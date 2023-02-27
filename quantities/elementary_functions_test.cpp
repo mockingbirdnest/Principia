@@ -25,8 +25,6 @@ using astronomy::Parsec;
 using astronomy::JovianGravitationalParameter;
 using astronomy::SolarGravitationalParameter;
 using astronomy::TerrestrialGravitationalParameter;
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
 using constants::GravitationalConstant;
 using constants::SpeedOfLight;
 using constants::StandardGravity;
@@ -52,6 +50,7 @@ using uk::Gallon;
 using uk::Rood;
 using ::testing::Eq;
 using ::testing::Lt;
+using namespace principia::base::_cpuid;
 
 class ElementaryFunctionsTest : public testing::Test {};
 

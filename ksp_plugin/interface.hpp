@@ -32,9 +32,6 @@ namespace interface {
 // and generated code; we allow ourselves to pollute the |interface| namespace
 // with convenience |using|s.
 
-using base::not_null;
-using base::PullSerializer;
-using base::PushDeserializer;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
@@ -64,6 +61,9 @@ using physics::RelativeDegreesOfFreedom;
 using quantities::AngularMomentum;
 using quantities::Length;
 using quantities::MomentOfInertia;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of

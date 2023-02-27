@@ -12,7 +12,7 @@ namespace base {
 namespace _zfp_compressor {
 namespace internal {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // Helper class for ZFP compression.  This class compresses doubles, not
 // quantities, because we don't want to depend on the layout of Quantity in
@@ -61,7 +61,6 @@ class ZfpCompressor {
 
 }  // namespace internal
 
-using internal::not_null;
 using internal::ZfpCompressor;
 
 }  // namespace _zfp_compressor

@@ -28,8 +28,6 @@
 
 namespace principia {
 
-using base::GetLine;
-using base::OFStream;
 using geometry::BarycentreCalculator;
 using geometry::Instant;
 using geometry::Position;
@@ -65,6 +63,8 @@ using quantities::si::Radian;
 using testing_utilities::AbsoluteError;
 using namespace principia::base::_array;
 using namespace principia::base::_bundle;
+using namespace principia::base::_file;
+using namespace principia::base::_get_line;
 using namespace principia::base::_not_null;
 
 namespace mathematica {

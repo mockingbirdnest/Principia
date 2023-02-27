@@ -6,6 +6,7 @@
 
 namespace principia {
 namespace ksp_plugin {
+namespace internal_iterators {
 
 template<typename Container>
 TypedIterator<Container>::TypedIterator(Container container)
@@ -82,5 +83,6 @@ inline not_null<Plugin const*> TypedIterator<
   return plugin_;
 }
 
+}  // namespace internal_iterators
 }  // namespace ksp_plugin
 }  // namespace principia

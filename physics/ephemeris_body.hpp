@@ -32,7 +32,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::J2000;
-using base::MakeStoppableThread;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InfiniteFuture;
@@ -65,6 +64,7 @@ using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 

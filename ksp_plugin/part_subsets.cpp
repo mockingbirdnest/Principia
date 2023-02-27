@@ -8,7 +8,6 @@
 #include "ksp_plugin/pile_up.hpp"
 
 namespace principia {
-
 namespace base {
 
 using geometry::Instant;

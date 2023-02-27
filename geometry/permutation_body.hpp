@@ -16,7 +16,7 @@ namespace principia {
 namespace geometry {
 namespace internal_permutation {
 
-using base::is_same_template_v;
+using namespace principia::base::_traits;
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>::Permutation(

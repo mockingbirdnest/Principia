@@ -17,7 +17,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-using base::HexadecimalEncoder;
 using geometry::OrthogonalMap;
 using geometry::R3x3Matrix;
 using physics::RigidTransformation;
@@ -29,6 +28,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using namespace principia::base::_array;
+using namespace principia::base::_hexadecimal;
 using namespace principia::base::_not_null;
 
 constexpr Mass untruthful_part_mass = 1 * Kilogram;

@@ -16,11 +16,11 @@
 
 namespace principia {
 
-using base::GetLine;
 using base::Version;
-using base::HexadecimalEncoder;
 using interface::principia__ActivatePlayer;
 using namespace principia::base::_array;
+using namespace principia::base::_get_line;
+using namespace principia::base::_hexadecimal;
 
 using namespace std::chrono_literals;
 

@@ -30,7 +30,6 @@ namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
-using base::all_different_v;
 using geometry::Bivector;
 using geometry::Point;
 using geometry::Quaternion;
@@ -60,6 +59,7 @@ using quantities::Quantity;
 using quantities::Quotient;
 using quantities::Temperature;
 using quantities::Time;
+using namespace principia::base::_traits;
 namespace si = quantities::si;
 
 // A helper class for type erasure of quantities.  It may be used with the
