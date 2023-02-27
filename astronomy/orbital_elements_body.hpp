@@ -49,7 +49,7 @@ using quantities::si::Milli;
 using quantities::si::Radian;
 
 constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;
-constexpr double max_clenshaw_curtis_relative_error = 1.0e-8;
+constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;
 constexpr int max_clenshaw_curtis_points = 2000;
 // Carefully tuned based on MercuryOrbiter test.
 constexpr double max_clenshaw_curtis_relative_error_for_initial_integration =

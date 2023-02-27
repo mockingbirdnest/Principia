@@ -42,10 +42,12 @@ bool IsNearMatcher<T>::MatchAndExplain(
     *listener << "which ";
   } else {
     *listener << "which is "
-              << std::setprecision(std::ceil(
-                     std::log10(std::abs(expected_.min() / expected_.unit())) -
-                     std::log10(std::abs((expected_.max() - expected_.min()) /
-                                         expected_.unit()))))
+              << std::setprecision(1 +
+                                   std::floor(std::log10(std::abs(
+                                       expected_.min() / expected_.unit()))) -
+                                   std::floor(std::log10(std::abs(
+                                       (expected_.max() - expected_.min()) /
+                                       (2 * expected_.unit())))))
               << actual / expected_.unit() << " * " << expected_.unit()
               << " and ";
   }
