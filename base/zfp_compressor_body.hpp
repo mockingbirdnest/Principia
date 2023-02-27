@@ -121,9 +121,6 @@ void ZfpCompressor::ReadFromMessageMultidimensional(
 }
 
 }  // namespace internal
-
-using internal::ZfpCompressor;
-
 }  // namespace _zfp_compressor
 }  // namespace base
 }  // namespace principia
