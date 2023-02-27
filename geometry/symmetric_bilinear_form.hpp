@@ -12,9 +12,9 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(rotation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Rotation);
+FORWARD_DECLARE_FROM_NEW(rotation,
+                         TEMPLATE(typename FromFrame, typename ToFrame) class,
+                         Rotation);
 
 namespace _symmetric_bilinear_form {
 namespace internal {
@@ -23,6 +23,7 @@ using quantities::Product;
 using quantities::Quotient;
 using quantities::Square;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_rotation;
 
 // A symmetric bilinear form with dimensionality |Scalar|, on the given kind of
 // |Multivector|, expressed in the coordinates of |Frame|.

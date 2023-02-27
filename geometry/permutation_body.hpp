@@ -1,5 +1,7 @@
 #pragma once
 
+#include "geometry/permutation.hpp"
+
 #include <array>
 #include <string>
 #include <utility>

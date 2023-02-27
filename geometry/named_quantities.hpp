@@ -14,6 +14,11 @@
 
 namespace principia {
 namespace geometry {
+
+FORWARD_DECLARE_FROM_NEW(orthogonal_map,
+                         TEMPLATE(typename FromFrame, typename ToFrame) class,
+                         OrthogonalMap);
+
 namespace _named_quantities {
 namespace internal {
 
@@ -23,6 +28,7 @@ using quantities::Length;
 using quantities::MomentOfInertia;
 using quantities::Speed;
 using quantities::Time;
+using namespace principia::geometry::_orthogonal_map;
 
 using Instant = Point<Time>;
 

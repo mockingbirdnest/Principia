@@ -70,7 +70,7 @@ struct Hilbert<T1, T2,
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942
   {  // NOLINT
-    return internal_grassmann::InnerProduct(t1, t2);
+    return _grassmann::internal::InnerProduct(t1, t2);
   }
 #else
   ;  // NOLINT
@@ -90,7 +90,7 @@ struct Hilbert<T, T,
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942
   {  // NOLINT
-    return internal_grassmann::InnerProduct(t1, t2);
+    return _grassmann::internal::InnerProduct(t1, t2);
   }
 #else
   ;  // NOLINT

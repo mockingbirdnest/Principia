@@ -139,6 +139,10 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
 }
 
 }  // namespace internal
+}  // namespace _pair
+
+namespace _barycentre_calculator {
+namespace internal {
 
 template<typename T1, typename T2, typename Weight>
 void BarycentreCalculator<Pair<T1, T2>, Weight>::Add(Pair<T1, T2> const& pair,
@@ -175,24 +179,26 @@ T1 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t1_;
 template<typename T1, typename T2, typename Weight>
 T2 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t2_;
 
-}  // namespace _pair
+}  // namespace internal
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 
 namespace base {
+namespace _mappable {
+namespace internal {
 
 template<typename Functor, typename T1, typename T2>
-typename Mappable<
-    Functor,
-    geometry::Pair<T1, T2>,
-    geometry::enable_if_vector_t<geometry::Pair<T1, T2>, void>>::type
-Mappable<Functor,
-         geometry::Pair<T1, T2>,
-         geometry::enable_if_vector_t<geometry::Pair<T1, T2>, void>>::Do(
+typename Mappable<Functor,
+                  Pair<T1, T2>,
+                  enable_if_vector_t<Pair<T1, T2>, void>>::type
+Mappable<Functor, Pair<T1, T2>, enable_if_vector_t<Pair<T1, T2>, void>>::Do(
     Functor const& functor,
-    geometry::Pair<T1, T2> const& pair) {
+    Pair<T1, T2> const& pair) {
   return type(functor(pair.t1_), functor(pair.t2_));
 }
 
+}  // namespace internal
+}  // namespace _mappable
 }  // namespace base
 
 }  // namespace principia

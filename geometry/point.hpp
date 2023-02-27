@@ -97,7 +97,7 @@ class Point final {
   friend std::string DebugString(Point<V> const& point);
 
   template<typename V, typename S>
-  friend class geometry::BarycentreCalculator;
+  friend class _barycentre_calculator::BarycentreCalculator;
 };
 
 template<typename Vector>
@@ -146,9 +146,13 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
 
 using internal::Point;
 
+}  // namespace _point
+
 // Specialize BarycentreCalculator to make it applicable to Points.
-namespace _point {
+namespace _barycentre_calculator {
 namespace internal {
+
+using namespace principia::geometry::_point;
 
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {
@@ -167,8 +171,7 @@ class BarycentreCalculator<Point<Vector>, Weight> final {
 };
 
 }  // namespace internal
-}  // namespace _point
-}  // namespace _point
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 }  // namespace principia
 

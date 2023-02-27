@@ -14,9 +14,9 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(rotation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Rotation);
+FORWARD_DECLARE_FROM_NEW(rotation,
+                         TEMPLATE(typename FromFrame, typename ToFrame) class,
+                         Rotation);
 
 namespace _grassmann {
 namespace internal {
@@ -28,6 +28,7 @@ using quantities::Quantity;
 using quantities::Quotient;
 using quantities::Square;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_rotation;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of

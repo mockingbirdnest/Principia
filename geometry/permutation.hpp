@@ -10,14 +10,15 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     OrthogonalMap);
+FORWARD_DECLARE_FROM_NEW(orthogonal_map,
+                         TEMPLATE(typename FromFrame, typename ToFrame) class,
+                         OrthogonalMap);
 
 namespace _permutation {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_orthogonal_map;
 
 // Declare shorter names for the protocol buffer enums.
 static constexpr int EVEN = serialization::Permutation::EVEN;

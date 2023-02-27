@@ -195,6 +195,10 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
 }
 
 }  // namespace internal
+}  // namespace _point
+
+namespace _barycentre_calculator {
+namespace internal {
 
 template<typename Vector, typename Weight>
 void BarycentreCalculator<Point<Vector>, Weight>::Add(
@@ -222,6 +226,8 @@ Weight const& BarycentreCalculator<Point<Vector>, Weight>::weight() const {
   return weight_;
 }
 
-}  // namespace _point
+}  // namespace internal
+}  // namespace _barycentre_calculator
+
 }  // namespace geometry
 }  // namespace principia

@@ -7,6 +7,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/signature.hpp"
 
 namespace principia {
 namespace geometry {
