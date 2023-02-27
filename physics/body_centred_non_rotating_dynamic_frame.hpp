@@ -23,13 +23,12 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Vector;
 using quantities::Acceleration;
 using quantities::SpecificEnergy;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
 
 // The origin of the frame is the centre of mass of the body.  The Y axis is at
 // the intersection of the equator and the XY plane of |InertialFrame|, in the

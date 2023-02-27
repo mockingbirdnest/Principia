@@ -18,6 +18,7 @@ using geometry::InfinitePast;
 using quantities::Time;
 using quantities::si::Second;
 using ::testing::Eq;
+using namespace principia::geometry::_instant_output;
 
 class InstantOutputTest : public ::testing::Test {};
 

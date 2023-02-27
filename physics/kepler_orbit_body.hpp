@@ -14,20 +14,6 @@ namespace principia {
 namespace physics {
 namespace internal_kepler_orbit {
 
-using geometry::AngleBetween;
-using geometry::Bivector;
-using geometry::Commutator;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::EulerAngles;
-using geometry::InnerProduct;
-using geometry::Normalize;
-using geometry::OrientedAngleBetween;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
 using numerics::Brent;
 using quantities::Abs;
 using quantities::ArcCos;
@@ -48,6 +34,10 @@ using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
 
 template<typename Frame>
 void KeplerianElements<Frame>::WriteToMessage(

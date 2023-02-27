@@ -22,9 +22,6 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Interval;
 using numerics::EstrinEvaluator;
 using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
@@ -34,6 +31,8 @@ using quantities::DebugString;
 using quantities::si::Metre;
 using quantities::si::Second;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 constexpr int max_degree = 17;

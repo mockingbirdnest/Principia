@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3_element {
+namespace _r3_element {
+namespace internal {
 
 using quantities::Angle;
 using quantities::is_quantity_v;
@@ -211,18 +212,23 @@ Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
 // other coordinates are 0.  |i| must be in [0, 2].
 R3Element<double> BasisVector(int i);
 
-}  // namespace internal_r3_element
+}  // namespace internal
 
-using internal_r3_element::BasisVector;
-using internal_r3_element::Cross;
-using internal_r3_element::Dot;
-using internal_r3_element::Normalize;
-using internal_r3_element::NormalizeOrZero;
-using internal_r3_element::R3Element;
-using internal_r3_element::RadiusLatitudeLongitude;
-using internal_r3_element::SphericalCoordinates;
+using internal::BasisVector;
+using internal::Cross;
+using internal::Dot;
+using internal::Normalize;
+using internal::NormalizeOrZero;
+using internal::R3Element;
+using internal::RadiusLatitudeLongitude;
+using internal::SphericalCoordinates;
 
+}  // namespace _r3_element
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_r3_element;
+}  // namespace principia::geometry
 
 #include "geometry/r3_element_body.hpp"

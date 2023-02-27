@@ -17,9 +17,9 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_linear_multistep_integrator {
 
-using geometry::QuantityOrMultivectorSerializer;
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_serialization;
 
 int const startup_step_divisor = 16;
 

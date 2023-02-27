@@ -18,7 +18,8 @@ FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
 
-namespace internal_grassmann {
+namespace _grassmann {
+namespace internal {
 
 using quantities::Angle;
 using quantities::is_quantity_v;
@@ -371,22 +372,27 @@ template<typename Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
-}  // namespace internal_grassmann
+}  // namespace internal
 
-using internal_grassmann::AngleBetween;
-using internal_grassmann::Bivector;
-using internal_grassmann::Commutator;
-using internal_grassmann::Exp;
-using internal_grassmann::InnerProduct;
-using internal_grassmann::Multivector;
-using internal_grassmann::Normalize;
-using internal_grassmann::NormalizeOrZero;
-using internal_grassmann::OrientedAngleBetween;
-using internal_grassmann::Trivector;
-using internal_grassmann::Vector;
-using internal_grassmann::Wedge;
+using internal::AngleBetween;
+using internal::Bivector;
+using internal::Commutator;
+using internal::Exp;
+using internal::InnerProduct;
+using internal::Multivector;
+using internal::Normalize;
+using internal::NormalizeOrZero;
+using internal::OrientedAngleBetween;
+using internal::Trivector;
+using internal::Vector;
+using internal::Wedge;
 
+}  // namespace _grassmann
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_grassmann;
+}  // namespace principia::geometry
 
 #include "geometry/grassmann_body.hpp"

@@ -40,12 +40,6 @@
 
 namespace principia {
 
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Instant;
-using geometry::OrientedAngleBetween;
-using geometry::Position;
-using geometry::Sign;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN11B;
@@ -89,6 +83,9 @@ using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_graveyard;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_sign;
 
 using namespace std::chrono_literals;
 

@@ -20,7 +20,6 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Instant;
 using quantities::Abs;
 using quantities::Difference;
 using quantities::Length;
@@ -34,6 +33,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
+using namespace principia::geometry::_named_quantities;
 using testing_utilities::operator""_;
 
 // The adapters wrap the result of the Newhall approximation so that they can be

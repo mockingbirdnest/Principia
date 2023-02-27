@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_sphere {
+namespace _sphere {
+namespace internal {
 
 using quantities::Length;
 using quantities::Square;
@@ -27,11 +28,16 @@ class Sphere {
   Square<Length> const radius²_;
 };
 
-}  // namespace internal_sphere
+}  // namespace internal
 
-using internal_sphere::Sphere;
+using internal::Sphere;
 
+}  // namespace _sphere
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_sphere;
+}  // namespace principia::geometry
 
 #include "geometry/sphere_body.hpp"

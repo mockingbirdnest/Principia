@@ -13,7 +13,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_integrators {
 
-using geometry::Position;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -26,6 +25,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
+using namespace principia::geometry::_named_quantities;
 
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters() {

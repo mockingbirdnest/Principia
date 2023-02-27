@@ -25,8 +25,6 @@ namespace internal_orbit_analyser {
 using astronomy::OrbitalElements;
 using astronomy::OrbitGroundTrack;
 using astronomy::OrbitRecurrence;
-using geometry::Instant;
-using geometry::Interval;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::RotatingBody;
@@ -34,6 +32,8 @@ using quantities::Length;
 using quantities::Time;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting

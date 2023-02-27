@@ -21,7 +21,6 @@
 
 namespace principia {
 
-using geometry::Instant;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -58,6 +57,7 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 #define INSTANCE(integrator,                                             \

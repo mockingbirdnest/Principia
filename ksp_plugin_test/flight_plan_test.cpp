@@ -31,11 +31,6 @@ namespace principia {
 namespace ksp_plugin {
 
 using astronomy::J2000;
-using geometry::Barycentre;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -75,6 +70,8 @@ using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::MockFunction;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_named_quantities;
 
 class FlightPlanTest : public testing::Test {
  protected:

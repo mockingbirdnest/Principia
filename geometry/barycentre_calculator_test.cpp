@@ -16,6 +16,7 @@ using geometry::Frame;
 using quantities::Entropy;
 using quantities::KinematicViscosity;
 using testing_utilities::AlmostEquals;
+using namespace principia::geometry::_barycentre_calculator;
 namespace si = quantities::si;
 
 namespace geometry {

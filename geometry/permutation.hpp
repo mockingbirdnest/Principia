@@ -14,7 +14,8 @@ FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
 
-namespace internal_permutation {
+namespace _permutation {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -132,13 +133,18 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Permutation<FromFrame, ToFrame> const& permutation);
 
-}  // namespace internal_permutation
+}  // namespace internal
 
-using internal_permutation::EvenPermutation;
-using internal_permutation::OddPermutation;
-using internal_permutation::Permutation;
+using internal::EvenPermutation;
+using internal::OddPermutation;
+using internal::Permutation;
 
+}  // namespace _permutation
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_permutation;
+}  // namespace principia::geometry
 
 #include "geometry/permutation_body.hpp"

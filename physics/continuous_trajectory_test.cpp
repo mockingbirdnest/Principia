@@ -29,11 +29,6 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Velocity;
 using numerics::Polynomial;
 using numerics::PolynomialInMonomialBasis;
 using numerics::HornerEvaluator;
@@ -58,6 +53,8 @@ using testing_utilities::operator""_;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {

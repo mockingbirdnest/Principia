@@ -13,10 +13,6 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
-using geometry::Barycentre;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
 using numerics::Brent;
 using numerics::Hermite3;
 using quantities::IsFinite;
@@ -25,6 +21,9 @@ using quantities::Speed;
 using quantities::Square;
 using quantities::Variation;
 using namespace principia::base::_array;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_sign;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,

@@ -35,13 +35,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::AngularVelocity;
-using geometry::Identity;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
@@ -87,6 +80,11 @@ using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
 
 namespace {
 

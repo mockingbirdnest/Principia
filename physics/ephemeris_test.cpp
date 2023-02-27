@@ -50,14 +50,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
-using geometry::Barycentre;
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Rotation;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -106,6 +98,10 @@ using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
 using namespace std::chrono_literals;
 namespace si = quantities::si;
 

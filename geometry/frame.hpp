@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_frame {
+namespace _frame {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -82,16 +83,21 @@ void ReadFrameFromMessage(
     google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,
     bool& is_inertial);
 
-}  // namespace internal_frame
+}  // namespace internal
 
-using internal_frame::Arbitrary;
-using internal_frame::Frame;
-using internal_frame::Handedness;
-using internal_frame::Inertial;
-using internal_frame::NonRotating;
-using internal_frame::ReadFrameFromMessage;
+using internal::Arbitrary;
+using internal::Frame;
+using internal::Handedness;
+using internal::Inertial;
+using internal::NonRotating;
+using internal::ReadFrameFromMessage;
 
+}  // namespace _frame
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_frame;
+}  // namespace principia::geometry
 
 #include "geometry/frame_body.hpp"

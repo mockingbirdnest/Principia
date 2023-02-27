@@ -23,12 +23,10 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
-using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
 using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
-using geometry::pointwise_inner_product::PointwiseInnerProduct;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 using quantities::DebugString;
@@ -39,6 +37,8 @@ using quantities::Time;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_cartesian_product;
+using namespace principia::geometry::_serialization;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
 // coefficients of the same monomial as a polynomial of (x - x₂), i.e.:

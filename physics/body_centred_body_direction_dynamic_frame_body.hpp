@@ -14,12 +14,6 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_body_direction_dynamic_frame {
 
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::R3x3Matrix;
-using geometry::Velocity;
-using geometry::Wedge;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
@@ -27,6 +21,10 @@ using quantities::Product;
 using quantities::Speed;
 using quantities::Variation;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3x3_matrix;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::

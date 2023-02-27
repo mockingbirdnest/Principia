@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_named_quantities {
+namespace _named_quantities {
+namespace internal {
 
 using quantities::AngularFrequency;
 using quantities::Infinity;
@@ -58,26 +59,33 @@ using InertiaTensor = SymmetricBilinearForm<MomentOfInertia, Frame, Bivector>;
 constexpr Instant JustAfter(Instant const t) { return NextUp(t); }
 constexpr Instant JustBefore(Instant const t) { return NextDown(t); }
 
-}  // namespace internal_named_quantities
+}  // namespace internal
 
-using internal_named_quantities::AngularVelocity;
-using internal_named_quantities::Displacement;
-using internal_named_quantities::InertiaTensor;
-using internal_named_quantities::InfiniteFuture;
-using internal_named_quantities::InfinitePast;
-using internal_named_quantities::Instant;
-using internal_named_quantities::JustAfter;
-using internal_named_quantities::JustBefore;
-using internal_named_quantities::Position;
-using internal_named_quantities::RigidTransformation;
-using internal_named_quantities::Velocity;
+using internal::AngularVelocity;
+using internal::Displacement;
+using internal::InertiaTensor;
+using internal::InfiniteFuture;
+using internal::InfinitePast;
+using internal::Instant;
+using internal::JustAfter;
+using internal::JustBefore;
+using internal::Position;
+using internal::RigidTransformation;
+using internal::Velocity;
 
-namespace internal_point {
+namespace _named_quantities {
+namespace internal {
 // We must declare this in the internal namespace where Point is defined so that
 // it is found by ADL.
 std::string DebugString(const Instant& t);
 std::ostream& operator<<(std::ostream& os, const Instant& t);
-}  // namespace internal_point
+}  // namespace internal
 
+}  // namespace _named_quantities
+}  // namespace _named_quantities
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_named_quantities;
+}  // namespace principia::geometry

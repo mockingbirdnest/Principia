@@ -16,11 +16,10 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory {
 
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
 using quantities::Length;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::DiscreteTrajectory()

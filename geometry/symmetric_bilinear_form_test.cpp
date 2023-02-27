@@ -20,7 +20,6 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_symmetric_bilinear_form {
 
 using quantities::Length;
 using quantities::Pow;
@@ -34,6 +33,7 @@ using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using testing_utilities::operator""_;
 using ::testing::Eq;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
  protected:
@@ -618,6 +618,5 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
   }
 }
 
-}  // namespace internal_symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia

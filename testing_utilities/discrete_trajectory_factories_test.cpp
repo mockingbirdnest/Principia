@@ -14,15 +14,6 @@
 namespace principia {
 namespace testing_utilities {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InnerProduct;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using quantities::Acceleration;
 using quantities::Pow;
@@ -30,6 +21,9 @@ using quantities::Sqrt;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
  protected:

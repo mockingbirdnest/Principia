@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_hilbert {
+namespace _hilbert {
+namespace internal {
 
 using quantities::Abs;
 
@@ -78,6 +79,7 @@ Norm(T const& t) -> NormType {
 }
 #endif
 
-}  // namespace internal_hilbert
+}  // namespace internal
+}  // namespace _hilbert
 }  // namespace geometry
 }  // namespace principia

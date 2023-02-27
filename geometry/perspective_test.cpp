@@ -19,7 +19,6 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_perspective {
 
 using quantities::Length;
 using quantities::Sqrt;
@@ -34,6 +33,7 @@ using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::_;
+using namespace principia::geometry::_perspective;
 
 class PerspectiveTest : public ::testing::Test {
  protected:
@@ -617,6 +617,5 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
               SizeIs(3));
 }
 
-}  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

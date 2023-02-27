@@ -25,9 +25,6 @@
 
 namespace principia {
 
-using geometry::AngleBetween;
-using geometry::Instant;
-using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
@@ -51,6 +48,8 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 using testing_utilities::operator""_;
 
 namespace astronomy {

@@ -15,9 +15,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::RP2Line;
-using geometry::RP2Lines;
-using geometry::RP2Point;
 using ksp_plugin::Camera;
 using ksp_plugin::TypedIterator;
 using ksp_plugin::VesselSet;
@@ -26,6 +23,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Length;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_rp2_point;
 
 bool __cdecl principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});

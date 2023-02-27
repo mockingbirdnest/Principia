@@ -34,10 +34,6 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using geometry::InfinitePast;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
@@ -51,6 +47,8 @@ using quantities::Speed;
 using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 // Note on thread-safety: the integration functions (Prolong, FlowWithFixedStep,
 // FlowWithAdaptiveStep) can be called concurrently as long as their parameters

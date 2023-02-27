@@ -21,10 +21,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using geometry::BarycentreCalculator;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Position;
 using physics::Client;
 using quantities::IsFinite;
 using quantities::Length;
@@ -35,6 +31,8 @@ using ::std::placeholders::_1;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_named_quantities;
 
 using namespace std::chrono_literals;
 

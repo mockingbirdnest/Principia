@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rp2_point {
+namespace _rp2_point {
+namespace internal {
 
 using numerics::TwoProduct;
 using quantities::DebugString;
@@ -97,6 +98,7 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace internal_rp2_point
+}  // namespace internal
+}  // namespace _rp2_point
 }  // namespace geometry
 }  // namespace principia

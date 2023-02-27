@@ -38,16 +38,6 @@
 namespace principia {
 
 using astronomy::ICRS;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::Rotation;
-using geometry::Velocity;
 using integrators::Integrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -80,6 +70,12 @@ using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
 
 namespace physics {
 

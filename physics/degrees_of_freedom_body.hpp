@@ -9,7 +9,7 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
-using geometry::BarycentreCalculator;
+using namespace principia::geometry::_barycentre_calculator;
 
 template<typename Frame>
 DegreesOfFreedom<Frame>::DegreesOfFreedom(Position<Frame> const& position,

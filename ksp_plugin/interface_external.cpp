@@ -16,9 +16,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::AngularVelocity;
-using geometry::Frame;
-using geometry::RadiusLatitudeLongitude;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::Vessel;
@@ -30,6 +27,9 @@ using physics::OblateBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 using namespace principia::base::_array;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3_element;
 
 namespace {
 

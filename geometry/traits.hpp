@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_traits {
+namespace _traits {
+namespace internal {
 
 using quantities::Difference;
 using namespace principia::base::_not_constructible;
@@ -25,10 +26,15 @@ struct is_vector<T const> : is_vector<T> {};
 template<typename T>
 constexpr bool is_vector_v = is_vector<T>::value;
 
-}  // namespace internal_traits
+}  // namespace internal
 
-using internal_traits::is_vector;
-using internal_traits::is_vector_v;
+using internal::is_vector;
+using internal::is_vector_v;
 
+}  // namespace _traits
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_traits;
+}  // namespace principia::geometry

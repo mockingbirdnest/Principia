@@ -28,12 +28,6 @@ namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Vector;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -58,6 +52,9 @@ using ::testing::AllOf;
 using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 // Constructs a piecewise Poisson series that has the given number of pieces

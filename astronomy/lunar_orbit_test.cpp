@@ -38,16 +38,6 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
@@ -96,6 +86,10 @@ using testing_utilities::Slope;
 using testing_utilities::operator""_;
 using ::testing::Lt;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
 
 namespace astronomy {
 

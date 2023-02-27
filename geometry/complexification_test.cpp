@@ -15,6 +15,7 @@ namespace geometry {
 using quantities::Length;
 using quantities::si::Metre;
 using ::testing::Eq;
+using namespace principia::geometry::_complexification;
 
 class ComplexificationTest : public testing::Test {
  protected:

@@ -12,13 +12,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_frames {
 
-using geometry::Arbitrary;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::NonRotating;
-using geometry::Permutation;
 using physics::DynamicFrame;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_permutation;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally

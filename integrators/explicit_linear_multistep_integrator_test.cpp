@@ -25,7 +25,6 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_runge_kutta_integrator {
 
-using geometry::Instant;
 using quantities::Length;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -43,6 +42,7 @@ using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using testing_utilities::operator""_;
 using ::testing::ValuesIn;
+using namespace principia::geometry::_named_quantities;
 
 // The execution time is exponential in |step_sizes|.
 constexpr int step_sizes = 110;

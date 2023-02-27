@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_plane {
+namespace _plane {
+namespace internal {
 
 template<typename Frame>
 template<typename Scalar>
@@ -52,6 +53,7 @@ Vector<Scalar, Frame> Projection(Vector<Scalar, Frame> const& vector,
   return vector - some_binormal * projection_on_plane;
 }
 
-}  // namespace internal_plane
+}  // namespace internal
+}  // namespace _plane
 }  // namespace geometry
 }  // namespace principia

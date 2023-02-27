@@ -14,11 +14,10 @@ namespace principia {
 namespace numerics {
 namespace internal_davenport_q_method {
 
-using geometry::KroneckerProduct;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
 using quantities::Infinity;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
 
 template<typename FromFrame, typename ToFrame, typename Weight>
 Rotation<FromFrame, ToFrame> DavenportQMethod(

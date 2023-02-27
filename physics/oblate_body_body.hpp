@@ -17,12 +17,11 @@ namespace physics {
 namespace internal_oblate_body {
 
 using astronomy::J2000;
-using geometry::AngularVelocity;
-using geometry::Instant;
 using numerics::LegendreNormalizationFactor;
 using quantities::Angle;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 template<typename Frame>

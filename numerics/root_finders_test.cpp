@@ -19,8 +19,6 @@
 
 namespace principia {
 
-using geometry::Instant;
-using geometry::Point;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::Entropy;
@@ -41,6 +39,8 @@ using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::IsEmpty;
 using ::testing::Le;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_point;
 namespace si = quantities::si;
 
 namespace numerics {

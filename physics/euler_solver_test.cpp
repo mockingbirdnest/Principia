@@ -35,21 +35,6 @@ namespace physics {
 
 using astronomy::ICRS;
 using astronomy::operator""_UTC;
-using geometry::AngleBetween;
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::EulerAngles;
-using geometry::EvenPermutation;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::R3Element;
-using geometry::RadiusLatitudeLongitude;
-using geometry::Rotation;
 using quantities::Abs;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -77,6 +62,13 @@ using testing_utilities::operator""_;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Matcher;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 class EulerSolverTest : public ::testing::Test {

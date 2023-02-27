@@ -34,15 +34,6 @@ FORWARD_DECLARE_FROM(part, class, Part);
 
 namespace internal_pile_up {
 
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::InertiaTensor;
-using geometry::Instant;
-using geometry::NonRotating;
-using geometry::RigidTransformation;
-using geometry::Vector;
 using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
@@ -59,6 +50,9 @@ using quantities::Mass;
 using quantities::Time;
 using quantities::Torque;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 // The axes are those of Barycentric. The origin is the centre of mass of the
 // pile up.  This frame is distinguished from NonRotatingPileUp in that it is

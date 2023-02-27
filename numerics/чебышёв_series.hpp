@@ -16,11 +16,11 @@ using ЧебышёвSeries = ChebyshevSeries;
 namespace numerics {
 namespace internal_чебышёв_series {
 
-using geometry::Instant;
 using quantities::Inverse;
 using quantities::Time;
 using quantities::Variation;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 // A helper class for implementing |Evaluate| that can be specialized for speed.
 template<typename Vector>

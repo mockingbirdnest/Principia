@@ -18,6 +18,7 @@ using quantities::Length;
 using quantities::Sqrt;
 using quantities::Square;
 using quantities::si::Metre;
+using namespace principia::geometry::_hilbert;
 
 using World = Frame<serialization::Frame::TestTag,
                     Inertial,

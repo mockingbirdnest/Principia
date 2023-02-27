@@ -8,8 +8,7 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
-using geometry::Instant;
-using geometry::Velocity;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 JacobiCoordinates<Frame>::JacobiCoordinates(MassiveBody const& primary) {

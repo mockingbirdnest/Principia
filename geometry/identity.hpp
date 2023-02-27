@@ -20,7 +20,8 @@ FORWARD_DECLARE_FROM(
              template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
 
-namespace internal_identity {
+namespace _identity {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -88,11 +89,16 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Identity<FromFrame, ToFrame> const& identity);
 
-}  // namespace internal_identity
+}  // namespace internal
 
-using internal_identity::Identity;
+using internal::Identity;
 
+}  // namespace _identity
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_identity;
+}  // namespace principia::geometry
 
 #include "geometry/identity_body.hpp"

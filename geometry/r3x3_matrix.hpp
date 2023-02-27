@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3x3_matrix {
+namespace _r3x3_matrix {
+namespace internal {
 
 using quantities::Cube;
 using quantities::is_quantity_v;
@@ -189,12 +190,17 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          R3x3Matrix<Scalar> const& r3x3_matrix);
 
-}  // namespace internal_r3x3_matrix
+}  // namespace internal
 
-using internal_r3x3_matrix::KroneckerProduct;
-using internal_r3x3_matrix::R3x3Matrix;
+using internal::KroneckerProduct;
+using internal::R3x3Matrix;
 
+}  // namespace _r3x3_matrix
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_r3x3_matrix;
+}  // namespace principia::geometry
 
 #include "geometry/r3x3_matrix_body.hpp"

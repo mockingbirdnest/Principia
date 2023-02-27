@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3_element {
+namespace _r3_element {
+namespace internal {
 
 using numerics::CanEmitFMAInstructions;
 using quantities::ArcSin;
@@ -477,6 +478,7 @@ inline R3Element<double> BasisVector(int const i) {
           static_cast<double>(i == 2)};
 }
 
-}  // namespace internal_r3_element
+}  // namespace internal
+}  // namespace _r3_element
 }  // namespace geometry
 }  // namespace principia

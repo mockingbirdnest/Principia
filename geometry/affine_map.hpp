@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_affine_map {
+namespace _affine_map {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -68,11 +69,16 @@ std::ostream& operator<<(
     std::ostream& out,
     AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& affine_map);
 
-}  // namespace internal_affine_map
+}  // namespace internal
 
-using internal_affine_map::AffineMap;
+using internal::AffineMap;
 
+}  // namespace _affine_map
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_affine_map;
+}  // namespace principia::geometry
 
 #include "geometry/affine_map_body.hpp"

@@ -10,13 +10,13 @@
 namespace principia {
 namespace base {
 
-using geometry::Instant;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::PileUp;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
   if (part->is_piled_up()) {

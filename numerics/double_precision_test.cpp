@@ -19,11 +19,6 @@ namespace principia {
 namespace numerics {
 namespace internal_double_precision {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Point;
-using geometry::R3Element;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Momentum;
@@ -39,6 +34,10 @@ using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_r3_element;
 
 constexpr double ε = std::numeric_limits<double>::epsilon();
 constexpr double ε² = ε * ε;

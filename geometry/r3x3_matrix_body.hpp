@@ -13,12 +13,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3x3_matrix {
+namespace _r3x3_matrix {
+namespace internal {
 
-using geometry::Dot;
 using quantities::Abs;
 using quantities::Sqrt;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_r3_element;
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(uninitialized_t) {}
@@ -424,6 +425,7 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-}  // namespace internal_r3x3_matrix
+}  // namespace internal
+}  // namespace _r3x3_matrix
 }  // namespace geometry
 }  // namespace principia

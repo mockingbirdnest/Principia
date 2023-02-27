@@ -29,6 +29,7 @@ using testing::Eq;
 using testing::Lt;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
+using namespace principia::geometry::_affine_map;
 
 class AffineMapTest : public testing::Test {
  protected:

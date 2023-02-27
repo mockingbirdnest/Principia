@@ -39,13 +39,6 @@ namespace internal_solar_system {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Position;
-using geometry::RadiusLatitudeLongitude;
-using geometry::Vector;
-using geometry::Velocity;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::DebugString;
@@ -60,6 +53,10 @@ using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3_element;
 
 inline serialization::GravityModel ParseGravityModel(
     std::filesystem::path const& gravity_model_filename) {

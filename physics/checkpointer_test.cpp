@@ -9,9 +9,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Instant;
 using quantities::si::Second;
 using testing_utilities::StatusIs;
 using ::testing::ElementsAre;
@@ -23,6 +20,7 @@ using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 ACTION_P(SetPayload, payload) {
   arg0->payload = payload;

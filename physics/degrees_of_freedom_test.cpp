@@ -15,17 +15,14 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
-using geometry::Barycentre;
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Velocity;
 using quantities::Entropy;
 using quantities::Length;
 using quantities::Speed;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 class DegreesOfFreedomTest : public testing::Test {

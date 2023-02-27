@@ -21,6 +21,7 @@ using quantities::si::Metre;
 using ::testing::Eq;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using namespace principia::geometry::_permutation;
 
 namespace geometry {
 

@@ -19,11 +19,6 @@ namespace principia {
 namespace physics {
 namespace internal_equipotential {
 
-using geometry::Bivector;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Plane;
-using geometry::Position;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using quantities::Acceleration;
@@ -35,6 +30,9 @@ using quantities::SpecificEnergy;
 using quantities::si::Metre;
 using quantities::si::Second;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_plane;
 
 template<typename InertialFrame, typename Frame>
 class Equipotential {

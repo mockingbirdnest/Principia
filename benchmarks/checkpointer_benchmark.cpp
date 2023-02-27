@@ -17,7 +17,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::Instant;
 using quantities::si::Second;
 using serialization::DoublePrecision;
 using serialization::Ephemeris;
@@ -25,6 +24,7 @@ using serialization::IntegratorInstance;
 using serialization::R3Element;
 using serialization::State;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 // Stub writer for checkpointer. Adds some data to the checkpoint.
 void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {

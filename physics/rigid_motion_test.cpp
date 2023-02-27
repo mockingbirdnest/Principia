@@ -21,26 +21,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InnerProduct;
-using geometry::Normalize;
-using geometry::OddPermutation;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::Point;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Signature;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Speed;
@@ -54,6 +34,16 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::VanishesBefore;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
 using testing_utilities::operator""_;
 
 class RigidMotionTest : public testing::Test {

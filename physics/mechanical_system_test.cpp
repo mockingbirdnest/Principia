@@ -6,19 +6,6 @@
 
 namespace principia {
 
-using geometry::AngularVelocity;
-using geometry::Anticommutator;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::Inertial;
-using geometry::NonRotating;
-using geometry::OrthogonalMap;
-using geometry::R3x3Matrix;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
-using geometry::Velocity;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::AngularMomentum;
@@ -36,6 +23,13 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 namespace physics {
 

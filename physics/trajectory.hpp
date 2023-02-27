@@ -8,10 +8,8 @@ namespace principia {
 namespace physics {
 namespace internal_trajectory {
 
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 class Trajectory {

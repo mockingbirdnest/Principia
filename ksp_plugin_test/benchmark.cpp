@@ -16,7 +16,6 @@
 
 namespace principia {
 
-using geometry::Instant;
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
@@ -32,6 +31,7 @@ using testing_utilities::ReadLinesFromHexadecimalFile;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_named_quantities;
 
 namespace ksp_plugin {
 

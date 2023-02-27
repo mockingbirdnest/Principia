@@ -17,11 +17,6 @@
 namespace principia {
 namespace astronomy {
 
-using geometry::AngleBetween;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
@@ -54,6 +49,8 @@ using ::testing::AnyOf;
 using ::testing::Eq;
 using namespace principia::base::_bundle;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 class GeodesyTest : public ::testing::Test {
  protected:

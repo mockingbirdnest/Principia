@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_interval {
+namespace _interval {
+namespace internal {
 
 using quantities::Difference;
 using quantities::Infinity;
@@ -27,11 +28,16 @@ struct Interval {
 template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval);
 
-}  // namespace internal_interval
+}  // namespace internal
 
-using internal_interval::Interval;
+using internal::Interval;
 
+}  // namespace _interval
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_interval;
+}  // namespace principia::geometry
 
 #include "geometry/interval_body.hpp"

@@ -47,6 +47,7 @@ using quantities::uk::admiralty::Fathom;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using namespace principia::base::_cpuid;
+using namespace principia::geometry::_grassmann;
 
 namespace geometry {
 

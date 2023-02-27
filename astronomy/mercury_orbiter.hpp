@@ -9,12 +9,10 @@ namespace astronomy {
 namespace internal_mercury_orbiter {
 
 using astronomy::operator""_TT;
-using geometry::Displacement;
-using geometry::Velocity;
-using geometry::Instant;
 using physics::DegreesOfFreedom;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::geometry::_named_quantities;
 
 // State of the spacecraft Mercury Orbiter 1 at the start of September, from a
 // save by Butcher given in issue #1119.  This is used both from a plugin

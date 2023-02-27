@@ -19,7 +19,6 @@ using astronomy::ITRS;
 using astronomy::J2000;
 using astronomy::OrbitRecurrence;
 using astronomy::StandardProduct3;
-using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodySurfaceDynamicFrame;
@@ -42,6 +41,7 @@ using ::testing::IsNull;
 using ::testing::Optional;
 using ::testing::Property;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 class OrbitAnalyserTest : public testing::Test {
  protected:

@@ -19,11 +19,6 @@ namespace principia {
 namespace physics {
 namespace internal_equipotential {
 
-using geometry::Normalize;
-using geometry::Displacement;
-using geometry::Trivector;  // We don't use this every day.
-using geometry::Vector;
-using geometry::Wedge;
 using integrators::InitialValueProblem;
 using numerics::BroydenFletcherGoldfarbShanno;
 using numerics::DoublePrecision;
@@ -37,6 +32,8 @@ using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 // If the potential is below the total energy by this factor, return an empty
 // equipotential line.

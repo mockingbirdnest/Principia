@@ -15,11 +15,9 @@
 namespace principia {
 namespace astronomy {
 
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
 using physics::SolarSystem;
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
 
 class KSPFingerprintTest : public ::testing::Test {
  protected:

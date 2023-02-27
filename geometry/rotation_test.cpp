@@ -18,7 +18,6 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rotation {
 
 using quantities::ArcCos;
 using quantities::ArcSin;
@@ -35,6 +34,7 @@ using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::geometry::_rotation;
 
 class RotationTest : public testing::Test {
  protected:
@@ -574,6 +574,5 @@ TEST_F(RotationTest, CardanoAngles) {
   }
 }
 
-}  // namespace internal_rotation
 }  // namespace geometry
 }  // namespace principia

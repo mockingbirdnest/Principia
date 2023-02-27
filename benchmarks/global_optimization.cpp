@@ -16,15 +16,15 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Vector;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::si::Metre;
 using testing_utilities::Branin;
 using testing_utilities::GoldsteinPrice;
 using testing_utilities::Hartmann3;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 using testing_utilities::𝛁Branin;
 using testing_utilities::𝛁GoldsteinPrice;
 using testing_utilities::𝛁Hartmann3;

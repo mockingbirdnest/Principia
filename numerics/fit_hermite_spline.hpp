@@ -12,7 +12,7 @@ namespace internal_fit_hermite_spline {
 
 using quantities::Derivative;
 using quantities::Difference;
-using geometry::Hilbert;
+using namespace principia::geometry::_hilbert;
 
 // Given |samples| for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators

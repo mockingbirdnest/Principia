@@ -16,7 +16,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_symmetric_bilinear_form {
+namespace _symmetric_bilinear_form {
+namespace internal {
 
 using quantities::Abs;
 using quantities::Angle;
@@ -449,6 +450,7 @@ std::ostream& operator<<(
   return out;
 }
 
-}  // namespace internal_symmetric_bilinear_form
+}  // namespace internal
+}  // namespace _symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia

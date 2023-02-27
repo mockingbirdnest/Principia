@@ -29,13 +29,6 @@ namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
 using astronomy::ICRS;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
@@ -57,6 +50,9 @@ using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 namespace {
 

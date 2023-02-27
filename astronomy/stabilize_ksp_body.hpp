@@ -10,9 +10,9 @@ namespace principia {
 namespace astronomy {
 namespace stabilize_ksp_internal {
 
-using geometry::Position;
 using physics::KeplerianElements;
 using quantities::si::Degree;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 void StabilizeKSP(SolarSystem<Frame>& solar_system) {

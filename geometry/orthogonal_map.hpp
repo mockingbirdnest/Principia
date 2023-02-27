@@ -14,7 +14,14 @@
 namespace principia {
 
 namespace physics {
+namespace _orthogonal_map {
+namespace internal {
 class RigidMotionTest;
+}  // namespace internal
+
+using internal::RigidMotionTest;
+
+}  // namespace _orthogonal_map
 }  // namespace physics
 
 namespace geometry {
@@ -38,7 +45,8 @@ FORWARD_DECLARE_FROM(
              template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
 
-namespace internal_orthogonal_map {
+namespace _orthogonal_map {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -147,11 +155,16 @@ std::ostream& operator<<(
     std::ostream& out,
     OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
 
-}  // namespace internal_orthogonal_map
+}  // namespace internal
 
-using internal_orthogonal_map::OrthogonalMap;
+using internal::OrthogonalMap;
 
+}  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_orthogonal_map;
+}  // namespace principia::geometry
 
 #include "geometry/orthogonal_map_body.hpp"

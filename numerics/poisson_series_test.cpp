@@ -26,13 +26,6 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Vector;
-using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -51,6 +44,9 @@ using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
 using ::testing::AnyOf;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:

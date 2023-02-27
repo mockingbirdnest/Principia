@@ -11,13 +11,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3x3_matrix {
 
 using quantities::Length;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
+using namespace principia::geometry::_r3x3_matrix;
 
 class R3x3MatrixTest : public ::testing::Test {
  protected:
@@ -212,6 +212,5 @@ TEST_F(R3x3MatrixTest, Serialization) {
   EXPECT_EQ(m1_, m);
 }
 
-}  // namespace internal_r3x3_matrix
 }  // namespace geometry
 }  // namespace principia

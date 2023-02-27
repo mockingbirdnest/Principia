@@ -35,18 +35,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::Arbitrary;
-using geometry::Barycentre;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Plane;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandPrince1986RK547FC;
@@ -66,6 +54,12 @@ using quantities::si::Minute;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_plane;
+using namespace principia::geometry::_rotation;
 
 class EquipotentialTest : public ::testing::Test {
  protected:

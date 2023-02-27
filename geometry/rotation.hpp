@@ -23,7 +23,8 @@ FORWARD_DECLARE_FROM(
             template<typename S, typename F> typename Multivector) class,
     SymmetricBilinearForm);
 
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
 using quantities::Angle;
 using namespace principia::base::_not_null;
@@ -295,14 +296,19 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
-}  // namespace internal_rotation
+}  // namespace internal
 
-using internal_rotation::CardanoAngles;
-using internal_rotation::DefinesFrame;
-using internal_rotation::EulerAngles;
-using internal_rotation::Rotation;
+using internal::CardanoAngles;
+using internal::DefinesFrame;
+using internal::EulerAngles;
+using internal::Rotation;
 
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_rotation;
+}  // namespace principia::geometry
 
 #include "geometry/rotation_body.hpp"

@@ -64,19 +64,6 @@ namespace interface {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::InertiaTensor;
-using geometry::OrthogonalMap;
-using geometry::Quaternion;
-using geometry::R3x3Matrix;
-using geometry::RadiusLatitudeLongitude;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::ParseAdaptiveStepSizeIntegrator;
@@ -127,6 +114,14 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 namespace {

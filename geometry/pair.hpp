@@ -17,7 +17,8 @@ FORWARD_DECLARE_FROM(componentwise,
 }  // namespace testing_utilities
 
 namespace geometry {
-namespace internal_pair {
+namespace _pair {
+namespace internal {
 
 using quantities::Difference;
 using quantities::Product;
@@ -202,14 +203,15 @@ enable_if_vector_t<Pair<T1, T2>>& operator/=(Pair<T1, T2>& left, double right);
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
-}  // namespace internal_pair
+}  // namespace internal
 
-using internal_pair::enable_if_vector_t;
-using internal_pair::Pair;
-using internal_pair::vector_of;
+using internal::enable_if_vector_t;
+using internal::Pair;
+using internal::vector_of;
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
-namespace internal_barycentre_calculator {
+namespace _pair {
+namespace internal {
 
 using quantities::Difference;
 
@@ -236,7 +238,9 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
   static T2 const reference_t2_;
 };
 
-}  // namespace internal_barycentre_calculator
+}  // namespace internal
+}  // namespace _pair
+}  // namespace _pair
 }  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.
@@ -261,5 +265,9 @@ class Mappable<Functor,
 }  // namespace _mappable
 }  // namespace base
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_pair;
+}  // namespace principia::geometry
 
 #include "geometry/pair_body.hpp"

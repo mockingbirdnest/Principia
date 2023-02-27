@@ -14,8 +14,6 @@ namespace principia {
 namespace physics {
 namespace internal_hierarchical_system {
 
-using geometry::Frame;
-using geometry::Inertial;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
@@ -29,6 +27,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 namespace si = quantities::si;
 
 class HierarchicalSystemTest : public ::testing::Test {

@@ -13,12 +13,12 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Frame;
-using geometry::Vector;
 using quantities::Infinity;
 using ::testing::Eq;
 using ::testing::Pointee;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 
 class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
  protected:

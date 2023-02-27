@@ -29,18 +29,6 @@ namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using astronomy::ICRS;
-using geometry::Arbitrary;
-using geometry::Barycentre;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
@@ -58,6 +46,11 @@ using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 namespace {

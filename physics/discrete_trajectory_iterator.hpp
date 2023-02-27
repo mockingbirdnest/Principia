@@ -19,8 +19,8 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 
 namespace internal_discrete_trajectory_iterator {
 
-using geometry::Instant;
 using physics::DegreesOfFreedom;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 class DiscreteTrajectoryIterator {

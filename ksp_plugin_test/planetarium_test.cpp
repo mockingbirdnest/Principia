@@ -32,26 +32,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::DeduceSignReversingOrientation;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::InfinitePast;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::LinearMap;
-using geometry::OrthogonalMap;
-using geometry::Perspective;
-using geometry::Position;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Signature;
-using geometry::Vector;
-using geometry::Velocity;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::MassiveBody;
@@ -84,6 +64,15 @@ using ::testing::ReturnRef;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
 
 class PlanetariumTest : public ::testing::Test {
   using LeftNavigation =

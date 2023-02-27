@@ -11,11 +11,11 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_planetarium {
 
-using geometry::RigidTransformation;
-using geometry::Signature;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using testing_utilities::make_not_null;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_signature;
 
 class MockPlanetarium : public Planetarium {
  public:

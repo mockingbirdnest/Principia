@@ -30,13 +30,6 @@ namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
-using geometry::Bivector;
-using geometry::Point;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
 using numerics::PiecewisePoissonSeries;
@@ -60,6 +53,12 @@ using quantities::Quotient;
 using quantities::Temperature;
 using quantities::Time;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_symmetric_bilinear_form;
 namespace si = quantities::si;
 
 // A helper class for type erasure of quantities.  It may be used with the

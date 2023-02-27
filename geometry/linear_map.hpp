@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_linear_map {
+namespace _linear_map {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -59,11 +60,16 @@ class LinearMap {
 //       R3Element<Scalar> const& r3_element) const = 0;
 };
 
-}  // namespace internal_linear_map
+}  // namespace internal
 
-using internal_linear_map::LinearMap;
+using internal::LinearMap;
 
+}  // namespace _linear_map
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_linear_map;
+}  // namespace principia::geometry
 
 #include "geometry/linear_map_body.hpp"

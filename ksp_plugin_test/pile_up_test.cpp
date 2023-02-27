@@ -32,15 +32,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::NonRotating;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::MockFixedStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
@@ -77,6 +68,12 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 // A helper class to expose the internal state of a pile-up for testing.

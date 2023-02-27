@@ -31,10 +31,6 @@ namespace principia {
 namespace physics {
 
 using astronomy::ICRS;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Interval;
-using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::EstrinEvaluator;
@@ -52,6 +48,8 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 
 namespace apodization = numerics::apodization;
 namespace frequency_analysis = numerics::frequency_analysis;

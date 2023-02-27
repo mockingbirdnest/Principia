@@ -14,10 +14,10 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
-using geometry::Instant;
 using quantities::Difference;
 using quantities::Variation;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
 // |q| and |v| are the positions and velocities over a constant division of

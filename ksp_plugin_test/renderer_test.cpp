@@ -23,15 +23,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MockContinuousTrajectory;
@@ -50,6 +41,9 @@ using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
 
 class RendererTest : public ::testing::Test {
  protected:

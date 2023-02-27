@@ -32,15 +32,6 @@ namespace interface {
 // and generated code; we allow ourselves to pollute the |interface| namespace
 // with convenience |using|s.
 
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::Vector;
-using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::ApparentWorld;
 using ksp_plugin::Barycentric;
@@ -64,6 +55,10 @@ using quantities::MomentOfInertia;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of

@@ -17,14 +17,10 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
-using geometry::Cross;
-using geometry::DefinesFrame;
-using geometry::EulerAngles;
-using geometry::Exp;
-using geometry::NormalizeOrZero;
-using geometry::RadiusLatitudeLongitude;
-using geometry::SphericalCoordinates;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(

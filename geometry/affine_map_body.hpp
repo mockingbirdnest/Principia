@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_affine_map {
+namespace _affine_map {
+namespace internal {
 
 // The map is represented as x ↦ linear_map(x - from_origin) + to_origin.  This
 // numerically better behaved than x ↦ linear_map(x) + translation with
@@ -109,6 +110,7 @@ std::ostream& operator<<(
              << ", map: " << affine_map.linear_map_ << "}";
 }
 
-}  // namespace internal_affine_map
+}  // namespace internal
+}  // namespace _affine_map
 }  // namespace geometry
 }  // namespace principia

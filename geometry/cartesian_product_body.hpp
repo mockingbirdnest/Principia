@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_cartesian_product {
+namespace _cartesian_product {
+namespace internal {
 
 using quantities::Apply;
 
@@ -178,9 +179,10 @@ CartesianProductVectorSpace<Scalar, Tuple, std::index_sequence<indices...>>::
   return {std::get<indices>(left) / right...};
 }
 
-}  // namespace internal_cartesian_product
+}  // namespace internal
 
-namespace internal_polynomial_ring {
+namespace _cartesian_product {
+namespace internal {
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;
 
@@ -334,14 +336,15 @@ constexpr auto PolynomialRing<LTuple, RTuple,
              decltype(right_head), LTuple>::Multiply(left, right_head);
 }
 
-}  // namespace internal_polynomial_ring
+}  // namespace internal
 
-namespace internal_pointwise_inner_product {
+namespace _cartesian_product {
+namespace internal {
 
-using geometry::Hilbert;
 using quantities::Apply;
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;
+using namespace principia::geometry::_hilbert;
 
 template<typename Scalar, typename Tuple,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
@@ -386,9 +389,11 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
       std::get<indices>(left), right)...};
 }
 
-}  // namespace internal_pointwise_inner_product
+}  // namespace internal
 
 namespace cartesian_product {
+namespace _cartesian_product {
+namespace internal {
 
 template<typename RTuple>
 FORCE_INLINE(constexpr) auto operator+(RTuple const& right) {
@@ -436,9 +441,13 @@ FORCE_INLINE(constexpr) auto operator/(Tuple const& left, Scalar const& right) {
       CartesianProductVectorSpace<Scalar, Tuple>::Divide(left, right);
 }
 
+}  // namespace internal
+}  // namespace _cartesian_product
 }  // namespace cartesian_product
 
 namespace polynomial_ring {
+namespace _cartesian_product {
+namespace internal {
 
 template<typename LTuple, typename RTuple, typename, typename>
 FORCE_INLINE(constexpr)
@@ -461,9 +470,13 @@ constexpr auto Pow(Tuple const& tuple) {
   }
 }
 
+}  // namespace internal
+}  // namespace _cartesian_product
 }  // namespace polynomial_ring
 
 namespace pointwise_inner_product {
+namespace _cartesian_product {
+namespace internal {
 
 template<typename LTuple, typename RTuple,
          typename, typename>
@@ -474,7 +487,12 @@ constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right) {
           CartesianProductPointwiseMultiplicativeSpace>::Multiply(left, right);
 }
 
+}  // namespace internal
+}  // namespace _cartesian_product
 }  // namespace pointwise_inner_product
 
+}  // namespace _cartesian_product
+}  // namespace _cartesian_product
+}  // namespace _cartesian_product
 }  // namespace geometry
 }  // namespace principia

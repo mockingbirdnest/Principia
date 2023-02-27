@@ -13,12 +13,12 @@ namespace numerics {
 namespace frequency_analysis {
 namespace internal_frequency_analysis {
 
-using geometry::Instant;
-using geometry::Interval;
 using quantities::AngularFrequency;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Time;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 
 // Computes the precise mode of a quasi-periodic |function|, assuming that the
 // mode is over the interval |fft_mode| (so named because it has presumably been

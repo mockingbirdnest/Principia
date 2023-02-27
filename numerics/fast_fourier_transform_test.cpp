@@ -17,11 +17,6 @@ namespace principia {
 namespace numerics {
 namespace internal_fast_fourier_transform {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Infinity;
@@ -37,6 +32,8 @@ using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Pair;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 class FastFourierTransformTest : public ::testing::Test {
  protected:

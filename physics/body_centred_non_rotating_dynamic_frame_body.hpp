@@ -11,10 +11,10 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
-using geometry::AngularVelocity;
-using geometry::Identity;
-using geometry::OrthogonalMap;
-using geometry::Rotation;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::

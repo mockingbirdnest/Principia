@@ -11,7 +11,7 @@ namespace principia {
 namespace physics {
 namespace internal_rigid_motion {
 
-using geometry::LinearMap;
+using namespace principia::geometry::_linear_map;
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(

@@ -13,8 +13,6 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_discrete_trajectory_factories {
 
-using geometry::Displacement;
-using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectorySegment;
 using physics::DiscreteTrajectorySegmentIterator;
@@ -24,6 +22,7 @@ using quantities::Sin;
 using quantities::Speed;
 using quantities::si::Radian;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(

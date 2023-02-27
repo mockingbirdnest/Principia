@@ -21,16 +21,15 @@ namespace principia {
 namespace numerics {
 namespace internal_double_precision {
 
-using geometry::DoubleOrQuantityOrMultivectorSerializer;
-using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
-using geometry::Multivector;
-using geometry::Point;
-using geometry::R3Element;
 using quantities::Abs;
 using quantities::FusedMultiplySubtract;
 using quantities::is_quantity;
 using quantities::Quantity;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_serialization;
 namespace si = quantities::si;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly

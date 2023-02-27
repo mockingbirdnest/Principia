@@ -18,14 +18,6 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
-using geometry::AngularVelocity;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::RigidTransformation;
-using geometry::Velocity;
 using quantities::Angle;
 using quantities::AngularAcceleration;
 using quantities::AngularFrequency;
@@ -52,6 +44,10 @@ using ::testing::Lt;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 class DynamicFrameTest : public testing::Test {

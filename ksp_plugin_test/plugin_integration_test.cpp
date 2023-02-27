@@ -27,11 +27,6 @@ namespace internal_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using geometry::AffineMap;
-using geometry::Bivector;
-using geometry::Identity;
-using geometry::OddPermutation;
-using geometry::Permutation;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::KeplerianElements;
@@ -70,6 +65,10 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_permutation;
 
 namespace {
 

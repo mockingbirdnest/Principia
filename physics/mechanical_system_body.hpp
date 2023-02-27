@@ -6,14 +6,12 @@ namespace principia {
 namespace physics {
 namespace internal_mechanical_system {
 
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::SymmetricSquare;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
 using quantities::Momentum;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 template<typename InertialFrame, typename SystemFrame>
 template<typename BodyFrame>

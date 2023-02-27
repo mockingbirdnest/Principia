@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_point {
+namespace _point {
+namespace internal {
 
 using quantities::is_quantity_v;
 using quantities::Product;
@@ -141,12 +142,13 @@ std::string DebugString(Point<Vector> const& point);
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
 
-}  // namespace internal_point
+}  // namespace internal
 
-using internal_point::Point;
+using internal::Point;
 
 // Specialize BarycentreCalculator to make it applicable to Points.
-namespace internal_barycentre_calculator {
+namespace _point {
+namespace internal {
 
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {
@@ -164,8 +166,14 @@ class BarycentreCalculator<Point<Vector>, Weight> final {
   Weight weight_;
 };
 
-}  // namespace internal_barycentre_calculator
+}  // namespace internal
+}  // namespace _point
+}  // namespace _point
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_point;
+}  // namespace principia::geometry
 
 #include "geometry/point_body.hpp"
