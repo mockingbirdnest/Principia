@@ -464,7 +464,7 @@ TEST_F(OrbitalElementsTest, Years) {
   EXPECT_THAT(elements.anomalistic_period(), IsNear(365.259'09_(1) * Day));
   // This should be 365.242190 if the node were with respect to the precessing
   // equator, but we do not have axial precession, so it is just the sidereal
-  // period.
+  // period up to the precession of the ecliptic.
   EXPECT_THAT(elements.nodal_period(), IsNear(365.256'350_(1) * Day));
   // https://hpiers.obspm.fr/eop-pc/models/constants.html gives 365.256'363'004.
   EXPECT_THAT(elements.sidereal_period(), IsNear(365.256'836_(1) * Day));

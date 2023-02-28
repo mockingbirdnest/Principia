@@ -63,7 +63,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectories(
     Body const& secondary,
     Trajectory<Nonrotating> const& secondary_trajectory,
     bool fill_osculating_equinoctial_elements) {
-  return OrbitalElements::ForRelativeDegreesOfFreedom<Nonrotating>(
+  return ForRelativeDegreesOfFreedom<Nonrotating>(
       [&primary_trajectory, &secondary_trajectory](Instant const& t) {
         return secondary_trajectory.EvaluateDegreesOfFreedom(t) -
                primary_trajectory.EvaluateDegreesOfFreedom(t);
@@ -71,7 +71,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectories(
       std::max(primary_trajectory.t_min(), secondary_trajectory.t_min()),
       std::min(primary_trajectory.t_max(), secondary_trajectory.t_max()),
       primary,
-      secondary);
+      secondary,
+      fill_osculating_equinoctial_elements);
 }
 
 template<typename PrimaryCentred>
@@ -80,7 +81,7 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     MassiveBody const& primary,
     Body const& secondary,
     bool const fill_osculating_equinoctial_elements) {
-  return OrbitalElements::ForRelativeDegreesOfFreedom<PrimaryCentred>(
+  return ForRelativeDegreesOfFreedom<PrimaryCentred>(
       [&trajectory](Instant const& t) {
         return trajectory.EvaluateDegreesOfFreedom(t) -
                DegreesOfFreedom<PrimaryCentred>{PrimaryCentred::origin,
@@ -89,7 +90,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       trajectory.t_min(),
       trajectory.t_max(),
       primary,
-      secondary);
+      secondary,
+      fill_osculating_equinoctial_elements);
 }
 
 inline std::vector<OrbitalElements::ClassicalElements> const&
@@ -157,7 +159,8 @@ OrbitalElements::mean_equinoctial_elements() const {
 
 template<typename Frame, typename RelativeDegreesOfFreedomComputation>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
-    RelativeDegreesOfFreedomComputation const& relative_degrees_of_freedom,
+    RelativeDegreesOfFreedomComputation const&
+        relative_degrees_of_freedom_at_time,
     Instant const& t_min,
     Instant const& t_max,
     MassiveBody const& primary,
@@ -173,10 +176,12 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
   }
 
   auto const osculating_elements =
-      [&primary, &secondary, &relative_degrees_of_freedom](
+      [&primary, &secondary, &relative_degrees_of_freedom_at_time](
           Instant const& time) -> KeplerianElements<Frame> {
-    return KeplerOrbit<Frame>(
-               primary, secondary, relative_degrees_of_freedom(time), time)
+    return KeplerOrbit<Frame>(primary,
+                              secondary,
+                              relative_degrees_of_freedom_at_time(time),
+                              time)
         .elements_at_epoch();
   };
 
@@ -242,15 +247,15 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
 
   auto mean_equinoctial_elements =
       MeanEquinoctialElements(osculating_equinoctial_elements,
-                              t_min,
-                              t_max,
+                              t_min, t_max,
                               orbital_elements.sidereal_period_);
   RETURN_IF_ERROR(mean_equinoctial_elements);
   orbital_elements.mean_equinoctial_elements_ =
       std::move(mean_equinoctial_elements).value();
 
   if (fill_osculating_equinoctial_elements) {
-    for (Instant t = t_min; t <= t_max;
+    for (Instant t = t_min;
+         t <= t_max;
          t += orbital_elements.sidereal_period_ /
               osculating_equinoctial_elements_per_sidereal_period) {
       orbital_elements.osculating_equinoctial_elements_.push_back(

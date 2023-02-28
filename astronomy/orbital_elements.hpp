@@ -152,14 +152,18 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
+  // For |t| between |t_min| and |t_max|,
+  // |relative_degrees_of_freedom_at_time(t)| should return
+  // |DegreesOfFreedom<Frame>|.
   template<typename Frame, typename RelativeDegreesOfFreedomComputation>
   static absl::StatusOr<OrbitalElements> ForRelativeDegreesOfFreedom(
-      RelativeDegreesOfFreedomComputation const& relative_degrees_of_freedom,
+      RelativeDegreesOfFreedomComputation const&
+          relative_degrees_of_freedom_at_time,
       Instant const& t_min,
       Instant const& t_max,
       MassiveBody const& primary,
       Body const& secondary,
-      bool fill_osculating_equinoctial_elements = false);
+      bool fill_osculating_equinoctial_elements);
 
   // The functor EquinoctialElementsComputation must have the profile
   // |EquinoctialElements(Instant const&)|.
