@@ -35,6 +35,14 @@ class OrbitalElements {
   OrbitalElements& operator=(OrbitalElements const&) = delete;
   OrbitalElements& operator=(OrbitalElements&&) = default;
 
+  template<typename Nonrotating>
+  static absl::StatusOr<OrbitalElements> ForTrajectories(
+      MassiveBody const& primary,
+      Trajectory<Nonrotating> const& primary_trajectory,
+      Body const& secondary,
+      Trajectory<Nonrotating> const& secondary_trajectory,
+      bool fill_osculating_equinoctial_elements = false);
+
   template<typename PrimaryCentred>
   static absl::StatusOr<OrbitalElements> ForTrajectory(
       Trajectory<PrimaryCentred> const& trajectory,
@@ -143,6 +151,19 @@ class OrbitalElements {
 
  private:
   OrbitalElements() = default;
+
+  // For |t| between |t_min| and |t_max|,
+  // |relative_degrees_of_freedom_at_time(t)| should return
+  // |DegreesOfFreedom<Frame>|.
+  template<typename Frame, typename RelativeDegreesOfFreedomComputation>
+  static absl::StatusOr<OrbitalElements> ForRelativeDegreesOfFreedom(
+      RelativeDegreesOfFreedomComputation const&
+          relative_degrees_of_freedom_at_time,
+      Instant const& t_min,
+      Instant const& t_max,
+      MassiveBody const& primary,
+      Body const& secondary,
+      bool fill_osculating_equinoctial_elements);
 
   // The functor EquinoctialElementsComputation must have the profile
   // |EquinoctialElements(Instant const&)|.
