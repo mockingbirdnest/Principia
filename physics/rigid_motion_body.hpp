@@ -6,12 +6,15 @@
 
 #include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
+#include "geometry/permutation.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_rigid_motion {
 
+using namespace principia::geometry::_identity;
 using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_permutation;
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
@@ -104,7 +107,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
     return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
                            FromFrame::origin,
                            degrees_of_freedom_of_from_frame_origin.position(),
-                           geometry::Identity<FromFrame, ToFrame>().Forget()),
+                           Identity<FromFrame, ToFrame>().Forget()),
                        ToFrame::nonrotating,
                        degrees_of_freedom_of_from_frame_origin.velocity());
   } else {
@@ -114,9 +117,9 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
         RigidTransformation<FromFrame, ToFrame>(
             FromFrame::origin,
             degrees_of_freedom_of_from_frame_origin.position(),
-            geometry::Permutation<FromFrame, ToFrame>(
-                geometry::Permutation<FromFrame,
-                                      ToFrame>::CoordinatePermutation::XZY)
+            Permutation<FromFrame, ToFrame>(
+                Permutation<FromFrame,
+                            ToFrame>::CoordinatePermutation::XZY)
                 .template Forget<OrthogonalMap>()),
         ToFrame::nonrotating,
         degrees_of_freedom_of_from_frame_origin.velocity());

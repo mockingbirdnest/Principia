@@ -11,7 +11,6 @@ namespace geometry {
 
 // These operators live in a separate (non-internal) namespace to avoid
 // polluting the entire universe in cases where they are not useful.
-namespace cartesian_product {
 namespace _cartesian_product {
 namespace internal {
 
@@ -50,10 +49,8 @@ using internal::operator/;
 using internal::operator+;
 
 }  // namespace _cartesian_product
-}  // namespace cartesian_product
 
-namespace polynomial_ring {
-namespace _cartesian_product {
+namespace _polynomial_ring {
 namespace internal {
 
 // The product assumes that the tuple elements are in the monomial basis.
@@ -70,11 +67,9 @@ constexpr auto Pow(Tuple const& tuple);
 using internal::operator*;
 using internal::Pow;
 
-}  // namespace _cartesian_product
-}  // namespace polynomial_ring
+}  // namespace _polynomial_ring
 
-namespace pointwise_inner_product {
-namespace _cartesian_product {
+namespace _pointwise_inner_product {
 namespace internal {
 
 template<typename LTuple, typename RTuple,
@@ -86,14 +81,9 @@ constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
 using internal::PointwiseInnerProduct;
 
-}  // namespace _cartesian_product
-}  // namespace pointwise_inner_product
+}  // namespace _pointwise_inner_product
 
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_cartesian_product;
-}  // namespace principia::geometry
 
 #include "geometry/cartesian_product_body.hpp"

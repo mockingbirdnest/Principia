@@ -23,11 +23,6 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
-using geometry::cartesian_product::operator+;
-using geometry::cartesian_product::operator-;
-using geometry::cartesian_product::operator*;
-using geometry::cartesian_product::operator/;
-using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 using quantities::DebugString;
 using quantities::Difference;
@@ -38,6 +33,7 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_cartesian_product;
+using namespace principia::geometry::_polynomial_ring;
 using namespace principia::geometry::_serialization;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
@@ -184,7 +180,7 @@ TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     // of TupleComposition.
     return degree_0 +
            ((std::get<left_indices + 1>(left_tuple) *
-             geometry::polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
+             geometry::_polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
             ...);
   }
 }

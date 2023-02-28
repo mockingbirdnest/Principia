@@ -180,11 +180,12 @@ CartesianProductVectorSpace<Scalar, Tuple, std::index_sequence<indices...>>::
 }
 
 }  // namespace internal
+}  // namespace _cartesian_product
 
-namespace _cartesian_product {
+namespace _polynomial_ring {
 namespace internal {
 
-using internal_cartesian_product::CartesianProductAdditiveGroup;
+using _cartesian_product::internal::CartesianProductAdditiveGroup;
 
 // A helper for prepending an element to a tuple.  Somewhat similar to
 // std::tuple_cat but conveniently exports the type of the result.
@@ -301,7 +302,7 @@ constexpr auto PolynomialRing<LTuple, RTuple,
                               lsize_, rsize_>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
-  using cartesian_product::operator+;
+  using _cartesian_product::operator+;
 
   auto const right_head = std::get<0>(right);
   auto const right_tail = TailGenerator<RTuple>::Tail(right);
@@ -337,13 +338,13 @@ constexpr auto PolynomialRing<LTuple, RTuple,
 }
 
 }  // namespace internal
+}  // namespace _polynomial_ring
 
-namespace _cartesian_product {
+namespace _pointwise_inner_product {
 namespace internal {
 
 using quantities::Apply;
-
-using internal_cartesian_product::CartesianProductAdditiveGroup;
+using _cartesian_product::internal::CartesianProductAdditiveGroup;
 using namespace principia::geometry::_hilbert;
 
 template<typename Scalar, typename Tuple,
@@ -390,8 +391,8 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
 }
 
 }  // namespace internal
+}  // namespace _pointwise_inner_product
 
-namespace cartesian_product {
 namespace _cartesian_product {
 namespace internal {
 
@@ -404,57 +405,52 @@ template<typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator-(RTuple const& right) {
   std::tuple<> zero;
-  return internal_cartesian_product::
-      CartesianProductAdditiveGroup<decltype(zero), RTuple>::Subtract(zero,
-                                                                      right);
+  return CartesianProductAdditiveGroup<decltype(zero), RTuple>::Subtract(zero,
+                                                                         right);
 }
 
 template<typename LTuple, typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator+(LTuple const& left, RTuple const& right) {
-  return internal_cartesian_product::
-      CartesianProductAdditiveGroup<LTuple, RTuple>::Add(left, right);
+  return CartesianProductAdditiveGroup<LTuple, RTuple>::Add(left, right);
 }
 
 template<typename LTuple, typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator-(LTuple const& left, RTuple const& right) {
-  return internal_cartesian_product::
-      CartesianProductAdditiveGroup<LTuple, RTuple>::Subtract(left, right);
+  return CartesianProductAdditiveGroup<LTuple, RTuple>::Subtract(left, right);
 }
 
 template<typename Scalar, typename Tuple, typename, typename>
-FORCE_INLINE(constexpr) auto operator*(Scalar const& left, Tuple const& right) {
-  return internal_cartesian_product::
-      CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
+FORCE_INLINE(constexpr)
+auto operator*(Scalar const& left, Tuple const& right) {
+  return CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
 template<typename Tuple, typename Scalar, typename, typename, typename>
-FORCE_INLINE(constexpr) auto operator*(Tuple const& left, Scalar const& right) {
-  return internal_cartesian_product::
-      CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
+FORCE_INLINE(constexpr)
+auto operator*(Tuple const& left, Scalar const& right) {
+  return CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
 template<typename Scalar, typename Tuple>
-FORCE_INLINE(constexpr) auto operator/(Tuple const& left, Scalar const& right) {
-  return internal_cartesian_product::
-      CartesianProductVectorSpace<Scalar, Tuple>::Divide(left, right);
+FORCE_INLINE(constexpr)
+auto operator/(Tuple const& left, Scalar const& right) {
+  return CartesianProductVectorSpace<Scalar, Tuple>::Divide(left, right);
 }
 
 }  // namespace internal
 }  // namespace _cartesian_product
-}  // namespace cartesian_product
 
-namespace polynomial_ring {
-namespace _cartesian_product {
+namespace _polynomial_ring {
 namespace internal {
 
 template<typename LTuple, typename RTuple, typename, typename>
 FORCE_INLINE(constexpr)
 auto operator*(LTuple const& left, RTuple const& right) {
-  return internal_polynomial_ring::PolynomialRing<
+  return _polynomial_ring::internal::PolynomialRing<
       LTuple, RTuple,
-      internal_cartesian_product::CartesianProductVectorSpace>::Multiply(
+      _cartesian_product::internal::CartesianProductVectorSpace>::Multiply(
           left, right);
 }
 
@@ -471,28 +467,22 @@ constexpr auto Pow(Tuple const& tuple) {
 }
 
 }  // namespace internal
-}  // namespace _cartesian_product
-}  // namespace polynomial_ring
+}  // namespace _polynomial_ring
 
-namespace pointwise_inner_product {
-namespace _cartesian_product {
+namespace _pointwise_inner_product {
 namespace internal {
 
 template<typename LTuple, typename RTuple,
          typename, typename>
 constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right) {
-  return internal_polynomial_ring::PolynomialRing<
+  return _polynomial_ring::internal::PolynomialRing<
       LTuple, RTuple,
-      internal_pointwise_inner_product::
+      _pointwise_inner_product::internal::
           CartesianProductPointwiseMultiplicativeSpace>::Multiply(left, right);
 }
 
 }  // namespace internal
-}  // namespace _cartesian_product
-}  // namespace pointwise_inner_product
+}  // namespace _pointwise_inner_product
 
-}  // namespace _cartesian_product
-}  // namespace _cartesian_product
-}  // namespace _cartesian_product
 }  // namespace geometry
 }  // namespace principia
