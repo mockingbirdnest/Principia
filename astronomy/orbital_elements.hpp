@@ -6,6 +6,7 @@
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
@@ -18,6 +19,7 @@ namespace internal_orbital_elements {
 using geometry::Instant;
 using geometry::Interval;
 using physics::Body;
+using physics::DynamicFrame;
 using physics::MassiveBody;
 using physics::Trajectory;
 using quantities::Angle;
@@ -35,12 +37,12 @@ class OrbitalElements {
   OrbitalElements& operator=(OrbitalElements const&) = delete;
   OrbitalElements& operator=(OrbitalElements&&) = default;
 
-  template<typename Nonrotating>
-  static absl::StatusOr<OrbitalElements> ForTrajectories(
+  template<typename Inertial, typename PrimaryCentred>
+  static absl::StatusOr<OrbitalElements> ForTrajectory(
+      Trajectory<Inertial> const& secondary_trajectory,
+      DynamicFrame<Inertial, PrimaryCentred> const& primary_centred,
       MassiveBody const& primary,
-      Trajectory<Nonrotating> const& primary_trajectory,
       Body const& secondary,
-      Trajectory<Nonrotating> const& secondary_trajectory,
       bool fill_osculating_equinoctial_elements = false);
 
   template<typename PrimaryCentred>
