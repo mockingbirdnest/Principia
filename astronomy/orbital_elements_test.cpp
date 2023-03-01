@@ -456,8 +456,8 @@ TEST_F(OrbitalElementsTest, Years) {
           *ephemeris->trajectory(&sun),
           BodyCentredNonRotatingDynamicFrame<ICRS, GCRS>(ephemeris.get(),
                                                          &earth),
-          earth,
-          sun);
+          /*primary=*/earth,
+          /*secondary=*/sun);
   LOG(ERROR) << "Done.";
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.value();
