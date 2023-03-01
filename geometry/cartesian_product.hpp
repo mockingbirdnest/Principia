@@ -12,7 +12,7 @@ namespace geometry {
 // These operators live in a separate (non-internal) namespace to avoid
 // polluting the entire universe in cases where they are not useful.
 namespace _cartesian_product {
-namespace internal {
+namespace vector_space {
 
 template<typename RTuple>
 constexpr auto operator+(RTuple const& right);
@@ -41,17 +41,9 @@ constexpr auto operator*(Tuple const& left, Scalar const& right);
 template<typename Scalar, typename Tuple>
 constexpr auto operator/(Tuple const& left, Scalar const& right);
 
-}  // namespace internal
+}  // namespace vector_space
 
-using internal::operator-;
-using internal::operator*;
-using internal::operator/;
-using internal::operator+;
-
-}  // namespace _cartesian_product
-
-namespace _polynomial_ring {
-namespace internal {
+namespace polynomial_ring {
 
 // The product assumes that the tuple elements are in the monomial basis.
 template<typename LTuple, typename RTuple,
@@ -62,27 +54,17 @@ constexpr auto operator*(LTuple const& left, RTuple const& right);
 template<int exponent, typename Tuple>
 constexpr auto Pow(Tuple const& tuple);
 
-}  // namespace internal
+}  // namespace polynomial_ring
 
-using internal::operator*;
-using internal::Pow;
-
-}  // namespace _polynomial_ring
-
-namespace _pointwise_inner_product {
-namespace internal {
+namespace pointwise_inner_product {
 
 template<typename LTuple, typename RTuple,
          typename = std::enable_if_t<quantities::is_tuple_v<LTuple>>,
          typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
 constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
-}  // namespace internal
-
-using internal::PointwiseInnerProduct;
-
-}  // namespace _pointwise_inner_product
-
+}  // namespace pointwise_inner_product
+}  // namespace _cartesian_product
 }  // namespace geometry
 }  // namespace principia
 
