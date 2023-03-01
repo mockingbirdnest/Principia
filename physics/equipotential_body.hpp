@@ -8,6 +8,7 @@
 #include <tuple>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/double_precision.hpp"
@@ -32,6 +33,7 @@ using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 
