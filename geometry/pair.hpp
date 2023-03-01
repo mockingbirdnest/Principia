@@ -243,7 +243,7 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
 
 }  // namespace internal
 }  // namespace _barycentre_calculator
-}  // namespace geometry;
+}  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.
 namespace base {
