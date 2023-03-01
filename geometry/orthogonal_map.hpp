@@ -12,24 +12,24 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM_NEW(identity,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         Identity);
-FORWARD_DECLARE_FROM_NEW(permutation,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         Permutation);
-FORWARD_DECLARE_FROM_NEW(rotation,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         Rotation);
-FORWARD_DECLARE_FROM_NEW(signature,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         Signature);
-FORWARD_DECLARE_FROM_NEW(symmetric_bilinear_form,
-                         TEMPLATE(typename Scalar,
-                                  typename Frame,
-                                  template<typename, typename>
-                                  typename Multivector) class,
-                         SymmetricBilinearForm);
+FORWARD_DECLARE_FR0M(identity,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Identity);
+FORWARD_DECLARE_FR0M(permutation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Permutation);
+FORWARD_DECLARE_FR0M(rotation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Rotation);
+FORWARD_DECLARE_FR0M(signature,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Signature);
+FORWARD_DECLARE_FR0M(
+    symmetric_bilinear_form,
+    TEMPLATE(typename Scalar,
+            typename Frame,
+            template<typename, typename> typename Multivector) class,
+    SymmetricBilinearForm);
 
 namespace _orthogonal_map {
 namespace internal {

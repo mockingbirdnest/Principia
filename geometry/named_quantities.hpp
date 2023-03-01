@@ -15,9 +15,9 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM_NEW(orthogonal_map,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         OrthogonalMap);
+FORWARD_DECLARE_FR0M(orthogonal_map,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     OrthogonalMap);
 
 namespace _named_quantities {
 namespace internal {

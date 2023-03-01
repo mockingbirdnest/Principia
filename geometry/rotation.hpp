@@ -13,18 +13,18 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM_NEW(orthogonal_map,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         OrthogonalMap);
-FORWARD_DECLARE_FROM_NEW(permutation,
-                         TEMPLATE(typename FromFrame, typename ToFrame) class,
-                         Permutation);
-FORWARD_DECLARE_FROM_NEW(symmetric_bilinear_form,
-                         TEMPLATE(typename Scalar,
-                                  typename Frame,
-                                  template<typename S, typename F>
-                                  typename Multivector) class,
-                         SymmetricBilinearForm);
+FORWARD_DECLARE_FR0M(orthogonal_map,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     OrthogonalMap);
+FORWARD_DECLARE_FR0M(permutation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Permutation);
+FORWARD_DECLARE_FR0M(
+    symmetric_bilinear_form,
+    TEMPLATE(typename Scalar,
+            typename Frame,
+            template<typename S, typename F> typename Multivector) class,
+    SymmetricBilinearForm);
 
 namespace _rotation {
 namespace internal {
