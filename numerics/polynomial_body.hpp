@@ -24,6 +24,8 @@ namespace numerics {
 namespace internal_polynomial {
 
 using geometry::_cartesian_product::polynomial_ring::operator*;
+using geometry::_cartesian_product::pointwise_inner_product::
+    PointwiseInnerProduct;
 using geometry::_cartesian_product::vector_space::operator+;
 using geometry::_cartesian_product::vector_space::operator-;
 using geometry::_cartesian_product::vector_space::operator*;
@@ -793,9 +795,8 @@ PointwiseInnerProduct(
   return PolynomialInMonomialBasis<
       typename Hilbert<LValue, RValue>::InnerProductType, Argument,
       ldegree_ + rdegree_, Evaluator>(
-      geometry::_cartesian_product::pointwise_inner_product::
           PointwiseInnerProduct(left.coefficients_, right.coefficients_),
-      left.origin_);
+          left.origin_);
 }
 
 template<typename Value, typename Argument, int degree_,

@@ -17,7 +17,6 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-
 namespace principia {
 namespace geometry {
 namespace _rotation {
@@ -52,7 +51,6 @@ class RotationTest : public testing::Test {
                       Inertial,
                       Handedness::Right,
                       serialization::Frame::TEST1>;
-  Permutation<World, World> x{EvenPermutation::XYZ};
   using Orth = OrthogonalMap<World, World>;
   using Rot = Rotation<World, World>;
 

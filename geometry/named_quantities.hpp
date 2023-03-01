@@ -79,16 +79,21 @@ using internal::Position;
 using internal::RigidTransformation;
 using internal::Velocity;
 
-namespace _named_quantities {
+}  // namespace _named_quantities
+
+namespace _point {
 namespace internal {
+
+using namespace principia::geometry::_named_quantities;
+
 // We must declare this in the internal namespace where Point is defined so that
 // it is found by ADL.
 std::string DebugString(const Instant& t);
 std::ostream& operator<<(std::ostream& os, const Instant& t);
-}  // namespace internal
 
-}  // namespace _named_quantities
-}  // namespace _named_quantities
+}  // namespace internal
+}  // namespace _point
+
 }  // namespace geometry
 }  // namespace principia
 

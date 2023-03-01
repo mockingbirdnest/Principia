@@ -8,7 +8,7 @@
 
 namespace principia {
 namespace geometry {
-namespace _instant_output {
+namespace _point {
 namespace internal {
 
 using astronomy::DateTimeAsTT;
@@ -51,6 +51,6 @@ std::string DebugString(const Instant& t) {
 }
 
 }  // namespace internal
-}  // namespace _instant_output
+}  // namespace _point
 }  // namespace geometry
 }  // namespace principia

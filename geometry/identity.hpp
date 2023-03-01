@@ -16,8 +16,8 @@ FORWARD_DECLARE_FR0M(orthogonal_map,
 FORWARD_DECLARE_FR0M(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
-            typename Frame,
-            template<typename, typename> typename Multivector) class,
+             typename Frame,
+             template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
 
 namespace _identity {
