@@ -49,7 +49,7 @@ auto Hilbert<T1, T2,
     InnerProduct(T1 const& t1, T2 const& t2) -> InnerProductType {
   // Is there a better way to avoid recursion than to put our fingers inside
   // grassmann?
-  return internal_grassmann::InnerProduct(t1, t2);
+  return _grassmann::internal::InnerProduct(t1, t2);
 }
 
 template<typename T>
@@ -59,7 +59,7 @@ auto Hilbert<T, T,
     InnerProduct(T const& t1, T const& t2) -> InnerProductType {
   // Is there a better way to avoid recursion than to put our fingers inside
   // grassmann?
-  return internal_grassmann::InnerProduct(t1, t2);
+  return _grassmann::internal::InnerProduct(t1, t2);
 }
 
 template<typename T>
