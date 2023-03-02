@@ -38,24 +38,6 @@ using physics::MasslessBody;
 using physics::OblateBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::DifferenceFrom;
@@ -66,6 +48,11 @@ using testing_utilities::operator""_;
 using ::testing::Lt;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class OrbitalElementsTest : public ::testing::Test {
  protected:

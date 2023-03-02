@@ -20,8 +20,8 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 namespace internal_discrete_trajectory_types {
 
 using physics::DegreesOfFreedom;
-using quantities::Length;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // |max_dense_intervals| is the maximal number of dense intervals before
 // downsampling occurs.  |tolerance| is the tolerance for downsampling with

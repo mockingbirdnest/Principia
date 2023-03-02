@@ -27,12 +27,11 @@ using numerics::PoissonSeries;
 using numerics::PolynomialInMonomialBasis;
 using numerics::ULPDistance;
 using numerics::ЧебышёвSeries;
-using quantities::DebugString;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 namespace si = quantities::si;
 
 constexpr int max_degree = 17;

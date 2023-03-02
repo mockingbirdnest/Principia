@@ -29,23 +29,15 @@ using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::SolarSystem;
 using physics::Trajectory;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::operator""_;
 using testing_utilities::IsNear;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].

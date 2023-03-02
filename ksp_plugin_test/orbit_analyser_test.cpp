@@ -25,14 +25,6 @@ using physics::BodySurfaceDynamicFrame;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::Abs;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::TerrestrialEquatorialRadius;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
 using ::testing::AllOf;
@@ -42,6 +34,9 @@ using ::testing::Optional;
 using ::testing::Property;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 class OrbitAnalyserTest : public testing::Test {
  protected:

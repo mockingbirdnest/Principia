@@ -24,8 +24,6 @@ using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::RigidMotion;
 using physics::Trajectory;
-using quantities::Angle;
-using quantities::Length;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
@@ -33,6 +31,7 @@ using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sphere;
+using namespace principia::quantities::_quantities;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
 // ScaledSpace.

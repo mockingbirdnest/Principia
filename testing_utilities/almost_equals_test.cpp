@@ -28,12 +28,6 @@ using numerics::FixedVector;
 using numerics::UnboundedLowerTriangularMatrix;
 using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
-using quantities::Length;
-using quantities::MagneticFlux;
-using quantities::Speed;
-using quantities::bipm::Knot;
-using quantities::cgs::Maxwell;
-using quantities::uk::Foot;
 using testing::Ne;
 using testing::Eq;
 using testing::Not;
@@ -43,6 +37,11 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_bipm;
+using namespace principia::quantities::_cgs;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_uk;
 namespace si = quantities::si;
 
 namespace {

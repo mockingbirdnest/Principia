@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_traits {
+namespace _traits {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 
@@ -22,10 +23,15 @@ struct is_quantity<T const> : is_quantity<T> {};
 template<typename T>
 constexpr bool is_quantity_v = is_quantity<T>::value;
 
-}  // namespace internal_traits
+}  // namespace internal
 
-using internal_traits::is_quantity;
-using internal_traits::is_quantity_v;
+using internal::is_quantity;
+using internal::is_quantity_v;
 
+}  // namespace _traits
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_traits;
+}  // namespace principia::quantities

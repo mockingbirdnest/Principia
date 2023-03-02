@@ -12,10 +12,9 @@ namespace principia {
 namespace numerics {
 namespace internal_hermite3 {
 
-using quantities::Derivative;
-using quantities::Difference;
 using namespace principia::base::_array;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_named_quantities;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.

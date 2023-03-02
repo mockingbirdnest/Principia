@@ -21,19 +21,16 @@ namespace physics {
 
 using ksp_plugin::World;
 using physics::internal_discrete_trajectory_types::Timeline;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewMotionlessTrajectoryTimeline;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

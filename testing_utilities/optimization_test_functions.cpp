@@ -10,10 +10,8 @@ namespace testing_utilities {
 
 using numerics::FixedMatrix;
 using numerics::FixedVector;
-using quantities::Cos;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::si::Radian;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 namespace branin_parameters {
   constexpr double a = 1;

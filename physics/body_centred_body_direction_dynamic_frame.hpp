@@ -24,12 +24,11 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_body_direction_dynamic_frame {
 
-using quantities::Acceleration;
-using quantities::SpecificEnergy;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the centre of mass of the primary body.  The X
 // axis points to the secondary.  The Y axis is in the direction of the velocity

@@ -18,14 +18,10 @@ namespace internal_orbital_elements {
 using physics::Body;
 using physics::MassiveBody;
 using physics::Trajectory;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Difference;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Time;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 class OrbitalElements {
  public:

@@ -31,13 +31,6 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 using astronomy::ICRS;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
@@ -50,6 +43,9 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

@@ -58,14 +58,6 @@ using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using quantities::constants::StandardGravity;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
@@ -85,6 +77,8 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_si;
 
 namespace {
 

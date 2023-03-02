@@ -11,7 +11,7 @@ namespace geometry {
 namespace _hilbert {
 namespace internal {
 
-using quantities::Abs;
+using namespace principia::quantities::_elementary_functions;
 
 template<typename T1, typename T2>
 auto Hilbert<T1, T2,

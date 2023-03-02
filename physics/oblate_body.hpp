@@ -18,13 +18,10 @@ namespace physics {
 namespace internal_oblate_body {
 
 using numerics::FixedLowerTriangularMatrix;
-using quantities::Degree2SphericalHarmonicCoefficient;
-using quantities::Degree3SphericalHarmonicCoefficient;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Quotient;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 class OblateBody : public RotatingBody<Frame> {

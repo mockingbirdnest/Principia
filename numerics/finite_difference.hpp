@@ -8,8 +8,7 @@ namespace principia {
 namespace numerics {
 namespace internal_finite_difference {
 
-using quantities::Derivative;
-using quantities::Difference;
+using namespace principia::quantities::_named_quantities;
 
 // Given n equally-spaced values f(xᵢ) = f(x₀ + i h),
 // approximates the derivative f′(xⱼ) at xⱼ for j = |offset|, where 0 ≤ j < n.

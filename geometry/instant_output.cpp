@@ -15,8 +15,8 @@ using astronomy::DateTimeAsTT;
 using astronomy::J2000;
 using astronomy::operator""_TT;
 using astronomy::TTSecond;
-using quantities::Time;
-using quantities::si::Second;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 std::ostream& operator<<(std::ostream& os, Instant const& t) {
   Time const from_j2000 = t - J2000;

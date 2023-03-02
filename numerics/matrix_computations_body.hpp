@@ -15,10 +15,8 @@ namespace principia {
 namespace numerics {
 namespace internal_matrix_computations {
 
-using quantities::Abs;
-using quantities::Pow;
-using quantities::Sqrt;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
 namespace si = quantities::si;
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a

@@ -21,14 +21,6 @@
 namespace principia {
 namespace physics {
 
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Day;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
@@ -44,6 +36,9 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using testing_utilities::operator""_;
 
 class RigidMotionTest : public testing::Test {

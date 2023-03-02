@@ -48,25 +48,6 @@ using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
 using ksp_plugin::Barycentric;
-using quantities::DebugString;
-using quantities::Frequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::bipm::NauticalMile;
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Degree;
-using quantities::si::Hertz;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
@@ -76,6 +57,12 @@ using namespace principia::geometry::_identity;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_bipm;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace physics {
 

@@ -17,14 +17,11 @@ namespace geometry {
 namespace _r3_element {
 namespace internal {
 
-using quantities::Angle;
-using quantities::is_quantity_v;
-using quantities::Product;
-using quantities::Quantity;
-using quantities::Quotient;
-using quantities::Square;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_traits;
 
 template<typename Scalar>
 struct SphericalCoordinates;

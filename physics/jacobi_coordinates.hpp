@@ -13,10 +13,10 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
-using quantities::GravitationalParameter;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_identity;
+using namespace principia::quantities::_named_quantities;
 
 // An utility for converting a linearly ordered system of massive bodies given
 // in Jacobi coordinates to barycentric coordinates.

@@ -21,12 +21,10 @@ namespace physics {
 namespace internal_discrete_trajectory_segment {
 
 using numerics::FitHermiteSpline;
-using quantities::Length;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::base::_zfp_compressor;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(

@@ -35,24 +35,6 @@ using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::Angle;
-using quantities::Mod;
-using quantities::Pow;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::TerrestrialEquatorialRadius;
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::DifferenceFrom;
 using testing_utilities::IsNear;
@@ -66,6 +48,10 @@ using ::testing::Property;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

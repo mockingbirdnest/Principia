@@ -12,11 +12,10 @@ namespace astronomy {
 namespace internal_orbit_ground_track {
 
 using physics::ComputeNodes;
-using quantities::Mod;
-using quantities::UnwindFrom;
-using quantities::si::Radian;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // Note that the origin of this celestial longitude is arbitrary: it is not the
 // node of the orbit around the sun (the equinox).  If |PrimaryCentred| is the

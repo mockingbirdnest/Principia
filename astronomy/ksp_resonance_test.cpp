@@ -29,20 +29,6 @@ using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
-using quantities::GravitationalParameter;
-using quantities::Infinity;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::operator""_;
@@ -54,6 +40,11 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace astronomy {
 

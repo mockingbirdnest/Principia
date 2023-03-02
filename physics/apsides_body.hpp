@@ -15,15 +15,12 @@ namespace internal_apsides {
 
 using numerics::Brent;
 using numerics::Hermite3;
-using quantities::IsFinite;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Square;
-using quantities::Variation;
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,

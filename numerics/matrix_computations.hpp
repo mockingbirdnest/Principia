@@ -8,8 +8,7 @@ namespace principia {
 namespace numerics {
 namespace internal_matrix_computations {
 
-using quantities::Quotient;
-using quantities::SquareRoot;
+using namespace principia::quantities::_named_quantities;
 
 // Declares:
 //   using Result = ⟨upper triangular matrix⟩;

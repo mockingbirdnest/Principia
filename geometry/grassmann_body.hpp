@@ -12,12 +12,8 @@ namespace geometry {
 namespace _grassmann {
 namespace internal {
 
-using quantities::ArcTan;
-using quantities::FusedMultiplyAdd;
-using quantities::FusedMultiplySubtract;
-using quantities::FusedNegatedMultiplyAdd;
-using quantities::FusedNegatedMultiplySubtract;
 using namespace principia::base::_not_constructible;
+using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)

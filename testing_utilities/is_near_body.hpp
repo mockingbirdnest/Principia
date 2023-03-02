@@ -19,8 +19,8 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_is_near {
 
-using quantities::DebugString;
-using quantities::Pow;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 template<typename T>
 testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(

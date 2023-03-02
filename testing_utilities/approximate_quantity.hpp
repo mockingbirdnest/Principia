@@ -10,9 +10,8 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_approximate_quantity {
 
-using quantities::Product;
-using quantities::Quantity;
-using quantities::Quotient;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Quantity>
 class ApproximateQuantity;

@@ -51,6 +51,7 @@ using uk::Rood;
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
+using namespace principia::quantities::_elementary_functions;
 
 class ElementaryFunctionsTest : public testing::Test {};
 

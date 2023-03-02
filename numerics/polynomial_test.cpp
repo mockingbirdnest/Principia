@@ -24,29 +24,16 @@
 
 namespace principia {
 
-using quantities::Acceleration;
-using quantities::Energy;
-using quantities::Entropy;
-using quantities::Length;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Current;
-using quantities::Temperature;
-using quantities::Time;
-using quantities::constants::BoltzmannConstant;
-using quantities::constants::SpeedOfLight;
-using quantities::si::Ampere;
-using quantities::si::Joule;
-using quantities::si::Kelvin;
-using quantities::si::Metre;
-using quantities::si::Second;
-using quantities::si::Watt;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

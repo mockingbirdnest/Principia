@@ -21,10 +21,6 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Length;
-using quantities::Pow;
-using quantities::Square;
-using quantities::si::Metre;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -34,6 +30,10 @@ using testing_utilities::VanishesBefore;
 using testing_utilities::operator""_;
 using ::testing::Eq;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
  protected:

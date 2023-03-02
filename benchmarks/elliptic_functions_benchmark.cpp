@@ -12,8 +12,8 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Angle;
-using quantities::si::Radian;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 void BM_JacobiAmplitude(benchmark::State& state) {
   constexpr int size = 100;

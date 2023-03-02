@@ -44,16 +44,13 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_piecewise_poisson_series {
 
-using quantities::AngularFrequency;
-using quantities::Primitive;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The trigonometric functions are by default assumed to look like a polynomial
 // of this degree over an interval of a piecewise series.

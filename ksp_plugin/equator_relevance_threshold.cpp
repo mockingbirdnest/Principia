@@ -12,10 +12,8 @@ namespace internal_equator_relevance_threshold {
 
 using physics::Geopotential;
 using physics::OblateBody;
-using quantities::Cbrt;
-using quantities::Pow;
-using quantities::si::Metre;
-using quantities::si::Radian;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 Length EquatorRelevanceThreshold(RotatingBody<Barycentric> const& body) {
   OblateBody<Barycentric> const* oblate_body =

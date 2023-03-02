@@ -10,11 +10,7 @@ namespace ksp_plugin {
 namespace internal_celestial {
 
 using physics::MassiveBody;
-using quantities::si::Degree;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::quantities::_si;
 
 class CelestialTest : public testing::Test {
  protected:

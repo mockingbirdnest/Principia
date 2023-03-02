@@ -50,21 +50,6 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::Angle;
-using quantities::AngularMomentum;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
@@ -81,6 +66,10 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace astronomy {
 

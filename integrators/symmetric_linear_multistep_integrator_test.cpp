@@ -21,25 +21,6 @@
 
 namespace principia {
 
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Energy;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Power;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Stiffness;
-using quantities::Time;
-using quantities::si::Joule;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
@@ -59,6 +40,10 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 namespace si = quantities::si;
 
 #define INSTANCE(integrator,                                          \

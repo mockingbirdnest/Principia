@@ -13,6 +13,8 @@ namespace quantities {
 // Becquerel, Gray and Sievert), as well as the Non-SI units accepted for use
 // with the SI.
 namespace si {
+namespace _si {
+namespace internal {
 
 // Returns the base or derived SI unit of |Q|.
 // For instance, |si::Unit<Action>() == Joule * Second|.
@@ -100,8 +102,71 @@ constexpr Area   Hectare   = 1e4 * Metre * Metre;
 constexpr Volume Litre     = 1e-3 * Metre * Metre * Metre;
 constexpr Mass   Tonne     = 1e3 * Kilogram;
 
+}  // namespace internal
+
+using internal::Ampere;
+using internal::ArcMinute;
+using internal::ArcSecond;
+using internal::Atto;
+using internal::Candela;
+using internal::Centi;
+using internal::Coulomb;
+using internal::Day;
+using internal::Deca;
+using internal::Deci;
+using internal::Degree;
+using internal::Exa;
+using internal::Farad;
+using internal::Femto;
+using internal::Giga;
+using internal::Gram;
+using internal::Hectare;
+using internal::Hecto;
+using internal::Henry;
+using internal::Hertz;
+using internal::Hour;
+using internal::Joule;
+using internal::Katal;
+using internal::Kelvin;
+using internal::Kilo;
+using internal::Kilogram;
+using internal::Litre;
+using internal::Lumen;
+using internal::Mega;
+using internal::Metre;
+using internal::Micro;
+using internal::Milli;
+using internal::Minute;
+using internal::Mole;
+using internal::Nano;
+using internal::Newton;
+using internal::Ohm;
+using internal::Pascal;
+using internal::Peta;
+using internal::Pico;
+using internal::Radian;
+using internal::Second;
+using internal::Siemens;
+using internal::Steradian;
+using internal::Tera;
+using internal::Tesla;
+using internal::Tonne;
+using internal::Unit;
+using internal::Volt;
+using internal::Watt;
+using internal::Weber;
+using internal::Yocto;
+using internal::Yotta;
+using internal::Zepto;
+using internal::Zetta;
+
+}  // namespace _si
 }  // namespace si
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_si;
+}  // namespace principia::quantities
 
 #include "quantities/si_body.hpp"

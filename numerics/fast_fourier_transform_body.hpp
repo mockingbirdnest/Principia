@@ -15,10 +15,10 @@ namespace principia {
 namespace numerics {
 namespace internal_fast_fourier_transform {
 
-using quantities::Angle;
-using quantities::Sin;
-using quantities::si::Radian;
 using namespace principia::base::_bits;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // Implementation of the Danielson-Lánczos algorithm using templates for
 // recursion and template specializations for short FFTs [DL42, Myr07].

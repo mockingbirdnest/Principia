@@ -34,22 +34,14 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Minute;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
 using testing_utilities::operator""_;
 
 namespace astronomy {

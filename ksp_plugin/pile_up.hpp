@@ -44,15 +44,12 @@ using physics::MasslessBody;
 using physics::MechanicalSystem;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
-using quantities::AngularMomentum;
-using quantities::Force;
-using quantities::Mass;
-using quantities::Time;
-using quantities::Torque;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The axes are those of Barycentric. The origin is the centre of mass of the
 // pile up.  This frame is distinguished from NonRotatingPileUp in that it is

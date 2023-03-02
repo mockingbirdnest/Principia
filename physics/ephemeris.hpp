@@ -40,15 +40,12 @@ using integrators::FixedStepSizeIntegrator;
 using integrators::InitialValueProblem;
 using integrators::Integrator;
 using integrators::SpecialSecondOrderDifferentialEquation;
-using quantities::Acceleration;
-using quantities::Length;
-using quantities::SpecificEnergy;
-using quantities::Speed;
-using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Note on thread-safety: the integration functions (Prolong, FlowWithFixedStep,
 // FlowWithAdaptiveStep) can be called concurrently as long as their parameters

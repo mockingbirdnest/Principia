@@ -24,16 +24,6 @@ namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
 
 using numerics::EstrinEvaluator;
 using numerics::LegendrePolynomial;
-using quantities::Abs;
-using quantities::Time;
-using quantities::Variation;
-using quantities::si::Centi;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeЧебышёвPolynomialSecondDerivative;
@@ -48,6 +38,10 @@ using ::std::placeholders::_3;
 using ::std::placeholders::_4;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<double>;
 

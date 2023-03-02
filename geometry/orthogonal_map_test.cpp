@@ -17,10 +17,9 @@ namespace geometry {
 namespace _orthogonal_map {
 namespace internal {
 
-using quantities::si::Degree;
-using quantities::si::Metre;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
+using namespace principia::quantities::_si;
 
 class OrthogonalMapTest : public testing::Test {
  protected:

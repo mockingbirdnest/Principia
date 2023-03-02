@@ -19,14 +19,10 @@ namespace geometry {
 namespace _symmetric_bilinear_form {
 namespace internal {
 
-using quantities::Abs;
-using quantities::Angle;
-using quantities::ArcCos;
-using quantities::Cos;
-using quantities::IsFinite;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::si::Radian;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 struct CosSin {
   double cos;

@@ -9,10 +9,10 @@ namespace principia {
 namespace physics {
 namespace internal_body_surface_frame_field {
 
-using quantities::Length;
-using quantities::Sqrt;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame, typename ThisFrame>
 BodySurfaceFrameField<Frame, ThisFrame>::BodySurfaceFrameField(

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_quantities {
+namespace _quantities {
+namespace internal {
 
 using internal_dimensions::DimensionsAreSerializable;
 
@@ -227,6 +228,7 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity) {
   return out << DebugString(quantity);
 }
 
-}  // namespace internal_quantities
+}  // namespace internal
+}  // namespace _quantities
 }  // namespace quantities
 }  // namespace principia

@@ -30,16 +30,14 @@ using geometry::_cartesian_product::vector_space::operator+;
 using geometry::_cartesian_product::vector_space::operator-;
 using geometry::_cartesian_product::vector_space::operator*;
 using geometry::_cartesian_product::vector_space::operator/;
-using quantities::Apply;
-using quantities::DebugString;
-using quantities::Difference;
-using quantities::Exponentiation;
-using quantities::Pow;
-using quantities::Time;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_serialization;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_tuples;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
 // coefficients of the same monomial as a polynomial of (x - x₂), i.e.:

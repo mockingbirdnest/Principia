@@ -13,8 +13,7 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_statistics {
 
-using quantities::Product;
-using quantities::Quotient;
+using namespace principia::quantities::_named_quantities;
 
 // The population mean μ(x) = E[x].
 template<typename T>

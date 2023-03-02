@@ -22,7 +22,6 @@ using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using physics::MockDynamicFrame;
-using quantities::si::Metre;
 using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Pointer;
@@ -33,6 +32,7 @@ using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_si;
 
 namespace {
 

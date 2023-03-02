@@ -22,12 +22,6 @@ FORWARD_DECLARE_FR0M(orthogonal_map,
 namespace _named_quantities {
 namespace internal {
 
-using quantities::AngularFrequency;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::MomentOfInertia;
-using quantities::Speed;
-using quantities::Time;
 using namespace principia::geometry::_orthogonal_map;
 
 using Instant = Point<Time>;
@@ -85,6 +79,8 @@ namespace _point {
 namespace internal {
 
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // We must declare this in the internal namespace where Point is defined so that
 // it is found by ADL.

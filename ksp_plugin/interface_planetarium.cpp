@@ -30,11 +30,6 @@ using ksp_plugin::Planetarium;
 using ksp_plugin::Renderer;
 using ksp_plugin::TypedIterator;
 using physics::DiscreteTrajectory;
-using quantities::Length;
-using quantities::si::ArcMinute;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Radian;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -42,6 +37,8 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 Planetarium* __cdecl principia__PlanetariumCreate(
     Plugin const* const plugin,

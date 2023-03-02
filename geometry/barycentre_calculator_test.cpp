@@ -13,10 +13,9 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Entropy;
-using quantities::KinematicViscosity;
 using testing_utilities::AlmostEquals;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::quantities::_named_quantities;
 namespace si = quantities::si;
 
 class BarycentreCalculatorTest : public testing::Test {

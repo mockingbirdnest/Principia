@@ -40,9 +40,18 @@ constexpr Length Link = Chain / 100;
 constexpr Length Rod  = Chain / 4;
 
 namespace admiralty {
+namespace _uk {
+namespace internal {
 constexpr Length NauticalMile = 6080 * Foot;
 constexpr Length Cable        = NauticalMile / 10;
 constexpr Length Fathom       = Cable / 100;
+}  // namespace internal
+
+using internal::Cable;
+using internal::Fathom;
+using internal::NauticalMile;
+
+}  // namespace _uk
 }  // namespace admiralty
 
 constexpr Area Perch = Pow<2>(Rod);
@@ -62,3 +71,7 @@ constexpr Pressure PoundPerSquareInch = PoundForce / Pow<2>(Inch);
 }  // namespace uk
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_uk;
+}  // namespace principia::quantities

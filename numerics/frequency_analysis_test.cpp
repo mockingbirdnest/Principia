@@ -28,22 +28,6 @@ namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Infinity;
-using quantities::Jerk;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Product;
-using quantities::Sin;
-using quantities::Snap;
-using quantities::Speed;
-using quantities::Square;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeErrorFrom;
@@ -55,6 +39,10 @@ using ::testing::Lt;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 namespace si = quantities::si;
 
 // Constructs a piecewise Poisson series that has the given number of pieces

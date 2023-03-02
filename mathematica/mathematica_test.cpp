@@ -42,15 +42,6 @@ using numerics::UnboundedUpperTriangularMatrix;
 using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_interval;
@@ -60,6 +51,10 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class MathematicaTest : public ::testing::Test {
  protected:

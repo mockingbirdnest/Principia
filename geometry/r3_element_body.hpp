@@ -19,14 +19,9 @@ namespace _r3_element {
 namespace internal {
 
 using numerics::CanEmitFMAInstructions;
-using quantities::ArcSin;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::DebugString;
-using quantities::DoubleOrQuantitySerializer;
-using quantities::Quantity;
-using quantities::Sin;
-using quantities::ToM128D;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_serialization;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>

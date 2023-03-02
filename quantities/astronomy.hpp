@@ -12,6 +12,8 @@ namespace quantities {
 
 // This namespace contains units commonly used in astronomy.
 namespace astronomy {
+namespace _astronomy {
+namespace internal {
 
 // Résolution B2 "Re-définition de l’unité astronomique de longueur" adopted
 // at the XXVIIIth General Assembly of the IAU in 2012.
@@ -52,6 +54,29 @@ constexpr GravitationalParameter JovianGravitationalParameter      =
 constexpr Time   JulianYear = 365.25 * si::Day;
 constexpr Length LightYear  = constants::SpeedOfLight * JulianYear;
 
+}  // namespace internal
+
+using internal::AstronomicalUnit;
+using internal::JovianEquatorialRadius;
+using internal::JovianGravitationalParameter;
+using internal::JovianPolarRadius;
+using internal::JulianYear;
+using internal::LightYear;
+using internal::Parsec;
+using internal::SolarEffectiveTemperature;
+using internal::SolarGravitationalParameter;
+using internal::SolarLuminosity;
+using internal::SolarRadius;
+using internal::TerrestrialEquatorialRadius;
+using internal::TerrestrialGravitationalParameter;
+using internal::TerrestrialPolarRadius;
+using internal::TotalSolarIrradiance;
+
+}  // namespace _astronomy
 }  // namespace astronomy
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_astronomy;
+}  // namespace principia::quantities

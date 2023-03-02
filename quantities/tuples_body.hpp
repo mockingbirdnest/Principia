@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_tuples {
+namespace _tuples {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 
@@ -61,6 +62,7 @@ struct DerivativesGenerator<Value, Argument, n,
   using Type = std::tuple<Derivative<Value, Argument, orders>...>;
 };
 
-}  // namespace internal_tuples
+}  // namespace internal
+}  // namespace _tuples
 }  // namespace quantities
 }  // namespace principia

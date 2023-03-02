@@ -10,7 +10,7 @@ namespace geometry {
 namespace _barycentre_calculator {
 namespace internal {
 
-using quantities::Product;
+using namespace principia::quantities::_named_quantities;
 
 // |Vector| must be a vector space over the field |Scalar|.
 template<typename Vector, typename Scalar>

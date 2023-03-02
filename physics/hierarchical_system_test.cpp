@@ -14,20 +14,15 @@ namespace principia {
 namespace physics {
 namespace internal_hierarchical_system {
 
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 namespace si = quantities::si;
 
 class HierarchicalSystemTest : public ::testing::Test {

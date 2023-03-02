@@ -17,13 +17,10 @@ namespace principia {
 namespace numerics {
 namespace internal_root_finders {
 
-using quantities::Abs;
-using quantities::Difference;
-using quantities::Product;
-using quantities::Sqrt;
-using quantities::Square;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 namespace si = quantities::si;
 
 template<typename Argument, typename Function>

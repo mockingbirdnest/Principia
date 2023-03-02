@@ -12,18 +12,6 @@
 
 namespace principia {
 
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Centi;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Nano;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
@@ -31,6 +19,10 @@ using ::testing::Eq;
 using ::testing::ResultOf;
 using namespace principia::base::_ranges;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

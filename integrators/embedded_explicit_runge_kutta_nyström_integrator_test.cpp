@@ -20,23 +20,6 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Sin;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Centi;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
@@ -49,6 +32,10 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 

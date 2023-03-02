@@ -11,8 +11,8 @@ namespace geometry {
 namespace _sign {
 namespace internal {
 
-using quantities::Quantity;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_quantities;
 
 // An element of the multiplicative group ({+1, -1}, *). Useful for instance to
 // represent the determinant of an orthogonal map.

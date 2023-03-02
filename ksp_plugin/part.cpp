@@ -18,18 +18,14 @@ namespace ksp_plugin {
 namespace internal_part {
 
 using physics::RigidTransformation;
-using quantities::Cbrt;
-using quantities::Density;
-using quantities::MomentOfInertia;
-using quantities::Pow;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 constexpr Mass untruthful_part_mass = 1 * Kilogram;
 

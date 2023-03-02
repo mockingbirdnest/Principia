@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_tuples {
+namespace _tuples {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 
@@ -36,10 +37,10 @@ template<typename Value, typename Argument, int n,
          typename = std::make_index_sequence<n>>
 struct DerivativesGenerator;
 
-}  // namespace internal_tuples
+}  // namespace internal
 
-using internal_tuples::is_tuple;
-using internal_tuples::is_tuple_v;
+using internal::is_tuple;
+using internal::is_tuple_v;
 
 template<template<typename...> typename Transform, typename... Tuples>
 using Apply =
@@ -49,7 +50,12 @@ template<typename Value, typename Argument, int n>
 using Derivatives =
     typename internal_tuples::DerivativesGenerator<Value, Argument, n>::Type;
 
+}  // namespace _tuples
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_tuples;
+}  // namespace principia::quantities
 
 #include "quantities/tuples_body.hpp"

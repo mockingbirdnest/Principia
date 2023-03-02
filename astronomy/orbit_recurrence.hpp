@@ -9,9 +9,8 @@ namespace astronomy {
 namespace internal_orbit_recurrence {
 
 using physics::RotatingBody;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Time;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // All references in this class are to [Cap12]; the notation follows that of the
 // book.

@@ -16,13 +16,10 @@ namespace geometry {
 namespace _point {
 namespace internal {
 
-using quantities::FusedMultiplyAdd;
-using quantities::FusedNegatedMultiplyAdd;
-using quantities::NextDown;
-using quantities::NextUp;
-using quantities::Product;
-using quantities::Quantity;
 using namespace principia::base::_not_constructible;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Vector>
 struct PointSerializer : not_constructible {};

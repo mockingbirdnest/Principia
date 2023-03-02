@@ -17,11 +17,10 @@ using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::KeplerOrbit;
 using physics::MasslessBody;
-using quantities::Infinity;
-using quantities::IsFinite;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::quantities::_quantities;
 
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>

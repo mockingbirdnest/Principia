@@ -22,13 +22,12 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using quantities::Length;
-using quantities::Time;
 using numerics::EstrinEvaluator;
 using numerics::PiecewisePoissonSeries;
 using numerics::Polynomial;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 class TestableContinuousTrajectory;

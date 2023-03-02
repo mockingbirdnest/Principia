@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_dimensions {
+namespace _dimensions {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 
@@ -157,6 +158,7 @@ struct DimensionsQuotientGenerator : not_constructible {
                           LDimensions::Angle - RDimensions::Angle>;
 };
 
-}  // namespace internal_dimensions
+}  // namespace internal
+}  // namespace _dimensions
 }  // namespace quantities
 }  // namespace principia

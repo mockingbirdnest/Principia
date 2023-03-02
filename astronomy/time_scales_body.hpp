@@ -25,12 +25,8 @@ using astronomy::date_time::operator""_DateTime;
 using astronomy::date_time::operator""_Julian;
 using numerics::DoublePrecision;
 using numerics::TwoDifference;
-using quantities::NextDown;
-using quantities::si::Day;
-using quantities::si::Hour;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
 // timescale), not counting any leap seconds that may have occurred in the past.

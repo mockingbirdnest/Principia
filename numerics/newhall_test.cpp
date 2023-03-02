@@ -20,20 +20,16 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Abs;
-using quantities::Difference;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::Variation;
-using quantities::si::Metre;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using testing_utilities::operator""_;
 
 // The adapters wrap the result of the Newhall approximation so that they can be

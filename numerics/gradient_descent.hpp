@@ -11,11 +11,9 @@ namespace principia {
 namespace numerics {
 namespace internal_gradient_descent {
 
-using quantities::Difference;
-using quantities::Infinity;
-using quantities::Product;
-using quantities::Quotient;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // In this file |Argument| must be such that its difference belongs to a Hilbert
 // space.

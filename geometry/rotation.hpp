@@ -29,11 +29,11 @@ FORWARD_DECLARE_FR0M(
 namespace _rotation {
 namespace internal {
 
-using quantities::Angle;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_quantities;
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,

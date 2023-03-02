@@ -36,21 +36,6 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::SolarSystem;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Time;
-using quantities::si::ArcMinute;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -58,6 +43,9 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_signature;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

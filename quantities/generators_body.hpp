@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_generators {
+namespace _generators {
+namespace internal {
 
 using internal_dimensions::Dimensions;
 using internal_dimensions::DimensionsExponentiationGenerator;
@@ -103,6 +104,7 @@ struct QuotientGenerator<double, double> : not_constructible {
   using Type = double;
 };
 
-}  // namespace internal_generators
+}  // namespace internal
+}  // namespace _generators
 }  // namespace quantities
 }  // namespace principia

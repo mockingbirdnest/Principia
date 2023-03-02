@@ -67,16 +67,6 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::Trajectory;
-using quantities::Angle;
-using quantities::Force;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Time;
-using quantities::Torque;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
@@ -87,6 +77,9 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.

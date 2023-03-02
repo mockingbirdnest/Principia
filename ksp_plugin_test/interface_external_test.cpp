@@ -21,16 +21,6 @@ using ksp_plugin::FakePlugin;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
 using physics::SolarSystem;
-using quantities::Sqrt;
-using quantities::si::Centi;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
@@ -41,6 +31,8 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 namespace interface {
 namespace {

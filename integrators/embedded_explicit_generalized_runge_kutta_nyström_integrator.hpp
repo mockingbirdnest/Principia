@@ -26,11 +26,11 @@ namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
 
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
-using quantities::Time;
-using quantities::Variation;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // This class solves ordinary differential equations of the form
 //   q″ = f(q, q′, t)

@@ -12,8 +12,8 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_approximate_quantity {
 
-using quantities::Abs;
-using quantities::Format;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 namespace si = quantities::si;
 
 template<typename Dimensions>

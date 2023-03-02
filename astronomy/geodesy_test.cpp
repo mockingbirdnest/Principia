@@ -32,16 +32,6 @@ using physics::KeplerOrbit;
 using physics::MasslessBody;
 using physics::OblateBody;
 using physics::SolarSystem;
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Centi;
-using quantities::si::Deci;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
@@ -51,6 +41,7 @@ using namespace principia::base::_bundle;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_si;
 
 class GeodesyTest : public ::testing::Test {
  protected:

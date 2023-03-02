@@ -24,6 +24,7 @@ using si::Radian;
 using si::Second;
 using si::Steradian;
 using si::Watt;
+using namespace principia::quantities::_parser;
 
 class ParserTest : public ::testing::Test {
 };

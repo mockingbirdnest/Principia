@@ -12,7 +12,7 @@ namespace principia {
 namespace numerics {
 namespace internal_legendre {
 
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
 
 template<int degree, typename>
 struct LegendreCoefficientsGenerator;

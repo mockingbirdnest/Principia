@@ -6,6 +6,8 @@
 namespace principia {
 namespace quantities {
 
+using namespace principia::quantities::_traits;
+
 TEST(Traits, IsQuantityV) {
   static_assert(is_quantity_v<int>);
   static_assert(is_quantity_v<double>);

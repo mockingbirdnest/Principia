@@ -11,9 +11,9 @@
 
 namespace principia {
 
-using quantities::Angle;
-using quantities::si::Radian;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_dimensions {
+namespace _dimensions {
+namespace internal {
 
 // Dimensionality of physical quantities.  Note that we strongly type angles.
 template<std::int64_t LengthExponent,
@@ -42,8 +43,13 @@ struct DimensionsProductGenerator;
 template<typename LDimensions, typename RDimensions>
 struct DimensionsQuotientGenerator;
 
-}  // namespace internal_dimensions
+}  // namespace internal
+}  // namespace _dimensions
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_dimensions;
+}  // namespace principia::quantities
 
 #include "quantities/dimensions_body.hpp"

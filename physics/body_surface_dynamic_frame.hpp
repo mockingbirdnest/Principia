@@ -23,11 +23,10 @@ namespace principia {
 namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
-using quantities::Acceleration;
-using quantities::SpecificEnergy;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the centre of mass of the body.  The X axis is at
 // the intersection of the equator and the prime meridian.  The Z axis is the

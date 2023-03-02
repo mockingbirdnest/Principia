@@ -14,12 +14,10 @@
 namespace principia {
 
 using astronomy::ICRS;
-using quantities::Length;
-using quantities::Quantity;
-using quantities::Time;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_quantities;
 namespace si = quantities::si;
 
 namespace numerics {

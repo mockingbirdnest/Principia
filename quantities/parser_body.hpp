@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_parser {
+namespace _parser {
+namespace internal {
 
 using internal_dimensions::Dimensions;
 
@@ -252,6 +253,7 @@ Q ParseQuantity(std::string const& s) {
   return magnitude * unit.scale * si::Unit<Q>;
 }
 
-}  // namespace internal_parser
+}  // namespace internal
+}  // namespace _parser
 }  // namespace quantities
 }  // namespace principia

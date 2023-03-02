@@ -18,10 +18,9 @@ namespace internal_oblate_body {
 
 using astronomy::J2000;
 using numerics::LegendreNormalizationFactor;
-using quantities::Angle;
-using quantities::si::Radian;
-using quantities::si::Second;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 namespace si = quantities::si;
 
 template<typename Frame>

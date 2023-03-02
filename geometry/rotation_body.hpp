@@ -17,11 +17,9 @@ namespace geometry {
 namespace _rotation {
 namespace internal {
 
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::Sin;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::quantities::_elementary_functions;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and

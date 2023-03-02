@@ -24,20 +24,6 @@ using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::Bisect;
 using physics::Ephemeris;
 using physics::SolarSystem;
-using quantities::Abs;
-using quantities::Angle;
-using quantities::ArcSin;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Time;
-using quantities::astronomy::TerrestrialEquatorialRadius;
-using quantities::si::Day;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
@@ -46,6 +32,10 @@ using ::testing::Eq;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace astronomy {
 

@@ -15,18 +15,15 @@ namespace principia {
 namespace physics {
 namespace internal_barycentric_rotating_dynamic_frame {
 
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Product;
-using quantities::Speed;
-using quantities::Variation;
-using quantities::si::Radian;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::

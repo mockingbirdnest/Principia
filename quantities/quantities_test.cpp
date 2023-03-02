@@ -42,6 +42,7 @@ using uk::Mile;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
+using namespace principia::quantities::_quantities;
 
 class QuantitiesTest : public testing::Test {};
 

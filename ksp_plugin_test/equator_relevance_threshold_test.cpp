@@ -16,11 +16,9 @@ namespace internal_equator_relevance_threshold {
 
 using astronomy::ICRS;
 using physics::SolarSystem;
-using quantities::astronomy::JovianEquatorialRadius;
-using quantities::astronomy::SolarRadius;
-using quantities::astronomy::TerrestrialEquatorialRadius;
 using testing_utilities::IsNear;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_astronomy;
 using testing_utilities::operator""_;
 
 class EquatorRelevanceThresholdTest : public testing::Test {

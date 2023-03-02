@@ -16,12 +16,12 @@
 
 namespace principia {
 
-using quantities::Length;
-using quantities::si::Metre;
 using ::testing::Eq;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using namespace principia::geometry::_permutation;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace geometry {
 

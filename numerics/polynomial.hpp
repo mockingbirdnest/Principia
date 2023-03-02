@@ -55,18 +55,14 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_polynomial {
 
-using quantities::Derivative;
-using quantities::Derivatives;
-using quantities::Difference;
-using quantities::Primitive;
-using quantities::Product;
-using quantities::Quotient;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_traits;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_tuples;
 
 // |Value_| must belong to an affine space.  |Argument_| must belong to a ring
 // or to Point based on a ring.

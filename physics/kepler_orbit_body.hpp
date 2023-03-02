@@ -15,29 +15,14 @@ namespace physics {
 namespace internal_kepler_orbit {
 
 using numerics::Brent;
-using quantities::Abs;
-using quantities::ArcCos;
-using quantities::ArcCosh;
-using quantities::ArcSin;
-using quantities::ArcTan;
-using quantities::Cbrt;
-using quantities::Cos;
-using quantities::Cosh;
-using quantities::DebugString;
-using quantities::NaN;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sinh;
-using quantities::SpecificAngularMomentum;
-using quantities::SpecificEnergy;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Radian;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 void KeplerianElements<Frame>::WriteToMessage(

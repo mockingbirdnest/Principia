@@ -14,9 +14,8 @@ namespace _rp2_point {
 namespace internal {
 
 using numerics::TwoProduct;
-using quantities::DebugString;
-using quantities::Infinity;
-using quantities::Square;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Scalar, typename Frame>
 RP2Point<Scalar, Frame>::RP2Point(

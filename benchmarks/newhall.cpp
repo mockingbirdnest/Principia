@@ -17,11 +17,10 @@
 namespace principia {
 
 using astronomy::ICRS;
-using quantities::Variation;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

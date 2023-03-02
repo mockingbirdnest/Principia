@@ -13,10 +13,9 @@ namespace principia {
 namespace numerics {
 namespace internal_unbounded_arrays {
 
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Square;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<class T>
 template<class U, class... Args>

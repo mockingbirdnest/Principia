@@ -12,14 +12,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_time_scales {
 
-using quantities::astronomy::JulianYear;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
@@ -29,6 +21,8 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ne;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
 
 constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
 

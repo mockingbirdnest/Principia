@@ -10,9 +10,8 @@ namespace numerics {
 namespace quadrature {
 namespace internal_quadrature {
 
-using quantities::AngularFrequency;
-using quantities::Primitive;
-using quantities::Time;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(

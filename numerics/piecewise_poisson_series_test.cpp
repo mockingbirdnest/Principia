@@ -25,13 +25,6 @@
 namespace principia {
 namespace numerics {
 
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
@@ -39,6 +32,9 @@ using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 using testing_utilities::operator""_;
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {

@@ -38,23 +38,6 @@ using physics::HierarchicalSystem;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
-using quantities::si::Radian;
 using testing_utilities::AbsoluteError;
 using namespace principia::base::_array;
 using namespace principia::base::_bundle;
@@ -65,6 +48,11 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace mathematica {
 

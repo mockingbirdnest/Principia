@@ -16,11 +16,11 @@
 namespace principia {
 namespace physics {
 
-using quantities::si::Second;
 using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_si;
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:

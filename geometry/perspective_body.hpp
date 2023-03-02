@@ -17,10 +17,9 @@ namespace _perspective {
 namespace internal {
 
 using numerics::SolveQuadraticEquation;
-using quantities::Pow;
-using quantities::Product;
-using quantities::Square;
 using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<typename FromFrame, typename ToFrame>
 Perspective<FromFrame, ToFrame>::Perspective(

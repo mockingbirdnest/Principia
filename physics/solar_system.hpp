@@ -23,10 +23,10 @@ namespace principia {
 namespace physics {
 namespace internal_solar_system {
 
-using quantities::GravitationalParameter;
-using quantities::Length;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 serialization::GravityModel ParseGravityModel(
     std::filesystem::path const& gravity_model_filename);

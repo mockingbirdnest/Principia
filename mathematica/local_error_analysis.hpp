@@ -14,12 +14,10 @@ namespace internal_local_error_analysis {
 using integrators::FixedStepSizeIntegrator;
 using physics::Ephemeris;
 using physics::SolarSystem;
-using quantities::Length;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Milli;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // A utility to compute the local errors in the numerical integration of a
 // |solar_system| with a given |integrator| and |step|.

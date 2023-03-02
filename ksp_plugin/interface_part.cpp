@@ -15,14 +15,10 @@
 namespace principia {
 namespace interface {
 
-using quantities::Force;
-using quantities::Torque;
 using ksp_plugin::PartId;
-using quantities::si::Kilo;
-using quantities::si::Newton;
-using quantities::si::Metre;
-using quantities::si::Radian;
 using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 void __cdecl principia__PartApplyIntrinsicForce(
     Plugin* const plugin,

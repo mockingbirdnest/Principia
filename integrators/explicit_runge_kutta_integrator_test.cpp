@@ -23,22 +23,15 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_runge_kutta_integrator {
 
-using quantities::Length;
-using quantities::Mass;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using testing_utilities::operator""_;
 
 using ODE =

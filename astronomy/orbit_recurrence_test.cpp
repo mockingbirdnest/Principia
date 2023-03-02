@@ -12,16 +12,14 @@ namespace astronomy {
 
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::AngularFrequency;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Minute;
 using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Property;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 class OrbitRecurrenceTest : public ::testing::Test {
  protected:

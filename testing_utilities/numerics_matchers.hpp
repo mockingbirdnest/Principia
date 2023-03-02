@@ -7,8 +7,8 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_numerics_matchers {
 
-using quantities::Difference;
 using ::testing::Matcher;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Value>
 Matcher<Value> DifferenceFrom(

@@ -16,7 +16,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_quantities {
+namespace _quantities {
+namespace internal {
 
 using internal_dimensions::Dimensions;
 using internal_generators::ProductGenerator;
@@ -155,25 +156,30 @@ std::string DebugString(
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
-}  // namespace internal_quantities
+}  // namespace internal
 
-using internal_quantities::Amount;
-using internal_quantities::Angle;
-using internal_quantities::Current;
-using internal_quantities::DebugString;
-using internal_quantities::Format;
-using internal_quantities::Infinity;
-using internal_quantities::IsFinite;
-using internal_quantities::Length;
-using internal_quantities::LuminousIntensity;
-using internal_quantities::Mass;
-using internal_quantities::NaN;
-using internal_quantities::Quantity;
-using internal_quantities::Temperature;
-using internal_quantities::Time;
-using internal_quantities::ToM128D;
+using internal::Amount;
+using internal::Angle;
+using internal::Current;
+using internal::DebugString;
+using internal::Format;
+using internal::Infinity;
+using internal::IsFinite;
+using internal::Length;
+using internal::LuminousIntensity;
+using internal::Mass;
+using internal::NaN;
+using internal::Quantity;
+using internal::Temperature;
+using internal::Time;
+using internal::ToM128D;
 
+}  // namespace _quantities
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_quantities;
+}  // namespace principia::quantities
 
 #include "quantities/quantities_body.hpp"

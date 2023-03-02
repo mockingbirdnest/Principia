@@ -35,18 +35,13 @@ using physics::BodySurfaceDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
-using quantities::Speed;
-using quantities::constants::StandardGravity;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

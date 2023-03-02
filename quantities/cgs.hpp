@@ -12,6 +12,8 @@ namespace quantities {
 // Gaussian system of units listed in the BIPM's SI brochure 8, section 4.1,
 // table 9, http://www.bipm.org/en/si/si_brochure/chapter4/table9.html.
 namespace cgs {
+namespace _cgs {
+namespace internal {
 
 constexpr Length Centimetre = si::Centi(si::Metre);
 using si::Gram;
@@ -36,6 +38,29 @@ constexpr MagneticField       Œrsted  =
 
 constexpr SpectroscopicWavenumber Kayser = 1 / Centimetre;
 
+}  // namespace internal
+
+using internal::Barye;
+using internal::Centimetre;
+using internal::Dyne;
+using internal::Erg;
+using internal::Gal;
+using internal::Gauss;
+using internal::Gram;
+using internal::Kayser;
+using internal::Maxwell;
+using internal::Œrsted;
+using internal::Phot;
+using internal::Poise;
+using internal::Second;
+using internal::Stilb;
+using internal::Stokes;
+
+}  // namespace _cgs
 }  // namespace cgs
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_cgs;
+}  // namespace principia::quantities

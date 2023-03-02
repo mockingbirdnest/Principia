@@ -19,12 +19,11 @@ using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Fine1987RKNG34;
-using quantities::Acceleration;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,
