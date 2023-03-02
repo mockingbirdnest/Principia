@@ -312,14 +312,16 @@ class Parser {
   }
 
   private static bool IsConstant(string line) {
-    return Regex.IsMatch(line, @"^constexpr .* =.*$") ||
-           Regex.IsMatch(line, @"^constexpr [^ ]+ [^ ]+;") ||
-           Regex.IsMatch(line, @"^inline +constexpr .* =.*$") ||
-           Regex.IsMatch(line, @"^inline +constexpr [^ ]+ [^ ]+;");
+    return Regex.IsMatch(line, @"^constexpr +[^ ]+ +\w+ +=.*$") ||
+           Regex.IsMatch(line, @"^constexpr +[^ ]+ +\w+;") ||
+           Regex.IsMatch(line, @"^inline +constexpr +[^ ]+ +\w+ +=.*$") ||
+           Regex.IsMatch(line, @"^inline +constexpr +[^ ]+ +\w+;");
   }
 
   private static bool IsFunction(string line) {
-    return Regex.IsMatch(line, @"^[\w].+ [^: ]+\(.*$");
+    // There are type aliases in named_quantities.hpp that have a ( in them.
+    return !Regex.IsMatch(line, @"^(using)") &&
+           Regex.IsMatch(line, @"^[\w].+ [^: ]+\(.*$");
   }
 
   private static bool IsOpeningNamespace(string line) {
@@ -346,7 +348,7 @@ class Parser {
   }
 
   private static bool IsTypeAlias(string line) {
-    return Regex.IsMatch(line, @"^using [\w]+ =;$");
+    return Regex.IsMatch(line, @"^using +[\w]+ +=.*$");
   }
 
   private static bool IsUsingDeclaration(string line) {
@@ -372,9 +374,9 @@ class Parser {
   private static string ParseConstant(string line) {
     return Regex.Replace(
         Regex.Replace(Regex.Replace(line, @"^inline +", ""),
-                      @"^constexpr [^ ]+ ",
+                      @"^constexpr +[^ ]+ +",
                       ""),
-        @" =.*$|;$",
+        @" +=.*$|;$",
         "");
   }
 
@@ -396,7 +398,7 @@ class Parser {
   }
 
   private static string ParseTypeAlias(string line) {
-    return Regex.Replace(line.Replace("using ", ""), @" =.*$", "");
+    return Regex.Replace(Regex.Replace(line, @"using +", ""), @" +=.*$", "");
   }
 
   private static string ParseUsingDeclaration(string line) {
