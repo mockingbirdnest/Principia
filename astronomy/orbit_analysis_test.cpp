@@ -24,9 +24,6 @@
 namespace principia {
 namespace astronomy {
 
-using geometry::Instant;
-using geometry::Interval;
-using geometry::Position;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::EstrinEvaluator;
@@ -67,6 +64,8 @@ using ::testing::Field;
 using ::testing::Lt;
 using ::testing::Property;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 
 namespace {
 

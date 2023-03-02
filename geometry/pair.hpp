@@ -17,7 +17,8 @@ FORWARD_DECLARE_FROM(componentwise,
 }  // namespace testing_utilities
 
 namespace geometry {
-namespace internal_pair {
+namespace _pair {
+namespace internal {
 
 using quantities::Difference;
 using quantities::Product;
@@ -112,7 +113,7 @@ class Pair {
 
   // This is needed to specialize BarycentreCalculator.
   template<typename V, typename S>
-  friend class geometry::BarycentreCalculator;
+  friend class _barycentre_calculator::BarycentreCalculator;
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
@@ -202,16 +203,20 @@ enable_if_vector_t<Pair<T1, T2>>& operator/=(Pair<T1, T2>& left, double right);
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);
 
-}  // namespace internal_pair
+}  // namespace internal
 
-using internal_pair::enable_if_vector_t;
-using internal_pair::Pair;
-using internal_pair::vector_of;
+using internal::enable_if_vector_t;
+using internal::Pair;
+using internal::vector_of;
+
+}  // namespace _pair
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
-namespace internal_barycentre_calculator {
+namespace _barycentre_calculator {
+namespace internal {
 
 using quantities::Difference;
+using namespace principia::geometry::_pair;
 
 template<typename T1, typename T2, typename Weight>
 class BarycentreCalculator<Pair<T1, T2>, Weight> final {
@@ -236,7 +241,8 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
   static T2 const reference_t2_;
 };
 
-}  // namespace internal_barycentre_calculator
+}  // namespace internal
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.
@@ -244,22 +250,26 @@ namespace base {
 namespace _mappable {
 namespace internal {
 
+using namespace principia::geometry::_pair;
+
 template<typename Functor, typename T1, typename T2>
 class Mappable<Functor,
-               geometry::Pair<T1, T2>,
-               geometry::enable_if_vector_t<geometry::Pair<T1, T2>, void>> {
+               Pair<T1, T2>,
+               enable_if_vector_t<Pair<T1, T2>, void>> {
  public:
-  using type = geometry::Pair<
-                   decltype(std::declval<Functor>()(std::declval<T1>())),
-                   decltype(std::declval<Functor>()(std::declval<T2>()))>;
+  using type = Pair<decltype(std::declval<Functor>()(std::declval<T1>())),
+                    decltype(std::declval<Functor>()(std::declval<T2>()))>;
 
-  static type Do(Functor const& functor,
-                 geometry::Pair<T1, T2> const& pair);
+  static type Do(Functor const& functor, Pair<T1, T2> const& pair);
 };
 
 }  // namespace internal
 }  // namespace _mappable
 }  // namespace base
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_pair;
+}  // namespace principia::geometry
 
 #include "geometry/pair_body.hpp"

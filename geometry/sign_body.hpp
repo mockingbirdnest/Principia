@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_sign {
+namespace _sign {
+namespace internal {
 
 namespace si = quantities::si;
 
@@ -93,6 +94,7 @@ inline std::ostream& operator<<(std::ostream& out, Sign const sign) {
   return out;
 }
 
-}  // namespace internal_sign
+}  // namespace internal
+}  // namespace _sign
 }  // namespace geometry
 }  // namespace principia

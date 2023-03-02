@@ -1,5 +1,7 @@
 #pragma once
 
+#include "geometry/permutation.hpp"
+
 #include <array>
 #include <string>
 #include <utility>
@@ -14,7 +16,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_permutation {
+namespace _permutation {
+namespace internal {
 
 using namespace principia::base::_traits;
 
@@ -192,6 +195,7 @@ std::ostream& operator<<(std::ostream& out,
                                   INDEX)];
 }
 
-}  // namespace internal_permutation
+}  // namespace internal
+}  // namespace _permutation
 }  // namespace geometry
 }  // namespace principia

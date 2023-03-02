@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_hilbert {
+namespace _hilbert {
+namespace internal {
 
 using quantities::is_quantity;
 using quantities::is_quantity_v;
@@ -69,7 +70,7 @@ struct Hilbert<T1, T2,
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942
   {  // NOLINT
-    return internal_grassmann::InnerProduct(t1, t2);
+    return _grassmann::internal::InnerProduct(t1, t2);
   }
 #else
   ;  // NOLINT
@@ -89,7 +90,7 @@ struct Hilbert<T, T,
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942
   {  // NOLINT
-    return internal_grassmann::InnerProduct(t1, t2);
+    return _grassmann::internal::InnerProduct(t1, t2);
   }
 #else
   ;  // NOLINT
@@ -120,11 +121,16 @@ struct Hilbert<T, T,
   using NormalizedType = Quotient<T, NormType>;
 };
 
-}  // namespace internal_hilbert
+}  // namespace internal
 
-using internal_hilbert::Hilbert;
+using internal::Hilbert;
 
+}  // namespace _hilbert
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_hilbert;
+}  // namespace principia::geometry
 
 #include "geometry/hilbert_body.hpp"

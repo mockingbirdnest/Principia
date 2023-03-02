@@ -19,7 +19,6 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_runge_kutta_integrator {
 
-using geometry::Sign;
 using numerics::DoublePrecision;
 using quantities::Abs;
 using quantities::DebugString;
@@ -27,6 +26,7 @@ using quantities::Difference;
 using quantities::Quotient;
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_sign;
 
 template<typename Method, typename ODE_>
 ExplicitRungeKuttaIntegrator<Method, ODE_>::

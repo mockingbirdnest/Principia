@@ -13,9 +13,9 @@ namespace principia {
 namespace numerics {
 namespace internal_чебышёв_series {
 
-using geometry::DoubleOrQuantityOrMultivectorSerializer;
-using geometry::Multivector;
-using geometry::R3Element;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_serialization;
 namespace si = quantities::si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a

@@ -8,9 +8,8 @@ namespace principia {
 namespace physics {
 namespace internal_frame_field {
 
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
 
 // A section of the frame bundle of the manifold |Position|, i.e., a smooth
 // assignment of an orthonormal basis to the tangent space of positions at every

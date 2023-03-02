@@ -29,12 +29,6 @@ namespace physics {
 namespace internal_body_centred_body_direction_dynamic_frame {
 
 using astronomy::ICRS;
-using geometry::Arbitrary;
-using geometry::Barycentre;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Vector;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::Sqrt;
@@ -52,6 +46,10 @@ using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 namespace {
 

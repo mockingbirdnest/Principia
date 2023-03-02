@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_signature {
+namespace _signature {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -109,13 +110,18 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Signature<FromFrame, ToFrame> const& signature);
 
-}  // namespace internal_signature
+}  // namespace internal
 
-using internal_signature::DeduceSignPreservingOrientation;
-using internal_signature::DeduceSignReversingOrientation;
-using internal_signature::Signature;
+using internal::DeduceSignPreservingOrientation;
+using internal::DeduceSignReversingOrientation;
+using internal::Signature;
 
+}  // namespace _signature
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_signature;
+}  // namespace principia::geometry
 
 #include "geometry/signature_body.hpp"

@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_identity {
+namespace _identity {
+namespace internal {
 
 template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
@@ -104,6 +105,7 @@ std::ostream& operator<<(std::ostream& out,
   return out << "𝟙";
 }
 
-}  // namespace internal_identity
+}  // namespace internal
+}  // namespace _identity
 }  // namespace geometry
 }  // namespace principia

@@ -13,11 +13,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_planetarium {
 
-using geometry::Position;
-using geometry::R3Element;
-using geometry::RP2Line;
-using geometry::Sign;
-using geometry::Velocity;
 using physics::MassiveBody;
 using quantities::Infinity;
 using quantities::Pow;
@@ -26,6 +21,10 @@ using quantities::Square;
 using quantities::Sqrt;
 using quantities::Tan;
 using quantities::Time;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_sign;
 
 namespace {
 constexpr int max_plot_method_2_steps = 10'000;

@@ -30,21 +30,6 @@
 
 namespace principia {
 
-using geometry::AngleBetween;
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Bivector;
-using geometry::Commutator;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Velocity;
-using geometry::Wedge;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
@@ -90,6 +75,12 @@ using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
 
 namespace astronomy {
 

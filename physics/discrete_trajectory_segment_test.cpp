@@ -23,11 +23,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Velocity;
 using quantities::Abs;
 using quantities::AngularFrequency;
 using quantities::Length;
@@ -50,6 +45,8 @@ using ::testing::Eq;
 using ::testing::Le;
 using ::testing::Lt;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:

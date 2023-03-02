@@ -31,18 +31,6 @@ namespace principia {
 namespace mathematica {
 
 using astronomy::OrbitalElements;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Interval;
-using geometry::Point;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
-using geometry::Velocity;
 using numerics::DoublePrecision;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
@@ -63,6 +51,15 @@ using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 class MathematicaTest : public ::testing::Test {
  protected:

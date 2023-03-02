@@ -51,19 +51,6 @@ class TestablePlugin;
 
 namespace internal_plugin {
 
-using geometry::AffineMap;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InertiaTensor;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Point;
-using geometry::Perspective;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Body;
@@ -93,6 +80,13 @@ using quantities::si::Second;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_rotation;
 
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.

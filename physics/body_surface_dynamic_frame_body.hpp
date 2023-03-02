@@ -11,11 +11,11 @@ namespace principia {
 namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
-using geometry::AngularVelocity;
-using geometry::OrthogonalMap;
-using geometry::Rotation;
 using quantities::Variation;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
 
 template<typename InertialFrame, typename ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::

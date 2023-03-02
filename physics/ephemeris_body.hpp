@@ -32,14 +32,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::J2000;
-using geometry::Barycentre;
-using geometry::Displacement;
-using geometry::InfiniteFuture;
-using geometry::InnerProduct;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::Sign;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::InitialValueProblem;
@@ -67,6 +59,11 @@ using ::std::placeholders::_3;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_sign;
 
 using namespace std::chrono_literals;
 

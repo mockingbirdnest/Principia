@@ -11,6 +11,7 @@ namespace geometry {
 using quantities::Area;
 using quantities::Entropy;
 using quantities::Frequency;
+using namespace principia::geometry::_traits;
 
 TEST(Traits, IsVectorV) {
   static_assert(is_vector_v<int>);

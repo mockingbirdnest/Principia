@@ -15,14 +15,11 @@
 
 namespace principia {
 
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
 using quantities::Length;
 using quantities::si::Metre;
 using quantities::si::Second;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 namespace numerics {
 

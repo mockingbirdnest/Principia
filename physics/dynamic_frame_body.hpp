@@ -13,18 +13,13 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Normalize;
-using geometry::R3x3Matrix;
-using geometry::Velocity;
-using geometry::Wedge;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Variation;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3x3_matrix;
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>

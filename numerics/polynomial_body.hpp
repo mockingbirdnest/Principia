@@ -23,13 +23,13 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
-using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
-using geometry::cartesian_product::operator+;
-using geometry::cartesian_product::operator-;
-using geometry::cartesian_product::operator*;
-using geometry::cartesian_product::operator/;
-using geometry::pointwise_inner_product::PointwiseInnerProduct;
-using geometry::polynomial_ring::operator*;
+using geometry::_cartesian_product::polynomial_ring::operator*;
+using geometry::_cartesian_product::pointwise_inner_product::
+    PointwiseInnerProduct;
+using geometry::_cartesian_product::vector_space::operator+;
+using geometry::_cartesian_product::vector_space::operator-;
+using geometry::_cartesian_product::vector_space::operator*;
+using geometry::_cartesian_product::vector_space::operator/;
 using quantities::Apply;
 using quantities::DebugString;
 using quantities::Difference;
@@ -39,6 +39,7 @@ using quantities::Time;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_serialization;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
 // coefficients of the same monomial as a polynomial of (x - x₂), i.e.:
@@ -182,10 +183,10 @@ TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
   } else {
     // The + 1 in the expressions below match the - 1 in the primary declaration
     // of TupleComposition.
-    return degree_0 +
-           ((std::get<left_indices + 1>(left_tuple) *
-             geometry::polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
-            ...);
+    return degree_0 + ((std::get<left_indices + 1>(left_tuple) *
+                        geometry::_cartesian_product::polynomial_ring::Pow<
+                            left_indices + 1>(right_tuple)) +
+                       ...);
   }
 }
 
@@ -792,10 +793,10 @@ PointwiseInnerProduct(
         right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<
-              typename Hilbert<LValue, RValue>::InnerProductType, Argument,
-              ldegree_ + rdegree_, Evaluator>(
-              PointwiseInnerProduct(left.coefficients_, right.coefficients_),
-              left.origin_);
+      typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+      ldegree_ + rdegree_, Evaluator>(
+          PointwiseInnerProduct(left.coefficients_, right.coefficients_),
+          left.origin_);
 }
 
 template<typename Value, typename Argument, int degree_,

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_quaternion {
+namespace _quaternion {
+namespace internal {
 
 using quantities::Abs;
 using quantities::DebugString;
@@ -176,6 +177,7 @@ inline std::ostream& operator<<(std::ostream& out,
              << Sign(z) << " " << unsigned_debug_string(z) << " k";
 }
 
-}  // namespace internal_quaternion
+}  // namespace internal
+}  // namespace _quaternion
 }  // namespace geometry
 }  // namespace principia

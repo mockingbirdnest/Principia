@@ -21,7 +21,6 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_runge_kutta_integrator {
 
-using geometry::Instant;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -51,6 +50,7 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::geometry::_named_quantities;
 
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;

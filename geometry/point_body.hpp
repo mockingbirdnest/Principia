@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_point {
+namespace _point {
+namespace internal {
 
 using quantities::FusedMultiplyAdd;
 using quantities::FusedNegatedMultiplyAdd;
@@ -193,7 +194,11 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
   return out << DebugString(point);
 }
 
-}  // namespace internal_point
+}  // namespace internal
+}  // namespace _point
+
+namespace _barycentre_calculator {
+namespace internal {
 
 template<typename Vector, typename Weight>
 void BarycentreCalculator<Point<Vector>, Weight>::Add(
@@ -220,6 +225,9 @@ template<typename Vector, typename Weight>
 Weight const& BarycentreCalculator<Point<Vector>, Weight>::weight() const {
   return weight_;
 }
+
+}  // namespace internal
+}  // namespace _barycentre_calculator
 
 }  // namespace geometry
 }  // namespace principia

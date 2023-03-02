@@ -11,7 +11,7 @@ namespace numerics {
 namespace apodization {
 namespace internal_apodization {
 
-using geometry::Instant;
+using namespace principia::geometry::_named_quantities;
 
 // ISO 18431-2:2004, section 5.4.
 template<template<typename, typename, int> class Evaluator>

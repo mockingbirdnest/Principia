@@ -9,8 +9,8 @@ namespace principia {
 namespace numerics {
 namespace internal_davenport_q_method {
 
-using geometry::Rotation;
-using geometry::Vector;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_rotation;
 
 template<typename FromFrame, typename ToFrame, typename Weight>
 Rotation<FromFrame, ToFrame> DavenportQMethod(

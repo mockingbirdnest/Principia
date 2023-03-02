@@ -16,12 +16,12 @@ namespace principia {
 namespace numerics {
 namespace internal_nearest_neighbour {
 
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Hilbert;
-using geometry::SymmetricSquare;
 using quantities::Difference;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 // Principal component partitioning trees (PCP trees) are introduced by [WZ91]
 // in the context of quantization.  Their use for nearest neighbour search was

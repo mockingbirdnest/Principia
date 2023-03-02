@@ -15,9 +15,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
@@ -26,6 +23,8 @@ using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,

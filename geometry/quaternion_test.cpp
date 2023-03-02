@@ -8,6 +8,7 @@ namespace principia {
 
 using testing_utilities::TestSkewField;
 using ::testing::Eq;
+using namespace principia::geometry::_quaternion;
 
 namespace geometry {
 

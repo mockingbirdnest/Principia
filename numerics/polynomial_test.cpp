@@ -24,14 +24,6 @@
 
 namespace principia {
 
-using geometry::Frame;
-using geometry::Displacement;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Energy;
 using quantities::Entropy;
@@ -52,6 +44,9 @@ using quantities::si::Watt;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 namespace numerics {
 

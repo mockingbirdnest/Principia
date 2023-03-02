@@ -24,14 +24,12 @@ namespace principia {
 namespace physics {
 namespace internal_barycentric_rotating_dynamic_frame {
 
-using geometry::AngularVelocity;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
 using quantities::Acceleration;
 using quantities::SpecificEnergy;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
 
 // The origin of the frame is the barycentre of the two bodies.  The X axis
 // points to the secondary.  The Y axis is in the direction of the velocity of

@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_signature {
+namespace _signature {
+namespace internal {
 
 using namespace principia::base::_traits;
 
@@ -183,6 +184,7 @@ std::ostream& operator<<(std::ostream& out,
              << signature.z_ << "}";
 }
 
-}  // namespace internal_signature
+}  // namespace internal
+}  // namespace _signature
 }  // namespace geometry
 }  // namespace principia

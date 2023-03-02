@@ -16,12 +16,6 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Hilbert;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Vector;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Sqrt;
@@ -30,6 +24,10 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_named_quantities;
 
 class PoissonSeriesBasisTest : public ::testing::Test {
  protected:

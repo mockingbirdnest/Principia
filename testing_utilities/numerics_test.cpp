@@ -17,18 +17,16 @@
 namespace principia {
 namespace testing_utilities {
 
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Point;
-using geometry::R3Element;
-using geometry::Trivector;
-using geometry::Vector;
 using numerics::ULPDistance;
 using quantities::Sqrt;
 using quantities::si::Metre;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Ne;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_r3_element;
 
 class NumericsTest : public testing::Test {
  protected:

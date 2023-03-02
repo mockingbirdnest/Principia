@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rp2_point {
+namespace _rp2_point {
+namespace internal {
 
 // An |RP2Point| is an element of ℝP², the real projective plane.  |Scalar|
 // must be a 1-dimensional vector space over ℝ, typically represented by
@@ -65,13 +66,18 @@ template<typename Scalar, typename Frame>
 std::ostream& operator<<(std::ostream& os,
                          RP2Point<Scalar, Frame> const& rp2_point);
 
-}  // namespace internal_rp2_point
+}  // namespace internal
 
-using internal_rp2_point::RP2Line;
-using internal_rp2_point::RP2Lines;
-using internal_rp2_point::RP2Point;
+using internal::RP2Line;
+using internal::RP2Lines;
+using internal::RP2Point;
 
+}  // namespace _rp2_point
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_rp2_point;
+}  // namespace principia::geometry
 
 #include "geometry/rp2_point_body.hpp"

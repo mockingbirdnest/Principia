@@ -51,19 +51,6 @@ namespace ksp_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Identity;
-using geometry::Instant;
-using geometry::OddPermutation;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Trivector;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::InitialValueProblem;
 using integrators::MockFixedStepSizeIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -135,6 +122,12 @@ using ::testing::_;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
 
 namespace {
 

@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_orthogonal_map {
+namespace _orthogonal_map {
+namespace internal {
 
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -186,6 +187,7 @@ TEST_F(OrthogonalMapTest, Output) {
   std::cout << orthogonal_a_ << "\n";
 }
 
-}  // namespace internal_orthogonal_map
+}  // namespace internal
+}  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia

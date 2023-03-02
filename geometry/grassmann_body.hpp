@@ -5,12 +5,12 @@
 #include <string>
 
 #include "base/not_constructible.hpp"
-#include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_grassmann {
+namespace _grassmann {
+namespace internal {
 
 using quantities::ArcTan;
 using quantities::FusedMultiplyAdd;
@@ -510,6 +510,7 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-}  // namespace internal_grassmann
+}  // namespace internal
+}  // namespace _grassmann
 }  // namespace geometry
 }  // namespace principia

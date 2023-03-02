@@ -55,9 +55,6 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_polynomial {
 
-using geometry::is_vector_v;
-using geometry::Hilbert;
-using geometry::Point;
 using quantities::Derivative;
 using quantities::Derivatives;
 using quantities::Difference;
@@ -67,6 +64,9 @@ using quantities::Quotient;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_traits;
 
 // |Value_| must belong to an affine space.  |Argument_| must belong to a ring
 // or to Point based on a ring.

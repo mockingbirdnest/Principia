@@ -15,7 +15,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::Rotation;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockPlugin;
@@ -33,6 +32,7 @@ using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_rotation;
 
 namespace {
 

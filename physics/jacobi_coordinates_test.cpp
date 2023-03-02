@@ -13,8 +13,6 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
-using geometry::Frame;
-using geometry::Inertial;
 using quantities::Length;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -22,6 +20,7 @@ using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
+using namespace principia::geometry::_frame;
 
 class JacobiCoordinatesTest : public ::testing::Test {
  protected:

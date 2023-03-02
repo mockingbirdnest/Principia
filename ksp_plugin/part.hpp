@@ -25,13 +25,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InertiaTensor;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
@@ -41,6 +34,8 @@ using quantities::Mass;
 using quantities::Torque;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 // Represents a KSP part.
 class Part final {

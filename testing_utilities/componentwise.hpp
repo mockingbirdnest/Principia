@@ -18,13 +18,11 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_componentwise {
 
-using geometry::Displacement;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::Velocity;
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3_element;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;

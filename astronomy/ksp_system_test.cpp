@@ -24,14 +24,6 @@
 
 namespace principia {
 
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
-using geometry::Vector;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
@@ -65,6 +57,11 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_sign;
 
 namespace astronomy {
 

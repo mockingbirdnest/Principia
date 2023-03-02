@@ -12,16 +12,14 @@
 namespace principia {
 namespace physics {
 
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Vector;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Square;
 using quantities::si::Metre;
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 
 class HarmonicDampingTest : public ::testing::Test {
  protected:

@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_point {
+namespace _point {
+namespace internal {
 
 using astronomy::DateTimeAsTT;
 using astronomy::J2000;
@@ -49,6 +50,7 @@ std::string DebugString(const Instant& t) {
   return (std::stringstream() << t).str();
 }
 
-}  // namespace internal_point
+}  // namespace internal
+}  // namespace _point
 }  // namespace geometry
 }  // namespace principia

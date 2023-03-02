@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_plane {
+namespace _plane {
+namespace internal {
 
 // A subspace of codimension 1 which happens to be a subspace of dimension 2.
 // No notion of orientation, neither "clockwise" nor "side of the the plane".
@@ -46,12 +47,17 @@ template<typename Scalar, typename Frame>
 Vector<Scalar, Frame> Projection(Vector<Scalar, Frame> const& vector,
                                  Plane<Frame> const& plane);
 
-}  // namespace internal_plane
+}  // namespace internal
 
-using internal_plane::Plane;
-using internal_plane::Projection;
+using internal::Plane;
+using internal::Projection;
 
+}  // namespace _plane
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_plane;
+}  // namespace principia::geometry
 
 #include "geometry/plane_body.hpp"

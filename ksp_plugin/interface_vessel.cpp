@@ -14,13 +14,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Sign;
-using geometry::Vector;
-using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Apparent;
 using physics::DegreesOfFreedom;
@@ -30,6 +23,10 @@ using quantities::Force;
 using quantities::si::Kilo;
 using quantities::si::Newton;
 using quantities::si::Tonne;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_sign;
 
 XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
                                       char const* const vessel_guid) {

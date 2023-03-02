@@ -20,11 +20,6 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
-using geometry::Displacement;
-using geometry::Inertial;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
@@ -49,6 +44,8 @@ using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 class ApsidesTest : public ::testing::Test {
  protected:

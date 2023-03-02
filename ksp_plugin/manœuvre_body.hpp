@@ -13,14 +13,14 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_manœuvre {
 
-using geometry::NormalizeOrZero;
-using geometry::Rotation;
 using physics::DiscreteTrajectory;
 using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Sqrt;
 using std::placeholders::_1;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_rotation;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,

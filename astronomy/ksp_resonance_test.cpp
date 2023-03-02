@@ -21,17 +21,6 @@
 
 namespace principia {
 
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Sign;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;
@@ -59,6 +48,12 @@ using testing_utilities::RelativeError;
 using testing_utilities::operator""_;
 using ::testing::Eq;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_sign;
 
 namespace astronomy {
 

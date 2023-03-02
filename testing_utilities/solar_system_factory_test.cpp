@@ -16,10 +16,6 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using geometry::Bivector;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
 using physics::Body;
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
@@ -41,6 +37,8 @@ using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Ge;
 using ::testing::UnorderedElementsAreArray;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 namespace testing_utilities {
 

@@ -20,6 +20,7 @@ using quantities::si::Second;
 using quantities::si::Tesla;
 using ::testing::Eq;
 using ::testing::UnorderedElementsAre;
+using namespace principia::geometry::_plane;
 
 class PlaneTest : public ::testing::Test {
  protected:

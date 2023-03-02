@@ -12,9 +12,9 @@ namespace principia {
 namespace physics {
 namespace internal_hierarchical_system {
 
-using geometry::Identity;
-using geometry::Velocity;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 HierarchicalSystem<Frame>::HierarchicalSystem(

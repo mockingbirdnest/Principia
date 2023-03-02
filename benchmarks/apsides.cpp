@@ -28,9 +28,6 @@ using astronomy::GCRS;
 using astronomy::ICRS;
 using astronomy::ITRS;
 using astronomy::StandardProduct3;
-using geometry::InfiniteFuture;
-using geometry::Position;
-using geometry::Vector;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
@@ -41,6 +38,8 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 namespace physics {
 

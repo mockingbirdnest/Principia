@@ -18,10 +18,7 @@ namespace physics {
 namespace internal_massive_body {
 
 using quantities::constants::GravitationalConstant;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::ReadFrameFromMessage;
+using namespace principia::geometry::_frame;
 
 inline MassiveBody::Parameters::Parameters(
     GravitationalParameter const& gravitational_parameter)

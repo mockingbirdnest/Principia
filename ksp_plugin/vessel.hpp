@@ -36,9 +36,6 @@ class VesselTest;
 
 namespace internal_vessel {
 
-using geometry::InfinitePast;
-using geometry::Instant;
-using geometry::Vector;
 using physics::Checkpointer;
 using physics::Clientele;
 using physics::DegreesOfFreedom;
@@ -54,6 +51,8 @@ using quantities::Mass;
 using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 // Represents a KSP |Vessel|.
 class Vessel {

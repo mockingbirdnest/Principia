@@ -46,16 +46,16 @@ FORWARD_DECLARE_FUNCTION_FROM(
 namespace numerics {
 namespace internal_poisson_series {
 
-using geometry::Complexification;
-using geometry::Hilbert;
-using geometry::Instant;
-using geometry::Interval;
 using quantities::AngularFrequency;
 using quantities::Primitive;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Time;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 
 // A Poisson series is the sum of terms of the form:
 //   aₙtⁿ      aₙₖ tⁿ sin ωₖ t      aₙₖ tⁿ cos ωₖ t

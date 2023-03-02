@@ -26,9 +26,6 @@ using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
-using geometry::Bivector;
-using geometry::InnerProduct;
-using geometry::R3Element;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Derivative;
@@ -38,6 +35,8 @@ using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Sin;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

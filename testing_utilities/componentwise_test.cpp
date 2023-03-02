@@ -20,12 +20,6 @@
 
 namespace principia {
 
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Pair;
-using geometry::R3Element;
-using geometry::RP2Point;
-using geometry::Vector;
 using quantities::Action;
 using quantities::Amount;
 using quantities::Length;
@@ -39,6 +33,11 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::Not;
 using ::testing::_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_pair;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rp2_point;
 namespace si = quantities::si;
 
 namespace testing_utilities {

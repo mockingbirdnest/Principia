@@ -7,10 +7,12 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/signature.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_orthogonal_map {
+namespace _orthogonal_map {
+namespace internal {
 
 template<typename FromFrame, typename ToFrame>
 Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
@@ -151,6 +153,7 @@ std::ostream& operator<<(
              << ", quaternion: " << orthogonal_map.quaternion_ << "}";
 }
 
-}  // namespace internal_orthogonal_map
+}  // namespace internal
+}  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia

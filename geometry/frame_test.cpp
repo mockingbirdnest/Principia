@@ -9,6 +9,8 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::geometry::_frame;
+
 class FrameTest : public testing::Test {
  protected:
   using World1 = Frame<serialization::Frame::TestTag,

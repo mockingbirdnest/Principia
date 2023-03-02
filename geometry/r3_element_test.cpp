@@ -42,6 +42,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
+using namespace principia::geometry::_r3_element;
 
 namespace geometry {
 

@@ -20,11 +20,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Vector;
-using geometry::Velocity;
 using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
@@ -49,6 +44,9 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
 
 namespace {
 

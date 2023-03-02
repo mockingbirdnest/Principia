@@ -17,16 +17,11 @@ namespace principia {
 namespace numerics {
 namespace internal_gradient_descent {
 
-using geometry::InnerProduct;
-using geometry::InnerProductForm;
-using geometry::Normalize;
-using geometry::SymmetricBilinearForm;
-using geometry::SymmetricProduct;
-using geometry::SymmetricSquare;
-using geometry::Vector;
 using quantities::Abs;
 using quantities::Quotient;
 using quantities::Square;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_symmetric_bilinear_form;
 namespace si = quantities::si;
 
 // A helper to use |Argument| with |SymmetricBilinearForm|.

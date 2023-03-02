@@ -10,13 +10,15 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
+FORWARD_DECLARE_FR0M(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
 
-namespace internal_permutation {
+namespace _permutation {
+namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_orthogonal_map;
 
 // Declare shorter names for the protocol buffer enums.
 static constexpr int EVEN = serialization::Permutation::EVEN;
@@ -132,13 +134,18 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Permutation<FromFrame, ToFrame> const& permutation);
 
-}  // namespace internal_permutation
+}  // namespace internal
 
-using internal_permutation::EvenPermutation;
-using internal_permutation::OddPermutation;
-using internal_permutation::Permutation;
+using internal::EvenPermutation;
+using internal::OddPermutation;
+using internal::Permutation;
 
+}  // namespace _permutation
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_permutation;
+}  // namespace principia::geometry
 
 #include "geometry/permutation_body.hpp"

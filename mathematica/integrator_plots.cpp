@@ -52,12 +52,6 @@
 
 namespace principia {
 
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Inertial;
-using geometry::InnerProduct;
-using geometry::Instant;
-using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
 using integrators::InitialValueProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
@@ -95,6 +89,10 @@ using ::std::placeholders::_3;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 namespace mathematica {

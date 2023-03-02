@@ -10,7 +10,7 @@ namespace principia {
 namespace astronomy {
 namespace internal_epoch {
 
-using geometry::Instant;
+using namespace principia::geometry::_named_quantities;
 
 // |J2000| represents to the standard epoch J2000.0.
 // According to Resolution B1 (On the Use of Julian Dates) of the XXIIIrd IAU

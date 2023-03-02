@@ -15,16 +15,15 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::Rotation;
-using geometry::Vector;
 using quantities::Length;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
 
 constexpr int number_of_test_vectors = 100;
 

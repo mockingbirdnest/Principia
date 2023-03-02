@@ -12,16 +12,18 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(rotation,
+FORWARD_DECLARE_FR0M(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
 
-namespace internal_symmetric_bilinear_form {
+namespace _symmetric_bilinear_form {
+namespace internal {
 
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Square;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_rotation;
 
 // A symmetric bilinear form with dimensionality |Scalar|, on the given kind of
 // |Multivector|, expressed in the coordinates of |Frame|.
@@ -330,15 +332,20 @@ std::ostream& operator<<(
     std::ostream& out,
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& form);
 
-}  // namespace internal_symmetric_bilinear_form
+}  // namespace internal
 
-using internal_symmetric_bilinear_form::Anticommutator;
-using internal_symmetric_bilinear_form::InnerProductForm;
-using internal_symmetric_bilinear_form::SymmetricBilinearForm;
-using internal_symmetric_bilinear_form::SymmetricProduct;
-using internal_symmetric_bilinear_form::SymmetricSquare;
+using internal::Anticommutator;
+using internal::InnerProductForm;
+using internal::SymmetricBilinearForm;
+using internal::SymmetricProduct;
+using internal::SymmetricSquare;
 
+}  // namespace _symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_symmetric_bilinear_form;
+}  // namespace principia::geometry
 
 #include "geometry/symmetric_bilinear_form_body.hpp"

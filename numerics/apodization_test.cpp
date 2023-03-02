@@ -12,11 +12,11 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Instant;
 using quantities::Sqrt;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
+using namespace principia::geometry::_named_quantities;
 
 class ApodizationTest : public ::testing::Test {
  protected:

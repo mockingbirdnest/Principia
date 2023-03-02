@@ -10,12 +10,12 @@ namespace principia {
 namespace physics {
 namespace internal_harmonic_damping {
 
-using geometry::Vector;
 using numerics::PolynomialInMonomialBasis;
 using quantities::Infinity;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Square;
+using namespace principia::geometry::_grassmann;
 
 // Specification of the damping of a spherical harmonic, acting as a radial
 // multiplier on the potential:

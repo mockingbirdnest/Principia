@@ -33,13 +33,6 @@
 
 namespace principia {
 
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::Exp;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using ksp_plugin::Barycentric;
@@ -56,6 +49,9 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 namespace si = quantities::si;
 
 namespace physics {

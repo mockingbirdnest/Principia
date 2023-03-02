@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_perspective {
+namespace _perspective {
+namespace internal {
 
 using quantities::Length;
 using quantities::Square;
@@ -96,13 +97,18 @@ std::ostream& operator<<(
     std::ostream& out,
     Perspective<FromFrame, ToFrame> const& perspective);
 
-}  // namespace internal_perspective
+}  // namespace internal
 
-using internal_perspective::Perspective;
-using internal_perspective::Segment;
-using internal_perspective::Segments;
+using internal::Perspective;
+using internal::Segment;
+using internal::Segments;
 
+}  // namespace _perspective
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_perspective;
+}  // namespace principia::geometry
 
 #include "geometry/perspective_body.hpp"

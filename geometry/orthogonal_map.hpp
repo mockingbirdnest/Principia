@@ -6,41 +6,40 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
-#include "geometry/signature.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
-
-namespace physics {
-class RigidMotionTest;
-}  // namespace physics
-
 namespace geometry {
 
-FORWARD_DECLARE_FROM(identity,
+FORWARD_DECLARE_FR0M(identity,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Identity);
-FORWARD_DECLARE_FROM(permutation,
+FORWARD_DECLARE_FR0M(permutation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Permutation);
-FORWARD_DECLARE_FROM(rotation,
+FORWARD_DECLARE_FR0M(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
-FORWARD_DECLARE_FROM(signature,
+FORWARD_DECLARE_FR0M(signature,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Signature);
-FORWARD_DECLARE_FROM(
+FORWARD_DECLARE_FR0M(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
-             typename Frame,
-             template<typename, typename> typename Multivector) class,
+            typename Frame,
+            template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
 
-namespace internal_orthogonal_map {
+namespace _orthogonal_map {
+namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 // An orthogonal map between the inner product spaces |FromFrame| and
 // |ToFrame|, as well as the induced maps on the exterior algebra.
@@ -114,15 +113,15 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
                                                    : Sign::Negative();
 
   template<typename From, typename To>
-  friend class internal_identity::Identity;
+  friend class _identity::Identity;
   template<typename From, typename To>
   friend class OrthogonalMap;
   template<typename From, typename To>
-  friend class internal_permutation::Permutation;
+  friend class _permutation::Permutation;
   template<typename From, typename To>
-  friend class internal_rotation::Rotation;
+  friend class _rotation::Rotation;
   template<typename From, typename To>
-  friend class internal_signature::Signature;
+  friend class _signature::Signature;
 
   template<typename From, typename Through, typename To>
   friend OrthogonalMap<From, To> operator*(
@@ -147,11 +146,16 @@ std::ostream& operator<<(
     std::ostream& out,
     OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
 
-}  // namespace internal_orthogonal_map
+}  // namespace internal
 
-using internal_orthogonal_map::OrthogonalMap;
+using internal::OrthogonalMap;
 
+}  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_orthogonal_map;
+}  // namespace principia::geometry
 
 #include "geometry/orthogonal_map_body.hpp"

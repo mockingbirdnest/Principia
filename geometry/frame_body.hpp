@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_frame {
+namespace _frame {
+namespace internal {
 
 using namespace principia::base::_fingerprint2011;
 
@@ -108,6 +109,7 @@ inline void ReadFrameFromMessage(
   is_inertial = message.is_inertial();
 }
 
-}  // namespace internal_frame
+}  // namespace internal
+}  // namespace _frame
 }  // namespace geometry
 }  // namespace principia

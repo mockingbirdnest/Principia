@@ -34,14 +34,6 @@ namespace principia {
 namespace interface {
 
 using astronomy::operator""_TT;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
@@ -106,6 +98,10 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 namespace {

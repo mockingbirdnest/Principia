@@ -218,6 +218,15 @@ template_and_class_key declared_name;                \
 }                                                    \
 using internal_##package_name::declared_name
 
+#define FORWARD_DECLARE_FR0M(                            \
+    package_name, template_and_class_key, declared_name) \
+  namespace _##package_name {                            \
+    namespace internal {                                 \
+    template_and_class_key declared_name;                \
+    }                                                    \
+    using internal::declared_name;                       \
+  }
+
 #define FORWARD_DECLARE_FUNCTION_FROM(package_name,        \
                                       template_and_result, \
                                       declared_name,       \

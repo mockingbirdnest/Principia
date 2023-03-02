@@ -22,6 +22,7 @@ using quantities::Pow;
 using quantities::si::Metre;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
+using namespace principia::geometry::_signature;
 
 namespace geometry {
 

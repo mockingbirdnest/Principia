@@ -15,12 +15,6 @@
 
 namespace principia {
 
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Displacement;
-using geometry::Position;
-using geometry::Velocity;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
@@ -35,6 +29,8 @@ using testing_utilities::IsNear;
 using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 namespace numerics {
 

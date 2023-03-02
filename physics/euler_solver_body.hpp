@@ -15,14 +15,6 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
-using geometry::Commutator;
-using geometry::DeduceSignPreservingOrientation;
-using geometry::DefinesFrame;
-using geometry::Normalize;
-using geometry::OrthogonalMap;
-using geometry::Quaternion;
-using geometry::Sign;
-using geometry::Vector;
 using numerics::EllipticF;
 using numerics::EllipticΠ;
 using numerics::JacobiAmplitude;
@@ -45,6 +37,12 @@ using quantities::Time;
 using quantities::Variation;
 using quantities::si::Joule;
 using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(

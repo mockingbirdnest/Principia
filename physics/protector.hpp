@@ -12,7 +12,7 @@ namespace principia {
 namespace physics {
 namespace internal_protector {
 
-using geometry::Instant;
+using namespace principia::geometry::_named_quantities;
 
 // The protector helps with preventing asynchronous changes to timelines, i.e.,
 // classes that associate some data with distinct instants.  It makes it

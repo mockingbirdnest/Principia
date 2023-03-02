@@ -14,8 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_checkpointer {
 
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)

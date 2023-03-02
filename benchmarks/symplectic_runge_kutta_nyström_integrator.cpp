@@ -26,13 +26,6 @@
 
 namespace principia {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -51,6 +44,9 @@ using testing_utilities::ComputeHarmonicOscillatorAcceleration3D;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 namespace integrators {
 

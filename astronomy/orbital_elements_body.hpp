@@ -20,7 +20,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
 
-using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaIntegrator;
 using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
@@ -47,6 +46,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Radian;
 using namespace principia::base::_jthread;
+using namespace principia::geometry::_named_quantities;
 
 constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;
 constexpr double max_clenshaw_curtis_relative_error = 1.0e-6;

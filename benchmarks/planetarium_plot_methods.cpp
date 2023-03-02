@@ -17,14 +17,6 @@ namespace geometry {
 
 using astronomy::operator""_UT1;
 using astronomy::operator""_TT;
-using geometry::Bivector;
-using geometry::DeduceSignReversingOrientation;
-using geometry::Perspective;
-using geometry::RigidTransformation;
-using geometry::RP2Lines;
-using geometry::Signature;
-using geometry::Vector;
-using geometry::Velocity;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
@@ -61,6 +53,11 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_signature;
 
 namespace {
 

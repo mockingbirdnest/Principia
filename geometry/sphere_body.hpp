@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_sphere {
+namespace _sphere {
+namespace internal {
 
 template<typename Frame>
 Sphere<Frame>::Sphere(Position<Frame> const& centre,
@@ -28,6 +29,7 @@ Square<Length> const& Sphere<Frame>::radius²() const {
   return radius²_;
 }
 
-}  // namespace internal_sphere
+}  // namespace internal
+}  // namespace _sphere
 }  // namespace geometry
 }  // namespace principia

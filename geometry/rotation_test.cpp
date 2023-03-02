@@ -4,6 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
@@ -18,12 +19,16 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
+using quantities::Angle;
 using quantities::ArcCos;
 using quantities::ArcSin;
+using quantities::Cos;
 using quantities::Length;
 using quantities::Pow;
+using quantities::Sin;
 using quantities::Sqrt;
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -574,6 +579,7 @@ TEST_F(RotationTest, CardanoAngles) {
   }
 }
 
-}  // namespace internal_rotation
+}  // namespace internal
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia

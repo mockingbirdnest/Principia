@@ -25,6 +25,7 @@ using quantities::Product;
 using quantities::Quantity;
 using quantities::SolidAngle;
 using quantities::Time;
+using namespace principia::geometry::_pair;
 namespace si = quantities::si;
 
 namespace geometry {

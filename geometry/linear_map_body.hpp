@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_linear_map {
+namespace _linear_map {
+namespace internal {
 
 template<typename FromFrame, typename ToFrame>
 void LinearMap<FromFrame, ToFrame>::WriteToMessage(
@@ -21,6 +22,7 @@ void LinearMap<FromFrame, ToFrame>::ReadFromMessage(
   ToFrame::ReadFromMessage(message.to_frame());
 }
 
-}  // namespace internal_linear_map
+}  // namespace internal
+}  // namespace _linear_map
 }  // namespace geometry
 }  // namespace principia

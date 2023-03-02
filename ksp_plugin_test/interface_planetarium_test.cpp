@@ -16,11 +16,6 @@
 namespace principia {
 namespace interface {
 
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
 using ksp_plugin::Camera;
 using ksp_plugin::Navigation;
 using ksp_plugin::MockPlanetarium;
@@ -34,6 +29,10 @@ using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
 
 class InterfacePlanetariumTest : public ::testing::Test {
  protected:

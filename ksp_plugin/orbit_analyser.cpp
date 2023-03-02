@@ -13,8 +13,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
-using geometry::Frame;
-using geometry::NonRotating;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::KeplerOrbit;
@@ -23,6 +21,7 @@ using quantities::Infinity;
 using quantities::IsFinite;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>

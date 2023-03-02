@@ -28,6 +28,7 @@ using quantities::si::Second;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 using namespace principia::base::_cpuid;
+using namespace principia::geometry::_point;
 
 class PointTest : public testing::Test {
  protected:

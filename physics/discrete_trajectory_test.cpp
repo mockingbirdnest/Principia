@@ -27,13 +27,6 @@ namespace principia {
 namespace physics {
 
 using astronomy::operator""_TT;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Velocity;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Time;
@@ -59,6 +52,8 @@ using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 class DiscreteTrajectoryTest : public ::testing::Test {
  protected:

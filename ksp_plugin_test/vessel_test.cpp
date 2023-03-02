@@ -38,16 +38,6 @@ namespace principia {
 namespace ksp_plugin {
 
 using astronomy::operator""_TT;
-using geometry::Barycentre;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InertiaTensor;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Position;
-using geometry::R3x3Matrix;
-using geometry::Vector;
-using geometry::Velocity;
 using interface::ReadPluginFromFile;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -86,6 +76,10 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_r3x3_matrix;
 
 class VesselTest : public testing::Test {
  protected:

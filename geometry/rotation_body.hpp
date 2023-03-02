@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
 using quantities::ArcTan;
 using quantities::Cos;
@@ -367,6 +368,7 @@ std::ostream& operator<<(std::ostream& out,
   return out << rotation.quaternion_;
 }
 
-}  // namespace internal_rotation
+}  // namespace internal
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia

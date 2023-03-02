@@ -13,9 +13,9 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series_basis {
 
-using geometry::Hilbert;
-using geometry::Instant;
 using quantities::AngularFrequency;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_named_quantities;
 
 // A |PoissonSeriesSubspace| represents a linear subspace of the space of
 // Poisson series.

@@ -9,8 +9,7 @@ namespace principia {
 namespace physics {
 namespace internal_discrete_trajectory_iterator {
 
-using geometry::InfiniteFuture;
-using geometry::Instant;
+using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 FORCE_INLINE(inline) DiscreteTrajectoryIterator<Frame>&

@@ -28,11 +28,6 @@
 
 namespace principia {
 
-using geometry::BarycentreCalculator;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
-using geometry::Vector;
 using integrators::FixedStepSizeIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN14A;
@@ -66,6 +61,10 @@ using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_get_line;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_sign;
 
 namespace mathematica {
 

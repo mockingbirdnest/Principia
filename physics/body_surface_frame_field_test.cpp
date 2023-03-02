@@ -18,11 +18,6 @@ namespace internal_body_surface_dynamic_frame {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Frame;
-using geometry::Rotation;
-using geometry::Vector;
 using quantities::Sqrt;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -32,6 +27,10 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_rotation;
 
 class BodySurfaceFrameFieldTest : public ::testing::Test {
  protected:

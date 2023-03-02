@@ -13,13 +13,14 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_perspective {
+namespace _perspective {
+namespace internal {
 
-using geometry::InnerProduct;
 using numerics::SolveQuadraticEquation;
 using quantities::Pow;
 using quantities::Product;
 using quantities::Square;
+using namespace principia::geometry::_grassmann;
 
 template<typename FromFrame, typename ToFrame>
 Perspective<FromFrame, ToFrame>::Perspective(
@@ -425,6 +426,7 @@ std::ostream& operator<<(std::ostream& out,
              << ", focal: " << perspective.focal_ << "}";
 }
 
-}  // namespace internal_perspective
+}  // namespace internal
+}  // namespace _perspective
 }  // namespace geometry
 }  // namespace principia

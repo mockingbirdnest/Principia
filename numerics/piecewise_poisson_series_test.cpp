@@ -25,11 +25,6 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Sin;
@@ -42,6 +37,8 @@ using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 using testing_utilities::operator""_;
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {

@@ -14,8 +14,8 @@ namespace internal_hermite3 {
 
 using quantities::Derivative;
 using quantities::Difference;
-using geometry::Hilbert;
 using namespace principia::base::_array;
+using namespace principia::geometry::_hilbert;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.

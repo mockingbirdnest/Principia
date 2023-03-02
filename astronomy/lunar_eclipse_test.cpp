@@ -19,10 +19,6 @@
 
 namespace principia {
 
-using geometry::AngleBetween;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::Bisect;
@@ -47,6 +43,9 @@ using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
 using ::testing::Eq;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_sign;
 
 namespace astronomy {
 

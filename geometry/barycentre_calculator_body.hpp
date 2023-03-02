@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_barycentre_calculator {
+namespace _barycentre_calculator {
+namespace internal {
 
 template<typename Vector, typename Scalar>
 void BarycentreCalculator<Vector, Scalar>::Add(Vector const& vector,
@@ -59,6 +60,7 @@ T Barycentre(Container<T> const& ts, Container<Scalar> const& weights) {
   return calculator.Get();
 }
 
-}  // namespace internal_barycentre_calculator
+}  // namespace internal
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 }  // namespace principia

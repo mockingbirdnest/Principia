@@ -13,20 +13,27 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
+FORWARD_DECLARE_FR0M(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
-FORWARD_DECLARE_FROM(
+FORWARD_DECLARE_FR0M(permutation,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     Permutation);
+FORWARD_DECLARE_FR0M(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
             typename Frame,
             template<typename S, typename F> typename Multivector) class,
     SymmetricBilinearForm);
 
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
 using quantities::Angle;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
@@ -262,7 +269,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   // For constructing a rotation using a quaternion.
   template<typename From, typename To>
-  friend class Permutation;
+  friend class _permutation::Permutation;
 
   template<typename From, typename Through, typename To>
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
@@ -295,14 +302,19 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
-}  // namespace internal_rotation
+}  // namespace internal
 
-using internal_rotation::CardanoAngles;
-using internal_rotation::DefinesFrame;
-using internal_rotation::EulerAngles;
-using internal_rotation::Rotation;
+using internal::CardanoAngles;
+using internal::DefinesFrame;
+using internal::EulerAngles;
+using internal::Rotation;
 
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_rotation;
+}  // namespace principia::geometry
 
 #include "geometry/rotation_body.hpp"

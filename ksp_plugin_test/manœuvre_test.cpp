@@ -33,18 +33,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
 using physics::AcceleratedRigidMotion;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
@@ -85,6 +73,11 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
 namespace si = quantities::si;
 
 class ManœuvreTest : public ::testing::Test {

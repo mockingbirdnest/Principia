@@ -19,14 +19,6 @@
 namespace principia {
 namespace physics {
 
-using geometry::Barycentre;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Velocity;
 using ksp_plugin::World;
 using physics::internal_discrete_trajectory_types::Timeline;
 using quantities::AngularFrequency;
@@ -39,6 +31,9 @@ using quantities::si::Second;
 using testing_utilities::NewCircularTrajectoryTimeline;
 using testing_utilities::NewMotionlessTrajectoryTimeline;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 
 namespace {
 

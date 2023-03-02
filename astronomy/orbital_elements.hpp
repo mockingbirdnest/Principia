@@ -15,8 +15,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
 
-using geometry::Instant;
-using geometry::Interval;
 using physics::Body;
 using physics::MassiveBody;
 using physics::Trajectory;
@@ -26,6 +24,8 @@ using quantities::Difference;
 using quantities::Infinity;
 using quantities::Length;
 using quantities::Time;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_named_quantities;
 
 class OrbitalElements {
  public:

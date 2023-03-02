@@ -13,15 +13,12 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_renderer {
 
-using geometry::AngularVelocity;
-using geometry::OddPermutation;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Vector;
-using geometry::Velocity;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::DegreesOfFreedom;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_permutation;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
                    not_null<std::unique_ptr<NavigationFrame>> plotting_frame)

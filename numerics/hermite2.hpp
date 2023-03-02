@@ -14,7 +14,7 @@ namespace internal_hermite2 {
 
 using quantities::Derivative;
 using quantities::Difference;
-using geometry::Hilbert;
+using namespace principia::geometry::_hilbert;
 
 // A 2nd degree Hermite polynomial defined by its values at the bounds of some
 // interval and one of its derivatives.

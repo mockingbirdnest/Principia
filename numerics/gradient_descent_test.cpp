@@ -15,10 +15,6 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Vector;
 using quantities::Exponentiation;
 using quantities::Inverse;
 using quantities::Length;
@@ -31,6 +27,9 @@ using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
 using ::testing::Optional;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 
 class GradientDescentTest : public ::testing::Test {
  protected:

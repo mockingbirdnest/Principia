@@ -23,7 +23,6 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_runge_kutta_integrator {
 
-using geometry::Instant;
 using quantities::Length;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -39,6 +38,7 @@ using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
+using namespace principia::geometry::_named_quantities;
 using testing_utilities::operator""_;
 
 using ODE =

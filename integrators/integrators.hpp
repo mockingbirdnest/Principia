@@ -16,10 +16,10 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Time;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 
 // A base class for integrators.
 template<typename ODE_>

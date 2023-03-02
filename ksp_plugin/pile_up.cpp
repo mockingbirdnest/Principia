@@ -20,29 +20,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Bivector;
-using geometry::Commutator;
-using geometry::DeduceSignPreservingOrientation;
-using geometry::DeduceSignReversingOrientation;
-using geometry::EvenPermutation;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::NonRotating;
-using geometry::Normalize;
-using geometry::NormalizeOrZero;
-using geometry::OddPermutation;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Signature;
-using geometry::Velocity;
-using geometry::Wedge;
 using numerics::DavenportQMethod;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
@@ -66,6 +43,17 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
 
 const auto part_x = Vector<double, RigidPart>({1, 0, 0});
 const auto part_y = Vector<double, RigidPart>({0, 1, 0});
