@@ -43,12 +43,11 @@ using internal::is_tuple;
 using internal::is_tuple_v;
 
 template<template<typename...> typename Transform, typename... Tuples>
-using Apply =
-    typename internal_tuples::ApplyGenerator<Transform, Tuples...>::Type;
+using Apply = typename internal::ApplyGenerator<Transform, Tuples...>::Type;
 
 template<typename Value, typename Argument, int n>
 using Derivatives =
-    typename internal_tuples::DerivativesGenerator<Value, Argument, n>::Type;
+    typename internal::DerivativesGenerator<Value, Argument, n>::Type;
 
 }  // namespace _tuples
 }  // namespace quantities

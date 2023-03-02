@@ -13,7 +13,10 @@ namespace quantities {
 // This namespace contains the imperial units as defined by the international
 // yard and pound agreement, as well as the units of the English Engineering
 // system.
-namespace uk {
+namespace _uk {
+namespace internal {
+
+using namespace principia::quantities::_constants;
 
 constexpr Mass Pound  = 0.45359237 * si::Kilogram;
 constexpr Mass Ounce  = Pound / 16;
@@ -39,20 +42,11 @@ constexpr Length League  = 3 * Mile;
 constexpr Length Link = Chain / 100;
 constexpr Length Rod  = Chain / 4;
 
-namespace admiralty {
-namespace _uk {
-namespace internal {
+namespace _admiralty {
 constexpr Length NauticalMile = 6080 * Foot;
 constexpr Length Cable        = NauticalMile / 10;
 constexpr Length Fathom       = Cable / 100;
-}  // namespace internal
-
-using internal::Cable;
-using internal::Fathom;
-using internal::NauticalMile;
-
-}  // namespace _uk
-}  // namespace admiralty
+}  // namespace _admiralty
 
 constexpr Area Perch = Pow<2>(Rod);
 constexpr Area Rood  = Furlong * Rod;
@@ -64,11 +58,43 @@ constexpr Volume Pint       = 4 * Gill;
 constexpr Volume Quart      = 2 * Pint;
 constexpr Volume Gallon     = 4 * Quart;
 
-constexpr Force    PoundForce         = Pound * constants::StandardGravity;
+constexpr Force    PoundForce         = Pound * StandardGravity;
 constexpr Power    HorsePower         = 550 * PoundForce * Foot / si::Second;
 constexpr Pressure PoundPerSquareInch = PoundForce / Pow<2>(Inch);
 
-}  // namespace uk
+}  // namespace internal
+
+using internal::Acre;
+using internal::Chain;
+using internal::Drachm;
+using internal::FluidOunce;
+using internal::Foot;
+using internal::Furlong;
+using internal::Gallon;
+using internal::Gill;
+using internal::Grain;
+using internal::HorsePower;
+using internal::Hundredweight;
+using internal::Inch;
+using internal::League;
+using internal::Link;
+using internal::Mile;
+using internal::Ounce;
+using internal::Perch;
+using internal::Pint;
+using internal::Pound;
+using internal::PoundForce;
+using internal::PoundPerSquareInch;
+using internal::Quart;
+using internal::Quarter;
+using internal::Rod;
+using internal::Rood;
+using internal::Stone;
+using internal::Thou;
+using internal::Ton;
+using internal::Yard;
+
+}  // namespace _uk
 }  // namespace quantities
 }  // namespace principia
 

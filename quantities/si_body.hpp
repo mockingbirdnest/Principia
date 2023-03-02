@@ -6,7 +6,6 @@
 
 namespace principia {
 namespace quantities {
-namespace si {
 namespace _si {
 namespace internal {
 
@@ -93,6 +92,5 @@ constexpr Quantity<D> Yocto(Quantity<D> base) {
 
 }  // namespace internal
 }  // namespace _si
-}  // namespace si
 }  // namespace quantities
 }  // namespace principia

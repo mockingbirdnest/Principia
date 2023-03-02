@@ -11,7 +11,6 @@ namespace quantities {
 // This namespace contains the non-SI units associated with the CGS and the CGS-
 // Gaussian system of units listed in the BIPM's SI brochure 8, section 4.1,
 // table 9, http://www.bipm.org/en/si/si_brochure/chapter4/table9.html.
-namespace cgs {
 namespace _cgs {
 namespace internal {
 
@@ -57,7 +56,6 @@ using internal::Stilb;
 using internal::Stokes;
 
 }  // namespace _cgs
-}  // namespace cgs
 }  // namespace quantities
 }  // namespace principia
 

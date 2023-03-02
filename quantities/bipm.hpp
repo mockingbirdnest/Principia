@@ -12,7 +12,6 @@ namespace quantities {
 // This namespace contains the other non-SI units listed in the BIPM's
 // SI brochure 8, section 4.1, table 8,
 // http://www.bipm.org/en/si/si_brochure/chapter4/table8.html.
-namespace bipm {
 namespace _bipm {
 namespace internal {
 
@@ -33,7 +32,6 @@ using internal::MillimetreOfMercury;
 using internal::NauticalMile;
 
 }  // namespace _bipm
-}  // namespace bipm
 }  // namespace quantities
 }  // namespace principia
 

@@ -23,14 +23,14 @@ using Inverse = Quotient<double, Q>;
 
 template<typename T, int exponent>
 using Exponentiation =
-    typename internal_generators::ExponentiationGenerator<T, exponent>::Type;
+    typename _generators::ExponentiationGenerator<T, exponent>::Type;
 template<typename Q>
 using Square = Exponentiation<Q, 2>;
 template<typename Q>
 using Cube = Exponentiation<Q, 3>;
 
 template<typename Q, int n>
-using NthRoot = typename internal_generators::NthRootGenerator<Q, n>::Type;
+using NthRoot = typename _generators::NthRootGenerator<Q, n>::Type;
 template<typename Q>
 using SquareRoot = NthRoot<Q, 2>;
 template<typename Q>

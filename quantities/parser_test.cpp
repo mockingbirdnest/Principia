@@ -15,16 +15,9 @@ using testing_utilities::AlmostEquals;
 
 namespace quantities {
 
-using astronomy::AstronomicalUnit;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Metre;
-using si::Radian;
-using si::Second;
-using si::Steradian;
-using si::Watt;
+using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_parser;
+using namespace principia::quantities::_si;
 
 class ParserTest : public ::testing::Test {
 };

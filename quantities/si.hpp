@@ -12,14 +12,13 @@ namespace quantities {
 // This namespace contains the units and prefixes of the SI (except the
 // Becquerel, Gray and Sievert), as well as the Non-SI units accepted for use
 // with the SI.
-namespace si {
 namespace _si {
 namespace internal {
 
 // Returns the base or derived SI unit of |Q|.
 // For instance, |si::Unit<Action>() == Joule * Second|.
 template<typename Q>
-constexpr Q Unit = internal_quantities::SIUnit<Q>();
+constexpr Q Unit = _quantities::internal::SIUnit<Q>();
 template<>
 inline constexpr double Unit<double> = 1;
 
@@ -159,9 +158,9 @@ using internal::Yocto;
 using internal::Yotta;
 using internal::Zepto;
 using internal::Zetta;
+namespace si = _si;
 
 }  // namespace _si
-}  // namespace si
 }  // namespace quantities
 }  // namespace principia
 

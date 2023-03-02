@@ -98,15 +98,14 @@ struct DimensionsAreSerializable : std::true_type {
 
 template<typename Dimensions, int n>
 struct DimensionsExponentiationGenerator : not_constructible {
-  using Type =
-      internal_dimensions::Dimensions<Dimensions::Length * n,
-                                      Dimensions::Mass * n,
-                                      Dimensions::Time * n,
-                                      Dimensions::Current * n,
-                                      Dimensions::Temperature * n,
-                                      Dimensions::Amount * n,
-                                      Dimensions::LuminousIntensity * n,
-                                      Dimensions::Angle * n>;
+  using Type = _dimensions::Dimensions<Dimensions::Length * n,
+                                       Dimensions::Mass * n,
+                                       Dimensions::Time * n,
+                                       Dimensions::Current * n,
+                                       Dimensions::Temperature * n,
+                                       Dimensions::Amount * n,
+                                       Dimensions::LuminousIntensity * n,
+                                       Dimensions::Angle * n>;
 };
 
 template<typename Dimensions, int n>
@@ -121,15 +120,14 @@ struct DimensionsNthRootGenerator : not_constructible {
                 (Dimensions::Angle % n) == 0,
                 "Dimensions not suitable for Nth root");
 
-  using Type =
-      internal_dimensions::Dimensions<Dimensions::Length / n,
-                                      Dimensions::Mass / n,
-                                      Dimensions::Time / n,
-                                      Dimensions::Current / n,
-                                      Dimensions::Temperature / n,
-                                      Dimensions::Amount / n,
-                                      Dimensions::LuminousIntensity / n,
-                                      Dimensions::Angle / n>;
+  using Type = _dimensions::Dimensions<Dimensions::Length / n,
+                                       Dimensions::Mass / n,
+                                       Dimensions::Time / n,
+                                       Dimensions::Current / n,
+                                       Dimensions::Temperature / n,
+                                       Dimensions::Amount / n,
+                                       Dimensions::LuminousIntensity / n,
+                                       Dimensions::Angle / n>;
 };
 
 template<typename LDimensions, typename RDimensions>

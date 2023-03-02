@@ -17,6 +17,8 @@ namespace _point {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight

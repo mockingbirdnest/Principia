@@ -19,12 +19,11 @@ namespace quantities {
 namespace _quantities {
 namespace internal {
 
-using internal_dimensions::Dimensions;
-using internal_generators::ProductGenerator;
-using internal_generators::QuotientGenerator;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_dimensions;
+using namespace principia::quantities::_generators;
 
 template<typename D>
 class Quantity;

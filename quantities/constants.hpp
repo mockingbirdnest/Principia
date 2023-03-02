@@ -7,7 +7,6 @@
 
 namespace principia {
 namespace quantities {
-namespace constants {
 namespace _constants {
 namespace internal {
 
@@ -58,7 +57,6 @@ using internal::VacuumPermeability;
 using internal::VacuumPermittivity;
 
 }  // namespace _constants
-}  // namespace constants
 }  // namespace quantities
 }  // namespace principia
 

@@ -11,9 +11,10 @@ namespace principia {
 namespace quantities {
 
 // This namespace contains units commonly used in astronomy.
-namespace astronomy {
 namespace _astronomy {
 namespace internal {
+
+using namespace principia::quantities::_constants;
 
 // Résolution B2 "Re-définition de l’unité astronomique de longueur" adopted
 // at the XXVIIIth General Assembly of the IAU in 2012.
@@ -52,7 +53,7 @@ constexpr GravitationalParameter JovianGravitationalParameter      =
     1.266'865'3e17 * (Pow<3>(si::Metre) / Pow<2>(si::Second));
 
 constexpr Time   JulianYear = 365.25 * si::Day;
-constexpr Length LightYear  = constants::SpeedOfLight * JulianYear;
+constexpr Length LightYear  = SpeedOfLight * JulianYear;
 
 }  // namespace internal
 
@@ -73,7 +74,6 @@ using internal::TerrestrialPolarRadius;
 using internal::TotalSolarIrradiance;
 
 }  // namespace _astronomy
-}  // namespace astronomy
 }  // namespace quantities
 }  // namespace principia
 

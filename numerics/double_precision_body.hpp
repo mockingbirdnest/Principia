@@ -29,7 +29,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_traits;
-namespace si = quantities::si;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
 // complicated as it needs to peel off all of our abstractions until it reaches
@@ -240,6 +239,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if (UseHardwareFMA) {
+    using quantities::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(a * b);
     result.error = FusedMultiplySubtract(a, b, result.value);
     return result;
