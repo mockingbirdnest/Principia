@@ -20,8 +20,8 @@ namespace principia {
 using astronomy::Sky;
 using physics::KeplerOrbit;
 using physics::SolarSystem;
-using quantities::constants::GravitationalConstant;
 using namespace principia::base::_map_util;
+using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;

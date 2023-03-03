@@ -42,11 +42,11 @@ constexpr Length League  = 3 * Mile;
 constexpr Length Link = Chain / 100;
 constexpr Length Rod  = Chain / 4;
 
-namespace _admiralty {
+namespace admiralty {
 constexpr Length NauticalMile = 6080 * Foot;
 constexpr Length Cable        = NauticalMile / 10;
 constexpr Length Fathom       = Cable / 100;
-}  // namespace _admiralty
+}  // namespace admiralty
 
 constexpr Area Perch = Pow<2>(Rod);
 constexpr Area Rood  = Furlong * Rod;
@@ -93,6 +93,7 @@ using internal::Stone;
 using internal::Thou;
 using internal::Ton;
 using internal::Yard;
+namespace admiralty = internal::admiralty;
 
 }  // namespace _uk
 }  // namespace quantities

@@ -23,6 +23,7 @@ namespace internal {
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::quantities::_named_quantities;
 
 template<typename T1, typename T2>
 class Pair;

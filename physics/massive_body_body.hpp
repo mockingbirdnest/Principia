@@ -17,8 +17,8 @@ namespace principia {
 namespace physics {
 namespace internal_massive_body {
 
-using quantities::constants::GravitationalConstant;
 using namespace principia::geometry::_frame;
+using namespace principia::quantities::_constants;
 
 inline MassiveBody::Parameters::Parameters(
     GravitationalParameter const& gravitational_parameter)

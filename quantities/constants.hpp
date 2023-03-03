@@ -49,6 +49,7 @@ using internal::ElectronMass;
 using internal::ElectronVolt;
 using internal::ElementaryCharge;
 using internal::FineStructureConstant;
+using internal::GravitationalConstant;
 using internal::PlanckConstant;
 using internal::ProtonMass;
 using internal::SpeedOfLight;

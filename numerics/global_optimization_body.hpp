@@ -304,6 +304,7 @@ typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Norm²Type
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
     double const σ,
     std::int64_t const kN) {
+  using quantities::_elementary_functions::Cbrt;
   if constexpr (dimensions == 1) {
     return Pow<2>(box_measure_ * σ * std::log(kN) / (2.0 * kN));
   } else if constexpr (dimensions == 2) {

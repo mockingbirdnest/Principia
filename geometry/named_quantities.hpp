@@ -23,6 +23,8 @@ namespace _named_quantities {
 namespace internal {
 
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 using Instant = Point<Time>;
 
@@ -79,8 +81,6 @@ namespace _point {
 namespace internal {
 
 using namespace principia::geometry::_named_quantities;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 // We must declare this in the internal namespace where Point is defined so that
 // it is found by ADL.

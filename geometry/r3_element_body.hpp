@@ -432,6 +432,7 @@ R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
 
 template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
+  using quantities::_quantities::DebugString;
   std::string result = "{";
   result += DebugString(r3_element.x);
   result += ", ";

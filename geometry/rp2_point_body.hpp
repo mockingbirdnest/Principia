@@ -85,6 +85,7 @@ bool operator!=(RP2Point<Scalar, Frame> const& left,
 
 template<typename Scalar, typename Frame>
 std::string DebugString(RP2Point<Scalar, Frame> const & rp2_point) {
+  using quantities::_quantities::DebugString;
   return "[" + DebugString(rp2_point.x_) + ":" +
                DebugString(rp2_point.y_) + ":" +
                DebugString(rp2_point.z_) + "]";
