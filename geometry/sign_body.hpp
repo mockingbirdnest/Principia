@@ -15,7 +15,6 @@ namespace internal {
 
 using namespace principia::quantities::_si;
 
-
 // Must be defined first because it is called by member functions below.
 template<typename T>
 constexpr T operator*(Sign const left, T const& right) {
