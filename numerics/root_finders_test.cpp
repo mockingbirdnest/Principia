@@ -32,7 +32,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 namespace numerics {
 

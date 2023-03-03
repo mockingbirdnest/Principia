@@ -18,7 +18,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

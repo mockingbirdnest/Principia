@@ -27,7 +27,6 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.

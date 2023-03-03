@@ -24,7 +24,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.

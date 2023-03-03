@@ -46,7 +46,6 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 class BodyTest : public testing::Test {
  protected:

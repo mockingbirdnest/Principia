@@ -44,7 +44,6 @@ using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 namespace physics {
 

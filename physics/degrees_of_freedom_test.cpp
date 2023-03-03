@@ -22,7 +22,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:

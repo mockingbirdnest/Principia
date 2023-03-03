@@ -41,8 +41,8 @@ using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_cgs;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
-namespace si = quantities::si;
 
 namespace {
 using World = Frame<struct WorldTag>;

@@ -39,7 +39,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>

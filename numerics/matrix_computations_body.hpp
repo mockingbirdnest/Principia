@@ -17,7 +17,7 @@ namespace internal_matrix_computations {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_elementary_functions;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that

@@ -43,7 +43,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 // Constructs a piecewise Poisson series that has the given number of pieces
 // covering [t_min, t_max] and that matches |series| over that interval.

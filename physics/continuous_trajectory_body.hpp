@@ -32,7 +32,6 @@ using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 constexpr int max_degree = 17;
 constexpr int min_degree = 3;

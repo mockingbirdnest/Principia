@@ -50,7 +50,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_tuples;
-namespace si = quantities::si;
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions in this file to remove the dimensions of quantities (we know that

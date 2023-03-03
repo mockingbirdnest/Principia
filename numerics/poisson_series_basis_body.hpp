@@ -18,7 +18,6 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_traits;
-namespace si = quantities::si;
 
 
 // A helper to build unit quantities or multivector.  |Coefficient| must be a

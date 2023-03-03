@@ -18,7 +18,7 @@ namespace principia {
 using namespace principia::geometry::_pair;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 namespace geometry {
 

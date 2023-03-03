@@ -21,7 +21,6 @@ using numerics::LegendreNormalizationFactor;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,

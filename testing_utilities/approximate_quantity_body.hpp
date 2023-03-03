@@ -14,7 +14,7 @@ namespace internal_approximate_quantity {
 
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {

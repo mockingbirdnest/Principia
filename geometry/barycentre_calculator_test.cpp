@@ -16,7 +16,7 @@ namespace geometry {
 using testing_utilities::AlmostEquals;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::quantities::_named_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 class BarycentreCalculatorTest : public testing::Test {
  protected:

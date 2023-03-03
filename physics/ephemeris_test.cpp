@@ -89,7 +89,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace std::chrono_literals;
-namespace si = quantities::si;
 
 namespace {
 

@@ -16,7 +16,7 @@ namespace principia {
 using ::testing::Ne;
 using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_named_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 namespace testing_utilities {
 

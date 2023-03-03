@@ -52,7 +52,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-namespace si = quantities::si;
 
 class GeopotentialTest : public ::testing::Test {
  protected:

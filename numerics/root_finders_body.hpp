@@ -21,7 +21,7 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
