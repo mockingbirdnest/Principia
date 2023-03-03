@@ -24,7 +24,6 @@ using namespace principia::quantities::_si;
 namespace numerics {
 
 class Hermite2Test : public ::testing::Test {
-
  protected:
   using World = Frame<struct WorldTag, Inertial>;
 
