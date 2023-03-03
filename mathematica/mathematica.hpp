@@ -47,6 +47,7 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using namespace principia::quantities::_tuples;
 
 // A helper class for type erasure of quantities.  It may be used with the
