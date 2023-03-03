@@ -29,10 +29,6 @@ using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AppendTrajectoryTimeline;
 using testing_utilities::Componentwise;
@@ -44,6 +40,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class RendererTest : public ::testing::Test {
  protected:

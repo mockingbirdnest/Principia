@@ -21,11 +21,8 @@ using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::Fine1987RKNG34;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Quinlan1999Order8A;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_si;
 
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters() {

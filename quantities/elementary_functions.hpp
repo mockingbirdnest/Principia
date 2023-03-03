@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_elementary_functions {
+namespace _elementary_functions {
+namespace internal {
 
 // Equivalent to |std::fma(x, y, z)|.
 template<typename Q1, typename Q2>
@@ -80,34 +81,39 @@ Angle ArcTanh(double x);
 // |previous_angle|.
 Angle UnwindFrom(Angle const& previous_angle, Angle const& α);
 
-}  // namespace internal_elementary_functions
+}  // namespace internal
 
-using internal_elementary_functions::Abs;
-using internal_elementary_functions::ArcCos;
-using internal_elementary_functions::ArcCosh;
-using internal_elementary_functions::ArcSin;
-using internal_elementary_functions::ArcSinh;
-using internal_elementary_functions::ArcTan;
-using internal_elementary_functions::ArcTanh;
-using internal_elementary_functions::Cbrt;
-using internal_elementary_functions::Cos;
-using internal_elementary_functions::Cosh;
-using internal_elementary_functions::FusedMultiplyAdd;
-using internal_elementary_functions::FusedMultiplySubtract;
-using internal_elementary_functions::FusedNegatedMultiplyAdd;
-using internal_elementary_functions::FusedNegatedMultiplySubtract;
-using internal_elementary_functions::Mod;
-using internal_elementary_functions::NextDown;
-using internal_elementary_functions::NextUp;
-using internal_elementary_functions::Pow;
-using internal_elementary_functions::Sin;
-using internal_elementary_functions::Sinh;
-using internal_elementary_functions::Sqrt;
-using internal_elementary_functions::Tan;
-using internal_elementary_functions::Tanh;
-using internal_elementary_functions::UnwindFrom;
+using internal::Abs;
+using internal::ArcCos;
+using internal::ArcCosh;
+using internal::ArcSin;
+using internal::ArcSinh;
+using internal::ArcTan;
+using internal::ArcTanh;
+using internal::Cbrt;
+using internal::Cos;
+using internal::Cosh;
+using internal::FusedMultiplyAdd;
+using internal::FusedMultiplySubtract;
+using internal::FusedNegatedMultiplyAdd;
+using internal::FusedNegatedMultiplySubtract;
+using internal::Mod;
+using internal::NextDown;
+using internal::NextUp;
+using internal::Pow;
+using internal::Sin;
+using internal::Sinh;
+using internal::Sqrt;
+using internal::Tan;
+using internal::Tanh;
+using internal::UnwindFrom;
 
+}  // namespace _elementary_functions
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_elementary_functions;
+}  // namespace principia::quantities
 
 #include "quantities/elementary_functions_body.hpp"

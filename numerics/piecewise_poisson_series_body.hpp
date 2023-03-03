@@ -11,10 +11,8 @@ namespace principia {
 namespace numerics {
 namespace internal_piecewise_poisson_series {
 
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.

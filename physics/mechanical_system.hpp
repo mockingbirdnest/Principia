@@ -17,15 +17,14 @@ namespace principia {
 namespace physics {
 namespace internal_mechanical_system {
 
-using quantities::AngularMomentum;
-using quantities::Mass;
-using quantities::MomentOfInertia;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Computes the instantaneous overall properties of a mechanical system.
 // Effectively an extension of

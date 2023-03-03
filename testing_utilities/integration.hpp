@@ -15,16 +15,11 @@ namespace testing_utilities {
 namespace internal_integration {
 
 using physics::MassiveBody;
-using quantities::Acceleration;
-using quantities::Force;
-using quantities::Length;
-using quantities::Momentum;
-using quantities::Speed;
-using quantities::Time;
-using quantities::Variation;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.

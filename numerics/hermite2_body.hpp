@@ -12,7 +12,7 @@ namespace principia {
 namespace numerics {
 namespace internal_hermite2 {
 
-using quantities::Difference;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument>
 Hermite2<Value, Argument>::Hermite2(

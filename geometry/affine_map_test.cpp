@@ -21,15 +21,14 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Length;
-using quantities::si::Metre;
-using quantities::si::Radian;
 using testing::Contains;
 using testing::Eq;
 using testing::Lt;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
 using namespace principia::geometry::_affine_map;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class AffineMapTest : public testing::Test {
  protected:

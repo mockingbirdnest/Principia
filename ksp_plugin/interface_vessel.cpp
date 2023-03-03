@@ -19,14 +19,12 @@ using ksp_plugin::Apparent;
 using physics::DegreesOfFreedom;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
-using quantities::Force;
-using quantities::si::Kilo;
-using quantities::si::Newton;
-using quantities::si::Tonne;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
                                       char const* const vessel_guid) {

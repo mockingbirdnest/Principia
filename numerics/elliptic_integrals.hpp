@@ -6,7 +6,7 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
 
-using quantities::Angle;
+using namespace principia::quantities::_quantities;
 
 // Computes the associate incomplete elliptic integrals of the second kind
 // B(φ|m) and D(φ|m), as well as Fukushima’s associate incomplete elliptic

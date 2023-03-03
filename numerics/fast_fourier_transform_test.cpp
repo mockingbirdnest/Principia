@@ -17,16 +17,6 @@ namespace principia {
 namespace numerics {
 namespace internal_fast_fourier_transform {
 
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::Voltage;
-using quantities::si::Metre;
-using quantities::si::Second;
-using quantities::si::Volt;
 using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
@@ -34,6 +24,10 @@ using ::testing::Lt;
 using ::testing::Pair;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class FastFourierTransformTest : public ::testing::Test {
  protected:

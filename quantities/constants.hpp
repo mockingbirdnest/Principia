@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace quantities {
-namespace constants {
+namespace _constants {
+namespace internal {
 
 // Defining constants for the SI, by resolution A of the 26th meeting of the
 // CGPM.
@@ -39,6 +40,27 @@ constexpr Permittivity VacuumPermittivity =
 constexpr Energy ElectronVolt = ElementaryCharge * si::Volt;
 constexpr Mass Dalton         = (si::Gram / si::Mole) / AvogadroConstant;
 
-}  // namespace constants
+}  // namespace internal
+
+using internal::AvogadroConstant;
+using internal::BoltzmannConstant;
+using internal::Dalton;
+using internal::ElectronMass;
+using internal::ElectronVolt;
+using internal::ElementaryCharge;
+using internal::FineStructureConstant;
+using internal::GravitationalConstant;
+using internal::PlanckConstant;
+using internal::ProtonMass;
+using internal::SpeedOfLight;
+using internal::StandardGravity;
+using internal::VacuumPermeability;
+using internal::VacuumPermittivity;
+
+}  // namespace _constants
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_constants;
+}  // namespace principia::quantities

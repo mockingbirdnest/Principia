@@ -78,13 +78,6 @@ using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::RigidMotion;
 using physics::SolarSystem;
-using quantities::Force;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::MomentOfInertia;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
 using namespace principia::base::_file;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_hexadecimal;
@@ -101,6 +94,9 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using ::operator<<;
 
 Plugin::Plugin(std::string const& game_epoch,

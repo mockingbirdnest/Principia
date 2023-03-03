@@ -17,14 +17,13 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::si::Radian;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {

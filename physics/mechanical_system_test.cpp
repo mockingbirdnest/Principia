@@ -8,19 +8,6 @@ namespace principia {
 
 using physics::RigidMotion;
 using physics::RigidTransformation;
-using quantities::AngularMomentum;
-using quantities::Energy;
-using quantities::Length;
-using quantities::Mass;
-using quantities::MomentOfInertia;
-using quantities::Momentum;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
@@ -30,6 +17,10 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace physics {
 

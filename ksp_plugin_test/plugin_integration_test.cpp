@@ -32,25 +32,6 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::NaN;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Minute;
-using quantities::si::Radian;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
@@ -69,6 +50,11 @@ using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

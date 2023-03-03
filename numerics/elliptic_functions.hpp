@@ -8,7 +8,7 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_functions {
 
-using quantities::Angle;
+using namespace principia::quantities::_quantities;
 
 Angle JacobiAmplitude(Angle const& u, double mc);
 

@@ -9,8 +9,8 @@ namespace principia {
 namespace physics {
 namespace internal_harmonic_damping {
 
-using quantities::Derivative;
-using quantities::Pow;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

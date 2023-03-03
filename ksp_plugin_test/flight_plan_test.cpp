@@ -44,20 +44,6 @@ using physics::Ephemeris;
 using physics::Frenet;
 using physics::MassiveBody;
 using physics::RotatingBody;
-using quantities::Force;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
@@ -72,6 +58,10 @@ using ::testing::MockFunction;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class FlightPlanTest : public testing::Test {
  protected:

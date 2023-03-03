@@ -11,10 +11,8 @@ namespace principia {
 namespace numerics {
 namespace internal_fixed_arrays {
 
-using quantities::Difference;
-using quantities::Product;
-using quantities::Quotient;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;

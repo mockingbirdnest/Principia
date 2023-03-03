@@ -27,19 +27,6 @@ namespace principia {
 
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Stiffness;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration3D;
 using ::std::placeholders::_1;
@@ -48,6 +35,10 @@ using ::std::placeholders::_3;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace integrators {
 

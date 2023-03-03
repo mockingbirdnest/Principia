@@ -12,13 +12,12 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
-using quantities::Acceleration;
-using quantities::SpecificEnergy;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_named_quantities;
 
 // The Frenet frame of a free fall trajectory in |Frame|.
 // TODO(egg): this should actually depend on its template parameter somehow.

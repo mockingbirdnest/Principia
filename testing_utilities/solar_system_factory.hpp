@@ -24,9 +24,9 @@ namespace internal_solar_system_factory {
 using astronomy::ICRS;
 using physics::Ephemeris;
 using physics::SolarSystem;
-using quantities::Length;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_quantities;
 
 // A helper class for constructing physics::SolarSystem objects for testing.
 // TODO(egg): should this be a namespace instead?  It contains only static

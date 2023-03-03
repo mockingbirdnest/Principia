@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_parser {
+namespace _parser {
+namespace internal {
 
 // This function parses the following grammar:
 //   quantity            ⩴ double quotient_unit
@@ -19,11 +20,16 @@ namespace internal_parser {
 template<typename Q>
 Q ParseQuantity(std::string const& s);
 
-}  // namespace internal_parser
+}  // namespace internal
 
-using internal_parser::ParseQuantity;
+using internal::ParseQuantity;
 
+}  // namespace _parser
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_parser;
+}  // namespace principia::quantities
 
 #include "quantities/parser_body.hpp"

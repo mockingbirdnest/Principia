@@ -20,29 +20,19 @@
 
 namespace principia {
 
-using quantities::Length;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::Parsec;
-using quantities::bipm::Knot;
-using quantities::constants::SpeedOfLight;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Minute;
-using quantities::si::Second;
-using quantities::uk::Furlong;
-using quantities::uk::Mile;
-using quantities::uk::Rod;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_bipm;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_uk;
 
 namespace geometry {
 

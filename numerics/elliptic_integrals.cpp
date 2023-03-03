@@ -21,18 +21,10 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_integrals {
 
-using quantities::Abs;
-using quantities::ArcSin;
-using quantities::Angle;
-using quantities::ArcTan;
-using quantities::ArcTanh;
-using quantities::Cos;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Tan;
-using quantities::si::Radian;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

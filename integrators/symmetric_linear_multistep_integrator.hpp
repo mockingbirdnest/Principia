@@ -26,10 +26,10 @@ namespace internal_symmetric_linear_multistep_integrator {
 
 using numerics::DoublePrecision;
 using numerics::FixedVector;
-using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // This implementation follows [QT90].
 template<typename Method, typename ODE_>

@@ -17,14 +17,11 @@ namespace principia {
 namespace numerics {
 namespace internal_root_finders {
 
-using quantities::Abs;
-using quantities::Difference;
-using quantities::Product;
-using quantities::Sqrt;
-using quantities::Square;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,

@@ -18,11 +18,10 @@ namespace integrators {
 namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
 using numerics::DoublePrecision;
-using quantities::DebugString;
-using quantities::Difference;
-using quantities::Quotient;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Method, typename ODE_>
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::

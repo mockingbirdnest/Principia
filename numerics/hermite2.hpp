@@ -12,9 +12,8 @@ namespace principia {
 namespace numerics {
 namespace internal_hermite2 {
 
-using quantities::Derivative;
-using quantities::Difference;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_named_quantities;
 
 // A 2nd degree Hermite polynomial defined by its values at the bounds of some
 // interval and one of its derivatives.

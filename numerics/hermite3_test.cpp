@@ -15,15 +15,6 @@
 
 namespace principia {
 
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::si::Centi;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
@@ -31,6 +22,10 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

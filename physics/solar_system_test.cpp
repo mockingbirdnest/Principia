@@ -20,18 +20,11 @@ namespace internal_solar_system {
 using astronomy::ICRS;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Second;
-using quantities::si::Yotta;
-using quantities::si::Zetta;
 using testing_utilities::RelativeError;
 using ::testing::ElementsAreArray;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::geometry::_frame;
+using namespace principia::quantities::_si;
 
 class SolarSystemTest : public ::testing::Test {};
 

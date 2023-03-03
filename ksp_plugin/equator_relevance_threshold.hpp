@@ -8,8 +8,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_equator_relevance_threshold {
 
-using quantities::Length;
 using physics::RotatingBody;
+using namespace principia::quantities::_quantities;
 
 // Returns a distance from |body| that we consider is too far for the equator to
 // be of interest.  Specifically, this distance is the maximum of

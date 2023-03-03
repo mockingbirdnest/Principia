@@ -43,16 +43,6 @@ using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
 using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::_;
@@ -62,6 +52,10 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace astronomy {
 

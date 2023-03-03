@@ -41,18 +41,6 @@ using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using quantities::Acceleration;
-using quantities::Length;
-using quantities::MomentOfInertia;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
@@ -74,7 +62,10 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {

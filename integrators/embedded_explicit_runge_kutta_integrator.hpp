@@ -26,9 +26,9 @@ namespace internal_embedded_explicit_runge_kutta_integrator {
 
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
-using quantities::Variation;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::quantities::_named_quantities;
 
 // This class solves ordinary differential equations of the form q′ = f(q, t)
 // using an embedded Runge-Kutta method.  We follow the standard conventions for

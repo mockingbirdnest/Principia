@@ -11,10 +11,8 @@ namespace internal_fake_plugin {
 
 using physics::MasslessBody;
 using physics::KeplerOrbit;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
+using namespace principia::quantities::_si;
 
 FakePlugin::FakePlugin(SolarSystem<ICRS> const& solar_system)
     : Plugin(/*game_epoch=*/solar_system.epoch_literal(),

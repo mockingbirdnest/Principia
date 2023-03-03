@@ -35,12 +35,10 @@ void UpdateWithAbort(absl::Status const& updater, absl::Status& updated);
 namespace internal_ordinary_differential_equations {
 
 using numerics::DoublePrecision;
-using quantities::Derivative;
-using quantities::Difference;
-using quantities::Time;
-using quantities::Variation;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A differential equation of the form y′ = f(s, y).
 // |DependentVariable| are the types of the elements of y.

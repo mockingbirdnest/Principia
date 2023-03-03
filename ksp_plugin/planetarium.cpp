@@ -14,17 +14,13 @@ namespace ksp_plugin {
 namespace internal_planetarium {
 
 using physics::MassiveBody;
-using quantities::Infinity;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Square;
-using quantities::Sqrt;
-using quantities::Tan;
-using quantities::Time;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 namespace {
 constexpr int max_plot_method_2_steps = 10'000;

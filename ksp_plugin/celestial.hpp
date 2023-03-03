@@ -19,9 +19,9 @@ using physics::Body;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::RotatingBody;
-using quantities::GravitationalParameter;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
 
 // Represents a KSP |CelestialBody|.
 class Celestial {

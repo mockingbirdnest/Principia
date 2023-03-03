@@ -56,20 +56,6 @@ using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::constants::StandardGravity;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::ReadFromBinaryFile;
@@ -102,7 +88,12 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
-namespace si = quantities::si;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

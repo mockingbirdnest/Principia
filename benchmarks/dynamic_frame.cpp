@@ -36,23 +36,14 @@ namespace principia {
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using ksp_plugin::Barycentric;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace physics {
 

@@ -41,17 +41,10 @@ using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::OblateBody;
 using physics::SolarSystem;
-using quantities::Time;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class OrbitalElementsBenchmark : public benchmark::Fixture {
  protected:

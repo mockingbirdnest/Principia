@@ -28,11 +28,6 @@ using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::astronomy::JulianYear;
-using quantities::si::Deci;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::Componentwise;
 using ::testing::AllOf;
@@ -47,6 +42,8 @@ using ::testing::UnorderedElementsAre;
 using ::testing::ValuesIn;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:

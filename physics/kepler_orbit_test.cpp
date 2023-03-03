@@ -17,18 +17,13 @@ namespace internal_kepler_orbit {
 using astronomy::ICRS;
 using astronomy::J2000;
 using astronomy::operator""_TT;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
 
 // Target body name : Moon(301) { source: DE431mx }
 // Centre body name : Earth(399) { source: DE431mx }

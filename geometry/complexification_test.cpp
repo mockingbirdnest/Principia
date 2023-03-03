@@ -12,10 +12,10 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Length;
-using quantities::si::Metre;
 using ::testing::Eq;
 using namespace principia::geometry::_complexification;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class ComplexificationTest : public testing::Test {
  protected:

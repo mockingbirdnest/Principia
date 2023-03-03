@@ -16,9 +16,9 @@ namespace internal_symplectic_runge_kutta_nyström_integrator {
 
 using numerics::DoublePrecision;
 using numerics::ULPDistance;
-using quantities::Abs;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_elementary_functions;
 
 template<typename Method, typename ODE_>
 absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::

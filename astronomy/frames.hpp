@@ -11,11 +11,9 @@ namespace principia {
 namespace astronomy {
 namespace internal_frames {
 
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Degree;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_si;
 
 // The International Celestial Reference System.
 // The origin is the barycentre of the solar system.  The axes are fixed with

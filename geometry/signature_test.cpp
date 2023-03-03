@@ -17,12 +17,12 @@
 
 namespace principia {
 
-using quantities::Length;
-using quantities::Pow;
-using quantities::si::Metre;
 using testing_utilities::Componentwise;
 using ::testing::Eq;
 using namespace principia::geometry::_signature;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace geometry {
 

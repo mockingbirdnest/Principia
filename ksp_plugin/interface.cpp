@@ -86,21 +86,6 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using quantities::Acceleration;
-using quantities::DebugString;
-using quantities::Mass;
-using quantities::MomentOfInertia;
-using quantities::ParseQuantity;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
 using ::operator<<;
@@ -122,7 +107,12 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
-namespace si = quantities::si;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 

@@ -15,22 +15,12 @@ namespace testing_utilities {
 namespace internal_integration {
 
 using astronomy::J2000;
-using quantities::Exponentiation;
-using quantities::Force;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Momentum;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::Stiffness;
-using quantities::Time;
-using quantities::si::Second;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 inline absl::Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,

@@ -15,10 +15,9 @@ namespace principia {
 namespace physics {
 namespace internal_massive_body {
 
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 class MassiveBody : public Body {
  public:

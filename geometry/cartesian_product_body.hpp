@@ -17,7 +17,7 @@ namespace geometry {
 namespace _cartesian_product {
 namespace internal {
 
-using quantities::Apply;
+using namespace principia::quantities::_tuples;
 
 template<typename LTuple, typename RTuple,
          typename = std::make_index_sequence<

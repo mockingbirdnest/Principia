@@ -28,12 +28,11 @@ using astronomy::OrbitRecurrence;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::RotatingBody;
-using quantities::Length;
-using quantities::Time;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting

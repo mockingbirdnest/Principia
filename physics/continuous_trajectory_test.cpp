@@ -32,19 +32,6 @@ namespace internal_continuous_trajectory {
 using numerics::Polynomial;
 using numerics::PolynomialInMonomialBasis;
 using numerics::HornerEvaluator;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
@@ -55,6 +42,11 @@ using ::testing::SetArgReferee;
 using ::testing::_;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {

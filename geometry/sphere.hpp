@@ -9,8 +9,8 @@ namespace geometry {
 namespace _sphere {
 namespace internal {
 
-using quantities::Length;
-using quantities::Square;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 class Sphere {

@@ -20,11 +20,10 @@ using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
-using quantities::si::Day;
-using quantities::si::Minute;
 using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 LocalErrorAnalyser<Frame>::LocalErrorAnalyser(

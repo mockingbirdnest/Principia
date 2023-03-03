@@ -19,19 +19,6 @@
 
 namespace principia {
 
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::Entropy;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Kelvin;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Watt;
 using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -41,7 +28,10 @@ using ::testing::IsEmpty;
 using ::testing::Le;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_point;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace numerics {
 

@@ -20,15 +20,10 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series {
 
-using quantities::Abs;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Infinity;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Variation;
-using quantities::si::Radian;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.

@@ -15,13 +15,10 @@ namespace principia {
 namespace numerics {
 namespace internal_global_optimization {
 
-using quantities::Difference;
-using quantities::Exponentiation;
-using quantities::Length;
-using quantities::Product;
-using quantities::Quotient;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // In this file |Argument| must be such that its difference belongs to a Hilbert
 // space.

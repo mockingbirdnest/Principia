@@ -22,13 +22,9 @@ FORWARD_DECLARE_FR0M(orthogonal_map,
 namespace _named_quantities {
 namespace internal {
 
-using quantities::AngularFrequency;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::MomentOfInertia;
-using quantities::Speed;
-using quantities::Time;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 using Instant = Point<Time>;
 

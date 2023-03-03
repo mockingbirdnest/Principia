@@ -20,10 +20,6 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Length;
-using quantities::Sqrt;
-using quantities::si::Metre;
-using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
@@ -35,6 +31,9 @@ using ::testing::IsEmpty;
 using ::testing::SizeIs;
 using ::testing::_;
 using namespace principia::geometry::_perspective;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class PerspectiveTest : public ::testing::Test {
  protected:

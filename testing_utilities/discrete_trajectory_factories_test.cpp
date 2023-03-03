@@ -15,15 +15,12 @@ namespace principia {
 namespace testing_utilities {
 
 using physics::DegreesOfFreedom;
-using quantities::Acceleration;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
  protected:

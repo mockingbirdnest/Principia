@@ -16,13 +16,11 @@ namespace internal_discrete_trajectory_factories {
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectorySegment;
 using physics::DiscreteTrajectorySegmentIterator;
-using quantities::Cos;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::si::Radian;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(

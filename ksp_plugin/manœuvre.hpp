@@ -20,17 +20,12 @@ using physics::DiscreteTrajectorySegmentIterator;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::Frenet;
-using quantities::Acceleration;
-using quantities::Force;
-using quantities::Mass;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::Variation;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // This class represents a constant-thrust burn.  |InertialFrame| is an
 // underlying inertial reference frame, |Frame| is the reference frame used to

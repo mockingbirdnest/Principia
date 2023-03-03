@@ -14,11 +14,10 @@ namespace principia {
 namespace numerics {
 namespace internal_poisson_series_basis {
 
-using quantities::is_quantity_v;
-using quantities::Pow;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_hilbert;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_traits;
 
 
 // A helper to build unit quantities or multivector.  |Coefficient| must be a

@@ -11,10 +11,7 @@ namespace geometry {
 namespace _complexification {
 namespace internal {
 
-using quantities::Difference;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Sum;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Vector>
 class Complexification {

@@ -21,9 +21,9 @@ namespace numerics {
 namespace apodization {
 namespace internal_apodization {
 
-using quantities::AngularFrequency;
-using quantities::si::Radian;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, 0, Evaluator> Dirichlet(Instant const& t_min,

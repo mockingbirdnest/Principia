@@ -23,22 +23,16 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
-using quantities::SpecificAngularMomentum;
-using quantities::SpecificEnergy;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Quotient;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::si::Radian;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Ge;
 using ::testing::UnorderedElementsAreArray;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace testing_utilities {
 

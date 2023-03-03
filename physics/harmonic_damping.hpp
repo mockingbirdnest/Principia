@@ -11,11 +11,9 @@ namespace physics {
 namespace internal_harmonic_damping {
 
 using numerics::PolynomialInMonomialBasis;
-using quantities::Infinity;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Square;
 using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Specification of the damping of a spherical harmonic, acting as a radial
 // multiplier on the potential:

@@ -33,10 +33,6 @@ using astronomy::date_time::operator""_DateTime;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
 using physics::DiscreteTrajectory;
-using quantities::Speed;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Second;
 using testing_utilities::operator""_;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromBinaryFile;
@@ -54,6 +50,8 @@ using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 using namespace std::chrono_literals;
 

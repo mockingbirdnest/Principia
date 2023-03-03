@@ -16,9 +16,9 @@ namespace geometry {
 namespace _point {
 namespace internal {
 
-using quantities::is_quantity_v;
-using quantities::Product;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -153,6 +153,8 @@ namespace _barycentre_calculator {
 namespace internal {
 
 using namespace principia::geometry::_point;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {

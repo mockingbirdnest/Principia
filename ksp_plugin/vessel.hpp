@@ -45,14 +45,12 @@ using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
-using quantities::Force;
-using quantities::GravitationalParameter;
-using quantities::Mass;
-using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Represents a KSP |Vessel|.
 class Vessel {

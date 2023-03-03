@@ -231,7 +231,7 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-using quantities::DoubleOrQuantitySerializer;
+using namespace principia::quantities::_serialization;
 
 template<typename Integrator>
 not_null<std::unique_ptr<typename Integrator::Instance>>

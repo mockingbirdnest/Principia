@@ -8,8 +8,7 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial_evaluators {
 
-using quantities::Derivative;
-using quantities::Square;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator;

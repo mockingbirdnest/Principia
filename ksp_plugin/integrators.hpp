@@ -12,9 +12,8 @@ namespace internal_integrators {
 
 using physics::DiscreteTrajectorySegment;
 using physics::Ephemeris;
-using quantities::Length;
-using quantities::si::Metre;
-using quantities::si::Milli;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // Parameters for downsampling after fixed-step integration.
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters

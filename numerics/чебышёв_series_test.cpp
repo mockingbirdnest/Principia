@@ -13,12 +13,11 @@ namespace numerics {
 namespace internal_чебышёв_series {
 
 using astronomy::ICRS;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:

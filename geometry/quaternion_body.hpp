@@ -14,9 +14,8 @@ namespace geometry {
 namespace _quaternion {
 namespace internal {
 
-using quantities::Abs;
-using quantities::DebugString;
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 inline Quaternion::Quaternion(double const real_part)
     : real_part_(real_part) {}

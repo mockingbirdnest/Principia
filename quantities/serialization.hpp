@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_serialization {
+namespace _serialization {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 
@@ -20,11 +21,16 @@ using namespace principia::base::_not_constructible;
 template<typename T, typename Message>
 struct DoubleOrQuantitySerializer : not_constructible {};
 
-}  // namespace internal_serialization
+}  // namespace internal
 
-using internal_serialization::DoubleOrQuantitySerializer;
+using internal::DoubleOrQuantitySerializer;
 
+}  // namespace _serialization
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_serialization;
+}  // namespace principia::quantities
 
 #include "quantities/serialization_body.hpp"

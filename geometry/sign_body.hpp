@@ -13,7 +13,7 @@ namespace geometry {
 namespace _sign {
 namespace internal {
 
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 // Must be defined first because it is called by member functions below.
 template<typename T>

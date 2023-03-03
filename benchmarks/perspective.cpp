@@ -16,12 +16,9 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Length;
-using quantities::si::Metre;
-using quantities::si::Radian;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 using World = Frame<struct WorldTag>;

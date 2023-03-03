@@ -20,12 +20,6 @@
 
 namespace principia {
 
-using quantities::Action;
-using quantities::Amount;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Metre;
-using quantities::si::Second;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -38,7 +32,9 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_pair;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
-namespace si = quantities::si;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace testing_utilities {
 

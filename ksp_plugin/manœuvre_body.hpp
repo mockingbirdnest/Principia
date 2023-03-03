@@ -15,12 +15,12 @@ namespace internal_manœuvre {
 
 using physics::DiscreteTrajectory;
 using physics::RigidMotion;
-using quantities::Acceleration;
-using quantities::Sqrt;
 using std::placeholders::_1;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,

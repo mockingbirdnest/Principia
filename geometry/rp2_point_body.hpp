@@ -14,9 +14,8 @@ namespace _rp2_point {
 namespace internal {
 
 using numerics::TwoProduct;
-using quantities::DebugString;
-using quantities::Infinity;
-using quantities::Square;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Scalar, typename Frame>
 RP2Point<Scalar, Frame>::RP2Point(
@@ -86,6 +85,7 @@ bool operator!=(RP2Point<Scalar, Frame> const& left,
 
 template<typename Scalar, typename Frame>
 std::string DebugString(RP2Point<Scalar, Frame> const & rp2_point) {
+  using quantities::_quantities::DebugString;
   return "[" + DebugString(rp2_point.x_) + ":" +
                DebugString(rp2_point.y_) + ":" +
                DebugString(rp2_point.z_) + "]";

@@ -26,17 +26,12 @@ using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::Derivative;
-using quantities::Length;
-using quantities::NaN;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Sin;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

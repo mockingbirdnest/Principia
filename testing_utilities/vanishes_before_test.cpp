@@ -13,10 +13,10 @@
 
 namespace principia {
 
-using quantities::Speed;
-using quantities::bipm::Knot;
 using ::testing::Ne;
-namespace si = quantities::si;
+using namespace principia::quantities::_bipm;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 namespace testing_utilities {
 

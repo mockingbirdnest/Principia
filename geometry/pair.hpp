@@ -20,12 +20,10 @@ namespace geometry {
 namespace _pair {
 namespace internal {
 
-using quantities::Difference;
-using quantities::Product;
-using quantities::Quotient;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::quantities::_named_quantities;
 
 template<typename T1, typename T2>
 class Pair;
@@ -215,7 +213,6 @@ using internal::vector_of;
 namespace _barycentre_calculator {
 namespace internal {
 
-using quantities::Difference;
 using namespace principia::geometry::_pair;
 
 template<typename T1, typename T2, typename Weight>
@@ -251,6 +248,7 @@ namespace _mappable {
 namespace internal {
 
 using namespace principia::geometry::_pair;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Functor, typename T1, typename T2>
 class Mappable<Functor,

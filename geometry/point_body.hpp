@@ -16,13 +16,10 @@ namespace geometry {
 namespace _point {
 namespace internal {
 
-using quantities::FusedMultiplyAdd;
-using quantities::FusedNegatedMultiplyAdd;
-using quantities::NextDown;
-using quantities::NextUp;
-using quantities::Product;
-using quantities::Quantity;
 using namespace principia::base::_not_constructible;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Vector>
 struct PointSerializer : not_constructible {};
@@ -136,12 +133,14 @@ constexpr Point<Vector> operator+(Vector const& translation,
 template<typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                       Point<Product<L, R>> const& c) {
+  using quantities::_elementary_functions::FusedMultiplyAdd;
   return Point<Product<L, R>>(FusedMultiplyAdd(a, b, c.coordinates_));
 }
 
 template<typename L, typename R>
 Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
                                              Point<Product<L, R>> const& c) {
+  using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
   return Point<Product<L, R>>(FusedNegatedMultiplyAdd(a, b, c.coordinates_));
 }
 
@@ -174,12 +173,14 @@ constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator>(
 template<typename Vector>
 constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
 NextUp(Point<Vector> const x) {
+  using quantities::_elementary_functions::NextUp;
   return Point<Vector>(NextUp(x.coordinates_));
 }
 
 template<typename Vector>
 constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
 NextDown(Point<Vector> const x) {
+  using quantities::_elementary_functions::NextDown;
   return Point<Vector>(NextDown(x.coordinates_));
 }
 

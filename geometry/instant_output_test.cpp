@@ -15,9 +15,9 @@ using astronomy::operator""_UT1;
 using astronomy::operator""_UTC;
 using geometry::InfiniteFuture;
 using geometry::InfinitePast;
-using quantities::Time;
-using quantities::si::Second;
 using ::testing::Eq;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class InstantOutputTest : public ::testing::Test {};
 

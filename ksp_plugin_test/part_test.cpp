@@ -10,18 +10,14 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-using quantities::Force;
-using quantities::MomentOfInertia;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Second;
 using ::testing::_;
 using ::testing::MockFunction;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 class PartTest : public testing::Test {
  protected:

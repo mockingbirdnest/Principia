@@ -18,17 +18,13 @@ namespace geometry {
 using astronomy::J2000;
 using astronomy::operator""_TT;
 using numerics::CanEmitFMAInstructions;
-using quantities::Length;
-using quantities::Time;
-using quantities::Volume;
-using quantities::si::Day;
-using quantities::si::Litre;
-using quantities::si::Metre;
-using quantities::si::Second;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_point;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class PointTest : public testing::Test {
  protected:

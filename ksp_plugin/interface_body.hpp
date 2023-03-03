@@ -21,17 +21,12 @@ namespace interface {
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
 using physics::RigidMotion;
-using quantities::Pow;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using namespace principia::base::_array;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.

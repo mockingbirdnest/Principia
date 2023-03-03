@@ -18,12 +18,10 @@ namespace geometry {
 namespace _r3x3_matrix {
 namespace internal {
 
-using quantities::Cube;
-using quantities::is_quantity_v;
-using quantities::Product;
-using quantities::Quotient;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 // An |R3x3Matrix| is an element of the associative algebra of 3-by-3 matrices
 // over |Scalar|.  |Scalar| should be a vector space over ℝ, represented by

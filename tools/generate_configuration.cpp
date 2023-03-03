@@ -26,18 +26,14 @@ using astronomy::ICRS;
 using astronomy::J2000;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
-using quantities::DebugString;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
-using quantities::ParseQuantity;
-using quantities::Pow;
-using quantities::constants::GravitationalConstant;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_serialization;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace tools {
 

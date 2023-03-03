@@ -22,24 +22,15 @@ namespace geometry {
 namespace _rotation {
 namespace internal {
 
-using quantities::Angle;
-using quantities::ArcCos;
-using quantities::ArcSin;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class RotationTest : public testing::Test {
  protected:

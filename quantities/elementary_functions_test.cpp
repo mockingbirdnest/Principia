@@ -18,39 +18,18 @@
 namespace principia {
 namespace quantities {
 
-using astronomy::AstronomicalUnit;
-using astronomy::JulianYear;
-using astronomy::LightYear;
-using astronomy::Parsec;
-using astronomy::JovianGravitationalParameter;
-using astronomy::SolarGravitationalParameter;
-using astronomy::TerrestrialGravitationalParameter;
-using constants::GravitationalConstant;
-using constants::SpeedOfLight;
-using constants::StandardGravity;
-using constants::VacuumPermeability;
-using constants::VacuumPermittivity;
 using numerics::CanEmitFMAInstructions;
-using si::Ampere;
-using si::Coulomb;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Kilogram;
-using si::Mega;
-using si::Metre;
-using si::Mole;
-using si::Radian;
-using si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
-using uk::Foot;
-using uk::Gallon;
-using uk::Rood;
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_uk;
 
 class ElementaryFunctionsTest : public testing::Test {};
 

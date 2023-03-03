@@ -29,13 +29,12 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::RigidMotion;
-using quantities::Force;
-using quantities::Mass;
-using quantities::Torque;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Represents a KSP part.
 class Part final {

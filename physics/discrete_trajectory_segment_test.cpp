@@ -23,16 +23,6 @@
 namespace principia {
 namespace physics {
 
-using quantities::Abs;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Nano;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AbsoluteErrorFrom;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AppendTrajectoryTimeline;
@@ -47,6 +37,10 @@ using ::testing::Lt;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:

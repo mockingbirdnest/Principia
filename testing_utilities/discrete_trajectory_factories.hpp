@@ -20,13 +20,11 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
 using physics::internal_discrete_trajectory_types::Timeline;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A helper class to avoid having to declare friendship for all the individual
 // functions in this file.

@@ -41,17 +41,6 @@ using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::Quinlan1999Order8A;
 using numerics::MultiLevelSingleLinkage;
-using quantities::Acceleration;
-using quantities::Infinity;
-using quantities::SpecificEnergy;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -60,6 +49,9 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_plane;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class EquipotentialTest : public ::testing::Test {
  protected:

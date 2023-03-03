@@ -34,19 +34,6 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::Bisect;
 using numerics::LegendreNormalizationFactor;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Degree2SphericalHarmonicCoefficient;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::operator""_;
@@ -56,7 +43,9 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
-namespace si = quantities::si;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class BodyTest : public testing::Test {
  protected:

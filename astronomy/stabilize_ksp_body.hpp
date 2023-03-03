@@ -11,8 +11,8 @@ namespace astronomy {
 namespace stabilize_ksp_internal {
 
 using physics::KeplerianElements;
-using quantities::si::Degree;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 void StabilizeKSP(SolarSystem<Frame>& solar_system) {

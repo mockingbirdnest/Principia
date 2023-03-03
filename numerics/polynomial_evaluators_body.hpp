@@ -12,8 +12,8 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial_evaluators {
 
-using quantities::FusedMultiplyAdd;
 using namespace principia::base::_bits;
+using namespace principia::quantities::_elementary_functions;
 
 // Generator for repeated squaring:
 //   SquareGenerator<Length, 0>::Type is Exponentiation<Length, 2>
@@ -142,6 +142,7 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
       InternalEstrinEvaluator<Value, Argument, degree, fma, low, m - 1>::
           Evaluate(coefficients, argument, argument_squares);
   if constexpr (fma) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, xᵐ, b);
   } else {
     return  a * xᵐ + b;
@@ -171,6 +172,7 @@ EvaluateDerivative(Coefficients const& coefficients,
       InternalEstrinEvaluator<Value, Argument, degree, fma, low, m - 1>::
           EvaluateDerivative(coefficients, argument, argument_squares);
   if constexpr (fma) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, xᵐ, b);
   } else {
     return a * xᵐ + b;
@@ -187,6 +189,7 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::Evaluate(
   auto const& a = std::get<low + 1>(coefficients);
   auto const& b = std::get<low>(coefficients);
   if constexpr (fma) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -212,6 +215,7 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
   auto const& a = (low + 1) * std::get<low + 1>(coefficients);
   auto const& b = low * std::get<low>(coefficients);
   if constexpr (fma) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -333,6 +337,7 @@ InternalHornerEvaluator<Value, Argument, degree, fma, low>::Evaluate(
           coefficients, argument);
   auto const& b = std::get<low>(coefficients);
   if constexpr (fma) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -350,6 +355,7 @@ InternalHornerEvaluator<Value, Argument, degree, fma, low>::EvaluateDerivative(
           EvaluateDerivative(coefficients, argument);
   auto const b = std::get<low>(coefficients) * low;
   if constexpr (fma) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;

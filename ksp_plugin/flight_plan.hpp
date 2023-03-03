@@ -26,11 +26,10 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Speed;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A chain of trajectories obtained by executing the corresponding
 // |NavigationManœuvre|s.

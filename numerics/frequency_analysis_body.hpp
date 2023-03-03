@@ -28,14 +28,12 @@ namespace internal_frequency_analysis {
 #define PRINCIPIA_USE_CGS 0
 #define PRINCIPIA_USE_R 1
 
-using quantities::Inverse;
-using quantities::IsFinite;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::SquareRoot;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.

@@ -10,9 +10,8 @@ namespace principia {
 namespace numerics {
 namespace internal_fit_hermite_spline {
 
-using quantities::Derivative;
-using quantities::Difference;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_named_quantities;
 
 // Given |samples| for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators

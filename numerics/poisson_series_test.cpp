@@ -26,17 +26,6 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
@@ -47,6 +36,10 @@ using ::testing::AnyOf;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:

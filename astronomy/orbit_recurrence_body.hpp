@@ -12,10 +12,10 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbit_recurrence {
 
-using quantities::si::Radian;
-using quantities::Abs;
 using namespace principia::base::_mod;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
                                         int const Dᴛₒ,

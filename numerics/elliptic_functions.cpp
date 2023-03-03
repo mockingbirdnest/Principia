@@ -15,11 +15,8 @@ namespace principia {
 namespace numerics {
 namespace internal_elliptic_functions {
 
-using quantities::Abs;
-using quantities::ArcTan;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::si::Radian;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 namespace {
 

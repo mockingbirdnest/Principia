@@ -11,8 +11,8 @@ namespace internal_time_scales {
 
 using astronomy::date_time::Date;
 using astronomy::date_time::DateTime;
-using quantities::Angle;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // NOTE(egg): We cannot use literal operator templates for strings, so if an
 // invalid date is given and the result does not need to be constexpr the

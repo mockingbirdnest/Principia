@@ -21,14 +21,14 @@
 namespace principia {
 namespace mathematica {
 
-using quantities::ParseQuantity;
 using integrators::ParseFixedStepSizeIntegrator;
 using ksp_plugin::Barycentric;
 using physics::Ephemeris;
 using physics::SolarSystem;
-using quantities::Time;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
 
 class ErrorAnalysisTest : public ::testing::Test {
  protected:

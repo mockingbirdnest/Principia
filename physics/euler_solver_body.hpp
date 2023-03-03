@@ -19,30 +19,16 @@ using numerics::EllipticF;
 using numerics::EllipticΠ;
 using numerics::JacobiAmplitude;
 using numerics::JacobiSNCNDN;
-using quantities::Abs;
-using quantities::ArcTan;
-using quantities::ArcTanh;
-using quantities::Cosh;
-using quantities::Energy;
-using quantities::Inverse;
-using quantities::IsFinite;
-using quantities::Pow;
-using quantities::Quotient;
-using quantities::Sinh;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::SquareRoot;
-using quantities::Tanh;
-using quantities::Time;
-using quantities::Variation;
-using quantities::si::Joule;
-using quantities::si::Radian;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(

@@ -49,9 +49,6 @@ using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
-using quantities::AngularMomentum;
-using quantities::Length;
-using quantities::MomentOfInertia;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
@@ -59,6 +56,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of

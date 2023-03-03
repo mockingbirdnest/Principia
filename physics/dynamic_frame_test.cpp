@@ -18,20 +18,6 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
-using quantities::Angle;
-using quantities::AngularAcceleration;
-using quantities::AngularFrequency;
-using quantities::ArcTan;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Centi;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Nano;
-using quantities::si::Radian;
-using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
@@ -48,7 +34,10 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class DynamicFrameTest : public testing::Test {
  protected:

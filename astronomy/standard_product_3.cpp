@@ -19,15 +19,12 @@ namespace astronomy {
 namespace internal_standard_product_3 {
 
 using numerics::FiniteDifference;
-using quantities::NaN;
-using quantities::Speed;
-using quantities::si::Deci;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Second;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // Given a trajectory whose velocities are bad or absent (e.g., NaN), uses
 // n-point finite difference formulæ on the positions to produce a trajectory

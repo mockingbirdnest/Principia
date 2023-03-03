@@ -9,7 +9,7 @@ namespace geometry {
 namespace _interval {
 namespace internal {
 
-using quantities::NaN;
+using namespace principia::quantities::_quantities;
 
 template<typename T>
 Difference<T> Interval<T>::measure() const {

@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_serialization {
+namespace _serialization {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -38,6 +39,7 @@ struct DoubleOrQuantitySerializer<double, Message> : not_constructible {
   }
 };
 
-}  // namespace internal_serialization
+}  // namespace internal
+}  // namespace _serialization
 }  // namespace quantities
 }  // namespace principia

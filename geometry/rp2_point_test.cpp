@@ -13,11 +13,10 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Infinity;
-using quantities::Length;
-using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class RP2PointTest : public ::testing::Test {
  protected:

@@ -16,14 +16,14 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Angle;
-using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::ReadFromTabulatedData;
 using testing_utilities::RelativeError;
 using ::testing::Le;
 using ::testing::Lt;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class EllipticFunctionsTest : public ::testing::Test {};
 

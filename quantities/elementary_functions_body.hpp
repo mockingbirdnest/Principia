@@ -14,9 +14,10 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_elementary_functions {
+namespace _elementary_functions {
+namespace internal {
 
-using si::Radian;
+using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
@@ -196,6 +197,7 @@ inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
                  (2 * π * Radian);
 }
 
-}  // namespace internal_elementary_functions
+}  // namespace internal
+}  // namespace _elementary_functions
 }  // namespace quantities
 }  // namespace principia

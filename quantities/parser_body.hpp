@@ -13,9 +13,12 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_parser {
+namespace _parser {
+namespace internal {
 
-using internal_dimensions::Dimensions;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_dimensions;
+using namespace principia::quantities::_bipm;
 
 using RuntimeDimensions = std::array<std::int64_t, 8>;
 
@@ -106,7 +109,7 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(1.0);
   // Units of length.
   } else if (s == "Å") {
-    return Unit(bipm::Ångström);
+    return Unit(Ångström);
   } else if (s == "μm") {
     return Unit(si::Micro(si::Metre));
   } else if (s == "mm") {
@@ -118,11 +121,11 @@ inline Unit ParseUnit(std::string const& s) {
   } else if (s == "km") {
     return Unit(si::Kilo(si::Metre));
   } else if (s == "R🜨") {
-    return Unit(astronomy::TerrestrialEquatorialRadius);
+    return Unit(TerrestrialEquatorialRadius);
   } else if (s == "R☉") {
-    return Unit(astronomy::SolarRadius);
+    return Unit(SolarRadius);
   } else if (s == "au") {
-    return Unit(astronomy::AstronomicalUnit);
+    return Unit(AstronomicalUnit);
   // Units of mass.
   } else if (s == "kg") {
     return Unit(si::Kilogram);
@@ -139,9 +142,9 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(si::Day);
   // Units of gravitational parameter.
   } else if (s == "GM🜨") {
-    return Unit(astronomy::TerrestrialGravitationalParameter);
+    return Unit(TerrestrialGravitationalParameter);
   } else if (s == "GM☉") {
-    return Unit(astronomy::SolarGravitationalParameter);
+    return Unit(SolarGravitationalParameter);
   // Units of power.
   } else if (s == "W") {
     return Unit(si::Watt);
@@ -252,6 +255,7 @@ Q ParseQuantity(std::string const& s) {
   return magnitude * unit.scale * si::Unit<Q>;
 }
 
-}  // namespace internal_parser
+}  // namespace internal
+}  // namespace _parser
 }  // namespace quantities
 }  // namespace principia

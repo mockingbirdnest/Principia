@@ -17,10 +17,10 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
-using quantities::si::Radian;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(

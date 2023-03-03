@@ -14,10 +14,10 @@ namespace principia {
 namespace integrators {
 namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
-using quantities::Time;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A symplectic partitioned Runge-Kutta integrator.  Does not subclass
 // |Integrator|; used to generate (less general)
