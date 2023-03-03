@@ -15,16 +15,14 @@ namespace principia {
 namespace physics {
 namespace internal_euler_solver {
 
-using numerics::EllipticF;
-using numerics::EllipticΠ;
-using numerics::JacobiAmplitude;
-using numerics::JacobiSNCNDN;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::numerics::_elliptic_functions;
+using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

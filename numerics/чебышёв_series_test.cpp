@@ -10,11 +10,11 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_чебышёв_series {
 
 using astronomy::ICRS;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -201,6 +201,5 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
   }
 }
 
-}  // namespace internal_чебышёв_series
 }  // namespace numerics
 }  // namespace principia

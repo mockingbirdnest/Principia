@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_poisson_series {
+namespace _poisson_series {
+namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -975,6 +976,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   return (slow_quadrature + fast_quadrature) / (t_max - t_min);
 }
 
-}  // namespace internal_poisson_series
+}  // namespace internal
+}  // namespace _poisson_series
 }  // namespace numerics
 }  // namespace principia

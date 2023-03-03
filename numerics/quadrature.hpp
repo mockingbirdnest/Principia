@@ -8,7 +8,8 @@
 namespace principia {
 namespace numerics {
 namespace quadrature {
-namespace internal_quadrature {
+namespace _quadrature {
+namespace internal {
 
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -56,15 +57,20 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
     Argument const& upper_bound,
     int intervals);
 
-}  // namespace internal_quadrature
+}  // namespace internal
 
-using internal_quadrature::AutomaticClenshawCurtis;
-using internal_quadrature::GaussLegendre;
-using internal_quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis;
-using internal_quadrature::Midpoint;
+using internal::AutomaticClenshawCurtis;
+using internal::GaussLegendre;
+using internal::MaxPointsHeuristicsForAutomaticClenshawCurtis;
+using internal::Midpoint;
 
+}  // namespace _quadrature
 }  // namespace quadrature
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_quadrature;
+}  // namespace principia::numerics
 
 #include "numerics/quadrature_body.hpp"

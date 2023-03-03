@@ -22,8 +22,6 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
-using numerics::EstrinEvaluator;
-using numerics::LegendrePolynomial;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeЧебышёвPolynomialSecondDerivative;
@@ -38,6 +36,8 @@ using ::std::placeholders::_3;
 using ::std::placeholders::_4;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::numerics::_legendre;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

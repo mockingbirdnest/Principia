@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial_evaluators {
+namespace _polynomial_evaluators {
+namespace internal {
 
 using namespace principia::quantities::_named_quantities;
 
@@ -14,7 +15,7 @@ template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator;
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct HornerEvaluator;
-}  // namespace internal_polynomial_evaluators
+}  // namespace internal
 
 template<typename Value, typename Argument, int degree>
 using EstrinEvaluator = internal_polynomial_evaluators::
@@ -29,7 +30,8 @@ template<typename Value, typename Argument, int degree>
 using HornerEvaluatorWithoutFMA = internal_polynomial_evaluators::
     HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
 
-namespace internal_polynomial_evaluators {
+namespace _polynomial_evaluators {
+namespace internal {
 // We use FORCE_INLINE because we have to write this recursively, but we really
 // want linear code.
 
@@ -67,8 +69,14 @@ struct HornerEvaluator {
                      Argument const& argument);
 };
 
-}  // namespace internal_polynomial_evaluators
+}  // namespace internal
+}  // namespace _polynomial_evaluators
+}  // namespace _polynomial_evaluators
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_polynomial_evaluators;
+}  // namespace principia::numerics
 
 #include "numerics/polynomial_evaluators_body.hpp"

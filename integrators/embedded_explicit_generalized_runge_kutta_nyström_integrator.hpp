@@ -24,11 +24,10 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
-using numerics::FixedStrictlyLowerTriangularMatrix;
-using numerics::FixedVector;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

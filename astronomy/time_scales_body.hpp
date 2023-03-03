@@ -23,8 +23,7 @@ using astronomy::date_time::JulianDate;
 using astronomy::date_time::operator""_Date;
 using astronomy::date_time::operator""_DateTime;
 using astronomy::date_time::operator""_Julian;
-using numerics::DoublePrecision;
-using numerics::TwoDifference;
+using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

@@ -6,7 +6,7 @@ namespace principia {
 namespace integrators {
 namespace internal_cohen_hubbard_oesterwinter {
 
-using numerics::FixedVector;
+using namespace principia::numerics::_fixed_arrays;
 
 // Definition of a modified Cohen-Hubbard-Oesterwinter formula, see [CHO73],
 // p. 21.  Our formula is:

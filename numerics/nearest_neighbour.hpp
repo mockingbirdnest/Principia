@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_nearest_neighbour {
+namespace _nearest_neighbour {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -180,11 +181,16 @@ class PrincipalComponentPartitioningTree {
   std::unique_ptr<Node> root_;
 };
 
-}  // namespace internal_nearest_neighbour
+}  // namespace internal
 
-using internal_nearest_neighbour::PrincipalComponentPartitioningTree;
+using internal::PrincipalComponentPartitioningTree;
 
+}  // namespace _nearest_neighbour
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_nearest_neighbour;
+}  // namespace principia::numerics
 
 #include "numerics/nearest_neighbour_body.hpp"

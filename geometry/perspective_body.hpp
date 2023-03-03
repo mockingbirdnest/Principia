@@ -16,8 +16,8 @@ namespace geometry {
 namespace _perspective {
 namespace internal {
 
-using numerics::SolveQuadraticEquation;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 

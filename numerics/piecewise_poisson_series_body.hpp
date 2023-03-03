@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_piecewise_poisson_series {
+namespace _piecewise_poisson_series {
+namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
@@ -706,6 +707,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
          (t_max - t_min);
 }
 
-}  // namespace internal_piecewise_poisson_series
+}  // namespace internal
+}  // namespace _piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia

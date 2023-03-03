@@ -18,7 +18,7 @@ namespace geometry {
 namespace _r3_element {
 namespace internal {
 
-using numerics::CanEmitFMAInstructions;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_serialization;

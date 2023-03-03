@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_newhall {
+namespace _newhall {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -56,12 +57,17 @@ NewhallApproximationInMonomialBasis(int degree,
                                     Instant const& t_max,
                                     Difference<Value>& error_estimate);
 
-}  // namespace internal_newhall
+}  // namespace internal
 
-using internal_newhall::NewhallApproximationInЧебышёвBasis;
-using internal_newhall::NewhallApproximationInMonomialBasis;
+using internal::NewhallApproximationInЧебышёвBasis;
+using internal::NewhallApproximationInMonomialBasis;
 
+}  // namespace _newhall
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_newhall;
+}  // namespace principia::numerics
 
 #include "numerics/newhall_body.hpp"

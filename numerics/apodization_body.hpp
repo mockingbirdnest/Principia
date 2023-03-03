@@ -19,7 +19,8 @@
 namespace principia {
 namespace numerics {
 namespace apodization {
-namespace internal_apodization {
+namespace _apodization {
+namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::quantities::_named_quantities;
@@ -197,7 +198,8 @@ PoissonSeries<double, 0, 0, Evaluator> ISO18431_2(Instant const& t_min,
                        {0.03222656 / 4.63867187}, t_mid)}}});
 }
 
-}  // namespace internal_apodization
+}  // namespace internal
+}  // namespace _apodization
 }  // namespace apodization
 }  // namespace numerics
 }  // namespace principia

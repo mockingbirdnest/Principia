@@ -29,9 +29,6 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using numerics::Polynomial;
-using numerics::PolynomialInMonomialBasis;
-using numerics::HornerEvaluator;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
@@ -42,6 +39,8 @@ using ::testing::SetArgReferee;
 using ::testing::_;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

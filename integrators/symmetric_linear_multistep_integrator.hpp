@@ -24,11 +24,11 @@ namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
 
-using numerics::DoublePrecision;
-using numerics::FixedVector;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_quantities;
 
 // This implementation follows [QT90].

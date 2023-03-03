@@ -55,7 +55,6 @@ namespace principia {
 using integrators::FixedStepSizeIntegrator;
 using integrators::InitialValueProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
-using numerics::DoublePrecision;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
@@ -73,6 +72,7 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -6,6 +6,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _log_b {
+namespace internal {
 
 template<typename SourceFormat, typename>
 constexpr SourceFormat LogB(SourceFormat const x) {
@@ -33,5 +35,7 @@ constexpr SourceFormat LogB(SourceFormat const x) {
   return result;
 }
 
+}  // namespace internal
+}  // namespace _log_b
 }  // namespace numerics
 }  // namespace principia

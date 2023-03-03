@@ -44,7 +44,8 @@ FORWARD_DECLARE_FUNCTION_FROM(
 }  // namespace mathematica
 
 namespace numerics {
-namespace internal_poisson_series {
+namespace _poisson_series {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
@@ -384,12 +385,17 @@ InnerProduct(PoissonSeries<LValue,
              Instant const& t_min,
              Instant const& t_max);
 
-}  // namespace internal_poisson_series
+}  // namespace internal
 
-using internal_poisson_series::InnerProduct;
-using internal_poisson_series::PoissonSeries;
+using internal::InnerProduct;
+using internal::PoissonSeries;
 
+}  // namespace _poisson_series
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_poisson_series;
+}  // namespace principia::numerics
 
 #include "numerics/poisson_series_body.hpp"

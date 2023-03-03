@@ -9,7 +9,8 @@
 namespace principia {
 namespace numerics {
 namespace apodization {
-namespace internal_apodization {
+namespace _apodization {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 
@@ -58,21 +59,26 @@ template<template<typename, typename, int> class Evaluator>
 PoissonSeries<double, 0, 0, Evaluator> ISO18431_2(Instant const& t_min,
                                                   Instant const& t_max);
 
-}  // namespace internal_apodization
+}  // namespace internal
 
-using internal_apodization::Blackman;
-using internal_apodization::BlackmanHarris;
-using internal_apodization::BlackmanNuttall;
-using internal_apodization::Dirichlet;
-using internal_apodization::ExactBlackman;
-using internal_apodization::Hann;
-using internal_apodization::Hamming;
-using internal_apodization::ISO18431_2;
-using internal_apodization::Nuttall;
-using internal_apodization::Sine;
+using internal::Blackman;
+using internal::BlackmanHarris;
+using internal::BlackmanNuttall;
+using internal::Dirichlet;
+using internal::ExactBlackman;
+using internal::Hann;
+using internal::Hamming;
+using internal::ISO18431_2;
+using internal::Nuttall;
+using internal::Sine;
 
+}  // namespace _apodization
 }  // namespace apodization
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_apodization;
+}  // namespace principia::numerics
 
 #include "numerics/apodization_body.hpp"

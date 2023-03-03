@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fit_hermite_spline {
+namespace _fit_hermite_spline {
+namespace internal {
 
 using namespace principia::base::_ranges;
 
@@ -90,6 +91,7 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
   return fit;
 }
 
-}  // namespace internal_fit_hermite_spline
+}  // namespace internal
+}  // namespace _fit_hermite_spline
 }  // namespace numerics
 }  // namespace principia

@@ -4,17 +4,23 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_legendre {
+namespace _legendre {
+namespace internal {
 
 template<int degree_, template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<double, double, degree_, Evaluator>
 LegendrePolynomial();
 
-}  // namespace internal_legendre
+}  // namespace internal
 
-using internal_legendre::LegendrePolynomial;
+using internal::LegendrePolynomial;
 
+}  // namespace _legendre
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_legendre;
+}  // namespace principia::numerics
 
 #include "numerics/legendre_body.hpp"

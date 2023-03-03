@@ -17,9 +17,9 @@ namespace principia {
 namespace physics {
 namespace internal_oblate_body {
 
-using numerics::FixedLowerTriangularMatrix;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

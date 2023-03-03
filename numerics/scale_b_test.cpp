@@ -3,6 +3,8 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_scale_b;
+
 static_assert(ScaleB(3.0, 2) == 0x3p2);
 static_assert(ScaleB(5.0, -2) == 0x5p-2);
 static_assert(ScaleB(7.0, 0) == 0x7p0);

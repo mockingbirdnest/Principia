@@ -2,7 +2,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_cbrt {
+namespace _cbrt {
+namespace internal {
 
 // Computes ∛y, correctly rounded to nearest.
 double Cbrt(double y);
@@ -41,9 +42,14 @@ extern template double Cbrt<Rounding::Correct>(double y);
 // binary expansion of ∛y.
 bool CbrtOneBit(double y, double a, double b);
 
-}  // namespace internal_cbrt
+}  // namespace internal
 
-using internal_cbrt::Cbrt;
+using internal::Cbrt;
 
+}  // namespace _cbrt
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_cbrt;
+}  // namespace principia::numerics

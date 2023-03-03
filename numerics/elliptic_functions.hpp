@@ -6,7 +6,8 @@
 // into C++ and adapted to the needs of this project.
 namespace principia {
 namespace numerics {
-namespace internal_elliptic_functions {
+namespace _elliptic_functions {
+namespace internal {
 
 using namespace principia::quantities::_quantities;
 
@@ -14,10 +15,15 @@ Angle JacobiAmplitude(Angle const& u, double mc);
 
 void JacobiSNCNDN(Angle const& u, double mc, double& s, double& c, double& d);
 
-}  // namespace internal_elliptic_functions
+}  // namespace internal
 
-using internal_elliptic_functions::JacobiAmplitude;
-using internal_elliptic_functions::JacobiSNCNDN;
+using internal::JacobiAmplitude;
+using internal::JacobiSNCNDN;
 
+}  // namespace _elliptic_functions
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_elliptic_functions;
+}  // namespace principia::numerics

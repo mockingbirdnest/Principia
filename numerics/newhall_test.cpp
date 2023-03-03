@@ -26,6 +26,7 @@ using testing_utilities::ApproximateQuantity;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_newhall;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_unbounded_arrays {
+namespace _unbounded_arrays {
+namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_elementary_functions;
@@ -589,6 +590,7 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-}  // namespace internal_unbounded_arrays
+}  // namespace internal
+}  // namespace _unbounded_arrays
 }  // namespace numerics
 }  // namespace principia

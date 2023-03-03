@@ -21,7 +21,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial {
+namespace _polynomial {
+namespace internal {
 
 using geometry::_cartesian_product::polynomial_ring::operator*;
 using geometry::_cartesian_product::pointwise_inner_product::
@@ -818,6 +819,7 @@ std::ostream& operator<<(
   return out;
 }
 
-}  // namespace internal_polynomial
+}  // namespace internal
+}  // namespace _polynomial
 }  // namespace numerics
 }  // namespace principia

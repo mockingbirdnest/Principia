@@ -15,7 +15,6 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_cbrt {
 
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -25,6 +24,7 @@ using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::Truly;
 using namespace principia::base::_cpuid;
+using namespace principia::numerics::_cbrt;
 
 #define EXPECT_SIGNALS(expression, exceptions)                             \
   do {                                                                     \
@@ -241,6 +241,5 @@ TEST_F(CubeRootTest, ParticularlyDifficultRounding) {
   }
 }
 
-}  // namespace internal_cbrt
 }  // namespace numerics
 }  // namespace principia

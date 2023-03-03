@@ -42,7 +42,8 @@ FORWARD_DECLARE_FUNCTION_FROM(
 }  // namespace mathematica
 
 namespace numerics {
-namespace internal_piecewise_poisson_series {
+namespace _piecewise_poisson_series {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
@@ -460,11 +461,16 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     Instant const& t_max,
     std::optional<int> max_points = std::nullopt);
 
-}  // namespace internal_piecewise_poisson_series
+}  // namespace internal
 
-using internal_piecewise_poisson_series::PiecewisePoissonSeries;
+using internal::PiecewisePoissonSeries;
 
+}  // namespace _piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_piecewise_poisson_series;
+}  // namespace principia::numerics
 
 #include "numerics/piecewise_poisson_series_body.hpp"

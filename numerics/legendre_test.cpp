@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_legendre {
+
+using namespace principia::numerics::_legendre;
 
 class LegendreTest : public ::testing::Test {};
 
@@ -31,6 +32,5 @@ TEST_F(LegendreTest, P16) {
   EXPECT_EQ(6435.0 / 32768.0, p16(0));
 }
 
-}  // namespace internal_legendre
 }  // namespace numerics
 }  // namespace principia

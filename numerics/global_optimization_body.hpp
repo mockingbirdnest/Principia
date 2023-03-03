@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_global_optimization {
+namespace _global_optimization {
+namespace internal {
 
 using base::noreturn;
 using namespace principia::base::_not_null;
@@ -315,6 +316,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
   noreturn();
 }
 
-}  // namespace internal_global_optimization
+}  // namespace internal
+}  // namespace _global_optimization
 }  // namespace numerics
 }  // namespace principia

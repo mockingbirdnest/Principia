@@ -6,7 +6,7 @@ namespace principia {
 namespace integrators {
 namespace internal_adams_moulton_integrator {
 
-using numerics::FixedVector;
+using namespace principia::numerics::_fixed_arrays;
 
 // Definition of an Adams-Moulton method.  Not technically an "integrator" as
 // it is not a subclass of |integrators::Integrator|.

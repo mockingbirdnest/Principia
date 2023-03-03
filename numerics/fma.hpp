@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fma {
+namespace _fma {
+namespace internal {
 
 using namespace principia::base::_cpuid;
 
@@ -39,16 +40,21 @@ inline double FusedNegatedMultiplyAdd(double a, double b, double c);
 // ⟦-ab - c⟧.
 inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 
-}  // namespace internal_fma
+}  // namespace internal
 
-using internal_fma::CanEmitFMAInstructions;
-using internal_fma::FusedMultiplyAdd;
-using internal_fma::FusedMultiplySubtract;
-using internal_fma::FusedNegatedMultiplyAdd;
-using internal_fma::FusedNegatedMultiplySubtract;
-using internal_fma::UseHardwareFMA;
+using internal::CanEmitFMAInstructions;
+using internal::FusedMultiplyAdd;
+using internal::FusedMultiplySubtract;
+using internal::FusedNegatedMultiplyAdd;
+using internal::FusedNegatedMultiplySubtract;
+using internal::UseHardwareFMA;
 
+}  // namespace _fma
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_fma;
+}  // namespace principia::numerics
 
 #include "numerics/fma_body.hpp"

@@ -21,14 +21,13 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
-using numerics::FixedLowerTriangularMatrix;
-using numerics::FixedVector;
-using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

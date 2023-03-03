@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_unbounded_arrays {
+namespace _unbounded_arrays {
+namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_named_quantities;
@@ -230,14 +231,19 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedUpperTriangularMatrix<Scalar> const& matrix);
 
-}  // namespace internal_unbounded_arrays
+}  // namespace internal
 
-using internal_unbounded_arrays::UnboundedLowerTriangularMatrix;
-using internal_unbounded_arrays::UnboundedMatrix;
-using internal_unbounded_arrays::UnboundedUpperTriangularMatrix;
-using internal_unbounded_arrays::UnboundedVector;
+using internal::UnboundedLowerTriangularMatrix;
+using internal::UnboundedMatrix;
+using internal::UnboundedUpperTriangularMatrix;
+using internal::UnboundedVector;
 
+}  // namespace _unbounded_arrays
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_unbounded_arrays;
+}  // namespace principia::numerics
 
 #include "numerics/unbounded_arrays_body.hpp"

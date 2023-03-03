@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_poisson_series_basis {
+namespace _poisson_series_basis {
+namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_hilbert;
@@ -288,6 +289,7 @@ inline std::ostream& operator<<(std::ostream& out,
              << ", parity: " << static_cast<int>(subspace.parity_) << "}";
 }
 
-}  // namespace internal_poisson_series_basis
+}  // namespace internal
+}  // namespace _poisson_series_basis
 }  // namespace numerics
 }  // namespace principia

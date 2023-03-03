@@ -18,13 +18,13 @@
 namespace principia {
 namespace quantities {
 
-using numerics::CanEmitFMAInstructions;
 using testing_utilities::AlmostEquals;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;

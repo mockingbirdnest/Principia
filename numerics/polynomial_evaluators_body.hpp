@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial_evaluators {
+namespace _polynomial_evaluators {
+namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::quantities::_elementary_functions;
@@ -414,6 +415,7 @@ HornerEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
   }
 }
 
-}  // namespace internal_polynomial_evaluators
+}  // namespace internal
+}  // namespace _polynomial_evaluators
 }  // namespace numerics
 }  // namespace principia

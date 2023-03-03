@@ -11,7 +11,8 @@
 namespace principia {
 namespace numerics {
 namespace frequency_analysis {
-namespace internal_frequency_analysis {
+namespace _frequency_analysis {
+namespace internal {
 
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
@@ -87,14 +88,19 @@ IncrementalProjection(Function const& function,
                       Instant const& t_min,
                       Instant const& t_max);
 
-}  // namespace internal_frequency_analysis
+}  // namespace internal
 
-using internal_frequency_analysis::IncrementalProjection;
-using internal_frequency_analysis::PreciseMode;
-using internal_frequency_analysis::Projection;
+using internal::IncrementalProjection;
+using internal::PreciseMode;
+using internal::Projection;
 
+}  // namespace _frequency_analysis
 }  // namespace frequency_analysis
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_frequency_analysis;
+}  // namespace principia::numerics
 
 #include "numerics/frequency_analysis_body.hpp"

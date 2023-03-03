@@ -33,11 +33,11 @@ namespace physics {
 using astronomy::ICRS;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
-using numerics::EstrinEvaluator;
-using numerics::FastFourierTransform;
-using numerics::PoissonSeries;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_fast_fourier_transform;
+using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

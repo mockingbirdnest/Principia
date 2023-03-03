@@ -53,7 +53,8 @@ FORWARD_DECLARE_FUNCTION_FROM(
 }  // namespace mathematica
 
 namespace numerics {
-namespace internal_polynomial {
+namespace _polynomial {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -404,12 +405,17 @@ std::ostream& operator<<(
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
         polynomial);
 
-}  // namespace internal_polynomial
+}  // namespace internal
 
-using internal_polynomial::Polynomial;
-using internal_polynomial::PolynomialInMonomialBasis;
+using internal::Polynomial;
+using internal::PolynomialInMonomialBasis;
 
+}  // namespace _polynomial
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_polynomial;
+}  // namespace principia::numerics
 
 #include "numerics/polynomial_body.hpp"

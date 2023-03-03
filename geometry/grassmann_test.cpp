@@ -20,11 +20,11 @@
 
 namespace principia {
 
-using numerics::CanEmitFMAInstructions;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;

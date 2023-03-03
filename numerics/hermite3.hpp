@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_hermite3 {
+namespace _hermite3 {
+namespace internal {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_hilbert;
@@ -75,11 +76,16 @@ class Hermite3 final {
   Derivative3 a3_;
 };
 
-}  // namespace internal_hermite3
+}  // namespace internal
 
-using internal_hermite3::Hermite3;
+using internal::Hermite3;
 
+}  // namespace _hermite3
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_hermite3;
+}  // namespace principia::numerics
 
 #include "numerics/hermite3_body.hpp"

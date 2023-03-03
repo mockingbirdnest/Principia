@@ -9,6 +9,8 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_polynomial_evaluators;
+
 class PolynomialEvaluatorTest : public ::testing::Test {
  public:
   template<typename Tuple, int n, std::size_t... k>

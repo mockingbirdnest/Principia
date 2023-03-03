@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
+namespace _finite_difference {
+namespace internal {
 
 using namespace principia::quantities::_named_quantities;
 
@@ -26,11 +27,16 @@ Derivative<Value, Argument> FiniteDifference(
     Argument const& step,
     int offset);
 
-}  // namespace internal_finite_difference
+}  // namespace internal
 
-using internal_finite_difference::FiniteDifference;
+using internal::FiniteDifference;
 
+}  // namespace _finite_difference
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_finite_difference;
+}  // namespace principia::numerics
 
 #include "numerics/finite_difference_body.hpp"

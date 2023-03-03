@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_matrix_computations {
+namespace _matrix_computations {
+namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_elementary_functions;
@@ -587,6 +588,7 @@ Solve(Matrix A, Vector b) {
   return x;
 }
 
-}  // namespace internal_matrix_computations
+}  // namespace internal
+}  // namespace _matrix_computations
 }  // namespace numerics
 }  // namespace principia

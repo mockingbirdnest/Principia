@@ -13,6 +13,7 @@ namespace principia {
 namespace numerics {
 
 using testing_utilities::AlmostEquals;
+using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_elementary_functions;
 
 template<typename T>

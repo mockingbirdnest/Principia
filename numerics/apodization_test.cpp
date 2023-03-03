@@ -15,6 +15,7 @@ namespace numerics {
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_apodization;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
