@@ -259,7 +259,7 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
   // Computed using Mathematica.
   EXPECT_THAT(InnerProduct(pa_->AtOrigin(t_mid),
                            pb_->AtOrigin(t_mid),
-                           apodization::Hann<HornerEvaluator>(t_min, t_max),
+                           _apodization::Hann<HornerEvaluator>(t_min, t_max),
                            t_min,
                            t_max),
               AlmostEquals(-381.25522770148542400, 0, 7));
@@ -313,7 +313,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
   auto const product =
       InnerProduct(f.AtOrigin(t_mid),
                    q.AtOrigin(t_mid),
-                   apodization::Hann<HornerEvaluator>(t_min, t_max),
+                   _apodization::Hann<HornerEvaluator>(t_min, t_max),
                    t_min,
                    t_max);
   // Exact result obtained using Mathematica.
@@ -377,7 +377,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
 
   {
     auto const product = InnerProduct(f, g,
-                     apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
+                     _apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                      t_min, t_max);
     EXPECT_THAT(
         product,
@@ -386,10 +386,11 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
             AnyOf(IsNear(0.26_(1)), IsNear(0.33_(1)), IsNear(0.38_(1)))));
   }
   {
-    auto const product = (PointwiseInnerProduct(f, g) *
-                          apodization::Dirichlet<HornerEvaluator>(t_min, t_max))
-                             .Integrate(t_min, t_max) /
-                         (t_max - t_min);
+    auto const product =
+        (PointwiseInnerProduct(f, g) *
+         _apodization::Dirichlet<HornerEvaluator>(t_min, t_max))
+            .Integrate(t_min, t_max) /
+        (t_max - t_min);
     EXPECT_THAT(
         product,
         RelativeErrorFrom(+2.0267451184776034270e-11, IsNear(4.0e3_(1))));
@@ -585,7 +586,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
   {
     auto const product =
         InnerProduct(f, g,
-                     apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
+                     _apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
                      t_min, t_max);
     EXPECT_THAT(product,
                 RelativeErrorFrom(expected_product,
@@ -600,10 +601,11 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
   // effectively losing 69 bits.  In other words, there is no hope of computing
   // this product using double.
   {
-    auto const product = (PointwiseInnerProduct(f, g) *
-                          apodization::Dirichlet<EstrinEvaluator>(t_min, t_max))
-                             .Integrate(t_min, t_max) /
-                         (t_max - t_min);
+    auto const product =
+        (PointwiseInnerProduct(f, g) *
+         _apodization::Dirichlet<EstrinEvaluator>(t_min, t_max))
+            .Integrate(t_min, t_max) /
+        (t_max - t_min);
     EXPECT_THAT(
         product,
         RelativeErrorFrom(

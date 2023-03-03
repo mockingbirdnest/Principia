@@ -8,7 +8,6 @@
 
 namespace principia {
 namespace numerics {
-namespace apodization {
 namespace _apodization {
 namespace internal {
 
@@ -73,7 +72,6 @@ using internal::Nuttall;
 using internal::Sine;
 
 }  // namespace _apodization
-}  // namespace apodization
 }  // namespace numerics
 }  // namespace principia
 

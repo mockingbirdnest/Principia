@@ -21,7 +21,7 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FROM(poisson_series,
+FORWARD_DECLARE_FR0M(poisson_series,
                      TEMPLATE(typename Value,
                               int aperiodic_degree, int periodic_degree,
                               template<typename, typename, int> class Evaluator)
@@ -37,9 +37,9 @@ FORWARD_DECLARE_FUNCTION_FROM(
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn) std::string,
     ToMathematicaBody,
-    (numerics::PoissonSeries<Value,
-                             aperiodic_degree, periodic_degree,
-                             Evaluator> const& series,
+    (numerics::_poisson_series::PoissonSeries<Value,
+                                              aperiodic_degree, periodic_degree,
+                                              Evaluator> const& series,
      OptionalExpressIn express_in));
 }  // namespace mathematica
 
@@ -52,6 +52,7 @@ using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

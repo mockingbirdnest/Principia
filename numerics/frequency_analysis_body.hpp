@@ -18,7 +18,6 @@
 
 namespace principia {
 namespace numerics {
-namespace frequency_analysis {
 namespace _frequency_analysis {
 namespace internal {
 
@@ -373,6 +372,5 @@ IncrementalProjection(Function const& function,
 
 }  // namespace internal
 }  // namespace _frequency_analysis
-}  // namespace frequency_analysis
 }  // namespace numerics
 }  // namespace principia

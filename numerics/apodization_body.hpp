@@ -18,7 +18,6 @@
 
 namespace principia {
 namespace numerics {
-namespace apodization {
 namespace _apodization {
 namespace internal {
 
@@ -200,6 +199,5 @@ PoissonSeries<double, 0, 0, Evaluator> ISO18431_2(Instant const& t_min,
 
 }  // namespace internal
 }  // namespace _apodization
-}  // namespace apodization
 }  // namespace numerics
 }  // namespace principia

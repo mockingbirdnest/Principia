@@ -10,7 +10,6 @@
 
 namespace principia {
 namespace numerics {
-namespace frequency_analysis {
 namespace _frequency_analysis {
 namespace internal {
 
@@ -95,7 +94,6 @@ using internal::PreciseMode;
 using internal::Projection;
 
 }  // namespace _frequency_analysis
-}  // namespace frequency_analysis
 }  // namespace numerics
 }  // namespace principia
 

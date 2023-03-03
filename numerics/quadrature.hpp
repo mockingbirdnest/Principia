@@ -7,7 +7,6 @@
 
 namespace principia {
 namespace numerics {
-namespace quadrature {
 namespace _quadrature {
 namespace internal {
 
@@ -65,7 +64,6 @@ using internal::MaxPointsHeuristicsForAutomaticClenshawCurtis;
 using internal::Midpoint;
 
 }  // namespace _quadrature
-}  // namespace quadrature
 }  // namespace numerics
 }  // namespace principia
 

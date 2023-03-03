@@ -35,6 +35,7 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_serialization;
+using namespace principia::numerics::_quadrature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -505,8 +506,7 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 Integrate(Argument const& argument1,
           Argument const& argument2) const {
   // + 2 is to take into account the truncation resulting from integer division.
-  return quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
-                                                      argument1, argument2);
+  return GaussLegendre<(degree_ + 2) / 2>(*this, argument1, argument2);
 }
 
 template<typename Value_, typename Argument_, int degree_,

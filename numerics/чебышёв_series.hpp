@@ -10,14 +10,7 @@
 namespace principia {
 
 namespace serialization {
-namespace _чебышёв_series {
-namespace internal {
 using ЧебышёвSeries = ChebyshevSeries;
-}  // namespace internal
-
-using internal::ЧебышёвSeries;
-
-}  // namespace _чебышёв_series
 }  // namespace serialization
 
 namespace numerics {

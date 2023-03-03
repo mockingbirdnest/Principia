@@ -15,7 +15,6 @@
 
 namespace principia {
 namespace numerics {
-namespace quadrature {
 namespace _quadrature {
 namespace internal {
 
@@ -323,6 +322,5 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
 
 }  // namespace internal
 }  // namespace _quadrature
-}  // namespace quadrature
 }  // namespace numerics
 }  // namespace principia

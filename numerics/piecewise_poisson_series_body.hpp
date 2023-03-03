@@ -12,6 +12,7 @@ namespace numerics {
 namespace _piecewise_poisson_series {
 namespace internal {
 
+using namespace principia::numerics::_quadrature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
@@ -130,7 +131,7 @@ FourierTransform() const -> Spectrum {
     Primitive<Complexification<Value>, Instant> integral;
     int cache_index = 0;
     for (int k = 0; k < series_.size(); ++k) {
-      integral += quadrature::GaussLegendre<gauss_legendre_points>(
+      integral += GaussLegendre<gauss_legendre_points>(
           [this, &cache_index, &f = series_[k], t0, ω](
               Instant const& t) -> Complexification<Value> {
             Angle const θ = ω * (t - t0);
@@ -163,7 +164,7 @@ Norm(PoissonSeries<double,
      Instant const& t_max) const {
   AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -172,7 +173,7 @@ Norm(PoissonSeries<double,
   auto integrand = [this, &weight](Instant const& t) {
     return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
   };
-  return Sqrt(quadrature::AutomaticClenshawCurtis(
+  return Sqrt(AutomaticClenshawCurtis(
                   integrand,
                   t_min, t_max,
                   /*max_relative_error=*/clenshaw_curtis_relative_error,
@@ -688,7 +689,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
              std::optional<int> max_points) {
   AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
   std::optional<int> const max_points_heuristic =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -697,7 +698,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(
+  return AutomaticClenshawCurtis(
              integrand,
              t_min,
              t_max,
