@@ -15,8 +15,8 @@
 
 namespace principia {
 namespace numerics {
-namespace quadrature {
-namespace internal_quadrature {
+namespace _quadrature {
+namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::geometry::_hilbert;
@@ -320,7 +320,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
   return result;
 }
 
-}  // namespace internal_quadrature
-}  // namespace quadrature
+}  // namespace internal
+}  // namespace _quadrature
 }  // namespace numerics
 }  // namespace principia

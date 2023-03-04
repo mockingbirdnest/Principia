@@ -17,7 +17,6 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_double_precision {
 
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
@@ -27,6 +26,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -320,7 +320,6 @@ TEST_F(DoublePrecisionTest, Mod2π) {
               AlmostEquals(0x1.F123760000000p-15 * Radian, 0));
 }
 
-}  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia
 

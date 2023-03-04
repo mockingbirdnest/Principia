@@ -26,8 +26,6 @@ namespace astronomy {
 
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
-using numerics::EstrinEvaluator;
-using numerics::PolynomialInMonomialBasis;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
 using physics::DiscreteTrajectory;
@@ -48,6 +46,8 @@ using ::testing::Property;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;

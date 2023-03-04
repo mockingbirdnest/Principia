@@ -5,6 +5,8 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_combinatorics;
+
 TEST(Combinatorics, Binomial) {
   // Pascal's triangle.
   static_assert(Binomial(0, 0) == 1);

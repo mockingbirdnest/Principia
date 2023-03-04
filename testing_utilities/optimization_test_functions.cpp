@@ -8,8 +8,7 @@
 namespace principia {
 namespace testing_utilities {
 
-using numerics::FixedMatrix;
-using numerics::FixedVector;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

@@ -6,6 +6,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _combinatorics {
+namespace internal {
 
 constexpr std::int64_t Binomial(std::int64_t const n, std::int64_t const k) {
   return FallingFactorial(n, k) / Factorial(k);
@@ -32,5 +34,7 @@ constexpr std::int64_t FallingFactorial(std::int64_t const n,
   return result;
 }
 
+}  // namespace internal
+}  // namespace _combinatorics
 }  // namespace numerics
 }  // namespace principia

@@ -9,6 +9,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _ulp_distance {
+namespace internal {
 
 inline std::int64_t ULPDistance(double const x, double const y) {
   if (x == y) {
@@ -39,5 +41,7 @@ inline std::int64_t ULPDistance(double const x, double const y) {
   return std::abs(x_bits - y_bits);
 }
 
+}  // namespace internal
+}  // namespace _ulp_distance
 }  // namespace numerics
 }  // namespace principia

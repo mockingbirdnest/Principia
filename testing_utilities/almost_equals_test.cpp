@@ -22,12 +22,6 @@
 namespace principia {
 namespace testing_utilities {
 
-using numerics::FixedLowerTriangularMatrix;
-using numerics::FixedUpperTriangularMatrix;
-using numerics::FixedVector;
-using numerics::UnboundedLowerTriangularMatrix;
-using numerics::UnboundedUpperTriangularMatrix;
-using numerics::UnboundedVector;
 using testing::Ne;
 using testing::Eq;
 using testing::Not;
@@ -37,6 +31,8 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_cgs;
 using namespace principia::quantities::_named_quantities;

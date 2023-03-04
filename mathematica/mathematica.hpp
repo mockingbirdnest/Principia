@@ -30,14 +30,6 @@ namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
-using numerics::DoublePrecision;
-using numerics::FixedVector;
-using numerics::PiecewisePoissonSeries;
-using numerics::PoissonSeries;
-using numerics::PolynomialInMonomialBasis;
-using numerics::UnboundedLowerTriangularMatrix;
-using numerics::UnboundedUpperTriangularMatrix;
-using numerics::UnboundedVector;
 using physics::DegreesOfFreedom;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
@@ -46,6 +38,12 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_piecewise_poisson_series;
+using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

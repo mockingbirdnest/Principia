@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fma {
+namespace _fma {
+namespace internal {
 
 inline double FusedMultiplyAdd(double const a, double const b, double const c) {
   if constexpr (CanEmitFMAInstructions) {
@@ -49,6 +50,7 @@ inline double FusedNegatedMultiplySubtract(double const a,
   }
 }
 
-}  // namespace internal_fma
+}  // namespace internal
+}  // namespace _fma
 }  // namespace numerics
 }  // namespace principia

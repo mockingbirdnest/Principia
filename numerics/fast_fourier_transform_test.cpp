@@ -15,13 +15,15 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fast_fourier_transform {
+namespace _fast_fourier_transform {
+namespace internal {
 
 using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Pair;
+using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_elementary_functions;
@@ -226,6 +228,7 @@ TEST_F(FastFourierTransformTest, Inverse) {
   EXPECT_THAT(nv.frequency(1) - nv.frequency(0), AlmostEquals(Δt, 0));
 }
 
-}  // namespace internal_fast_fourier_transform
+}  // namespace internal
+}  // namespace _fast_fourier_transform
 }  // namespace numerics
 }  // namespace principia

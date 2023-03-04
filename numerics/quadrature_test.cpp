@@ -19,6 +19,7 @@ using testing_utilities::RelativeErrorFrom;
 using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
+using namespace principia::numerics::_quadrature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

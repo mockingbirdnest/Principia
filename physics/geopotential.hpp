@@ -16,11 +16,11 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
-using numerics::PolynomialInMonomialBasis;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

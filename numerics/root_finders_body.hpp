@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_root_finders {
+namespace _root_finders {
+namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
@@ -388,6 +389,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
   }
 }
 
-}  // namespace internal_root_finders
+}  // namespace internal
+}  // namespace _root_finders
 }  // namespace numerics
 }  // namespace principia

@@ -10,8 +10,8 @@ namespace principia {
 namespace physics {
 namespace internal_harmonic_damping {
 
-using numerics::PolynomialInMonomialBasis;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

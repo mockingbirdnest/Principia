@@ -17,6 +17,7 @@ namespace principia {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

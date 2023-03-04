@@ -18,10 +18,10 @@ namespace principia {
 namespace astronomy {
 namespace internal_standard_product_3 {
 
-using numerics::FiniteDifference;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

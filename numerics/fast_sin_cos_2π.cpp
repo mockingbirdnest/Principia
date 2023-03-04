@@ -8,6 +8,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _fast_sin_cos_2π {
+namespace internal {
 
 namespace {
 
@@ -101,5 +103,7 @@ void FastSinCos2π(double const cycles, double& sin, double& cos) {
   }
 }
 
+}  // namespace internal
+}  // namespace _fast_sin_cos_2π
 }  // namespace numerics
 }  // namespace principia

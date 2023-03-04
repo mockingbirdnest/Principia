@@ -17,7 +17,6 @@
 namespace principia {
 namespace testing_utilities {
 
-using numerics::ULPDistance;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Ne;
@@ -25,6 +24,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_ulp_distance;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

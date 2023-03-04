@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fixed_arrays {
+namespace _fixed_arrays {
+namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_elementary_functions;
@@ -498,6 +499,7 @@ std::ostream& operator<<(
   return out;
 }
 
-}  // namespace internal_fixed_arrays
+}  // namespace internal
+}  // namespace _fixed_arrays
 }  // namespace numerics
 }  // namespace principia

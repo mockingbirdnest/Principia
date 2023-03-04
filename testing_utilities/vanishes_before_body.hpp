@@ -17,7 +17,7 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_vanishes_before {
 
-using numerics::ULPDistance;
+using namespace principia::numerics::_ulp_distance;
 
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(

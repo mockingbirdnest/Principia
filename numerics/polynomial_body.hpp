@@ -21,7 +21,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial {
+namespace _polynomial {
+namespace internal {
 
 using geometry::_cartesian_product::polynomial_ring::operator*;
 using geometry::_cartesian_product::pointwise_inner_product::
@@ -504,8 +505,8 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 Integrate(Argument const& argument1,
           Argument const& argument2) const {
   // + 2 is to take into account the truncation resulting from integer division.
-  return quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
-                                                      argument1, argument2);
+  return _quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
+                                                       argument1, argument2);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -818,6 +819,7 @@ std::ostream& operator<<(
   return out;
 }
 
-}  // namespace internal_polynomial
+}  // namespace internal
+}  // namespace _polynomial
 }  // namespace numerics
 }  // namespace principia

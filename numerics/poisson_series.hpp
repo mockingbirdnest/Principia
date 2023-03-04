@@ -21,7 +21,7 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FROM(poisson_series,
+FORWARD_DECLARE_FR0M(poisson_series,
                      TEMPLATE(typename Value,
                               int aperiodic_degree, int periodic_degree,
                               template<typename, typename, int> class Evaluator)
@@ -37,20 +37,22 @@ FORWARD_DECLARE_FUNCTION_FROM(
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn) std::string,
     ToMathematicaBody,
-    (numerics::PoissonSeries<Value,
-                             aperiodic_degree, periodic_degree,
-                             Evaluator> const& series,
+    (numerics::_poisson_series::PoissonSeries<Value,
+                                              aperiodic_degree, periodic_degree,
+                                              Evaluator> const& series,
      OptionalExpressIn express_in));
 }  // namespace mathematica
 
 namespace numerics {
-namespace internal_poisson_series {
+namespace _poisson_series {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -384,12 +386,17 @@ InnerProduct(PoissonSeries<LValue,
              Instant const& t_min,
              Instant const& t_max);
 
-}  // namespace internal_poisson_series
+}  // namespace internal
 
-using internal_poisson_series::InnerProduct;
-using internal_poisson_series::PoissonSeries;
+using internal::InnerProduct;
+using internal::PoissonSeries;
 
+}  // namespace _poisson_series
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_poisson_series;
+}  // namespace principia::numerics
 
 #include "numerics/poisson_series_body.hpp"

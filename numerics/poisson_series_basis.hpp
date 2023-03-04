@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_poisson_series_basis {
+namespace _poisson_series_basis {
+namespace internal {
 
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_named_quantities;
@@ -82,12 +83,17 @@ class PoissonSeriesBasisGenerator {
 std::ostream& operator<<(std::ostream& out,
                          PoissonSeriesSubspace const& subspace);
 
-}  // namespace internal_poisson_series_basis
+}  // namespace internal
 
-using internal_poisson_series_basis::PoissonSeriesBasisGenerator;
-using internal_poisson_series_basis::PoissonSeriesSubspace;
+using internal::PoissonSeriesBasisGenerator;
+using internal::PoissonSeriesSubspace;
 
+}  // namespace _poisson_series_basis
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_poisson_series_basis;
+}  // namespace principia::numerics
 
 #include "numerics/poisson_series_basis_body.hpp"

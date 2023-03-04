@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fit_hermite_spline {
+namespace _fit_hermite_spline {
+namespace internal {
 
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_named_quantities;
@@ -35,11 +36,16 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
         typename Samples::value_type const&)> const& get_derivative,
     typename Hilbert<Difference<Value>>::NormType const& tolerance);
 
-}  // namespace internal_fit_hermite_spline
+}  // namespace internal
 
-using internal_fit_hermite_spline::FitHermiteSpline;
+using internal::FitHermiteSpline;
 
+}  // namespace _fit_hermite_spline
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_fit_hermite_spline;
+}  // namespace principia::numerics
 
 #include "numerics/fit_hermite_spline_body.hpp"

@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_global_optimization {
+namespace _global_optimization {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_hilbert;
@@ -122,11 +123,16 @@ class MultiLevelSingleLinkage {
   std::uniform_real_distribution<> distribution_;
 };
 
-}  // namespace internal_global_optimization
+}  // namespace internal
 
-using internal_global_optimization::MultiLevelSingleLinkage;
+using internal::MultiLevelSingleLinkage;
 
+}  // namespace _global_optimization
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_global_optimization;
+}  // namespace principia::numerics
 
 #include "numerics/global_optimization_body.hpp"

@@ -13,12 +13,12 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
-using numerics::Brent;
-using numerics::Hermite3;
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::numerics::_hermite3;
+using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

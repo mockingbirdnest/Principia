@@ -9,7 +9,7 @@ namespace principia {
 namespace astronomy {
 namespace fortran_astrodynamics_toolkit {
 
-using numerics::FixedVector;
+using namespace principia::numerics::_fixed_arrays;
 
 template<int nmodel, int mmodel>
 R3Element<double> ComputeGravityAccelerationLear(

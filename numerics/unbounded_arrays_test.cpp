@@ -10,6 +10,7 @@ namespace principia {
 namespace numerics {
 
 using testing_utilities::AlmostEquals;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 
 class UnboundedArraysTest : public ::testing::Test {

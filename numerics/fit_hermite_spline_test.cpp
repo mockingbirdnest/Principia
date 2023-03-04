@@ -19,6 +19,7 @@ using ::testing::Eq;
 using ::testing::ResultOf;
 using namespace principia::base::_ranges;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_fit_hermite_spline;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

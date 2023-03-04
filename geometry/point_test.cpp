@@ -17,11 +17,11 @@ namespace geometry {
 
 using astronomy::J2000;
 using astronomy::operator""_TT;
-using numerics::CanEmitFMAInstructions;
 using testing::Eq;
 using testing_utilities::AlmostEquals;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_point;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

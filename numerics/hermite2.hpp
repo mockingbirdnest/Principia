@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_hermite2 {
+namespace _hermite2 {
+namespace internal {
 
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_named_quantities;
@@ -43,11 +44,16 @@ class Hermite2 final {
   Derivative2 a2_;
 };
 
-}  // namespace internal_hermite2
+}  // namespace internal
 
-using internal_hermite2::Hermite2;
+using internal::Hermite2;
 
+}  // namespace _hermite2
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_hermite2;
+}  // namespace principia::numerics
 
 #include "numerics/hermite2_body.hpp"

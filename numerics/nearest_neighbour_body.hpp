@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_nearest_neighbour {
+namespace _nearest_neighbour {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -364,6 +365,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   }
 }
 
-}  // namespace internal_nearest_neighbour
+}  // namespace internal
+}  // namespace _nearest_neighbour
 }  // namespace numerics
 }  // namespace principia

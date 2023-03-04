@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_elliptic_integrals {
+namespace _elliptic_integrals {
+namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_elementary_functions;
@@ -2071,6 +2072,7 @@ Angle EllipticK(double const mʹ) {
   }
 }
 
-}  // namespace internal_elliptic_integrals
+}  // namespace internal
+}  // namespace _elliptic_integrals
 }  // namespace numerics
 }  // namespace principia

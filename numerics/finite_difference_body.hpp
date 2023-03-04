@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
+namespace _finite_difference {
+namespace internal {
 
 template<typename Value, typename Argument, std::size_t n>
 Derivative<Value, Argument> FiniteDifference(
@@ -42,9 +43,10 @@ Derivative<Value, Argument> FiniteDifference(
   return sum / (denominator * step);
 }
 
-}  // namespace internal_finite_difference
+}  // namespace internal
 
-using internal_finite_difference::FiniteDifference;
+using internal::FiniteDifference;
 
+}  // namespace _finite_difference
 }  // namespace numerics
 }  // namespace principia

@@ -37,10 +37,10 @@ class DiscreteTrajectorySegmentTest;
 
 namespace internal_discrete_trajectory_segment {
 
-using numerics::Hermite3;
 using physics::DegreesOfFreedom;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_hermite3;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {

@@ -23,7 +23,6 @@ namespace principia {
 
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
-using numerics::Bisect;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -40,6 +39,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_sign;
+using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

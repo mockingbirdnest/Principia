@@ -39,6 +39,8 @@ using ::testing::Lt;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_frequency_analysis;
+using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -148,7 +150,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
   auto const precise_mode =
       PreciseMode(mode,
                   piecewise_sin,
-                  apodization::Hann<HornerEvaluator>(t_min, t_max));
+                  _apodization::Hann<HornerEvaluator>(t_min, t_max));
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(2.6e-8_(1))));
 }
 
@@ -197,7 +199,7 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
   auto const precise_mode =
       PreciseMode(mode,
                   piecewise_sin,
-                  apodization::Hann<HornerEvaluator>(t_min, t_max));
+                  _apodization::Hann<HornerEvaluator>(t_min, t_max));
   EXPECT_THAT(precise_mode, RelativeErrorFrom(ω, IsNear(4.2e-11_(1))));
 }
 
@@ -220,7 +222,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   auto const projection4 =
       Projection<4, 4>(series,
                        ω,
-                       apodization::Hann<HornerEvaluator>(t_min, t_max),
+                       _apodization::Hann<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t_min + i * Radian / ω),
@@ -231,7 +233,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   auto const projection5 =
       Projection<5, 5>(series,
                        ω,
-                       apodization::Hann<HornerEvaluator>(t_min, t_max),
+                       _apodization::Hann<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t_min + i * Radian / ω),
@@ -242,7 +244,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesScalarProjection) {
   auto const projection3 =
       Projection<3, 3>(series,
                        ω,
-                       apodization::Hann<HornerEvaluator>(t_min, t_max),
+                       _apodization::Hann<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection3(t_min + i * Radian / ω),
@@ -300,7 +302,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   auto const projection4 =
       Projection<4, 4>(series,
                        ω,
-                       apodization::Hann<HornerEvaluator>(t_min, t_max),
+                       _apodization::Hann<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection4(t_min + i * Radian / ω),
@@ -311,7 +313,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   auto const projection5 =
       Projection<5, 5>(series,
                        ω,
-                       apodization::Hann<HornerEvaluator>(t_min, t_max),
+                       _apodization::Hann<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection5(t_min + i * Radian / ω),
@@ -322,7 +324,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesVectorProjection) {
   auto const projection3 =
       Projection<3, 3>(series,
                        ω,
-                       apodization::Hann<HornerEvaluator>(t_min, t_max),
+                       _apodization::Hann<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(projection3(t_min + i * Radian / ω),
@@ -370,7 +372,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
   auto const projection4 =
       Projection<4, 4>(piecewise_series,
                        ω,
-                       apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
+                       _apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
                        t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(
@@ -443,7 +445,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
       IncrementalProjection<4, 4>(
           series.value(),
           angular_frequency_calculator,
-          apodization::Hann<HornerEvaluator>(t_min, t_max),
+          _apodization::Hann<HornerEvaluator>(t_min, t_max),
           t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(
@@ -515,7 +517,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionSecular) {
       IncrementalProjection<4, 4>(
           series,
           angular_frequency_calculator,
-          apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
+          _apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
           t_min, t_max);
   for (int i = 0; i <= 100; ++i) {
     EXPECT_THAT(

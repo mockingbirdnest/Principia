@@ -7,6 +7,8 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_fixed_arrays;
+
 using namespace principia::quantities::_elementary_functions;
 
 class FixedArraysTest : public ::testing::Test {

@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_matrix_computations {
+namespace _matrix_computations {
+namespace internal {
 
 using namespace principia::quantities::_named_quantities;
 
@@ -104,18 +105,23 @@ template<typename Matrix, typename Vector>
 typename SolveGenerator<Matrix, Vector>::Result
 Solve(Matrix A, Vector b);
 
-}  // namespace internal_matrix_computations
+}  // namespace internal
 
-using internal_matrix_computations::BackSubstitution;
-using internal_matrix_computations::CholeskyDecomposition;
-using internal_matrix_computations::ClassicalJacobi;
-using internal_matrix_computations::ForwardSubstitution;
-using internal_matrix_computations::RayleighQuotient;
-using internal_matrix_computations::RayleighQuotientIteration;
-using internal_matrix_computations::Solve;
-using internal_matrix_computations::ᵗRDRDecomposition;
+using internal::BackSubstitution;
+using internal::CholeskyDecomposition;
+using internal::ClassicalJacobi;
+using internal::ForwardSubstitution;
+using internal::RayleighQuotient;
+using internal::RayleighQuotientIteration;
+using internal::Solve;
+using internal::ᵗRDRDecomposition;
 
+}  // namespace _matrix_computations
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_matrix_computations;
+}  // namespace principia::numerics
 
 #include "numerics/matrix_computations_body.hpp"

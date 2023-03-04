@@ -10,6 +10,7 @@ namespace numerics {
 
 using testing_utilities::AlmostEquals;
 using namespace principia::base::_cpuid;
+using namespace principia::numerics::_fma;
 
 class FMATest : public testing::Test {
  protected:

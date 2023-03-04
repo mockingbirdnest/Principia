@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_hermite3 {
+namespace _hermite3 {
+namespace internal {
 
 using namespace principia::quantities::_named_quantities;
 
@@ -98,6 +99,7 @@ bool Hermite3<Argument, Value>::LInfinityErrorIsWithin(
   return true;
 }
 
-}  // namespace internal_hermite3
+}  // namespace internal
+}  // namespace _hermite3
 }  // namespace numerics
 }  // namespace principia

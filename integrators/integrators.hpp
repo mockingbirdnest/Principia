@@ -16,9 +16,9 @@ namespace principia {
 namespace integrators {
 namespace internal_integrators {
 
-using numerics::DoublePrecision;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
 
 // A base class for integrators.

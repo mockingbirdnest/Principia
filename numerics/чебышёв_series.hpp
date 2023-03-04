@@ -14,7 +14,8 @@ using ЧебышёвSeries = ChebyshevSeries;
 }  // namespace serialization
 
 namespace numerics {
-namespace internal_чебышёв_series {
+namespace _чебышёв_series {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -78,11 +79,16 @@ class ЧебышёвSeries final {
   EvaluationHelper<Vector> helper_;
 };
 
-}  // namespace internal_чебышёв_series
+}  // namespace internal
 
-using internal_чебышёв_series::ЧебышёвSeries;
+using internal::ЧебышёвSeries;
 
+}  // namespace _чебышёв_series
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_чебышёв_series;
+}  // namespace principia::numerics
 
 #include "numerics/чебышёв_series_body.hpp"

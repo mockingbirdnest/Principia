@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_davenport_q_method {
+namespace _davenport_q_method {
+namespace internal {
 
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
@@ -80,6 +81,7 @@ Rotation<FromFrame, ToFrame> DavenportQMethod(
   return Rotation<FromFrame, ToFrame>(eigenvector.Conjugate());
 }
 
-}  // namespace internal_davenport_q_method
+}  // namespace internal
+}  // namespace _davenport_q_method
 }  // namespace numerics
 }  // namespace principia

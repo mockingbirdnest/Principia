@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_gradient_descent {
+namespace _gradient_descent {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_symmetric_bilinear_form;
@@ -230,6 +231,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   return xₖ;
 }
 
-}  // namespace internal_gradient_descent
+}  // namespace internal
+}  // namespace _gradient_descent
 }  // namespace numerics
 }  // namespace principia

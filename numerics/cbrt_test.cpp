@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_cbrt {
+namespace _cbrt {
+namespace internal {
 
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -241,6 +242,7 @@ TEST_F(CubeRootTest, ParticularlyDifficultRounding) {
   }
 }
 
-}  // namespace internal_cbrt
+}  // namespace internal
+}  // namespace _cbrt
 }  // namespace numerics
 }  // namespace principia

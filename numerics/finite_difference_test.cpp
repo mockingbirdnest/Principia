@@ -13,7 +13,6 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
 
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
@@ -23,6 +22,7 @@ using testing_utilities::Slope;
 using ::testing::Each;
 using ::testing::Lt;
 using ::testing::Types;
+using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
@@ -88,6 +88,5 @@ TYPED_TEST(FiniteDifferenceTest, HighDegreePolynomial) {
   }
 }
 
-}  // namespace internal_finite_difference
 }  // namespace numerics
 }  // namespace principia

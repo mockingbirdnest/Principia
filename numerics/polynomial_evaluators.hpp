@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial_evaluators {
+namespace _polynomial_evaluators {
+namespace internal {
 
 using namespace principia::quantities::_named_quantities;
 
@@ -14,22 +15,24 @@ template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator;
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct HornerEvaluator;
-}  // namespace internal_polynomial_evaluators
+
+}  // namespace internal
 
 template<typename Value, typename Argument, int degree>
-using EstrinEvaluator = internal_polynomial_evaluators::
+using EstrinEvaluator = internal::
     EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
 template<typename Value, typename Argument, int degree>
-using EstrinEvaluatorWithoutFMA = internal_polynomial_evaluators::
+using EstrinEvaluatorWithoutFMA = internal::
     EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
 template<typename Value, typename Argument, int degree>
-using HornerEvaluator = internal_polynomial_evaluators::
+using HornerEvaluator = internal::
     HornerEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
 template<typename Value, typename Argument, int degree>
-using HornerEvaluatorWithoutFMA = internal_polynomial_evaluators::
+using HornerEvaluatorWithoutFMA = internal::
     HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
 
-namespace internal_polynomial_evaluators {
+namespace internal {
+
 // We use FORCE_INLINE because we have to write this recursively, but we really
 // want linear code.
 
@@ -41,7 +44,7 @@ struct EstrinEvaluator {
       Value,
       Argument,
       degree,
-      numerics::EstrinEvaluator>::Coefficients;
+      _polynomial_evaluators::EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
@@ -58,7 +61,7 @@ struct HornerEvaluator {
       Value,
       Argument,
       degree,
-      numerics::HornerEvaluator>::Coefficients;
+      _polynomial_evaluators::HornerEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
@@ -67,8 +70,13 @@ struct HornerEvaluator {
                      Argument const& argument);
 };
 
-}  // namespace internal_polynomial_evaluators
+}  // namespace internal
+}  // namespace _polynomial_evaluators
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_polynomial_evaluators;
+}  // namespace principia::numerics
 
 #include "numerics/polynomial_evaluators_body.hpp"

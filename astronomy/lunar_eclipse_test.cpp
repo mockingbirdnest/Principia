@@ -21,7 +21,6 @@ namespace principia {
 
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
-using numerics::Bisect;
 using physics::Ephemeris;
 using physics::SolarSystem;
 using testing_utilities::AbsoluteError;
@@ -32,6 +31,7 @@ using ::testing::Eq;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;

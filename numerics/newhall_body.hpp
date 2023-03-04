@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_newhall {
+namespace _newhall {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -262,6 +263,7 @@ NewhallApproximationInMonomialBasis(int degree,
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE
 
-}  // namespace internal_newhall
+}  // namespace internal
+}  // namespace _newhall
 }  // namespace numerics
 }  // namespace principia

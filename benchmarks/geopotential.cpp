@@ -26,7 +26,6 @@ namespace physics {
 
 using astronomy::ICRS;
 using astronomy::ITRS;
-using numerics::FixedMatrix;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
 using namespace principia::base::_not_null;
@@ -34,6 +33,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;

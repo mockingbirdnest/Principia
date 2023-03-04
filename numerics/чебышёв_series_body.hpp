@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_чебышёв_series {
+namespace _чебышёв_series {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
@@ -281,6 +282,7 @@ template<typename Vector>
                        Instant::ReadFromMessage(message.t_max()));
 }
 
-}  // namespace internal_чебышёв_series
+}  // namespace internal
+}  // namespace _чебышёв_series
 }  // namespace numerics
 }  // namespace principia

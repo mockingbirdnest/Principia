@@ -28,6 +28,7 @@ using ::testing::IsEmpty;
 using ::testing::Le;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_point;
+using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_gradient_descent {
+namespace _gradient_descent {
+namespace internal {
 
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_named_quantities;
@@ -39,11 +40,16 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     typename Hilbert<Difference<Argument>>::NormType const& radius =
         Infinity<typename Hilbert<Difference<Argument>>::NormType>);
 
-}  // namespace internal_gradient_descent
+}  // namespace internal
 
-using internal_gradient_descent::BroydenFletcherGoldfarbShanno;
+using internal::BroydenFletcherGoldfarbShanno;
 
+}  // namespace _gradient_descent
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_gradient_descent;
+}  // namespace principia::numerics
 
 #include "numerics/gradient_descent_body.hpp"

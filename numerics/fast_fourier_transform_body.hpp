@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fast_fourier_transform {
+namespace _fast_fourier_transform {
+namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::quantities::_elementary_functions;
@@ -210,6 +211,7 @@ FastFourierTransform<Value, Argument, size_>::frequency(int const s) const {
   return s * Δω_;
 }
 
-}  // namespace internal_fast_fourier_transform
+}  // namespace internal
+}  // namespace _fast_fourier_transform
 }  // namespace numerics
 }  // namespace principia

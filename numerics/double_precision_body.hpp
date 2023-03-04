@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_double_precision {
+namespace _double_precision {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
@@ -402,6 +403,7 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace internal_double_precision
+}  // namespace internal
+}  // namespace _double_precision
 }  // namespace numerics
 }  // namespace principia

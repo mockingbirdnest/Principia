@@ -32,6 +32,7 @@ using testing_utilities::VanishesBefore;
 using testing_utilities::RelativeErrorFrom;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -197,11 +198,11 @@ TEST_F(PiecewisePoissonSeriesTest, ActionMultiorigin) {
 TEST_F(PiecewisePoissonSeriesTest, InnerProduct) {
   double const d1 = InnerProduct(
       pp_, p_,
-      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      _apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
       /*max_points=*/1 << 20);
   double const d2 = InnerProduct(
       p_, pp_,
-      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      _apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
       /*max_points=*/1 << 20);
   EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
   EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
@@ -211,11 +212,11 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
   auto const p = p_.AtOrigin(t0_ + 2 * Second);
   double const d1 = InnerProduct(
       pp_, p,
-      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      _apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
       /*max_points=*/1 << 20);
   double const d2 = InnerProduct(
       p, pp_,
-      apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
+      _apodization::Dirichlet<HornerEvaluator>(t0_, t0_ + 2 * Second),
       /*max_points=*/1 << 20);
   EXPECT_THAT(d1, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
   EXPECT_THAT(d2, RelativeErrorFrom((3 * π - 26) / (8 * π), IsNear(3e-11_(1))));
@@ -256,7 +257,7 @@ TEST_F(PiecewisePoissonSeriesTest, Fourier) {
                     std::greater<>{}),
               IsNear(1.209_(1) * Radian / Second));
 
-  auto const fw = f * apodization::Hann<HornerEvaluator>(f.t_min(), f.t_max());
+  auto const fw = f * _apodization::Hann<HornerEvaluator>(f.t_min(), f.t_max());
 
   auto const fw_fourier_transform = fw.FourierTransform();
   auto const fw_power_spectrum =

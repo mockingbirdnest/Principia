@@ -17,6 +17,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
+using namespace principia::numerics::_fast_sin_cos_2π;
 using testing_utilities::operator""_;
 
 namespace numerics {

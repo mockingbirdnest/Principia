@@ -18,8 +18,8 @@
 
 namespace principia {
 namespace numerics {
-namespace frequency_analysis {
-namespace internal_frequency_analysis {
+namespace _frequency_analysis {
+namespace internal {
 
 // Note that using CGS and R in some tests produces imprecise results, possibly
 // because CGS doesn't yield a good value for R ([Bjö94] is silent on this
@@ -370,7 +370,7 @@ IncrementalProjection(Function const& function,
 #undef PRINCIPIA_USE_CGS
 #undef PRINCIPIA_USE_R
 
-}  // namespace internal_frequency_analysis
-}  // namespace frequency_analysis
+}  // namespace internal
+}  // namespace _frequency_analysis
 }  // namespace numerics
 }  // namespace principia
