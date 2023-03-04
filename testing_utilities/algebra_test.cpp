@@ -26,8 +26,8 @@ TEST_F(AlgebraTest, Group) {
 }
 
 #if !PRINCIPIA_COMPILER_MSVC_HANDLES_TEST_GROUP
-}  // namespace internal
-}  // namespace _algebra
+}  // namespace internal  // NOLINT
+}  // namespace _algebra  // NOLINT
 #endif
 }  // namespace testing_utilities
 }  // namespace principia
