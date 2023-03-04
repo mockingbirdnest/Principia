@@ -11,7 +11,7 @@
 namespace principia {
 
 namespace testing_utilities {
-FORWARD_DECLARE_FROM(componentwise,
+FORWARD_DECLARE_FR0M(componentwise,
                      TEMPLATE(typename PairType) class,
                      ComponentwiseMatcher2Impl);
 }  // namespace testing_utilities
@@ -119,7 +119,7 @@ class Pair {
 
   // This is needed for testing.
   template<typename PairType>
-  friend class testing_utilities::internal_componentwise::
+  friend class testing_utilities::_componentwise::internal::
       ComponentwiseMatcher2Impl;
 
   template<typename U1, typename U2>

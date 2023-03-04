@@ -62,22 +62,11 @@ MATCHER_P(SSELowHalfIs,
 }  // namespace testing_utilities
 
 namespace serialization {
-namespace _matchers {
-namespace internal {
 
 inline void PrintTo(Part const& message, std::ostream* const os) {
   *os << message.ShortDebugString();
 }
 
-}  // namespace internal
-
-using internal::PrintTo;
-
-}  // namespace _matchers
 }  // namespace serialization
 
 }  // namespace principia
-
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_matchers;
-}  // namespace principia::testing_utilities
