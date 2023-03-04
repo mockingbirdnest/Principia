@@ -25,17 +25,15 @@ namespace principia {
 namespace integrators {
 namespace internal_explicit_runge_kutta_integrator {
 
-using testing_utilities::ApproximateQuantity;
-using testing_utilities::IsNear;
-using testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using testing_utilities::RelativeError;
-using testing_utilities::Slope;
-using testing_utilities::operator""_;
 using ::testing::ValuesIn;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
 
 // The execution time is exponential in |step_sizes|.
 constexpr int step_sizes = 110;

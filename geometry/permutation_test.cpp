@@ -17,11 +17,11 @@
 namespace principia {
 
 using ::testing::Eq;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
 using namespace principia::geometry::_permutation;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
 
 namespace geometry {
 

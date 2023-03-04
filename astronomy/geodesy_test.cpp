@@ -32,9 +32,6 @@ using physics::KeplerOrbit;
 using physics::MasslessBody;
 using physics::OblateBody;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteError;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using namespace principia::base::_bundle;
@@ -42,6 +39,9 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 class GeodesyTest : public ::testing::Test {
  protected:

@@ -35,6 +35,7 @@ using namespace principia::geometry::_rp2_point;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
 
 namespace testing_utilities {
 

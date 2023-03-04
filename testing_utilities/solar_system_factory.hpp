@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_solar_system_factory {
+namespace _solar_system_factory {
+namespace internal {
 
 using astronomy::ICRS;
 using physics::Ephemeris;
@@ -111,11 +112,16 @@ class SolarSystemFactory : not_constructible {
   static std::string name(int index);
 };
 
-}  // namespace internal_solar_system_factory
+}  // namespace internal
 
-using internal_solar_system_factory::SolarSystemFactory;
+using internal::SolarSystemFactory;
 
+}  // namespace _solar_system_factory
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_solar_system_factory;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/solar_system_factory_body.hpp"

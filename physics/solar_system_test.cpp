@@ -20,11 +20,11 @@ namespace internal_solar_system {
 using astronomy::ICRS;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
-using testing_utilities::RelativeError;
 using ::testing::ElementsAreArray;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::geometry::_frame;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_numerics;
 
 class SolarSystemTest : public ::testing::Test {};
 

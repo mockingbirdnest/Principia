@@ -18,7 +18,6 @@ namespace numerics {
 namespace _fast_fourier_transform {
 namespace internal {
 
-using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
@@ -30,6 +29,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class FastFourierTransformTest : public ::testing::Test {
  protected:

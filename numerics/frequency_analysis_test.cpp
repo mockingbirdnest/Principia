@@ -28,10 +28,6 @@ namespace principia {
 namespace numerics {
 namespace frequency_analysis {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Ge;
 using ::testing::Gt;
@@ -45,6 +41,10 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 // Constructs a piecewise Poisson series that has the given number of pieces
 // covering [t_min, t_max] and that matches |series| over that interval.

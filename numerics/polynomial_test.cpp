@@ -24,8 +24,6 @@
 
 namespace principia {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -35,6 +33,8 @@ using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
 
 namespace numerics {
 

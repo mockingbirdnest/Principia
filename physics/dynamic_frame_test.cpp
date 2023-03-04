@@ -18,12 +18,6 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_;
 using ::testing::Gt;
 using ::testing::Invoke;
 using ::testing::Lt;
@@ -38,6 +32,12 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class DynamicFrameTest : public testing::Test {
  protected:

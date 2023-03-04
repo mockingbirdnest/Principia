@@ -15,6 +15,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _serialization {
+namespace internal {
 
 inline void PrintUtf16ToFile(char16_t const c, std::fstream& file) {
   char chars[sizeof(char16_t)];
@@ -185,5 +187,7 @@ void WriteToHexadecimalFile(
   file.close();
 }
 
+}  // namespace internal
+}  // namespace _serialization
 }  // namespace testing_utilities
 }  // namespace principia

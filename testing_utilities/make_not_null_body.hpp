@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_make_not_null {
+namespace _make_not_null {
+namespace internal {
 
 template<typename T>
 not_null<T> make_not_null() {
@@ -16,6 +17,7 @@ not_null<T> make_not_null() {
 #endif
 }
 
-}  // namespace internal_make_not_null
+}  // namespace internal
+}  // namespace _make_not_null
 }  // namespace testing_utilities
 }  // namespace principia

@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _algebra {
+namespace internal {
 
 template<typename T>
 void TestEquality(T const& low, T const& high) {
@@ -236,5 +238,7 @@ void TestSkewField(
   TestVectorSpace(zero, a, b, c, zero, one, x, y, min_ulps, max_ulps);
 }
 
+}  // namespace internal
+}  // namespace _algebra
 }  // namespace testing_utilities
 }  // namespace principia

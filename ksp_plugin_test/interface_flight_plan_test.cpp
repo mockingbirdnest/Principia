@@ -58,7 +58,6 @@ using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -79,6 +78,7 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 

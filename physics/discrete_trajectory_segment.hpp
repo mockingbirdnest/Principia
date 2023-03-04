@@ -20,7 +20,7 @@
 namespace principia {
 
 namespace testing_utilities {
-FORWARD_DECLARE_FROM(discrete_trajectory_factories,
+FORWARD_DECLARE_FR0M(discrete_trajectory_factories,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryFactoriesFriend);
 }  // namespace testing_utilities
@@ -227,7 +227,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   friend class physics::DiscreteTrajectorySegmentIteratorTest;
   friend class physics::DiscreteTrajectorySegmentTest;
   template<typename F>
-  friend class testing_utilities::DiscreteTrajectoryFactoriesFriend;
+  friend class testing_utilities::_discrete_trajectory_factories::
+      DiscreteTrajectoryFactoriesFriend;
 };
 
 }  // namespace internal_discrete_trajectory_segment

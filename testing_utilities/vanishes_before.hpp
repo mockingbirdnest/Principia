@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_vanishes_before {
+namespace _vanishes_before {
+namespace internal {
 
 template<typename T>
 class VanishesBeforeMatcher;
@@ -61,11 +62,16 @@ class VanishesBeforeMatcher final {
   std::int64_t const max_ulps_;
 };
 
-}  // namespace internal_vanishes_before
+}  // namespace internal
 
-using internal_vanishes_before::VanishesBefore;
+using internal::VanishesBefore;
 
+}  // namespace _vanishes_before
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_vanishes_before;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/vanishes_before_body.hpp"

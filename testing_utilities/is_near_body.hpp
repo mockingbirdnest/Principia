@@ -17,7 +17,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_is_near {
+namespace _is_near {
+namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
@@ -86,6 +87,7 @@ void IsNearMatcher<T>::DescribeNegationTo(std::ostream* out) const {
   *out << "is not near " << expected_;
 }
 
-}  // namespace internal_is_near
+}  // namespace internal
+}  // namespace _is_near
 }  // namespace testing_utilities
 }  // namespace principia

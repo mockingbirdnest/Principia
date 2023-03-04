@@ -10,9 +10,9 @@
 namespace principia {
 namespace base {
 
-using testing_utilities::StatusIs;
 using ::testing::Eq;
 using namespace principia::base::_bundle;
+using namespace principia::testing_utilities::_matchers;
 using namespace std::chrono_literals;
 
 constexpr int workers = 8;

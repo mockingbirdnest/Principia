@@ -12,12 +12,12 @@ namespace internal_part {
 
 using ::testing::_;
 using ::testing::MockFunction;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
 
 class PartTest : public testing::Test {
  protected:

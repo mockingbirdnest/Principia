@@ -22,8 +22,6 @@ using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
 using interface::principia__SerializePlugin;
 using interface::ReadPluginFromFile;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::ReadLinesFromHexadecimalFile;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
@@ -31,6 +29,7 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_serialization;
 
 namespace ksp_plugin {
 

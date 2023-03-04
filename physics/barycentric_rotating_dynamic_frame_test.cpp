@@ -30,8 +30,6 @@ namespace internal_barycentric_rotating_dynamic_frame {
 using astronomy::ICRS;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
@@ -43,6 +41,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_numerics;
 
 namespace {
 

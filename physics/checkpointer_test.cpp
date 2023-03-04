@@ -9,7 +9,6 @@
 namespace principia {
 namespace physics {
 
-using testing_utilities::StatusIs;
 using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::InSequence;
@@ -21,6 +20,7 @@ using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_matchers;
 
 ACTION_P(SetPayload, payload) {
   arg0->payload = payload;

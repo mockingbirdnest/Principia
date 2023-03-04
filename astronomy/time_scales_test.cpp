@@ -12,10 +12,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_time_scales {
 
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -23,6 +19,10 @@ using ::testing::Lt;
 using ::testing::Ne;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
 

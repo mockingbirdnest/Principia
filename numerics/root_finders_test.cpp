@@ -19,7 +19,6 @@
 
 namespace principia {
 
-using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -33,6 +32,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 namespace numerics {
 

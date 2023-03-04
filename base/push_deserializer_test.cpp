@@ -27,12 +27,12 @@ using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
-using testing_utilities::EqualsProto;
 using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
 using namespace principia::base::_not_null;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
+using namespace principia::testing_utilities::_matchers;
 
 namespace this_internal = _push_deserializer::internal;
 

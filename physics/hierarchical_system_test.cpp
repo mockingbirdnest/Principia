@@ -14,8 +14,6 @@ namespace principia {
 namespace physics {
 namespace internal_hierarchical_system {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -23,6 +21,8 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class HierarchicalSystemTest : public ::testing::Test {
  protected:

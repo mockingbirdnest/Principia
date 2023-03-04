@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_integration {
+namespace _integration {
+namespace internal {
 
 using astronomy::J2000;
 using namespace principia::geometry::_grassmann;
@@ -115,6 +116,7 @@ absl::Status ComputeLegendrePolynomialSecondDerivative(
   return absl::OkStatus();
 }
 
-}  // namespace internal_integration
+}  // namespace internal
+}  // namespace _integration
 }  // namespace testing_utilities
 }  // namespace principia

@@ -21,8 +21,6 @@ namespace physics {
 
 using ksp_plugin::World;
 using physics::internal_discrete_trajectory_types::Timeline;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::NewMotionlessTrajectoryTimeline;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -31,6 +29,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
 
 namespace {
 

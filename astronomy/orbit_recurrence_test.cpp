@@ -12,7 +12,6 @@ namespace astronomy {
 
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Lt;
@@ -20,6 +19,7 @@ using ::testing::Property;
 using namespace principia::base::_not_null;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_numerics;
 
 class OrbitRecurrenceTest : public ::testing::Test {
  protected:

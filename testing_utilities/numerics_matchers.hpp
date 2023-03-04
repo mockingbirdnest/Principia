@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_numerics_matchers {
+namespace _numerics_matchers {
+namespace internal {
 
 using ::testing::Matcher;
 using namespace principia::quantities::_named_quantities;
@@ -23,13 +24,18 @@ template<typename Value>
 Matcher<Value> RelativeErrorFrom(Value const& expected,
                                  Matcher<double> const& error_matcher);
 
-}  // namespace internal_numerics_matchers
+}  // namespace internal
 
-using internal_numerics_matchers::AbsoluteErrorFrom;
-using internal_numerics_matchers::DifferenceFrom;
-using internal_numerics_matchers::RelativeErrorFrom;
+using internal::AbsoluteErrorFrom;
+using internal::DifferenceFrom;
+using internal::RelativeErrorFrom;
 
+}  // namespace _numerics_matchers
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_numerics_matchers;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/numerics_matchers_body.hpp"

@@ -16,10 +16,10 @@ namespace internal_equator_relevance_threshold {
 
 using astronomy::ICRS;
 using physics::SolarSystem;
-using testing_utilities::IsNear;
 using namespace principia::base::_not_null;
 using namespace principia::quantities::_astronomy;
-using testing_utilities::operator""_;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class EquatorRelevanceThresholdTest : public testing::Test {
  protected:

@@ -31,10 +31,6 @@ namespace internal_body_surface_dynamic_frame {
 using astronomy::ICRS;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
@@ -48,6 +44,10 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 

@@ -56,10 +56,6 @@ using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::ReadFromHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -94,6 +90,9 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_serialization;
 
 namespace {
 

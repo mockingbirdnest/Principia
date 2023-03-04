@@ -24,11 +24,11 @@ namespace geometry {
 using testing::Contains;
 using testing::Eq;
 using testing::Lt;
-using testing_utilities::AlmostEquals;
-using testing_utilities::RelativeError;
 using namespace principia::geometry::_affine_map;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_numerics;
 
 class AffineMapTest : public testing::Test {
  protected:

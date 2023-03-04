@@ -33,11 +33,6 @@ using astronomy::date_time::operator""_DateTime;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Plugin;
 using physics::DiscreteTrajectory;
-using testing_utilities::operator""_;
-using testing_utilities::IsNear;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::StringLogSink;
-using testing_utilities::WriteToBinaryFile;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -52,6 +47,10 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_string_log_sink;
 
 using namespace std::chrono_literals;
 

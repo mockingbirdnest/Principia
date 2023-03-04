@@ -33,9 +33,6 @@ using astronomy::J2000;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::LegendreNormalizationFactor;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::IsNull;
 using ::testing::NotNull;
 using namespace principia::geometry::_frame;
@@ -46,6 +43,9 @@ using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class BodyTest : public testing::Test {
  protected:

@@ -24,7 +24,6 @@ using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
@@ -35,6 +34,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class ApsidesTest : public ::testing::Test {
  protected:

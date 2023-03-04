@@ -32,11 +32,6 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteError;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -55,6 +50,10 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 

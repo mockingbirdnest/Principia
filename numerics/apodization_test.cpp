@@ -12,12 +12,12 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::VanishesBefore;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_apodization;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class ApodizationTest : public ::testing::Test {
  protected:

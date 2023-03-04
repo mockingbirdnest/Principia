@@ -352,7 +352,9 @@ class Parser {
   }
 
   private static bool IsUsingDeclaration(string line) {
-    return !IsUsingDirective(line) && Regex.IsMatch(line, @"^using [\w:]+;$");
+    return !IsUsingDirective(line) &&
+           (Regex.IsMatch(line, @"^using +[\w:]+;$") ||
+            Regex.IsMatch(line, @"^using +[\w:]+operator.*$"));
   }
 
   private static bool IsUsingDirective(string line) {
@@ -384,7 +386,7 @@ class Parser {
     return Regex.Replace(Regex.Replace(line, @"\(.*$", ""), @"^.+ ", "");
   }
 
-      private static string[] ParseIncludedPath(string line) {
+  private static string[] ParseIncludedPath(string line) {
     string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
     return path.Split('/');
   }
@@ -402,7 +404,7 @@ class Parser {
   }
 
   private static string ParseUsingDeclaration(string line) {
-    return line.Replace("using ", "").Replace(";", "");
+    return Regex.Replace(line, @"using +", "").Replace(";", "");
   }
 
   private static string ParseUsingDirective(string line) {

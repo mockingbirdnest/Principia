@@ -48,7 +48,6 @@ using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
 using ksp_plugin::Barycentric;
-using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_frame;
@@ -63,6 +62,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace physics {
 

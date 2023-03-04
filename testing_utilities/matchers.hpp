@@ -13,6 +13,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _matchers {
+namespace internal {
 
 // This is not defined in base/status_utilities.hpp to avoid pulling gmock in
 // non-test code.
@@ -59,6 +61,15 @@ MATCHER_P(SSELowHalfIs,
   return _mm_cvtsd_f64(arg) == value;
 }
 
+}  // namespace internal
+
+using internal::EqualsProto;
+using internal::IsOk;
+using internal::SSEHighHalfIs;
+using internal::SSELowHalfIs;
+using internal::StatusIs;
+
+}  // namespace _matchers
 }  // namespace testing_utilities
 
 namespace serialization {
@@ -70,3 +81,7 @@ inline void PrintTo(Part const& message, std::ostream* const os) {
 }  // namespace serialization
 
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_matchers;
+}  // namespace principia::testing_utilities

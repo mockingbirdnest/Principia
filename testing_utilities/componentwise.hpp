@@ -16,7 +16,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_componentwise {
+namespace _componentwise {
+namespace internal {
 
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
@@ -217,11 +218,16 @@ class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&> final
   Matcher<Scalar> const z_matcher_;
 };
 
-}  // namespace internal_componentwise
+}  // namespace internal
 
-using internal_componentwise::Componentwise;
+using internal::Componentwise;
 
+}  // namespace _componentwise
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_componentwise;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/componentwise_body.hpp"

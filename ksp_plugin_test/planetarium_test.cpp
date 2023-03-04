@@ -40,11 +40,6 @@ using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::VanishesBefore;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Ge;
@@ -66,6 +61,10 @@ using namespace principia::geometry::_signature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class PlanetariumTest : public ::testing::Test {
   using LeftNavigation =

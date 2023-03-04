@@ -28,9 +28,6 @@ using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_;
 using ::testing::Eq;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -45,6 +42,9 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 namespace astronomy {
 

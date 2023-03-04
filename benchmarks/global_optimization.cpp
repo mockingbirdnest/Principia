@@ -16,18 +16,13 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::Branin;
-using testing_utilities::GoldsteinPrice;
-using testing_utilities::Hartmann3;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using testing_utilities::𝛁Branin;
-using testing_utilities::𝛁GoldsteinPrice;
-using testing_utilities::𝛁Hartmann3;
+using namespace principia::testing_utilities::_optimization_test_functions;
 
 using World = Frame<struct WorldTag>;
 

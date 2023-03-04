@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _optimization_test_functions {
+namespace internal {
 
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
@@ -137,6 +139,7 @@ std::array<double, 3> 𝛁Hartmann3(double const x₁,
   return {component(0), component(1), component(2)};
 }
 
-
+}  // namespace internal
+}  // namespace _optimization_test_functions
 }  // namespace testing_utilities
 }  // namespace principia

@@ -18,9 +18,6 @@
 namespace principia {
 namespace quantities {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::RelativeError;
-using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
@@ -30,6 +27,9 @@ using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class ElementaryFunctionsTest : public testing::Test {};
 

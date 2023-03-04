@@ -27,17 +27,6 @@ namespace principia {
 namespace physics {
 
 using astronomy::operator""_TT;
-using testing_utilities::operator""_;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::NewLinearTrajectoryTimeline;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::StringLogSink;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -49,6 +38,15 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_string_log_sink;
 
 class DiscreteTrajectoryTest : public ::testing::Test {
  protected:

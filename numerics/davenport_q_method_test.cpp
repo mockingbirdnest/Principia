@@ -15,7 +15,6 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::AlmostEquals;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_quaternion;
@@ -24,6 +23,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::numerics::_davenport_q_method;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 constexpr int number_of_test_vectors = 100;
 

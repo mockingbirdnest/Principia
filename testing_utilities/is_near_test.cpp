@@ -10,8 +10,10 @@ namespace principia {
 namespace testing_utilities {
 
 using namespace principia::quantities::_bipm;
+
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_is_near;
 
 class IsNearTest : public testing::Test {};
 
