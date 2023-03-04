@@ -436,11 +436,12 @@ TEST_F(OrbitalElementsTest, Years) {
   LOG(ERROR) << "Analysing...";
 
   auto const status_or_elements =
-      OrbitalElements::OrbitalElements::ForTrajectories(
-          sun,
+      OrbitalElements::OrbitalElements::ForTrajectory(
           *ephemeris->trajectory(&sun),
-          earth,
-          *ephemeris->trajectory(&earth));
+          BodyCentredNonRotatingDynamicFrame<ICRS, GCRS>(ephemeris.get(),
+                                                         &earth),
+          /*primary=*/earth,
+          /*secondary=*/sun);
   LOG(ERROR) << "Done.";
   ASSERT_THAT(status_or_elements, IsOk());
   OrbitalElements const& elements = status_or_elements.value();

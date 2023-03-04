@@ -44,20 +44,22 @@ constexpr double max_clenshaw_curtis_relative_error_for_initial_integration =
     1.0e-8;
 constexpr Length eerk_a_tolerance = 10 * Milli(Metre);
 
-template<typename Nonrotating>
-absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectories(
+template<typename Inertial, typename PrimaryCentred>
+absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
+    Trajectory<Inertial> const& secondary_trajectory,
+    DynamicFrame<Inertial, PrimaryCentred> const& primary_centred,
     MassiveBody const& primary,
-    Trajectory<Nonrotating> const& primary_trajectory,
     Body const& secondary,
-    Trajectory<Nonrotating> const& secondary_trajectory,
     bool fill_osculating_equinoctial_elements) {
-  return ForRelativeDegreesOfFreedom<Nonrotating>(
-      [&primary_trajectory, &secondary_trajectory](Instant const& t) {
-        return secondary_trajectory.EvaluateDegreesOfFreedom(t) -
-               primary_trajectory.EvaluateDegreesOfFreedom(t);
+  return ForRelativeDegreesOfFreedom<PrimaryCentred>(
+      [&primary_centred, &secondary_trajectory](Instant const& t) {
+        return primary_centred.ToThisFrameAtTime(t)(
+                   secondary_trajectory.EvaluateDegreesOfFreedom(t)) -
+               DegreesOfFreedom<PrimaryCentred>{PrimaryCentred::origin,
+                                                PrimaryCentred::unmoving};
       },
-      std::max(primary_trajectory.t_min(), secondary_trajectory.t_min()),
-      std::min(primary_trajectory.t_max(), secondary_trajectory.t_max()),
+      std::max(primary_centred.t_min(), secondary_trajectory.t_min()),
+      std::min(primary_centred.t_max(), secondary_trajectory.t_max()),
       primary,
       secondary,
       fill_osculating_equinoctial_elements);
