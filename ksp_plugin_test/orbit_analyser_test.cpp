@@ -25,8 +25,6 @@ using physics::BodySurfaceDynamicFrame;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::IsNull;
@@ -37,6 +35,8 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class OrbitAnalyserTest : public testing::Test {
  protected:

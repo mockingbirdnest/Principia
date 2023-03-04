@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_discrete_trajectory_factories {
+namespace _discrete_trajectory_factories {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectorySegment;
@@ -159,6 +160,7 @@ void AppendTrajectoryTimeline(
   }
 }
 
-}  // namespace internal_discrete_trajectory_factories
+}  // namespace internal
+}  // namespace _discrete_trajectory_factories
 }  // namespace testing_utilities
 }  // namespace principia

@@ -42,13 +42,6 @@ using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using testing_utilities::make_not_null;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -68,6 +61,12 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_make_not_null;
+using namespace principia::testing_utilities::_numerics;
 
 class ManœuvreTest : public ::testing::Test {
  protected:

@@ -59,9 +59,6 @@ using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
-using testing_utilities::AbsoluteError;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
-using testing_utilities::ComputeKeplerAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -77,6 +74,8 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_integration;
+using namespace principia::testing_utilities::_numerics;
 
 namespace mathematica {
 

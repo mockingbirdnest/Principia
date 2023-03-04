@@ -21,6 +21,7 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
 
 class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
  protected:

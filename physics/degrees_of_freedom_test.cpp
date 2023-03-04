@@ -15,7 +15,6 @@ namespace principia {
 namespace physics {
 namespace internal_degrees_of_freedom {
 
-using testing_utilities::Componentwise;
 using ::testing::Eq;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -23,6 +22,7 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:

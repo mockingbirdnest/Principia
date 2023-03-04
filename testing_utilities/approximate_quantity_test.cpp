@@ -10,8 +10,10 @@ namespace principia {
 namespace testing_utilities {
 
 using namespace principia::quantities::_named_quantities;
+
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
 
 TEST(ApproximateQuantityTest, Literals_1) {
   ApproximateQuantity<double> const l1 = 123.45_(1);

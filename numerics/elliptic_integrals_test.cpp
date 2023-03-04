@@ -15,14 +15,14 @@
 
 namespace principia {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::ReadFromTabulatedData;
-using testing_utilities::RelativeError;
 using ::testing::Lt;
 using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_serialization;
 
 namespace numerics {
 

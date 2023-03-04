@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_discrete_trajectory_factories {
+namespace _discrete_trajectory_factories {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -112,15 +113,20 @@ void AppendTrajectoryTimeline(
         Instant const& time,
         DegreesOfFreedom<Frame> const& degrees_of_freedom)> const& append_to);
 
-}  // namespace internal_discrete_trajectory_factories
+}  // namespace internal
 
-using internal_discrete_trajectory_factories::AppendTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewAcceleratedTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewCircularTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewLinearTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewMotionlessTrajectoryTimeline;
+using internal::AppendTrajectoryTimeline;
+using internal::NewAcceleratedTrajectoryTimeline;
+using internal::NewCircularTrajectoryTimeline;
+using internal::NewLinearTrajectoryTimeline;
+using internal::NewMotionlessTrajectoryTimeline;
 
+}  // namespace _discrete_trajectory_factories
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/discrete_trajectory_factories_body.hpp"

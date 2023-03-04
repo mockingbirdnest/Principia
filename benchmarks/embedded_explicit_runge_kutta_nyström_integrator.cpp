@@ -27,8 +27,6 @@ namespace principia {
 
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration3D;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -39,6 +37,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_integration;
 
 namespace integrators {
 

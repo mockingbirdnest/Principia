@@ -8,6 +8,8 @@
 namespace principia {
 namespace testing_utilities {
 
+using namespace principia::testing_utilities::_algebra;
+
 class AlgebraTest : public testing::Test {};
 
 TEST_F(AlgebraTest, Group) {

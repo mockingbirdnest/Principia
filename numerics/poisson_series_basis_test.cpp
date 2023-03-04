@@ -16,7 +16,6 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::AlmostEquals;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
@@ -26,6 +25,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class PoissonSeriesBasisTest : public ::testing::Test {
  protected:

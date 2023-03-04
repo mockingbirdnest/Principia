@@ -25,18 +25,18 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::VanishesBefore;
-using testing_utilities::RelativeErrorFrom;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
-using testing_utilities::operator""_;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class PiecewisePoissonSeriesTest : public ::testing::Test {
  protected:

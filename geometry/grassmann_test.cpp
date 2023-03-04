@@ -20,7 +20,6 @@
 
 namespace principia {
 
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_grassmann;
@@ -33,6 +32,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
 using namespace principia::quantities::_uk::admiralty;
+using namespace principia::testing_utilities::_almost_equals;
 
 namespace geometry {
 

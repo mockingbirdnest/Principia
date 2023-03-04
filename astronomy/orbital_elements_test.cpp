@@ -38,13 +38,7 @@ using physics::MasslessBody;
 using physics::OblateBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::DifferenceFrom;
-using testing_utilities::IsNear;
 using testing_utilities::IsOk;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_;
 using ::testing::Lt;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -53,6 +47,11 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class OrbitalElementsTest : public ::testing::Test {
  protected:

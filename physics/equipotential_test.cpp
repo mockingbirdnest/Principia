@@ -40,7 +40,6 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandPrince1986RK547FC;
 using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::Quinlan1999Order8A;
-using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -52,6 +51,7 @@ using namespace principia::numerics::_global_optimization;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 class EquipotentialTest : public ::testing::Test {
  protected:

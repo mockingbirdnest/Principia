@@ -8,7 +8,6 @@ namespace principia {
 
 using physics::RigidMotion;
 using physics::RigidTransformation;
-using testing_utilities::Componentwise;
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -21,6 +20,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
 
 namespace physics {
 

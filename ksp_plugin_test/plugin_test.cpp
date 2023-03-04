@@ -65,16 +65,7 @@ using physics::MockEphemeris;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
-using testing_utilities::make_not_null;
-using testing_utilities::RelativeError;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::VanishesBefore;
-using testing_utilities::WriteToBinaryFile;
-using testing_utilities::WriteToHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -109,6 +100,13 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_make_not_null;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_solar_system_factory;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 

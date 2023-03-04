@@ -50,12 +50,6 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteError;
-using testing_utilities::ApproximateQuantity;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::operator""_;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
@@ -70,6 +64,10 @@ using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace astronomy {
 

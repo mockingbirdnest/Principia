@@ -20,9 +20,6 @@
 
 namespace principia {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_astronomy;
@@ -33,6 +30,9 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace geometry {
 

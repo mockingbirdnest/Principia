@@ -9,6 +9,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _numerics {
+namespace internal {
 
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar);
@@ -78,7 +80,18 @@ template<typename Scalar, typename Frame, int rank>
 double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
                      geometry::Multivector<Scalar, Frame, rank> const& actual);
 
+}  // namespace internal
+
+using internal::AbsoluteError;
+using internal::DoubleValue;
+using internal::RelativeError;
+
+}  // namespace _numerics
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_numerics;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/numerics_body.hpp"

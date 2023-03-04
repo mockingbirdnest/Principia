@@ -18,7 +18,6 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
@@ -31,6 +30,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 constexpr double ε = std::numeric_limits<double>::epsilon();
 constexpr double ε² = ε * ε;

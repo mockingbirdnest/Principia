@@ -13,12 +13,12 @@ namespace principia {
 namespace physics {
 namespace internal_jacobi_coordinates {
 
-using testing_utilities::AlmostEquals;
-using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
 using namespace principia::geometry::_frame;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class JacobiCoordinatesTest : public ::testing::Test {
  protected:

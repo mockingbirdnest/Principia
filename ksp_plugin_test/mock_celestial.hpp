@@ -9,7 +9,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_celestial {
 
-using testing_utilities::make_not_null;
+using namespace principia::testing_utilities::_make_not_null;
 
 class MockCelestial : public Celestial {
  public:

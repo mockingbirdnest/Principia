@@ -12,12 +12,12 @@
 namespace principia {
 namespace geometry {
 
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class R3x3MatrixTest : public ::testing::Test {
  protected:

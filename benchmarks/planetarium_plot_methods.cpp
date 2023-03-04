@@ -36,7 +36,6 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::SolarSystem;
-using testing_utilities::SolarSystemFactory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -46,6 +45,7 @@ using namespace principia::geometry::_signature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 

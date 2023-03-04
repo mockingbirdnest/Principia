@@ -28,8 +28,6 @@ using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::AbsoluteError;
-using testing_utilities::Componentwise;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
@@ -44,6 +42,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_numerics;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:

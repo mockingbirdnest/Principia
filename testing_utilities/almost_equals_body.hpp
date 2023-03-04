@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_almost_equals {
+namespace _almost_equals {
+namespace internal {
 
 // Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.
 inline double NormalizeNaN(double const x) {
@@ -582,6 +583,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplainIdentical(
   }
 }
 
-}  // namespace internal_almost_equals
+}  // namespace internal
+}  // namespace _almost_equals
 }  // namespace testing_utilities
 }  // namespace principia

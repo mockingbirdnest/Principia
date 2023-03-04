@@ -38,7 +38,6 @@ using physics::HierarchicalSystem;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
-using testing_utilities::AbsoluteError;
 using namespace principia::base::_array;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
@@ -53,6 +52,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_numerics;
 
 namespace mathematica {
 

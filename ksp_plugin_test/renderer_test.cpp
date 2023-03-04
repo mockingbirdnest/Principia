@@ -29,10 +29,6 @@ using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::Componentwise;
-using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
@@ -42,6 +38,9 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
 
 class RendererTest : public ::testing::Test {
  protected:

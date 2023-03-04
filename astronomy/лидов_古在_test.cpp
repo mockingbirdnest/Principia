@@ -29,8 +29,6 @@ using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::SolarSystem;
 using physics::Trajectory;
-using testing_utilities::operator""_;
-using testing_utilities::IsNear;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_interval;
@@ -38,6 +36,8 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].

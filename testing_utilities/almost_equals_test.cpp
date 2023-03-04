@@ -39,6 +39,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 using World = Frame<struct WorldTag>;

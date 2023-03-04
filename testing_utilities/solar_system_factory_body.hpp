@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_solar_system_factory {
+namespace _solar_system_factory {
+namespace internal {
 
 using namespace principia::base::_map_util;
 
@@ -225,6 +226,7 @@ inline std::string SolarSystemFactory::name(int const index) {
 #undef BODY_NAME
 }
 
-}  // namespace internal_solar_system_factory
+}  // namespace internal
+}  // namespace _solar_system_factory
 }  // namespace testing_utilities
 }  // namespace principia

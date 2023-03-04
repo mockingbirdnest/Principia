@@ -22,6 +22,8 @@ namespace branin_parameters {
 }  // namespace branin_parameters
 
 namespace hartmann_parameters {
+namespace _optimization_test_functions {
+namespace internal {
 constexpr FixedVector<double, 4> α({1.0, 1.2, 3.0, 3.2});
 constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> A({3.0, 10, 30,
                                                             0.1, 10, 35,
@@ -54,6 +56,8 @@ constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> P(
      4699e-4, 4387e-4, 7470e-4,
      1091e-4, 8732e-4, 5547e-4,
       381e-4, 5743e-4, 8828e-4});
+}  // namespace internal
+}  // namespace _optimization_test_functions
 }  // namespace hartmann_parameters
 
 double Branin(double const x₁, double const x₂) {

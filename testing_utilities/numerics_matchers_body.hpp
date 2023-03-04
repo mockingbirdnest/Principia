@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_numerics_matchers {
+namespace _numerics_matchers {
+namespace internal {
 
 using ::testing::MakeMatcher;
 using ::testing::MatcherInterface;
@@ -176,6 +177,7 @@ Matcher<Value> RelativeErrorFrom(Value const& expected,
       new RelativeErrorFromMatcher<Value>(expected, error_matcher));
 }
 
-}  // namespace internal_numerics_matchers
+}  // namespace internal
+}  // namespace _numerics_matchers
 }  // namespace testing_utilities
 }  // namespace principia

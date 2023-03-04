@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_integration {
+namespace _integration {
+namespace internal {
 
 using physics::MassiveBody;
 using namespace principia::base::_not_null;
@@ -82,16 +83,21 @@ absl::Status ComputeLegendrePolynomialSecondDerivative(
     std::vector<Variation<Variation<double>>>& pʺ,
     int* evaluations);
 
-}  // namespace internal_integration
+}  // namespace internal
 
-using internal_integration::ComputeЧебышёвPolynomialSecondDerivative;
-using internal_integration::ComputeHarmonicOscillatorAcceleration1D;
-using internal_integration::ComputeHarmonicOscillatorAcceleration3D;
-using internal_integration::ComputeHarmonicOscillatorDerivatives1D;
-using internal_integration::ComputeKeplerAcceleration;
-using internal_integration::ComputeLegendrePolynomialSecondDerivative;
+using internal::ComputeЧебышёвPolynomialSecondDerivative;
+using internal::ComputeHarmonicOscillatorAcceleration1D;
+using internal::ComputeHarmonicOscillatorAcceleration3D;
+using internal::ComputeHarmonicOscillatorDerivatives1D;
+using internal::ComputeKeplerAcceleration;
+using internal::ComputeLegendrePolynomialSecondDerivative;
 
+}  // namespace _integration
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_integration;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/integration_body.hpp"
