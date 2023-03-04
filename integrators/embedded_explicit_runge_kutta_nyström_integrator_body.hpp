@@ -360,16 +360,15 @@ WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
 }  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_embedded_explicit_runge_kutta_nyström_integrator::
-    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitRungeKuttaNyström,
                       Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKuttaNyström");
-  static internal_embedded_explicit_runge_kutta_nyström_integrator::
-      EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const
-          integrator;
+  static internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method,
+                                                               ODE_> const
+      integrator;
   return integrator;
 }
 

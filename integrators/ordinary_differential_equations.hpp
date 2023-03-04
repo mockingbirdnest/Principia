@@ -15,11 +15,18 @@
 namespace principia {
 namespace integrators {
 
+namespace _ordinary_differential_equations {
+namespace internal {
+
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
 namespace termination_condition {
-namespace _ordinary_differential_equations {
-namespace internal {
 
 constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 // The integration may be retried with the same arguments and progress will
@@ -32,24 +39,7 @@ constexpr absl::StatusCode VanishingStepSize =
 // Same as absl::Status::Update, but prefers kAbort.
 void UpdateWithAbort(absl::Status const& updater, absl::Status& updated);
 
-}  // namespace internal
-
-using internal::Done;
-using internal::ReachedMaximalStepCount;
-using internal::UpdateWithAbort;
-using internal::VanishingStepSize;
-
-}  // namespace _ordinary_differential_equations
 }  // namespace termination_condition
-
-namespace _ordinary_differential_equations {
-namespace internal {
-
-using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
-using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 // A differential equation of the form y′ = f(s, y).
 // |DependentVariable| are the types of the elements of y.
@@ -239,15 +229,12 @@ struct InitialValueProblem final {
 
 }  // namespace internal
 
-using internal_ordinary_differential_equations::
-    DecomposableFirstOrderDifferentialEquation;
-using internal_ordinary_differential_equations::
-    ExplicitFirstOrderOrdinaryDifferentialEquation;
-using internal_ordinary_differential_equations::
-    ExplicitSecondOrderOrdinaryDifferentialEquation;
+using internal::DecomposableFirstOrderDifferentialEquation;
+using internal::ExplicitFirstOrderOrdinaryDifferentialEquation;
+using internal::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using internal::InitialValueProblem;
-using internal_ordinary_differential_equations::
-    SpecialSecondOrderDifferentialEquation;
+using internal::SpecialSecondOrderDifferentialEquation;
+namespace termination_condition = internal::termination_condition;
 
 }  // namespace _ordinary_differential_equations
 }  // namespace integrators

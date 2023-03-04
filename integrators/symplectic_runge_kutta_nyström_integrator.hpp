@@ -130,18 +130,16 @@ class SymplecticRungeKuttaNyströmIntegrator
 }  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<
-        typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                        composition>::Method,
-        ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<
+    typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                    composition>::Method,
+    ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 }  // namespace _symplectic_runge_kutta_nyström_integrator

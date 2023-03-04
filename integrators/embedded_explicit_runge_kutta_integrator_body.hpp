@@ -364,15 +364,13 @@ WriteToMessage(
 }  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
+internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitRungeKutta,
-                      Method>::value,
+      std::is_base_of<methods::EmbeddedExplicitRungeKutta, Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
-  static internal_embedded_explicit_runge_kutta_integrator::
-      EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const integrator;
+  static internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const
+      integrator;
   return integrator;
 }
 

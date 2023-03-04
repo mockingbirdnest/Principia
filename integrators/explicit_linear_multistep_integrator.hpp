@@ -108,8 +108,7 @@ class ExplicitLinearMultistepIntegrator
 }  // namespace internal
 
 template<typename Method, typename Position>
-internal_explicit_linear_multistep_integrator::
-    ExplicitLinearMultistepIntegrator<Method, Position> const&
+internal::ExplicitLinearMultistepIntegrator<Method, Position> const&
 ExplicitLinearMultistepIntegrator();
 
 }  // namespace _explicit_linear_multistep_integrator

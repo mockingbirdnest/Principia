@@ -491,19 +491,20 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Serialization) {
 }
 #endif
 
-
 // Reopen this namespace to allow printing out the system state.
+namespace _ordinary_differential_equations {
+namespace internal {
 
-void PrintTo(
-    typename internal_embedded_explicit_runge_kutta_integrator::ODE::
-        State const& state,
-    std::ostream* const out) {
+void PrintTo(typename ODE::State const& state,
+             std::ostream* const out) {
   auto const& [position, velocity] = state.y;
   *out << "\nTime: " << state.s << "\n";
   *out << "Position: " << position << "\n";
   *out << "Velocity: " << velocity << "\n";
 }
 
+}  // namespace internal
+}  // namespace _ordinary_differential_equations
 
 }  // namespace integrators
 }  // namespace principia

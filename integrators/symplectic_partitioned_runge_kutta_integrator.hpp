@@ -107,8 +107,7 @@ class SymplecticPartitionedRungeKuttaIntegrator
 }  // namespace internal
 
 template<typename Method, typename Position>
-internal_symplectic_partitioned_runge_kutta_integrator::
-    SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const&
+internal::SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const&
 SymplecticPartitionedRungeKuttaIntegrator();
 
 }  // namespace _symplectic_partitioned_runge_kutta_integrator

@@ -143,8 +143,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 }  // namespace internal
 
 template<typename Method, typename Position>
-internal_embedded_explicit_runge_kutta_nyström_integrator::
-    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
+internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator();
 
 }  // namespace _embedded_explicit_runge_kutta_nyström_integrator

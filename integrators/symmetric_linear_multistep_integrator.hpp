@@ -130,8 +130,7 @@ class SymmetricLinearMultistepIntegrator
 }  // namespace internal
 
 template<typename Method, typename Position>
-internal_symmetric_linear_multistep_integrator::
-    SymmetricLinearMultistepIntegrator<Method, Position> const&
+internal::SymmetricLinearMultistepIntegrator<Method, Position> const&
 SymmetricLinearMultistepIntegrator();
 
 }  // namespace _symmetric_linear_multistep_integrator

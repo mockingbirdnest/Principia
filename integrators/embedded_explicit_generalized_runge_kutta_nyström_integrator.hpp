@@ -152,8 +152,8 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
 }  // namespace internal
 
 template<typename Method, typename ODE>
-internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
-    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE> const&
+internal::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
+                                                                 ODE> const&
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
 
 }  // namespace _embedded_explicit_generalized_runge_kutta_nyström_integrator

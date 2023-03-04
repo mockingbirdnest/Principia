@@ -106,8 +106,7 @@ class ExplicitRungeKuttaIntegrator
 }  // namespace internal
 
 template<typename Method, typename ODE>
-internal_explicit_runge_kutta_integrator::
-    ExplicitRungeKuttaIntegrator<Method, ODE> const&
+internal::ExplicitRungeKuttaIntegrator<Method, ODE> const&
 ExplicitRungeKuttaIntegrator();
 
 }  // namespace _explicit_runge_kutta_integrator

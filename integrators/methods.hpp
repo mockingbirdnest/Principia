@@ -7,7 +7,6 @@
 
 namespace principia {
 namespace integrators {
-namespace methods {
 namespace _methods {
 namespace internal {
 
@@ -1289,6 +1288,7 @@ using internal::BlanesMoan2002SRKN6B;
 using internal::CandyRozmus1991ForestRuth1990;
 using internal::DormandPrince1986RK547FC;
 using internal::DormandالمكاوىPrince1986RKN434FM;
+using internal::EmbeddedExplicitGeneralizedRungeKuttaNyström;
 using internal::EmbeddedExplicitRungeKutta;
 using internal::EmbeddedExplicitRungeKuttaNyström;
 using internal::ExplicitLinearMultistep;
@@ -1310,7 +1310,6 @@ using internal::McLachlanAtela1992Order2Optimal;
 using internal::McLachlanAtela1992Order3Optimal;
 using internal::McLachlanAtela1992Order4Optimal;
 using internal::McLachlanAtela1992Order5Optimal;
-using internal::mod;
 using internal::NewtonDelambreStørmerVerletLeapfrog;
 using internal::not_constructible;
 using internal::OkunborSkeel1994Order6Method13;
@@ -1333,9 +1332,9 @@ using internal::吉田1990Order8C;
 using internal::吉田1990Order8D;
 using internal::吉田1990Order8E;
 using internal::鈴木1990;
+namespace methods = _methods;
 
 }  // namespace _methods
-}  // namespace methods
 }  // namespace integrators
 }  // namespace principia
 

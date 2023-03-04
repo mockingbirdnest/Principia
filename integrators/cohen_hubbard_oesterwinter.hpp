@@ -26,12 +26,13 @@ struct CohenHubbardOesterwinter final {
   double denominator;
 };
 
+template<int order>
+CohenHubbardOesterwinter<order> const& CohenHubbardOesterwinterOrder();
+
 }  // namespace internal
 
 using internal::CohenHubbardOesterwinter;
-
-template<int order>
-CohenHubbardOesterwinter<order> const& CohenHubbardOesterwinterOrder();
+using internal::CohenHubbardOesterwinterOrder;
 
 }  // namespace _cohen_hubbard_oesterwinter
 }  // namespace integrators

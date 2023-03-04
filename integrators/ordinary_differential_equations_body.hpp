@@ -8,9 +8,9 @@
 
 namespace principia {
 namespace integrators {
-namespace termination_condition {
 namespace _ordinary_differential_equations {
 namespace internal {
+namespace termination_condition {
 
 inline void UpdateWithAbort(absl::Status const& updater,
                             absl::Status& updated) {
@@ -21,20 +21,14 @@ inline void UpdateWithAbort(absl::Status const& updater,
   }
 }
 
-}  // namespace internal
-}  // namespace _ordinary_differential_equations
 }  // namespace termination_condition
-
-namespace _ordinary_differential_equations {
-namespace internal {
-
-using namespace principia::base::_for_all_of;
 
 template<typename IndependentVariable_, typename... DependentVariable>
 ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
                                                DependentVariable...>::
 State::State(IndependentVariable const& s, DependentVariables const& y)
     : s(s) {
+  using principia::base::_for_all_of::for_all_of;
   for_all_of(y, this->y).loop([](auto const& y, auto& this_y) {
     this_y = DoublePrecision(y);
   });
