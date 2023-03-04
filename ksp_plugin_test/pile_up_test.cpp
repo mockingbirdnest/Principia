@@ -41,7 +41,6 @@ using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using testing_utilities::EqualsProto;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -65,6 +64,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
 // A helper class to expose the internal state of a pile-up for testing.

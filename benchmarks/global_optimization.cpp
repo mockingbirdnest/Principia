@@ -23,9 +23,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_optimization_test_functions;
-using testing_utilities::𝛁Branin;
-using testing_utilities::𝛁GoldsteinPrice;
-using testing_utilities::𝛁Hartmann3;
 
 using World = Frame<struct WorldTag>;
 

@@ -26,21 +26,17 @@ using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
 using quantities::si::Metre;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Branin;
-using testing_utilities::Componentwise;
-using testing_utilities::GoldsteinPrice;
-using testing_utilities::Hartmann3;
-using testing_utilities::IsNear;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::𝛁Branin;
-using testing_utilities::𝛁GoldsteinPrice;
-using testing_utilities::𝛁Hartmann3;
-using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::_;
+using namespace principia::numerics::_global_optimization;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_optimization_test_functions;
+using namespace principia::testing_utilities::_vanishes_before;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.

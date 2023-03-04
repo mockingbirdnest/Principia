@@ -23,7 +23,6 @@
 namespace principia {
 namespace physics {
 
-using testing_utilities::EqualsProto;
 using ::testing::Eq;
 using ::testing::Le;
 using ::testing::Lt;
@@ -38,6 +37,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {

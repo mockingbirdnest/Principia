@@ -22,8 +22,6 @@ namespace principia {
 namespace integrators {
 namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
-using testing_utilities::EqualsProto;
-using testing_utilities::StatusIs;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -40,6 +38,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 
 using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<double>;

@@ -21,7 +21,6 @@ using ksp_plugin::FakePlugin;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
 using physics::SolarSystem;
-using testing_utilities::StatusIs;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -32,6 +31,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace interface {

@@ -73,7 +73,6 @@
 .\renamespacer\bin\Debug\net7.0\renamespacer.exe `
     --project:testing_utilities `
     --exclude:macros.hpp `
-    --exclude:matchers.hpp `
     --dry_run:false `
     --client:astronomy `
     --client:base `

@@ -11,8 +11,8 @@ namespace principia {
 namespace numerics {
 
 using quantities::Sqrt;
-using testing_utilities::AlmostEquals;
 using ::testing::Lt;
+using namespace principia::testing_utilities::_almost_equals;
 
 class MaxAbsNormalizedAssociatedLegendreFunctionTest : public testing::Test {
  protected:

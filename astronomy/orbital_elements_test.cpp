@@ -38,7 +38,6 @@ using physics::MasslessBody;
 using physics::OblateBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::IsOk;
 using ::testing::Lt;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -50,6 +49,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 

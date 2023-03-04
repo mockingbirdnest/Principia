@@ -29,7 +29,6 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-using testing_utilities::EqualsProto;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
@@ -45,6 +44,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 
 template<typename Frame>

@@ -33,7 +33,6 @@ using physics::Ephemeris;
 using physics::MasslessBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
-using testing_utilities::IsOk;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Lt;
@@ -49,6 +48,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {

@@ -45,7 +45,6 @@ using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RotatingBody;
-using testing_utilities::EqualsProto;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -68,6 +67,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_matchers;
 
 class VesselTest : public testing::Test {
  protected:

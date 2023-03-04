@@ -44,8 +44,6 @@ using physics::Ephemeris;
 using physics::Frenet;
 using physics::MassiveBody;
 using physics::RotatingBody;
-using testing_utilities::EqualsProto;
-using testing_utilities::StatusIs;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -61,6 +59,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 
 class FlightPlanTest : public testing::Test {

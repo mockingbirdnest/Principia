@@ -21,7 +21,6 @@
 namespace principia {
 namespace geometry {
 
-using testing_utilities::EqualsProto;
 using ::testing::Eq;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_elementary_functions;
@@ -32,6 +31,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 

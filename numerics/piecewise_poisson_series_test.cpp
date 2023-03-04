@@ -25,7 +25,6 @@
 namespace principia {
 namespace numerics {
 
-using testing_utilities::EqualsProto;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_piecewise_poisson_series;
@@ -35,6 +34,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
