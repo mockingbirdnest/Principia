@@ -34,8 +34,6 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::SpecialSecondOrderDifferentialEquation;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;

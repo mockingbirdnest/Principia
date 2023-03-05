@@ -20,7 +20,6 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
 
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;

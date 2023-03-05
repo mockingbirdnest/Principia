@@ -32,7 +32,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::J2000;
-using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
