@@ -36,7 +36,8 @@ using ::testing::UnorderedElementsAre;
 using ::testing::ValuesIn;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
-using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_astronomy;
