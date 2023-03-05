@@ -140,7 +140,8 @@ EmbeddedExplicitRungeKuttaIntegrator();
 }  // namespace principia
 
 namespace principia::integrators {
-using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_integrator;
 }  // namespace principia::integrators
 
 #include "integrators/embedded_explicit_runge_kutta_integrator_body.hpp"

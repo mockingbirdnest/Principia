@@ -147,7 +147,8 @@ SymplecticRungeKuttaNyströmIntegrator();
 }  // namespace principia
 
 namespace principia::integrators {
-using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 }  // namespace principia::integrators
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"
