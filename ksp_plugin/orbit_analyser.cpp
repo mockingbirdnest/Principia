@@ -16,6 +16,7 @@ namespace internal_orbit_analyser {
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::KeplerOrbit;
+using physics::MassiveBody;
 using physics::MasslessBody;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
@@ -109,9 +110,13 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
       .IgnoreError();
 
   RotatingBody<Barycentric> const* primary = nullptr;
+  MassiveBody const* sun = nullptr;
   auto smallest_osculating_period = Infinity<Time>;
   for (auto const body : ephemeris_->bodies()) {
     RETURN_IF_STOPPED;
+    if (body->name() == "Sun") {
+      sun = body;
+    }
     auto const initial_osculating_elements =
         KeplerOrbit<Barycentric>{
             *body,
@@ -162,12 +167,12 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     using PrimaryCentred = Frame<struct PrimaryCentredTag, NonRotating>;
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
-        body_centred(ephemeris_, primary);
+        primary_centred(ephemeris_, primary);
     for (auto const& [time, degrees_of_freedom] : trajectory) {
       RETURN_IF_STOPPED;
-      primary_centred_trajectory.Append(
-          time,
-          body_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
+      primary_centred_trajectory
+          .Append(time,
+                  primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
           .IgnoreError();
     }
     analysis.primary_ = primary;
@@ -175,6 +180,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
         RadialDistanceInterval(primary_centred_trajectory);
     auto elements = OrbitalElements::ForTrajectory(
         primary_centred_trajectory, *primary, MasslessBody{});
+
     // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
     // statuses.
     RETURN_IF_STOPPED;
@@ -190,10 +196,28 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
       if (analysis.closest_recurrence_->number_of_revolutions() == 0) {
         analysis.closest_recurrence_.reset();
       }
+
+      std::optional<OrbitGroundTrack::MeanSun> mean_sun;
+      if (primary != sun && sun != nullptr) {
+        auto const sun_elements = OrbitalElements::ForTrajectory(
+            *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
+        if (sun_elements.ok()) {
+          mean_sun = OrbitGroundTrack::MeanSun{
+              .epoch = sun_elements->mean_elements().front().time,
+              .mean_longitude_at_epoch =
+                  sun_elements->mean_elements()
+                      .front()
+                      .longitude_of_ascending_node +
+                  sun_elements->mean_elements().front().argument_of_periapsis +
+                  sun_elements->mean_elements().front().mean_anomaly,
+              .year = sun_elements->sidereal_period()};
+        }
+      }
+
       auto ground_track =
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                           *primary,
-                                          /*mean_sun=*/std::nullopt);
+                                          mean_sun);
       RETURN_IF_ERROR(ground_track);
       analysis.ground_track_ = std::move(ground_track).value();
       analysis.ResetRecurrence();
