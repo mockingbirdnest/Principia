@@ -88,7 +88,7 @@ void TestAbelianMultiplicativeGroup(
     T const& one, T const& a, T const& b, T const& c,
     std::int64_t const min_ulps,
     std::int64_t const max_ulps) {
-  TestNonAbelianMultiplicativeGroup(one, a, b, c, max_ulps);
+  TestNonAbelianMultiplicativeGroup(one, a, b, c, min_ulps, max_ulps);
   EXPECT_EQ(a * b, b * a);
 }
 

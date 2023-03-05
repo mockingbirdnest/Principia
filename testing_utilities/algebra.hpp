@@ -18,15 +18,16 @@ void TestAdditiveGroup(T const& zero, T const& a, T const& b, T const& c,
                        std::int64_t min_ulps = 0,
                        std::int64_t max_ulps = 0);
 
-template<typename T>
+template<typename T, typename Operation, typename Inverse>
 void TestGroup(T const& identity, T const& a, T const& b, T const& c,
-               T (*operation)(T const&, T const&), T (*inverse)(T const&),
+               Operation operation, Inverse inverse,
                std::int64_t min_ulps = 0,
                std::int64_t max_ulps = 0);
 
 template<typename T>
 void TestAbelianMultiplicativeGroup(
     T const& one, T const& a, T const& b, T const& c,
+    std::int64_t min_ulps = 0,
     std::int64_t max_ulps = 0);
 
 template<typename T>
