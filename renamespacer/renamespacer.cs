@@ -304,7 +304,7 @@ class Parser {
   }
 
   private static bool IsClass(string line) {
-    return Regex.IsMatch(line, @"^class [\w]+[ ;].*$");
+    return Regex.IsMatch(line, @"^class \w+[ ;].*$");
   }
 
   private static bool IsClosingNamespace(string line) {
@@ -320,14 +320,17 @@ class Parser {
 
   private static bool IsFunction(string line) {
     // There are type aliases in named_quantities.hpp that have a ( in them.
+    // Note that if the return type is very long the function name will be on
+    // its own line, in which case the parsing is even more cheesy than usual.
     return !Regex.IsMatch(line, @"^(using)") &&
-           Regex.IsMatch(line, @"^[\w].+ [^: ]+\(.*$");
+           (Regex.IsMatch(line, @"^\w.+ [^: ]+\(.*$") ||
+            Regex.IsMatch(line, @"^[A-Z][a-z]\w+\(.*$"));
   }
 
   private static bool IsOpeningNamespace(string line) {
     return line != "namespace {" &&
            line.StartsWith("namespace ") &&
-           !Regex.IsMatch(line, @"^namespace [\w]+ = .*$");
+           !Regex.IsMatch(line, @"^namespace \w+ = .*$");
   }
 
   private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
@@ -344,11 +347,11 @@ class Parser {
   }
 
   private static bool IsStruct(string line) {
-    return Regex.IsMatch(line, @"^struct [\w]+[ ;].*$");
+    return Regex.IsMatch(line, @"^struct \w+[ ;].*$");
   }
 
   private static bool IsTypeAlias(string line) {
-    return Regex.IsMatch(line, @"^using +[\w]+ +=.*$");
+    return Regex.IsMatch(line, @"^using +\w+ +=.*$");
   }
 
   private static bool IsUsingDeclaration(string line) {
