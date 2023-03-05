@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
+namespace _embedded_explicit_runge_kutta_nyström_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
@@ -356,7 +357,7 @@ WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
 internal_embedded_explicit_runge_kutta_nyström_integrator::
@@ -372,5 +373,6 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   return integrator;
 }
 
+}  // namespace _embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

@@ -17,7 +17,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_runge_kutta_integrator {
+namespace _explicit_runge_kutta_integrator {
+namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
@@ -213,7 +214,7 @@ WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_explicit_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
 internal_explicit_runge_kutta_integrator::
@@ -228,5 +229,6 @@ ExplicitRungeKuttaIntegrator() {
   return integrator;
 }
 
+}  // namespace _explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

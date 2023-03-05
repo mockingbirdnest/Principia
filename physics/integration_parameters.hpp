@@ -12,9 +12,8 @@ namespace principia {
 namespace physics {
 namespace internal_integration_parameters {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::FixedStepSizeIntegrator;
 using namespace principia::base::_not_null;
+using namespace principia::integrators::_integrators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

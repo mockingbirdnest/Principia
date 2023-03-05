@@ -30,16 +30,6 @@
 
 namespace principia {
 
-using integrators::FixedStepSizeIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order8;
-using integrators::methods::QuinlanTremaine1990Order10;
-using integrators::methods::QuinlanTremaine1990Order12;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
 using mathematica::PreserveUnits;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
@@ -60,6 +50,10 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

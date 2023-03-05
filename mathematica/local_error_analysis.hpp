@@ -11,11 +11,11 @@ namespace principia {
 namespace mathematica {
 namespace internal_local_error_analysis {
 
-using integrators::FixedStepSizeIntegrator;
 using physics::Ephemeris;
 using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

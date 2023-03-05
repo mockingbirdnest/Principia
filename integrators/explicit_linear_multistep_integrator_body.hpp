@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_linear_multistep_integrator {
+namespace _explicit_linear_multistep_integrator {
+namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
@@ -207,7 +208,7 @@ void ExplicitLinearMultistepIntegrator<Method, ODE_>::WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_explicit_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
 internal_explicit_linear_multistep_integrator::
@@ -225,5 +226,6 @@ ExplicitLinearMultistepIntegrator() {
   return integrator;
 }
 
+}  // namespace _explicit_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia

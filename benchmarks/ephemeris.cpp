@@ -38,15 +38,6 @@
 namespace principia {
 
 using astronomy::ICRS;
-using integrators::Integrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
 using ksp_plugin::Barycentric;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
@@ -56,6 +47,11 @@ using namespace principia::geometry::_identity;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_elementary_functions;

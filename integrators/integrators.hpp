@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_integrators {
+namespace _integrators {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -236,16 +237,21 @@ template<typename Equation>
 AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
     std::string const& integrator_kind);
 
-}  // namespace internal_integrators
+}  // namespace internal
 
-using internal_integrators::AdaptiveStepSizeIntegrator;
-using internal_integrators::FixedStepSizeIntegrator;
-using internal_integrators::Integrator;
-using internal_integrators::ParseAdaptiveStepSizeIntegrator;
-using internal_integrators::ParseFixedStepSizeIntegrator;
+using internal::AdaptiveStepSizeIntegrator;
+using internal::FixedStepSizeIntegrator;
+using internal::Integrator;
+using internal::ParseAdaptiveStepSizeIntegrator;
+using internal::ParseFixedStepSizeIntegrator;
 
+}  // namespace _integrators
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_integrators;
+}  // namespace principia::integrators
 
 #include "integrators/integrators_body.hpp"
 

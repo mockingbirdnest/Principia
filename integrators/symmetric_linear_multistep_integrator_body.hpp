@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symmetric_linear_multistep_integrator {
+namespace _symmetric_linear_multistep_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_serialization;
@@ -351,7 +352,7 @@ void SymmetricLinearMultistepIntegrator<Method, ODE_>::WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_symmetric_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
 internal_symmetric_linear_multistep_integrator::
@@ -370,6 +371,7 @@ SymmetricLinearMultistepIntegrator() {
   return integrator;
 }
 
+}  // namespace _symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
 

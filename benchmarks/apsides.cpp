@@ -28,13 +28,12 @@ using astronomy::GCRS;
 using astronomy::ICRS;
 using astronomy::ITRS;
 using astronomy::StandardProduct3;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::QuinlanTremaine1990Order12;
-using integrators::SymmetricLinearMultistepIntegrator;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
 

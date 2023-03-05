@@ -18,13 +18,13 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -472,10 +472,8 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 
-}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
 
 // Reopen this namespace to allow printing out the system state.
-namespace internal_ordinary_differential_equations {
 
 void PrintTo(
     typename internal_embedded_explicit_runge_kutta_nyström_integrator::ODE::
@@ -492,7 +490,6 @@ void PrintTo(
   }
 }
 
-}  // namespace internal_ordinary_differential_equations
 
 }  // namespace integrators
 }  // namespace principia

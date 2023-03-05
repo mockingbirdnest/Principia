@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_partitioned_runge_kutta_integrator {
+namespace _symplectic_partitioned_runge_kutta_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
@@ -103,14 +104,19 @@ class SymplecticPartitionedRungeKuttaIntegrator
   static constexpr auto b_ = Method::b;
 };
 
-}  // namespace internal_symplectic_partitioned_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename Position>
 internal_symplectic_partitioned_runge_kutta_integrator::
     SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const&
 SymplecticPartitionedRungeKuttaIntegrator();
 
+}  // namespace _symplectic_partitioned_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_symplectic_partitioned_runge_kutta_integrator;
+}  // namespace principia::integrators
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator_body.hpp"

@@ -21,13 +21,13 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_flight_plan {
 
-using integrators::AdaptiveStepSizeIntegrator;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::Ephemeris;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -9,6 +9,8 @@
 namespace principia {
 namespace integrators {
 namespace termination_condition {
+namespace _ordinary_differential_equations {
+namespace internal {
 
 inline void UpdateWithAbort(absl::Status const& updater,
                             absl::Status& updated) {
@@ -19,9 +21,12 @@ inline void UpdateWithAbort(absl::Status const& updater,
   }
 }
 
+}  // namespace internal
+}  // namespace _ordinary_differential_equations
 }  // namespace termination_condition
 
-namespace internal_ordinary_differential_equations {
+namespace _ordinary_differential_equations {
+namespace internal {
 
 using namespace principia::base::_for_all_of;
 
@@ -102,6 +107,7 @@ State::ReadFromMessage(serialization::State const& message) {
   return state;
 }
 
-}  // namespace internal_ordinary_differential_equations
+}  // namespace internal
+}  // namespace _ordinary_differential_equations
 }  // namespace integrators
 }  // namespace principia

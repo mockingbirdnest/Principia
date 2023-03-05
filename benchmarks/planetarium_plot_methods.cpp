@@ -17,9 +17,6 @@ namespace geometry {
 
 using astronomy::operator""_UT1;
 using astronomy::operator""_TT;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
 using ksp_plugin::Camera;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Navigation;
@@ -42,6 +39,8 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_signature;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -19,7 +19,6 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_integrator {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -27,6 +26,7 @@ using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -491,10 +491,8 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Serialization) {
 }
 #endif
 
-}  // namespace internal_embedded_explicit_runge_kutta_integrator
 
 // Reopen this namespace to allow printing out the system state.
-namespace internal_ordinary_differential_equations {
 
 void PrintTo(
     typename internal_embedded_explicit_runge_kutta_integrator::ODE::
@@ -506,7 +504,6 @@ void PrintTo(
   *out << "Velocity: " << velocity << "\n";
 }
 
-}  // namespace internal_ordinary_differential_equations
 
 }  // namespace integrators
 }  // namespace principia

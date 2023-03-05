@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_runge_kutta_nyström_integrator {
+namespace _symplectic_runge_kutta_nyström_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
@@ -257,7 +258,7 @@ void SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::WriteToMessage(
   message->set_composition_method(composition);
 }
 
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
 internal_symplectic_runge_kutta_nyström_integrator::
@@ -291,5 +292,6 @@ SymplecticRungeKuttaNyströmIntegrator() {
   return integrator;
 }
 
+}  // namespace _symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

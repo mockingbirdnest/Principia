@@ -22,7 +22,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symmetric_linear_multistep_integrator {
+namespace _symmetric_linear_multistep_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
@@ -126,15 +127,20 @@ class SymmetricLinearMultistepIntegrator
   CohenHubbardOesterwinter<order> const& cohen_hubbard_oesterwinter_;
 };
 
-}  // namespace internal_symmetric_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename Position>
 internal_symmetric_linear_multistep_integrator::
     SymmetricLinearMultistepIntegrator<Method, Position> const&
 SymmetricLinearMultistepIntegrator();
 
+}  // namespace _symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+}  // namespace principia::integrators
 
 #include "symmetric_linear_multistep_integrator_body.hpp"
 

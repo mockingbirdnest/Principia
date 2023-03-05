@@ -13,15 +13,12 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_integrators {
 
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::Fine1987RKNG34;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Quinlan1999Order8A;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_si;
 
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters

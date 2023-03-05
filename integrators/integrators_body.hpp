@@ -229,7 +229,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_integrators {
+namespace _integrators {
+namespace internal {
 
 using namespace principia::quantities::_serialization;
 
@@ -880,7 +881,8 @@ AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
   return AdaptiveStepSizeIntegrator<Equation>::ReadFromMessage(message);
 }
 
-}  // namespace internal_integrators
+}  // namespace internal
+}  // namespace _integrators
 }  // namespace integrators
 }  // namespace principia
 

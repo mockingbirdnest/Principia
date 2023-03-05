@@ -18,6 +18,8 @@ namespace integrators {
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
 namespace termination_condition {
+namespace _ordinary_differential_equations {
+namespace internal {
 
 constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 // The integration may be retried with the same arguments and progress will
@@ -30,9 +32,18 @@ constexpr absl::StatusCode VanishingStepSize =
 // Same as absl::Status::Update, but prefers kAbort.
 void UpdateWithAbort(absl::Status const& updater, absl::Status& updated);
 
+}  // namespace internal
+
+using internal::Done;
+using internal::ReachedMaximalStepCount;
+using internal::UpdateWithAbort;
+using internal::VanishingStepSize;
+
+}  // namespace _ordinary_differential_equations
 }  // namespace termination_condition
 
-namespace internal_ordinary_differential_equations {
+namespace _ordinary_differential_equations {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -226,7 +237,7 @@ struct InitialValueProblem final {
   typename ODE::State initial_state;
 };
 
-}  // namespace internal_ordinary_differential_equations
+}  // namespace internal
 
 using internal_ordinary_differential_equations::
     DecomposableFirstOrderDifferentialEquation;
@@ -234,11 +245,16 @@ using internal_ordinary_differential_equations::
     ExplicitFirstOrderOrdinaryDifferentialEquation;
 using internal_ordinary_differential_equations::
     ExplicitSecondOrderOrdinaryDifferentialEquation;
-using internal_ordinary_differential_equations::InitialValueProblem;
+using internal::InitialValueProblem;
 using internal_ordinary_differential_equations::
     SpecialSecondOrderDifferentialEquation;
 
+}  // namespace _ordinary_differential_equations
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_ordinary_differential_equations;
+}  // namespace principia::integrators
 
 #include "integrators/ordinary_differential_equations_body.hpp"

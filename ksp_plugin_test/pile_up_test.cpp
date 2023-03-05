@@ -32,11 +32,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
-using integrators::MockFixedStepSizeIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN6B;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
@@ -58,6 +53,10 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_mock_integrators;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

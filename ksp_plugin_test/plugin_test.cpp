@@ -51,10 +51,6 @@ namespace ksp_plugin {
 
 using astronomy::ICRS;
 using astronomy::ParseTT;
-using integrators::InitialValueProblem;
-using integrators::MockFixedStepSizeIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -94,6 +90,10 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_mock_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
