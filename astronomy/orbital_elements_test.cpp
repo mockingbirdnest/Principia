@@ -412,6 +412,41 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
              mathematica::ExpressIn(Metre, Second, Radian));
 }
 
+TEST_F(OrbitalElementsTest, Escape) {
+  SolarSystem<ICRS> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  auto const ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<
+              QuinlanTremaine1990Order12,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
+          /*step=*/10 * Minute));
+  MassiveBody const& earth = *solar_system.massive_body(*ephemeris, "Earth");
+
+  Time const mission_duration = 10 * Day;
+
+  KeplerianElements<GCRS> initial_osculating;
+  initial_osculating.periapsis_distance = 7000 * Kilo(Metre);
+  initial_osculating.eccentricity = 1.2;
+  initial_osculating.inclination = 10 * Milli(ArcSecond);
+  initial_osculating.longitude_of_ascending_node = 10 * Degree;
+  initial_osculating.argument_of_periapsis = 20 * Degree;
+  initial_osculating.hyperbolic_mean_anomaly = 30 * Degree;
+  EXPECT_THAT(
+      OrbitalElements::ForTrajectory(
+          *EarthCentredTrajectory(
+              initial_osculating, J2000, J2000 + mission_duration, *ephemeris),
+          earth,
+          MasslessBody{},
+          /*fill_osculating_equinoctial_elements=*/true)
+          .status(),
+      StatusIs(absl::StatusCode::kOutOfRange));
+}
+
 TEST_F(OrbitalElementsTest, Years) {
   SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
