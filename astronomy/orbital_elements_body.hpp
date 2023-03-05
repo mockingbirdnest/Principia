@@ -186,6 +186,10 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
   KeplerianElements<Frame> const initial_osculating_elements =
       osculating_elements(t_min);
   Time const estimated_period = *initial_osculating_elements.period;
+  if (!IsFinite(estimated_period) || estimated_period <= Time{}) {
+    return absl::OutOfRangeError("estimated period is " +
+                                 DebugString(estimated_period));
+  }
 
   std::vector<Angle> unwound_λs;
   // 3 is greater than 2 to make sure that we start in the right direction.

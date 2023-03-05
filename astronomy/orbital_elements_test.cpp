@@ -436,66 +436,15 @@ TEST_F(OrbitalElementsTest, Escape) {
   initial_osculating.longitude_of_ascending_node = 10 * Degree;
   initial_osculating.argument_of_periapsis = 20 * Degree;
   initial_osculating.hyperbolic_mean_anomaly = 30 * Degree;
-  auto const status_or_elements = OrbitalElements::ForTrajectory(
-      *EarthCentredTrajectory(
-          initial_osculating, J2000, J2000 + mission_duration, *ephemeris),
-      earth,
-      MasslessBody{},
-      /*fill_osculating_equinoctial_elements=*/true);
-  ASSERT_THAT(status_or_elements, IsOk());
-  OrbitalElements const& elements = status_or_elements.value();
   EXPECT_THAT(
-      elements.anomalistic_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-8.0_(1) * Second)));
-  EXPECT_THAT(
-      elements.nodal_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-14_(1) * Second)));
-  EXPECT_THAT(
-      elements.sidereal_period(),
-      DifferenceFrom(*initial_osculating.period, IsNear(-16_(1) * Second)));
-
-  // This value is meaningless, see below.
-  EXPECT_THAT(elements.nodal_precession(), IsNear(2.0_(1) * Degree / Day));
-
-  // Mean element values.
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                IsNear(104_(1) * Metre)));
-  EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.0014_(1)));
-  EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
-              AbsoluteErrorFrom(initial_osculating.inclination,
-                                IsNear(6.0_(1) * ArcSecond)));
-
-  // Mean element stability: Ω and ω exhibit a daily oscillation (likely due to
-  // the tesseral terms of the geopotential) as the very low inclination means
-  // that these elements are singular.
-  // The other elements are stable.
-  // A closer analysis would show that the longitude of periapsis ϖ = Ω + ω
-  // exhibits a precession that is largely free of oscillations, and that, if
-  // its oscillations are filtered, the argument of periapsis ω precesses as
-  // expected; the longitude of the ascending node Ω exhibits no obvious
-  // precession even if its daily oscillation is filtered out.
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(20_(1) * Metre));
-  EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              IsNear(1.0e-4_(1)));
-  EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(11_(1) * ArcSecond));
-  EXPECT_THAT(elements.mean_longitude_of_ascending_node_interval().measure(),
-              IsNear(136_(1) * Degree));
-  EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              IsNear(154_(1) * Degree));
-
-  mathematica::Logger logger(
-      SOLUTION_DIR / "mathematica" / "fully_perturbed_elements.generated.wl",
-      /*make_unique=*/false);
-  logger.Set("fullyPerturbedOsculating",
-             elements.osculating_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
-  logger.Set("fullyPerturbedMean",
-             elements.mean_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+      OrbitalElements::ForTrajectory(
+          *EarthCentredTrajectory(
+              initial_osculating, J2000, J2000 + mission_duration, *ephemeris),
+          earth,
+          MasslessBody{},
+          /*fill_osculating_equinoctial_elements=*/true)
+          .status(),
+      StatusIs(absl::StatusCode::kOutOfRange));
 }
 
 TEST_F(OrbitalElementsTest, Years) {
