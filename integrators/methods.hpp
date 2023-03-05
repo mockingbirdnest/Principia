@@ -10,10 +10,9 @@ namespace integrators {
 namespace _methods {
 namespace internal {
 
-using base::mod;
-using base::not_constructible;
-using numerics::FixedStrictlyLowerTriangularMatrix;
-using numerics::FixedVector;
+using namespace principia::base::_mod;
+using namespace principia::base::_not_constructible;
+using namespace principia::numerics::_fixed_arrays;
 
 struct EmbeddedExplicitRungeKutta : not_constructible {
   // static constexpr int higher_order = ...;
