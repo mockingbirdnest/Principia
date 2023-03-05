@@ -26,7 +26,8 @@ using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using namespace principia::geometry::_named_quantities;
-using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

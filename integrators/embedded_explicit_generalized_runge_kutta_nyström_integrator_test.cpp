@@ -28,7 +28,8 @@ using ::std::placeholders::_4;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using namespace principia::geometry::_named_quantities;
-using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_generalized_runge_kutta_nyström_integrator;
 using namespace principia::numerics::_legendre;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;

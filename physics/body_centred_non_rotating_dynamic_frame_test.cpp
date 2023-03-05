@@ -38,7 +38,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

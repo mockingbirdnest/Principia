@@ -43,7 +43,8 @@ using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
-using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;

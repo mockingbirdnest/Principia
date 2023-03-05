@@ -61,7 +61,8 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;

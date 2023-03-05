@@ -31,7 +31,8 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 using namespace principia::geometry::_named_quantities;
-using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -46,8 +46,10 @@ using ::testing::MockFunction;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
-using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;
-using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_generalized_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_elementary_functions;

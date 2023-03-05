@@ -42,7 +42,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_plane;
 using namespace principia::geometry::_rotation;
-using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
