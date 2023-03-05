@@ -47,13 +47,17 @@ inline void WriteToHexadecimalFile(std::filesystem::path const& filename,
 
 }  // namespace internal
 
+#if PRINCIPIA_COMPILER_MSVC
 using internal::ReadFromBase32768File;
+#endif
 using internal::ReadFromBinaryFile;
 using internal::ReadFromHexadecimalFile;
 using internal::ReadFromTabulatedData;
 using internal::ReadLinesFromBase64File;
 using internal::ReadLinesFromHexadecimalFile;
+#if PRINCIPIA_COMPILER_MSVC
 using internal::WriteToBase32768File;
+#endif
 using internal::WriteToBinaryFile;
 using internal::WriteToHexadecimalFile;
 
