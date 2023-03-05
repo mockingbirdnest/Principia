@@ -435,7 +435,7 @@ TEST_F(OrbitalElementsTest, Escape) {
   initial_osculating.inclination = 10 * Milli(ArcSecond);
   initial_osculating.longitude_of_ascending_node = 10 * Degree;
   initial_osculating.argument_of_periapsis = 20 * Degree;
-  initial_osculating.mean_anomaly = 30 * Degree;
+  initial_osculating.hyperbolic_mean_anomaly = 30 * Degree;
   auto const status_or_elements = OrbitalElements::ForTrajectory(
       *EarthCentredTrajectory(
           initial_osculating, J2000, J2000 + mission_duration, *ephemeris),
