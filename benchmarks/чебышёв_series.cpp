@@ -29,6 +29,7 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace numerics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
@@ -37,10 +38,6 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace numerics {
-namespace _чебышёв_series {
-namespace internal {
 
 namespace {
 constexpr int evaluations_per_iteration = 1000;
@@ -249,7 +246,5 @@ BENCHMARK(BM_EvaluateDisplacement)
     ->Arg(19)
     ->Unit(benchmark::kMicrosecond);
 
-}  // namespace internal
-}  // namespace _чебышёв_series
 }  // namespace numerics
 }  // namespace principia
