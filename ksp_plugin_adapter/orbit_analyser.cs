@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Net;
 using KSP.Localization;
+using static Targeting;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -96,8 +98,27 @@ internal static class Formatters {
     return $"{interval.FormatAngleInterval()} ({formatted_distance})";
   }
 
-  // Formats a duration, omitting leading components if they are 0, and omitting
-  // leading 0s on the days; optionally exclude seconds.
+  public static string FormatHourAngleInterval(this Interval interval) {
+    double half_width = (interval.max - interval.min) / 2;
+    double midpoint = interval.min + half_width;
+    if (half_width > Math.PI) {
+      return L10N.CacheFormat("#Principia_OrbitAnalyser_Precesses");
+    }
+    var formatted_midpoint = new PrincipiaTimeSpan(
+        KSPUtil.dateTimeFormatter.Day * midpoint / (2 * Math.PI))
+        .FormatPositive(with_leading_zeroes: false,
+                        with_seconds: false,
+                        iau_style: true);
+    var formatted_half_width = new PrincipiaTimeSpan(
+        KSPUtil.dateTimeFormatter.Day * half_width / (2 * Math.PI))
+        .FormatPositive(with_leading_zeroes: false,
+                        with_seconds: false,
+                        iau_style: true);
+    return $"{formatted_midpoint}±{formatted_half_width}";
+  }
+
+      // Formats a duration, omitting leading components if they are 0, and omitting
+      // leading 0s on the days; optionally exclude seconds.
   public static string FormatDuration(this double seconds,
                                       bool show_seconds = true) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
@@ -313,6 +334,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       RenderOrbitRecurrence(recurrence, primary);
       Style.LineSpacing();
       RenderOrbitGroundTrack(equatorial_crossings, primary);
+      Style.LineSpacing();
+      RenderNodeMeanSolarTimes(solar_times_of_nodes);
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -571,6 +594,17 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack_DescendingPass"),
         equatorial_crossings?.longitudes_reduced_to_descending_pass.
             FormatEquatorialAngleInterval(primary));
+  }
+
+  private void RenderNodeMeanSolarTimes(SolarTimesOfNodes? solar_times_of_nodes) {
+    LabeledField(
+        "MST AN",  // REMOVE BEFORE FLIGHT: L10N
+        solar_times_of_nodes?.mean_solar_times_of_ascending_nodes.
+            FormatHourAngleInterval());
+    LabeledField(
+        "MST DN",  // REMOVE BEFORE FLIGHT: L10N
+        solar_times_of_nodes?.mean_solar_times_of_descending_nodes.
+            FormatHourAngleInterval());
   }
 
   private void LabeledField(string label, string value) {
