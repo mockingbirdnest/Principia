@@ -24,10 +24,9 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
-using astronomy::ITRS;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -74,7 +73,7 @@ GeneralSphericalHarmonicsAccelerationF90(
   auto const acceleration_surface =
       Vector<Quotient<Acceleration, GravitationalParameter>, SurfaceFrame>(
           si::Unit<Quotient<Acceleration, GravitationalParameter>> *
-          astronomy::fortran_astrodynamics_toolkit::
+          astronomy::_fortran_astrodynamics_toolkit::
               ComputeGravityAccelerationLear<degree, order>(
                   r_surface.coordinates() / Metre, mu, rbar, cnm, snm));
   return from_surface_frame(acceleration_surface);

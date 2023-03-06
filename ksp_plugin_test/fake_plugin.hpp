@@ -10,9 +10,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_fake_plugin {
 
-using astronomy::ICRS;
 using physics::KeplerianElements;
 using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
 
 class FakePlugin : public Plugin {
  public:

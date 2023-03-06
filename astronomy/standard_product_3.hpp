@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_standard_product_3 {
+namespace _standard_product_3 {
+namespace internal {
 
 using physics::DiscreteTrajectory;
 using namespace principia::base::_not_null;
@@ -153,9 +154,14 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteIdentifier const& id);
 
-}  // namespace internal_standard_product_3
+}  // namespace internal
 
-using internal_standard_product_3::StandardProduct3;
+using internal::StandardProduct3;
 
+}  // namespace _standard_product_3
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_standard_product_3;
+}  // namespace principia::astronomy

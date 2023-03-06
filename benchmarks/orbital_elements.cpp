@@ -26,7 +26,6 @@
 namespace principia {
 namespace astronomy {
 
-using astronomy::GCRS;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -38,6 +37,7 @@ using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::OblateBody;
 using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;

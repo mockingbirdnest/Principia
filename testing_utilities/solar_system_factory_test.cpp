@@ -14,8 +14,6 @@
 
 namespace principia {
 
-using astronomy::ICRS;
-using astronomy::J2000;
 using physics::Body;
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
@@ -27,6 +25,8 @@ using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Ge;
 using ::testing::UnorderedElementsAreArray;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_elementary_functions;

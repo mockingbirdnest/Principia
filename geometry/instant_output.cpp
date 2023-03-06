@@ -11,10 +11,8 @@ namespace geometry {
 namespace _point {
 namespace internal {
 
-using astronomy::DateTimeAsTT;
-using astronomy::J2000;
-using astronomy::operator""_TT;
-using astronomy::TTSecond;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

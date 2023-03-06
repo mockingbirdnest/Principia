@@ -15,8 +15,6 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::operator""_UT1;
-using astronomy::operator""_TT;
 using ksp_plugin::Camera;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Navigation;
@@ -33,6 +31,7 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::SolarSystem;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;

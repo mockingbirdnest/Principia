@@ -15,9 +15,9 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::J2000;
-using astronomy::operator""_TT;
 using testing::Eq;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_fma;

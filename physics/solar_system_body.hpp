@@ -37,8 +37,8 @@ namespace principia {
 namespace physics {
 namespace internal_solar_system {
 
-using astronomy::J2000;
-using astronomy::ParseTT;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;

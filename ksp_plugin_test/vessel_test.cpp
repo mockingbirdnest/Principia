@@ -37,7 +37,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::operator""_TT;
 using interface::ReadPluginFromFile;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -55,6 +54,7 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;

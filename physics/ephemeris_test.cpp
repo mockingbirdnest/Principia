@@ -49,7 +49,6 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using astronomy::ICRS;
 using mathematica::PreserveUnits;
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -57,6 +56,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;

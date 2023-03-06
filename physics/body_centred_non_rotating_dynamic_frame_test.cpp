@@ -28,10 +28,10 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
-using astronomy::ICRS;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;

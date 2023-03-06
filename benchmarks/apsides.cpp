@@ -24,10 +24,8 @@
 
 namespace principia {
 
-using astronomy::GCRS;
-using astronomy::ICRS;
-using astronomy::ITRS;
-using astronomy::StandardProduct3;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;

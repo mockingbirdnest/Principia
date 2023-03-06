@@ -12,8 +12,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace date_time {
-namespace internal_date_time {
+namespace _date_time {
+namespace internal {
 
 using namespace principia::base::_mod;
 
@@ -98,7 +98,7 @@ constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
 
 constexpr Date Date::YYYYMMDD(
     std::int64_t const digits,
-    std::optional<date_time::Calendar> const calendar) {
+    std::optional<_date_time::Calendar> const calendar) {
   auto const abs_digits = digits < 0 ? -digits : digits;
   auto const sign = digits < 0 ? -1 : 1;
   CONSTEXPR_CHECK(abs_digits <= 9999'99'99);
@@ -110,7 +110,7 @@ constexpr Date Date::YYYYMMDD(
 
 constexpr Date Date::YYYYDDD(
     std::int64_t const digits,
-    std::optional<date_time::Calendar> const calendar) {
+    std::optional<_date_time::Calendar> const calendar) {
   auto const sign = digits < 0 ? -1 : 1;
   CONSTEXPR_CHECK(digits <= 9999'999);
   return Date::Ordinal(sign * digit_range(digits, 3, 7),
@@ -127,10 +127,10 @@ constexpr Date Date::YYYYwwD(std::int64_t const digits) {
 }
 
 constexpr Date Date::Calendar(int const year, int const month, int const day,
-                              std::optional<date_time::Calendar> calendar) {
+                              std::optional<_date_time::Calendar> calendar) {
   if (!calendar.has_value()) {
     CONSTEXPR_CHECK(year >= 1583);
-    calendar = date_time::Calendar::Gregorian;
+    calendar = _date_time::Calendar::Gregorian;
   }
   CONSTEXPR_CHECK(year <= 9999);
   CONSTEXPR_CHECK(month >= 1);
@@ -141,10 +141,10 @@ constexpr Date Date::Calendar(int const year, int const month, int const day,
 }
 
 constexpr Date Date::Ordinal(int const year, int const day,
-                             std::optional<date_time::Calendar> calendar) {
+                             std::optional<_date_time::Calendar> calendar) {
   if (!calendar.has_value()) {
     CONSTEXPR_CHECK(year >= 1583);
-    calendar = date_time::Calendar::Gregorian;
+    calendar = _date_time::Calendar::Gregorian;
   }
   CONSTEXPR_CHECK(day >= 1);
   CONSTEXPR_CHECK(day <= year_length(year, *calendar));
@@ -172,7 +172,7 @@ inline constexpr Date Date::JD(double jd) {
   // 0.5 must be 0.
   constexpr double F = 0;
   double A = std::numeric_limits<double>::quiet_NaN();
-  date_time::Calendar calendar{};
+  _date_time::Calendar calendar{};
   if (Z < 2299'161) {
     A = Z;
     calendar = Calendar::Julian;
@@ -203,7 +203,7 @@ constexpr int Date::day() const {
   return day_;
 }
 
-inline constexpr date_time::Calendar Date::calendar() const {
+inline constexpr _date_time::Calendar Date::calendar() const {
   return calendar_;
 }
 
@@ -243,7 +243,7 @@ constexpr Date Date::next_day() const {
 }
 
 constexpr Date::Date(int const year, int const month, int const day,
-                     date_time::Calendar const calendar)
+                     _date_time::Calendar const calendar)
       : year_(year),
         month_(month),
         day_(day),
@@ -1061,7 +1061,7 @@ constexpr JulianDate operator""_Julian(char const* const str,
   }
 }
 
-}  // namespace internal_date_time
-}  // namespace date_time
+}  // namespace internal
+}  // namespace _date_time
 }  // namespace astronomy
 }  // namespace principia

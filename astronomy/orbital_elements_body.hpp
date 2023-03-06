@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbital_elements {
+namespace _orbital_elements {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
@@ -569,6 +570,7 @@ inline absl::Status OrbitalElements::ComputeIntervals() {
 }
 
 
-}  // namespace internal_orbital_elements
+}  // namespace internal
+}  // namespace _orbital_elements
 }  // namespace astronomy
 }  // namespace principia

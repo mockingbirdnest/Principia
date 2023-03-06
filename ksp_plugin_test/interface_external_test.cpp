@@ -13,7 +13,6 @@
 
 namespace principia {
 
-using astronomy::ICRS;
 using ksp_plugin::GUID;
 using ksp_plugin::Navigation;
 using ksp_plugin::PartId;
@@ -25,6 +24,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;

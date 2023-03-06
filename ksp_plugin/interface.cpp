@@ -62,8 +62,6 @@
 namespace principia {
 namespace interface {
 
-using astronomy::J2000;
-using astronomy::ParseTT;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
@@ -85,6 +83,8 @@ using physics::SolarSystem;
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
 using ::operator<<;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_array;
 using namespace principia::base::_base64;
 using namespace principia::base::_encoder;

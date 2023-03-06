@@ -15,10 +15,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::ITRS;
-using astronomy::J2000;
-using astronomy::OrbitRecurrence;
-using astronomy::StandardProduct3;
 using physics::BodySurfaceDynamicFrame;
 using physics::Ephemeris;
 using physics::RotatingBody;
@@ -28,6 +24,10 @@ using ::testing::Eq;
 using ::testing::IsNull;
 using ::testing::Optional;
 using ::testing::Property;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_orbit_recurrence;
+using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;

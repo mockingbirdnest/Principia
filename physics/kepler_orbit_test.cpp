@@ -14,13 +14,13 @@ namespace principia {
 namespace physics {
 namespace internal_kepler_orbit {
 
-using astronomy::ICRS;
-using astronomy::J2000;
-using astronomy::operator""_TT;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

@@ -5,25 +5,19 @@
 #include <ostream>
 #include <optional>
 
-// This file has an additional layer of namespacing for several reasons:
-//   - we are not entirely sure whether we really want to expose this API;
-//   - |astronomy::Time| for a class that represents the time of day is weird;
-//   - |astronomy::Time| would clash with the more common |quantities::Time| in
-//     some parts of |astronomy|.
-
 namespace principia {
 namespace astronomy {
-namespace date_time {
+namespace _date_time {
 
-// Declared in date_time, rather than in the internal namespace and re-exported,
-// so that we can refer to it as date_time::Calendar when it is hidden by
-// Date::Calendar below.
+// Declared in _date_time, rather than in the internal namespace and
+// re-exported, so that we can refer to it as date_time::Calendar when it is
+// hidden by Date::Calendar below.
 enum class Calendar {
   Julian = 'J',
   Gregorian = 'G',
 };
 
-namespace internal_date_time {
+namespace internal {
 
 // Represents a calendar day.
 class Date final {
@@ -51,7 +45,7 @@ class Date final {
   // |calendar| is required.
   static constexpr Date Ordinal(
       int year, int day,
-      std::optional<date_time::Calendar> calendar = std::nullopt);
+      std::optional<_date_time::Calendar> calendar = std::nullopt);
   // Since the calendar week number is an ISO 8601 construct, the year must be
   // at least 1583, and the calendar is Gregorian.
   static constexpr Date Week(int year, int week, int day);
@@ -63,7 +57,7 @@ class Date final {
   constexpr int year() const;
   constexpr int month() const;
   constexpr int day() const;
-  constexpr date_time::Calendar calendar() const;
+  constexpr _date_time::Calendar calendar() const;
 
   constexpr int ordinal() const;
 
@@ -76,12 +70,12 @@ class Date final {
 
  private:
   constexpr Date(int year, int month, int day,
-                 date_time::Calendar const calendar);
+                 _date_time::Calendar const calendar);
 
   int year_;
   int month_;
   int day_;
-  date_time::Calendar calendar_;
+  _date_time::Calendar calendar_;
 };
 
 class Time final {
@@ -185,19 +179,20 @@ std::ostream& operator<<(std::ostream& out, DateTime const& date_time);
 constexpr bool IsJulian(char const* str, std::size_t size);
 constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
 
-}  // namespace internal_date_time
+}  // namespace internal
 
-using internal_date_time::Date;
-using internal_date_time::DateTime;
-using internal_date_time::IsJulian;
-using internal_date_time::JulianDate;
-using internal_date_time::operator""_Date;
-using internal_date_time::operator""_DateTime;
-using internal_date_time::operator""_Julian;
-using internal_date_time::operator""_Time;
-using internal_date_time::Time;
+using internal::Date;
+using internal::DateTime;
+using internal::IsJulian;
+using internal::JulianDate;
+using internal::operator""_Date;
+using internal::operator""_DateTime;
+using internal::operator""_Julian;
+using internal::operator""_Time;
+using internal::Time;
+namespace date_time = _date_time;
 
-}  // namespace date_time
+}  // namespace _date_time
 }  // namespace astronomy
 }  // namespace principia
 

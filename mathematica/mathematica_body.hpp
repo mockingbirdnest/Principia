@@ -19,7 +19,7 @@ namespace principia {
 namespace mathematica {
 namespace internal_mathematica {
 
-using astronomy::J2000;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_mod;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;

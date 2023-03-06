@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbit_recurrence {
+namespace _orbit_recurrence {
+namespace internal {
 
 using physics::RotatingBody;
 using namespace principia::quantities::_named_quantities;
@@ -109,11 +110,16 @@ bool operator!=(OrbitRecurrence const& left, OrbitRecurrence const& right);
 
 std::ostream& operator<<(std::ostream& out, OrbitRecurrence const& recurrence);
 
-}  // namespace internal_orbit_recurrence
+}  // namespace internal
 
-using internal_orbit_recurrence::OrbitRecurrence;
+using internal::OrbitRecurrence;
 
+}  // namespace _orbit_recurrence
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_orbit_recurrence;
+}  // namespace principia::astronomy
 
 #include "astronomy/orbit_recurrence_body.hpp"

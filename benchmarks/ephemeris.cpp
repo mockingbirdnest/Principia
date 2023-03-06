@@ -37,8 +37,8 @@
 
 namespace principia {
 
-using astronomy::ICRS;
 using ksp_plugin::Barycentric;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_frame;

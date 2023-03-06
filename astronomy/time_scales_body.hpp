@@ -16,13 +16,10 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_time_scales {
+namespace _time_scales {
+namespace internal {
 
-using astronomy::date_time::IsJulian;
-using astronomy::date_time::JulianDate;
-using astronomy::date_time::operator""_Date;
-using astronomy::date_time::operator""_DateTime;
-using astronomy::date_time::operator""_Julian;
+using namespace principia::astronomy::_date_time;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -606,6 +603,7 @@ constexpr DateTime TTSecond(Instant const& t) {
           /*millisecond=*/0));
 }
 
-}  // namespace internal_time_scales
+}  // namespace internal
+}  // namespace _time_scales
 }  // namespace astronomy
 }  // namespace principia
