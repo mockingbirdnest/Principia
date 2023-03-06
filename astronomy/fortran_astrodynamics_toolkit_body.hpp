@@ -7,7 +7,6 @@
 
 namespace principia {
 namespace astronomy {
-namespace fortran_astrodynamics_toolkit {
 namespace _fortran_astrodynamics_toolkit {
 namespace internal {
 
@@ -139,6 +138,5 @@ R3Element<double> ComputeGravityAccelerationLear(
 
 }  // namespace internal
 }  // namespace _fortran_astrodynamics_toolkit
-}  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy
 }  // namespace principia

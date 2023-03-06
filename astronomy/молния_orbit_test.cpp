@@ -28,6 +28,7 @@
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using astronomy::ICRS;
 using astronomy::J2000;
@@ -39,7 +40,6 @@ using physics::MasslessBody;
 using physics::OblateBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
-using namespace principia::astronomy::_молния_orbit;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
@@ -53,8 +53,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
-
-namespace astronomy {
 
 class МолнияOrbitTest : public ::testing::Test {
  protected:

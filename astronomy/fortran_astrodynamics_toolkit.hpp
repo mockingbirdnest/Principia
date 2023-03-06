@@ -39,7 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace principia {
 namespace astronomy {
-namespace fortran_astrodynamics_toolkit {
 namespace _fortran_astrodynamics_toolkit {
 namespace internal {
 
@@ -61,7 +60,6 @@ using internal::FixedMatrix;
 using internal::R3Element;
 
 }  // namespace _fortran_astrodynamics_toolkit
-}  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy
 }  // namespace principia
 

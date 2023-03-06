@@ -35,7 +35,6 @@ using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Lt;
 using ::testing::Property;
-using namespace principia::astronomy::_orbit_analysis;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;

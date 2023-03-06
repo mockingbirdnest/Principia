@@ -53,7 +53,6 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 using physics::SolarSystem;
 using ::testing::Lt;
-using namespace principia::astronomy::_lunar_orbit;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;

@@ -125,7 +125,7 @@ class GeopotentialTest : public ::testing::Test {
     }
     return Vector<Acceleration, ITRS>(
         si::Unit<Acceleration> *
-        astronomy::fortran_astrodynamics_toolkit::
+        astronomy::_fortran_astrodynamics_toolkit::
             ComputeGravityAccelerationLear<9, 9>(
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
   }

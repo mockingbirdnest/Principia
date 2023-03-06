@@ -22,7 +22,6 @@ namespace principia {
 using physics::Ephemeris;
 using physics::SolarSystem;
 using ::testing::Eq;
-using namespace principia::astronomy::_lunar_eclipse;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;

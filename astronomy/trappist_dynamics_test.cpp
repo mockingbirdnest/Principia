@@ -39,6 +39,7 @@
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using mathematica::PreserveUnits;
 using physics::Ephemeris;
@@ -52,7 +53,6 @@ using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
-using namespace principia::astronomy::_trappist_dynamics;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_graveyard;
@@ -70,10 +70,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
 using namespace std::chrono_literals;
-
-namespace astronomy {
 
 namespace genetics {
 

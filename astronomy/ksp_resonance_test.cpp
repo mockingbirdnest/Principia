@@ -27,7 +27,6 @@ using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
 using ::testing::Eq;
-using namespace principia::astronomy::_ksp_resonance;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;

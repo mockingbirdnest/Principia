@@ -29,7 +29,6 @@ using physics::OblateBody;
 using physics::SolarSystem;
 using ::testing::AnyOf;
 using ::testing::Eq;
-using namespace principia::astronomy::_geodesy;
 using namespace principia::base::_bundle;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;

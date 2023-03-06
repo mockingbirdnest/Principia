@@ -73,7 +73,7 @@ GeneralSphericalHarmonicsAccelerationF90(
   auto const acceleration_surface =
       Vector<Quotient<Acceleration, GravitationalParameter>, SurfaceFrame>(
           si::Unit<Quotient<Acceleration, GravitationalParameter>> *
-          astronomy::fortran_astrodynamics_toolkit::
+          astronomy::_fortran_astrodynamics_toolkit::
               ComputeGravityAccelerationLear<degree, order>(
                   r_surface.coordinates() / Metre, mu, rbar, cnm, snm));
   return from_surface_frame(acceleration_surface);

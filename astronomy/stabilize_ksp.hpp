@@ -4,7 +4,6 @@
 
 namespace principia {
 namespace astronomy {
-namespace stabilize_ksp_internal {
 namespace _stabilize_ksp {
 namespace internal {
 
@@ -17,14 +16,9 @@ void StabilizeKSP(SolarSystem<Frame>& solar_system);
 
 }  // namespace internal
 
-using internal::SolarSystem;
 using internal::StabilizeKSP;
 
 }  // namespace _stabilize_ksp
-}  // namespace stabilize_ksp_internal
-
-using stabilize_ksp_internal::StabilizeKSP;
-
 }  // namespace astronomy
 }  // namespace principia
 

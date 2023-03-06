@@ -22,6 +22,8 @@ constexpr std::uint64_t KSPStabilizedSystemFingerprints[] = {
 
 using internal::KSP122;
 using internal::KSP191;
+using internal::KSPStabilizedSystemFingerprints;
+using internal::KSPStockSystemFingerprints;
 
 }  // namespace _solar_system_fingerprints
 }  // namespace astronomy
