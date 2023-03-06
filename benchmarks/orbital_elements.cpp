@@ -27,9 +27,6 @@ namespace principia {
 namespace astronomy {
 
 using astronomy::GCRS;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -43,6 +40,8 @@ using physics::OblateBody;
 using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

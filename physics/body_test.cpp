@@ -30,8 +30,6 @@ namespace internal_body {
 using astronomy::ICRS;
 using astronomy::operator""_UTC;
 using astronomy::J2000;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::LegendreNormalizationFactor;
 using ::testing::IsNull;
 using ::testing::NotNull;
@@ -39,6 +37,8 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

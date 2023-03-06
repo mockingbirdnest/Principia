@@ -20,16 +20,16 @@ namespace principia {
 namespace astronomy {
 namespace internal_orbital_elements {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaIntegrator;
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
-using integrators::InitialValueProblem;
-using integrators::methods::DormandPrince1986RK547FC;
 using physics::DegreesOfFreedom;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using namespace principia::base::_jthread;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_integrator;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_quadrature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

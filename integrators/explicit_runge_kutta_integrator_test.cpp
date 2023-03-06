@@ -21,9 +21,9 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_runge_kutta_integrator {
 
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_explicit_runge_kutta_integrator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -145,6 +145,5 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
 #endif
 }
 
-}  // namespace internal_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

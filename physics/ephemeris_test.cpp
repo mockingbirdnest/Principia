@@ -50,16 +50,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
 using mathematica::PreserveUnits;
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -72,6 +62,14 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::
+    _embedded_explicit_generalized_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

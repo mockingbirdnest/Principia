@@ -40,10 +40,6 @@
 
 namespace principia {
 
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::Quinlan1999Order8A;
 using mathematica::PreserveUnits;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -63,6 +59,10 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;

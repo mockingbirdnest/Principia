@@ -23,10 +23,10 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_runge_kutta_integrator {
 
 using ::testing::ValuesIn;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_explicit_linear_multistep_integrator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -236,6 +236,5 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
 }
 #endif
 
-}  // namespace internal_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

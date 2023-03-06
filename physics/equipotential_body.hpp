@@ -20,13 +20,13 @@ namespace principia {
 namespace physics {
 namespace internal_equipotential {
 
-using integrators::InitialValueProblem;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::quantities::_elementary_functions;

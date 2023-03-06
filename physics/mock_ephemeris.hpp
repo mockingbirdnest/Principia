@@ -11,7 +11,7 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using integrators::MockFixedStepSizeIntegrator;
+using namespace principia::integrators::_mock_integrators;
 
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {

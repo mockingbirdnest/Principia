@@ -35,10 +35,6 @@
 namespace principia {
 namespace interface {
 
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockFlightPlan;
@@ -76,6 +72,11 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::
+    _embedded_explicit_generalized_runge_kutta_nyström_integrator;
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_methods;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

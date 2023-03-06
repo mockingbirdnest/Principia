@@ -31,9 +31,6 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerOrbit;
@@ -44,6 +41,8 @@ using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

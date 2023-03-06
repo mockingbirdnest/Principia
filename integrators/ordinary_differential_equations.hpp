@@ -15,6 +15,15 @@
 namespace principia {
 namespace integrators {
 
+namespace _ordinary_differential_equations {
+namespace internal {
+
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
 namespace termination_condition {
@@ -31,14 +40,6 @@ constexpr absl::StatusCode VanishingStepSize =
 void UpdateWithAbort(absl::Status const& updater, absl::Status& updated);
 
 }  // namespace termination_condition
-
-namespace internal_ordinary_differential_equations {
-
-using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
-using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 // A differential equation of the form y′ = f(s, y).
 // |DependentVariable| are the types of the elements of y.
@@ -226,19 +227,21 @@ struct InitialValueProblem final {
   typename ODE::State initial_state;
 };
 
-}  // namespace internal_ordinary_differential_equations
+}  // namespace internal
 
-using internal_ordinary_differential_equations::
-    DecomposableFirstOrderDifferentialEquation;
-using internal_ordinary_differential_equations::
-    ExplicitFirstOrderOrdinaryDifferentialEquation;
-using internal_ordinary_differential_equations::
-    ExplicitSecondOrderOrdinaryDifferentialEquation;
-using internal_ordinary_differential_equations::InitialValueProblem;
-using internal_ordinary_differential_equations::
-    SpecialSecondOrderDifferentialEquation;
+using internal::DecomposableFirstOrderDifferentialEquation;
+using internal::ExplicitFirstOrderOrdinaryDifferentialEquation;
+using internal::ExplicitSecondOrderOrdinaryDifferentialEquation;
+using internal::InitialValueProblem;
+using internal::SpecialSecondOrderDifferentialEquation;
+namespace termination_condition = internal::termination_condition;
 
+}  // namespace _ordinary_differential_equations
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_ordinary_differential_equations;
+}  // namespace principia::integrators
 
 #include "integrators/ordinary_differential_equations_body.hpp"

@@ -29,8 +29,6 @@ namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using astronomy::ICRS;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
@@ -39,6 +37,9 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::
+    _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

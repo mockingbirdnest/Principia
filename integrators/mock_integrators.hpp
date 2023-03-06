@@ -1,14 +1,20 @@
 #pragma once
 
 #include "base/not_null.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "integrators/integrators.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace integrators {
-namespace internal_integrators {
+namespace _mock_integrators {
+namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
+using namespace principia::quantities::_quantities;
 
 template<typename DifferentialEquation>
 class MockFixedStepSizeIntegrator
@@ -52,9 +58,14 @@ class MockFixedStepSizeIntegrator
   MockFixedStepSizeIntegrator() : FixedStepSizeIntegrator<ODE>() {}
 };
 
-}  // namespace internal_integrators
+}  // namespace internal
 
-using internal_integrators::MockFixedStepSizeIntegrator;
+using internal::MockFixedStepSizeIntegrator;
 
+}  // namespace _mock_integrators
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_mock_integrators;
+}  // namespace principia::integrators

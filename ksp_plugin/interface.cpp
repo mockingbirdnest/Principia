@@ -64,10 +64,6 @@ namespace interface {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::FixedStepSizeIntegrator;
-using integrators::ParseAdaptiveStepSizeIntegrator;
-using integrators::ParseFixedStepSizeIntegrator;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
@@ -107,6 +103,7 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

@@ -34,7 +34,6 @@ FORWARD_DECLARE_FROM(part, class, Part);
 
 namespace internal_pile_up {
 
-using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
 using physics::DegreesOfFreedom;
@@ -48,6 +47,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

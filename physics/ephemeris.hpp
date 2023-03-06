@@ -34,16 +34,12 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::FixedStepSizeIntegrator;
-using integrators::InitialValueProblem;
-using integrators::Integrator;
-using integrators::SpecialSecondOrderDifferentialEquation;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

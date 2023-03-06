@@ -7,12 +7,12 @@
 
 namespace principia {
 namespace integrators {
-namespace methods {
+namespace _methods {
+namespace internal {
 
-using base::mod;
-using base::not_constructible;
-using numerics::FixedStrictlyLowerTriangularMatrix;
-using numerics::FixedVector;
+using namespace principia::base::_mod;
+using namespace principia::base::_not_constructible;
+using namespace principia::numerics::_fixed_arrays;
 
 struct EmbeddedExplicitRungeKutta : not_constructible {
   // static constexpr int higher_order = ...;
@@ -1271,6 +1271,72 @@ struct 吉田1990Order8E : SymplecticPartitionedRungeKutta {
                                                    +0.651500828787584192418}}};
 };
 
-}  // namespace methods
+}  // namespace internal
+
+using internal::AdamsBashforthOrder2;
+using internal::AdamsBashforthOrder3;
+using internal::AdamsBashforthOrder4;
+using internal::AdamsBashforthOrder5;
+using internal::AdamsBashforthOrder6;
+using internal::AsSymplecticRungeKuttaNyström;
+using internal::BlanesMoan2002S10;
+using internal::BlanesMoan2002S6;
+using internal::BlanesMoan2002SRKN11B;
+using internal::BlanesMoan2002SRKN14A;
+using internal::BlanesMoan2002SRKN6B;
+using internal::CandyRozmus1991ForestRuth1990;
+using internal::DormandPrince1986RK547FC;
+using internal::DormandالمكاوىPrince1986RKN434FM;
+using internal::EmbeddedExplicitGeneralizedRungeKuttaNyström;
+using internal::EmbeddedExplicitRungeKutta;
+using internal::EmbeddedExplicitRungeKuttaNyström;
+using internal::ExplicitLinearMultistep;
+using internal::ExplicitRungeKutta;
+using internal::Fine1987RKNG34;
+using internal::FixedStrictlyLowerTriangularMatrix;
+using internal::FixedVector;
+using internal::Kutta1901Vσ1;
+using internal::McLachlan1995S2;
+using internal::McLachlan1995S4;
+using internal::McLachlan1995S5;
+using internal::McLachlan1995SB3A4;
+using internal::McLachlan1995SB3A5;
+using internal::McLachlan1995SS15;
+using internal::McLachlan1995SS17;
+using internal::McLachlan1995SS5;
+using internal::McLachlan1995SS9;
+using internal::McLachlanAtela1992Order2Optimal;
+using internal::McLachlanAtela1992Order3Optimal;
+using internal::McLachlanAtela1992Order4Optimal;
+using internal::McLachlanAtela1992Order5Optimal;
+using internal::NewtonDelambreStørmerVerletLeapfrog;
+using internal::not_constructible;
+using internal::OkunborSkeel1994Order6Method13;
+using internal::Quinlan1999Order8A;
+using internal::Quinlan1999Order8B;
+using internal::QuinlanTremaine1990Order10;
+using internal::QuinlanTremaine1990Order12;
+using internal::QuinlanTremaine1990Order14;
+using internal::QuinlanTremaine1990Order8;
+using internal::Ruth1983;
+using internal::SymmetricLinearMultistep;
+using internal::SymplecticPartitionedRungeKutta;
+using internal::SymplecticRungeKuttaNyström;
+using internal::吉田1990Order6A;
+using internal::吉田1990Order6B;
+using internal::吉田1990Order6C;
+using internal::吉田1990Order8A;
+using internal::吉田1990Order8B;
+using internal::吉田1990Order8C;
+using internal::吉田1990Order8D;
+using internal::吉田1990Order8E;
+using internal::鈴木1990;
+namespace methods = _methods;
+
+}  // namespace _methods
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_methods;
+}  // namespace principia::integrators

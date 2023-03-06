@@ -25,8 +25,6 @@
 
 namespace principia {
 
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -37,6 +35,8 @@ using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

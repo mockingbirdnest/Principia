@@ -22,7 +22,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
+namespace _embedded_explicit_runge_kutta_nyström_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
@@ -139,15 +140,20 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   static constexpr auto bʹ_ = Method::bʹ;
 };
 
-}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename Position>
-internal_embedded_explicit_runge_kutta_nyström_integrator::
-    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
+internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator();
 
+}  // namespace _embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::
+    _embedded_explicit_runge_kutta_nyström_integrator;
+}  // namespace principia::integrators
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp"
 
