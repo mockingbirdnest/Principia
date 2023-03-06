@@ -9,9 +9,9 @@ namespace principia {
 namespace astronomy {
 namespace _date_time {
 
-// Declared in _date_time, rather than in the internal namespace and re-exported,
-// so that we can refer to it as date_time::Calendar when it is hidden by
-// Date::Calendar below.
+// Declared in _date_time, rather than in the internal namespace and
+// re-exported, so that we can refer to it as date_time::Calendar when it is
+// hidden by Date::Calendar below.
 enum class Calendar {
   Julian = 'J',
   Gregorian = 'G',
