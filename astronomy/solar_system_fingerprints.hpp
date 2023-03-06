@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace astronomy {
+namespace _solar_system_fingerprints {
+namespace internal {
 
 // Indices in the arrays below.
 constexpr std::int64_t KSP122 = 0;
@@ -16,5 +18,15 @@ constexpr std::uint64_t KSPStabilizedSystemFingerprints[] = {
     0x9F1B6D95399877C6,
     0x4B830CBDF5E77F8D};
 
+}  // namespace internal
+
+using internal::KSP122;
+using internal::KSP191;
+
+}  // namespace _solar_system_fingerprints
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_solar_system_fingerprints;
+}  // namespace principia::astronomy

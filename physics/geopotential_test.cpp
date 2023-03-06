@@ -26,8 +26,6 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
-using astronomy::ICRS;
-using astronomy::ITRS;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
 using ::testing::AllOf;
@@ -38,6 +36,7 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::quantities::_elementary_functions;

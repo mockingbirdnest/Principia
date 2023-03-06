@@ -9,6 +9,8 @@
 namespace principia {
 namespace astronomy {
 namespace stabilize_ksp_internal {
+namespace _stabilize_ksp {
+namespace internal {
 
 using physics::KeplerianElements;
 using namespace principia::geometry::_named_quantities;
@@ -47,6 +49,8 @@ void StabilizeKSP(SolarSystem<Frame>& solar_system) {
   solar_system.ReplaceElements("Bop", bop_elements);
 }
 
+}  // namespace internal
+}  // namespace _stabilize_ksp
 }  // namespace stabilize_ksp_internal
 }  // namespace astronomy
 }  // namespace principia

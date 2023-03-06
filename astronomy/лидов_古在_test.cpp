@@ -26,6 +26,7 @@ using physics::MassiveBody;
 using physics::MasslessBody;
 using physics::SolarSystem;
 using physics::Trajectory;
+using namespace principia::astronomy::_лидов_古在;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_interval;

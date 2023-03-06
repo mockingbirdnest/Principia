@@ -22,12 +22,12 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_orbit_analyser {
 
-using astronomy::OrbitalElements;
-using astronomy::OrbitGroundTrack;
-using astronomy::OrbitRecurrence;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::RotatingBody;
+using namespace principia::astronomy::_orbit_ground_track;
+using namespace principia::astronomy::_orbit_recurrence;
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;

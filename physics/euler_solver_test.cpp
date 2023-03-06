@@ -33,11 +33,11 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
-using astronomy::operator""_UTC;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Matcher;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;

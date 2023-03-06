@@ -39,6 +39,7 @@ using physics::MasslessBody;
 using physics::OblateBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
+using namespace principia::astronomy::_молния_orbit;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;

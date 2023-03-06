@@ -13,7 +13,8 @@
 namespace principia {
 namespace astronomy {
 namespace date_time {
-namespace internal_date_time {
+namespace _date_time {
+namespace internal {
 
 using namespace principia::base::_mod;
 
@@ -1061,7 +1062,8 @@ constexpr JulianDate operator""_Julian(char const* const str,
   }
 }
 
-}  // namespace internal_date_time
+}  // namespace internal
+}  // namespace _date_time
 }  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia

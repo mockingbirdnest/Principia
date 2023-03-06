@@ -30,9 +30,9 @@
 namespace principia {
 namespace mathematica {
 
-using astronomy::OrbitalElements;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_interval;

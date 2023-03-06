@@ -40,6 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace principia {
 namespace astronomy {
 namespace fortran_astrodynamics_toolkit {
+namespace _fortran_astrodynamics_toolkit {
+namespace internal {
 
 using geometry::R3Element;
 using numerics::FixedMatrix;
@@ -52,8 +54,19 @@ R3Element<double> ComputeGravityAccelerationLear(
     FixedMatrix<double, nmodel + 1, nmodel + 1> const& cnm,
     FixedMatrix<double, nmodel + 1, nmodel + 1> const& snm);
 
+}  // namespace internal
+
+using internal::ComputeGravityAccelerationLear;
+using internal::FixedMatrix;
+using internal::R3Element;
+
+}  // namespace _fortran_astrodynamics_toolkit
 }  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_fortran_astrodynamics_toolkit;
+}  // namespace principia::astronomy
 
 #include "astronomy/fortran_astrodynamics_toolkit_body.hpp"

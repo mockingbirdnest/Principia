@@ -23,7 +23,8 @@ enum class Calendar {
   Gregorian = 'G',
 };
 
-namespace internal_date_time {
+namespace _date_time {
+namespace internal {
 
 // Represents a calendar day.
 class Date final {
@@ -185,20 +186,25 @@ std::ostream& operator<<(std::ostream& out, DateTime const& date_time);
 constexpr bool IsJulian(char const* str, std::size_t size);
 constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
 
-}  // namespace internal_date_time
+}  // namespace internal
 
-using internal_date_time::Date;
-using internal_date_time::DateTime;
-using internal_date_time::IsJulian;
-using internal_date_time::JulianDate;
-using internal_date_time::operator""_Date;
-using internal_date_time::operator""_DateTime;
-using internal_date_time::operator""_Julian;
-using internal_date_time::operator""_Time;
-using internal_date_time::Time;
+using internal::Date;
+using internal::DateTime;
+using internal::IsJulian;
+using internal::JulianDate;
+using internal::operator""_Date;
+using internal::operator""_DateTime;
+using internal::operator""_Julian;
+using internal::operator""_Time;
+using internal::Time;
 
+}  // namespace _date_time
 }  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_date_time;
+}  // namespace principia::astronomy
 
 #include "astronomy/date_time_body.hpp"

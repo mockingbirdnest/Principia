@@ -16,8 +16,8 @@ namespace principia {
 namespace physics {
 namespace internal_oblate_body {
 
-using astronomy::J2000;
 using numerics::LegendreNormalizationFactor;
+using namespace principia::astronomy::_epoch;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

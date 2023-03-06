@@ -15,7 +15,7 @@ namespace testing_utilities {
 namespace _integration {
 namespace internal {
 
-using astronomy::J2000;
+using namespace principia::astronomy::_epoch;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_elementary_functions;

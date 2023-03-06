@@ -9,13 +9,11 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::J2000;
-using astronomy::operator""_TT;
-using astronomy::operator""_UT1;
-using astronomy::operator""_UTC;
 using geometry::InfiniteFuture;
 using geometry::InfinitePast;
 using ::testing::Eq;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

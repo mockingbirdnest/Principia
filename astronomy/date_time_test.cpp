@@ -8,11 +8,11 @@
 namespace principia {
 namespace astronomy {
 namespace date_time {
-namespace internal_date_time {
 
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Property;
+using namespace principia::astronomy::_date_time;
 
 class CalendarTest : public testing::Test {};
 
@@ -113,7 +113,6 @@ TEST_F(CalendarTest, RoundTrip) {
   }
 }
 
-}  // namespace internal_date_time
 }  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia

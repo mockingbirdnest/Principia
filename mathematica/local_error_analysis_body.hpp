@@ -15,11 +15,11 @@ namespace principia {
 namespace mathematica {
 namespace internal_local_error_analysis {
 
-using astronomy::KSP191;
 using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
+using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;

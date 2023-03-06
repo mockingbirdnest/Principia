@@ -24,10 +24,9 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
-using astronomy::ITRS;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;

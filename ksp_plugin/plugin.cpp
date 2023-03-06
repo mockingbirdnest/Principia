@@ -58,12 +58,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::KSP122;
-using astronomy::KSP191;
 using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
-using astronomy::ParseTT;
-using astronomy::StabilizeKSP;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -98,6 +94,9 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using ::operator<<;
+using namespace principia::astronomy::_solar_system_fingerprints;
+using namespace principia::astronomy::_stabilize_ksp;
+using namespace principia::astronomy::_time_scales;
 
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,

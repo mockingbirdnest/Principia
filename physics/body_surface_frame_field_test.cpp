@@ -16,10 +16,10 @@ namespace principia {
 namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
-using astronomy::ICRS;
-using astronomy::J2000;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;

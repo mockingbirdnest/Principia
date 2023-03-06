@@ -11,7 +11,7 @@
 namespace principia {
 namespace numerics {
 
-using astronomy::ICRS;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_чебышёв_series;

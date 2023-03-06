@@ -49,8 +49,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::ICRS;
-using astronomy::ParseTT;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -81,6 +79,8 @@ using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;

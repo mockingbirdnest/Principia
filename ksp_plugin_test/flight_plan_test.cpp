@@ -30,7 +30,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::J2000;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -43,6 +42,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::MockFunction;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;

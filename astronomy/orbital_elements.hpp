@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbital_elements {
+namespace _orbital_elements {
+namespace internal {
 
 using physics::Body;
 using physics::DynamicFrame;
@@ -212,11 +213,16 @@ class OrbitalElements {
   Interval<Angle> mean_argument_of_periapsis_interval_;
 };
 
-}  // namespace internal_orbital_elements
+}  // namespace internal
 
-using internal_orbital_elements::OrbitalElements;
+using internal::OrbitalElements;
 
+}  // namespace _orbital_elements
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_orbital_elements;
+}  // namespace principia::astronomy
 
 #include "astronomy/orbital_elements_body.hpp"

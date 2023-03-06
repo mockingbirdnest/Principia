@@ -14,8 +14,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_equator_relevance_threshold {
 
-using astronomy::ICRS;
 using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::quantities::_astronomy;
 using namespace principia::testing_utilities::_approximate_quantity;

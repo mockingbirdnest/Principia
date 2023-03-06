@@ -30,7 +30,7 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;

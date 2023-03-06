@@ -16,6 +16,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::base::_not_null;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

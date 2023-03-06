@@ -36,6 +36,7 @@ using physics::OblateBody;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using ::testing::Lt;
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;

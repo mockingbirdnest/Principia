@@ -52,6 +52,7 @@ using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_trappist_dynamics;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_graveyard;

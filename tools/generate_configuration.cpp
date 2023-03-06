@@ -22,10 +22,10 @@
 
 namespace principia {
 
-using astronomy::ICRS;
-using astronomy::J2000;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_serialization;
 using namespace principia::quantities::_constants;

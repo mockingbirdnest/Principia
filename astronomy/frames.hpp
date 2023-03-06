@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_frames {
+namespace _frames {
+namespace internal {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
@@ -141,14 +142,19 @@ using Sky = Frame<serialization::Frame::SolarSystemTag,
                   Handedness::Right,
                   serialization::Frame::SKY>;
 
-}  // namespace internal_frames
+}  // namespace internal
 
-using internal_frames::CelestialIntermediateReferenceSystem;
-using internal_frames::GCRS;
-using internal_frames::ICRS;
-using internal_frames::ITRS;
-using internal_frames::Sky;
-using internal_frames::TerrestrialIntermediateReferenceSystem;
+using internal::CelestialIntermediateReferenceSystem;
+using internal::GCRS;
+using internal::ICRS;
+using internal::ITRS;
+using internal::Sky;
+using internal::TerrestrialIntermediateReferenceSystem;
 
+}  // namespace _frames
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_frames;
+}  // namespace principia::astronomy

@@ -25,8 +25,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::ICRS;
-using astronomy::ParseTT;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
@@ -38,6 +36,8 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::SizeIs;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;

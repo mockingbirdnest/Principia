@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbit_recurrence {
+namespace _orbit_recurrence {
+namespace internal {
 
 using namespace principia::base::_mod;
 using namespace principia::geometry::_sign;
@@ -134,6 +135,7 @@ inline std::ostream& operator<<(std::ostream& out,
              << recurrence.Cᴛₒ() << "]";
 }
 
-}  // namespace internal_orbit_recurrence
+}  // namespace internal
+}  // namespace _orbit_recurrence
 }  // namespace astronomy
 }  // namespace principia

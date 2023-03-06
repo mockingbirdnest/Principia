@@ -33,7 +33,6 @@
 namespace principia {
 namespace interface {
 
-using astronomy::operator""_TT;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
@@ -75,6 +74,7 @@ using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
