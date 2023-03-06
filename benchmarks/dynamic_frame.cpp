@@ -32,6 +32,7 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace physics {
 
 using ksp_plugin::Barycentric;
 using namespace principia::base::_not_null;
@@ -45,8 +46,6 @@ using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace physics {
 
 using Rendering = Frame<struct RenderingTag>;
 
