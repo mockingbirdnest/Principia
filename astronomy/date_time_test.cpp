@@ -7,7 +7,6 @@
 
 namespace principia {
 namespace astronomy {
-namespace date_time {
 
 using ::testing::AllOf;
 using ::testing::Eq;
@@ -113,6 +112,5 @@ TEST_F(CalendarTest, RoundTrip) {
   }
 }
 
-}  // namespace date_time
 }  // namespace astronomy
 }  // namespace principia
