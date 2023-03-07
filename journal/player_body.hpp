@@ -8,6 +8,8 @@
 
 namespace principia {
 namespace journal {
+namespace _player {
+namespace internal {
 
 template<typename Profile>
 bool Player::RunIfAppropriate(serialization::Method const& method_in,
@@ -26,5 +28,7 @@ bool Player::RunIfAppropriate(serialization::Method const& method_in,
   return false;
 }
 
+}  // namespace internal
+}  // namespace _player
 }  // namespace journal
 }  // namespace principia

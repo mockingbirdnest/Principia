@@ -7,9 +7,10 @@
 #include "serialization/journal.pb.h"
 
 namespace principia {
+namespace journal {
 
 // This file is not included from other headers, only translation units, so we
-// allow pollution of the principia namespace.
+// allow pollution of the |journal| namespace.
 using base::not_constructible;
 using base::not_null;
 using base::PullSerializer;
@@ -47,8 +48,6 @@ using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::ScaledSpacePoint;
-
-namespace journal {
 
 #include "journal/profiles.generated.h"
 

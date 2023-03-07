@@ -10,6 +10,12 @@
 namespace principia {
 namespace journal {
 
+class PlayerTest;
+class RecorderTest;
+
+namespace _player {
+namespace internal {
+
 class Player final {
  public:
   using PointerMap = std::map<std::uint64_t, void*>;
@@ -49,7 +55,16 @@ class Player final {
   friend class RecorderTest;
 };
 
+}  // namespace internal
+
+using internal::Player;
+
+}  // namespace _player
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_player;
+}  // namespace principia::journal
 
 #include "journal/player_body.hpp"
