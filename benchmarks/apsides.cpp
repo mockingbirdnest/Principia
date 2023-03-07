@@ -23,6 +23,7 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace physics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_standard_product_3;
@@ -35,8 +36,6 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
-
-namespace physics {
 
 class ApsidesBenchmark : public benchmark::Fixture {
  protected:

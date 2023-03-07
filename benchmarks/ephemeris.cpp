@@ -36,6 +36,7 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace physics {
 
 using ksp_plugin::Barycentric;
 using namespace principia::astronomy::_frames;
@@ -61,8 +62,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace physics {
 
 namespace {
 

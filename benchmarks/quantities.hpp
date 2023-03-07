@@ -6,13 +6,27 @@
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
-namespace quantities {
+namespace benchmarks {
+namespace _quantities {
+namespace internal {
+
+using namespace principia::quantities::_named_quantities;
 
 inline void DimensionfulDiscreteCosineTransform(std::vector<Momentum>& result);
 
 inline void DoubleDiscreteCosineTransform(std::vector<double>& result);
 
-}  // namespace quantities
+}  // namespace internal
+
+using internal::DimensionfulDiscreteCosineTransform;
+using internal::DoubleDiscreteCosineTransform;
+
+}  // namespace _quantities
+}  // namespace benchmarks
 }  // namespace principia
+
+namespace principia::benchmarks {
+using namespace principia::benchmarks::_quantities;
+}  // namespace principia::benchmarks
 
 #include "benchmarks/quantities_body.hpp"
