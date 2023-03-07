@@ -98,3 +98,7 @@ class Subset<ksp_plugin::Part>::Properties final {
 
 }  // namespace base
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_part_subsets;
+}  // namespace principia::ksp_plugin

@@ -15,12 +15,9 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::Barycentric;
-using ksp_plugin::Index;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
-using ksp_plugin::Navigation;
 using physics::MockDynamicFrame;
 using ::testing::ByMove;
 using ::testing::IsNull;
@@ -32,6 +29,8 @@ using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rotation;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_plugin;
 using namespace principia::quantities::_si;
 
 namespace {

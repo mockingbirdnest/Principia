@@ -38,7 +38,6 @@
 namespace principia {
 namespace physics {
 
-using ksp_plugin::Barycentric;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
@@ -54,6 +53,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::
+using namespace principia::ksp_plugin::_frames;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_bipm;

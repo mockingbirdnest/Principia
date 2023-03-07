@@ -34,13 +34,13 @@
 namespace principia {
 namespace physics {
 
-using ksp_plugin::Barycentric;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
+using namespace principia::ksp_plugin::_frames;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;

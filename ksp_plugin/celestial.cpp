@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_celestial {
+namespace _celestial {
+namespace internal {
 
 Celestial::Celestial(not_null<RotatingBody<Barycentric> const*> body)
     : body_(std::move(body)) {}
@@ -58,6 +59,7 @@ void Celestial::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-}  // namespace internal_celestial
+}  // namespace internal
+}  // namespace _celestial
 }  // namespace ksp_plugin
 }  // namespace principia

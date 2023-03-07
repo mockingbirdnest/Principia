@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -508,6 +509,7 @@ Instant FlightPlan::start_of_previous_coast(int const index) const {
   return index == 0 ? initial_time_ : manœuvres_[index - 1].final_time();
 }
 
-}  // namespace internal_flight_plan
+}  // namespace internal
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia

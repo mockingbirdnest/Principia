@@ -20,7 +20,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_orbit_analyser {
+namespace _orbit_analyser {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -153,9 +154,14 @@ class OrbitAnalyser {
   std::atomic<double> progress_of_next_analysis_ = 0;
 };
 
-}  // namespace internal_orbit_analyser
+}  // namespace internal
 
-using internal_orbit_analyser::OrbitAnalyser;
+using internal::OrbitAnalyser;
 
+}  // namespace _orbit_analyser
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_orbit_analyser;
+}  // namespace principia::ksp_plugin

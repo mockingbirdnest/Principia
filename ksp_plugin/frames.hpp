@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_frames {
+namespace _frames {
+namespace internal {
 
 using physics::DynamicFrame;
 using namespace principia::geometry::_frame;
@@ -159,28 +160,33 @@ using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
-}  // namespace internal_frames
+}  // namespace internal
 
-using internal_frames::AliceSun;
-using internal_frames::AliceWorld;
-using internal_frames::Apparent;
-using internal_frames::ApparentWorld;
-using internal_frames::Barycentric;
-using internal_frames::BodyWorld;
-using internal_frames::Camera;
-using internal_frames::CameraCompensatedReference;
-using internal_frames::CameraReference;
-using internal_frames::CelestialSphere;
-using internal_frames::EccentricPart;
-using internal_frames::MainBodyCentred;
-using internal_frames::Navball;
-using internal_frames::Navigation;
-using internal_frames::NavigationFrame;
-using internal_frames::NavigationManœuvre;
-using internal_frames::RigidPart;
-using internal_frames::World;
-using internal_frames::WorldSun;
-using internal_frames::sun_looking_glass;
+using internal::AliceSun;
+using internal::AliceWorld;
+using internal::Apparent;
+using internal::ApparentWorld;
+using internal::Barycentric;
+using internal::BodyWorld;
+using internal::Camera;
+using internal::CameraCompensatedReference;
+using internal::CameraReference;
+using internal::CelestialSphere;
+using internal::EccentricPart;
+using internal::MainBodyCentred;
+using internal::Navball;
+using internal::Navigation;
+using internal::NavigationFrame;
+using internal::NavigationManœuvre;
+using internal::RigidPart;
+using internal::World;
+using internal::WorldSun;
+using internal::sun_looking_glass;
 
+}  // namespace _frames
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_frames;
+}  // namespace principia::ksp_plugin

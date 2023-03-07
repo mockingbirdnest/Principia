@@ -9,6 +9,8 @@
 
 namespace principia {
 namespace base {
+namespace _part_subsets {
+namespace internal {
 
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
@@ -117,5 +119,7 @@ bool Subset<Part>::Properties::StrictSubsetOfExistingPileUp()
   return SubsetOfExistingPileUp() && missing_ > 0;
 }
 
+}  // namespace internal
+}  // namespace _part_subsets
 }  // namespace base
 }  // namespace principia

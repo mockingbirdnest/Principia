@@ -28,7 +28,6 @@
 
 namespace principia {
 
-using ksp_plugin::Barycentric;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using physics::HierarchicalSystem;
@@ -47,6 +46,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
+using namespace principia::ksp_plugin::_frames;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;

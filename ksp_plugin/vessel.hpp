@@ -34,7 +34,8 @@ namespace ksp_plugin {
 
 class VesselTest;
 
-namespace internal_vessel {
+namespace _vessel {
+namespace internal {
 
 using physics::Checkpointer;
 using physics::Clientele;
@@ -411,9 +412,14 @@ class Vessel {
   friend class ksp_plugin::VesselTest;
 };
 
-}  // namespace internal_vessel
+}  // namespace internal
 
-using internal_vessel::Vessel;
+using internal::Vessel;
 
+}  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_vessel;
+}  // namespace principia::ksp_plugin

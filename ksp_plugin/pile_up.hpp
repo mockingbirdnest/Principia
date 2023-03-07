@@ -32,7 +32,8 @@ namespace ksp_plugin {
 
 FORWARD_DECLARE_FROM(part, class, Part);
 
-namespace internal_pile_up {
+namespace _pile_up {
+namespace internal {
 
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
@@ -248,10 +249,15 @@ struct PileUpFuture {
   std::future<absl::Status> future;
 };
 
-}  // namespace internal_pile_up
+}  // namespace internal
 
-using internal_pile_up::PileUp;
-using internal_pile_up::PileUpFuture;
+using internal::PileUp;
+using internal::PileUpFuture;
 
+}  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_pile_up;
+}  // namespace principia::ksp_plugin

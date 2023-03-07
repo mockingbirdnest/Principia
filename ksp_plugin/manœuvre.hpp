@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
+namespace _manœuvre {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectorySegmentIterator;
@@ -170,11 +171,16 @@ class Manœuvre {
   DiscreteTrajectorySegmentIterator<InertialFrame> coasting_trajectory_;
 };
 
-}  // namespace internal_manœuvre
+}  // namespace internal
 
-using internal_manœuvre::Manœuvre;
+using internal::Manœuvre;
 
+}  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_manœuvre;
+}  // namespace principia::ksp_plugin
 
 #include "ksp_plugin/manœuvre_body.hpp"

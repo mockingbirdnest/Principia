@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_celestial {
+namespace _celestial {
+namespace internal {
 
 using physics::Body;
 using physics::ContinuousTrajectory;
@@ -56,9 +57,14 @@ class Celestial {
   ContinuousTrajectory<Barycentric> const* trajectory_ = nullptr;
 };
 
-}  // namespace internal_celestial
+}  // namespace internal
 
-using internal_celestial::Celestial;
+using internal::Celestial;
 
+}  // namespace _celestial
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_celestial;
+}  // namespace principia::ksp_plugin

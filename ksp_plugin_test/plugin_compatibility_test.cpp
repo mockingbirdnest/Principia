@@ -24,8 +24,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::Barycentric;
-using ksp_plugin::Plugin;
 using physics::DiscreteTrajectory;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -42,6 +40,8 @@ using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_plugin;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

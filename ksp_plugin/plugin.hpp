@@ -49,7 +49,8 @@ namespace ksp_plugin {
 
 class TestablePlugin;
 
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
 using physics::Body;
 using physics::DegreesOfFreedom;
@@ -563,10 +564,15 @@ class Plugin {
   friend class ksp_plugin::TestablePlugin;
 };
 
-}  // namespace internal_plugin
+}  // namespace internal
 
-using internal_plugin::Index;
-using internal_plugin::Plugin;
+using internal::Index;
+using internal::Plugin;
 
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_plugin;
+}  // namespace principia::ksp_plugin

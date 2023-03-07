@@ -20,14 +20,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::Barycentric;
-using ksp_plugin::FlightPlan;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::TypedIterator;
-using ksp_plugin::Vessel;
-using ksp_plugin::World;
-using ksp_plugin::WorldSun;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -39,6 +31,10 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

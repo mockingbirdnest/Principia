@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_orbit_analyser {
+namespace _orbit_analyser {
+namespace internal {
 
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
@@ -266,6 +267,7 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
 OrbitAnalyser::Analysis::Analysis(Instant const& first_time)
     : first_time_(first_time) {}
 
-}  // namespace internal_orbit_analyser
+}  // namespace internal
+}  // namespace _orbit_analyser
 }  // namespace ksp_plugin
 }  // namespace principia
