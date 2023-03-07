@@ -10,13 +10,15 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(part, class, Part);
-FORWARD_DECLARE_FROM(vessel, class, Vessel);
+FORWARD_DECLARE_FR0M(part, class, Part);
+FORWARD_DECLARE_FR0M(vessel, class, Vessel);
 
 namespace _identification {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_vessel;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.

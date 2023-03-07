@@ -173,8 +173,4 @@ not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 }  // namespace interface
 }  // namespace principia
 
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_interface;
-}  // namespace principia::ksp_plugin
-
 #include "ksp_plugin/interface_body.hpp"

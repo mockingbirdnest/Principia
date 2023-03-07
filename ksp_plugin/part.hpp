@@ -229,8 +229,8 @@ using internal::MakeWaterSphereInertiaTensor;
 namespace base {
 
 template<>
-inline not_null<Subset<ksp_plugin::Part>::Node*>
-Subset<ksp_plugin::Part>::Node::Get(ksp_plugin::Part& element) {
+inline not_null<Subset<ksp_plugin::_part::Part>::Node*>
+Subset<ksp_plugin::_part::Part>::Node::Get(ksp_plugin::_part::Part& element) {
   return element.subset_node_.get();
 }
 

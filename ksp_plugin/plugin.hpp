@@ -77,6 +77,7 @@ using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

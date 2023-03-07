@@ -9,18 +9,18 @@
 
 namespace principia {
 namespace base {
-namespace _part_subsets {
+namespace _disjoint_sets {
 namespace internal {
 
-using ksp_plugin::Barycentric;
-using ksp_plugin::Part;
-using ksp_plugin::PileUp;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_pile_up;
 
-Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
+Subset<Part>::Properties::Properties(not_null<Part*> const part) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->parts().size() - 1;
   }
@@ -120,6 +120,6 @@ bool Subset<Part>::Properties::StrictSubsetOfExistingPileUp()
 }
 
 }  // namespace internal
-}  // namespace _part_subsets
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia

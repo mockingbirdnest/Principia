@@ -30,7 +30,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(part, class, Part);
+FORWARD_DECLARE_FR0M(part, class, Part);
 
 namespace _pile_up {
 namespace internal {
@@ -49,6 +49,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
