@@ -803,15 +803,15 @@ class Parser {
       if (!ns.is_internal && !ns.is_compatibility_namespace) {
         var nodes_in_ns = ns.children.ToList();
         // Check if there are names to export from this namespace.  If not,
-        // don't touch it.  It may be some local reopening.  This produces a
-        // deduped and sorted set of symbols.
+        // don't touch it, unless it's in a body.  It may be some local
+        // reopening.  This produces a deduped and sorted set of symbols.
         var names = new SortedSet<string>();
         foreach (Node n in nodes_in_ns) {
           if (n is Declaration decl) {
             names.Add(decl.name);
           }
         }
-        if (names.Count == 0) {
+        if (names.Count == 0 && insert_using_declarations) {
           continue;
         }
         ns.children.Clear();
