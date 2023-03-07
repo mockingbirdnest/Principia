@@ -14,6 +14,8 @@ namespace principia {
 using namespace principia::base::_map_util;
 
 namespace journal {
+namespace _profiles {
+namespace internal {
 namespace {
 
 template<typename T>
@@ -99,5 +101,7 @@ std::uint64_t SerializePointer(T* t) {
 #undef PRINCIPIA_SET_VERBOSE_LOGGING
 #undef PRINCIPIA_CHECK_EQ
 
+}  // namespace internal
+}  // namespace _profiles
 }  // namespace journal
 }  // namespace principia

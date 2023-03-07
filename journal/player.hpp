@@ -9,6 +9,8 @@
 
 namespace principia {
 namespace journal {
+namespace _player {
+namespace internal {
 
 class Player final {
  public:
@@ -49,7 +51,16 @@ class Player final {
   friend class RecorderTest;
 };
 
+}  // namespace internal
+
+using internal::Player;
+
+}  // namespace _player
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_player;
+}  // namespace principia::journal
 
 #include "journal/player_body.hpp"

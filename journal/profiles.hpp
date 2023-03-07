@@ -54,3 +54,7 @@ namespace journal {
 
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_profiles;
+}  // namespace principia::journal

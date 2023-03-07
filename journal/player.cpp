@@ -25,6 +25,8 @@ using namespace principia::base::_hexadecimal;
 using namespace std::chrono_literals;
 
 namespace journal {
+namespace _player {
+namespace internal {
 
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
@@ -124,5 +126,7 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
   return true;
 }
 
+}  // namespace internal
+}  // namespace _player
 }  // namespace journal
 }  // namespace principia

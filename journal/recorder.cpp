@@ -17,6 +17,8 @@ using namespace principia::base::_serialization;
 using namespace principia::base::_version;
 
 namespace journal {
+namespace _recorder {
+namespace internal {
 
 Recorder::Recorder(std::filesystem::path const& path)
     : stream_(path, std::ios::out) {
@@ -71,5 +73,7 @@ void Recorder::WriteLocked(serialization::Method const& method) {
 
 Recorder* Recorder::active_recorder_ = nullptr;
 
+}  // namespace internal
+}  // namespace _recorder
 }  // namespace journal
 }  // namespace principia

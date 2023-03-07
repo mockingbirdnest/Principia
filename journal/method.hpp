@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace journal {
-namespace internal_method {
+namespace _method {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -96,11 +97,16 @@ class Method final {
   bool returned_ = false;
 };
 
-}  // namespace internal_method
+}  // namespace internal
 
-using internal_method::Method;
+using internal::Method;
 
+}  // namespace _method
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_method;
+}  // namespace principia::journal
 
 #include "journal/method_body.hpp"
