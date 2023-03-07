@@ -9,6 +9,10 @@
 
 namespace principia {
 namespace journal {
+
+class PlayerTest;
+class RecorderTest;
+
 namespace _player {
 namespace internal {
 

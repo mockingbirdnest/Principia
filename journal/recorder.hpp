@@ -9,10 +9,13 @@
 
 namespace principia {
 namespace journal {
+
+FORWARD_DECLARE_FR0M(method, template<typename Profile> class, Method);
+
+class RecorderTest;
+
 namespace _recorder {
 namespace internal {
-
-FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
 
 class Recorder final {
  public:
@@ -35,7 +38,7 @@ class Recorder final {
   static Recorder* active_recorder_;
 
   template<typename>
-  friend class Method;
+  friend class _method::Method;
   friend class RecorderTest;
 };
 

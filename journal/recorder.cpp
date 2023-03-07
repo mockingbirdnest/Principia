@@ -10,15 +10,14 @@
 #include "journal/profiles.hpp"
 
 namespace principia {
+namespace journal {
+namespace _recorder {
+namespace internal {
 
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_serialization;
 using namespace principia::base::_version;
-
-namespace journal {
-namespace _recorder {
-namespace internal {
 
 Recorder::Recorder(std::filesystem::path const& path)
     : stream_(path, std::ios::out) {
