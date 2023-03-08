@@ -51,8 +51,8 @@ class Player final {
   std::unique_ptr<serialization::Method> last_method_in_;
   std::unique_ptr<serialization::Method> last_method_out_return_;
 
-  friend class PlayerTest;
-  friend class RecorderTest;
+  friend class journal::PlayerTest;
+  friend class journal::RecorderTest;
 };
 
 }  // namespace internal
