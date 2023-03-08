@@ -12,12 +12,13 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_equator_relevance_threshold {
 
+using physics::RotatingBody;
 using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
@@ -65,6 +66,5 @@ TEST_F(EquatorRelevanceThresholdTest, Planets) {
               IsNear(424_(1) * mean_radius("Uranus")));
 }
 
-}  // namespace internal_equator_relevance_threshold
 }  // namespace ksp_plugin
 }  // namespace principia

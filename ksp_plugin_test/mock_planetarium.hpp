@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
+namespace _planetarium {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_signature;
@@ -38,9 +39,10 @@ class MockPlanetarium : public Planetarium {
             }) {}
 };
 
-}  // namespace internal_planetarium
+}  // namespace internal
 
-using internal_planetarium::MockPlanetarium;
+using internal::MockPlanetarium;
 
+}  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia

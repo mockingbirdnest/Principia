@@ -8,12 +8,17 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_part {
 
+using physics::DegreesOfFreedom;
+using physics::RigidMotion;
 using ::testing::_;
 using ::testing::MockFunction;
+using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -149,6 +154,5 @@ TEST_F(PartTest, Serialization) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
-}  // namespace internal_part
 }  // namespace ksp_plugin
 }  // namespace principia

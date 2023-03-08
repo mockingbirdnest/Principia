@@ -30,9 +30,10 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_pile_up {
 
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectorySegmentIterator;
+using physics::Ephemeris;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using physics::RigidMotion;
@@ -59,6 +60,8 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
+
+using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -731,6 +734,5 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   EXPECT_OK(p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second));
 }
 
-}  // namespace internal_pile_up
 }  // namespace ksp_plugin
 }  // namespace principia

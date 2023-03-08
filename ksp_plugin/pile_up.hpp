@@ -32,6 +32,8 @@ namespace ksp_plugin {
 
 FORWARD_DECLARE_FR0M(part, class, Part);
 
+class TestablePileUp;
+
 namespace _pile_up {
 namespace internal {
 
@@ -239,7 +241,7 @@ class PileUp {
   // Called in the destructor.
   std::function<void()> deletion_callback_;
 
-  friend class TestablePileUp;
+  friend class ksp_plugin::TestablePileUp;
 };
 
 // A convenient data object to track a pile-up and the result of integrating it.
@@ -252,8 +254,11 @@ struct PileUpFuture {
 
 }  // namespace internal
 
+using internal::ApparentPileUp;
+using internal::NonRotatingPileUp;
 using internal::PileUp;
 using internal::PileUpFuture;
+using internal::PileUpPrincipalAxes;
 
 }  // namespace _pile_up
 }  // namespace ksp_plugin

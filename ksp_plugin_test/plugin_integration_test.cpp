@@ -23,10 +23,11 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
 
+using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::MassiveBody;
+using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -42,10 +43,13 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
 using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
+using namespace principia::ksp_plugin::_plugin;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -730,6 +734,5 @@ TEST_F(PluginIntegrationTest, Prediction) {
               IsNear(29_(1) * Milli(Metre)));
 }
 
-}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
