@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace interface {
-namespace internal_plugin_io {
+namespace _plugin_io {
+namespace internal {
 
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
@@ -101,6 +102,7 @@ void WritePluginToFile(std::filesystem::path const& filename,
   principia__DeletePlugin(&released_plugin);
 }
 
-}  // namespace internal_plugin_io
+}  // namespace internal
+}  // namespace _plugin_io
 }  // namespace interface
 }  // namespace principia

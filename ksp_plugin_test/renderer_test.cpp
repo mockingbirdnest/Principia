@@ -36,6 +36,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::ksp_plugin_test::_renderer;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

@@ -78,6 +78,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin_test::_interface;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;

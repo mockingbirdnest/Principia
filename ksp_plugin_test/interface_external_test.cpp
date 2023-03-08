@@ -24,6 +24,7 @@ using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::ksp_plugin_test::_interface_external;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

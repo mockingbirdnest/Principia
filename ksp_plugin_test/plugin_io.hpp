@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace interface {
-namespace internal_plugin_io {
+namespace _plugin_io {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_plugin;
@@ -41,10 +42,15 @@ void WritePluginToFile(std::filesystem::path const& filename,
                        not_null<std::unique_ptr<Plugin const>> plugin,
                        std::int64_t& bytes_processed);
 
-}  // namespace internal_plugin_io
+}  // namespace internal
 
-using internal_plugin_io::ReadPluginFromFile;
-using internal_plugin_io::WritePluginToFile;
+using internal::ReadPluginFromFile;
+using internal::WritePluginToFile;
 
+}  // namespace _plugin_io
 }  // namespace interface
 }  // namespace principia
+
+namespace principia::ksp_plugin_test {
+using namespace principia::ksp_plugin_test::_plugin_io;
+}  // namespace principia::ksp_plugin_test

@@ -66,3 +66,7 @@ using internal::MockRenderer;
 }  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin_test {
+using namespace principia::ksp_plugin_test::_mock_renderer;
+}  // namespace principia::ksp_plugin_test

@@ -32,6 +32,8 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_serialization;
 
 namespace ksp_plugin {
+namespace _benchmark {
+namespace internal {
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
   auto const plugin = Plugin::ReadFromMessage(
@@ -121,5 +123,7 @@ TEST(PluginBenchmark, DISABLED_All) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
+}  // namespace internal
+}  // namespace _benchmark
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -31,6 +31,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin_test::_interface_planetarium;
 using namespace principia::quantities::_quantities;
 
 class InterfacePlanetariumTest : public ::testing::Test {

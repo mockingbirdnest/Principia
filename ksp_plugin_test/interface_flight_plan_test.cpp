@@ -74,6 +74,7 @@ using namespace principia::integrators::
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin_test::_interface_flight_plan;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

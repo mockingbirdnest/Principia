@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_fake_plugin {
+namespace _fake_plugin {
+namespace internal {
 
 using physics::KeplerianElements;
 using physics::SolarSystem;
@@ -29,9 +30,14 @@ class FakePlugin : public Plugin {
                                 KeplerianElements<Barycentric> const& elements);
 };
 
-}  // namespace internal_fake_plugin
+}  // namespace internal
 
-using internal_fake_plugin::FakePlugin;
+using internal::FakePlugin;
 
+}  // namespace _fake_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin_test {
+using namespace principia::ksp_plugin_test::_fake_plugin;
+}  // namespace principia::ksp_plugin_test

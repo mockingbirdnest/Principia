@@ -37,3 +37,7 @@ using internal::MockManœuvre;
 }  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin_test {
+using namespace principia::ksp_plugin_test::_mock_manœuvre;
+}  // namespace principia::ksp_plugin_test

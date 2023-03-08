@@ -62,6 +62,7 @@ using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 
 using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::ksp_plugin_test::_pile_up;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

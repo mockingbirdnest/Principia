@@ -32,6 +32,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin_test::_orbit_analyser;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
