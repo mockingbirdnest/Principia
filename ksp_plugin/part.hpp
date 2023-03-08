@@ -228,9 +228,10 @@ using internal::MakeWaterSphereInertiaTensor;
 
 namespace base {
 
+using namespace principia::ksp_plugin::_part;
+
 template<>
-inline not_null<Subset<ksp_plugin::_part::Part>::Node*>
-Subset<ksp_plugin::_part::Part>::Node::Get(ksp_plugin::_part::Part& element) {
+inline not_null<Subset<Part>::Node*> Subset<Part>::Node::Get(Part& element) {
   return element.subset_node_.get();
 }
 
