@@ -35,11 +35,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::MockFlightPlan;
-using ksp_plugin::MockManœuvre;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
@@ -72,9 +67,12 @@ using namespace principia::integrators::
 using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
+using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin_test::_interface_flight_plan;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

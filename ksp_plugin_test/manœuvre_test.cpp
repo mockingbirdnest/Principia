@@ -55,7 +55,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
-using namespace principia::ksp_plugin_test::_manœuvre;
+using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

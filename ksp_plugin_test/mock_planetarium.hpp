@@ -46,7 +46,3 @@ using internal::MockPlanetarium;
 }  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin_test {
-using namespace principia::ksp_plugin_test::_mock_planetarium;
-}  // namespace principia::ksp_plugin_test

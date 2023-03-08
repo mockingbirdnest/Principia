@@ -37,7 +37,3 @@ using internal::FakePlugin;
 }  // namespace _fake_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin_test {
-using namespace principia::ksp_plugin_test::_fake_plugin;
-}  // namespace principia::ksp_plugin_test

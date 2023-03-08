@@ -17,7 +17,7 @@ using physics::RotatingBody;
 using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
-using namespace principia::ksp_plugin_test::_equator_relevance_threshold;
+using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_approximate_quantity;

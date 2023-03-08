@@ -52,7 +52,7 @@ using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::ksp_plugin_test::_flight_plan;
+using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -166,7 +166,3 @@ using internal::MockPlugin;
 }  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin_test {
-using namespace principia::ksp_plugin_test::_mock_plugin;
-}  // namespace principia::ksp_plugin_test

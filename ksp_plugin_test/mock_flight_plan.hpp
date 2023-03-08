@@ -65,7 +65,3 @@ using internal::MockFlightPlan;
 }  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin_test {
-using namespace principia::ksp_plugin_test::_mock_flight_plan;
-}  // namespace principia::ksp_plugin_test
