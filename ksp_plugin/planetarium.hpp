@@ -17,7 +17,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
+namespace _planetarium {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -166,10 +167,15 @@ inline ScaledSpacePoint ScaledSpacePoint::FromCoordinates(
                           static_cast<float>(coordinates.z)};
 }
 
-}  // namespace internal_planetarium
+}  // namespace internal
 
-using internal_planetarium::Planetarium;
-using internal_planetarium::ScaledSpacePoint;
+using internal::Planetarium;
+using internal::ScaledSpacePoint;
 
+}  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_planetarium;
+}  // namespace principia::ksp_plugin

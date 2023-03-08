@@ -20,7 +20,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_renderer {
+namespace _renderer {
+namespace internal {
 
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -187,9 +188,14 @@ class Renderer {
   std::optional<Target> target_;
 };
 
-}  // namespace internal_renderer
+}  // namespace internal
 
-using internal_renderer::Renderer;
+using internal::Renderer;
 
+}  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_renderer;
+}  // namespace principia::ksp_plugin

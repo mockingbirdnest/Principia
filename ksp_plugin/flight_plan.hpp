@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -223,9 +224,14 @@ class FlightPlan {
       generalized_adaptive_step_parameters_;
 };
 
-}  // namespace internal_flight_plan
+}  // namespace internal
 
-using internal_flight_plan::FlightPlan;
+using internal::FlightPlan;
 
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_flight_plan;
+}  // namespace principia::ksp_plugin

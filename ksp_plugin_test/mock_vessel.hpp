@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_vessel {
+namespace _vessel {
+namespace internal {
 
 class MockVessel : public Vessel {
  public:
@@ -53,9 +54,10 @@ class MockVessel : public Vessel {
               (const, override));
 };
 
-}  // namespace internal_vessel
+}  // namespace internal
 
-using internal_vessel::MockVessel;
+using internal::MockVessel;
 
+}  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia

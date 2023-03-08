@@ -10,9 +10,9 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::Renderer;
-using ksp_plugin::TypedIterator;
 using physics::DiscreteTrajectory;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_renderer;
 
 namespace {
 

@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_pile_up {
+namespace _pile_up {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
@@ -690,6 +691,7 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
     : pile_up(pile_up),
       future(std::move(future)) {}
 
-}  // namespace internal_pile_up
+}  // namespace internal
+}  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia

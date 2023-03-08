@@ -30,9 +30,12 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(part, class, Part);
+FORWARD_DECLARE_FR0M(part, class, Part);
 
-namespace internal_pile_up {
+class TestablePileUp;
+
+namespace _pile_up {
+namespace internal {
 
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
@@ -48,6 +51,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -237,7 +241,7 @@ class PileUp {
   // Called in the destructor.
   std::function<void()> deletion_callback_;
 
-  friend class TestablePileUp;
+  friend class ksp_plugin::TestablePileUp;
 };
 
 // A convenient data object to track a pile-up and the result of integrating it.
@@ -248,10 +252,18 @@ struct PileUpFuture {
   std::future<absl::Status> future;
 };
 
-}  // namespace internal_pile_up
+}  // namespace internal
 
-using internal_pile_up::PileUp;
-using internal_pile_up::PileUpFuture;
+using internal::ApparentPileUp;
+using internal::NonRotatingPileUp;
+using internal::PileUp;
+using internal::PileUpFuture;
+using internal::PileUpPrincipalAxes;
 
+}  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_pile_up;
+}  // namespace principia::ksp_plugin

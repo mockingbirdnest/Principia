@@ -32,20 +32,6 @@ namespace interface {
 // and generated code; we allow ourselves to pollute the |interface| namespace
 // with convenience |using|s.
 
-using ksp_plugin::AliceSun;
-using ksp_plugin::ApparentWorld;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Camera;
-using ksp_plugin::EccentricPart;
-using ksp_plugin::Iterator;
-using ksp_plugin::NavigationFrame;
-using ksp_plugin::PileUp;
-using ksp_plugin::PileUpFuture;
-using ksp_plugin::Planetarium;
-using ksp_plugin::Plugin;
-using ksp_plugin::ScaledSpacePoint;
-using ksp_plugin::Vessel;
-using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
@@ -56,6 +42,12 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

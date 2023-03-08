@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_integrators {
+namespace _integrators {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::
@@ -97,6 +98,7 @@ Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
       /*speed_integration_tolerance=*/1 * Metre / Second);
 }
 
-}  // namespace internal_integrators
+}  // namespace internal
+}  // namespace _integrators
 }  // namespace ksp_plugin
 }  // namespace principia

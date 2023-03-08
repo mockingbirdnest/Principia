@@ -15,14 +15,13 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::Camera;
-using ksp_plugin::TypedIterator;
-using ksp_plugin::VesselSet;
-using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_iterators;
 using namespace principia::quantities::_quantities;
 
 bool __cdecl principia__IteratorAtEnd(Iterator const* const iterator) {

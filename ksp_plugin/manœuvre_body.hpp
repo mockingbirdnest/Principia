@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
+namespace _manœuvre {
+namespace internal {
 
 using physics::DiscreteTrajectory;
 using physics::RigidMotion;
@@ -287,6 +288,7 @@ Manœuvre<InertialFrame, Frame>::full_timing() const {
   return burn_.timing;
 }
 
-}  // namespace internal_manœuvre
+}  // namespace internal
+}  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia

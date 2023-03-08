@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
+namespace _planetarium {
+namespace internal {
 
 using physics::MassiveBody;
 using namespace principia::geometry::_named_quantities;
@@ -453,6 +454,7 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
   return all_segments;
 }
 
-}  // namespace internal_planetarium
+}  // namespace internal
+}  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia

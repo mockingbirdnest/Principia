@@ -15,13 +15,6 @@
 namespace principia {
 namespace geometry {
 
-using ksp_plugin::Camera;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationFrame;
-using ksp_plugin::Planetarium;
-using ksp_plugin::ScaledSpacePoint;
-using ksp_plugin::World;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -40,6 +33,8 @@ using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_signature;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

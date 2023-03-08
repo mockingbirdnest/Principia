@@ -3,7 +3,6 @@
 #include <list>
 
 #include "base/disjoint_sets.hpp"
-
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -18,10 +17,16 @@
 namespace principia {
 
 namespace ksp_plugin {
-FORWARD_DECLARE_FROM(part, class, Part);
+FORWARD_DECLARE_FR0M(part, class, Part);
 }  // namespace ksp_plugin
 
 namespace base {
+namespace _disjoint_sets {
+namespace internal {
+
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_pile_up;
 
 // Within an union-find on |Part|s, we maintain lists of the elements in the
 // disjoint sets.  Moreover, we keep track of the inclusion relations of those
@@ -30,12 +35,12 @@ namespace base {
 // The |Collect| operation finalizes this, destroying existing |PileUp| which
 // are strict supersets of the new sets, and creating the new |PileUp|s.
 template<>
-class Subset<ksp_plugin::Part>::Properties final {
-  using PileUps = std::list<ksp_plugin::PileUp*>;
+class Subset<Part>::Properties final {
+  using PileUps = std::list<PileUp*>;
 
  public:
   // |*part| must outlive the constructed object.
-  explicit Properties(not_null<ksp_plugin::Part*> part);
+  explicit Properties(not_null<Part*> part);
 
   // If |*this| and |other| are subsets of different |PileUp|s, or one is a
   // subset and not the other, the relevant |PileUp|s are erased.
@@ -62,11 +67,11 @@ class Subset<ksp_plugin::Part>::Properties final {
   void Collect(
       PileUps& pile_ups,
       geometry::Instant const& t,
-      physics::Ephemeris<ksp_plugin::Barycentric>::AdaptiveStepParameters const&
+      physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
-      physics::Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters const&
+      physics::Ephemeris<Barycentric>::FixedStepParameters const&
           fixed_step_parameters,
-      not_null<physics::Ephemeris<ksp_plugin::Barycentric>*> ephemeris);
+      not_null<physics::Ephemeris<Barycentric>*> ephemeris);
 
  private:
   // Whether |left| and |right| are both subsets of the same existing |PileUp|.
@@ -91,10 +96,12 @@ class Subset<ksp_plugin::Part>::Properties final {
   // |PileUp| that are not in this subset.
   int missing_;
   // The list of parts in this subset.
-  std::list<not_null<ksp_plugin::Part*>> parts_;
+  std::list<not_null<Part*>> parts_;
   // Whether the subset touches the ground.
   bool grounded_ = false;
 };
 
+}  // namespace internal
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia

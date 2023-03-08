@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
 class MockPlugin : public Plugin {
  public:
@@ -158,9 +159,10 @@ class MockPlugin : public Plugin {
               (const, override));
 };
 
-}  // namespace internal_plugin
+}  // namespace internal
 
-using internal_plugin::MockPlugin;
+using internal::MockPlugin;
 
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia

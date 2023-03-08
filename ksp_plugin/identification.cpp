@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_identification {
+namespace _identification {
+namespace internal {
 
 bool PartByPartIdComparator::operator()(not_null<Part*> const left,
                                         not_null<Part*> const right) const {
@@ -29,6 +30,7 @@ bool VesselByGUIDComparator::operator()(
   return left->guid() < right->guid();
 }
 
-}  // namespace internal_identification
+}  // namespace internal
+}  // namespace _identification
 }  // namespace ksp_plugin
 }  // namespace principia

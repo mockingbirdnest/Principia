@@ -62,14 +62,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::AliceSun;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Part;
-using ksp_plugin::PartId;
-using ksp_plugin::RigidPart;
-using ksp_plugin::TypedIterator;
-using ksp_plugin::VesselSet;
-using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegment;
@@ -104,6 +96,10 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

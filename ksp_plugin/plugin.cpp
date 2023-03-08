@@ -56,7 +56,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
 using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
@@ -1683,6 +1684,7 @@ bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
 
-}  // namespace internal_plugin
+}  // namespace internal
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia

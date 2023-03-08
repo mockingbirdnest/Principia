@@ -11,8 +11,8 @@ namespace principia {
 namespace interface {
 namespace internal_plugin_io {
 
-using ksp_plugin::Plugin;
 using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_plugin;
 
 // Reads a plugin from a file containing only the "serialized_plugin = " lines,
 // with "serialized_plugin = " dropped.

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_renderer {
+namespace _renderer {
+namespace internal {
 
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::DegreesOfFreedom;
@@ -317,6 +318,7 @@ Renderer::Target::Target(
               [this]() -> auto& { return *this->vessel->prediction(); },
               celestial->body())) {}
 
-}  // namespace internal_renderer
+}  // namespace internal
+}  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia

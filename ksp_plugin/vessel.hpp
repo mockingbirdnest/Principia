@@ -34,7 +34,8 @@ namespace ksp_plugin {
 
 class VesselTest;
 
-namespace internal_vessel {
+namespace _vessel {
+namespace internal {
 
 using physics::Checkpointer;
 using physics::Clientele;
@@ -49,6 +50,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -411,9 +413,14 @@ class Vessel {
   friend class ksp_plugin::VesselTest;
 };
 
-}  // namespace internal_vessel
+}  // namespace internal
 
-using internal_vessel::Vessel;
+using internal::Vessel;
 
+}  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_vessel;
+}  // namespace principia::ksp_plugin

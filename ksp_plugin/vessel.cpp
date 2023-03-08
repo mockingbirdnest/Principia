@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_vessel {
+namespace _vessel {
+namespace internal {
 
 using physics::Client;
 using ::std::placeholders::_1;
@@ -1207,6 +1208,7 @@ std::atomic_bool Vessel::synchronous_(true);
 std::atomic_bool Vessel::synchronous_(false);
 #endif
 
-}  // namespace internal_vessel
+}  // namespace internal
+}  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia

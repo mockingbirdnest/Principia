@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_integrators {
+namespace _integrators {
+namespace internal {
 
 using physics::DiscreteTrajectorySegment;
 using physics::Ephemeris;
@@ -36,16 +37,21 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPsychohistoryParameters();
 
-}  // namespace internal_integrators
+}  // namespace internal
 
-using internal_integrators::DefaultBurnParameters;
-using internal_integrators::DefaultDownsamplingParameters;
-using internal_integrators::DefaultEphemerisAccuracyParameters;
-using internal_integrators::DefaultEphemerisFixedStepParameters;
-using internal_integrators::DefaultHistoryParameters;
-using internal_integrators::DefaultPredictionParameters;
-using internal_integrators::DefaultPsychohistoryParameters;
-using internal_integrators::OrbitAnalyserDownsamplingParameters;
+using internal::DefaultBurnParameters;
+using internal::DefaultDownsamplingParameters;
+using internal::DefaultEphemerisAccuracyParameters;
+using internal::DefaultEphemerisFixedStepParameters;
+using internal::DefaultHistoryParameters;
+using internal::DefaultPredictionParameters;
+using internal::DefaultPsychohistoryParameters;
+using internal::OrbitAnalyserDownsamplingParameters;
 
+}  // namespace _integrators
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_integrators;
+}  // namespace principia::ksp_plugin

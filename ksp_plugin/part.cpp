@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_part {
+namespace _part {
+namespace internal {
 
 using physics::RigidTransformation;
 using namespace principia::base::_array;
@@ -411,6 +412,7 @@ std::ostream& operator<<(std::ostream& out, Part const& part) {
   return out << "{" << part.part_id() << ", " << part.mass() << "}";
 }
 
-}  // namespace internal_part
+}  // namespace internal
+}  // namespace _part
 }  // namespace ksp_plugin
 }  // namespace principia

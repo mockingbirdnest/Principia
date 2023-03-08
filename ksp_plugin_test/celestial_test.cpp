@@ -7,9 +7,12 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_celestial {
 
+using physics::ContinuousTrajectory;
 using physics::MassiveBody;
+using physics::RotatingBody;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_si;
 
 class CelestialTest : public testing::Test {
@@ -56,6 +59,5 @@ TEST_F(CelestialTest, Initialization) {
   EXPECT_TRUE(celestial_->is_initialized());
 }
 
-}  // namespace internal_celestial
 }  // namespace ksp_plugin
 }  // namespace principia
