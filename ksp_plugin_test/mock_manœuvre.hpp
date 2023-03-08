@@ -30,7 +30,7 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
               (const, override));
 };
 
-}  // namespace internal_manœuvre
+}  // namespace internal
 
 using internal::MockManœuvre;
 
