@@ -56,6 +56,8 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
 
 namespace mathematica {
+namespace _retrobop_dynamical_stability {
+namespace internal {
 
 namespace {
 
@@ -635,5 +637,7 @@ void StatisticallyAnalyseStability() {
   }
 }
 
+}  // namespace internal
+}  // namespace _retrobop_dynamical_stability
 }  // namespace mathematica
 }  // namespace principia

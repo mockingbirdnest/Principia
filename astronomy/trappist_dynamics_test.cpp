@@ -41,7 +41,6 @@
 namespace principia {
 namespace astronomy {
 
-using mathematica::PreserveUnits;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
@@ -63,6 +62,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::
+using namespace principia::mathematica::_mathematica;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_astronomy;

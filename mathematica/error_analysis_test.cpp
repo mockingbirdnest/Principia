@@ -27,6 +27,7 @@ using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::mathematica::_error_analysis;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 

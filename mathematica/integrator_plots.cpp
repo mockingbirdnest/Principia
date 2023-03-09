@@ -78,6 +78,8 @@ using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_numerics;
 
 namespace mathematica {
+namespace _integrator_plots {
+namespace internal {
 
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
@@ -388,5 +390,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   file << generator.GetMathematicaData();
 }
 
+}  // namespace internal
+}  // namespace _integrator_plots
 }  // namespace mathematica
 }  // namespace principia

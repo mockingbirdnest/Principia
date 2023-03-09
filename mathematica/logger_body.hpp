@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_logger {
+namespace _logger {
+namespace internal {
 
 inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
     : file_([this, make_unique, &path]() {
@@ -87,6 +88,7 @@ inline Logger::ConstructionCallback Logger::construction_callback_ = nullptr;
 ABSL_CONST_INIT inline absl::Mutex Logger::construction_callback_lock_(
     absl::kConstInit);
 
-}  // namespace internal_logger
+}  // namespace internal
+}  // namespace _logger
 }  // namespace mathematica
 }  // namespace principia
