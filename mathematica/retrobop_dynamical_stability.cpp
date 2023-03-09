@@ -27,6 +27,9 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace mathematica {
+namespace _retrobop_dynamical_stability {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -54,10 +57,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
-
-namespace mathematica {
-namespace _retrobop_dynamical_stability {
-namespace internal {
 
 namespace {
 
