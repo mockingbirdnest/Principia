@@ -30,7 +30,7 @@ FORWARD_DECLARE_FR0M(poisson_series,
 }  // namespace numerics
 
 namespace mathematica {
-FORWARD_DECLARE_FUNCTION_FROM(
+FORWARD_DECLARE_FUNCTION_FR0M(
     mathematica,
     TEMPLATE(typename Value,
              int aperiodic_degree, int periodic_degree,
@@ -216,7 +216,7 @@ class PoissonSeries {
   template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::ToMathematicaBody(
       PoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
   template<typename V, int ad, int pd,

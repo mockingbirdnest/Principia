@@ -40,14 +40,12 @@ inline Logger::~Logger() {
 }
 
 inline void Logger::Flush() {
+  using _mathematica::internal::RawApply;
   for (auto const& [name, values] : name_and_multiple_values_) {
-    file_ << internal_mathematica::RawApply(
-                 "Set",
-                 {name, internal_mathematica::RawApply("List", values)}) +
-                 ";\n";
+    file_ << RawApply("Set", {name, RawApply("List", values)}) + ";\n";
   }
   for (auto const& [name, value] : name_and_single_value_) {
-    file_ << internal_mathematica::RawApply("Set", {name, value}) + ";\n";
+    file_ << RawApply("Set", {name, value}) + ";\n";
   }
 }
 

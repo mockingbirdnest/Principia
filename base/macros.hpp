@@ -236,5 +236,14 @@ template_and_result declared_name parameters;              \
 }                                                          \
 using internal_##package_name::declared_name
 
+#define FORWARD_DECLARE_FUNCTION_FR0M(                            \
+    package_name, template_and_result, declared_name, parameters) \
+  namespace _##package_name {                                     \
+    namespace internal {                                          \
+    template_and_result declared_name parameters;                 \
+    }                                                             \
+    using internal::declared_name;                                \
+  }
+
 }  // namespace base
 }  // namespace principia
