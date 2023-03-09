@@ -37,7 +37,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using interface::ReadPluginFromFile;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::MassiveBody;
@@ -60,6 +59,8 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

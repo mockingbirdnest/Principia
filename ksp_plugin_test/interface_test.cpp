@@ -33,10 +33,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::MockManœuvre;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
 using physics::CoordinateFrameField;
 using physics::DegreesOfFreedom;
 using physics::DynamicFrame;
@@ -76,8 +72,11 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;

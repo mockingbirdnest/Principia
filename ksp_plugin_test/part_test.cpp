@@ -18,6 +18,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

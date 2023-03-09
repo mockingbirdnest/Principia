@@ -15,9 +15,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
 using physics::MockDynamicFrame;
 using ::testing::ByMove;
 using ::testing::IsNull;
@@ -31,6 +28,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_rotation;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::quantities::_si;
 
 namespace {

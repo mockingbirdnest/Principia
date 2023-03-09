@@ -94,6 +94,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_plugin;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

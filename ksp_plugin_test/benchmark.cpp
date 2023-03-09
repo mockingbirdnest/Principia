@@ -15,23 +15,24 @@
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace _benchmark {
+namespace internal {
 
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
 using interface::principia__SerializePlugin;
-using interface::ReadPluginFromFile;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::ksp_plugin::_plugin_io;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_serialization;
-
-namespace ksp_plugin {
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
   auto const plugin = Plugin::ReadFromMessage(
@@ -121,5 +122,7 @@ TEST(PluginBenchmark, DISABLED_All) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
+}  // namespace internal
+}  // namespace _benchmark
 }  // namespace ksp_plugin
 }  // namespace principia

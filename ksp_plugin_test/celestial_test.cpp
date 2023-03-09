@@ -13,6 +13,7 @@ using physics::MassiveBody;
 using physics::RotatingBody;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::ksp_plugin::_celestial;
 using namespace principia::quantities::_si;
 
 class CelestialTest : public testing::Test {

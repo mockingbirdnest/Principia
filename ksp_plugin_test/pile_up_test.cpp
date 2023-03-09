@@ -60,7 +60,6 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
-
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

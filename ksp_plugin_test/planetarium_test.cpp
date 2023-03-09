@@ -58,6 +58,7 @@ using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
