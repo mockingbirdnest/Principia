@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace tools {
-namespace internal_journal_proto_processor {
+namespace _journal_proto_processor {
+namespace internal {
 
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::FieldDescriptor;
@@ -361,9 +362,14 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cxx_nested_type_declaration_;
 };
 
-}  // namespace internal_journal_proto_processor
+}  // namespace internal
 
-using internal_journal_proto_processor::JournalProtoProcessor;
+using internal::JournalProtoProcessor;
 
+}  // namespace _journal_proto_processor
 }  // namespace tools
 }  // namespace principia
+
+namespace principia::tools {
+using namespace principia::tools::_journal_proto_processor;
+}  // namespace principia::tools
