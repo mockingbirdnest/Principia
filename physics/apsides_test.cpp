@@ -23,6 +23,7 @@ using ::testing::Eq;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
