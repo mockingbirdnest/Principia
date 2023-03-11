@@ -86,9 +86,9 @@ class DiscreteTrajectorySegmentIterator {
       DiscreteTrajectoryIterator;
 
   // For testing.
-  friend class DiscreteTrajectoryIteratorTest;
-  friend class DiscreteTrajectorySegmentIteratorTest;
-  friend class DiscreteTrajectorySegmentTest;
+  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentTest;
   template<typename F>
   friend class testing_utilities::_discrete_trajectory_factories::
       DiscreteTrajectoryFactoriesFriend;
