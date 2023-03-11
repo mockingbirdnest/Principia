@@ -14,14 +14,13 @@
 namespace principia {
 namespace interface {
 
-using physics::DegreesOfFreedom;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_sign;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 

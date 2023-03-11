@@ -35,15 +35,6 @@
 namespace principia {
 namespace interface {
 
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockContinuousTrajectory;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -73,6 +64,13 @@ using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

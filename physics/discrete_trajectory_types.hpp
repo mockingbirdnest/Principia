@@ -13,14 +13,16 @@
 namespace principia {
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+FORWARD_DECLARE_FR0M(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory_types {
+namespace _discrete_trajectory_types {
+namespace internal {
 
-using physics::DegreesOfFreedom;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_quantities;
 
 // |max_dense_intervals| is the maximal number of dense intervals before
@@ -59,8 +61,18 @@ using Segments = std::list<DiscreteTrajectorySegment<Frame>>;
 template<typename Frame>
 using Timeline = absl::btree_set<value_type<Frame>, Earlier>;
 
-}  // namespace internal_discrete_trajectory_types
+}  // namespace internal
+
+using internal::DownsamplingParameters;
+using internal::Segments;
+using internal::Timeline;
+
+}  // namespace _discrete_trajectory_types
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory_types;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_types_body.hpp"

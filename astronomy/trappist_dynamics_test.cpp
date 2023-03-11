@@ -41,14 +41,6 @@
 namespace principia {
 namespace astronomy {
 
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::ParseGravityModel;
-using physics::ParseInitialState;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -65,6 +57,11 @@ using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

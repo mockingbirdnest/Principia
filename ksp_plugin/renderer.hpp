@@ -23,15 +23,15 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::Frenet;
-using physics::RigidMotion;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_quantities;
 
 class Renderer {

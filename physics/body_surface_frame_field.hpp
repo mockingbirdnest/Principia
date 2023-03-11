@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_frame_field {
+namespace _body_surface_frame_field {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -36,11 +37,16 @@ class BodySurfaceFrameField : public FrameField<Frame, ThisFrame> {
   Position<Frame> const body_position_;
 };
 
-}  // namespace internal_body_surface_frame_field
+}  // namespace internal
 
-using internal_body_surface_frame_field::BodySurfaceFrameField;
+using internal::BodySurfaceFrameField;
 
+}  // namespace _body_surface_frame_field
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_body_surface_frame_field;
+}  // namespace principia::physics
 
 #include "physics/body_surface_frame_field_body.hpp"

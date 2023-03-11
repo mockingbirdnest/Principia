@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_equipotential {
+namespace _equipotential {
+namespace internal {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -398,6 +399,7 @@ std::int64_t Equipotential<InertialFrame, Frame>::WindingNumber(
   return static_cast<std::int64_t>(std::round(Abs(angle) / (2 * π * Radian)));
 }
 
-}  // namespace internal_equipotential
+}  // namespace internal
+}  // namespace _equipotential
 }  // namespace physics
 }  // namespace principia

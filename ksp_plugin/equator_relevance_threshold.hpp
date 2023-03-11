@@ -9,7 +9,7 @@ namespace ksp_plugin {
 namespace _equator_relevance_threshold {
 namespace internal {
 
-using physics::RotatingBody;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
 
 // Returns a distance from |body| that we consider is too far for the equator to

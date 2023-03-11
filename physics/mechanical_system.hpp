@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_mechanical_system {
+namespace _mechanical_system {
+namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -96,11 +97,16 @@ class MechanicalSystem {
       sum_of_inertia_tensors_;
 };
 
-}  // namespace internal_mechanical_system
+}  // namespace internal
 
-using internal_mechanical_system::MechanicalSystem;
+using internal::MechanicalSystem;
 
+}  // namespace _mechanical_system
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_mechanical_system;
+}  // namespace principia::physics
 
 #include "physics/mechanical_system_body.hpp"

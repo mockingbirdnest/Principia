@@ -11,8 +11,8 @@ namespace ksp_plugin {
 namespace _integrators {
 namespace internal {
 
-using physics::DiscreteTrajectorySegment;
-using physics::Ephemeris;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

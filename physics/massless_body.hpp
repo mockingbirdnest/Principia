@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_massless_body {
+namespace _massless_body {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -39,12 +40,17 @@ class MasslessBody : public Body {
       serialization::MasslessBody const& message);
 };
 
-}  // namespace internal_massless_body
+}  // namespace internal
 
-using internal_massless_body::MasslessBody;
+using internal::MasslessBody;
 
+}  // namespace _massless_body
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_massless_body;
+}  // namespace principia::physics
 
 #include "physics/massless_body_body.hpp"
 

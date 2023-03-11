@@ -23,9 +23,6 @@ namespace ksp_plugin {
 namespace _orbit_analyser {
 namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::RotatingBody;
 using namespace principia::astronomy::_orbit_ground_track;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::astronomy::_orbital_elements;
@@ -33,6 +30,9 @@ using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_jacobi_coordinates {
+namespace _jacobi_coordinates {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -64,11 +65,16 @@ class JacobiCoordinates final {
                        GravitationalParameter> system_barycentre_;
 };
 
-}  // namespace internal_jacobi_coordinates
+}  // namespace internal
 
-using internal_jacobi_coordinates::JacobiCoordinates;
+using internal::JacobiCoordinates;
 
+}  // namespace _jacobi_coordinates
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_jacobi_coordinates;
+}  // namespace principia::physics
 
 #include "physics/jacobi_coordinates_body.hpp"

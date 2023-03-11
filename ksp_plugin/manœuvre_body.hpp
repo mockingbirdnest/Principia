@@ -14,12 +14,12 @@ namespace ksp_plugin {
 namespace _manœuvre {
 namespace internal {
 
-using physics::DiscreteTrajectory;
-using physics::RigidMotion;
 using std::placeholders::_1;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 

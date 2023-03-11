@@ -22,13 +22,13 @@ namespace ksp_plugin {
 namespace _flight_plan {
 namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::Ephemeris;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_integrators;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

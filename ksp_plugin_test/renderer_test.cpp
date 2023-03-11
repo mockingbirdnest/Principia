@@ -23,12 +23,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::MockContinuousTrajectory;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
@@ -37,6 +31,12 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::ksp_plugin::_renderer;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_rigid_motion {
+namespace _rigid_motion {
+namespace internal {
 
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_linear_map;
@@ -243,6 +244,7 @@ AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_origin_of() const {
   }
 }
 
-}  // namespace internal_rigid_motion
+}  // namespace internal
+}  // namespace _rigid_motion
 }  // namespace physics
 }  // namespace principia

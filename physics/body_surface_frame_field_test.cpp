@@ -14,7 +14,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
 
 using ::testing::Return;
 using ::testing::_;
@@ -24,6 +23,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -90,6 +90,5 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
   }
 }
 
-}  // namespace internal_body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia

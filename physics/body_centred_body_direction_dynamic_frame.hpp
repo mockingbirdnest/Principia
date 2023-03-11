@@ -22,7 +22,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_body_direction_dynamic_frame {
+namespace _body_centred_body_direction_dynamic_frame {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -98,13 +99,17 @@ class BodyCentredBodyDirectionDynamicFrame
       secondary_trajectory_;
 };
 
-}  // namespace internal_body_centred_body_direction_dynamic_frame
+}  // namespace internal
 
-using internal_body_centred_body_direction_dynamic_frame::
-    BodyCentredBodyDirectionDynamicFrame;
+using internal::BodyCentredBodyDirectionDynamicFrame;
 
+}  // namespace _body_centred_body_direction_dynamic_frame
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
+}  // namespace principia::physics
 
 #include "physics/body_centred_body_direction_dynamic_frame_body.hpp"
 

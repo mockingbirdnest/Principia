@@ -26,7 +26,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_body_direction_dynamic_frame {
 
 using ::testing::IsNull;
 using ::testing::Lt;
@@ -41,7 +40,9 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -268,6 +269,5 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
   }
 }
 
-}  // namespace internal_body_centred_body_direction_dynamic_frame
 }  // namespace physics
 }  // namespace principia

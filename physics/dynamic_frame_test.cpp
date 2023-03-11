@@ -16,7 +16,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_dynamic_frame {
 
 using ::testing::Gt;
 using ::testing::Invoke;
@@ -25,9 +24,11 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_dynamic_frame;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -650,6 +651,5 @@ TEST_F(DynamicFrameTest, FrenetFrame) {
   EXPECT_THAT(moving_jaw_tangent, Componentwise(0, 1, 0));
 }
 
-}  // namespace internal_dynamic_frame
 }  // namespace physics
 }  // namespace principia

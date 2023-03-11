@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_segment_range {
+namespace _discrete_trajectory_segment_range {
+namespace internal {
 
 template<typename Iterator>
 DiscreteTrajectorySegmentRange<Iterator>::DiscreteTrajectorySegmentRange(
@@ -46,6 +47,7 @@ inline std::int64_t DiscreteTrajectorySegmentRange<Iterator>::size() const {
   return std::distance(begin_, end_);
 }
 
-}  // namespace internal_discrete_trajectory_segment_range
+}  // namespace internal
+}  // namespace _discrete_trajectory_segment_range
 }  // namespace physics
 }  // namespace principia

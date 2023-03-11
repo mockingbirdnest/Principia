@@ -20,7 +20,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_continuous_trajectory {
+namespace _continuous_trajectory {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
@@ -793,6 +794,7 @@ ContinuousTrajectory<Frame>::FindPolynomialForInstantLocked(
   }
 }
 
-}  // namespace internal_continuous_trajectory
+}  // namespace internal
+}  // namespace _continuous_trajectory
 }  // namespace physics
 }  // namespace principia

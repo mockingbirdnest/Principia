@@ -7,7 +7,7 @@ namespace astronomy {
 namespace _stabilize_ksp {
 namespace internal {
 
-using physics::SolarSystem;
+using namespace principia::physics::_solar_system;
 
 // Patches the given |solar_system|, which is expected to be the stock KSP, to
 // make the Jool system stable.

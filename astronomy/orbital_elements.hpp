@@ -17,12 +17,12 @@ namespace astronomy {
 namespace _orbital_elements {
 namespace internal {
 
-using physics::Body;
-using physics::DynamicFrame;
-using physics::MassiveBody;
-using physics::Trajectory;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_body;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -29,7 +29,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
+namespace _ephemeris {
+namespace internal {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -1427,6 +1428,7 @@ template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
     Ephemeris<Frame>::NoIntrinsicAccelerations;
 
-}  // namespace internal_ephemeris
+}  // namespace internal
+}  // namespace _ephemeris
 }  // namespace physics
 }  // namespace principia

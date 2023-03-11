@@ -13,12 +13,12 @@
 
 namespace principia {
 namespace physics {
-namespace internal_degrees_of_freedom {
 
 using ::testing::Eq;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -143,6 +143,5 @@ TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
                                       -50.0 * si::Unit<Speed>}))));
 }
 
-}  // namespace internal_degrees_of_freedom
 }  // namespace physics
 }  // namespace principia

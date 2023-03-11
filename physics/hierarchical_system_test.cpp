@@ -12,11 +12,11 @@
 
 namespace principia {
 namespace physics {
-namespace internal_hierarchical_system {
 
 using ::testing::ElementsAre;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::physics::_hierarchical_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -137,6 +137,5 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
                           AlmostEquals(1 * Metre, 0, 1)));
 }
 
-}  // namespace internal_hierarchical_system
 }  // namespace physics
 }  // namespace principia

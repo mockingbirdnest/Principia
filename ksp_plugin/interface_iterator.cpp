@@ -15,13 +15,13 @@
 namespace principia {
 namespace interface {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 
 bool __cdecl principia__IteratorAtEnd(Iterator const* const iterator) {

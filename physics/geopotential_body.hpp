@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
+namespace _geopotential {
+namespace internal {
 
 using numerics::LegendreNormalizationFactor;
 using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
@@ -931,6 +932,7 @@ template<typename Frame>
 const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
     Geopotential<Frame>::y_({0, 1, 0});
 
-}  // namespace internal_geopotential
+}  // namespace internal
+}  // namespace _geopotential
 }  // namespace physics
 }  // namespace principia

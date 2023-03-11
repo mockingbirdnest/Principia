@@ -14,11 +14,11 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
-using physics::MassiveBody;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sign;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

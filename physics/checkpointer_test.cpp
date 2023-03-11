@@ -19,6 +19,7 @@ using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_checkpointer;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_matchers;
 

@@ -31,12 +31,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::Ephemeris;
-using physics::MassiveBody;
-using physics::MockEphemeris;
-using physics::RigidMotion;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -56,11 +50,16 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -32,9 +32,6 @@ namespace interface {
 // and generated code; we allow ourselves to pollute the |interface| namespace
 // with convenience |using|s.
 
-using physics::DegreesOfFreedom;
-using physics::Frenet;
-using physics::RelativeDegreesOfFreedom;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
@@ -48,6 +45,8 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_dynamic_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

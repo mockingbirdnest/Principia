@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_oblate_body {
+namespace _oblate_body {
+namespace internal {
 
 using numerics::LegendreNormalizationFactor;
 using namespace principia::astronomy::_epoch;
@@ -230,6 +231,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
                                              *parameters);
 }
 
-}  // namespace internal_oblate_body
+}  // namespace internal
+}  // namespace _oblate_body
 }  // namespace physics
 }  // namespace principia

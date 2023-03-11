@@ -38,6 +38,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_fast_fourier_transform;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_analytical_series;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

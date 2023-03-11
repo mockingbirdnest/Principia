@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
+namespace _kepler_orbit {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -560,7 +561,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
 }
 
 template<typename Frame>
-void internal_kepler_orbit::KeplerOrbit<Frame>::CompleteOrientationParameters(
+void KeplerOrbit<Frame>::CompleteOrientationParameters(
     KeplerianElements<Frame>& elements) {
   auto& argument_of_periapsis = elements.argument_of_periapsis;
   auto& longitude_of_periapsis = elements.longitude_of_periapsis;
@@ -641,6 +642,7 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
   }
 }
 
-}  // namespace internal_kepler_orbit
+}  // namespace internal
+}  // namespace _kepler_orbit
 }  // namespace physics
 }  // namespace principia

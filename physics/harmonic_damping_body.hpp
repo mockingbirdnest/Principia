@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_harmonic_damping {
+namespace _harmonic_damping {
+namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -87,6 +88,7 @@ inline void HarmonicDamping::ComputeDampedRadialQuantities(
   }
 }
 
-}  // namespace internal_harmonic_damping
+}  // namespace internal
+}  // namespace _harmonic_damping
 }  // namespace physics
 }  // namespace principia

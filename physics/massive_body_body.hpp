@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_massive_body {
+namespace _massive_body {
+namespace internal {
 
 using namespace principia::geometry::_frame;
 using namespace principia::quantities::_constants;
@@ -206,6 +207,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 
 #undef ROTATING_BODY_TAG_VALUE_CASE
 
-}  // namespace internal_massive_body
+}  // namespace internal
+}  // namespace _massive_body
 }  // namespace physics
 }  // namespace principia

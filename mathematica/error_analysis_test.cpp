@@ -21,12 +21,12 @@
 namespace principia {
 namespace mathematica {
 
-using physics::Ephemeris;
-using physics::SolarSystem;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 

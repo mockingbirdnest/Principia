@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_checkpointer {
+namespace _checkpointer {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -138,11 +139,16 @@ class Checkpointer {
   CheckpointsByTime checkpoints_;
 };
 
-}  // namespace internal_checkpointer
+}  // namespace internal
 
-using internal_checkpointer::Checkpointer;
+using internal::Checkpointer;
 
+}  // namespace _checkpointer
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_checkpointer;
+}  // namespace principia::physics
 
 #include "physics/checkpointer_body.hpp"

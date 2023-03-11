@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory {
+namespace _discrete_trajectory {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
@@ -998,6 +999,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
   }
 }
 
-}  // namespace internal_discrete_trajectory
+}  // namespace internal
+}  // namespace _discrete_trajectory
 }  // namespace physics
 }  // namespace principia

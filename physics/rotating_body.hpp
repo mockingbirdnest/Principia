@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_rotating_body {
+namespace _rotating_body {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -180,12 +181,17 @@ Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
   return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
 }
 
-}  // namespace internal_rotating_body
+}  // namespace internal
 
-using internal_rotating_body::RotatingBody;
+using internal::RotatingBody;
 
+}  // namespace _rotating_body
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_rotating_body;
+}  // namespace principia::physics
 
 #include "physics/rotating_body_body.hpp"
 

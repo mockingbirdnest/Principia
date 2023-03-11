@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_clientele {
+namespace _clientele {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -46,12 +47,17 @@ class Client {
   not_null<Clientele<Key>*> const clientele_;
 };
 
-}  // namespace internal_clientele
+}  // namespace internal
 
-using internal_clientele::Client;
-using internal_clientele::Clientele;
+using internal::Client;
+using internal::Clientele;
 
+}  // namespace _clientele
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_clientele;
+}  // namespace principia::physics
 
 #include "physics/clientele_body.hpp"

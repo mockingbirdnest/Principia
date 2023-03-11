@@ -35,7 +35,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_solar_system {
+namespace _solar_system {
+namespace internal {
 
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
@@ -689,6 +690,7 @@ void SolarSystem<Frame>::CheckFrame(Message const& message) {
   }
 }
 
-}  // namespace internal_solar_system
+}  // namespace internal
+}  // namespace _solar_system
 }  // namespace physics
 }  // namespace principia

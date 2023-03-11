@@ -37,20 +37,20 @@ class VesselTest;
 namespace _vessel {
 namespace internal {
 
-using physics::Checkpointer;
-using physics::Clientele;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::Ephemeris;
-using physics::MasslessBody;
-using physics::RotatingBody;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_checkpointer;
+using namespace principia::physics::_clientele;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

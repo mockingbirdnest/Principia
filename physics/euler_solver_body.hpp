@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_euler_solver {
+namespace _euler_solver {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
@@ -478,6 +479,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::Compute𝒫ₜ(
   return 𝒫ₜ;
 }
 
-}  // namespace internal_euler_solver
+}  // namespace internal
+}  // namespace _euler_solver
 }  // namespace physics
 }  // namespace principia

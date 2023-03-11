@@ -19,12 +19,12 @@
 namespace principia {
 namespace physics {
 
-using physics::internal_discrete_trajectory_types::Timeline;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

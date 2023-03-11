@@ -22,11 +22,11 @@ namespace testing_utilities {
 namespace _solar_system_factory {
 namespace internal {
 
-using physics::Ephemeris;
-using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 
 // A helper class for constructing physics::SolarSystem objects for testing.

@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_body_direction_dynamic_frame {
+namespace _body_centred_body_direction_dynamic_frame {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -212,6 +213,7 @@ ComputeAngularDegreesOfFreedom(
   angular_velocity = reference_binormal * Radian / reference_direction.Norm²();
 }
 
-}  // namespace internal_body_centred_body_direction_dynamic_frame
+}  // namespace internal
+}  // namespace _body_centred_body_direction_dynamic_frame
 }  // namespace physics
 }  // namespace principia

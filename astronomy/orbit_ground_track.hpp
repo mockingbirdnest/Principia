@@ -15,10 +15,10 @@ namespace astronomy {
 namespace _orbit_ground_track {
 namespace internal {
 
-using physics::DiscreteTrajectory;
-using physics::RotatingBody;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -11,8 +11,8 @@ namespace astronomy {
 namespace _stabilize_ksp {
 namespace internal {
 
-using physics::KeplerianElements;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_kepler_orbit;
 using namespace principia::quantities::_si;
 
 template<typename Frame>

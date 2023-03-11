@@ -9,8 +9,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::DegreesOfFreedom;
-using physics::RigidMotion;
 using ::testing::_;
 using ::testing::MockFunction;
 using namespace principia::base::_not_null;
@@ -19,6 +17,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

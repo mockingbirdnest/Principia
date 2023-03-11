@@ -15,10 +15,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::BodySurfaceDynamicFrame;
-using physics::Ephemeris;
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::IsNull;
@@ -33,6 +29,10 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_orbit_analyser;
+using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
