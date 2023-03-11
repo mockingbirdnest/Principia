@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_local_error_analysis {
+namespace _local_error_analysis {
+namespace internal {
 
 using astronomy::KSPStabilizedSystemFingerprints;
 using astronomy::KSPStockSystemFingerprints;
@@ -106,6 +107,7 @@ LocalErrorAnalyser<Frame>::ForkEphemeris(
       typename Ephemeris<Frame>::FixedStepParameters(integrator, step));
 }
 
-}  // namespace internal_local_error_analysis
+}  // namespace internal
+}  // namespace _local_error_analysis
 }  // namespace mathematica
 }  // namespace principia

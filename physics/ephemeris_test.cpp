@@ -49,7 +49,6 @@ namespace principia {
 namespace physics {
 namespace internal_ephemeris {
 
-using mathematica::PreserveUnits;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -70,6 +69,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

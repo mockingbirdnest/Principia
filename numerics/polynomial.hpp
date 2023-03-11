@@ -40,7 +40,7 @@ FORWARD_DECLARE_FR0M(
 }  // namespace numerics
 
 namespace mathematica {
-FORWARD_DECLARE_FUNCTION_FROM(
+FORWARD_DECLARE_FUNCTION_FR0M(
     mathematica,
     TEMPLATE(typename Value, typename Argument, int degree_,
              template<typename, typename, int> typename Evaluator,
@@ -256,7 +256,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::ToMathematicaBody(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };

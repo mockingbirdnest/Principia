@@ -196,3 +196,21 @@
     --client:quantities `
     --client:testing_utilities `
     --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:mathematica `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools

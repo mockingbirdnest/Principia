@@ -28,7 +28,8 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_mathematica {
+namespace _mathematica {
+namespace internal {
 
 using physics::DegreesOfFreedom;
 using namespace principia::base::_traits;
@@ -297,20 +298,25 @@ std::string ToMathematica(std::string const& str,
 std::string RawApply(std::string const& function,
                      std::vector<std::string> const& arguments);
 
-}  // namespace internal_mathematica
+}  // namespace internal
 
-using internal_mathematica::Apply;
-using internal_mathematica::Evaluate;
-using internal_mathematica::ExpressIn;
-using internal_mathematica::ExpressInSIUnits;
-using internal_mathematica::PlottableDataset;
-using internal_mathematica::PreserveUnits;
-using internal_mathematica::Rule;
-using internal_mathematica::Set;
-using internal_mathematica::ToMathematica;
-using internal_mathematica::ToMathematicaBody;
+using internal::Apply;
+using internal::Evaluate;
+using internal::ExpressIn;
+using internal::ExpressInSIUnits;
+using internal::PlottableDataset;
+using internal::PreserveUnits;
+using internal::Rule;
+using internal::Set;
+using internal::ToMathematica;
+using internal::ToMathematicaBody;
 
+}  // namespace _mathematica
 }  // namespace mathematica
 }  // namespace principia
+
+namespace principia::mathematica {
+using namespace principia::mathematica::_mathematica;
+}  // namespace principia::mathematica
 
 #include "mathematica/mathematica_body.hpp"
