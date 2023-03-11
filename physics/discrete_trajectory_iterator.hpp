@@ -94,7 +94,6 @@ class DiscreteTrajectoryIterator {
   template<typename F>
   friend class _discrete_trajectory_segment::internal::
       DiscreteTrajectorySegment;
-  friend class DiscreteTrajectoryIteratorTest;
 };
 
 template<typename Frame>
