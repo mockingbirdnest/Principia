@@ -221,9 +221,10 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   Timeline timeline_;
 
   template<typename F>
-  friend class DiscreteTrajectory;
+  friend class _discrete_trajectory::internal::DiscreteTrajectory;
   template<typename F>
-  friend class DiscreteTrajectoryIterator;
+  friend class _discrete_trajectory_iterator::internal::
+      DiscreteTrajectoryIterator;
 
   // For testing.
   friend class physics::DiscreteTrajectoryIteratorTest;
