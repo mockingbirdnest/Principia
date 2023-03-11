@@ -38,8 +38,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::
-    _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

@@ -115,8 +115,7 @@ SymplecticPartitionedRungeKuttaIntegrator();
 }  // namespace principia
 
 namespace principia::integrators {
-using namespace principia::integrators::
-    _symplectic_partitioned_runge_kutta_integrator;
+using namespace principia::integrators::_symplectic_partitioned_runge_kutta_integrator;  // NOLINT
 }  // namespace principia::integrators
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator_body.hpp"

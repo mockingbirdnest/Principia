@@ -15,14 +15,11 @@ namespace _integrators {
 namespace internal {
 
 using namespace principia::geometry::_named_quantities;
-using namespace principia::integrators::
-    _embedded_explicit_generalized_runge_kutta_nyström_integrator;
-using namespace principia::integrators::
-    _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::integrators::
-    _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::quantities::_si;
 
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters

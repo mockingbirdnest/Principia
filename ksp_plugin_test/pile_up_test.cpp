@@ -48,12 +48,10 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
-using namespace principia::integrators::
-    _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::
-    _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
