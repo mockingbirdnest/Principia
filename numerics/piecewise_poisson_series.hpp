@@ -19,7 +19,7 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FR0M(piecewise_poisson_series,
+FORWARD_DECLARE_FROM(piecewise_poisson_series,
                      TEMPLATE(typename Value,
                               int aperiodic_degree, int periodic_degree,
                               template<typename, typename, int> class Evaluator)
@@ -28,7 +28,7 @@ FORWARD_DECLARE_FR0M(piecewise_poisson_series,
 }  // namespace numerics
 
 namespace mathematica {
-FORWARD_DECLARE_FUNCTION_FR0M(
+FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value,
              int aperiodic_degree, int periodic_degree,

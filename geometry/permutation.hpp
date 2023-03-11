@@ -10,7 +10,7 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FR0M(orthogonal_map,
+FORWARD_DECLARE_FROM(orthogonal_map,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      OrthogonalMap);
 

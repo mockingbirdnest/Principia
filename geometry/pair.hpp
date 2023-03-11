@@ -11,7 +11,7 @@
 namespace principia {
 
 namespace testing_utilities {
-FORWARD_DECLARE_FR0M(componentwise,
+FORWARD_DECLARE_FROM(componentwise,
                      TEMPLATE(typename PairType) class,
                      ComponentwiseMatcher2Impl);
 }  // namespace testing_utilities

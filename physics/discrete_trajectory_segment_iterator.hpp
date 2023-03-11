@@ -11,20 +11,20 @@
 namespace principia {
 
 namespace testing_utilities {
-FORWARD_DECLARE_FR0M(discrete_trajectory_factories,
+FORWARD_DECLARE_FROM(discrete_trajectory_factories,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryFactoriesFriend);
 }  // namespace testing_utilities
 
 namespace physics {
 
-FORWARD_DECLARE_FR0M(discrete_trajectory,
+FORWARD_DECLARE_FROM(discrete_trajectory,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectory);
-FORWARD_DECLARE_FR0M(discrete_trajectory_iterator,
+FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryIterator);
-FORWARD_DECLARE_FR0M(discrete_trajectory_segment,
+FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 

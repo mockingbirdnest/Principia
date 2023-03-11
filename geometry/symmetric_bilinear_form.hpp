@@ -12,7 +12,7 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FR0M(rotation,
+FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
 
