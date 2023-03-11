@@ -73,7 +73,6 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
-using namespace principia::physics::_mock_dynamic_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
