@@ -20,9 +20,6 @@
 namespace principia {
 namespace interface {
 
-using physics::BarycentricRotatingDynamicFrame;
-using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::BodyCentredNonRotatingDynamicFrame;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -31,6 +28,9 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_barycentric_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_body_surface_dynamic_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_dynamic_frame;

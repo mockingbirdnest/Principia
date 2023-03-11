@@ -31,7 +31,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::DiscreteTrajectorySegmentIterator;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -57,6 +56,7 @@ using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;

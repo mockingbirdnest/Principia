@@ -37,7 +37,6 @@ class TestablePileUp;
 namespace _pile_up {
 namespace internal {
 
-using physics::DiscreteTrajectorySegmentIterator;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -46,6 +45,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_euler_solver;
 using namespace principia::physics::_massless_body;

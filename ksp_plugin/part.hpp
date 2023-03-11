@@ -26,13 +26,13 @@ namespace ksp_plugin {
 namespace _part {
 namespace internal {
 
-using physics::DiscreteTrajectorySegmentIterator;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -16,11 +16,11 @@ namespace ksp_plugin {
 namespace _manœuvre {
 namespace internal {
 
-using physics::DiscreteTrajectorySegmentIterator;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_ephemeris;

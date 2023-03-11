@@ -30,7 +30,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::BodyCentredNonRotatingDynamicFrame;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -47,6 +46,7 @@ using namespace principia::integrators::
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_dynamic_frame;

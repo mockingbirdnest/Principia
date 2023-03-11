@@ -24,13 +24,13 @@ namespace principia {
 namespace astronomy {
 
 using astronomy::J2000;
-using physics::BodyCentredNonRotatingDynamicFrame;
 using ::testing::Lt;
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;

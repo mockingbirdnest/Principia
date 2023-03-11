@@ -24,7 +24,6 @@
 namespace principia {
 namespace astronomy {
 
-using physics::BodyCentredNonRotatingDynamicFrame;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Lt;
@@ -36,6 +35,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_body_surface_dynamic_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;

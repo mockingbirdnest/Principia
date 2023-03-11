@@ -59,11 +59,7 @@ namespace ksp_plugin {
 namespace _plugin {
 namespace internal {
 
-using astronomy::KSPStabilizedSystemFingerprints;
-using astronomy::KSPStockSystemFingerprints;
-using physics::BarycentricRotatingDynamicFrame;
-using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::BodyCentredNonRotatingDynamicFrame;
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_file;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_hexadecimal;
@@ -81,6 +77,9 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::physics::_apsides;
+using namespace principia::physics::_barycentric_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_body_surface_dynamic_frame;
 using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::physics::_dynamic_frame;

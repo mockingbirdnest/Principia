@@ -14,11 +14,11 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
-using physics::BodyCentredBodyDirectionDynamicFrame;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_permutation;
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
 using namespace principia::physics::_degrees_of_freedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,

@@ -19,11 +19,11 @@
 namespace principia {
 namespace physics {
 
-using physics::DegreesOfFreedom;
 using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::quantities::_quantities;

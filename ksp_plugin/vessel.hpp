@@ -37,7 +37,6 @@ class VesselTest;
 namespace _vessel {
 namespace internal {
 
-using physics::DiscreteTrajectorySegmentIterator;
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
@@ -48,6 +47,7 @@ using namespace principia::physics::_clientele;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_rotating_body;

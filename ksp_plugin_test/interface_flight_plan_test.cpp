@@ -35,7 +35,6 @@
 namespace principia {
 namespace interface {
 
-using physics::BodyCentredNonRotatingDynamicFrame;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -65,6 +64,7 @@ using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_dynamic_frame;
