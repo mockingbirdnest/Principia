@@ -21,8 +21,6 @@ namespace ksp_plugin {
 namespace _pile_up {
 namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::RigidMotion;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -40,6 +38,8 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::numerics::_davenport_q_method;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;

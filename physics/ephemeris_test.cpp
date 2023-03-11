@@ -47,7 +47,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
 
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -70,6 +69,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -1234,6 +1234,5 @@ INSTANTIATE_TEST_SUITE_P(
                           Quinlan1999Order8A,
                           Ephemeris<ICRS>::NewtonianMotionEquation>()));
 
-}  // namespace internal_ephemeris
 }  // namespace physics
 }  // namespace principia

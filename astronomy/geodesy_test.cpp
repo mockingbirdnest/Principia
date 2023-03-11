@@ -17,16 +17,6 @@
 namespace principia {
 namespace astronomy {
 
-using physics::BodySurfaceDynamicFrame;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::SolarSystem;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using namespace principia::base::_bundle;
@@ -37,6 +27,15 @@ using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;

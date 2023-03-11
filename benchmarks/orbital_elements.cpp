@@ -27,21 +27,20 @@ namespace principia {
 namespace astronomy {
 
 using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

@@ -18,12 +18,12 @@ namespace ksp_plugin {
 namespace _part {
 namespace internal {
 
-using physics::RigidTransformation;
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

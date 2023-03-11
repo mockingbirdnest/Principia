@@ -17,13 +17,6 @@
 namespace principia {
 namespace astronomy {
 
-using physics::BodySurfaceDynamicFrame;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
@@ -41,6 +34,13 @@ using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_componentwise;

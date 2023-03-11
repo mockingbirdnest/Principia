@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
+namespace _kepler_orbit {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -641,6 +642,7 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
   }
 }
 
-}  // namespace internal_kepler_orbit
+}  // namespace internal
+}  // namespace _kepler_orbit
 }  // namespace physics
 }  // namespace principia

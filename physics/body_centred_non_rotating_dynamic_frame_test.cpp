@@ -26,7 +26,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_non_rotating_dynamic_frame {
 
 using ::testing::IsNull;
 using ::testing::Lt;
@@ -39,6 +38,7 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -223,6 +223,5 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
             read_small_frame->GeometricAcceleration(t, point_dof));
 }
 
-}  // namespace internal_body_centred_non_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

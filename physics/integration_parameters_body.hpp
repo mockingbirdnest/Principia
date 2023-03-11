@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_integration_parameters {
+namespace _integration_parameters {
+namespace internal {
 
 template<typename ODE>
 template<typename E, std::enable_if_t<E::order == 1, std::nullptr_t>>
@@ -148,6 +149,7 @@ FixedStepParameters<ODE> FixedStepParameters<ODE>::ReadFromMessage(
       Time::ReadFromMessage(message.step()));
 }
 
-}  // namespace internal_integration_parameters
+}  // namespace internal
+}  // namespace _integration_parameters
 }  // namespace physics
 }  // namespace principia

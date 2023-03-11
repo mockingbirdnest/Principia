@@ -15,7 +15,6 @@
 namespace principia {
 namespace interface {
 
-using physics::MockDynamicFrame;
 using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Pointer;
@@ -30,6 +29,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_mock_dynamic_frame;
 using namespace principia::quantities::_si;
 
 namespace {

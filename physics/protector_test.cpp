@@ -9,6 +9,7 @@ namespace physics {
 
 using ::testing::MockFunction;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_protector;
 using namespace principia::quantities::_si;
 
 class ProtectorTest : public ::testing::Test {

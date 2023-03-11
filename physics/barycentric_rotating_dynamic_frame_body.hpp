@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_barycentric_rotating_dynamic_frame {
+namespace _barycentric_rotating_dynamic_frame {
+namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
@@ -192,6 +193,7 @@ ComputeAngularDegreesOfFreedom(
   angular_velocity = reference_binormal * Radian / reference_direction.Norm²();
 }
 
-}  // namespace internal_barycentric_rotating_dynamic_frame
+}  // namespace internal
+}  // namespace _barycentric_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

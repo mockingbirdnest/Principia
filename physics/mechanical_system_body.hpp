@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_mechanical_system {
+namespace _mechanical_system {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -93,6 +94,7 @@ MechanicalSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   return result.Anticommutator();
 }
 
-}  // namespace internal_mechanical_system
+}  // namespace internal
+}  // namespace _mechanical_system
 }  // namespace physics
 }  // namespace principia

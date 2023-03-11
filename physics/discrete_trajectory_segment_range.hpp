@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_segment_range {
+namespace _discrete_trajectory_segment_range {
+namespace internal {
 
 // A range of segments in a DiscreteTrajectory, iterator upon using |Iterator|.
 // Convenient for range-based loops.
@@ -30,12 +31,17 @@ class DiscreteTrajectorySegmentRange {
   Iterator end_;
 };
 
-}  // namespace internal_discrete_trajectory_segment_range
+}  // namespace internal
 
 using internal_discrete_trajectory_segment_range::
       DiscreteTrajectorySegmentRange;
 
+}  // namespace _discrete_trajectory_segment_range
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory_segment_range;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_segment_range_body.hpp"

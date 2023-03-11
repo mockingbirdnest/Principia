@@ -17,10 +17,10 @@
 
 namespace principia {
 
-using physics::KeplerOrbit;
-using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_map_util;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

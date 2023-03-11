@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_dynamic_frame {
+namespace _dynamic_frame {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -217,6 +218,7 @@ void DynamicFrame<InertialFrame, ThisFrame>::ComputeGeometricAccelerations(
   euler_acceleration = -dΩ_over_dt * r / Radian;
 }
 
-}  // namespace internal_dynamic_frame
+}  // namespace internal
+}  // namespace _dynamic_frame
 }  // namespace physics
 }  // namespace principia

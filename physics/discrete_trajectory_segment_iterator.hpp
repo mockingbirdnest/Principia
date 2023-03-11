@@ -32,7 +32,8 @@ class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
 class DiscreteTrajectorySegmentTest;
 
-namespace internal_discrete_trajectory_segment_iterator {
+namespace _discrete_trajectory_segment_iterator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -88,12 +89,17 @@ class DiscreteTrajectorySegmentIterator {
   friend class testing_utilities::DiscreteTrajectoryFactoriesFriend;
 };
 
-}  // namespace internal_discrete_trajectory_segment_iterator
+}  // namespace internal
 
 using internal_discrete_trajectory_segment_iterator::
       DiscreteTrajectorySegmentIterator;
 
+}  // namespace _discrete_trajectory_segment_iterator
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_segment_iterator_body.hpp"

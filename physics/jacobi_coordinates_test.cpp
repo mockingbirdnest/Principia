@@ -11,10 +11,10 @@
 
 namespace principia {
 namespace physics {
-namespace internal_jacobi_coordinates {
 
 using ::testing::ElementsAre;
 using namespace principia::geometry::_frame;
+using namespace principia::physics::_jacobi_coordinates;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -82,6 +82,5 @@ TEST_F(JacobiCoordinatesTest, Jacobi) {
                           5 * Metre));
 }
 
-}  // namespace internal_jacobi_coordinates
 }  // namespace physics
 }  // namespace principia

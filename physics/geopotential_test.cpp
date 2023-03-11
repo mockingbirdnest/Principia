@@ -24,10 +24,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
 
 using numerics::LegendreNormalizationFactor;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::An;
 using ::testing::Each;
@@ -39,6 +37,8 @@ using ::testing::Property;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::physics::_geopotential;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
@@ -835,6 +835,5 @@ TEST_F(GeopotentialTest, Potential) {
   }
 }
 
-}  // namespace internal_geopotential
 }  // namespace physics
 }  // namespace principia

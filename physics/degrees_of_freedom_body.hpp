@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_degrees_of_freedom {
+namespace _degrees_of_freedom {
+namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 
@@ -88,10 +89,13 @@ std::ostream& operator<<(
   return out;
 }
 
-}  // namespace internal_degrees_of_freedom
+}  // namespace internal
+}  // namespace _degrees_of_freedom
 }  // namespace physics
 
 namespace base {
+namespace _degrees_of_freedom {
+namespace internal {
 
 template<typename Functor, typename Frame>
 typename Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>::type
@@ -101,9 +105,13 @@ Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>::Do(
   return type(functor(relative.displacement()), functor(relative.velocity()));
 }
 
+}  // namespace internal
+}  // namespace _degrees_of_freedom
 }  // namespace base
 
 namespace geometry {
+namespace _degrees_of_freedom {
+namespace internal {
 
 template<typename Frame, typename Weight>
 void BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight>::Add(
@@ -145,5 +153,7 @@ Weight const& BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>,
   return implementation_.weight();
 }
 
+}  // namespace internal
+}  // namespace _degrees_of_freedom
 }  // namespace geometry
 }  // namespace principia

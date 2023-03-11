@@ -12,9 +12,9 @@ namespace astronomy {
 namespace _orbit_ground_track {
 namespace internal {
 
-using physics::ComputeNodes;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_apsides;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

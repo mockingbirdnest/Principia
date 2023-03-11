@@ -32,18 +32,17 @@ namespace astronomy {
 
 using astronomy::ICRS;
 using astronomy::J2000;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerOrbit;
-using physics::KeplerianElements;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

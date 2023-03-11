@@ -62,16 +62,6 @@
 namespace principia {
 namespace interface {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::FrameField;
-using physics::MassiveBody;
-using physics::OblateBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
 using ::operator<<;
@@ -100,6 +90,15 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

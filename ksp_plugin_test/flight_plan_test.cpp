@@ -31,12 +31,6 @@ namespace principia {
 namespace ksp_plugin {
 
 using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::RotatingBody;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -53,6 +47,12 @@ using namespace principia::integrators::
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

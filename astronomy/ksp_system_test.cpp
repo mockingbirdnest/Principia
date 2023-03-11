@@ -24,14 +24,6 @@
 
 namespace principia {
 
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::_;
@@ -47,6 +39,12 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

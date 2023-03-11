@@ -13,11 +13,11 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::RotatingBody;
-using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_approximate_quantity;

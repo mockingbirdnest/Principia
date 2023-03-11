@@ -33,14 +33,6 @@
 namespace principia {
 namespace interface {
 
-using physics::CoordinateFrameField;
-using physics::DegreesOfFreedom;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockDynamicFrame;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -77,6 +69,12 @@ using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_dynamic_frame;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;

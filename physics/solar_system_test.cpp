@@ -15,7 +15,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_solar_system {
 
 using ::testing::ElementsAreArray;
 using namespace principia::astronomy::_frames;
@@ -23,6 +22,7 @@ using namespace principia::base::_fingerprint2011;
 using namespace principia::geometry::_frame;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
+using namespace principia::physics::_solar_system;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
@@ -300,6 +300,5 @@ TEST_F(SolarSystemTest, FingerprintKeplerian) {
   CHECK_NE(fingerprint3, fingerprint4);
 }
 
-}  // namespace internal_solar_system
 }  // namespace physics
 }  // namespace principia

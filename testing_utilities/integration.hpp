@@ -15,10 +15,10 @@ namespace testing_utilities {
 namespace _integration {
 namespace internal {
 
-using physics::MassiveBody;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_clientele {
+namespace _clientele {
+namespace internal {
 
 template<typename Key>
 Clientele<Key>::Clientele(Key const& default_value)
@@ -46,6 +47,7 @@ Client<Key>::~Client() {
   clientele_->Leave(t_);
 }
 
-}  // namespace internal_clientele
+}  // namespace internal
+}  // namespace _clientele
 }  // namespace physics
 }  // namespace principia

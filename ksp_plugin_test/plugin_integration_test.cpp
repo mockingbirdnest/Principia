@@ -24,11 +24,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::MassiveBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -50,6 +45,11 @@ using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

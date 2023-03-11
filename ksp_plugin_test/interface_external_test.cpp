@@ -13,7 +13,6 @@
 
 namespace principia {
 
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -24,6 +23,7 @@ using namespace principia::ksp_plugin::_fake_plugin;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

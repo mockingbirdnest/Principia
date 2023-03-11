@@ -17,7 +17,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_equipotential {
+namespace _equipotential {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -142,11 +143,16 @@ class Equipotential {
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
 };
 
-}  // namespace internal_equipotential
+}  // namespace internal
 
-using internal_equipotential::Equipotential;
+using internal::Equipotential;
 
+}  // namespace _equipotential
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_equipotential;
+}  // namespace principia::physics
 
 #include "physics/equipotential_body.hpp"

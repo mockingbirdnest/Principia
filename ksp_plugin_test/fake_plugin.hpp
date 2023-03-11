@@ -11,9 +11,9 @@ namespace ksp_plugin {
 namespace _fake_plugin {
 namespace internal {
 
-using physics::KeplerianElements;
-using physics::SolarSystem;
 using namespace principia::astronomy::_frames;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_solar_system;
 
 class FakePlugin : public Plugin {
  public:

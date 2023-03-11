@@ -16,9 +16,9 @@ namespace astronomy {
 namespace _standard_product_3 {
 namespace internal {
 
-using physics::DiscreteTrajectory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_discrete_trajectory;
 
 // A representation of data in the extended standard product 3 orbit format.
 // Specification:

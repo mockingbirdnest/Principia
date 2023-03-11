@@ -11,8 +11,8 @@ namespace ksp_plugin {
 namespace _equator_relevance_threshold {
 namespace internal {
 
-using physics::Geopotential;
-using physics::OblateBody;
+using namespace principia::physics::_geopotential;
+using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

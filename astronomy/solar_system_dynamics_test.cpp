@@ -30,15 +30,6 @@
 
 namespace principia {
 
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
@@ -55,6 +46,13 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

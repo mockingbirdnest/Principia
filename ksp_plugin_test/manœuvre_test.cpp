@@ -33,15 +33,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::AcceleratedRigidMotion;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -56,6 +47,14 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_dynamic_frame;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

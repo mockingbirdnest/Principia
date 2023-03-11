@@ -36,6 +36,7 @@ namespace principia {
 namespace physics {
 
 using namespace principia::base::_not_null;
+
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -47,6 +48,7 @@ using namespace principia::integrators::
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::physics::_equipotential;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

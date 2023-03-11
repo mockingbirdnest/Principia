@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_integration_parameters {
+namespace _integration_parameters {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_integrators;
@@ -87,12 +88,17 @@ class FixedStepParameters final {
   Time step_;
 };
 
-}  // namespace internal_integration_parameters
+}  // namespace internal
 
-using internal_integration_parameters::AdaptiveStepParameters;
-using internal_integration_parameters::FixedStepParameters;
+using internal::AdaptiveStepParameters;
+using internal::FixedStepParameters;
 
+}  // namespace _integration_parameters
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_integration_parameters;
+}  // namespace principia::physics
 
 #include "physics/integration_parameters_body.hpp"

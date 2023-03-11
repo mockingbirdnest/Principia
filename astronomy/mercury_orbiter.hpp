@@ -9,9 +9,9 @@ namespace astronomy {
 namespace _mercury_orbiter {
 namespace internal {
 
-using physics::DegreesOfFreedom;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_si;
 
 // State of the spacecraft Mercury Orbiter 1 at the start of September, from a

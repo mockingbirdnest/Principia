@@ -49,16 +49,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::ContinuousTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -95,6 +85,15 @@ using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_dynamic_frame;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

@@ -17,13 +17,13 @@ namespace testing_utilities {
 namespace _discrete_trajectory_factories {
 namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
 using physics::internal_discrete_trajectory_types::Timeline;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -32,7 +32,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
+namespace _ephemeris {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
@@ -435,11 +436,16 @@ class Ephemeris {
   absl::Status last_severe_integration_status_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_ephemeris
+}  // namespace internal
 
-using internal_ephemeris::Ephemeris;
+using internal::Ephemeris;
 
+}  // namespace _ephemeris
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_ephemeris;
+}  // namespace principia::physics
 
 #include "physics/ephemeris_body.hpp"

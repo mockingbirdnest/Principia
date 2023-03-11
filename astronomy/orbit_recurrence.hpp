@@ -9,7 +9,7 @@ namespace astronomy {
 namespace _orbit_recurrence {
 namespace internal {
 
-using physics::RotatingBody;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

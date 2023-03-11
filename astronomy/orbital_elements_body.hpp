@@ -21,9 +21,6 @@ namespace astronomy {
 namespace _orbital_elements {
 namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
 using namespace principia::base::_jthread;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::
@@ -32,6 +29,8 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_quadrature;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_kepler_orbit;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

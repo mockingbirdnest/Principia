@@ -45,6 +45,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_euler_solver;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

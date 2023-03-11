@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
+namespace _geopotential {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -106,11 +107,16 @@ class Geopotential {
   HarmonicDamping sectoral_damping_;
 };
 
-}  // namespace internal_geopotential
+}  // namespace internal
 
-using internal_geopotential::Geopotential;
+using internal::Geopotential;
 
+}  // namespace _geopotential
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_geopotential;
+}  // namespace principia::physics
 
 #include "physics/geopotential_body.hpp"

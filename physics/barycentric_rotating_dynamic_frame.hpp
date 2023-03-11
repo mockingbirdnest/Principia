@@ -22,7 +22,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_barycentric_rotating_dynamic_frame {
+namespace _barycentric_rotating_dynamic_frame {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -91,13 +92,18 @@ class BarycentricRotatingDynamicFrame
       secondary_trajectory_;
 };
 
-}  // namespace internal_barycentric_rotating_dynamic_frame
+}  // namespace internal
 
 using internal_barycentric_rotating_dynamic_frame::
     BarycentricRotatingDynamicFrame;
 
+}  // namespace _barycentric_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_barycentric_rotating_dynamic_frame;
+}  // namespace principia::physics
 
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 

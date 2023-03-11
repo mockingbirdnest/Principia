@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
+namespace _mock_ephemeris {
+namespace internal {
 
 using namespace principia::integrators::_mock_integrators;
 
@@ -100,10 +101,11 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_METHOD(Instant, t_min_locked, (), (const, override));
 };
 
-}  // namespace internal_ephemeris
+}  // namespace internal
 
-using internal_ephemeris::MockEphemeris;
+using internal::MockEphemeris;
 
+}  // namespace _mock_ephemeris
 }  // namespace physics
 
 ACTION_P(AppendToDiscreteTrajectories, degrees_of_freedom) {
@@ -139,3 +141,7 @@ ACTION_P(AppendPointsToDiscreteTrajectory, trajectory) {
 }
 
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_mock_ephemeris;
+}  // namespace principia::physics

@@ -27,12 +27,13 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory {
+namespace _discrete_trajectory {
+namespace internal {
 
-using physics::DegreesOfFreedom;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Frame>
 class DiscreteTrajectory : public Trajectory<Frame> {
@@ -221,11 +222,16 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   SegmentByLeftEndpoint segment_by_left_endpoint_;
 };
 
-}  // namespace internal_discrete_trajectory
+}  // namespace internal
 
-using internal_discrete_trajectory::DiscreteTrajectory;
+using internal::DiscreteTrajectory;
 
+}  // namespace _discrete_trajectory
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_body.hpp"

@@ -26,7 +26,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
 
 using ::testing::IsNull;
 using ::testing::Lt;
@@ -40,6 +39,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
+using namespace principia::physics::_body_surface_dynamic_frame;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -222,6 +222,5 @@ TEST_F(BodySurfaceDynamicFrameTest, Serialization) {
             read_big_frame->GeometricAcceleration(t, point_dof));
 }
 
-}  // namespace internal_body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia

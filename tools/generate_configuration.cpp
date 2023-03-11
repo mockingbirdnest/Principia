@@ -22,12 +22,12 @@
 
 namespace principia {
 
-using physics::DegreesOfFreedom;
-using physics::SolarSystem;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_serialization;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

@@ -31,12 +31,6 @@ namespace mathematica {
 namespace _retrobop_dynamical_stability {
 namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::HierarchicalSystem;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
 using namespace principia::base::_array;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
@@ -51,6 +45,12 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_hierarchical_system;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

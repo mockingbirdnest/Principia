@@ -16,12 +16,12 @@ namespace ksp_plugin {
 namespace _celestial {
 namespace internal {
 
-using physics::Body;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::RotatingBody;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_body;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 
 // Represents a KSP |CelestialBody|.

@@ -37,21 +37,20 @@ class TestablePileUp;
 namespace _pile_up {
 namespace internal {
 
-using physics::DiscreteTrajectory;
 using physics::DiscreteTrajectorySegmentIterator;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::EulerSolver;
-using physics::MasslessBody;
-using physics::MechanicalSystem;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_euler_solver;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_mechanical_system;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

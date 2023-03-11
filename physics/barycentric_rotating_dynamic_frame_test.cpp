@@ -25,7 +25,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_barycentric_rotating_dynamic_frame {
 
 using ::testing::IsNull;
 using ::testing::Lt;
@@ -39,6 +38,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
+using namespace principia::physics::_barycentric_rotating_dynamic_frame;
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -225,6 +225,5 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
             read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
 
-}  // namespace internal_barycentric_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

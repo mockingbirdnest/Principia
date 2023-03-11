@@ -13,7 +13,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_degrees_of_freedom {
+namespace _degrees_of_freedom {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_named_quantities;
@@ -81,11 +82,12 @@ std::ostream& operator<<(
     std::ostream& out,
     RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom);
 
-}  // namespace internal_degrees_of_freedom
+}  // namespace internal
 
-using internal_degrees_of_freedom::DegreesOfFreedom;
-using internal_degrees_of_freedom::RelativeDegreesOfFreedom;
+using internal::DegreesOfFreedom;
+using internal::RelativeDegreesOfFreedom;
 
+}  // namespace _degrees_of_freedom
 }  // namespace physics
 
 // Reopen the base namespace to make RelativeDegreesOfFreedom mappable.
@@ -146,5 +148,9 @@ class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>
 
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_degrees_of_freedom;
+}  // namespace principia::physics
 
 #include "physics/degrees_of_freedom_body.hpp"

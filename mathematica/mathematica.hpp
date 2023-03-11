@@ -31,7 +31,6 @@ namespace mathematica {
 namespace _mathematica {
 namespace internal {
 
-using physics::DegreesOfFreedom;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
@@ -45,6 +44,7 @@ using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

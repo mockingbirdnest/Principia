@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_protector {
+namespace _protector {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 
@@ -42,9 +43,14 @@ class Protector {
   std::multiset<Instant> protection_start_times_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_protector
+}  // namespace internal
 
-using internal_protector::Protector;
+using internal::Protector;
 
+}  // namespace _protector
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_protector;
+}  // namespace principia::physics

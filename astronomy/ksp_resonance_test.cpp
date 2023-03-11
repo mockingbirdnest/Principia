@@ -21,11 +21,6 @@
 
 namespace principia {
 
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::MassiveBody;
-using physics::SolarSystem;
 using ::testing::Eq;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -38,6 +33,11 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::
     _symplectic_runge_kutta_nyström_integrator;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

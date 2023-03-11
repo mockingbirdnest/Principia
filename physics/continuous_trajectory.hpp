@@ -20,7 +20,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_continuous_trajectory {
+namespace _continuous_trajectory {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -248,11 +249,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   friend class TestableContinuousTrajectory<Frame>;
 };
 
-}  // namespace internal_continuous_trajectory
+}  // namespace internal
 
-using internal_continuous_trajectory::ContinuousTrajectory;
+using internal::ContinuousTrajectory;
 
+}  // namespace _continuous_trajectory
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_continuous_trajectory;
+}  // namespace principia::physics
 
 #include "physics/continuous_trajectory_body.hpp"

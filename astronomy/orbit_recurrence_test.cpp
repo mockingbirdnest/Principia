@@ -10,14 +10,14 @@
 namespace principia {
 namespace astronomy {
 
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Property;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::base::_not_null;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;

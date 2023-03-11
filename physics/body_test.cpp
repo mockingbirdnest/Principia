@@ -25,7 +25,6 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body {
 
 using numerics::LegendreNormalizationFactor;
 using ::testing::IsNull;
@@ -40,6 +39,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -406,6 +406,5 @@ TEST_F(BodyTest, SolarNoon) {
 
 #endif
 
-}  // namespace internal_body
 }  // namespace physics
 }  // namespace principia

@@ -11,7 +11,7 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
-using physics::MockDynamicFrame;
+using namespace principia::physics::_mock_dynamic_frame;
 
 MockCelestial* const sun = new MockCelestial;
 

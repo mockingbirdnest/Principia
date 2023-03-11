@@ -12,7 +12,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_checkpointer {
+namespace _checkpointer {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 
@@ -237,6 +238,7 @@ void Checkpointer<Message>::WriteToCheckpointLocked(Instant const& t) {
   lock_.Lock();
 }
 
-}  // namespace internal_checkpointer
+}  // namespace internal
+}  // namespace _checkpointer
 }  // namespace physics
 }  // namespace principia

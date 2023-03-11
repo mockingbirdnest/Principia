@@ -24,7 +24,6 @@
 namespace principia {
 namespace interface {
 
-using physics::DiscreteTrajectory;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -36,6 +35,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_renderer;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

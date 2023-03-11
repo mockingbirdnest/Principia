@@ -17,10 +17,11 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory_iterator {
+namespace _discrete_trajectory_iterator {
+namespace internal {
 
-using physics::DegreesOfFreedom;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Frame>
 class DiscreteTrajectoryIterator {
@@ -103,11 +104,16 @@ DiscreteTrajectoryIterator<Frame> operator+(
     typename DiscreteTrajectoryIterator<Frame>::difference_type n,
     DiscreteTrajectoryIterator<Frame> it);
 
-}  // namespace internal_discrete_trajectory_iterator
+}  // namespace internal
 
-using internal_discrete_trajectory_iterator::DiscreteTrajectoryIterator;
+using internal::DiscreteTrajectoryIterator;
 
+}  // namespace _discrete_trajectory_iterator
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory_iterator;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_iterator_body.hpp"

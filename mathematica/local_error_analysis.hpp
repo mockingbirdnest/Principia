@@ -12,11 +12,11 @@ namespace mathematica {
 namespace _local_error_analysis {
 namespace internal {
 
-using physics::Ephemeris;
-using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_integrators;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
