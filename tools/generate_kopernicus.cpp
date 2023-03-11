@@ -16,6 +16,9 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace tools {
+namespace _generate_kopernicus {
+namespace internal {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_map_util;
@@ -27,10 +30,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace tools {
-namespace _generate_kopernicus {
-namespace internal {
 
 namespace {
 

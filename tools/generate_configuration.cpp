@@ -21,6 +21,9 @@
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
+namespace tools {
+namespace _generate_configuration {
+namespace internal {
 
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
@@ -34,10 +37,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace tools {
-namespace _generate_configuration {
-namespace internal {
 
 namespace {
 constexpr char cfg[] = "cfg";
