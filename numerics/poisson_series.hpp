@@ -216,7 +216,7 @@ class PoissonSeries {
   template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       PoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
   template<typename V, int ad, int pd,
