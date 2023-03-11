@@ -21,6 +21,9 @@
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
+namespace tools {
+namespace _generate_configuration {
+namespace internal {
 
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
@@ -34,8 +37,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace tools {
 
 namespace {
 constexpr char cfg[] = "cfg";
@@ -308,5 +309,7 @@ void GenerateConfiguration(std::string const& game_epoch,
   numerics_blueprint_cfg << "}\n";
 }
 
+}  // namespace internal
+}  // namespace _generate_configuration
 }  // namespace tools
 }  // namespace principia

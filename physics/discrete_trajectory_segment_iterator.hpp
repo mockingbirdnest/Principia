@@ -80,14 +80,15 @@ class DiscreteTrajectorySegmentIterator {
   typename Segments::iterator iterator_;
 
   template<typename F>
-  friend class DiscreteTrajectory;
+  friend class _discrete_trajectory::internal::DiscreteTrajectory;
   template<typename F>
-  friend class DiscreteTrajectoryIterator;
+  friend class _discrete_trajectory_iterator::internal::
+      DiscreteTrajectoryIterator;
 
   // For testing.
-  friend class DiscreteTrajectoryIteratorTest;
-  friend class DiscreteTrajectorySegmentIteratorTest;
-  friend class DiscreteTrajectorySegmentTest;
+  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentIteratorTest;
+  friend class physics::DiscreteTrajectorySegmentTest;
   template<typename F>
   friend class testing_utilities::_discrete_trajectory_factories::
       DiscreteTrajectoryFactoriesFriend;

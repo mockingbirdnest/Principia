@@ -90,10 +90,10 @@ class DiscreteTrajectoryIterator {
   OptionalTimelineConstIterator point_;
 
   template<typename F>
-  friend class _discrete_trajectory::DiscreteTrajectory;
+  friend class _discrete_trajectory::internal::DiscreteTrajectory;
   template<typename F>
-  friend class DiscreteTrajectorySegment;
-  friend class DiscreteTrajectoryIteratorTest;
+  friend class _discrete_trajectory_segment::internal::
+      DiscreteTrajectorySegment;
 };
 
 template<typename Frame>
