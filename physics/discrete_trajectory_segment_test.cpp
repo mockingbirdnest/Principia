@@ -30,6 +30,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -48,7 +49,7 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Segments = internal_discrete_trajectory_types::Segments<World>;
+  using Segments = _discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentTest()
       : segments_(MakeSegments(1)) {

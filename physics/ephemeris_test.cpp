@@ -58,12 +58,14 @@ using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::
     _embedded_explicit_generalized_runge_kutta_nyström_integrator;
 using namespace principia::integrators::
     _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::

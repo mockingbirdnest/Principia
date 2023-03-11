@@ -20,8 +20,12 @@ using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 

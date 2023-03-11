@@ -37,6 +37,8 @@ using ::testing::Property;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;

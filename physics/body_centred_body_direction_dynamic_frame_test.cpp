@@ -39,9 +39,10 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
-using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
     _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

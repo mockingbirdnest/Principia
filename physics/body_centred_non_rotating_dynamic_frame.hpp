@@ -91,8 +91,7 @@ class BodyCentredNonRotatingDynamicFrame
 
 }  // namespace internal
 
-using internal_body_centred_non_rotating_dynamic_frame::
-    BodyCentredNonRotatingDynamicFrame;
+using internal::BodyCentredNonRotatingDynamicFrame;
 
 }  // namespace _body_centred_non_rotating_dynamic_frame
 }  // namespace physics

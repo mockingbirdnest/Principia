@@ -24,6 +24,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;

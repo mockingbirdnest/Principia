@@ -8,7 +8,7 @@
 
 namespace principia {
 namespace integrators {
-namespace _mock_integrators {
+namespace _integrators {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -62,10 +62,6 @@ class MockFixedStepSizeIntegrator
 
 using internal::MockFixedStepSizeIntegrator;
 
-}  // namespace _mock_integrators
+}  // namespace _integrators
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_mock_integrators;
-}  // namespace principia::integrators

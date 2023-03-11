@@ -27,7 +27,7 @@ FORWARD_DECLARE_FR0M(discrete_trajectory_factories,
 
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory,
+FORWARD_DECLARE_FR0M(discrete_trajectory,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectory);
 
@@ -42,10 +42,12 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_hermite3;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {
-  using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
+  using Timeline = _discrete_trajectory_types::Timeline<Frame>;
 
  public:
   using key_type = typename Timeline::key_type;
@@ -56,7 +58,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   using reverse_iterator = std::reverse_iterator<iterator>;
 
   using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
+      _discrete_trajectory_types::DownsamplingParameters;
 
   // TODO(phl): Decide which constructors should be public.
   DiscreteTrajectorySegment() = default;
@@ -219,9 +221,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   Timeline timeline_;
 
   template<typename F>
-  friend class physics::DiscreteTrajectory;
+  friend class DiscreteTrajectory;
   template<typename F>
-  friend class physics::DiscreteTrajectoryIterator;
+  friend class DiscreteTrajectoryIterator;
 
   // For testing.
   friend class physics::DiscreteTrajectoryIteratorTest;

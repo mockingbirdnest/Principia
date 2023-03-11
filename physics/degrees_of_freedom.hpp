@@ -92,34 +92,44 @@ using internal::RelativeDegreesOfFreedom;
 
 // Reopen the base namespace to make RelativeDegreesOfFreedom mappable.
 namespace base {
+namespace _mappable {
+namespace internal {
+
+using namespace principia::geometry::_pair;
+using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Functor, typename Frame>
-struct Mappable<Functor, physics::RelativeDegreesOfFreedom<Frame>>
+struct Mappable<Functor, RelativeDegreesOfFreedom<Frame>>
     : not_constructible {
-  using type = geometry::Pair<
-                   decltype(std::declval<Functor>()(
-                                std::declval<geometry::Displacement<Frame>>())),
-                   decltype(std::declval<Functor>()(
-                                std::declval<geometry::Velocity<Frame>>()))>;
+  using type = Pair<decltype(std::declval<Functor>()(
+                        std::declval<geometry::Displacement<Frame>>())),
+                    decltype(std::declval<Functor>()(
+                        std::declval<geometry::Velocity<Frame>>()))>;
 
   static type Do(Functor const& functor,
-                 physics::RelativeDegreesOfFreedom<Frame> const& relative);
+                 RelativeDegreesOfFreedom<Frame> const& relative);
 };
 
+}  // namespace internal
+}  // namespace _mappable
 }  // namespace base
 
 // Reopen the geometry namespace to make BarycentreCalculator applicable to
 // degrees of freedom.
 namespace geometry {
+namespace _barycentre_calculator {
+namespace internal {
+
+using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Frame, typename Weight>
-class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> final {
+class BarycentreCalculator<DegreesOfFreedom<Frame>, Weight> final {
  public:
   BarycentreCalculator() = default;
 
-  void Add(physics::DegreesOfFreedom<Frame> const& degrees_of_freedom,
+  void Add(DegreesOfFreedom<Frame> const& degrees_of_freedom,
            Weight const& weight);
-  physics::DegreesOfFreedom<Frame> Get() const;
+  DegreesOfFreedom<Frame> Get() const;
 
   Weight const& weight() const;
 
@@ -129,15 +139,14 @@ class BarycentreCalculator<physics::DegreesOfFreedom<Frame>, Weight> final {
 };
 
 template<typename Frame, typename Weight>
-class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>
+class BarycentreCalculator<RelativeDegreesOfFreedom<Frame>, Weight>
     final {
  public:
   BarycentreCalculator() = default;
 
-  void Add(physics::RelativeDegreesOfFreedom<Frame> const&
-               relative_degrees_of_freedom,
+  void Add(RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom,
            Weight const& weight);
-  physics::RelativeDegreesOfFreedom<Frame> Get() const;
+  RelativeDegreesOfFreedom<Frame> Get() const;
 
   Weight const& weight() const;
 
@@ -146,6 +155,8 @@ class BarycentreCalculator<physics::RelativeDegreesOfFreedom<Frame>, Weight>
       implementation_;
 };
 
+}  // namespace internal
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 }  // namespace principia
 

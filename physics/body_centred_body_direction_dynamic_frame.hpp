@@ -101,8 +101,7 @@ class BodyCentredBodyDirectionDynamicFrame
 
 }  // namespace internal
 
-using internal_body_centred_body_direction_dynamic_frame::
-    BodyCentredBodyDirectionDynamicFrame;
+using internal::BodyCentredBodyDirectionDynamicFrame;
 
 }  // namespace _body_centred_body_direction_dynamic_frame
 }  // namespace physics

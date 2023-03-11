@@ -20,6 +20,10 @@
 
 namespace principia {
 namespace physics {
+
+template<typename Frame>
+class TestableContinuousTrajectory;
+
 namespace _continuous_trajectory {
 namespace internal {
 
@@ -29,9 +33,6 @@ using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_quantities;
-
-template<typename Frame>
-class TestableContinuousTrajectory;
 
 // This class is thread-safe, but the client must be aware that if, for
 // instance, the trajectory is appended to asynchronously, successive calls to

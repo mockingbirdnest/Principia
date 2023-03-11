@@ -31,6 +31,7 @@ namespace physics {
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_polynomial;

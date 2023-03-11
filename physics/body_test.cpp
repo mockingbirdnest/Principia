@@ -32,6 +32,7 @@ using ::testing::NotNull;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;

@@ -13,7 +13,7 @@
 namespace principia {
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+FORWARD_DECLARE_FR0M(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
@@ -22,13 +22,14 @@ namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
 class DiscreteTrajectoryIterator {
  public:
   using difference_type = std::int64_t;
-  using value_type =
-      typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
+  using value_type = typename Timeline<Frame>::value_type;
   using pointer = value_type const*;
   using reference = value_type const&;
   using iterator_category = std::random_access_iterator_tag;
@@ -60,7 +61,7 @@ class DiscreteTrajectoryIterator {
   bool operator>=(DiscreteTrajectoryIterator other) const;
 
  private:
-  using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
+  using Timeline = _discrete_trajectory_types::Timeline<Frame>;
 
   // Optional because we cannot construct a point iterator in the end segment.
   using OptionalTimelineConstIterator =
@@ -89,10 +90,10 @@ class DiscreteTrajectoryIterator {
   OptionalTimelineConstIterator point_;
 
   template<typename F>
-  friend class physics::DiscreteTrajectory;
+  friend class _discrete_trajectory::DiscreteTrajectory;
   template<typename F>
-  friend class physics::DiscreteTrajectorySegment;
-  friend class physics::DiscreteTrajectoryIteratorTest;
+  friend class DiscreteTrajectorySegment;
+  friend class DiscreteTrajectoryIteratorTest;
 };
 
 template<typename Frame>

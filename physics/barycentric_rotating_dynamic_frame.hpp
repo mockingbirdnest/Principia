@@ -94,8 +94,7 @@ class BarycentricRotatingDynamicFrame
 
 }  // namespace internal
 
-using internal_barycentric_rotating_dynamic_frame::
-    BarycentricRotatingDynamicFrame;
+using internal::BarycentricRotatingDynamicFrame;
 
 }  // namespace _barycentric_rotating_dynamic_frame
 }  // namespace physics

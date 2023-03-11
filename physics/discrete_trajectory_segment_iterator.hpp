@@ -11,20 +11,20 @@
 namespace principia {
 
 namespace testing_utilities {
-FORWARD_DECLARE_FROM(discrete_trajectory_factories,
+FORWARD_DECLARE_FR0M(discrete_trajectory_factories,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryFactoriesFriend);
 }  // namespace testing_utilities
 
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory,
+FORWARD_DECLARE_FR0M(discrete_trajectory,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectory);
-FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
+FORWARD_DECLARE_FR0M(discrete_trajectory_iterator,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectoryIterator);
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+FORWARD_DECLARE_FR0M(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
@@ -36,6 +36,9 @@ namespace _discrete_trajectory_segment_iterator {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_iterator;
+using namespace principia::physics::_discrete_trajectory_segment;
 
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {
@@ -60,7 +63,7 @@ class DiscreteTrajectorySegmentIterator {
   bool operator!=(DiscreteTrajectorySegmentIterator const& other) const;
 
  private:
-  using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+  using Segments = _discrete_trajectory_types::Segments<Frame>;
 
   DiscreteTrajectorySegmentIterator(not_null<Segments*> segments,
                                     typename Segments::iterator iterator);
@@ -77,22 +80,22 @@ class DiscreteTrajectorySegmentIterator {
   typename Segments::iterator iterator_;
 
   template<typename F>
-  friend class physics::DiscreteTrajectory;
+  friend class DiscreteTrajectory;
   template<typename F>
-  friend class physics::DiscreteTrajectoryIterator;
+  friend class DiscreteTrajectoryIterator;
 
   // For testing.
-  friend class physics::DiscreteTrajectoryIteratorTest;
-  friend class physics::DiscreteTrajectorySegmentIteratorTest;
-  friend class physics::DiscreteTrajectorySegmentTest;
+  friend class DiscreteTrajectoryIteratorTest;
+  friend class DiscreteTrajectorySegmentIteratorTest;
+  friend class DiscreteTrajectorySegmentTest;
   template<typename F>
-  friend class testing_utilities::DiscreteTrajectoryFactoriesFriend;
+  friend class testing_utilities::_discrete_trajectory_factories::
+      DiscreteTrajectoryFactoriesFriend;
 };
 
 }  // namespace internal
 
-using internal_discrete_trajectory_segment_iterator::
-      DiscreteTrajectorySegmentIterator;
+using internal::DiscreteTrajectorySegmentIterator;
 
 }  // namespace _discrete_trajectory_segment_iterator
 }  // namespace physics

@@ -7,7 +7,7 @@
 
 namespace principia {
 namespace physics {
-namespace _mock_continuous_trajectory {
+namespace _continuous_trajectory {
 namespace internal {
 
 template<typename Frame>
@@ -29,10 +29,6 @@ class MockContinuousTrajectory : public ContinuousTrajectory<Frame> {
 
 using internal::MockContinuousTrajectory;
 
-}  // namespace _mock_continuous_trajectory
+}  // namespace _continuous_trajectory
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_mock_continuous_trajectory;
-}  // namespace principia::physics

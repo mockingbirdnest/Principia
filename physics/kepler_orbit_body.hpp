@@ -561,7 +561,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
 }
 
 template<typename Frame>
-void internal_kepler_orbit::KeplerOrbit<Frame>::CompleteOrientationParameters(
+void KeplerOrbit<Frame>::CompleteOrientationParameters(
     KeplerianElements<Frame>& elements) {
   auto& argument_of_periapsis = elements.argument_of_periapsis;
   auto& longitude_of_periapsis = elements.longitude_of_periapsis;

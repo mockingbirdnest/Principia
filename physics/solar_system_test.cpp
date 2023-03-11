@@ -20,10 +20,11 @@ using ::testing::ElementsAreArray;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::
-using namespace principia::physics::_solar_system;
     _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
 

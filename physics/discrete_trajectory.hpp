@@ -23,7 +23,7 @@
 namespace principia {
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
+FORWARD_DECLARE_FR0M(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
@@ -34,14 +34,13 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
 class DiscreteTrajectory : public Trajectory<Frame> {
  public:
-  using key_type =
-      typename internal_discrete_trajectory_types::Timeline<Frame>::key_type;
-  using value_type =
-      typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
+  using key_type = typename Timeline<Frame>::key_type;
+  using value_type = typename Timeline<Frame>::value_type;
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
   using reference = value_type const&;
@@ -153,8 +152,8 @@ class DiscreteTrajectory : public Trajectory<Frame> {
 
  private:
   using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
-  using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+      _discrete_trajectory_types::DownsamplingParameters;
+  using Segments = _discrete_trajectory_types::Segments<Frame>;
   using SegmentByLeftEndpoint =
       absl::btree_map<Instant, typename Segments::iterator>;
 

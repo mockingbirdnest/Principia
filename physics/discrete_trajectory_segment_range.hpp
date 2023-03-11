@@ -33,8 +33,7 @@ class DiscreteTrajectorySegmentRange {
 
 }  // namespace internal
 
-using internal_discrete_trajectory_segment_range::
-      DiscreteTrajectorySegmentRange;
+using internal::DiscreteTrajectorySegmentRange;
 
 }  // namespace _discrete_trajectory_segment_range
 }  // namespace physics
