@@ -29,6 +29,8 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace tools {
+namespace _generate_kopernicus {
+namespace internal {
 
 namespace {
 
@@ -298,5 +300,7 @@ void GenerateKopernicusForSlippist1(
   kopernicus_cfg << "}\n";
 }
 
+}  // namespace internal
+}  // namespace _generate_kopernicus
 }  // namespace tools
 }  // namespace principia

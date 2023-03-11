@@ -36,6 +36,8 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace tools {
+namespace _generate_configuration {
+namespace internal {
 
 namespace {
 constexpr char cfg[] = "cfg";
@@ -308,5 +310,7 @@ void GenerateConfiguration(std::string const& game_epoch,
   numerics_blueprint_cfg << "}\n";
 }
 
+}  // namespace internal
+}  // namespace _generate_configuration
 }  // namespace tools
 }  // namespace principia
