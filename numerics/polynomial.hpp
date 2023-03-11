@@ -256,7 +256,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
