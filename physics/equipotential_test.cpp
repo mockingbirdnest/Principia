@@ -36,7 +36,6 @@ namespace principia {
 namespace physics {
 
 using namespace principia::base::_not_null;
-
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;

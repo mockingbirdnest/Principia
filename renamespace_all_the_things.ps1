@@ -218,11 +218,11 @@
     --project:physics `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
-    --extra_body:body.hpp `
-    --extra_body:massive_body.hpp `
-    --extra_body:massless_body.hpp `
-    --extra_body:oblate_body.hpp `
-    --extra_body:rotating_body.hpp `
+    --extra_header:body.hpp `
+    --extra_header:massive_body.hpp `
+    --extra_header:massless_body.hpp `
+    --extra_header:oblate_body.hpp `
+    --extra_header:rotating_body.hpp `
     --dry_run:false `
     --client:astronomy `
     --client:base `

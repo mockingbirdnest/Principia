@@ -22,7 +22,6 @@ namespace principia {
 namespace physics {
 
 using namespace principia::geometry::_frame;
-
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
