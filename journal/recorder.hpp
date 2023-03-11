@@ -39,7 +39,6 @@ class Recorder final {
 
   template<typename>
   friend class _method::Method;
-  friend class RecorderTest;
 };
 
 }  // namespace internal
