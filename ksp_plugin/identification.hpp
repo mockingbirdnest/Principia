@@ -10,8 +10,8 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FR0M(part, class, Part);
-FORWARD_DECLARE_FR0M(vessel, class, Vessel);
+FORWARD_DECLARE_FROM(part, class, Part);
+FORWARD_DECLARE_FROM(vessel, class, Vessel);
 
 namespace _identification {
 namespace internal {

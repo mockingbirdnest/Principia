@@ -30,7 +30,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FR0M(part, class, Part);
+FORWARD_DECLARE_FROM(part, class, Part);
 
 class TestablePileUp;
 

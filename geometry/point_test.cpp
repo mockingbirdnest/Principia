@@ -15,7 +15,7 @@
 namespace principia {
 namespace geometry {
 
-using testing::Eq;
+using ::testing::Eq;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_cpuid;

@@ -14,14 +14,13 @@
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
+namespace numerics {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace numerics {
 
 class Hermite2Test : public ::testing::Test {
  protected:

@@ -20,6 +20,7 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using ::testing::Eq;
 using namespace principia::base::_not_null;
@@ -30,8 +31,7 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::
-    _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -46,8 +46,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
-
-namespace astronomy {
 
 namespace {
 constexpr Time Δt = 45 * Minute;

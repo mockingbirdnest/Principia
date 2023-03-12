@@ -18,6 +18,7 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace numerics {
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -33,8 +34,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-
-namespace numerics {
 
 class RootFindersTest : public ::testing::Test {};
 

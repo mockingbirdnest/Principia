@@ -14,6 +14,7 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace numerics {
 
 using ::testing::Lt;
 using namespace principia::numerics::_elliptic_integrals;
@@ -23,8 +24,6 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_serialization;
-
-namespace numerics {
 
 class EllipticIntegralsTest : public ::testing::Test {};
 

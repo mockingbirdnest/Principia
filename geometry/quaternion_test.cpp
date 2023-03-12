@@ -5,12 +5,11 @@
 #include "testing_utilities/algebra.hpp"
 
 namespace principia {
+namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_quaternion;
 using namespace principia::testing_utilities::_algebra;
-
-namespace geometry {
 
 class QuaternionTest : public testing::Test {
  protected:

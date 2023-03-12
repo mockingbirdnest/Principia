@@ -8,8 +8,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-using testing::Each;
-using testing::ElementsAre;
+using ::testing::Each;
+using ::testing::ElementsAre;
 
 namespace principia {
 namespace base {

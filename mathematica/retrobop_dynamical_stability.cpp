@@ -42,8 +42,7 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::
-    _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;

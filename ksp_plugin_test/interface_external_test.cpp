@@ -12,6 +12,7 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace interface {
 
 using ::testing::AllOf;
 using ::testing::Eq;
@@ -32,7 +33,6 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_solar_system_factory;
 
-namespace interface {
 namespace {
 
 constexpr PartId part_id = 1729;

@@ -12,24 +12,26 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FR0M(identity,
+FORWARD_DECLARE_FROM(identity,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Identity);
-FORWARD_DECLARE_FR0M(permutation,
+FORWARD_DECLARE_FROM(permutation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Permutation);
-FORWARD_DECLARE_FR0M(rotation,
+FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
-FORWARD_DECLARE_FR0M(signature,
+FORWARD_DECLARE_FROM(signature,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Signature);
-FORWARD_DECLARE_FR0M(
+FORWARD_DECLARE_FROM(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
             typename Frame,
             template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
+
+class OrthogonalMapTest;
 
 namespace _orthogonal_map {
 namespace internal {
@@ -133,7 +135,7 @@ class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
       std::ostream& out,
       OrthogonalMap<From, To> const& orthogonal_map);
 
-  friend class OrthogonalMapTest;
+  friend class geometry::OrthogonalMapTest;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

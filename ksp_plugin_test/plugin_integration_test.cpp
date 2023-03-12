@@ -41,8 +41,7 @@ using namespace principia::geometry::_identity;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
-using namespace principia::integrators::
-    _embedded_explicit_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::physics::_degrees_of_freedom;

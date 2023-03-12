@@ -20,6 +20,8 @@ namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_gauss_legendre_weights;
+using namespace principia::numerics::_legendre_roots;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

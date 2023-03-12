@@ -10,8 +10,10 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Sqrt;
 using ::testing::Lt;
+using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::numerics::_max_abs_normalized_associated_legendre_function;  // NOLINT
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
 
 class MaxAbsNormalizedAssociatedLegendreFunctionTest : public testing::Test {

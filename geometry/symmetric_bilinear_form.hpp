@@ -12,7 +12,7 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FR0M(rotation,
+FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
 
@@ -188,8 +188,6 @@ class SymmetricBilinearForm {
   template<typename S, typename F, template<typename, typename> typename M>
   friend std::ostream& operator<<(std::ostream& out,
                                   SymmetricBilinearForm<S, F, M> const& form);
-
-  friend class SymmetricBilinearFormTest;
 };
 
 // |InnerProductForm()| is the symmetric bilinear form such that for all v and

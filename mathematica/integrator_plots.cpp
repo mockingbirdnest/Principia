@@ -51,8 +51,10 @@
   }
 
 namespace principia {
+namespace mathematica {
+namespace _integrator_plots {
+namespace internal {
 
-using integrators::SpecialSecondOrderDifferentialEquation;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -75,10 +77,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_numerics;
-
-namespace mathematica {
-namespace _integrator_plots {
-namespace internal {
 
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.

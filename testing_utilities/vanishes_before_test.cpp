@@ -12,14 +12,13 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
+namespace testing_utilities {
 
 using ::testing::Ne;
 using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_vanishes_before;
-
-namespace testing_utilities {
 
 class VanishesBeforeTest : public testing::Test {};
 

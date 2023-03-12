@@ -10,7 +10,7 @@
 namespace principia {
 namespace journal {
 
-FORWARD_DECLARE_FR0M(method, template<typename Profile> class, Method);
+FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
 
 class RecorderTest;
 
@@ -39,7 +39,6 @@ class Recorder final {
 
   template<typename>
   friend class _method::Method;
-  friend class RecorderTest;
 };
 
 }  // namespace internal

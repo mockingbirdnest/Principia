@@ -25,7 +25,6 @@
 namespace principia {
 namespace physics {
 
-using numerics::LegendreNormalizationFactor;
 using ::testing::AllOf;
 using ::testing::An;
 using ::testing::Each;
@@ -39,6 +38,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;

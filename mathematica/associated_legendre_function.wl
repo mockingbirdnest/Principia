@@ -57,7 +57,7 @@ decimalFloatLiteral[x_Real,exponentWidth_Integer]:=
     {{#[[1]]},
      If[Length[#]>1,{"."},Nothing],
      If[Length[#]>1,StringPartition[#[[2]],UpTo[5]],Nothing],
-     If[e!=0,"e"<>If[e>0,"+","-"]<>IntegerString[e,10,exponentWidth],Nothing]}&[
+     If[e!=0,{"e"<>If[e>0,"+","-"]<>IntegerString[e,10,exponentWidth]},Nothing]}&[
      StringSplit[ToString[m],"."]]]]
 
 
@@ -73,6 +73,8 @@ Export[
 
 namespace principia {
 namespace numerics {
+namespace _max_abs_normalized_associated_legendre_function {
+namespace internal {
 
 // Global maxima over [-1, 1] of the absolute value of the normalized associated
 // Legendre functions.
@@ -84,6 +86,11 @@ With[
  "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>decimalFloatLiteral[z,1]<>",\n"]&,
 maxPnrm,{2}]<>"}}};
 
+}  // namespace internal
+
+using internal::MaxAbsNormalizedAssociatedLegendreFunction;
+
+}  // namespace _max_abs_normalized_associated_legendre_function
 }  // namespace numerics
 }  // namespace principia
 ",
@@ -99,6 +106,8 @@ Export[
 
 namespace principia {
 namespace numerics {
+namespace _legendre_normalization_factor {
+namespace internal {
 
 // Multiplying a normalized Cnm or Snm coefficient by this factor yields an
 // unnormalized coefficient.  Dividing an unnormalized Cnm or Snm coefficient by
@@ -113,6 +122,11 @@ LegendreNormalizationFactor{{{
    {m,0,n}],
   {n,0,50}]]<>"}}};
 
+}  // namespace internal
+
+using internal::LegendreNormalizationFactor;
+
+}  // namespace _legendre_normalization_factor
 }  // namespace numerics
 }  // namespace principia
 ",

@@ -15,8 +15,6 @@
 
 namespace principia {
 namespace numerics {
-namespace _fast_fourier_transform {
-namespace internal {
 
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
@@ -228,7 +226,5 @@ TEST_F(FastFourierTransformTest, Inverse) {
   EXPECT_THAT(nv.frequency(1) - nv.frequency(0), AlmostEquals(Δt, 0));
 }
 
-}  // namespace internal
-}  // namespace _fast_fourier_transform
 }  // namespace numerics
 }  // namespace principia

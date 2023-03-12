@@ -19,6 +19,7 @@
 #endif
 
 namespace principia {
+namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_r3_element;
@@ -33,8 +34,6 @@ using namespace principia::quantities::_uk;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_vanishes_before;
-
-namespace geometry {
 
 class R3ElementTest : public testing::Test {
  protected:

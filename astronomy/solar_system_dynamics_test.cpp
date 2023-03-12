@@ -29,6 +29,7 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using ::testing::Eq;
 using ::testing::Lt;
@@ -43,8 +44,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::integrators::
-    _symplectic_runge_kutta_nyström_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
@@ -61,8 +61,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace astronomy {
 
 class SolarSystemDynamicsTest : public ::testing::Test {
  protected:

@@ -20,7 +20,7 @@ namespace base {
 namespace _pull_serializer {
 namespace internal {
 
-using google::compression::Compressor;
+using ::google::compression::Compressor;
 
 // An output stream based on an array that delegates to a function the handling
 // of the case where one array is full.  It calls the |on_full| function passed

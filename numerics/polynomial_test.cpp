@@ -23,6 +23,7 @@
 #endif
 
 namespace principia {
+namespace numerics {
 
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
@@ -35,8 +36,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
-
-namespace numerics {
 
 class PolynomialTest : public ::testing::Test {
  protected:

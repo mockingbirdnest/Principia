@@ -23,8 +23,8 @@
 namespace principia {
 namespace astronomy {
 
-using astronomy::J2000;
 using ::testing::Lt;
+using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;

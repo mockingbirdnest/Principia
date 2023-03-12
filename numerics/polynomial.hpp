@@ -32,7 +32,7 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FR0M(
+FORWARD_DECLARE_FROM(
     polynomial,
     TEMPLATE(typename Value, typename Argument, int degree_,
             template<typename, typename, int> typename Evaluator) class,
@@ -40,7 +40,7 @@ FORWARD_DECLARE_FR0M(
 }  // namespace numerics
 
 namespace mathematica {
-FORWARD_DECLARE_FUNCTION_FR0M(
+FORWARD_DECLARE_FUNCTION_FROM(
     mathematica,
     TEMPLATE(typename Value, typename Argument, int degree_,
              template<typename, typename, int> typename Evaluator,
