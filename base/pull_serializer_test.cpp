@@ -13,11 +13,11 @@
 namespace principia {
 namespace base {
 
-using google::compression::Compressor;
 using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
+using ::google::compression::Compressor;
 using ::std::placeholders::_1;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;

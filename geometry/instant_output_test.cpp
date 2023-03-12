@@ -9,11 +9,10 @@
 namespace principia {
 namespace geometry {
 
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
 using ::testing::Eq;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
