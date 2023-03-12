@@ -21,9 +21,9 @@
 namespace principia {
 namespace geometry {
 
-using testing::Contains;
-using testing::Eq;
-using testing::Lt;
+using ::testing::Contains;
+using ::testing::Eq;
+using ::testing::Lt;
 using namespace principia::geometry::_affine_map;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

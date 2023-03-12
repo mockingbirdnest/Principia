@@ -55,7 +55,6 @@ namespace mathematica {
 namespace _integrator_plots {
 namespace internal {
 
-using integrators::SpecialSecondOrderDifferentialEquation;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
