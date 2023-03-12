@@ -5,6 +5,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _max_abs_normalized_associated_legendre_function {
+namespace internal {
 
 // Global maxima over [-1, 1] of the absolute value of the normalized associated
 // Legendre functions.
@@ -1338,5 +1340,10 @@ MaxAbsNormalizedAssociatedLegendreFunction{{{
     /*      m=50*/4.00961'66839'49989'47967'00675'21194'34798'99016'94610,
 }}};
 
+}  // namespace internal
+
+using internal::MaxAbsNormalizedAssociatedLegendreFunction;
+
+}  // namespace _max_abs_normalized_associated_legendre_function
 }  // namespace numerics
 }  // namespace principia

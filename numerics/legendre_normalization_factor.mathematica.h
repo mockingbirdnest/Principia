@@ -5,6 +5,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _legendre_normalization_factor {
+namespace internal {
 
 // Multiplying a normalized Cnm or Snm coefficient by this factor yields an
 // unnormalized coefficient.  Dividing an unnormalized Cnm or Snm coefficient by
@@ -1339,5 +1341,10 @@ LegendreNormalizationFactor{{{
     /*      m=50*/1.47120'72532'49331'68806'52294'34929'69239'73982'21805e-78,
 }}};
 
+}  // namespace internal
+
+using internal::LegendreNormalizationFactor;
+
+}  // namespace _legendre_normalization_factor
 }  // namespace numerics
 }  // namespace principia

@@ -24,7 +24,6 @@
 namespace principia {
 namespace physics {
 
-using numerics::LegendreNormalizationFactor;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -32,6 +31,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
