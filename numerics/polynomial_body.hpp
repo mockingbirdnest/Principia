@@ -27,9 +27,6 @@ namespace internal {
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_cartesian_product::pointwise_inner_product;  // NOLINT
-using namespace principia::geometry::_cartesian_product::polynomial_ring;
-using namespace principia::geometry::_cartesian_product::vector_space;
 using namespace principia::geometry::_serialization;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -119,6 +116,7 @@ MakePolynomial(typename Polynomial::Coefficients const& coefficients,
                Argument const& from_origin,
                Argument const& to_origin) -> Polynomial {
 #endif
+  using geometry::_cartesian_product::vector_space::operator+;
   Difference<Argument> const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
@@ -172,6 +170,8 @@ constexpr auto
 TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     LTuple const& left_tuple,
     RTuple const& right_tuple) {
+  using geometry::_cartesian_product::vector_space::operator+;
+  using geometry::_cartesian_product::vector_space::operator*;
   auto const degree_0 = std::tuple(std::get<0>(left_tuple));
   if constexpr (sizeof...(left_indices) == 0) {
     return degree_0;
@@ -581,6 +581,7 @@ template<typename Value, typename Argument, int rdegree_,
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>
 operator-(PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
               right) {
+  using geometry::_cartesian_product::vector_space::operator-;
   return PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator>(
       -right.coefficients_,
       right.origin_);
@@ -595,6 +596,7 @@ operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
+  using geometry::_cartesian_product::vector_space::operator+;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator>(
@@ -611,6 +613,7 @@ operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
+  using geometry::_cartesian_product::vector_space::operator-;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator>(
@@ -627,6 +630,7 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument,
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
+  using geometry::_cartesian_product::vector_space::operator*;
   return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
                                     Evaluator>(left * right.coefficients_,
                                                right.origin_);
@@ -641,6 +645,7 @@ PolynomialInMonomialBasis<Product<Value, Scalar>, Argument,
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
+  using geometry::_cartesian_product::vector_space::operator*;
   return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
                                     Evaluator>(left.coefficients_ * right,
                                               left.origin_);
@@ -655,6 +660,7 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument,
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
+  using geometry::_cartesian_product::vector_space::operator/;
   return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
                                     Evaluator>(left.coefficients_ / right,
                                               left.origin_);
@@ -671,6 +677,7 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
+  using geometry::_cartesian_product::polynomial_ring::operator*;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                     ldegree_ + rdegree_, Evaluator>(
@@ -786,6 +793,8 @@ PointwiseInnerProduct(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
+  using geometry::_cartesian_product::pointwise_inner_product::
+      PointwiseInnerProduct;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<
       typename Hilbert<LValue, RValue>::InnerProductType, Argument,
