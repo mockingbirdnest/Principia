@@ -29,6 +29,7 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using ::testing::Eq;
 using ::testing::Lt;
@@ -60,8 +61,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace astronomy {
 
 class SolarSystemDynamicsTest : public ::testing::Test {
  protected:

@@ -18,6 +18,7 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using ::testing::Eq;
 using namespace principia::geometry::_grassmann;
@@ -35,8 +36,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
-
-namespace astronomy {
 
 namespace {
 

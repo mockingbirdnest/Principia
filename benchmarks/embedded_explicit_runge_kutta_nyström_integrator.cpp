@@ -24,6 +24,7 @@
 #include "testing_utilities/integration.hpp"
 
 namespace principia {
+namespace integrators {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -38,8 +39,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
-
-namespace integrators {
 
 namespace {
 

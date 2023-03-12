@@ -24,6 +24,7 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -41,8 +42,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
-
-namespace astronomy {
 
 class MercuryPerihelionTest : public testing::Test {
  protected:

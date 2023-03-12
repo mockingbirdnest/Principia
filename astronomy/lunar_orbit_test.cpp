@@ -35,6 +35,7 @@
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using astronomy::ICRS;
 using astronomy::J2000;
@@ -66,8 +67,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
-
-namespace astronomy {
 
 // A minimum bounding rectangle for a set of values of the eccentricity vector.
 struct EccentricityVectorRange {

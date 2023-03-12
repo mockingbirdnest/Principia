@@ -16,6 +16,7 @@
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
+namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_signature;
@@ -23,8 +24,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_componentwise;
-
-namespace geometry {
 
 class SignatureTest : public testing::Test {
  protected:

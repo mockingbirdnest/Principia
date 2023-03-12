@@ -23,6 +23,7 @@
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using ::testing::Lt;
 using ::testing::Matcher;
@@ -48,8 +49,6 @@ using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace astronomy {
 
 using KSP = Frame<struct KSPTag, Inertial>;
 

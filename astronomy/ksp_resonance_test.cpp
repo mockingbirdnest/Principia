@@ -20,6 +20,7 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace astronomy {
 
 using ::testing::Eq;
 using namespace principia::base::_not_null;
@@ -45,8 +46,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
-
-namespace astronomy {
 
 namespace {
 constexpr Time Δt = 45 * Minute;

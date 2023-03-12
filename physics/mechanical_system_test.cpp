@@ -5,6 +5,7 @@
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
+namespace physics {
 
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
@@ -21,8 +22,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_componentwise;
-
-namespace physics {
 
 class MechanicalSystemTest : public testing::Test{
  protected:

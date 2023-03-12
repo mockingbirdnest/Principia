@@ -13,6 +13,7 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace testing_utilities {
 
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
@@ -32,8 +33,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace testing_utilities {
 
 class SolarSystemFactoryTest : public testing::Test {
  protected:

@@ -11,6 +11,7 @@
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
+namespace numerics {
 
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -24,8 +25,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-
-namespace numerics {
 
 class FitHermiteSplineTest : public ::testing::Test {
  protected:

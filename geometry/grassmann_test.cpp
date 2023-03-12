@@ -19,6 +19,7 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::base::_cpuid;
@@ -33,8 +34,6 @@ using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
 using namespace principia::quantities::_uk::admiralty;
 using namespace principia::testing_utilities::_almost_equals;
-
-namespace geometry {
 
 struct TransparentInnerProduct final {
   template<typename Left, typename Right>

@@ -10,12 +10,11 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace numerics {
 
 using namespace principia::base::_tags;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace numerics {
 
 void BM_EllipticF(benchmark::State& state) {
   constexpr int size = 20;
