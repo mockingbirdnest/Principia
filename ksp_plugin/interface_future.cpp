@@ -11,8 +11,8 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::TypedIterator;
-using ksp_plugin::VesselSet;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_iterators;
 
 PileUpFuture* __cdecl principia__FutureCatchUpVessel(
     Plugin* const plugin,

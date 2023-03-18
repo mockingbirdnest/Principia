@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_partitioned_runge_kutta_integrator {
+namespace _symplectic_partitioned_runge_kutta_integrator {
+namespace internal {
 
 using namespace principia::base::_mod;
 
@@ -72,20 +73,19 @@ void SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_symplectic_partitioned_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_symplectic_partitioned_runge_kutta_integrator::
-    SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
+internal::SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
 SymplecticPartitionedRungeKuttaIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
       "Method must be derived from SymplecticPartitionedRungeKutta");
-  static internal_symplectic_partitioned_runge_kutta_integrator::
-      SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const
-          integrator;
+  static internal::SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const
+      integrator;
   return integrator;
 }
 
+}  // namespace _symplectic_partitioned_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

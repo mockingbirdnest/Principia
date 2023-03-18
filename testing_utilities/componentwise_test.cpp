@@ -19,6 +19,7 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace testing_utilities {
 
 using ::testing::AllOf;
 using ::testing::Eq;
@@ -36,8 +37,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_componentwise;
-
-namespace testing_utilities {
 
 using World = Frame<struct WorldTag>;
 

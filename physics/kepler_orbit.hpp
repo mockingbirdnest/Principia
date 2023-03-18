@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
+namespace _kepler_orbit {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -127,12 +128,17 @@ class KeplerOrbit final {
   Instant const epoch_;
 };
 
-}  // namespace internal_kepler_orbit
+}  // namespace internal
 
-using internal_kepler_orbit::KeplerianElements;
-using internal_kepler_orbit::KeplerOrbit;
+using internal::KeplerianElements;
+using internal::KeplerOrbit;
 
+}  // namespace _kepler_orbit
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_kepler_orbit;
+}  // namespace principia::physics
 
 #include "physics/kepler_orbit_body.hpp"

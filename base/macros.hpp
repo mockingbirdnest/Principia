@@ -210,15 +210,7 @@ inline void noreturn() { std::exit(0); }
 // Usage:
 // FORWARD_DECLARE_FROM(p1, struct, T);
 // FORWARD_DECLARE_FROM(p2, TEMPLATE(int i) class, U);
-#define FORWARD_DECLARE_FROM(package_name,           \
-                             template_and_class_key, \
-                             declared_name)          \
-namespace internal_##package_name {                  \
-template_and_class_key declared_name;                \
-}                                                    \
-using internal_##package_name::declared_name
-
-#define FORWARD_DECLARE_FR0M(                            \
+#define FORWARD_DECLARE_FROM(                            \
     package_name, template_and_class_key, declared_name) \
   namespace _##package_name {                            \
     namespace internal {                                 \
@@ -227,14 +219,14 @@ using internal_##package_name::declared_name
     using internal::declared_name;                       \
   }
 
-#define FORWARD_DECLARE_FUNCTION_FROM(package_name,        \
-                                      template_and_result, \
-                                      declared_name,       \
-                                      parameters)          \
-namespace internal_##package_name {                        \
-template_and_result declared_name parameters;              \
-}                                                          \
-using internal_##package_name::declared_name
+#define FORWARD_DECLARE_FUNCTION_FROM(                            \
+    package_name, template_and_result, declared_name, parameters) \
+  namespace _##package_name {                                     \
+    namespace internal {                                          \
+    template_and_result declared_name parameters;                 \
+    }                                                             \
+    using internal::declared_name;                                \
+  }
 
 }  // namespace base
 }  // namespace principia

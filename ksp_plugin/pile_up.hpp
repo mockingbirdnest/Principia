@@ -32,22 +32,25 @@ namespace ksp_plugin {
 
 FORWARD_DECLARE_FROM(part, class, Part);
 
-namespace internal_pile_up {
+class TestablePileUp;
 
-using integrators::Integrator;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::EulerSolver;
-using physics::MasslessBody;
-using physics::MechanicalSystem;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
+namespace _pile_up {
+namespace internal {
+
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_euler_solver;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_mechanical_system;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -237,7 +240,7 @@ class PileUp {
   // Called in the destructor.
   std::function<void()> deletion_callback_;
 
-  friend class TestablePileUp;
+  friend class ksp_plugin::TestablePileUp;
 };
 
 // A convenient data object to track a pile-up and the result of integrating it.
@@ -248,10 +251,18 @@ struct PileUpFuture {
   std::future<absl::Status> future;
 };
 
-}  // namespace internal_pile_up
+}  // namespace internal
 
-using internal_pile_up::PileUp;
-using internal_pile_up::PileUpFuture;
+using internal::ApparentPileUp;
+using internal::NonRotatingPileUp;
+using internal::PileUp;
+using internal::PileUpFuture;
+using internal::PileUpPrincipalAxes;
 
+}  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_pile_up;
+}  // namespace principia::ksp_plugin

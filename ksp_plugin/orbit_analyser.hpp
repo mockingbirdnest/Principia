@@ -20,18 +20,19 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_orbit_analyser {
+namespace _orbit_analyser {
+namespace internal {
 
-using astronomy::OrbitalElements;
-using astronomy::OrbitGroundTrack;
-using astronomy::OrbitRecurrence;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::RotatingBody;
+using namespace principia::astronomy::_orbit_ground_track;
+using namespace principia::astronomy::_orbit_recurrence;
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
@@ -153,9 +154,14 @@ class OrbitAnalyser {
   std::atomic<double> progress_of_next_analysis_ = 0;
 };
 
-}  // namespace internal_orbit_analyser
+}  // namespace internal
 
-using internal_orbit_analyser::OrbitAnalyser;
+using internal::OrbitAnalyser;
 
+}  // namespace _orbit_analyser
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_orbit_analyser;
+}  // namespace principia::ksp_plugin

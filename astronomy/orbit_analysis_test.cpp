@@ -24,15 +24,6 @@
 namespace principia {
 namespace astronomy {
 
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::BodySurfaceDynamicFrame;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::MasslessBody;
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Lt;
@@ -40,8 +31,17 @@ using ::testing::Property;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;

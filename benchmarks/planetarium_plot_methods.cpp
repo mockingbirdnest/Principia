@@ -15,33 +15,25 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::operator""_UT1;
-using astronomy::operator""_TT;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using ksp_plugin::Camera;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationFrame;
-using ksp_plugin::Planetarium;
-using ksp_plugin::ScaledSpacePoint;
-using ksp_plugin::World;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::SolarSystem;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_signature;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

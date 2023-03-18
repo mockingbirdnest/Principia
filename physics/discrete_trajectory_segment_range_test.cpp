@@ -7,6 +7,8 @@
 namespace principia {
 namespace physics {
 
+using namespace principia::physics::_discrete_trajectory_segment_range;
+
 TEST(DiscreteTrajectorySegmentRangeTest, Basic) {
   std::vector<int> const primes{2, 3, 5, 7, 11, 13, 17, 19, 23};
   DiscreteTrajectorySegmentRange<std::vector<int>::const_iterator> range(

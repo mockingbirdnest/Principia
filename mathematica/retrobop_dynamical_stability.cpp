@@ -27,17 +27,10 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace mathematica {
+namespace _retrobop_dynamical_stability {
+namespace internal {
 
-using integrators::FixedStepSizeIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using ksp_plugin::Barycentric;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::HierarchicalSystem;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
 using namespace principia::base::_array;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
@@ -47,14 +40,22 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_hierarchical_system;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
-
-namespace mathematica {
 
 namespace {
 
@@ -634,5 +635,7 @@ void StatisticallyAnalyseStability() {
   }
 }
 
+}  // namespace internal
+}  // namespace _retrobop_dynamical_stability
 }  // namespace mathematica
 }  // namespace principia

@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
+namespace _embedded_explicit_runge_kutta_nyström_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
@@ -356,21 +357,21 @@ WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_embedded_explicit_runge_kutta_nyström_integrator::
-    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitRungeKuttaNyström,
                       Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKuttaNyström");
-  static internal_embedded_explicit_runge_kutta_nyström_integrator::
-      EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const
-          integrator;
+  static internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method,
+                                                               ODE_> const
+      integrator;
   return integrator;
 }
 
+}  // namespace _embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

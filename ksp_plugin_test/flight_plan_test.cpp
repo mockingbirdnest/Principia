@@ -30,28 +30,27 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::J2000;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::RotatingBody;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::MockFunction;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

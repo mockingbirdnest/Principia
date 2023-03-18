@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_linear_multistep_integrator {
+namespace _explicit_linear_multistep_integrator {
+namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
@@ -207,11 +208,10 @@ void ExplicitLinearMultistepIntegrator<Method, ODE_>::WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_explicit_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_explicit_linear_multistep_integrator::
-    ExplicitLinearMultistepIntegrator<Method, ODE_> const&
+internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const&
 ExplicitLinearMultistepIntegrator() {
   static_assert(
       std::is_base_of<methods::ExplicitLinearMultistep, Method>::value,
@@ -219,11 +219,11 @@ ExplicitLinearMultistepIntegrator() {
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
   // this Runge-Kutta integrator as a gift.
-  static internal_explicit_linear_multistep_integrator::
-      ExplicitLinearMultistepIntegrator<Method, ODE_> const integrator(
-          ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE_>());
+  static internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const
+      integrator(ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE_>());
   return integrator;
 }
 
+}  // namespace _explicit_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia

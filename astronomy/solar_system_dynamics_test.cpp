@@ -29,27 +29,8 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace astronomy {
 
-using integrators::FixedStepSizeIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order8;
-using integrators::methods::QuinlanTremaine1990Order10;
-using integrators::methods::QuinlanTremaine1990Order12;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using mathematica::PreserveUnits;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::SolarSystem;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
@@ -60,6 +41,18 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -68,8 +61,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace astronomy {
 
 class SolarSystemDynamicsTest : public ::testing::Test {
  protected:

@@ -109,13 +109,20 @@ class Parser {
 
   // A placeholder for a deleted node.
   public class File : Node {
-    public File(FileInfo file_info) : base(
+    public File(FileInfo file_info, bool is_body) : base(
         parent: null) {
       this.file_info = file_info;
-      file_namespace_simple_name = "_" +
-                              Regex.Replace(file_info.Name,
-                                            @"(_body|_test)?\.[hc]pp",
-                                            "");
+      if (is_body) {
+        file_namespace_simple_name = "_" +
+                                     Regex.Replace(file_info.Name,
+                                                   @"(_body|_test)?\.[hc]pp",
+                                                   "");
+      } else {
+        file_namespace_simple_name = "_" +
+                                     Regex.Replace(file_info.Name,
+                                                   @"\.hpp",
+                                                   "");
+      }
       project_namespace_full_name = "principia::" + file_info.Directory!.Name;
       file_namespace_full_name = project_namespace_full_name +
                                  "::" +
@@ -304,7 +311,7 @@ class Parser {
   }
 
   private static bool IsClass(string line) {
-    return Regex.IsMatch(line, @"^class [\w]+[ ;].*$");
+    return Regex.IsMatch(line, @"^class \w+[ ;].*$");
   }
 
   private static bool IsClosingNamespace(string line) {
@@ -320,14 +327,17 @@ class Parser {
 
   private static bool IsFunction(string line) {
     // There are type aliases in named_quantities.hpp that have a ( in them.
+    // Note that if the return type is very long the function name will be on
+    // its own line, in which case the parsing is even more cheesy than usual.
     return !Regex.IsMatch(line, @"^(using)") &&
-           Regex.IsMatch(line, @"^[\w].+ [^: ]+\(.*$");
+           (Regex.IsMatch(line, @"^\w.+ [^: ]+\(.*$") ||
+            Regex.IsMatch(line, @"^[A-Z][a-z]\w+\(.*$"));
   }
 
   private static bool IsOpeningNamespace(string line) {
     return line != "namespace {" &&
            line.StartsWith("namespace ") &&
-           !Regex.IsMatch(line, @"^namespace [\w]+ = .*$");
+           !Regex.IsMatch(line, @"^namespace \w+ = .*$");
   }
 
   private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
@@ -344,11 +354,11 @@ class Parser {
   }
 
   private static bool IsStruct(string line) {
-    return Regex.IsMatch(line, @"^struct [\w]+[ ;].*$");
+    return Regex.IsMatch(line, @"^struct \w+[ ;].*$");
   }
 
   private static bool IsTypeAlias(string line) {
-    return Regex.IsMatch(line, @"^using +[\w]+ +=.*$");
+    return Regex.IsMatch(line, @"^using +\w+ +=.*$");
   }
 
   private static bool IsUsingDeclaration(string line) {
@@ -444,8 +454,8 @@ class Parser {
     return uncommented_line.TrimEnd(' ');
   }
 
-  public static File ParseFile(FileInfo file_info) {
-    var file = new File(file_info);
+  public static File ParseFile(FileInfo file_info, bool is_body) {
+    var file = new File(file_info, is_body);
     Node current = file;
 
     using StreamReader reader = file_info.OpenText();
@@ -800,15 +810,15 @@ class Parser {
       if (!ns.is_internal && !ns.is_compatibility_namespace) {
         var nodes_in_ns = ns.children.ToList();
         // Check if there are names to export from this namespace.  If not,
-        // don't touch it.  It may be some local reopening.  This produces a
-        // deduped and sorted set of symbols.
+        // don't touch it, unless it's in a body.  It may be some local
+        // reopening.  This produces a deduped and sorted set of symbols.
         var names = new SortedSet<string>();
         foreach (Node n in nodes_in_ns) {
           if (n is Declaration decl) {
             names.Add(decl.name);
           }
         }
-        if (names.Count == 0) {
+        if (names.Count == 0 && insert_using_declarations) {
           continue;
         }
         ns.children.Clear();
@@ -881,8 +891,12 @@ class Renamespacer {
     }
   }
 
-  static bool IsBody(FileInfo file_info) {
-    return Regex.IsMatch(file_info.Name, @"_body\.hpp$|\.cpp$");
+  static bool IsBody(FileInfo file_info, HashSet<string> extra_headers) {
+    if (extra_headers.Contains(file_info.Name)) {
+      return false;
+    } else {
+      return Regex.IsMatch(file_info.Name, @"_body\.hpp$|\.cpp$");
+    }
   }
 
   static bool IsTest(FileInfo file_info) {
@@ -900,6 +914,7 @@ class Renamespacer {
     DirectoryInfo? project = null;
     var clients = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
+    var extra_headers = new HashSet<string>();
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -911,10 +926,14 @@ class Renamespacer {
           project = new DirectoryInfo(value);
         } else if (option == "client") {
           clients.Add(new DirectoryInfo(value));
-        } else if (option == "exclude") {
-          excluded.Add(value);
         } else if (option == "dry_run") {
           dry_run = bool.Parse(value);
+        } else if (option == "exclude") {
+          excluded.Add(value);
+        } else if (option == "extra_header") {
+          extra_headers.Add(value);
+        } else {
+          throw new ArgumentException("Unknown option " + option);
         }
       }
     }
@@ -934,7 +953,8 @@ class Renamespacer {
       if (excluded.Contains(input_file.Name)) {
         continue;
       }
-      Parser.File parser_file = Parser.ParseFile(input_file);
+      Parser.File parser_file =
+          Parser.ParseFile(input_file, IsBody(input_file, extra_headers));
       file_info_to_file.Add(input_file, parser_file);
     }
 
@@ -943,7 +963,8 @@ class Renamespacer {
     // names will change and would confuse our super-fancy name resolution.
     var declaration_to_file = new Dictionary<Parser.Declaration, Parser.File>();
     foreach (FileInfo input_file in hpp_files) {
-      if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
+      if (excluded.Contains(input_file.Name) ||
+          IsBody(input_file, extra_headers)) {
         continue;
       }
       Parser.File parser_file = file_info_to_file[input_file];
@@ -964,10 +985,11 @@ class Renamespacer {
         if (excluded.Contains(input_file.Name)) {
           continue;
         }
+        bool is_body = IsBody(input_file, extra_headers);
         // This file is not in our project, so we didn't parse it yet.
-        Parser.File parser_file = Parser.ParseFile(input_file);
+        Parser.File parser_file = Parser.ParseFile(input_file, is_body);
         Parser.FixUsingDeclarations(parser_file,
-                                    internal_only: !IsBody(input_file),
+                                    internal_only: !is_body,
                                     declaration_to_file);
         RewriteFile(input_file, parser_file, dry_run);
       }
@@ -986,7 +1008,8 @@ class Renamespacer {
 
     // Rewrite the namespaces in our project's header files.
     foreach (FileInfo input_file in hpp_files) {
-      if (excluded.Contains(input_file.Name) || IsBody(input_file)) {
+      if (excluded.Contains(input_file.Name) ||
+          IsBody(input_file, extra_headers)) {
         continue;
       }
       Parser.File parser_file = file_info_to_file[input_file];

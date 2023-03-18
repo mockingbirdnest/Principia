@@ -21,7 +21,7 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FR0M(poisson_series,
+FORWARD_DECLARE_FROM(poisson_series,
                      TEMPLATE(typename Value,
                               int aperiodic_degree, int periodic_degree,
                               template<typename, typename, int> class Evaluator)
@@ -216,7 +216,7 @@ class PoissonSeries {
   template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       PoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
   template<typename V, int ad, int pd,

@@ -24,15 +24,6 @@
 namespace principia {
 namespace interface {
 
-using astronomy::operator""_TT;
-using astronomy::MercuryOrbiterInitialDegreesOfFreedom;
-using astronomy::MercuryOrbiterInitialTime;
-using astronomy::TTSecond;
-using astronomy::date_time::DateTime;
-using astronomy::date_time::operator""_DateTime;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Plugin;
-using physics::DiscreteTrajectory;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -43,8 +34,15 @@ using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
+using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_mercury_orbiter;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

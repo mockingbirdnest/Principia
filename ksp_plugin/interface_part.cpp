@@ -15,8 +15,8 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::PartId;
 using namespace principia::geometry::_grassmann;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 

@@ -13,29 +13,26 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace testing_utilities {
 
-using astronomy::ICRS;
-using astronomy::J2000;
-using physics::Body;
-using physics::DegreesOfFreedom;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Ge;
 using ::testing::UnorderedElementsAreArray;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_body;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace testing_utilities {
 
 class SolarSystemFactoryTest : public testing::Test {
  protected:

@@ -20,6 +20,7 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace integrators {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -31,6 +32,7 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -74,8 +76,6 @@ using namespace principia::testing_utilities::_vanishes_before;
       (expected_velocity_error),                                          \
       (expected_energy_error),                                            \
       false)
-
-namespace integrators {
 
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 

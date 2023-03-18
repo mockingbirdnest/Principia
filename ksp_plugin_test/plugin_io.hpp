@@ -8,11 +8,12 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
-namespace interface {
-namespace internal_plugin_io {
+namespace ksp_plugin {
+namespace _plugin_io {
+namespace internal {
 
-using ksp_plugin::Plugin;
 using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_plugin;
 
 // Reads a plugin from a file containing only the "serialized_plugin = " lines,
 // with "serialized_plugin = " dropped.
@@ -41,10 +42,11 @@ void WritePluginToFile(std::filesystem::path const& filename,
                        not_null<std::unique_ptr<Plugin const>> plugin,
                        std::int64_t& bytes_processed);
 
-}  // namespace internal_plugin_io
+}  // namespace internal
 
-using internal_plugin_io::ReadPluginFromFile;
-using internal_plugin_io::WritePluginToFile;
+using internal::ReadPluginFromFile;
+using internal::WritePluginToFile;
 
-}  // namespace interface
+}  // namespace _plugin_io
+}  // namespace ksp_plugin
 }  // namespace principia

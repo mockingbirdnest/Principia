@@ -14,10 +14,8 @@
 
 namespace principia {
 namespace geometry {
-namespace _orthogonal_map {
-namespace internal {
 
-using testing::Eq;
+using ::testing::Eq;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
@@ -186,7 +184,5 @@ TEST_F(OrthogonalMapTest, Output) {
   std::cout << orthogonal_a_ << "\n";
 }
 
-}  // namespace internal
-}  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia

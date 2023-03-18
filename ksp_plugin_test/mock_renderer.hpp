@@ -8,9 +8,10 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_renderer {
+namespace _renderer {
+namespace internal {
 
-using physics::MockDynamicFrame;
+using namespace principia::physics::_dynamic_frame;
 
 MockCelestial* const sun = new MockCelestial;
 
@@ -58,9 +59,10 @@ class MockRenderer : public Renderer {
               (const, override));
 };
 
-}  // namespace internal_renderer
+}  // namespace internal
 
-using internal_renderer::MockRenderer;
+using internal::MockRenderer;
 
+}  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia

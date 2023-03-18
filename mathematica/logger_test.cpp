@@ -16,6 +16,7 @@ namespace mathematica {
 using ::testing::Optional;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::mathematica::_logger;
 using namespace principia::quantities::_si;
 
 class LoggerTest : public ::testing::Test {

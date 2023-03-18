@@ -19,15 +19,16 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::Ephemeris;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -223,9 +224,14 @@ class FlightPlan {
       generalized_adaptive_step_parameters_;
 };
 
-}  // namespace internal_flight_plan
+}  // namespace internal
 
-using internal_flight_plan::FlightPlan;
+using internal::FlightPlan;
 
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_flight_plan;
+}  // namespace principia::ksp_plugin

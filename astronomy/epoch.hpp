@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_epoch {
+namespace _epoch {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 
@@ -22,9 +23,14 @@ using namespace principia::geometry::_named_quantities;
 // "2000-01-01T11:58:55,816"_UTC
 constexpr Instant J2000;
 
-}  // namespace internal_epoch
+}  // namespace internal
 
-using internal_epoch::J2000;
+using internal::J2000;
 
+}  // namespace _epoch
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_epoch;
+}  // namespace principia::astronomy

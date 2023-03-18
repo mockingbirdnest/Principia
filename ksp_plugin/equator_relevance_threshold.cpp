@@ -8,10 +8,11 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_equator_relevance_threshold {
+namespace _equator_relevance_threshold {
+namespace internal {
 
-using physics::Geopotential;
-using physics::OblateBody;
+using namespace principia::physics::_geopotential;
+using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
@@ -30,6 +31,7 @@ Length EquatorRelevanceThreshold(RotatingBody<Barycentric> const& body) {
   return std::max(j2_threshold, supersynchronous_threshold);
 }
 
-}  // namespace internal_equator_relevance_threshold
+}  // namespace internal
+}  // namespace _equator_relevance_threshold
 }  // namespace ksp_plugin
 }  // namespace principia

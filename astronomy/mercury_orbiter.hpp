@@ -6,11 +6,12 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_mercury_orbiter {
+namespace _mercury_orbiter {
+namespace internal {
 
-using astronomy::operator""_TT;
-using physics::DegreesOfFreedom;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_si;
 
 // State of the spacecraft Mercury Orbiter 1 at the start of September, from a
@@ -32,10 +33,15 @@ physics::DegreesOfFreedom<Barycentric> const
                                -2.23741500134468079e+04 * (Metre / Second),
                                -7.15344990825653076e+03 * (Metre / Second)})};
 
-}  // namespace internal_mercury_orbiter
+}  // namespace internal
 
-using internal_mercury_orbiter::MercuryOrbiterInitialDegreesOfFreedom;
-using internal_mercury_orbiter::MercuryOrbiterInitialTime;
+using internal::MercuryOrbiterInitialDegreesOfFreedom;
+using internal::MercuryOrbiterInitialTime;
 
+}  // namespace _mercury_orbiter
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_mercury_orbiter;
+}  // namespace principia::astronomy

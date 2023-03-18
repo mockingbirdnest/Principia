@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_iterator {
+namespace _discrete_trajectory_iterator {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 
@@ -312,6 +313,7 @@ DiscreteTrajectoryIterator<Frame> operator+(
   return mutable_it += n;
 }
 
-}  // namespace internal_discrete_trajectory_iterator
+}  // namespace internal
+}  // namespace _discrete_trajectory_iterator
 }  // namespace physics
 }  // namespace principia

@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symmetric_linear_multistep_integrator {
+namespace _symmetric_linear_multistep_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_serialization;
@@ -351,11 +352,10 @@ void SymmetricLinearMultistepIntegrator<Method, ODE_>::WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_symmetric_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_symmetric_linear_multistep_integrator::
-    SymmetricLinearMultistepIntegrator<Method, ODE_> const&
+internal::SymmetricLinearMultistepIntegrator<Method, ODE_> const&
 SymmetricLinearMultistepIntegrator() {
   static_assert(
       std::is_base_of<methods::SymmetricLinearMultistep, Method>::value,
@@ -363,13 +363,14 @@ SymmetricLinearMultistepIntegrator() {
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
   // this Blanes-Moan integrator as a gift.
-  static internal_symmetric_linear_multistep_integrator::
-      SymmetricLinearMultistepIntegrator<Method, ODE_> const integrator(
+  static internal::SymmetricLinearMultistepIntegrator<Method, ODE_> const
+      integrator(
           SymplecticRungeKuttaNyströmIntegrator<methods::BlanesMoan2002SRKN14A,
                                                 ODE_>());
   return integrator;
 }
 
+}  // namespace _symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
 

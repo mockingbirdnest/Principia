@@ -30,17 +30,7 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_pile_up {
 
-using integrators::MockFixedStepSizeIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN6B;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using physics::DegreesOfFreedom;
-using physics::MassiveBody;
-using physics::MockEphemeris;
-using physics::RigidMotion;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -58,6 +48,16 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -730,6 +730,5 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   EXPECT_OK(p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second));
 }
 
-}  // namespace internal_pile_up
 }  // namespace ksp_plugin
 }  // namespace principia

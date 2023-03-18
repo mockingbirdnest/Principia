@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_starter {
+namespace _starter {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -73,11 +74,16 @@ class Starter {
   std::list<Step> previous_steps_;  // At most |order| elements.
 };
 
-}  // namespace internal_starter
+}  // namespace internal
 
-using internal_starter::Starter;
+using internal::Starter;
 
+}  // namespace _starter
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_starter;
+}  // namespace principia::integrators
 
 #include "integrators/starter_body.hpp"

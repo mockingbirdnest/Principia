@@ -17,13 +17,9 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
+namespace _planetarium {
+namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::RigidMotion;
-using physics::Trajectory;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
@@ -31,6 +27,11 @@ using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sphere;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_quantities;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
@@ -166,10 +167,15 @@ inline ScaledSpacePoint ScaledSpacePoint::FromCoordinates(
                           static_cast<float>(coordinates.z)};
 }
 
-}  // namespace internal_planetarium
+}  // namespace internal
 
-using internal_planetarium::Planetarium;
-using internal_planetarium::ScaledSpacePoint;
+using internal::Planetarium;
+using internal::ScaledSpacePoint;
 
+}  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_planetarium;
+}  // namespace principia::ksp_plugin

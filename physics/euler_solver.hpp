@@ -16,7 +16,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_euler_solver {
+namespace _euler_solver {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -152,11 +153,16 @@ class EulerSolver {
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>;
 };
 
-}  // namespace internal_euler_solver
+}  // namespace internal
 
-using internal_euler_solver::EulerSolver;
+using internal::EulerSolver;
 
+}  // namespace _euler_solver
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_euler_solver;
+}  // namespace principia::physics
 
 #include "physics/euler_solver_body.hpp"

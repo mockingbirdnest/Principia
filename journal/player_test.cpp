@@ -18,6 +18,7 @@
 namespace principia {
 namespace journal {
 
+using namespace principia::journal::_player;
 using namespace std::chrono_literals;
 
 void BM_PlayForReal(benchmark::State& state) {

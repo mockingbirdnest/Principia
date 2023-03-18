@@ -12,6 +12,11 @@ namespace journal {
 
 FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
 
+class RecorderTest;
+
+namespace _recorder {
+namespace internal {
+
 class Recorder final {
  public:
   explicit Recorder(std::filesystem::path const& path);
@@ -33,9 +38,17 @@ class Recorder final {
   static Recorder* active_recorder_;
 
   template<typename>
-  friend class Method;
-  friend class RecorderTest;
+  friend class _method::Method;
 };
 
+}  // namespace internal
+
+using internal::Recorder;
+
+}  // namespace _recorder
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_recorder;
+}  // namespace principia::journal

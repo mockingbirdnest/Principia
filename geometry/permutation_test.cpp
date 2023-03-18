@@ -15,6 +15,7 @@
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
+namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_permutation;
@@ -22,8 +23,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
-
-namespace geometry {
 
 class PermutationTest : public testing::Test {
  protected:

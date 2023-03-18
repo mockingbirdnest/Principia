@@ -51,14 +51,10 @@
   }
 
 namespace principia {
+namespace mathematica {
+namespace _integrator_plots {
+namespace internal {
 
-using integrators::FixedStepSizeIntegrator;
-using integrators::InitialValueProblem;
-using integrators::SpecialSecondOrderDifferentialEquation;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -69,15 +65,18 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_numerics;
-
-namespace mathematica {
 
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
@@ -388,5 +387,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   file << generator.GetMathematicaData();
 }
 
+}  // namespace internal
+}  // namespace _integrator_plots
 }  // namespace mathematica
 }  // namespace principia

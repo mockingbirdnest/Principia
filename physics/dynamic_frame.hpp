@@ -10,7 +10,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_dynamic_frame {
+namespace _dynamic_frame {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -115,13 +116,18 @@ class DynamicFrame {
       Instant const& t) const = 0;
 };
 
-}  // namespace internal_dynamic_frame
+}  // namespace internal
 
-using internal_dynamic_frame::DynamicFrame;
-using internal_dynamic_frame::Frenet;
+using internal::DynamicFrame;
+using internal::Frenet;
 
+}  // namespace _dynamic_frame
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_dynamic_frame;
+}  // namespace principia::physics
 
 #include "physics/dynamic_frame_body.hpp"
 

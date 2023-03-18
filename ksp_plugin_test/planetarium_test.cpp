@@ -32,14 +32,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::MassiveBody;
-using physics::MockContinuousTrajectory;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using physics::RotatingBody;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Ge;
@@ -58,6 +50,15 @@ using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -21,7 +21,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
+namespace _body_surface_dynamic_frame {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -73,12 +74,17 @@ class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
 };
 
-}  // namespace internal_body_surface_dynamic_frame
+}  // namespace internal
 
-using internal_body_surface_dynamic_frame::BodySurfaceDynamicFrame;
+using internal::BodySurfaceDynamicFrame;
 
+}  // namespace _body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_body_surface_dynamic_frame;
+}  // namespace principia::physics
 
 #include "physics/body_surface_dynamic_frame_body.hpp"
 

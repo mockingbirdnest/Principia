@@ -39,20 +39,8 @@
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
+namespace astronomy {
 
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::Quinlan1999Order8A;
-using mathematica::PreserveUnits;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::ParseGravityModel;
-using physics::ParseInitialState;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -63,16 +51,22 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
 using namespace std::chrono_literals;
-
-namespace astronomy {
 
 namespace genetics {
 

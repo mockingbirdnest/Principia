@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_frame_field {
+namespace _body_surface_frame_field {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -45,6 +46,7 @@ BodySurfaceFrameField<Frame, ThisFrame>::FromThisFrame(
   return Rotation<ThisFrame, Frame>(north, east, nadir);
 }
 
-}  // namespace internal_body_surface_frame_field
+}  // namespace internal
+}  // namespace _body_surface_frame_field
 }  // namespace physics
 }  // namespace principia

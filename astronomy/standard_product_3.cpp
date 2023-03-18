@@ -16,7 +16,8 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_standard_product_3 {
+namespace _standard_product_3 {
+namespace internal {
 
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
@@ -493,6 +494,7 @@ std::ostream& operator<<(std::ostream& out,
   return out << id.group << absl::StrCat(absl::Dec(id.index, absl::kZeroPad2));
 }
 
-}  // namespace internal_standard_product_3
+}  // namespace internal
+}  // namespace _standard_product_3
 }  // namespace astronomy
 }  // namespace principia

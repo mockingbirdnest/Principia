@@ -18,7 +18,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_segment {
+namespace _discrete_trajectory_segment {
+namespace internal {
 
 using namespace principia::base::_zfp_compressor;
 using namespace principia::geometry::_named_quantities;
@@ -721,6 +722,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 }
 
-}  // namespace internal_discrete_trajectory_segment
+}  // namespace internal
+}  // namespace _discrete_trajectory_segment
 }  // namespace physics
 }  // namespace principia

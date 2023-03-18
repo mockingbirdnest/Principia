@@ -14,9 +14,9 @@ namespace quantities {
 namespace _cgs {
 namespace internal {
 
+using namespace principia::quantities::_si;
+
 constexpr Length Centimetre = si::Centi(si::Metre);
-using si::Gram;
-using si::Second;
 
 constexpr Energy       Erg  = 1e-7 * si::Joule;
 constexpr Force        Dyne = 1e-5 * si::Newton;

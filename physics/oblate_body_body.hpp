@@ -14,11 +14,12 @@
 
 namespace principia {
 namespace physics {
-namespace internal_oblate_body {
+namespace _oblate_body {
+namespace internal {
 
-using astronomy::J2000;
-using numerics::LegendreNormalizationFactor;
+using namespace principia::astronomy::_epoch;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
@@ -230,6 +231,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
                                              *parameters);
 }
 
-}  // namespace internal_oblate_body
+}  // namespace internal
+}  // namespace _oblate_body
 }  // namespace physics
 }  // namespace principia

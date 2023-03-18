@@ -18,18 +18,17 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Vector;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Pow;
-using quantities::si::Metre;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;

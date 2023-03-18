@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_dynamic_frame {
+namespace _dynamic_frame {
+namespace internal {
 
 template<typename InertialFrame, typename ThisFrame>
 class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
@@ -46,9 +47,10 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
               (const, override));
 };
 
-}  // namespace internal_dynamic_frame
+}  // namespace internal
 
-using internal_dynamic_frame::MockDynamicFrame;
+using internal::MockDynamicFrame;
 
+}  // namespace _dynamic_frame
 }  // namespace physics
 }  // namespace principia

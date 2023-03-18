@@ -10,8 +10,6 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-
-
 namespace quantities {
 
 using namespace principia::quantities::_astronomy;

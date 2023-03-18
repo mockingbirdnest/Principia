@@ -17,7 +17,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_runge_kutta_nyström_integrator {
+namespace _symplectic_runge_kutta_nyström_integrator {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
@@ -126,25 +127,28 @@ class SymplecticRungeKuttaNyströmIntegrator
   FixedVector<double, Method::stages> c_;
 };
 
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<
-        typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                        composition>::Method,
-        ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<
+    typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                    composition>::Method,
+    ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
+}  // namespace _symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+}  // namespace principia::integrators
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"
 

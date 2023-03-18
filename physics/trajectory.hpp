@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_trajectory {
+namespace _trajectory {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -30,9 +31,14 @@ class Trajectory {
       Instant const& time) const = 0;
 };
 
-}  // namespace internal_trajectory
+}  // namespace internal
 
-using internal_trajectory::Trajectory;
+using internal::Trajectory;
 
+}  // namespace _trajectory
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_trajectory;
+}  // namespace principia::physics

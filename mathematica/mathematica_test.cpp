@@ -30,9 +30,7 @@
 namespace principia {
 namespace mathematica {
 
-using astronomy::OrbitalElements;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_interval;
@@ -42,6 +40,7 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_piecewise_poisson_series;
@@ -49,6 +48,8 @@ using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

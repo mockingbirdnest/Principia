@@ -11,16 +11,17 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_orbit_analyser {
+namespace _orbit_analyser {
+namespace internal {
 
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_quantities;
 
 // TODO(egg): This could be implemented using ComputeApsides.
@@ -290,6 +291,7 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
 OrbitAnalyser::Analysis::Analysis(Instant const& first_time)
     : first_time_(first_time) {}
 
-}  // namespace internal_orbit_analyser
+}  // namespace internal
+}  // namespace _orbit_analyser
 }  // namespace ksp_plugin
 }  // namespace principia

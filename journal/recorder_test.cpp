@@ -18,6 +18,8 @@
 namespace principia {
 namespace journal {
 
+using namespace principia::journal::_recorder;
+
 class RecorderTest : public testing::Test {
  protected:
   RecorderTest()

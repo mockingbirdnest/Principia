@@ -18,16 +18,17 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
+namespace astronomy {
 
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::Ephemeris;
-using physics::SolarSystem;
 using ::testing::Eq;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
@@ -35,8 +36,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
-
-namespace astronomy {
 
 namespace {
 

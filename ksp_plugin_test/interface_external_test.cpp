@@ -12,20 +12,19 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace interface {
 
-using astronomy::ICRS;
-using ksp_plugin::GUID;
-using ksp_plugin::Navigation;
-using ksp_plugin::PartId;
-using ksp_plugin::FakePlugin;
-using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::Vessel;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_fake_plugin;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
@@ -34,7 +33,6 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_solar_system_factory;
 
-namespace interface {
 namespace {
 
 constexpr PartId part_id = 1729;

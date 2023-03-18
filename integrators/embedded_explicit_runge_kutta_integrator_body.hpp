@@ -16,7 +16,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_integrator {
+namespace _embedded_explicit_runge_kutta_integrator {
+namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
@@ -360,20 +361,19 @@ WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_embedded_explicit_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
+internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitRungeKutta,
-                      Method>::value,
+      std::is_base_of<methods::EmbeddedExplicitRungeKutta, Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
-  static internal_embedded_explicit_runge_kutta_integrator::
-      EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const integrator;
+  static internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const
+      integrator;
   return integrator;
 }
 
+}  // namespace _embedded_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

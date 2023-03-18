@@ -17,14 +17,15 @@
 
 namespace principia {
 namespace physics {
-namespace internal_equipotential {
+namespace _equipotential {
+namespace internal {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_plane;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -142,11 +143,16 @@ class Equipotential {
   not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
 };
 
-}  // namespace internal_equipotential
+}  // namespace internal
 
-using internal_equipotential::Equipotential;
+using internal::Equipotential;
 
+}  // namespace _equipotential
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_equipotential;
+}  // namespace principia::physics
 
 #include "physics/equipotential_body.hpp"

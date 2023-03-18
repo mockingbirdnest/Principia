@@ -7,6 +7,8 @@
 namespace principia {
 namespace physics {
 
+using namespace principia::physics::_clientele;
+
 class ClienteleTest : public ::testing::Test {
  protected:
   ClienteleTest() : clientele_(/*default_key=*/666) {}

@@ -15,16 +15,17 @@
 #define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
 
 namespace principia {
+namespace journal {
+namespace _player {
+namespace internal {
 
-using base::Version;
 using interface::principia__ActivatePlayer;
 using namespace principia::base::_array;
 using namespace principia::base::_get_line;
 using namespace principia::base::_hexadecimal;
+using namespace principia::base::_version;
 
 using namespace std::chrono_literals;
-
-namespace journal {
 
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
@@ -124,5 +125,7 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
   return true;
 }
 
+}  // namespace internal
+}  // namespace _player
 }  // namespace journal
 }  // namespace principia

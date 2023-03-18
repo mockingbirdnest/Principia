@@ -13,17 +13,17 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
+namespace _manœuvre {
+namespace internal {
 
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::DynamicFrame;
-using physics::Ephemeris;
-using physics::Frenet;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -170,11 +170,16 @@ class Manœuvre {
   DiscreteTrajectorySegmentIterator<InertialFrame> coasting_trajectory_;
 };
 
-}  // namespace internal_manœuvre
+}  // namespace internal
 
-using internal_manœuvre::Manœuvre;
+using internal::Manœuvre;
 
+}  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_manœuvre;
+}  // namespace principia::ksp_plugin
 
 #include "ksp_plugin/manœuvre_body.hpp"

@@ -73,6 +73,7 @@
 .\renamespacer\bin\Debug\net7.0\renamespacer.exe `
     --project:testing_utilities `
     --exclude:macros.hpp `
+    --exclude:matchers.hpp `
     --dry_run:false `
     --client:astronomy `
     --client:base `
@@ -86,4 +87,172 @@
     --client:numerics `
     --client:physics `
     --client:quantities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:integrators `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:astronomy `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:benchmarks `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:journal `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:ksp_plugin `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+  .\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:ksp_plugin_test `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:mathematica `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:physics `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --extra_header:body.hpp `
+    --extra_header:massive_body.hpp `
+    --extra_header:massless_body.hpp `
+    --extra_header:oblate_body.hpp `
+    --extra_header:rotating_body.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\renamespacer\bin\Debug\net7.0\renamespacer.exe `
+    --project:tools `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
     --client:tools

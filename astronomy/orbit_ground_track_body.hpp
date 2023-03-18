@@ -9,11 +9,12 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbit_ground_track {
+namespace _orbit_ground_track {
+namespace internal {
 
-using physics::ComputeNodes;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_apsides;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
@@ -195,6 +196,7 @@ OrbitGroundTrack::mean_solar_times_of_descending_nodes() const {
   return mean_solar_times_of_descending_nodes_;
 }
 
-}  // namespace internal_orbit_ground_track
+}  // namespace internal
+}  // namespace _orbit_ground_track
 }  // namespace astronomy
 }  // namespace principia

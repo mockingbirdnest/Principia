@@ -13,15 +13,15 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
@@ -507,6 +507,7 @@ Instant FlightPlan::start_of_previous_coast(int const index) const {
   return index == 0 ? initial_time_ : manœuvres_[index - 1].final_time();
 }
 
-}  // namespace internal_flight_plan
+}  // namespace internal
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia

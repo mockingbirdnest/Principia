@@ -1,13 +1,15 @@
 #pragma once
 
+#include "base/for_all_of.hpp"
+
 #include <tuple>
 #include <utility>
 
 namespace principia {
 namespace base {
-
 namespace _for_all_of {
 namespace internal {
+
 template<typename... Tuple>
 constexpr Iteration<Tuple...>::Iteration(Tuple&&... tuple)
     : all_the_tuples_(std::forward_as_tuple(tuple...)) {}

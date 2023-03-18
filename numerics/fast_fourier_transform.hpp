@@ -14,6 +14,9 @@
 
 namespace principia {
 namespace numerics {
+
+class FastFourierTransformTest;
+
 namespace _fast_fourier_transform {
 namespace internal {
 
@@ -82,7 +85,7 @@ class FastFourierTransform {
   // The elements of transform_ are spaced in frequency by ω_.
   std::array<Complexification<Value>, size> transform_;
 
-  friend class FastFourierTransformTest;
+  friend class numerics::FastFourierTransformTest;
 };
 
 }  // namespace internal

@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
+namespace _body_surface_dynamic_frame {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
@@ -120,6 +121,7 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
              acceleration_of_to_frame_origin);
 }
 
-}  // namespace internal_body_surface_dynamic_frame
+}  // namespace internal
+}  // namespace _body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia

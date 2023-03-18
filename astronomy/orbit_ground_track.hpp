@@ -12,12 +12,13 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbit_ground_track {
+namespace _orbit_ground_track {
+namespace internal {
 
-using physics::DiscreteTrajectory;
-using physics::RotatingBody;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -102,11 +103,16 @@ class OrbitGroundTrack {
   std::optional<Interval<Angle>> mean_solar_times_of_descending_nodes_;
 };
 
-}  // namespace internal_orbit_ground_track
+}  // namespace internal
 
-using internal_orbit_ground_track::OrbitGroundTrack;
+using internal::OrbitGroundTrack;
 
+}  // namespace _orbit_ground_track
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_orbit_ground_track;
+}  // namespace principia::astronomy
 
 #include "astronomy/orbit_ground_track_body.hpp"

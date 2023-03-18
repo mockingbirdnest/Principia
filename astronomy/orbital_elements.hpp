@@ -14,14 +14,15 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbital_elements {
+namespace _orbital_elements {
+namespace internal {
 
-using physics::Body;
-using physics::DynamicFrame;
-using physics::MassiveBody;
-using physics::Trajectory;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_body;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -212,11 +213,16 @@ class OrbitalElements {
   Interval<Angle> mean_argument_of_periapsis_interval_;
 };
 
-}  // namespace internal_orbital_elements
+}  // namespace internal
 
-using internal_orbital_elements::OrbitalElements;
+using internal::OrbitalElements;
 
+}  // namespace _orbital_elements
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_orbital_elements;
+}  // namespace principia::astronomy
 
 #include "astronomy/orbital_elements_body.hpp"

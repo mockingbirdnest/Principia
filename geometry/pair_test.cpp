@@ -14,13 +14,12 @@
 #undef CHECK_ILLEGAL
 
 namespace principia {
+namespace geometry {
 
 using namespace principia::geometry::_pair;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace geometry {
 
 class PairTest : public testing::Test {
  protected:

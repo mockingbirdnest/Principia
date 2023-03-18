@@ -21,21 +21,22 @@
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
+namespace tools {
+namespace _generate_configuration {
+namespace internal {
 
-using astronomy::ICRS;
-using astronomy::J2000;
-using physics::DegreesOfFreedom;
-using physics::SolarSystem;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_serialization;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace tools {
 
 namespace {
 constexpr char cfg[] = "cfg";
@@ -308,5 +309,7 @@ void GenerateConfiguration(std::string const& game_epoch,
   numerics_blueprint_cfg << "}\n";
 }
 
+}  // namespace internal
+}  // namespace _generate_configuration
 }  // namespace tools
 }  // namespace principia

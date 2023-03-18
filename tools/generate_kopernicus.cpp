@@ -16,19 +16,20 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace tools {
+namespace _generate_kopernicus {
+namespace internal {
 
-using astronomy::Sky;
-using physics::KeplerOrbit;
-using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_map_util;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace tools {
 
 namespace {
 
@@ -298,5 +299,7 @@ void GenerateKopernicusForSlippist1(
   kopernicus_cfg << "}\n";
 }
 
+}  // namespace internal
+}  // namespace _generate_kopernicus
 }  // namespace tools
 }  // namespace principia

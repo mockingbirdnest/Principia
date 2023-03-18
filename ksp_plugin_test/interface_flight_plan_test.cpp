@@ -35,29 +35,6 @@
 namespace principia {
 namespace interface {
 
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Index;
-using ksp_plugin::MockFlightPlan;
-using ksp_plugin::MockManœuvre;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::WorldSun;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockContinuousTrajectory;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -76,6 +53,22 @@ using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

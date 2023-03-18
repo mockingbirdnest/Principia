@@ -21,7 +21,7 @@ namespace base {
 namespace _push_deserializer {
 namespace internal {
 
-using google::compression::Compressor;
+using ::google::compression::Compressor;
 
 // An input stream based on an array that delegates to a function the handling
 // of the case where the array is empty.  It calls the |on_empty| function

@@ -32,20 +32,19 @@
 #include "serialization/geometry.pb.h"
 
 namespace principia {
+namespace physics {
 
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using ksp_plugin::Barycentric;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace physics {
 
 using Rendering = Frame<struct RenderingTag>;
 

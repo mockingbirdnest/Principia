@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_rotating_body {
+namespace _rotating_body {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
@@ -239,6 +240,7 @@ RotatingBody<Frame>::ReadFromMessage(
   }
 }
 
-}  // namespace internal_rotating_body
+}  // namespace internal
+}  // namespace _rotating_body
 }  // namespace physics
 }  // namespace principia

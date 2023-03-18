@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_rigid_motion {
+namespace _rigid_motion {
+namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_affine_map;
@@ -166,13 +167,18 @@ std::ostream& operator<<(
     std::ostream& out,
     AcceleratedRigidMotion<FromFrame, ToFrame> const& accelerated_rigid_motion);
 
-}  // namespace internal_rigid_motion
+}  // namespace internal
 
-using internal_rigid_motion::AcceleratedRigidMotion;
-using internal_rigid_motion::RigidMotion;
-using internal_rigid_motion::RigidTransformation;
+using internal::AcceleratedRigidMotion;
+using internal::RigidMotion;
+using internal::RigidTransformation;
 
+}  // namespace _rigid_motion
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_rigid_motion;
+}  // namespace principia::physics
 
 #include "physics/rigid_motion_body.hpp"

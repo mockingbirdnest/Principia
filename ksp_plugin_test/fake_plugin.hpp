@@ -8,11 +8,12 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_fake_plugin {
+namespace _fake_plugin {
+namespace internal {
 
-using astronomy::ICRS;
-using physics::KeplerianElements;
-using physics::SolarSystem;
+using namespace principia::astronomy::_frames;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_solar_system;
 
 class FakePlugin : public Plugin {
  public:
@@ -29,9 +30,10 @@ class FakePlugin : public Plugin {
                                 KeplerianElements<Barycentric> const& elements);
 };
 
-}  // namespace internal_fake_plugin
+}  // namespace internal
 
-using internal_fake_plugin::FakePlugin;
+using internal::FakePlugin;
 
+}  // namespace _fake_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -17,9 +17,10 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_mathematica {
+namespace _mathematica {
+namespace internal {
 
-using astronomy::J2000;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_mod;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -533,6 +534,7 @@ std::string ToMathematica(std::string const& str,
   return Escape(str);
 }
 
-}  // namespace internal_mathematica
+}  // namespace internal
+}  // namespace _mathematica
 }  // namespace mathematica
 }  // namespace principia

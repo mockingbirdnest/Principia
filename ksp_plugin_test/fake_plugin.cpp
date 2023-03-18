@@ -7,10 +7,11 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_fake_plugin {
+namespace _fake_plugin {
+namespace internal {
 
-using physics::MasslessBody;
-using physics::KeplerOrbit;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
 
@@ -62,6 +63,7 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
   return *GetVessel(vessel_id);
 }
 
-}  // namespace internal_fake_plugin
+}  // namespace internal
+}  // namespace _fake_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

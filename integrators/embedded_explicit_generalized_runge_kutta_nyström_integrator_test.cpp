@@ -20,7 +20,6 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -28,6 +27,8 @@ using ::std::placeholders::_3;
 using ::std::placeholders::_4;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::numerics::_legendre;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
@@ -139,6 +140,5 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   EXPECT_THAT(max_derivative_error, IsNear(4.54e-3_(1) / Second));
 }
 
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 }  // namespace integrators
 }  // namespace principia

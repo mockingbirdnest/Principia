@@ -14,7 +14,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_hierarchical_system {
+namespace _hierarchical_system {
+namespace internal {
 
 using namespace principia::base::_not_null;
 
@@ -94,11 +95,16 @@ class HierarchicalSystem final {
   std::map<not_null<MassiveBody const*>, System*> systems_;
 };
 
-}  // namespace internal_hierarchical_system
+}  // namespace internal
 
-using internal_hierarchical_system::HierarchicalSystem;
+using internal::HierarchicalSystem;
 
+}  // namespace _hierarchical_system
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_hierarchical_system;
+}  // namespace principia::physics
 
 #include "physics/hierarchical_system_body.hpp"

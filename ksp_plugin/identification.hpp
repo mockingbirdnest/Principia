@@ -13,9 +13,12 @@ namespace ksp_plugin {
 FORWARD_DECLARE_FROM(part, class, Part);
 FORWARD_DECLARE_FROM(vessel, class, Vessel);
 
-namespace internal_identification {
+namespace _identification {
+namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_vessel;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
 // key in an |std::map|.
@@ -50,15 +53,20 @@ using VesselSet = std::set<not_null<Vessel*>,
 using VesselConstSet = std::set<not_null<Vessel const*>,
                                 VesselByGUIDComparator>;
 
-}  // namespace internal_identification
+}  // namespace internal
 
-using internal_identification::GUID;
-using internal_identification::PartByPartIdComparator;
-using internal_identification::PartId;
-using internal_identification::PartTo;
-using internal_identification::VesselByGUIDComparator;
-using internal_identification::VesselConstSet;
-using internal_identification::VesselSet;
+using internal::GUID;
+using internal::PartByPartIdComparator;
+using internal::PartId;
+using internal::PartTo;
+using internal::VesselByGUIDComparator;
+using internal::VesselConstSet;
+using internal::VesselSet;
 
+}  // namespace _identification
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_identification;
+}  // namespace principia::ksp_plugin

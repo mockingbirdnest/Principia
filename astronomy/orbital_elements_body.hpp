@@ -18,19 +18,18 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbital_elements {
+namespace _orbital_elements {
+namespace internal {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaIntegrator;
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
-using integrators::InitialValueProblem;
-using integrators::methods::DormandPrince1986RK547FC;
-using physics::DegreesOfFreedom;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
 using namespace principia::base::_jthread;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_quadrature;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_kepler_orbit;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -186,6 +185,10 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
   KeplerianElements<Frame> const initial_osculating_elements =
       osculating_elements(t_min);
   Time const estimated_period = *initial_osculating_elements.period;
+  if (!IsFinite(estimated_period) || estimated_period <= Time{}) {
+    return absl::OutOfRangeError("estimated period is " +
+                                 DebugString(estimated_period));
+  }
 
   std::vector<Angle> unwound_λs;
   // 3 is greater than 2 to make sure that we start in the right direction.
@@ -565,6 +568,7 @@ inline absl::Status OrbitalElements::ComputeIntervals() {
 }
 
 
-}  // namespace internal_orbital_elements
+}  // namespace internal
+}  // namespace _orbital_elements
 }  // namespace astronomy
 }  // namespace principia

@@ -20,12 +20,13 @@ using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::quantities::_si;
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<struct WorldTag>;
-  using Segments = internal_discrete_trajectory_types::Segments<World>;
+  using Segments = _discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentIteratorTest()
       : segments_(MakeSegments(3)) {

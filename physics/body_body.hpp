@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body {
+namespace _body {
+namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -55,6 +56,7 @@ bool Body::CompatibilityHelper<Frame, true>::is_compatible_with(
          dynamic_cast_not_null<OblateBody<Frame> const*>(body) != nullptr;
 }
 
-}  // namespace internal_body
+}  // namespace internal
+}  // namespace _body
 }  // namespace physics
 }  // namespace principia

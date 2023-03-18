@@ -9,13 +9,14 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_local_error_analysis {
+namespace _local_error_analysis {
+namespace internal {
 
-using integrators::FixedStepSizeIntegrator;
-using physics::Ephemeris;
-using physics::SolarSystem;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::integrators::_integrators;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
@@ -57,11 +58,16 @@ class LocalErrorAnalyser {
   Time const step_;
 };
 
-}  // namespace internal_local_error_analysis
+}  // namespace internal
 
-using internal_local_error_analysis::LocalErrorAnalyser;
+using internal::LocalErrorAnalyser;
 
+}  // namespace _local_error_analysis
 }  // namespace mathematica
 }  // namespace principia
+
+namespace principia::mathematica {
+using namespace principia::mathematica::_local_error_analysis;
+}  // namespace principia::mathematica
 
 #include "mathematica/local_error_analysis_body.hpp"

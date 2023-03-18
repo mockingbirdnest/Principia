@@ -16,20 +16,18 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::FlightPlan;
-using ksp_plugin::Navigation;
-using ksp_plugin::Vessel;
-using ksp_plugin::WorldSun;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::ComputeApsides;
-using physics::DiscreteTrajectory;
-using physics::OblateBody;
-using physics::RigidMotion;
-using physics::RigidTransformation;
 using namespace principia::base::_array;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_apsides;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_rigid_motion;
 
 namespace {
 

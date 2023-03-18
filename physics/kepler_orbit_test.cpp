@@ -12,16 +12,20 @@
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
 
-using astronomy::ICRS;
-using astronomy::J2000;
-using astronomy::operator""_TT;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_kepler_orbit;
 using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
@@ -1640,6 +1644,5 @@ TEST_F(KeplerOrbitTest,
                                    /*apoapsis_distance_ulps=*/0);
 }
 
-}  // namespace internal_kepler_orbit
 }  // namespace physics
 }  // namespace principia

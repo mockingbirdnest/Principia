@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_protector {
+namespace _protector {
+namespace internal {
 
 bool Protector::RunWhenUnprotected(Instant const& t, Callback callback) {
   {
@@ -57,6 +58,7 @@ void Protector::Unprotect(Instant const& t_min) {
   }
 }
 
-}  // namespace internal_protector
+}  // namespace internal
+}  // namespace _protector
 }  // namespace physics
 }  // namespace principia

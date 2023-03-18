@@ -24,12 +24,6 @@
 namespace principia {
 namespace interface {
 
-using ksp_plugin::Camera;
-using ksp_plugin::Navigation;
-using ksp_plugin::Planetarium;
-using ksp_plugin::Renderer;
-using ksp_plugin::TypedIterator;
-using physics::DiscreteTrajectory;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -37,6 +31,11 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

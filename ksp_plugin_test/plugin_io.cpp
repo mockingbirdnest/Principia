@@ -10,12 +10,17 @@
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
-namespace interface {
-namespace internal_plugin_io {
+namespace ksp_plugin {
+namespace _plugin_io {
+namespace internal {
 
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
+using interface::principia__DeletePlugin;
+using interface::principia__DeleteString;
+using interface::principia__DeserializePlugin;
+using interface::principia__SerializePlugin;
 using namespace principia::base::_file;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
@@ -101,6 +106,7 @@ void WritePluginToFile(std::filesystem::path const& filename,
   principia__DeletePlugin(&released_plugin);
 }
 
-}  // namespace internal_plugin_io
-}  // namespace interface
+}  // namespace internal
+}  // namespace _plugin_io
+}  // namespace ksp_plugin
 }  // namespace principia

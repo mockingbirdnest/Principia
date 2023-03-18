@@ -19,15 +19,16 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_vessel {
+namespace _vessel {
+namespace internal {
 
-using physics::Client;
 using ::std::placeholders::_1;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_clientele;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -1207,6 +1208,7 @@ std::atomic_bool Vessel::synchronous_(true);
 std::atomic_bool Vessel::synchronous_(false);
 #endif
 
-}  // namespace internal_vessel
+}  // namespace internal
+}  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_apsides {
+namespace _apsides {
+namespace internal {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
@@ -205,6 +206,7 @@ absl::Status ComputeNodes(
   return absl::OkStatus();
 }
 
-}  // namespace internal_apsides
+}  // namespace internal
+}  // namespace _apsides
 }  // namespace physics
 }  // namespace principia

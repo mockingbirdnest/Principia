@@ -12,6 +12,7 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace numerics {
 
 using namespace principia::numerics::_fast_sin_cos_2π;
 using namespace principia::testing_utilities::_almost_equals;
@@ -19,8 +20,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_vanishes_before;
-
-namespace numerics {
 
 class FastSinCos2πTest : public ::testing::Test {
  protected:

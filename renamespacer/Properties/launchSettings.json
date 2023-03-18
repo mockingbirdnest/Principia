@@ -2,7 +2,7 @@
   "profiles": {
     "renamespacer": {
       "commandName": "Project",
-      "commandLineArgs": "--project:testing_utilities --exclude:macros.hpp --dry_run:false",
+      "commandLineArgs": "--project:journal --exclude:macros.hpp --extra_header:massive_body.hpp --dry_run:false",
       "workingDirectory": "C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia"
     }
   }

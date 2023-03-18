@@ -1,5 +1,6 @@
 #include "astronomy/time_scales.hpp"
 
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
@@ -10,13 +11,15 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_time_scales {
 
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ne;
+using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -514,6 +517,5 @@ TEST_F(TimeScalesTest, DateTimeUnparsing) {
   }
 }
 
-}  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia

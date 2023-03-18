@@ -23,26 +23,8 @@
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
+namespace astronomy {
 
-using integrators::FixedStepSizeIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order8;
-using integrators::methods::QuinlanTremaine1990Order10;
-using integrators::methods::QuinlanTremaine1990Order12;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using mathematica::PreserveUnits;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
 using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::_;
@@ -52,12 +34,21 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_sign;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace astronomy {
 
 using KSP = Frame<struct KSPTag, Inertial>;
 

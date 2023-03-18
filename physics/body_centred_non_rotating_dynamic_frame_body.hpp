@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_non_rotating_dynamic_frame {
+namespace _body_centred_non_rotating_dynamic_frame {
+namespace internal {
 
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_named_quantities;
@@ -117,6 +118,7 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
                  ComputeGravitationalAccelerationOnMassiveBody(centre_, t));
 }
 
-}  // namespace internal_body_centred_non_rotating_dynamic_frame
+}  // namespace internal
+}  // namespace _body_centred_non_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

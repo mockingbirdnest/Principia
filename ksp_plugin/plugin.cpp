@@ -56,28 +56,10 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
-using astronomy::KSP122;
-using astronomy::KSP191;
-using astronomy::KSPStabilizedSystemFingerprints;
-using astronomy::KSPStockSystemFingerprints;
-using astronomy::ParseTT;
-using astronomy::StabilizeKSP;
-using physics::BarycentricRotatingDynamicFrame;
-using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::BodySurfaceDynamicFrame;
-using physics::BodySurfaceFrameField;
-using physics::ComputeApsides;
-using physics::ComputeNodes;
-using physics::CoordinateFrameField;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::KeplerianElements;
-using physics::MassiveBody;
-using physics::RigidMotion;
-using physics::SolarSystem;
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_file;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_hexadecimal;
@@ -94,10 +76,25 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::physics::_apsides;
+using namespace principia::physics::_barycentric_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_surface_frame_field;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using ::operator<<;
+using namespace principia::astronomy::_solar_system_fingerprints;
+using namespace principia::astronomy::_stabilize_ksp;
+using namespace principia::astronomy::_time_scales;
 
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
@@ -1684,6 +1681,7 @@ bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
 
-}  // namespace internal_plugin
+}  // namespace internal
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia

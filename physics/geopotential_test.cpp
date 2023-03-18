@@ -24,12 +24,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
 
-using astronomy::ICRS;
-using astronomy::ITRS;
-using numerics::LegendreNormalizationFactor;
-using physics::SolarSystem;
 using ::testing::AllOf;
 using ::testing::An;
 using ::testing::Each;
@@ -38,8 +33,14 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_named_quantities;
+using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::physics::_geopotential;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
@@ -126,7 +127,7 @@ class GeopotentialTest : public ::testing::Test {
     }
     return Vector<Acceleration, ITRS>(
         si::Unit<Acceleration> *
-        astronomy::fortran_astrodynamics_toolkit::
+        astronomy::_fortran_astrodynamics_toolkit::
             ComputeGravityAccelerationLear<9, 9>(
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
   }
@@ -836,6 +837,5 @@ TEST_F(GeopotentialTest, Potential) {
   }
 }
 
-}  // namespace internal_geopotential
 }  // namespace physics
 }  // namespace principia

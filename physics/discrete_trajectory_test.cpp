@@ -26,15 +26,16 @@
 namespace principia {
 namespace physics {
 
-using astronomy::operator""_TT;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

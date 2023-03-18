@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_frame_field {
+namespace _frame_field {
+namespace internal {
 
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
@@ -36,12 +37,17 @@ class CoordinateFrameField : public FrameField<Frame, ThisFrame> {
       Position<Frame> const& q) const override;
 };
 
-}  // namespace internal_frame_field
+}  // namespace internal
 
-using internal_frame_field::FrameField;
-using internal_frame_field::CoordinateFrameField;
+using internal::FrameField;
+using internal::CoordinateFrameField;
 
+}  // namespace _frame_field
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_frame_field;
+}  // namespace principia::physics
 
 #include "physics/frame_field_body.hpp"

@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace integrators {
+namespace _adams_moulton_integrator {
+namespace internal {
 
 // For the Adams-Moulton integrators, see
 // http://www.scholarpedia.org/article/Linear_multistep_method#Methods_for_Hamiltonian_systems  // NOLINT
@@ -174,5 +176,7 @@ inline AdamsMoulton<14> const& AdamsMoultonOrder<14>() {
   return integrator;
 }
 
+}  // namespace internal
+}  // namespace _adams_moulton_integrator
 }  // namespace integrators
 }  // namespace principia

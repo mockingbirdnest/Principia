@@ -15,7 +15,8 @@
 
 namespace principia {
 namespace tools {
-namespace internal_journal_proto_processor {
+namespace _journal_proto_processor {
+namespace internal {
 
 using ::google::protobuf::MessageOptions;
 using namespace principia::base::_map_util;
@@ -1753,6 +1754,7 @@ std::string JournalProtoProcessor::MarshalAs(
   LOG(FATAL) << "Bad marshaler for " << descriptor->name();
 }
 
-}  // namespace internal_journal_proto_processor
+}  // namespace internal
+}  // namespace _journal_proto_processor
 }  // namespace tools
 }  // namespace principia

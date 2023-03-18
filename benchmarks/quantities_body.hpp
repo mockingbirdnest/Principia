@@ -12,8 +12,11 @@
 #include "quantities/si.hpp"
 
 namespace principia {
-namespace quantities {
+namespace benchmarks {
+namespace _quantities {
+namespace internal {
 
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 #define TRIGGER_DEAD_CODE_ELIMINATION
@@ -62,5 +65,7 @@ inline void DoubleDiscreteCosineTransform(std::vector<double>& result) {
   }
 }
 
-}  // namespace quantities
+}  // namespace internal
+}  // namespace _quantities
+}  // namespace benchmarks
 }  // namespace principia

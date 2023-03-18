@@ -27,15 +27,16 @@
 
 namespace principia {
 namespace physics {
-namespace internal_continuous_trajectory {
 
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_continuous_trajectory;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -1044,6 +1045,5 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
 }
 
-}  // namespace internal_continuous_trajectory
 }  // namespace physics
 }  // namespace principia

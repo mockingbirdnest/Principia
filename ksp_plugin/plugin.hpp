@@ -49,24 +49,9 @@ namespace ksp_plugin {
 
 class TestablePlugin;
 
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
-using integrators::FixedStepSizeIntegrator;
-using integrators::AdaptiveStepSizeIntegrator;
-using physics::Body;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::DynamicFrame;
-using physics::Ephemeris;
-using physics::FrameField;
-using physics::Frenet;
-using physics::HierarchicalSystem;
-using physics::MassiveBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::Trajectory;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
@@ -77,6 +62,20 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_body;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_hierarchical_system;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -564,10 +563,15 @@ class Plugin {
   friend class ksp_plugin::TestablePlugin;
 };
 
-}  // namespace internal_plugin
+}  // namespace internal
 
-using internal_plugin::Index;
-using internal_plugin::Plugin;
+using internal::Index;
+using internal::Plugin;
 
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_plugin;
+}  // namespace principia::ksp_plugin

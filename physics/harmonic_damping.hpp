@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_harmonic_damping {
+namespace _harmonic_damping {
+namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_polynomial;
@@ -61,11 +62,16 @@ class HarmonicDamping final {
       double, Length, 3,
       numerics::EstrinEvaluator>::Coefficients sigmoid_coefficients_;
 };
-}  // namespace internal_harmonic_damping
+}  // namespace internal
 
-using internal_harmonic_damping::HarmonicDamping;
+using internal::HarmonicDamping;
 
+}  // namespace _harmonic_damping
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_harmonic_damping;
+}  // namespace principia::physics
 
 #include "physics/harmonic_damping_body.hpp"

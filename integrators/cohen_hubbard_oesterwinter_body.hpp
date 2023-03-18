@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace integrators {
+namespace _cohen_hubbard_oesterwinter {
+namespace internal {
 
 template<>
 inline CohenHubbardOesterwinter<1> const& CohenHubbardOesterwinterOrder<1>() {
@@ -203,5 +205,7 @@ inline CohenHubbardOesterwinter<15> const& CohenHubbardOesterwinterOrder<15>() {
   return cohen_hubbard_oesterwinter;
 }
 
+}  // namespace internal
+}  // namespace _cohen_hubbard_oesterwinter
 }  // namespace integrators
 }  // namespace principia

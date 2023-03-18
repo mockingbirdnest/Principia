@@ -37,14 +37,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::operator""_TT;
-using interface::ReadPluginFromFile;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::MassiveBody;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using physics::RotatingBody;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -55,11 +47,20 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -3,7 +3,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_types {
+namespace _discrete_trajectory_types {
+namespace internal {
 
 template<typename Frame>
 value_type<Frame>::value_type(Instant const& time,
@@ -28,6 +29,7 @@ bool Earlier::operator()(value_type<Frame> const& left,
   return left.time < right;
 }
 
-}  // namespace internal_discrete_trajectory_types
+}  // namespace internal
+}  // namespace _discrete_trajectory_types
 }  // namespace physics
 }  // namespace principia

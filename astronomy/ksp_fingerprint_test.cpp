@@ -15,9 +15,11 @@
 namespace principia {
 namespace astronomy {
 
-using physics::SolarSystem;
 using ::testing::Eq;
+using namespace principia::astronomy::_solar_system_fingerprints;
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::geometry::_frame;
+using namespace principia::physics::_solar_system;
 
 class KSPFingerprintTest : public ::testing::Test {
  protected:

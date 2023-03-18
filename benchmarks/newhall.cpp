@@ -15,14 +15,13 @@
 #include "quantities/si.hpp"
 
 namespace principia {
+namespace numerics {
 
-using astronomy::ICRS;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
-
-namespace numerics {
 
 template<typename Result,
          Result (*newhall)(int degree,

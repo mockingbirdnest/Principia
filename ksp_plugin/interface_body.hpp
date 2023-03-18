@@ -18,13 +18,13 @@
 namespace principia {
 namespace interface {
 
-using integrators::AdaptiveStepSizeIntegrator;
-using physics::Ephemeris;
-using physics::RigidMotion;
 using namespace principia::base::_array;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

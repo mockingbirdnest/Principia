@@ -29,17 +29,13 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
+namespace _ephemeris {
+namespace internal {
 
-using astronomy::J2000;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::InitialValueProblem;
-using integrators::Integrator;
-using integrators::methods::Fine1987RKNG34;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
@@ -48,6 +44,10 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
@@ -1427,6 +1427,7 @@ template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
     Ephemeris<Frame>::NoIntrinsicAccelerations;
 
-}  // namespace internal_ephemeris
+}  // namespace internal
+}  // namespace _ephemeris
 }  // namespace physics
 }  // namespace principia
