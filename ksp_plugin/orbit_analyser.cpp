@@ -119,10 +119,13 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
     trajectory.segments().front().SetDownsampling(
         OrbitAnalyserDownsamplingParameters());
 
-    auto const status_or_duration =
-        FlowWithProgressBar(parameters, smallest_osculating_period, trajectory);
-    RETURN_IF_ERROR(status_or_duration);
-    analysis.mission_duration_ = status_or_duration.value();
+    Time const analysis_duration = std::min(
+        parameters.extended_mission_duration.value_or(
+            parameters.mission_duration),
+        std::max(2 * smallest_osculating_period, parameters.mission_duration));
+    RETURN_IF_ERROR(
+        FlowWithProgressBar(parameters, analysis_duration, trajectory));
+    analysis.mission_duration_ = trajectory.back().time - parameters.first_time;
 
     // TODO(egg): |next_analysis_percentage_| only reflects the progress of
     // the integration, but the analysis itself can take a while; this results
@@ -159,10 +162,10 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
         analysis.closest_recurrence_.reset();
       }
 
-      auto const status_or_mean_sun =
-          ComputeMeanSunIfPossible(parameters, primary_centred);
-      RETURN_IF_ERROR(status_or_mean_sun);
-      auto const& mean_sun = status_or_mean_sun.value();
+      std::optional<OrbitGroundTrack::MeanSun> mean_sun;
+      RETURN_IF_ERROR(ComputeMeanSunIfPossible(parameters,
+                                               primary_centred,
+                                               mean_sun));
 
       auto ground_track =
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
@@ -207,9 +210,9 @@ absl::Status OrbitAnalyser::FindBodyWithSmallestOsculatingPeriod(
   return absl::OkStatus();
 }
 
-absl::StatusOr<Time> OrbitAnalyser::FlowWithProgressBar(
+absl::Status OrbitAnalyser::FlowWithProgressBar(
     Parameters const& parameters,
-    Time const& smallest_osculating_period,
+    Time const& analysis_duration,
     DiscreteTrajectory<Barycentric>& trajectory) {
   trajectory.Append(parameters.first_time,
                     parameters.first_degrees_of_freedom).IgnoreError();
@@ -222,10 +225,6 @@ absl::StatusOr<Time> OrbitAnalyser::FlowWithProgressBar(
       analysed_trajectory_parameters_);
   RETURN_IF_STOPPED;
 
-  Time const analysis_duration = std::min(
-      parameters.extended_mission_duration.value_or(
-          parameters.mission_duration),
-      std::max(2 * smallest_osculating_period, parameters.mission_duration));
   constexpr double progress_bar_steps = 0x1p10;
   for (double n = 0; n <= progress_bar_steps; ++n) {
     Instant const t =
@@ -238,17 +237,18 @@ absl::StatusOr<Time> OrbitAnalyser::FlowWithProgressBar(
         (trajectory.back().time - parameters.first_time) / analysis_duration;
     RETURN_IF_STOPPED;
   }
-  return trajectory.back().time - parameters.first_time;
+  return absl::OkStatus();
 }
 
-absl::StatusOr<std::optional<OrbitGroundTrack::MeanSun>>
+absl::Status
 OrbitAnalyser::ComputeMeanSunIfPossible(
     Parameters const& parameters,
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
-        primary_centred) {
+        primary_centred,
+    std::optional<OrbitGroundTrack::MeanSun>& mean_sun) {
+  mean_sun = std::nullopt;
   auto const primary = primary_centred.centre();
   MassiveBody const* sun = nullptr;
-  std::optional<OrbitGroundTrack::MeanSun> mean_sun;
 
   // Find the sun.  If there is none, we are done.
   for (auto const body : ephemeris_->bodies()) {
@@ -289,7 +289,7 @@ OrbitAnalyser::ComputeMeanSunIfPossible(
     }
   }
 
-  return mean_sun;
+  return absl::OkStatus();
 }
 
 absl::StatusOr<DiscreteTrajectory<OrbitAnalyser::PrimaryCentred>>

@@ -139,7 +139,7 @@ class OrbitAnalyser {
   absl::Status AnalyseOrbit(Parameters const& parameters);
 
   // Locates the body with the smallest osculating period and returns it and its
-  // period.
+  // period.  This function may be stopped.
   absl::Status FindBodyWithSmallestOsculatingPeriod(
       Parameters const& parameters,
       RotatingBody<Barycentric> const*& primary,
@@ -148,21 +148,20 @@ class OrbitAnalyser {
   // Flows the |trajectory| with a fixed step integrator using the given
   // |parameters|.  This is done in small increments and
   // |progress_of_next_analysis_| is updated after each increment to be able to
-  // display a progress bar.  Returns the actual mission duration.  This
-  // function may be stopped.
-  absl::StatusOr<Time> FlowWithProgressBar(
+  // display a progress bar.  This function may be stopped.
+  absl::Status FlowWithProgressBar(
       Parameters const& parameters,
-      Time const& smallest_osculating_period,
+      Time const& analysis_duration,
       DiscreteTrajectory<Barycentric>& trajectory);
 
   // If we can find a sun, computes its mean motion around the primary if it
   // doesn't require too long an integration.  If there is no sun, or the
-  // integration would take too long, returns |std::nullopt|.
-  absl::StatusOr<std::optional<OrbitGroundTrack::MeanSun>>
-  ComputeMeanSunIfPossible(
+  // integration would take too long, |mean_sun| is set to |std::nullopt|.
+  absl::Status ComputeMeanSunIfPossible(
       Parameters const& parameters,
       BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
-          primary_centred);
+          primary_centred,
+      std::optional<OrbitGroundTrack::MeanSun>& mean_sun);
 
   // Converts the |trajectory| to the given |primary_centred| frame.  This
   // function may be stopped.
