@@ -1,5 +1,4 @@
 ﻿using System;
-using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -96,6 +95,27 @@ internal static class Formatters {
     return $"{interval.FormatAngleInterval()} ({formatted_distance})";
   }
 
+  // Formats an interval of angles (given in radians) as an interval of times of
+  // day, mapping [0, 2π] to one day.
+  public static string FormatHourAngleInterval(this Interval interval) {
+    double half_width = (interval.max - interval.min) / 2;
+    double midpoint = interval.min + half_width;
+    if (half_width > Math.PI) {
+      return L10N.CacheFormat("#Principia_OrbitAnalyser_Precesses");
+    }
+    var formatted_midpoint = new PrincipiaTimeSpan(
+        KSPUtil.dateTimeFormatter.Day * midpoint / (2 * Math.PI))
+        .FormatPositive(with_leading_zeroes: false,
+                        with_seconds: false,
+                        iau_style: true);
+    var formatted_half_width = new PrincipiaTimeSpan(
+        KSPUtil.dateTimeFormatter.Day * half_width / (2 * Math.PI))
+        .FormatPositive(with_leading_zeroes: false,
+                        with_seconds: false,
+                        iau_style: true);
+    return $"{formatted_midpoint}±{formatted_half_width}";
+  }
+
   // Formats a duration, omitting leading components if they are 0, and omitting
   // leading 0s on the days; optionally exclude seconds.
   public static string FormatDuration(this double seconds,
@@ -176,7 +196,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       orbit_description_ = OrbitDescription(primary,
                                             analysis.elements,
                                             analysis.recurrence,
-                                            analysis.ground_track,
+                                            analysis.ground_track_equatorial_crossings,
+                                            analysis.solar_times_of_nodes,
                                             (int?)(analysis.mission_duration /
                                                    analysis.elements?.
                                                        nodal_period));
@@ -230,7 +251,9 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
       OrbitalElements? elements = analysis.elements;
       OrbitRecurrence? recurrence = analysis.recurrence;
-      OrbitGroundTrack? ground_track = analysis.ground_track;
+      EquatorialCrossings? equatorial_crossings =
+          analysis.ground_track_equatorial_crossings;
+      SolarTimesOfNodes? solar_times_of_nodes = analysis.solar_times_of_nodes;
       double mission_duration = analysis.mission_duration;
       CelestialBody primary = analysis.primary_index.HasValue
                                   ? FlightGlobals.Bodies[
@@ -240,7 +263,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
       orbit_description_ = OrbitDescription(primary,
                                             elements,
                                             recurrence,
-                                            ground_track,
+                                            equatorial_crossings,
+                                            solar_times_of_nodes,
                                             (int?)(mission_duration /
                                                    elements?.nodal_period));
 
@@ -308,7 +332,9 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack"));
       RenderOrbitRecurrence(recurrence, primary);
       Style.LineSpacing();
-      RenderOrbitGroundTrack(ground_track, primary);
+      RenderEquatorialCrossings(equatorial_crossings, primary);
+      Style.LineSpacing();
+      RenderNodeMeanSolarTimes(solar_times_of_nodes);
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -316,7 +342,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   public static string OrbitDescription(CelestialBody primary,
                                         OrbitalElements? elements,
                                         OrbitRecurrence? recurrence,
-                                        OrbitGroundTrack? ground_track,
+                                        EquatorialCrossings? equatorial_crossings,
+                                        SolarTimesOfNodes? solar_times_of_nodes,
                                         int? nodal_revolutions) {
     if (!elements.HasValue) {
       return null;
@@ -351,10 +378,10 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           L10N.CacheFormat(
               "#Principia_OrbitAnalyser_OrbitDescription_Retrograde");
     }
-    if (recurrence.HasValue && ground_track.HasValue) {
-      Interval ascending_longitudes = ground_track.Value.equatorial_crossings.
+    if (recurrence.HasValue && equatorial_crossings.HasValue) {
+      Interval ascending_longitudes = equatorial_crossings.Value.
           longitudes_reduced_to_ascending_pass;
-      Interval descending_longitudes = ground_track.Value.equatorial_crossings.
+      Interval descending_longitudes = equatorial_crossings.Value.
           longitudes_reduced_to_descending_pass;
       double drift = Math.Max(
           ascending_longitudes.max - ascending_longitudes.min,
@@ -399,6 +426,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         }
       }
     }
+    // TODO(egg): do something about heliosynchronicity.
     return L10N.CelestialString("#Principia_OrbitAnalyser_OrbitDescription",
                                 new[]{primary},
                                 properties);
@@ -540,8 +568,8 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         recurrence?.grid_interval.FormatEquatorialAngle(primary));
   }
 
-  private void RenderOrbitGroundTrack(OrbitGroundTrack? ground_track,
-                                      CelestialBody primary) {
+  private void RenderEquatorialCrossings(EquatorialCrossings? equatorial_crossings,
+                                         CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(
@@ -557,7 +585,6 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         ground_track_revolution_ = revolution;
       }
     }
-    var equatorial_crossings = ground_track?.equatorial_crossings;
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack_AscendingPass"),
         equatorial_crossings?.longitudes_reduced_to_ascending_pass.
@@ -566,6 +593,19 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack_DescendingPass"),
         equatorial_crossings?.longitudes_reduced_to_descending_pass.
             FormatEquatorialAngleInterval(primary));
+  }
+
+  private void RenderNodeMeanSolarTimes(SolarTimesOfNodes? solar_times_of_nodes) {
+    LabeledField(
+        L10N.CacheFormat(
+            "#Principia_OrbitAnalyser_MeanSolarTimeOfAscendingNode"),
+        solar_times_of_nodes?.mean_solar_times_of_ascending_nodes.
+            FormatHourAngleInterval());
+    LabeledField(
+        L10N.CacheFormat(
+            "#Principia_OrbitAnalyser_MeanSolarTimeOfDescendingNode"),
+        solar_times_of_nodes?.mean_solar_times_of_descending_nodes.
+            FormatHourAngleInterval());
   }
 
   private void LabeledField(string label, string value) {

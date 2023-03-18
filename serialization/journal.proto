@@ -205,9 +205,9 @@ message EquatorialCrossings {
   required Interval longitudes_reduced_to_descending_pass = 2;
 }
 
-message OrbitGroundTrack {
-  required EquatorialCrossings equatorial_crossings = 1;
-  // TODO(egg): mean solar times of the nodes.
+message SolarTimesOfNodes {
+  required Interval mean_solar_times_of_ascending_nodes = 1;
+  required Interval mean_solar_times_of_descending_nodes = 2;
 }
 
 message OrbitAnalysis {
@@ -216,11 +216,13 @@ message OrbitAnalysis {
   required double mission_duration = 3;
   optional OrbitalElements elements = 4 [(is_produced) = true];
   optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
-  optional OrbitGroundTrack ground_track = 6 [(is_produced) = true];
+  optional EquatorialCrossings ground_track_equatorial_crossings = 6 [(is_produced) = true];
+  optional SolarTimesOfNodes solar_times_of_nodes = 11 [(is_produced) = true];
   required fixed64 primary_index_address = 10 [(address_of) = "primary_index"];
   required fixed64 elements_address = 7 [(address_of) = "elements"];
   required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
-  required fixed64 ground_track_address = 9 [(address_of) = "ground_track"];
+  required fixed64 ground_track_equatorial_crossings_address = 9 [(address_of) = "ground_track_equatorial_crossings"];
+  required fixed64 solar_times_of_nodes_address = 12 [(address_of) = "solar_times_of_nodes"];
 }
 
 message Method {

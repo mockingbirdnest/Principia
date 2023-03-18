@@ -221,7 +221,9 @@ inline bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
 
 inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
   return left.elements == right.elements &&
-         left.ground_track == right.ground_track &&
+         left.ground_track_equatorial_crossings ==
+             right.ground_track_equatorial_crossings &&
+         left.solar_times_of_nodes == right.solar_times_of_nodes &&
          left.mission_duration == right.mission_duration &&
          left.primary_index == right.primary_index &&
          left.progress_of_next_analysis == right.progress_of_next_analysis &&
@@ -234,21 +236,6 @@ inline bool operator==(EquatorialCrossings const& left,
              right.longitudes_reduced_to_ascending_pass &&
          left.longitudes_reduced_to_descending_pass ==
              right.longitudes_reduced_to_descending_pass;
-}
-
-inline bool operator==(OrbitGroundTrack const& left,
-                       OrbitGroundTrack const& right) {
-  return left.equatorial_crossings == right.equatorial_crossings;
-}
-
-inline bool operator==(OrbitRecurrence const& left,
-                       OrbitRecurrence const& right) {
-  return NaNIndependentEq(left.base_interval, right.base_interval) &&
-         left.cto == right.cto && left.dto == right.dto &&
-         NaNIndependentEq(left.equatorial_shift, right.equatorial_shift) &&
-         NaNIndependentEq(left.grid_interval, right.grid_interval) &&
-         left.number_of_revolutions == right.number_of_revolutions &&
-         left.nuo == right.nuo && left.subcycle == right.subcycle;
 }
 
 inline bool operator==(OrbitalElements const& left,
@@ -271,6 +258,14 @@ inline bool operator==(QP const& left, QP const& right) {
 
 inline bool operator==(QPRW const& left, QPRW const& right) {
   return left.qp == right.qp && left.r == right.r && left.w == right.w;
+}
+
+inline bool operator==(SolarTimesOfNodes const& left,
+                       SolarTimesOfNodes const& right) {
+  return left.mean_solar_times_of_ascending_nodes ==
+             right.mean_solar_times_of_ascending_nodes &&
+         left.mean_solar_times_of_descending_nodes ==
+             right.mean_solar_times_of_descending_nodes;
 }
 
 inline bool operator==(Status const& left, Status const& right) {
@@ -595,19 +590,28 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .subcycle = recurrence.subcycle(),
     };
   }
-  if (vessel_analysis->ground_track().has_value() &&
-      vessel_analysis->equatorial_crossings().has_value()) {
-    auto const& equatorial_crossings = *vessel_analysis->equatorial_crossings();
-    analysis->ground_track = new OrbitGroundTrack{
-        .equatorial_crossings = {
-                .longitudes_reduced_to_ascending_pass =
-                    ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
-                        2 * ground_track_revolution - 1)),
-                .longitudes_reduced_to_descending_pass =
-                    ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
-                        2 * ground_track_revolution)),
-            },
-    };
+  if (auto const& ground_track = vessel_analysis->ground_track();
+      ground_track.has_value()) {
+    if (ground_track->mean_solar_times_of_ascending_nodes().has_value() &&
+        ground_track->mean_solar_times_of_descending_nodes().has_value()) {
+      analysis->solar_times_of_nodes = new SolarTimesOfNodes{
+          .mean_solar_times_of_ascending_nodes =
+              ToInterval(*ground_track->mean_solar_times_of_ascending_nodes()),
+          .mean_solar_times_of_descending_nodes = ToInterval(
+              *ground_track->mean_solar_times_of_descending_nodes())};
+    }
+    if (vessel_analysis->equatorial_crossings().has_value()) {
+      auto const& equatorial_crossings =
+          *vessel_analysis->equatorial_crossings();
+      analysis->ground_track_equatorial_crossings = new EquatorialCrossings{
+          .longitudes_reduced_to_ascending_pass =
+              ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                  2 * ground_track_revolution - 1)),
+          .longitudes_reduced_to_descending_pass =
+              ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                  2 * ground_track_revolution)),
+      };
+    }
   }
   return analysis;
 }

@@ -8,6 +8,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "quantities/astronomy.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -20,7 +21,9 @@ using namespace principia::geometry::_frame;
 using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_quantities;
 
 // TODO(egg): This could be implemented using ComputeApsides.
@@ -163,12 +166,12 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     using PrimaryCentred = Frame<struct PrimaryCentredTag, NonRotating>;
     DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
     BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
-        body_centred(ephemeris_, primary);
+        primary_centred(ephemeris_, primary);
     for (auto const& [time, degrees_of_freedom] : trajectory) {
       RETURN_IF_STOPPED;
-      primary_centred_trajectory.Append(
-          time,
-          body_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
+      primary_centred_trajectory
+          .Append(time,
+                  primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
           .IgnoreError();
     }
     analysis.primary_ = primary;
@@ -176,6 +179,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
         RadialDistanceInterval(primary_centred_trajectory);
     auto elements = OrbitalElements::ForTrajectory(
         primary_centred_trajectory, *primary, MasslessBody{});
+
     // We do not RETURN_IF_ERROR as ForTrajectory can return non-CANCELLED
     // statuses.
     RETURN_IF_STOPPED;
@@ -191,10 +195,51 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
       if (analysis.closest_recurrence_->number_of_revolutions() == 0) {
         analysis.closest_recurrence_.reset();
       }
+
+      std::optional<OrbitGroundTrack::MeanSun> mean_sun;
+      MassiveBody const* sun = nullptr;
+      auto smallest_osculating_period = Infinity<Time>;
+      for (auto const body : ephemeris_->bodies()) {
+        if (body->name() == "Sun") {
+          sun = body;
+          break;
+        }
+      }
+      if (primary != sun && sun != nullptr) {
+        auto const sun_osculating_elements =
+            KeplerOrbit<Barycentric>{
+                *primary,
+                *sun,
+                ephemeris_->trajectory(sun)->EvaluateDegreesOfFreedom(
+                    parameters.first_time) -
+                    ephemeris_->trajectory(primary)->EvaluateDegreesOfFreedom(
+                        parameters.first_time),
+                parameters.first_time}
+                .elements_at_epoch();
+        Time const ephemeris_span = ephemeris_->t_max() - ephemeris_->t_min();
+        if (ephemeris_span < 1.5 * *sun_osculating_elements.period &&
+            ephemeris_span < 20 * JulianYear) {
+          RETURN_IF_ERROR(
+              ephemeris_->Prolong(ephemeris_->t_max() + 0.5 * JulianYear));
+        }
+        auto const sun_elements = OrbitalElements::ForTrajectory(
+            *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
+        if (sun_elements.ok()) {
+          auto const& sun_mean_elements = sun_elements->mean_elements().front();
+          mean_sun = OrbitGroundTrack::MeanSun{
+              .epoch = sun_mean_elements.time,
+              .mean_longitude_at_epoch =
+                  sun_mean_elements.longitude_of_ascending_node +
+                  sun_mean_elements.argument_of_periapsis +
+                  sun_mean_elements.mean_anomaly,
+              .year = sun_elements->sidereal_period()};
+        }
+      }
+
       auto ground_track =
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
                                           *primary,
-                                          /*mean_sun=*/std::nullopt);
+                                          mean_sun);
       RETURN_IF_ERROR(ground_track);
       analysis.ground_track_ = std::move(ground_track).value();
       analysis.ResetRecurrence();

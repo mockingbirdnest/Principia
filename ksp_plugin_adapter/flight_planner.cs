@@ -483,7 +483,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           primary,
           coast_analysis.elements,
           coast_analysis.recurrence,
-          coast_analysis.ground_track,
+          coast_analysis.ground_track_equatorial_crossings,
+          coast_analysis.solar_times_of_nodes,
           nodal_revolutions);
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
