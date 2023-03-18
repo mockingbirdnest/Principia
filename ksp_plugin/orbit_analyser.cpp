@@ -8,6 +8,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "quantities/astronomy.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -23,6 +24,7 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_astronomy;
 
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>
@@ -111,13 +113,9 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
       .IgnoreError();
 
   RotatingBody<Barycentric> const* primary = nullptr;
-  MassiveBody const* sun = nullptr;
   auto smallest_osculating_period = Infinity<Time>;
   for (auto const body : ephemeris_->bodies()) {
     RETURN_IF_STOPPED;
-    if (body->name() == "Sun") {
-      sun = body;
-    }
     auto const initial_osculating_elements =
         KeplerOrbit<Barycentric>{
             *body,
@@ -199,7 +197,30 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
       }
 
       std::optional<OrbitGroundTrack::MeanSun> mean_sun;
+      MassiveBody const* sun = nullptr;
+      auto smallest_osculating_period = Infinity<Time>;
+      for (auto const body : ephemeris_->bodies()) {
+        if (body->name() == "Sun") {
+          sun = body;
+        }
+      }
       if (primary != sun && sun != nullptr) {
+        auto const sun_osculating_elements =
+            KeplerOrbit<Barycentric>{
+                *primary,
+                *sun,
+                ephemeris_->trajectory(sun)->EvaluateDegreesOfFreedom(
+                    parameters.first_time) -
+                    ephemeris_->trajectory(primary)->EvaluateDegreesOfFreedom(
+                        parameters.first_time),
+                parameters.first_time}
+                .elements_at_epoch();
+        Time const ephemeris_span = ephemeris_->t_max() - ephemeris_->t_min();
+        if (ephemeris_span < 1.5 * *sun_osculating_elements.period &&
+            ephemeris_span < 20 * JulianYear) {
+          RETURN_IF_ERROR(
+              ephemeris_->Prolong(ephemeris_->t_max() + 0.5 * JulianYear));
+        }
         auto const sun_elements = OrbitalElements::ForTrajectory(
             *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
         if (sun_elements.ok()) {
