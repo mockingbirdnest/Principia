@@ -127,7 +127,16 @@ class OrbitAnalyser {
   double progress_of_next_analysis() const;
 
  private:
-  absl::Status AnalyseOrbit(Parameters parameters);
+  absl::Status AnalyseOrbit(Parameters const& parameters);
+
+  // Flows the |trajectory| with a fixed step integrator using the given
+  // |parameters|.  This is done in small increments and
+  // |progress_of_next_analysis_| is updated after each increment to be able to
+  // display a progress bar.  Returns the actual mission duration.
+  absl::StatusOr<Time> FlowWithProgressBar(
+      Parameters const& parameters,
+      Time const& smallest_osculating_period,
+      DiscreteTrajectory<Barycentric>& trajectory);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const

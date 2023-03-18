@@ -76,10 +76,9 @@ void OrbitAnalyser::RequestAnalysis(Parameters const& parameters) {
   if (analyser_idle_) {
     analyser_idle_ = false;
     analyser_ = MakeStoppableThread(
-        [this](Parameters parameters) {
+        [this, parameters]() {
           AnalyseOrbit(parameters).IgnoreError();
-        },
-        parameters);
+        });
   }
 }
 
@@ -104,7 +103,7 @@ double OrbitAnalyser::progress_of_next_analysis() const {
   return progress_of_next_analysis_;
 }
 
-absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
+absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
   Analysis analysis{parameters.first_time};
   DiscreteTrajectory<Barycentric> trajectory;
   trajectory.segments().front().SetDownsampling(
@@ -132,31 +131,10 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
     }
   }
   if (primary != nullptr) {
-    std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
-        &trajectory};
-    auto instance = ephemeris_->StoppableNewInstance(
-        trajectories,
-        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-        analysed_trajectory_parameters_);
-    RETURN_IF_STOPPED;
-
-    Time const analysis_duration = std::min(
-        parameters.extended_mission_duration.value_or(
-            parameters.mission_duration),
-        std::max(2 * smallest_osculating_period, parameters.mission_duration));
-    constexpr double progress_bar_steps = 0x1p10;
-    for (double n = 0; n <= progress_bar_steps; ++n) {
-      Instant const t =
-          parameters.first_time + n / progress_bar_steps * analysis_duration;
-      if (!ephemeris_->FlowWithFixedStep(t, *instance.value()).ok()) {
-        // TODO(egg): Report that the integration failed.
-        break;
-      }
-      progress_of_next_analysis_ =
-          (trajectory.back().time - parameters.first_time) / analysis_duration;
-      RETURN_IF_STOPPED;
-    }
-    analysis.mission_duration_ = trajectory.back().time - parameters.first_time;
+    auto const status_or_duration =
+        FlowWithProgressBar(parameters, smallest_osculating_period, trajectory);
+    RETURN_IF_ERROR(status_or_duration);
+    analysis.mission_duration_ = status_or_duration.value();
 
     // TODO(egg): |next_analysis_percentage_| only reflects the progress of
     // the integration, but the analysis itself can take a while; this results
@@ -250,6 +228,37 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
   next_analysis_ = std::move(analysis);
   analyser_idle_ = true;
   return absl::OkStatus();
+}
+
+absl::StatusOr<Time> OrbitAnalyser::FlowWithProgressBar(
+    Parameters const& parameters,
+    Time const& smallest_osculating_period,
+    DiscreteTrajectory<Barycentric>& trajectory) {
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+      &trajectory};
+  auto instance = ephemeris_->StoppableNewInstance(
+      trajectories,
+      Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+      analysed_trajectory_parameters_);
+  RETURN_IF_STOPPED;
+
+  Time const analysis_duration = std::min(
+      parameters.extended_mission_duration.value_or(
+          parameters.mission_duration),
+      std::max(2 * smallest_osculating_period, parameters.mission_duration));
+  constexpr double progress_bar_steps = 0x1p10;
+  for (double n = 0; n <= progress_bar_steps; ++n) {
+    Instant const t =
+        parameters.first_time + n / progress_bar_steps * analysis_duration;
+    if (!ephemeris_->FlowWithFixedStep(t, *instance.value()).ok()) {
+      // TODO(egg): Report that the integration failed.
+      break;
+    }
+    progress_of_next_analysis_ =
+        (trajectory.back().time - parameters.first_time) / analysis_duration;
+    RETURN_IF_STOPPED;
+  }
+  return trajectory.back().time - parameters.first_time;
 }
 
 Instant const& OrbitAnalyser::Analysis::first_time() const {
