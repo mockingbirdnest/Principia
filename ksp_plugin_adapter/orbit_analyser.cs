@@ -597,11 +597,13 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
 
   private void RenderNodeMeanSolarTimes(SolarTimesOfNodes? solar_times_of_nodes) {
     LabeledField(
-        "MST AN",  // REMOVE BEFORE FLIGHT: L10N
+        L10N.CacheFormat(
+            "#Principia_OrbitAnalyser_MeanSolarTimeOfAscendingNode"),
         solar_times_of_nodes?.mean_solar_times_of_ascending_nodes.
             FormatHourAngleInterval());
     LabeledField(
-        "MST DN",  // REMOVE BEFORE FLIGHT: L10N
+        L10N.CacheFormat(
+            "#Principia_OrbitAnalyser_MeanSolarTimeOfDescendingNode"),
         solar_times_of_nodes?.mean_solar_times_of_descending_nodes.
             FormatHourAngleInterval());
   }
