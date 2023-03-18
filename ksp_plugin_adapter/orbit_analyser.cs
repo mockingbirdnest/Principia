@@ -569,7 +569,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   }
 
   private void RenderEquatorialCrossings(EquatorialCrossings? equatorial_crossings,
-                                      CelestialBody primary) {
+                                         CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(

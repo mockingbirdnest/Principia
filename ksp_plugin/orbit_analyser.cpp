@@ -225,13 +225,13 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
         auto const sun_elements = OrbitalElements::ForTrajectory(
             *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
         if (sun_elements.ok()) {
-          auto const& sun_mean_elements = sun_elements->mean_elements();
+          auto const& sun_mean_elements = sun_elements->mean_elements().front();
           mean_sun = OrbitGroundTrack::MeanSun{
-              .epoch = sun_mean_elements.front().time,
+              .epoch = sun_mean_elements.time,
               .mean_longitude_at_epoch =
-                  sun_mean_elements.front().longitude_of_ascending_node +
-                  sun_mean_elements.front().argument_of_periapsis +
-                  sun_mean_elements.front().mean_anomaly,
+                  sun_mean_elements.longitude_of_ascending_node +
+                  sun_mean_elements.argument_of_periapsis +
+                  sun_mean_elements.mean_anomaly,
               .year = sun_elements->sidereal_period()};
         }
       }
