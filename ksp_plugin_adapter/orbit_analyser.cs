@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Net;
-using KSP.Localization;
-using static Targeting;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -98,6 +95,8 @@ internal static class Formatters {
     return $"{interval.FormatAngleInterval()} ({formatted_distance})";
   }
 
+  // Formats an interval of angles (given in radians) as an interval of times of
+  // day, mapping [0, 2π] to one day.
   public static string FormatHourAngleInterval(this Interval interval) {
     double half_width = (interval.max - interval.min) / 2;
     double midpoint = interval.min + half_width;
@@ -117,8 +116,8 @@ internal static class Formatters {
     return $"{formatted_midpoint}±{formatted_half_width}";
   }
 
-      // Formats a duration, omitting leading components if they are 0, and omitting
-      // leading 0s on the days; optionally exclude seconds.
+  // Formats a duration, omitting leading components if they are 0, and omitting
+  // leading 0s on the days; optionally exclude seconds.
   public static string FormatDuration(this double seconds,
                                       bool show_seconds = true) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
@@ -333,7 +332,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
           L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack"));
       RenderOrbitRecurrence(recurrence, primary);
       Style.LineSpacing();
-      RenderOrbitGroundTrack(equatorial_crossings, primary);
+      RenderEquatorialCrossings(equatorial_crossings, primary);
       Style.LineSpacing();
       RenderNodeMeanSolarTimes(solar_times_of_nodes);
     }
@@ -569,7 +568,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         recurrence?.grid_interval.FormatEquatorialAngle(primary));
   }
 
-  private void RenderOrbitGroundTrack(EquatorialCrossings? equatorial_crossings,
+  private void RenderEquatorialCrossings(EquatorialCrossings? equatorial_crossings,
                                       CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Label(

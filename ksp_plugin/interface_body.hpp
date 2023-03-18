@@ -221,7 +221,8 @@ inline bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
 
 inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
   return left.elements == right.elements &&
-         left.ground_track_equatorial_crossings == right.ground_track_equatorial_crossings &&
+         left.ground_track_equatorial_crossings ==
+             right.ground_track_equatorial_crossings &&
          left.solar_times_of_nodes == right.solar_times_of_nodes &&
          left.mission_duration == right.mission_duration &&
          left.primary_index == right.primary_index &&
@@ -589,20 +590,15 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .subcycle = recurrence.subcycle(),
     };
   }
-  if (vessel_analysis->ground_track().has_value()) {
-    if (vessel_analysis->ground_track()
-            ->mean_solar_times_of_ascending_nodes()
-            .has_value() &&
-        vessel_analysis->ground_track()
-            ->mean_solar_times_of_descending_nodes()
-            .has_value()) {
+  if (auto const& ground_track = vessel_analysis->ground_track();
+      ground_track.has_value()) {
+    if (ground_track->mean_solar_times_of_ascending_nodes().has_value() &&
+        ground_track->mean_solar_times_of_descending_nodes().has_value()) {
       analysis->solar_times_of_nodes = new SolarTimesOfNodes{
           .mean_solar_times_of_ascending_nodes =
-              ToInterval(*vessel_analysis->ground_track()
-                              ->mean_solar_times_of_ascending_nodes()),
-          .mean_solar_times_of_descending_nodes =
-              ToInterval(*vessel_analysis->ground_track()
-                              ->mean_solar_times_of_descending_nodes())};
+              ToInterval(*ground_track->mean_solar_times_of_ascending_nodes()),
+          .mean_solar_times_of_descending_nodes = ToInterval(
+              *ground_track->mean_solar_times_of_descending_nodes())};
     }
     if (vessel_analysis->equatorial_crossings().has_value()) {
       auto const& equatorial_crossings =

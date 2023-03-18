@@ -23,8 +23,8 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_quantities;
 
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>
@@ -202,6 +202,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
       for (auto const body : ephemeris_->bodies()) {
         if (body->name() == "Sun") {
           sun = body;
+          break;
         }
       }
       if (primary != sun && sun != nullptr) {
@@ -224,14 +225,13 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const parameters) {
         auto const sun_elements = OrbitalElements::ForTrajectory(
             *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
         if (sun_elements.ok()) {
+          auto const& sun_mean_elements = sun_elements->mean_elements();
           mean_sun = OrbitGroundTrack::MeanSun{
-              .epoch = sun_elements->mean_elements().front().time,
+              .epoch = sun_mean_elements.front().time,
               .mean_longitude_at_epoch =
-                  sun_elements->mean_elements()
-                      .front()
-                      .longitude_of_ascending_node +
-                  sun_elements->mean_elements().front().argument_of_periapsis +
-                  sun_elements->mean_elements().front().mean_anomaly,
+                  sun_mean_elements.front().longitude_of_ascending_node +
+                  sun_mean_elements.front().argument_of_periapsis +
+                  sun_mean_elements.front().mean_anomaly,
               .year = sun_elements->sidereal_period()};
         }
       }
