@@ -10,10 +10,13 @@
 #include "astronomy/orbital_elements.hpp"
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/interval.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
@@ -28,9 +31,12 @@ using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_interval;
 using namespace principia::geometry::_named_quantities;
+using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
@@ -127,16 +133,43 @@ class OrbitAnalyser {
   double progress_of_next_analysis() const;
 
  private:
+  using PrimaryCentred = Frame<struct PrimaryCentredTag, NonRotating>;
+
+  // Finds the primary body and analyze our orbit around it.
   absl::Status AnalyseOrbit(Parameters const& parameters);
+
+  // Locates the body with the smallest osculating period and returns it and its
+  // period.
+  absl::Status FindBodyWithSmallestOsculatingPeriod(
+      Parameters const& parameters,
+      RotatingBody<Barycentric> const*& primary,
+      Time& smallest_osculating_period);
 
   // Flows the |trajectory| with a fixed step integrator using the given
   // |parameters|.  This is done in small increments and
   // |progress_of_next_analysis_| is updated after each increment to be able to
-  // display a progress bar.  Returns the actual mission duration.
+  // display a progress bar.  Returns the actual mission duration.  This
+  // function may be stopped.
   absl::StatusOr<Time> FlowWithProgressBar(
       Parameters const& parameters,
       Time const& smallest_osculating_period,
       DiscreteTrajectory<Barycentric>& trajectory);
+
+  // If we can find a sun, computes its mean motion around the primary if it
+  // doesn't require too long an integration.  If there is no sun, or the
+  // integration would take too long, returns |std::nullopt|.
+  absl::StatusOr<std::optional<OrbitGroundTrack::MeanSun>>
+  ComputeMeanSunIfPossible(
+      Parameters const& parameters,
+      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+          primary_centred);
+
+  // Converts the |trajectory| to the given |primary_centred| frame.  This
+  // function may be stopped.
+  static absl::StatusOr<DiscreteTrajectory<PrimaryCentred>> ToPrimaryCentred(
+      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+          primary_centred,
+      DiscreteTrajectory<Barycentric> const& trajectory);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const

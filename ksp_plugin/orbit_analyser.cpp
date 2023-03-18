@@ -105,32 +105,20 @@ double OrbitAnalyser::progress_of_next_analysis() const {
 
 absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
   Analysis analysis{parameters.first_time};
-  DiscreteTrajectory<Barycentric> trajectory;
-  trajectory.segments().front().SetDownsampling(
-      OrbitAnalyserDownsamplingParameters());
-  trajectory.Append(parameters.first_time, parameters.first_degrees_of_freedom)
-      .IgnoreError();
 
   RotatingBody<Barycentric> const* primary = nullptr;
   auto smallest_osculating_period = Infinity<Time>;
-  for (auto const body : ephemeris_->bodies()) {
-    RETURN_IF_STOPPED;
-    auto const initial_osculating_elements =
-        KeplerOrbit<Barycentric>{
-            *body,
-            MasslessBody{},
-            parameters.first_degrees_of_freedom -
-                ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
-                    parameters.first_time),
-            parameters.first_time}
-            .elements_at_epoch();
-    if (initial_osculating_elements.period.has_value() &&
-        initial_osculating_elements.period < smallest_osculating_period) {
-      smallest_osculating_period = *initial_osculating_elements.period;
-      primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
-    }
-  }
+  auto const primary_status =
+      FindBodyWithSmallestOsculatingPeriod(parameters,
+                                           primary,
+                                           smallest_osculating_period);
+  RETURN_IF_ERROR(primary_status);
+
   if (primary != nullptr) {
+    DiscreteTrajectory<Barycentric> trajectory;
+    trajectory.segments().front().SetDownsampling(
+        OrbitAnalyserDownsamplingParameters());
+
     auto const status_or_duration =
         FlowWithProgressBar(parameters, smallest_osculating_period, trajectory);
     RETURN_IF_ERROR(status_or_duration);
@@ -141,17 +129,14 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
     // in the progress bar being stuck at 100% while the elements and nodes
     // are being computed.
 
-    using PrimaryCentred = Frame<struct PrimaryCentredTag, NonRotating>;
-    DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
-    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred>
+    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const
         primary_centred(ephemeris_, primary);
-    for (auto const& [time, degrees_of_freedom] : trajectory) {
-      RETURN_IF_STOPPED;
-      primary_centred_trajectory
-          .Append(time,
-                  primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
-          .IgnoreError();
-    }
+    auto const status_or_primary_centred_trajectory =
+        ToPrimaryCentred(primary_centred, trajectory);
+    RETURN_IF_ERROR(status_or_primary_centred_trajectory);
+    auto const& primary_centred_trajectory =
+        status_or_primary_centred_trajectory.value();
+
     analysis.primary_ = primary;
     analysis.radial_distance_interval_ =
         RadialDistanceInterval(primary_centred_trajectory);
@@ -174,45 +159,10 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
         analysis.closest_recurrence_.reset();
       }
 
-      std::optional<OrbitGroundTrack::MeanSun> mean_sun;
-      MassiveBody const* sun = nullptr;
-      auto smallest_osculating_period = Infinity<Time>;
-      for (auto const body : ephemeris_->bodies()) {
-        if (body->name() == "Sun") {
-          sun = body;
-          break;
-        }
-      }
-      if (primary != sun && sun != nullptr) {
-        auto const sun_osculating_elements =
-            KeplerOrbit<Barycentric>{
-                *primary,
-                *sun,
-                ephemeris_->trajectory(sun)->EvaluateDegreesOfFreedom(
-                    parameters.first_time) -
-                    ephemeris_->trajectory(primary)->EvaluateDegreesOfFreedom(
-                        parameters.first_time),
-                parameters.first_time}
-                .elements_at_epoch();
-        Time const ephemeris_span = ephemeris_->t_max() - ephemeris_->t_min();
-        if (ephemeris_span < 1.5 * *sun_osculating_elements.period &&
-            ephemeris_span < 20 * JulianYear) {
-          RETURN_IF_ERROR(
-              ephemeris_->Prolong(ephemeris_->t_max() + 0.5 * JulianYear));
-        }
-        auto const sun_elements = OrbitalElements::ForTrajectory(
-            *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
-        if (sun_elements.ok()) {
-          auto const& sun_mean_elements = sun_elements->mean_elements().front();
-          mean_sun = OrbitGroundTrack::MeanSun{
-              .epoch = sun_mean_elements.time,
-              .mean_longitude_at_epoch =
-                  sun_mean_elements.longitude_of_ascending_node +
-                  sun_mean_elements.argument_of_periapsis +
-                  sun_mean_elements.mean_anomaly,
-              .year = sun_elements->sidereal_period()};
-        }
-      }
+      auto const status_or_mean_sun =
+          ComputeMeanSunIfPossible(parameters, primary_centred);
+      RETURN_IF_ERROR(status_or_mean_sun);
+      auto const& mean_sun = status_or_mean_sun.value();
 
       auto ground_track =
           OrbitGroundTrack::ForTrajectory(primary_centred_trajectory,
@@ -230,10 +180,40 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
   return absl::OkStatus();
 }
 
+absl::Status OrbitAnalyser::FindBodyWithSmallestOsculatingPeriod(
+    Parameters const& parameters,
+    RotatingBody<Barycentric> const*& primary,
+    Time& smallest_osculating_period) {
+  primary = nullptr;
+  smallest_osculating_period = Infinity<Time>;
+  for (auto const body : ephemeris_->bodies()) {
+    RETURN_IF_STOPPED;
+    auto const initial_osculating_elements =
+        KeplerOrbit<Barycentric>{
+            *body,
+            MasslessBody{},
+            parameters.first_degrees_of_freedom -
+                ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(
+                    parameters.first_time),
+            parameters.first_time}
+            .elements_at_epoch();
+    if (initial_osculating_elements.period.has_value() &&
+        initial_osculating_elements.period < smallest_osculating_period) {
+      smallest_osculating_period = *initial_osculating_elements.period;
+      primary = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body);
+    }
+  }
+
+  return absl::OkStatus();
+}
+
 absl::StatusOr<Time> OrbitAnalyser::FlowWithProgressBar(
     Parameters const& parameters,
     Time const& smallest_osculating_period,
     DiscreteTrajectory<Barycentric>& trajectory) {
+  trajectory.Append(parameters.first_time,
+                    parameters.first_degrees_of_freedom).IgnoreError();
+
   std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
       &trajectory};
   auto instance = ephemeris_->StoppableNewInstance(
@@ -259,6 +239,73 @@ absl::StatusOr<Time> OrbitAnalyser::FlowWithProgressBar(
     RETURN_IF_STOPPED;
   }
   return trajectory.back().time - parameters.first_time;
+}
+
+absl::StatusOr<std::optional<OrbitGroundTrack::MeanSun>>
+OrbitAnalyser::ComputeMeanSunIfPossible(
+    Parameters const& parameters,
+    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+        primary_centred) {
+  auto const primary = primary_centred.centre();
+  MassiveBody const* sun = nullptr;
+  std::optional<OrbitGroundTrack::MeanSun> mean_sun;
+
+  // Find the sun.  If there is none, we are done.
+  for (auto const body : ephemeris_->bodies()) {
+    if (body->name() == "Sun") {
+      sun = body;
+      break;
+    }
+  }
+
+  if (primary != sun && sun != nullptr) {
+    auto const sun_osculating_elements =
+        KeplerOrbit<Barycentric>{
+            *primary,
+            *sun,
+            ephemeris_->trajectory(sun)->EvaluateDegreesOfFreedom(
+                parameters.first_time) -
+                ephemeris_->trajectory(primary)->EvaluateDegreesOfFreedom(
+                    parameters.first_time),
+            parameters.first_time}
+            .elements_at_epoch();
+    Time const ephemeris_span = ephemeris_->t_max() - ephemeris_->t_min();
+    if (ephemeris_span < 1.5 * *sun_osculating_elements.period &&
+        ephemeris_span < 20 * JulianYear) {
+      RETURN_IF_ERROR(
+          ephemeris_->Prolong(ephemeris_->t_max() + 0.5 * JulianYear));
+    }
+    auto const sun_elements = OrbitalElements::ForTrajectory(
+        *ephemeris_->trajectory(sun), primary_centred, *primary, *sun);
+    if (sun_elements.ok()) {
+      auto const& sun_mean_elements = sun_elements->mean_elements().front();
+      mean_sun = OrbitGroundTrack::MeanSun{
+          .epoch = sun_mean_elements.time,
+          .mean_longitude_at_epoch =
+              sun_mean_elements.longitude_of_ascending_node +
+              sun_mean_elements.argument_of_periapsis +
+              sun_mean_elements.mean_anomaly,
+          .year = sun_elements->sidereal_period()};
+    }
+  }
+
+  return mean_sun;
+}
+
+absl::StatusOr<DiscreteTrajectory<OrbitAnalyser::PrimaryCentred>>
+OrbitAnalyser::ToPrimaryCentred(
+    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+        primary_centred,
+    DiscreteTrajectory<Barycentric> const& trajectory) {
+  DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
+    RETURN_IF_STOPPED;
+    primary_centred_trajectory
+        .Append(time,
+                primary_centred.ToThisFrameAtTime(time)(degrees_of_freedom))
+        .IgnoreError();
+  }
+  return primary_centred_trajectory;
 }
 
 Instant const& OrbitAnalyser::Analysis::first_time() const {
