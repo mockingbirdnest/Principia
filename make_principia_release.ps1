@@ -118,5 +118,5 @@ if ($mathematician.contains("TEST")) {
   echo "  git tag --delete $tag"
   echo "to clean up."
 } else {
-  git push $remote --tags
+  git push $remote $tag
 }
