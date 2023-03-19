@@ -481,6 +481,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                       coast_analysis.elements?.nodal_period);
       orbit_description = OrbitAnalyser.OrbitDescription(
           primary,
+          coast_analysis.mission_duration,
           coast_analysis.elements,
           coast_analysis.recurrence,
           coast_analysis.ground_track_equatorial_crossings,

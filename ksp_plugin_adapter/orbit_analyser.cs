@@ -194,6 +194,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                       analysis.primary_index.Value]
                                   : null;
       orbit_description_ = OrbitDescription(primary,
+                                            analysis.mission_duration,
                                             analysis.elements,
                                             analysis.recurrence,
                                             analysis.ground_track_equatorial_crossings,
@@ -261,6 +262,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
                                   : null;
 
       orbit_description_ = OrbitDescription(primary,
+                                            mission_duration,
                                             elements,
                                             recurrence,
                                             equatorial_crossings,
@@ -340,6 +342,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   }
 
   public static string OrbitDescription(CelestialBody primary,
+                                        double mission_duration,
                                         OrbitalElements? elements,
                                         OrbitRecurrence? recurrence,
                                         EquatorialCrossings? equatorial_crossings,
@@ -426,7 +429,24 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
         }
       }
     }
-    // TODO(egg): do something about heliosynchronicity.
+    if (solar_times_of_nodes.HasValue) {
+      Interval ascending_times = solar_times_of_nodes.Value.
+          mean_solar_times_of_ascending_nodes;
+      Interval descending_times = solar_times_of_nodes.Value.
+          mean_solar_times_of_descending_nodes;
+      double drift = Math.Max(
+          ascending_times.max - ascending_times.min,
+          descending_times.max - descending_times.min);
+      double revolutions = mission_duration / elements.Value.nodal_period;
+      // We ignore 0 drift as it means that there was only one pass, which is
+      // insufficient to assess synchronicity.
+      // TODO(egg): The criterion should be the drift per year, not the drift
+      // per revolution, but we would need to bring the mean sun here.
+      if (drift > 0 && drift / revolutions < 0.001 * degree) {
+        properties += L10N.CacheFormat(
+            "#Principia_OrbitAnalyser_OrbitDescription_SunSynchronous");
+      }
+    }
     return L10N.CelestialString("#Principia_OrbitAnalyser_OrbitDescription",
                                 new[]{primary},
                                 properties);
