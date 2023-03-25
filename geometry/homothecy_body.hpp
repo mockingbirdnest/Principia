@@ -12,8 +12,9 @@ namespace internal {
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
+template<typename>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)
-    : scale_(scale) {}
+    : Homothecy(PrivateConstructor{}, scale) {}
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
@@ -28,39 +29,19 @@ Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
+template<typename>
+Homothecy<Scalar, FromFrame, ToFrame>
+Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
+  return Homothecy(PrivateConstructor{}, 1);
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename VScalar>
 Vector<Product<VScalar, Scalar>, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(
     Vector<VScalar, FromFrame> const& vector) const {
   return Vector<Product<VScalar, Scalar>, ToFrame>(vector.coordinates() *
                                                    scale_);
-}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename BScalar>
-Bivector<Product<BScalar, Square<Scalar>>, ToFrame>
-Homothecy<Scalar, FromFrame, ToFrame>::operator()(
-    Bivector<BScalar, FromFrame> const& bivector) const {
-  return Bivector<Product<BScalar, Scalar>, ToFrame>(bivector.coordinates() *
-                                                     Pow<2>(scale_));
-}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename TScalar>
-Trivector<Product<TScalar, Cube<Scalar>>, ToFrame>
-Homothecy<Scalar, FromFrame, ToFrame>::operator()(
-    Trivector<TScalar, FromFrame> const& trivector) const {
-  return Trivector<Product<TScalar, Cube<Scalar>>, ToFrame>(
-      trivector.coordinates() * Pow<3>(scale_));
-}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename Scalar, typename Scalar, template<typename Scalar, typename, typename> typename Multivector>
-SymmetricBilinearForm<Scalar, ToFrame, Multivector>
-Homothecy<Scalar, FromFrame, ToFrame>::operator()(
-    SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
-  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(
-      form.coordinates());
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -74,7 +55,6 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 template<template<typename, typename> typename LinearMap>
 LinearMap<FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Forget() const {
-  return LinearMap<FromFrame, ToFrame>::Homothecy();
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -98,27 +78,38 @@ Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
-    not_null<serialization::Homothecy*> const message) const {}
+    not_null<serialization::Homothecy*> const message) const {
+  scale_.WriteToMessage(message->mutable_scale());
+}
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::Homothecy const& message) {
-  return Homothecy();
+  return Homothecy(Scalar::ReadFromMessage(message.scale()));
 }
 
-template<typename Scalar, typename FromFrame, typename ThroughFrame, typename ToFrame>
-Homothecy<Scalar, FromFrame, ToFrame> operator*(
-    Homothecy<Scalar, ThroughFrame, ToFrame> const& left,
-    Homothecy<Scalar, FromFrame, ThroughFrame> const& right) {
-  return Homothecy<Scalar, FromFrame, ToFrame>();
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(PrivateConstructor,
+                                                 Scalar const& scale)
+    : scale_(scale) {
+  CHECK_LE(Scalar{}, scale_);
+}
+
+template<typename LScalar, typename RScalar,
+         typename FromFrame, typename ThroughFrame, typename ToFrame>
+Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
+    Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
+    Homothecy<RScalar, FromFrame, ThroughFrame> const& right) {
+  return Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame>(left.scale_ *
+                                                                  right.scale_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Homothecy<Scalar, FromFrame, ToFrame> const& homothecy) {
-  return out << "𝟙";
+  return out << homothecy.scale_;
 }
 
 }  // namespace internal

@@ -91,6 +91,7 @@ message Homothecy {
   extend LinearMap {
     optional Homothecy extension = 1005;
   }
+  required Quantity scale = 1;
 }
 
 message OrthogonalMap {

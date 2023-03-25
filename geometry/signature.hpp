@@ -30,7 +30,7 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
   constexpr Signature(Sign x, DeduceSign y, Sign z);
   constexpr Signature(DeduceSign x, Sign y, Sign z);
 
-  constexpr Sign Determinant() const override;
+  constexpr Sign Determinant() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,

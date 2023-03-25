@@ -179,6 +179,9 @@
     <ClInclude Include="homothecy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -256,8 +259,8 @@
     <ClCompile Include="plane_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="homothecy_body.hpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="homothecy_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

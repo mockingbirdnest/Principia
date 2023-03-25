@@ -16,7 +16,6 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -26,29 +25,21 @@ class Homothecy : public LinearMap<FromFrame, ToFrame> {
                 "handedness");
 
  public:
+  template<typename = std::enable_if_t<!std::is_floating_point_v<Scalar> &&
+                                       !std::is_integral_v<Scalar>>>
   explicit Homothecy(Scalar const& scale);
 
   Cube<Scalar> Determinant() const;
 
   Homothecy<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
 
+  template<typename = std::enable_if_t<std::is_floating_point_v<Scalar> ||
+                                       std::is_integral_v<Scalar>>>
+  static Homothecy Identity();
+
   template<typename VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
-
-  template<typename BScalar>
-  Bivector<Product<BScalar, Square<Scalar>>, ToFrame> operator()(
-      Bivector<BScalar, FromFrame> const& bivector) const;
-
-  template<typename TScalar>
-  Trivector<Product<TScalar, Cube<Scalar>>, ToFrame> operator()(
-      Trivector<TScalar, FromFrame> const& trivector) const;
-
-  //???
-  template<typename Scalar,
-           template<typename, typename> typename Multivector>
-  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<typename T>
   typename base::Mappable<Homothecy, T>::type operator()(T const& t) const;
@@ -71,7 +62,20 @@ class Homothecy : public LinearMap<FromFrame, ToFrame> {
   static Homothecy ReadFromMessage(serialization::Homothecy const& message);
 
  private:
+  struct PrivateConstructor {};
+  Homothecy(PrivateConstructor, Scalar const& scale);
+
   Scalar const scale_;
+
+  template<typename L, typename R,
+           typename From, typename Through, typename To>
+  friend Homothecy<Product<L, R>, From, To> operator*(
+      Homothecy<L, Through, To> const& left,
+      Homothecy<R, From, Through> const& right);
+
+  template<typename S, typename From, typename To>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Homothecy<S, From, To> const& homothecy);
 };
 
 template<typename LScalar, typename RScalar,
@@ -80,10 +84,10 @@ Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
     Homothecy<RScalar, FromFrame, ThroughFrame> const& right);
 
-template<typename FromFrame, typename ToFrame, typename Scalar>
+template<typename Scalar, typename FromFrame, typename ToFrame>
 std::ostream& operator<<(
     std::ostream& out,
-    Homothecy<FromFrame, ToFrame, Scalar> const& homothecy);
+    Homothecy<Scalar, FromFrame, ToFrame> const& homothecy);
 
 }  // namespace internal
 
@@ -92,3 +96,5 @@ using internal::Homothecy;
 }  // namespace _homothecy
 }  // namespace geometry
 }  // namespace principia
+
+#include "geometry/homothecy_body.hpp"

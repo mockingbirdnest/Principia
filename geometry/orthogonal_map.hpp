@@ -49,7 +49,7 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
  public:
-  Sign Determinant() const override;
+  Sign Determinant() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
