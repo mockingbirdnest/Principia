@@ -94,7 +94,7 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(PrivateConstructor,
                                                  Scalar const& scale)
     : scale_(scale) {
-  CHECK_LE(Scalar{}, scale_);
+  CHECK_LT(Scalar{}, scale_);
 }
 
 template<typename LScalar, typename RScalar,
@@ -107,8 +107,9 @@ Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-std::ostream& operator<<(std::ostream& out,
-                         Homothecy<Scalar, FromFrame, ToFrame> const& homothecy) {
+std::ostream& operator<<(
+    std::ostream& out,
+    Homothecy<Scalar, FromFrame, ToFrame> const& homothecy) {
   return out << homothecy.scale_;
 }
 
