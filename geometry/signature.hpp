@@ -19,7 +19,8 @@ struct DeduceSignReversingOrientation final {};
 // identity 𝟙, the central inversion -𝟙, the 180° rotations around all three
 // axes, and the reflections across the planes orthogonal to all three axes.
 template<typename FromFrame, typename ToFrame>
-class Signature : public LinearMap<FromFrame, ToFrame> {
+class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
+                                   FromFrame, ToFrame> {
  public:
   using DeduceSign =
       std::conditional_t<FromFrame::handedness == ToFrame::handedness,

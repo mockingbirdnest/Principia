@@ -47,7 +47,8 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 // |ToFrame|, as well as the induced maps on the exterior algebra.
 // The orthogonal map is modeled as a rotoinversion.
 template<typename FromFrame, typename ToFrame>
-class OrthogonalMap : public LinearMap<FromFrame, ToFrame> {
+class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
+                                       FromFrame, ToFrame> {
  public:
   Sign Determinant() const;
 

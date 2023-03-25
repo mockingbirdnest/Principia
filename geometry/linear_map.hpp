@@ -11,10 +11,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 
-template<typename FromFrame, typename ToFrame>
+template<typename Map, typename FromFrame, typename ToFrame>
 class LinearMap {
  public:
-  LinearMap() = default;
   virtual ~LinearMap() = default;
 
 // The following is the contract that must be implemented by subclasses.

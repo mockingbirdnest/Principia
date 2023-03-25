@@ -81,7 +81,8 @@ struct DefinesFrame final {};
 // |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
 // algebra.
 template<typename FromFrame, typename ToFrame>
-class Rotation : public LinearMap<FromFrame, ToFrame> {
+class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
+                                  FromFrame, ToFrame> {
   static_assert(FromFrame::handedness == ToFrame::handedness,
                 "Cannot rotate between frames of different handedness");
 

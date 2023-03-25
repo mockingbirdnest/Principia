@@ -7,16 +7,16 @@ namespace geometry {
 namespace _linear_map {
 namespace internal {
 
-template<typename FromFrame, typename ToFrame>
-void LinearMap<FromFrame, ToFrame>::WriteToMessage(
+template<typename Map, typename FromFrame, typename ToFrame>
+void LinearMap<Map, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) {
   FromFrame::WriteToMessage(message->mutable_from_frame());
   ToFrame::WriteToMessage(message->mutable_to_frame());
 }
 
-template<typename FromFrame, typename ToFrame>
+template<typename Map,typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
-void LinearMap<FromFrame, ToFrame>::ReadFromMessage(
+void LinearMap<Map, FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
   FromFrame::ReadFromMessage(message.from_frame());
   ToFrame::ReadFromMessage(message.to_frame());

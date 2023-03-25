@@ -19,7 +19,8 @@ using namespace principia::geometry::_linear_map;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-class Homothecy : public LinearMap<FromFrame, ToFrame> {
+class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
+                                   FromFrame, ToFrame> {
   static_assert(FromFrame::handedness == ToFrame::handedness,
                 "Cannot perform an homothecy between frames with different "
                 "handedness");

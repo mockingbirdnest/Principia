@@ -79,7 +79,7 @@ OrthogonalMap<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<OrthogonalMap, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::OrthogonalMap::extension));
 }
@@ -89,7 +89,7 @@ template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<OrthogonalMap, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::OrthogonalMap::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::OrthogonalMap::extension));
