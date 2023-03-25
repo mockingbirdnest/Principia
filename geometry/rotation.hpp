@@ -209,7 +209,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            CardanoAngles axes,
            DefinesFrame<FromFrame> tag);
 
-  Sign Determinant() const override;
+  Sign Determinant() const;
 
   Rotation<ToFrame, FromFrame> Inverse() const;
 

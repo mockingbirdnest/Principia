@@ -64,7 +64,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   explicit Permutation(CoordinatePermutation coordinate_permutation);
 
-  Sign Determinant() const override;
+  Sign Determinant() const;
 
   Permutation<ToFrame, FromFrame> Inverse() const;
 

@@ -18,6 +18,7 @@
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="hilbert.hpp" />
     <ClInclude Include="hilbert_body.hpp" />
+    <ClInclude Include="homothecy.hpp" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
     <ClInclude Include="interval.hpp" />
@@ -60,6 +61,7 @@
     <ClInclude Include="symmetric_bilinear_form.hpp" />
     <ClInclude Include="symmetric_bilinear_form_body.hpp" />
     <ClInclude Include="traits.hpp" />
+    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
@@ -68,6 +70,7 @@
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="hilbert_test.cpp" />
+    <ClCompile Include="homothecy_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="instant_output.cpp" />
     <ClCompile Include="instant_output_test.cpp" />

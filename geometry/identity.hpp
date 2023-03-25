@@ -36,7 +36,7 @@ class Identity : public LinearMap<FromFrame, ToFrame> {
  public:
   Identity() = default;
 
-  Sign Determinant() const override;
+  Sign Determinant() const;
 
   Identity<ToFrame, FromFrame> Inverse() const;
 

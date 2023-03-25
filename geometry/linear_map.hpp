@@ -17,8 +17,6 @@ class LinearMap {
   LinearMap() = default;
   virtual ~LinearMap() = default;
 
-  virtual Sign Determinant() const = 0;
-
 // The following is the contract that must be implemented by subclasses.
 // Apologies for the commented-out code, but we cannot write this in real C++
 // because templates cannot be virtual and because the return type is not
