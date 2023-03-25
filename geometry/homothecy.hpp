@@ -26,6 +26,8 @@ class Homothecy : public LinearMap<FromFrame, ToFrame> {
                 "handedness");
 
  public:
+  explicit Homothecy(Scalar const& scale);
+
   Cube<Scalar> Determinant() const;
 
   Homothecy<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
@@ -34,14 +36,15 @@ class Homothecy : public LinearMap<FromFrame, ToFrame> {
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
-  Bivector<Scalar, ToFrame> operator()(
-      Bivector<Scalar, FromFrame> const& bivector) const;
+  template<typename BScalar>
+  Bivector<Product<BScalar, Square<Scalar>>, ToFrame> operator()(
+      Bivector<BScalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
-  Trivector<Scalar, ToFrame> operator()(
-      Trivector<Scalar, FromFrame> const& trivector) const;
+  template<typename TScalar>
+  Trivector<Product<TScalar, Cube<Scalar>>, ToFrame> operator()(
+      Trivector<TScalar, FromFrame> const& trivector) const;
 
+  //???
   template<typename Scalar,
            template<typename, typename> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
@@ -68,8 +71,7 @@ class Homothecy : public LinearMap<FromFrame, ToFrame> {
   static Homothecy ReadFromMessage(serialization::Homothecy const& message);
 
  private:
-  template<typename Scalar>
-  R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
+  Scalar const scale_;
 };
 
 template<typename LScalar, typename RScalar,
