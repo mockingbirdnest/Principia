@@ -41,8 +41,6 @@ class ConformalMapTest : public testing::Test {
   using DirectOrth = OrthogonalMap<DirectWorld, DirectWorld>;
   using MirrorOrth = OrthogonalMap<MirrorWorld, DirectWorld>;
   using Rot = Rotation<DirectWorld, DirectWorld>;
-  using DirectSig = Signature<DirectWorld, DirectWorld>;
-  using MirrorSig = Signature<MirrorWorld, DirectWorld>;
 
   ConformalMapTest()
       : direct_vector_(Vector<Length, DirectWorld>(
