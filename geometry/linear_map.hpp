@@ -38,7 +38,7 @@ class LinearMap {
   //
   //   virtual LinearMap<..., ToFrame, FromFrame> Inverse() const = 0;
 
-protected:
+ protected:
   // Serialization of the frames.  These are just helper functions for
   // implementing the subclasses, they don't dispatch to the subclasses.
 
