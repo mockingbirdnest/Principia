@@ -303,7 +303,7 @@ Quaternion const& Rotation<FromFrame, ToFrame>::quaternion() const {
 template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Rotation, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(message->MutableExtension(serialization::Rotation::extension));
 }
 
@@ -311,7 +311,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Rotation, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Rotation::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Rotation::extension));

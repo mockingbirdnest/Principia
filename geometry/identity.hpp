@@ -29,7 +29,8 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>
-class Identity : public LinearMap<FromFrame, ToFrame> {
+class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
+                                  FromFrame, ToFrame> {
   static_assert(FromFrame::handedness == ToFrame::handedness,
                 "Cannot identity frames with different handedness");
 

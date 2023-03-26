@@ -55,7 +55,8 @@ enum class OddPermutation {
 // practical.  There are no precision losses when composing or applying
 // permutations.
 template<typename FromFrame, typename ToFrame>
-class Permutation : public LinearMap<FromFrame, ToFrame> {
+class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
+                                     FromFrame, ToFrame> {
  public:
   using CoordinatePermutation =
       std::conditional_t<FromFrame::handedness == ToFrame::handedness,

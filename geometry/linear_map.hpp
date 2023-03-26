@@ -1,8 +1,8 @@
 #pragma once
 
+#include "base/mappable.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
@@ -10,52 +10,45 @@ namespace _linear_map {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
 
-template<typename FromFrame, typename ToFrame>
+template<typename Map, typename FromFrame, typename ToFrame>
 class LinearMap {
  public:
-  LinearMap() = default;
   virtual ~LinearMap() = default;
 
-// The following is the contract that must be implemented by subclasses.
-// Apologies for the commented-out code, but we cannot write this in real C++
-// because templates cannot be virtual and because the return type is not
-// covariant in inheritance.
-//
-//   virtual LinearMap<ToFrame, FromFrame> Inverse() const = 0;
-//
-//   template<typename Scalar>
-//   virtual Vector<Scalar, ToFrame> operator()(
-//       Vector<Scalar, FromFrame> const& vector) const = 0;
-//
-//   template<typename Scalar>
-//   virtual Bivector<Scalar, ToFrame> operator()(
-//       Bivector<Scalar, FromFrame> const& bivector) const = 0;
-//
-//   template<typename Scalar>
-//   virtual Trivector<Scalar, ToFrame> operator()(
-//       Trivector<Scalar, FromFrame> const& trivector) const = 0;
-//
-//   template<typename Scalar>
-//   SymmetricBilinearForm<Scalar, ToFrame> operator()(
-//       SymmetricBilinearForm<Scalar, FromFrame> const& form) const = 0;
-//
-//   template<typename T>
-//   typename base::Mappable<LinearMap, T>::type operator()(T const& t) const;
-//
+  // The contract of linear maps.  All subclasses must implement these functions
+  // lest they go into infinite loops or trigger weird compilation errors.  In
+  // C++23, we'll want to use concepts.
+
+  static Map Identity();
+
+  // Our vector are effectively contravariant.  Note that only orthogonal maps
+  // operate on bivectors, trivectors, and symmetric bilinear forms because we
+  // do not want to distinguish their possible co/contravariance.
+  template<typename Scalar>
+  Vector<Scalar, ToFrame> operator()(
+      Vector<Scalar, FromFrame> const& vector) const;
+
+  template<typename T>
+  typename base::Mappable<Map, T>::type operator()(T const& t) const;
+
+  // Apologies for the commented-out code, but we cannot write the return type
+  // of this function.
+  //
+  //   virtual LinearMap<..., ToFrame, FromFrame> Inverse() const = 0;
+
  protected:
   // Serialization of the frames.  These are just helper functions for
   // implementing the subclasses, they don't dispatch to the subclasses.
+
   static void WriteToMessage(not_null<serialization::LinearMap*> message);
+
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<base::is_serializable_v<F> &&
                                        base::is_serializable_v<T>>>
   static void ReadFromMessage(serialization::LinearMap const& message);
-
-//   template<typename Scalar>
-//   virtual R3Element<Scalar> operator()(
-//       R3Element<Scalar> const& r3_element) const = 0;
 };
 
 }  // namespace internal
