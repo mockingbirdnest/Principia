@@ -77,6 +77,7 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::ConformalMap*> const message) const {
   scale_.WriteToMessage(message->mutable_scale());
+  orthogonal_map_.WriteToMessage(message->mutable_orthogonal_map());
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -84,7 +85,10 @@ template<typename, typename, typename>
 ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::ConformalMap const& message) {
-  return ConformalMap(Scalar::ReadFromMessage(message.scale()));
+  return ConformalMap(PrivateConstructor{},
+                      Scalar::ReadFromMessage(message.scale()),
+                      OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
+                          message.orthogonal_map()));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

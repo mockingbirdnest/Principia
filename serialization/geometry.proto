@@ -85,6 +85,8 @@ message ConformalMap {
   extend LinearMap {
     optional ConformalMap extension = 1006;
   }
+  required Quantity scale = 1;
+  required OrthogonalMap orthogonal_map = 2;
 }
 
 message Identity {

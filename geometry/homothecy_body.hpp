@@ -91,7 +91,8 @@ template<typename, typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::Homothecy const& message) {
-  return Homothecy(Scalar::ReadFromMessage(message.scale()));
+  return Homothecy(PrivateConstructor{},
+                   Scalar::ReadFromMessage(message.scale()));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

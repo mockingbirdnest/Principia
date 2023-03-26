@@ -268,5 +268,8 @@
     <ClCompile Include="homothecy_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="conformal_map_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
