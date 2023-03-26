@@ -182,6 +182,12 @@
     <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="conformal_map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="conformal_map_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">

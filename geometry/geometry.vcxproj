@@ -14,6 +14,8 @@
     <ClInclude Include="cartesian_product_body.hpp" />
     <ClInclude Include="complexification.hpp" />
     <ClInclude Include="complexification_body.hpp" />
+    <ClInclude Include="conformal_map.hpp" />
+    <ClInclude Include="conformal_map_body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="hilbert.hpp" />

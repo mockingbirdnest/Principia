@@ -30,6 +30,7 @@ namespace _rotation {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_symmetric_bilinear_form;

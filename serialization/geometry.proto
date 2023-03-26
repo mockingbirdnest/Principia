@@ -78,7 +78,13 @@ message SymmetricBilinearForm {
 message LinearMap {
   required Frame from_frame = 1;
   required Frame to_frame = 2;
-  extensions 1000 to 1999;  // Last used: 1005.
+  extensions 1000 to 1999;  // Last used: 1006.
+}
+
+message ConformalMap {
+  extend LinearMap {
+    optional ConformalMap extension = 1006;
+  }
 }
 
 message Identity {
