@@ -1185,7 +1185,6 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
       Exponentiation<Length, -3> const one_over_Δq³ =
           one_over_Δq_norm * one_over_Δq_norm * one_over_Δq_norm;
 
-      auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
       Quotient<SpecificEnergy, GravitationalParameter> const
           spherical_harmonics_effect =
               geopotentials_[b1].GeneralSphericalHarmonicsPotential(

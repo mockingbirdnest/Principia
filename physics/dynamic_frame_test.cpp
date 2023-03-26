@@ -556,7 +556,7 @@ TEST_F(DynamicFrameTest, FrenetFrame) {
       }));
 
   EXPECT_CALL(jaw_to_jaw_frame, MotionOfThisFrame(_))
-      .WillRepeatedly(Invoke([this, &jaw_to_jaw_frame](Instant const& t) {
+      .WillRepeatedly(Invoke([&jaw_to_jaw_frame](Instant const& t) {
         Bivector<AngularAcceleration, FixedJaw> const
             angular_acceleration_of_to_frame;
         Vector<Acceleration, FixedJaw> const acceleration_of_to_frame_origin;
@@ -587,7 +587,7 @@ TEST_F(DynamicFrameTest, FrenetFrame) {
       }));
 
   EXPECT_CALL(jaw_to_handle_frame, MotionOfThisFrame(_))
-      .WillRepeatedly(Invoke([this, &jaw_to_handle_frame](Instant const& t) {
+      .WillRepeatedly(Invoke([&jaw_to_handle_frame](Instant const& t) {
         Bivector<AngularAcceleration, MovingJaw> const
             angular_acceleration_of_to_frame;
         Vector<Acceleration, MovingJaw> const
