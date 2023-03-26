@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -20,6 +21,7 @@ namespace geometry {
 using ::testing::Eq;
 using namespace principia::geometry::_conformal_map;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -43,12 +45,10 @@ class ConformalMapTest : public testing::Test {
   using MirrorSig = Signature<MirrorWorld, DirectWorld>;
 
   ConformalMapTest()
-      : direct_vector_(Vector<quantities::Length, DirectWorld>(
-            R3Element<quantities::Length>(
-                1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        mirror_vector_(Vector<quantities::Length, MirrorWorld>(
-            R3Element<quantities::Length>(
-                1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+      : direct_vector_(Vector<Length, DirectWorld>(
+            {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
+        mirror_vector_(Vector<Length, MirrorWorld>(
+            {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
         conformal_a_(
             MirrorConf(5 * Mole,
                        MirrorOrth(Rot(120 * Degree,
@@ -65,8 +65,8 @@ class ConformalMapTest : public testing::Test {
                                       Bivector<double, DirectWorld>({1, 0, 0}))
                                       .quaternion()))) {}
 
-  Vector<quantities::Length, DirectWorld> direct_vector_;
-  Vector<quantities::Length, MirrorWorld> mirror_vector_;
+  Vector<Length, DirectWorld> direct_vector_;
+  Vector<Length, MirrorWorld> mirror_vector_;
   MirrorConf conformal_a_;
   DirectConf conformal_b_;
   MirrorConf conformal_c_;
@@ -76,35 +76,41 @@ using ConformalMapDeathTest = ConformalMapTest;
 
 TEST_F(ConformalMapTest, AppliedToVector) {
   EXPECT_THAT(conformal_a_(mirror_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(-3.0 * Metre,
-                                                -1.0 * Metre,
-                                                -2.0 * Metre)), 4));
+              AlmostEquals(Vector<Product<Length, Amount>, DirectWorld>(
+                               {15.0 * Metre * Mole,
+                                5.0 * Metre * Mole,
+                                10.0 * Metre * Mole}),
+                  4));
   EXPECT_THAT(conformal_b_(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(1.0 * Metre,
-                                                -3.0 * Metre,
-                                                2.0 * Metre)), 1, 2));
+              AlmostEquals(Vector<Product<Length, Amount>, DirectWorld>(
+                               {5.0 * Metre * Mole,
+                                -15.0 * Metre * Mole,
+                                10.0 * Metre * Mole}),
+                  1,
+                  2));
 }
 
 TEST_F(ConformalMapTest, Inverse) {
   EXPECT_THAT(conformal_a_.Inverse()(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, MirrorWorld>(
-                  R3Element<quantities::Length>(-2.0 * Metre,
-                                                -3.0 * Metre,
-                                                -1.0 * Metre)), 2));
+              AlmostEquals(Vector<Quotient<Length, Amount>, MirrorWorld>(
+                               {-0.2 * Metre / Mole,
+                                -0.4 * Metre / Mole,
+                                -0.6 * Metre / Mole}),
+                           2));
   EXPECT_THAT(conformal_b_.Inverse()(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(1.0 * Metre,
-                                                3.0 * Metre,
-                                                -2.0 * Metre)), 1, 2));
+              AlmostEquals(Vector<Quotient<Length, Amount>, DirectWorld>(
+                               {0.2 * Metre / Mole,
+                                0.4 * Metre / Mole,
+                                -0.6 * Metre / Mole}),
+                  1,
+                  2));
 }
 
 TEST_F(ConformalMapTest, Composition) {
   auto const conformal_ac = conformal_a_ * conformal_c_.Inverse();
   EXPECT_THAT(conformal_ac(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(-2.0 * Metre,
+              AlmostEquals(Vector<Length, DirectWorld>(
+                  R3Element<Length>(-2.0 * Metre,
                                                 1.0 * Metre,
                                                 3.0 * Metre)), 1, 6));
   EXPECT_THAT((conformal_b_ * conformal_a_).Determinant(),

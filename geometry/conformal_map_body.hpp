@@ -57,7 +57,7 @@ ConformalMap<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::ConformalMap::extension));
 }
@@ -67,7 +67,7 @@ template<typename, typename, typename>
 ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::ConformalMap::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::ConformalMap::extension));
@@ -106,7 +106,9 @@ template<typename LScalar, typename RScalar,
 ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     ConformalMap<LScalar, ThroughFrame, ToFrame> const& left,
     ConformalMap<RScalar, FromFrame, ThroughFrame> const& right) {
-  return ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame>(
+  using Map = ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame>;
+  return Map(
+      typename Map::PrivateConstructor{},
       left.scale_ * right.scale_,
       left.orthogonal_map_ * right.orthogonal_map_);
 }
