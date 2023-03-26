@@ -1,26 +1,15 @@
 #pragma once
 
 #include "geometry/frame.hpp"
-#include "geometry/linear_map.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
-
-FORWARD_DECLARE_FROM(
-    symmetric_bilinear_form,
-    TEMPLATE(typename Scalar,
-            typename Frame,
-            template<typename S, typename F> typename Multivector) class,
-    SymmetricBilinearForm);
-
 namespace _signature {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_symmetric_bilinear_form;
 
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};

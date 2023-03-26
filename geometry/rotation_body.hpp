@@ -5,7 +5,11 @@
 #include <algorithm>
 
 #include "base/traits.hpp"
-#include "geometry/orthogonal_map.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/linear_map.hpp"
+#include "geometry/quaternion.hpp"
+#include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -13,8 +17,8 @@ namespace geometry {
 namespace _rotation {
 namespace internal {
 
+using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_orthogonal_map;
 using namespace principia::quantities::_elementary_functions;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
@@ -335,16 +339,6 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
   return r3_element + 2 * Cross(imaginary_part,
                                 Cross(imaginary_part, r3_element) +
                                       real_part * r3_element);
-}
-
-template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent) {
-  Angle const angle = exponent.Norm();
-  if (angle == Angle()) {
-    return Rotation<Frame, Frame>::Identity();
-  } else {
-    return Rotation<Frame, Frame>(angle, exponent);
-  }
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "geometry/affine_map.hpp"
-
 #include <utility>
 
 #include "geometry/point.hpp"
 #include "geometry/grassmann.hpp"
+#include "affine_map.hpp"
 
 namespace principia {
 namespace geometry {
