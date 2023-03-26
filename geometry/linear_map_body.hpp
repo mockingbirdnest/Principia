@@ -33,7 +33,7 @@ void LinearMap<Map, FromFrame, ToFrame>::WriteToMessage(
   ToFrame::WriteToMessage(message->mutable_to_frame());
 }
 
-template<typename Map,typename FromFrame, typename ToFrame>
+template<typename Map, typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 void LinearMap<Map, FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {

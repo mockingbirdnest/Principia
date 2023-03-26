@@ -33,8 +33,8 @@ class LinearMap {
   template<typename T>
   typename base::Mappable<Map, T>::type operator()(T const& t) const;
 
-  // Apologies for the commented-out code, but we cannot the return type of this
-  // function.
+  // Apologies for the commented-out code, but we cannot write the return type
+  // of this function.
   //
   //   virtual LinearMap<..., ToFrame, FromFrame> Inverse() const = 0;
 
