@@ -363,7 +363,7 @@ OrbitalElements::MeanEquinoctialElements(
   };
 
   auto const initial_integration =
-      [&equinoctial_elements, period, t_min, t_max](auto const element) {
+      [&equinoctial_elements, period, t_min](auto const element) {
         return AutomaticClenshawCurtis(
                    [element, &equinoctial_elements](Instant const& t) {
                      return equinoctial_elements(t).*element;

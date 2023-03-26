@@ -207,12 +207,12 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
       for (int i = 0; i < stages_; ++i) {
         for_all_of(k[i], ŷ, Δŷ, Σᵢ_b̂ᵢ_kᵢ, Σᵢ_bᵢ_kᵢ, error_estimate)
-            .loop([&a, &b, &b̂, i](auto const& kᵢ,
-                                  auto const& ŷ,
-                                  auto& Δŷ,
-                                  auto& Σᵢ_b̂ᵢ_kᵢ,
-                                  auto& Σᵢ_bᵢ_kᵢ,
-                                  auto& error_estimate) {
+            .loop([&b, &b̂, i](auto const& kᵢ,
+                              auto const& ŷ,
+                              auto& Δŷ,
+                              auto& Σᵢ_b̂ᵢ_kᵢ,
+                              auto& Σᵢ_bᵢ_kᵢ,
+                              auto& error_estimate) {
               Σᵢ_b̂ᵢ_kᵢ += b̂[i] * kᵢ;
               Σᵢ_bᵢ_kᵢ += b[i] * kᵢ;
               Δŷ = Σᵢ_b̂ᵢ_kᵢ;
