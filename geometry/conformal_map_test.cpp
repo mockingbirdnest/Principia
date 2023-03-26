@@ -77,33 +77,31 @@ using ConformalMapDeathTest = ConformalMapTest;
 TEST_F(ConformalMapTest, AppliedToVector) {
   EXPECT_THAT(conformal_a_(mirror_vector_),
               AlmostEquals(Vector<Product<Length, Amount>, DirectWorld>(
-                               {15.0 * Metre * Mole,
-                                5.0 * Metre * Mole,
-                                10.0 * Metre * Mole}),
-                  4));
+                               {-15.0 * Metre * Mole,
+                                -5.0 * Metre * Mole,
+                                -10.0 * Metre * Mole}),
+                  2));
   EXPECT_THAT(conformal_b_(direct_vector_),
               AlmostEquals(Vector<Product<Length, Amount>, DirectWorld>(
                                {5.0 * Metre * Mole,
                                 -15.0 * Metre * Mole,
                                 10.0 * Metre * Mole}),
-                  1,
-                  2));
+                  1, 2));
 }
 
 TEST_F(ConformalMapTest, Inverse) {
   EXPECT_THAT(conformal_a_.Inverse()(direct_vector_),
               AlmostEquals(Vector<Quotient<Length, Amount>, MirrorWorld>(
-                               {-0.2 * Metre / Mole,
-                                -0.4 * Metre / Mole,
-                                -0.6 * Metre / Mole}),
+                               {-0.4 * Metre / Mole,
+                                -0.6 * Metre / Mole,
+                                -0.2 * Metre / Mole}),
                            2));
   EXPECT_THAT(conformal_b_.Inverse()(direct_vector_),
               AlmostEquals(Vector<Quotient<Length, Amount>, DirectWorld>(
                                {0.2 * Metre / Mole,
-                                0.4 * Metre / Mole,
-                                -0.6 * Metre / Mole}),
-                  1,
-                  2));
+                                0.6 * Metre / Mole,
+                                -0.4 * Metre / Mole}),
+                  1, 3));
 }
 
 TEST_F(ConformalMapTest, Composition) {
@@ -114,11 +112,11 @@ TEST_F(ConformalMapTest, Composition) {
                                                 1.0 * Metre,
                                                 3.0 * Metre)), 1, 6));
   EXPECT_THAT((conformal_b_ * conformal_a_).Determinant(),
-              Eq(-Pow<6>(5 * Mole)));
+              Eq(Pow<6>(5 * Mole)));
   EXPECT_THAT((conformal_a_ * conformal_c_.Inverse()).
               Determinant(), Eq(1));
   EXPECT_THAT((conformal_b_ * conformal_c_).Determinant(),
-              Eq(-Pow<6>(5 * Mole)));
+              Eq(Pow<6>(5 * Mole)));
 }
 
 TEST_F(ConformalMapDeathTest, SerializationError) {
