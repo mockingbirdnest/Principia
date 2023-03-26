@@ -12,7 +12,7 @@ namespace internal {
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)
     : Homothecy(PrivateConstructor{}, scale) {}
 
@@ -29,7 +29,7 @@ Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename>
+template<typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
   return Homothecy(PrivateConstructor{}, 1);

@@ -26,16 +26,18 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
                 "handedness");
 
  public:
-  template<typename = std::enable_if_t<!std::is_floating_point_v<Scalar> &&
-                                       !std::is_integral_v<Scalar>>>
+  template<typename S = Scalar,
+           typename = std::enable_if_t<!std::is_floating_point_v<S> &&
+                                       !std::is_integral_v<S>>>
   explicit Homothecy(Scalar const& scale);
 
   Cube<Scalar> Determinant() const;
 
   Homothecy<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
 
-  template<typename = std::enable_if_t<std::is_floating_point_v<Scalar> ||
-                                       std::is_integral_v<Scalar>>>
+  template<typename S = Scalar,
+           typename = std::enable_if_t<std::is_floating_point_v<S> ||
+                                       std::is_integral_v<S>>>
   static Homothecy Identity();
 
   template<typename VScalar>

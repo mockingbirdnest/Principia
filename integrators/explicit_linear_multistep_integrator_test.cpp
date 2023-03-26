@@ -150,7 +150,6 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   Mass const initial_mass = 1 * Kilogram;
   SpecificImpulse const specific_impulse = 1 * Newton * Second / Kilogram;
   Instant const t_initial;
-  Instant const t_singular = t_initial + initial_mass / mass_flow;
   // Before the singularity.
   Instant const t_final = t_initial + 0.9 * initial_mass / mass_flow;
   Length const q_initial = 0 * Metre;
