@@ -8,7 +8,7 @@ namespace _linear_map {
 namespace internal {
 
 template<typename Map, typename FromFrame, typename ToFrame>
-static Map LinearMap<Map, FromFrame, ToFrame>::Identity() {
+Map LinearMap<Map, FromFrame, ToFrame>::Identity() {
   return Map::Identity();
 }
 

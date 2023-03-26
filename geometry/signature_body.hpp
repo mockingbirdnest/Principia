@@ -129,7 +129,7 @@ LinearMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget() const {
 template<typename FromFrame, typename ToFrame>
 void Signature<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Signature, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::Signature::extension));
 }
@@ -138,7 +138,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Signature, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Signature::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Signature::extension));
