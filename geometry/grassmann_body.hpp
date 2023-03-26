@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/not_constructible.hpp"
-#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace geometry {
@@ -249,16 +248,6 @@ Vector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<RScalar, Frame> const& right) {
   return Vector<Product<LScalar, RScalar>, Frame>(
       Cross(left.coordinates(), right.coordinates()));
-}
-
-template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent) {
-  Angle const angle = exponent.Norm();
-  if (angle == Angle()) {
-    return Rotation<Frame, Frame>::Identity();
-  } else {
-    return Rotation<Frame, Frame>(angle, exponent);
-  }
 }
 
 // Implementation from [Kah06], §12 "Mangled Angles", p. 47.
