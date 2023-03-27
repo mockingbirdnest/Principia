@@ -4,98 +4,101 @@
 #include "base/traits.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace geometry {
-namespace _homothecy {
+namespace _conformal_map {
 namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_orthogonal_map;
 using namespace principia::quantities::_named_quantities;
 
+// This is really a *linear* conformal map, but we don't call it
+// LinearConformalMap because that's a mouthful.
 template<typename Scalar, typename FromFrame, typename ToFrame>
-class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
-                                   FromFrame, ToFrame> {
-  static_assert(FromFrame::handedness == ToFrame::handedness,
-                "Cannot perform an homothecy between frames with different "
-                "handedness");
-
+class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
+                                      FromFrame, ToFrame> {
  public:
   template<typename S = Scalar,
            typename = std::enable_if_t<!std::is_floating_point_v<S> &&
                                        !std::is_integral_v<S>>>
-  explicit Homothecy(Scalar const& scale);
+  ConformalMap(Scalar const& scale,
+               OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
 
   Cube<Scalar> Determinant() const;
 
-  Homothecy<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
+  ConformalMap<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
 
   template<typename S = Scalar,
            typename = std::enable_if_t<std::is_floating_point_v<S> ||
                                        std::is_integral_v<S>>>
-  static Homothecy Identity();
+  static ConformalMap Identity();
 
   template<typename VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
 
   template<typename T>
-  typename base::Mappable<Homothecy, T>::type operator()(T const& t) const;
-
-  template<template<typename, typename, typename> typename ConformalMap>
-  ConformalMap<Scalar, FromFrame, ToFrame> Forget() const;
+  typename base::Mappable<ConformalMap, T>::type operator()(T const& t) const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<base::is_serializable_v<F> &&
                                        base::is_serializable_v<T>>>
-  static Homothecy ReadFromMessage(serialization::LinearMap const& message);
+  static ConformalMap ReadFromMessage(serialization::LinearMap const& message);
 
-  void WriteToMessage(not_null<serialization::Homothecy*> message) const;
+  void WriteToMessage(not_null<serialization::ConformalMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<base::is_serializable_v<F> &&
                                        base::is_serializable_v<T>>>
-  static Homothecy ReadFromMessage(serialization::Homothecy const& message);
+  static ConformalMap ReadFromMessage(
+      serialization::ConformalMap const& message);
 
  private:
   struct PrivateConstructor {};
-  Homothecy(PrivateConstructor, Scalar const& scale);
+  ConformalMap(PrivateConstructor,
+               Scalar const& scale,
+               OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
 
   Scalar const scale_;
+  OrthogonalMap<FromFrame, ToFrame> const orthogonal_map_;
 
   template<typename L, typename R,
            typename From, typename Through, typename To>
-  friend Homothecy<Product<L, R>, From, To> operator*(
-      Homothecy<L, Through, To> const& left,
-      Homothecy<R, From, Through> const& right);
+  friend ConformalMap<Product<L, R>, From, To> operator*(
+      ConformalMap<L, Through, To> const& left,
+      ConformalMap<R, From, Through> const& right);
 
   template<typename S, typename From, typename To>
-  friend std::ostream& operator<<(std::ostream& out,
-                                  Homothecy<S, From, To> const& homothecy);
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      ConformalMap<S, From, To> const& conformal_map);
 };
 
 template<typename LScalar, typename RScalar,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
-Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
-    Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
-    Homothecy<RScalar, FromFrame, ThroughFrame> const& right);
+ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
+    ConformalMap<LScalar, ThroughFrame, ToFrame> const& left,
+    ConformalMap<RScalar, FromFrame, ThroughFrame> const& right);
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 std::ostream& operator<<(
     std::ostream& out,
-    Homothecy<Scalar, FromFrame, ToFrame> const& homothecy);
+    ConformalMap<Scalar, FromFrame, ToFrame> const& conformal_map);
 
 }  // namespace internal
 
-using internal::Homothecy;
+using internal::ConformalMap;
 
-}  // namespace _homothecy
+}  // namespace _conformal_map
 }  // namespace geometry
 }  // namespace principia
 
-#include "geometry/homothecy_body.hpp"
+#include "geometry/conformal_map_body.hpp"

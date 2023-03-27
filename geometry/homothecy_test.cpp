@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "geometry/conformal_map.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
@@ -17,6 +18,7 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::geometry::_conformal_map;
 using namespace principia::geometry::_homothecy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -73,7 +75,11 @@ TEST_F(HomothecyTest, Identity) {
 }
 
 TEST_F(HomothecyTest, Forget) {
-  // TBD
+  AmountHomothecy h(5 * Mole);
+  EXPECT_THAT(h.Forget<ConformalMap>()(vector_).coordinates(),
+              Componentwise(5 * Mole * Metre,
+                            -10 * Mole * Metre,
+                            15 * Mole * Metre));
 }
 
 TEST_F(HomothecyTest, Composition) {

@@ -31,6 +31,7 @@ FORWARD_DECLARE_FROM(
             template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm);
 
+class ConformalMapTest;
 class OrthogonalMapTest;
 
 namespace _orthogonal_map {
@@ -136,6 +137,7 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
       std::ostream& out,
       OrthogonalMap<From, To> const& orthogonal_map);
 
+  friend class geometry::ConformalMapTest;
   friend class geometry::OrthogonalMapTest;
 };
 
