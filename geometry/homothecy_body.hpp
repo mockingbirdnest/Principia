@@ -60,7 +60,7 @@ Homothecy<Scalar, FromFrame, ToFrame>::Forget() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Homothecy, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::Homothecy::extension));
 }
@@ -70,7 +70,7 @@ template<typename, typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Homothecy, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Homothecy::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Homothecy::extension));
