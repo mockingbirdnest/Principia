@@ -341,6 +341,16 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
                                       real_part * r3_element);
 }
 
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent) {
+  Angle const angle = exponent.Norm();
+  if (angle == Angle()) {
+    return Rotation<Frame, Frame>::Identity();
+  } else {
+    return Rotation<Frame, Frame>(angle, exponent);
+  }
+}
+
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,

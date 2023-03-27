@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/not_constructible.hpp"
-#include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
@@ -13,6 +13,7 @@ namespace _grassmann {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::geometry::_sign;
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename Frame>
@@ -249,16 +250,6 @@ Vector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<RScalar, Frame> const& right) {
   return Vector<Product<LScalar, RScalar>, Frame>(
       Cross(left.coordinates(), right.coordinates()));
-}
-
-template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent) {
-  Angle const angle = exponent.Norm();
-  if (angle == Angle()) {
-    return Rotation<Frame, Frame>::Identity();
-  } else {
-    return Rotation<Frame, Frame>(angle, exponent);
-  }
 }
 
 // Implementation from [Kah06], §12 "Mangled Angles", p. 47.
