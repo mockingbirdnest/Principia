@@ -107,8 +107,8 @@ TEST_F(ConformalMapTest, Composition) {
   EXPECT_THAT(conformal_ac(direct_vector_),
               AlmostEquals(Vector<Length, DirectWorld>(
                   R3Element<Length>(-2.0 * Metre,
-                                                1.0 * Metre,
-                                                3.0 * Metre)), 1, 6));
+                                    1.0 * Metre,
+                                    3.0 * Metre)), 1, 6));
   EXPECT_THAT((conformal_b_ * conformal_a_).Determinant(),
               Eq(Pow<6>(5 * Mole)));
   EXPECT_THAT((conformal_a_ * conformal_c_.Inverse()).
@@ -143,17 +143,17 @@ TEST_F(ConformalMapTest, SerializationSuccess) {
       message.GetExtension(serialization::ConformalMap::extension);
   EXPECT_THAT(extension.orthogonal_map().quaternion().real_part(),
               AlmostEquals(0.5, 1));
-  EXPECT_EQ(
-      0.5,
-      extension.orthogonal_map().quaternion().imaginary_part().x().double_());
-  EXPECT_EQ(
-      0.5,
-      extension.orthogonal_map().quaternion().imaginary_part().y().double_());
-  EXPECT_EQ(
-      0.5,
-      extension.orthogonal_map().quaternion().imaginary_part().z().double_());
+  EXPECT_THAT(
+      extension.orthogonal_map().quaternion().imaginary_part().x().double_(),
+      AlmostEquals(0.5, 0));
+  EXPECT_THAT(
+      extension.orthogonal_map().quaternion().imaginary_part().y().double_(),
+      AlmostEquals(0.5, 0));
+  EXPECT_THAT(
+      extension.orthogonal_map().quaternion().imaginary_part().z().double_(),
+      AlmostEquals(0.5, 0));
   MirrorConf const o = MirrorConf::ReadFromMessage(message);
-  EXPECT_EQ(conformal_a_(mirror_vector_), o(mirror_vector_));
+  EXPECT_THAT(conformal_a_(mirror_vector_), Eq(o(mirror_vector_)));
 }
 
 TEST_F(ConformalMapTest, Output) {
