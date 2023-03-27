@@ -5,8 +5,7 @@
 #include <algorithm>
 
 #include "base/traits.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/linear_map.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
@@ -19,6 +18,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_orthogonal_map;
 using namespace principia::quantities::_elementary_functions;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
