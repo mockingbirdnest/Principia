@@ -2,7 +2,6 @@
 #include <string>
 
 #include "astronomy/epoch.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "quantities/parser.hpp"
 #include "tools/generate_configuration.hpp"
