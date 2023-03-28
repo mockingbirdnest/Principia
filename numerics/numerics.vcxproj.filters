@@ -331,9 +331,6 @@
     <ClCompile Include="fma_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\geometry\instant_output.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="next_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -360,6 +357,9 @@
     </ClCompile>
     <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\geometry\instant.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

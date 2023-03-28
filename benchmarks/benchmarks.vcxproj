@@ -17,7 +17,7 @@
   <ItemGroup>
     <ClCompile Include="..\astronomy\standard_product_3.cpp" />
     <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\geometry\instant_output.cpp" />
+    <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />

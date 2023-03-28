@@ -27,7 +27,6 @@
     <ClInclude Include="interval.hpp" />
     <ClInclude Include="interval_body.hpp" />
     <ClInclude Include="linear_map_body.hpp" />
-    <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="pair.hpp" />
     <ClInclude Include="pair_body.hpp" />
     <ClInclude Include="perspective.hpp" />
@@ -78,8 +77,8 @@
     <ClCompile Include="hilbert_test.cpp" />
     <ClCompile Include="homothecy_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
-    <ClCompile Include="instant_output.cpp" />
-    <ClCompile Include="instant_output_test.cpp" />
+    <ClCompile Include="instant.cpp" />
+    <ClCompile Include="instant_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="perspective_test.cpp" />
     <ClCompile Include="plane_test.cpp" />
