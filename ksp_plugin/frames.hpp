@@ -3,7 +3,6 @@
 #include <functional>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/dynamic_frame.hpp"
