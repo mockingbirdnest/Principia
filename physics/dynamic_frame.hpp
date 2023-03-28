@@ -2,7 +2,9 @@
 #define PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
 
 #include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "serialization/geometry.pb.h"
@@ -16,8 +18,9 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 
 // The Frenet frame of a free fall trajectory in |Frame|.

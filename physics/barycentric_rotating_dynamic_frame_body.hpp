@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,7 +17,6 @@ namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_elementary_functions;

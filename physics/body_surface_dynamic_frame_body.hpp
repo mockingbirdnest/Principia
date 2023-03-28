@@ -13,7 +13,6 @@ namespace _body_surface_dynamic_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_named_quantities;

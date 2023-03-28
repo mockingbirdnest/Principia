@@ -15,7 +15,6 @@ namespace _dynamic_frame {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
