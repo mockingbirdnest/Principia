@@ -2,7 +2,8 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
@@ -16,7 +17,8 @@ namespace testing_utilities {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
