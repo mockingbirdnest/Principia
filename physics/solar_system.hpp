@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -25,7 +26,7 @@ namespace _solar_system {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

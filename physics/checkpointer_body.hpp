@@ -8,14 +8,11 @@
 
 #include "absl/container/btree_set.h"
 #include "base/status_utilities.hpp"
-#include "geometry/named_quantities.hpp"
 
 namespace principia {
 namespace physics {
 namespace _checkpointer {
 namespace internal {
-
-using namespace principia::geometry::_named_quantities;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)

@@ -17,7 +17,7 @@
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -46,8 +46,8 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;

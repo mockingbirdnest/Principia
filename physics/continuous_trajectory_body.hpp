@@ -11,7 +11,6 @@
 
 #include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
 #include "numerics/ulp_distance.hpp"
@@ -25,7 +24,6 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;

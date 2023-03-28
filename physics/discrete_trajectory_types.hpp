@@ -4,7 +4,7 @@
 
 #include "absl/container/btree_set.h"
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 
@@ -20,7 +20,7 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
 namespace _discrete_trajectory_types {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_quantities;

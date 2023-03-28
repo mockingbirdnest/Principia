@@ -18,7 +18,6 @@ namespace _oblate_body {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

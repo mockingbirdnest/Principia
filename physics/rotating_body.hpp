@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -20,8 +22,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -15,7 +15,6 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_named_quantities;
 
 template<typename Frame>
 HierarchicalSystem<Frame>::HierarchicalSystem(
