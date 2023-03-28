@@ -20,7 +20,6 @@ using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::base::_file;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_si;

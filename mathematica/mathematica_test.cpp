@@ -8,8 +8,9 @@
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
@@ -33,12 +34,13 @@ namespace mathematica {
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_double_precision;

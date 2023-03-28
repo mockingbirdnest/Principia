@@ -2,6 +2,7 @@
 
 #include <filesystem>
 
+#include "geometry/instant.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -13,7 +14,7 @@ namespace _local_error_analysis {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_solar_system;

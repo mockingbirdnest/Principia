@@ -11,6 +11,8 @@
 #include "base/bundle.hpp"
 #include "base/file.hpp"
 #include "base/status_utilities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -64,7 +66,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
