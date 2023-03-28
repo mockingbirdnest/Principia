@@ -8,6 +8,7 @@
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/standard_product_3.hpp"
 #include "base/not_null.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/logger.hpp"
@@ -29,8 +30,8 @@ using ::testing::Field;
 using ::testing::Lt;
 using ::testing::Property;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_polynomial;

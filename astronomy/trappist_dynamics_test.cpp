@@ -18,7 +18,7 @@
 #include "base/graveyard.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -49,7 +49,7 @@ using namespace principia::base::_file;
 using namespace principia::base::_graveyard;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;

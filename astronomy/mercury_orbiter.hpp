@@ -1,7 +1,8 @@
 #pragma once
 
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
@@ -10,7 +11,8 @@ namespace _mercury_orbiter {
 namespace internal {
 
 using namespace principia::astronomy::_time_scales;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_si;
 

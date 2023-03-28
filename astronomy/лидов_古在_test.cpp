@@ -5,6 +5,8 @@
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/frames.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -22,8 +24,8 @@ namespace astronomy {
 using namespace principia::astronomy::_date_time;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
