@@ -20,10 +20,10 @@ constexpr Instant InfinitePast = Instant() - Infinity<Time>;
 constexpr Instant InfiniteFuture = Instant() + Infinity<Time>;
 
 // IEEE 754:2008 nextUp and nextDown for Instants.
-// We would like to avoid the terms “up” and “down” when referring to the
-// passage of time.  We avoid the term “next” in one direction because of the
+// We would like to avoid the terms â€œupâ€ and â€œdownâ€ when referring to the
+// passage of time.  We avoid the term â€œnextâ€ in one direction because of the
 // confusability with |std::nextafter|, which has different semantics, and in
-// the other because of the awkwardness of the phrase “next before”.
+// the other because of the awkwardness of the phrase â€œnext beforeâ€.
 // Defined inline for want of a way to alias functions in C++.
 constexpr Instant JustAfter(Instant const& t) { return NextUp(t); }
 constexpr Instant JustBefore(Instant const& t) { return NextDown(t); }

@@ -6,9 +6,9 @@
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/point.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -17,8 +17,8 @@ namespace _degrees_of_freedom {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_pair;
+using namespace principia::geometry::_space;
 
 // This class is analogous to the pair which is its base class, except that it
 // exports properly-named selectors.  It is implicitly convertible in both
@@ -96,15 +96,16 @@ namespace _mappable {
 namespace internal {
 
 using namespace principia::geometry::_pair;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Functor, typename Frame>
 struct Mappable<Functor, RelativeDegreesOfFreedom<Frame>>
     : not_constructible {
   using type = Pair<decltype(std::declval<Functor>()(
-                        std::declval<geometry::Displacement<Frame>>())),
+                        std::declval<Displacement<Frame>>())),
                     decltype(std::declval<Functor>()(
-                        std::declval<geometry::Velocity<Frame>>()))>;
+                        std::declval<Velocity<Frame>>()))>;
 
   static type Do(Functor const& functor,
                  RelativeDegreesOfFreedom<Frame> const& relative);
@@ -120,6 +121,7 @@ namespace geometry {
 namespace _barycentre_calculator {
 namespace internal {
 
+using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Frame, typename Weight>

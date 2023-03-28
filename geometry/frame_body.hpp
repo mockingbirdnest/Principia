@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/fingerprint2011.hpp"
-#include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 
 namespace principia {

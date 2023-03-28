@@ -1,14 +1,15 @@
 #pragma once
 
-#include "geometry/grassmann.hpp"
-#include "geometry/point.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _sphere {
 namespace internal {
 
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

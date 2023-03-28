@@ -6,10 +6,10 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
@@ -22,8 +22,8 @@ namespace internal {
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;

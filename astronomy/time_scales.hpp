@@ -3,7 +3,7 @@
 #include <string>
 
 #include "astronomy/date_time.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -11,7 +11,7 @@ namespace _time_scales {
 namespace internal {
 
 using namespace principia::astronomy::_date_time;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_quantities;
 
 // NOTE(egg): We cannot use literal operator templates for strings, so if an

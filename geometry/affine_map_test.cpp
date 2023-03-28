@@ -5,7 +5,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/point.hpp"
@@ -25,6 +25,7 @@ using ::testing::Contains;
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

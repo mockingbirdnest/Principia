@@ -7,9 +7,10 @@
 #include "base/array.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
+#include "geometry/rigid_transformation.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "geometry/sphere.hpp"
 #include "quantities/quantities.hpp"
 
@@ -19,6 +20,8 @@ namespace _perspective {
 namespace internal {
 
 using namespace principia::base::_array;
+using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

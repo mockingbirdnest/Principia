@@ -1,7 +1,7 @@
 #include "geometry/plane.hpp"
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -14,6 +14,7 @@ namespace geometry {
 using ::testing::Eq;
 using ::testing::UnorderedElementsAre;
 using namespace principia::geometry::_plane;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
