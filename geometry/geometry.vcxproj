@@ -23,6 +23,7 @@
     <ClInclude Include="homothecy.hpp" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
+    <ClInclude Include="instant.hpp" />
     <ClInclude Include="interval.hpp" />
     <ClInclude Include="interval_body.hpp" />
     <ClInclude Include="linear_map_body.hpp" />
@@ -48,6 +49,7 @@
     <ClInclude Include="r3x3_matrix_body.hpp" />
     <ClInclude Include="r3_element_body.hpp" />
     <ClInclude Include="r3_element.hpp" />
+    <ClInclude Include="rigid_transformation.hpp" />
     <ClInclude Include="rotation_body.hpp" />
     <ClInclude Include="rotation.hpp" />
     <ClInclude Include="rp2_point.hpp" />
@@ -58,6 +60,7 @@
     <ClInclude Include="signature_body.hpp" />
     <ClInclude Include="sign_body.hpp" />
     <ClInclude Include="sign.hpp" />
+    <ClInclude Include="space.hpp" />
     <ClInclude Include="sphere.hpp" />
     <ClInclude Include="sphere_body.hpp" />
     <ClInclude Include="symmetric_bilinear_form.hpp" />

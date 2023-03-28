@@ -188,6 +188,15 @@
     <ClInclude Include="conformal_map_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="instant.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="space.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rigid_transformation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
