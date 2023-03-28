@@ -7,10 +7,10 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/quantities.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
@@ -21,9 +21,9 @@ namespace internal {
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_inertia_tensor;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

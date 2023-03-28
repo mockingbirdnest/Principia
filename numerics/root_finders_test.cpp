@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "absl/base/casts.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/combinatorics.hpp"
@@ -26,7 +26,7 @@ using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::IsEmpty;
 using ::testing::Le;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;

@@ -7,7 +7,8 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
@@ -34,7 +35,8 @@ using ::testing::Gt;
 using ::testing::Lt;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_frequency_analysis;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::quantities::_elementary_functions;

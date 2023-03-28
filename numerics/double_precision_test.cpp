@@ -4,7 +4,7 @@
 #include <random>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"
@@ -22,9 +22,9 @@ using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

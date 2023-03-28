@@ -1,7 +1,7 @@
 #include "physics/checkpointer.hpp"
 
 #include "base/status_utilities.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/matchers.hpp"
@@ -18,7 +18,7 @@ using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::physics::_checkpointer;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_matchers;
