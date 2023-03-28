@@ -28,9 +28,6 @@ constexpr Instant InfiniteFuture = Instant() + Infinity<Time>;
 constexpr Instant JustAfter(Instant const& t) { return NextUp(t); }
 constexpr Instant JustBefore(Instant const& t) { return NextDown(t); }
 
-std::string DebugString(Instant const& t);
-std::ostream& operator<<(std::ostream& os, Instant const& t);
-
 }  // namespace internal
 
 using internal::InfiniteFuture;
@@ -38,8 +35,21 @@ using internal::InfinitePast;
 using internal::Instant;
 using internal::JustAfter;
 using internal::JustBefore;
-using internal::operator<<;
 
 }  // namespace _instant
+
+namespace _point {
+namespace internal {
+
+using namespace principia::geometry::_instant;
+
+// We must declare this in the internal namespace where Point is defined so that
+// it is found by ADL.
+std::string DebugString(Instant const& t);
+std::ostream& operator<<(std::ostream& os, Instant const& t);
+
+}  // namespace internal
+}  // namespace _point
+
 }  // namespace geometry
 }  // namespace principia

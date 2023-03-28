@@ -10,7 +10,7 @@
 
 namespace principia {
 namespace geometry {
-namespace _instant {
+namespace _point {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
@@ -51,6 +51,6 @@ std::ostream& operator<<(std::ostream& os, Instant const& t) {
 }
 
 }  // namespace internal
-}  // namespace _instant
+}  // namespace _point
 }  // namespace geometry
 }  // namespace principia
