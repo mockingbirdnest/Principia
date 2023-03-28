@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -22,7 +22,7 @@
 namespace principia {
 namespace integrators {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_explicit_runge_kutta_integrator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

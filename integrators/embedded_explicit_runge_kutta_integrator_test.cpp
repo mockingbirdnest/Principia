@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,7 +25,7 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
