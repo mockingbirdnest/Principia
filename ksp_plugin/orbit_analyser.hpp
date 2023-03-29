@@ -11,8 +11,8 @@
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -32,8 +32,8 @@ using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;

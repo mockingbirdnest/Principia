@@ -13,7 +13,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
 #include "base/recurring_thread.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
@@ -40,7 +40,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_checkpointer;
 using namespace principia::physics::_clientele;

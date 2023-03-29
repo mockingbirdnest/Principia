@@ -2,7 +2,6 @@
 
 #include <limits>
 
-#include "geometry/named_quantities.hpp"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -14,7 +13,6 @@ namespace ksp_plugin {
 namespace _integrators {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;

@@ -4,7 +4,6 @@
 #include <optional>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -16,7 +15,6 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_permutation;
 using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
 using namespace principia::physics::_degrees_of_freedom;

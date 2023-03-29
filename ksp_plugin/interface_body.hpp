@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/array.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/ephemeris.hpp"
@@ -19,7 +18,6 @@ namespace principia {
 namespace interface {
 
 using namespace principia::base::_array;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_integrators;

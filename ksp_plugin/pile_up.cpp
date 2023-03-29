@@ -11,6 +11,7 @@
 
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "numerics/davenport_q_method.hpp"
@@ -30,13 +31,13 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_davenport_q_method;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;

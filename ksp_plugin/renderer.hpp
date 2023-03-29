@@ -6,9 +6,10 @@
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
@@ -25,9 +26,10 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_affine_map;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_ephemeris;

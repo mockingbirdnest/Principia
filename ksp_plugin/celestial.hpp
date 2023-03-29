@@ -3,6 +3,8 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -17,7 +19,8 @@ namespace _celestial {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_body;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;

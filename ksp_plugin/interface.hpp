@@ -11,8 +11,9 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
+#include "geometry/space.hpp"
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
@@ -36,9 +37,10 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_pile_up;

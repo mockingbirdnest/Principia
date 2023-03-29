@@ -5,7 +5,7 @@
 #include "base/disjoint_sets.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -24,6 +24,7 @@ namespace base {
 namespace _disjoint_sets {
 namespace internal {
 
+using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
@@ -66,7 +67,7 @@ class Subset<Part>::Properties final {
   //   parameters.
   void Collect(
       PileUps& pile_ups,
-      geometry::Instant const& t,
+      Instant const& t,
       physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
       physics::Ephemeris<Barycentric>::FixedStepParameters const&
