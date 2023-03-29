@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/instant.hpp"
 #include "geometry/point.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -14,7 +15,7 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sign;

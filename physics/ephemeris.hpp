@@ -12,7 +12,8 @@
 #include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "google/protobuf/repeated_field.h"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -38,7 +39,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_named_quantities;

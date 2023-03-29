@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "integrators/integrators.hpp"
 #include "quantities/quantities.hpp"
@@ -12,7 +12,7 @@ namespace _integrators {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
 using namespace principia::quantities::_quantities;
 

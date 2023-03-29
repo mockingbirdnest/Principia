@@ -13,12 +13,13 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/mechanical_system.hpp"
 #include "physics/rigid_motion.hpp"
@@ -40,7 +41,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
@@ -48,6 +49,7 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_euler_solver;
+using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_mechanical_system;
 using namespace principia::physics::_rigid_motion;

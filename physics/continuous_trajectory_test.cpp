@@ -7,7 +7,8 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -33,7 +34,8 @@ using ::testing::SetArgReferee;
 using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::physics::_continuous_trajectory;

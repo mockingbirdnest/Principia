@@ -11,7 +11,6 @@
 #include "absl/container/btree_set.h"
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
-#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
@@ -27,7 +26,6 @@ using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_clientele;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

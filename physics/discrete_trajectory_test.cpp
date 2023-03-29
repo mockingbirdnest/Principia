@@ -6,7 +6,8 @@
 #include "astronomy/time_scales.hpp"
 #include "base/serialization.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -34,7 +35,8 @@ using ::testing::Not;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

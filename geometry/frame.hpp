@@ -4,7 +4,8 @@
 #include <string>
 
 #include "base/not_constructible.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "google/protobuf/descriptor.h"
 #include "serialization/geometry.pb.h"
 
@@ -15,6 +16,8 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 
 // The enumerators of |FrameMotion| are ordered from most restrictive to least
 // restrictive; m1 <= m2 means that m1 satisfies the requirements of m2.

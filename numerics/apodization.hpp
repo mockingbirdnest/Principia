@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/poisson_series.hpp"
 
 // The order and terminology in this file follows
@@ -11,7 +11,7 @@ namespace numerics {
 namespace _apodization {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 
 // ISO 18431-2:2004, section 5.4.
 template<template<typename, typename, int> class Evaluator>

@@ -2,15 +2,16 @@
 
 #include <functional>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 
 namespace principia {
 namespace physics {
 namespace _frame_field {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 
 // A section of the frame bundle of the manifold |Position|, i.e., a smooth
 // assignment of an orthonormal basis to the tangent space of positions at every

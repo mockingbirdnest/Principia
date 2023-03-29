@@ -13,7 +13,6 @@ namespace _body_centred_non_rotating_dynamic_frame {
 namespace internal {
 
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 

@@ -5,8 +5,8 @@
 
 #include "absl/strings/str_cat.h"
 #include "astronomy/frames.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -31,8 +31,8 @@ namespace principia {
 namespace physics {
 
 using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_fast_fourier_transform;

@@ -3,7 +3,6 @@
 #include <functional>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -13,7 +12,6 @@ namespace _frames {
 namespace internal {
 
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_si;
 
 // The International Celestial Reference System.

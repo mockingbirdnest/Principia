@@ -14,6 +14,7 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -27,7 +28,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

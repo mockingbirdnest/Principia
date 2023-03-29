@@ -181,12 +181,9 @@
     <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\geometry\instant_output.cpp">
+    <ClCompile Include="..\geometry\instant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\serialization\journal.proto" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="principia.manifest" />

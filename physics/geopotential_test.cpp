@@ -6,7 +6,8 @@
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/legendre.hpp"
 #include "physics/solar_system.hpp"
@@ -37,7 +38,8 @@ using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_solar_system;

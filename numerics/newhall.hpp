@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "quantities/quantities.hpp"
@@ -16,7 +16,7 @@ namespace _newhall {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.

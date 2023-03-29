@@ -2,15 +2,19 @@
 
 #include "physics/mechanical_system.hpp"
 
+#include "geometry/space.hpp"
+#include "physics/inertia_tensor.hpp"
+
 namespace principia {
 namespace physics {
 namespace _mechanical_system {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_space;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_inertia_tensor;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
@@ -19,7 +23,7 @@ template<typename BodyFrame>
 void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
     RigidMotion<BodyFrame, InertialFrame> const& motion,
     Mass const& mass,
-    geometry::InertiaTensor<BodyFrame> const& inertia_tensor) {
+    _inertia_tensor::InertiaTensor<BodyFrame> const& inertia_tensor) {
   DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
   SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> const

@@ -50,7 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\geometry\instant_output.cpp" />
+    <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="almost_equals_test.cpp" />

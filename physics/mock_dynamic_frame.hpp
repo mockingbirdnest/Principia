@@ -3,7 +3,8 @@
 #include "physics/dynamic_frame.hpp"
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "physics/rigid_motion.hpp"
 
@@ -11,6 +12,9 @@ namespace principia {
 namespace physics {
 namespace _dynamic_frame {
 namespace internal {
+
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 
 template<typename InertialFrame, typename ThisFrame>
 class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {

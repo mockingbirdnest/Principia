@@ -17,7 +17,7 @@
   <ItemGroup>
     <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\geometry\instant_output.cpp" />
+    <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="error_analysis_test.cpp" />

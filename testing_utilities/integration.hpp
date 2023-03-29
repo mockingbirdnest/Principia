@@ -3,7 +3,8 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -17,7 +18,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

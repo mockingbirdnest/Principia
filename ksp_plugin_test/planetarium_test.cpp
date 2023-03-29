@@ -7,11 +7,11 @@
 #include "base/serialization.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/linear_map.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -43,13 +43,13 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;

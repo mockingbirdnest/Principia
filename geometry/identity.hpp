@@ -10,9 +10,6 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     OrthogonalMap);
 FORWARD_DECLARE_FROM(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
@@ -24,7 +21,9 @@ namespace _identity {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_sign;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
 // The identity map.

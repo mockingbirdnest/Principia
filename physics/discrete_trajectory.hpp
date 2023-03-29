@@ -10,7 +10,8 @@
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -32,7 +33,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_types;
 

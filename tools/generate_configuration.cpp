@@ -9,7 +9,6 @@
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/serialization.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/solar_system.hpp"

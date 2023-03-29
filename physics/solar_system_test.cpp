@@ -6,10 +6,11 @@
 #include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
-#include "integrators/methods.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -20,7 +21,7 @@ using ::testing::ElementsAreArray;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::physics::_solar_system;

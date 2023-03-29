@@ -6,7 +6,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
@@ -18,7 +18,7 @@ namespace _integrators {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
 

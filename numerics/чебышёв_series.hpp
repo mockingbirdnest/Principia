@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -18,7 +18,7 @@ namespace _чебышёв_series {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

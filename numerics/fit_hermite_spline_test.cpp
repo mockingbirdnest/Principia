@@ -3,7 +3,7 @@
 #include <list>
 #include <vector>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"
@@ -17,7 +17,7 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ResultOf;
 using namespace principia::base::_ranges;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_fit_hermite_spline;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

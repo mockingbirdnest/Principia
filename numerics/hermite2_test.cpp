@@ -4,7 +4,8 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
@@ -17,7 +18,8 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

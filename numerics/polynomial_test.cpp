@@ -5,7 +5,8 @@
 #include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/constants.hpp"
@@ -28,7 +29,8 @@ namespace numerics {
 using ::testing::Eq;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;

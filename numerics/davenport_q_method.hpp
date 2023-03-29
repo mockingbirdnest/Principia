@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace numerics {

@@ -13,7 +13,6 @@ namespace _disjoint_sets {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;

@@ -48,6 +48,7 @@
     <ClInclude Include="equipotential_body.hpp" />
     <ClInclude Include="harmonic_damping.hpp" />
     <ClInclude Include="harmonic_damping_body.hpp" />
+    <ClInclude Include="inertia_tensor.hpp" />
     <ClInclude Include="integration_parameters.hpp" />
     <ClInclude Include="integration_parameters_body.hpp" />
     <ClInclude Include="mechanical_system.hpp" />
@@ -95,7 +96,7 @@
     <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\base\flags.cpp" />
     <ClCompile Include="..\base\zfp_compressor.cpp" />
-    <ClCompile Include="..\geometry\instant_output.cpp" />
+    <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="..\numerics\elliptic_integrals.cpp" />

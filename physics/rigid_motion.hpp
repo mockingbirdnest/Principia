@@ -5,9 +5,9 @@
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/rotation.hpp"
+#include "geometry/rigid_transformation.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
@@ -20,8 +20,9 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

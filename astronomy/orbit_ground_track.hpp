@@ -6,6 +6,7 @@
 #include "absl/status/statusor.h"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
@@ -15,8 +16,8 @@ namespace astronomy {
 namespace _orbit_ground_track {
 namespace internal {
 
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;

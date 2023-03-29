@@ -7,7 +7,7 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -28,7 +28,7 @@ namespace astronomy {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;

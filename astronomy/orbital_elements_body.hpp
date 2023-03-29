@@ -22,7 +22,6 @@ namespace _orbital_elements {
 namespace internal {
 
 using namespace principia::base::_jthread;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;

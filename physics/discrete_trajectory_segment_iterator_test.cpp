@@ -5,7 +5,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -19,7 +19,7 @@ namespace physics {
 using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::quantities::_si;
 

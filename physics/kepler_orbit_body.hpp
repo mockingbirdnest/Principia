@@ -7,6 +7,7 @@
 #include "base/optional_serialization.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -16,9 +17,9 @@ namespace _kepler_orbit {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

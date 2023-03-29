@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
@@ -17,8 +17,8 @@ namespace astronomy {
 namespace _orbital_elements {
 namespace internal {
 
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_body;
 using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_massive_body;

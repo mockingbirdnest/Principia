@@ -1,6 +1,6 @@
 #include "numerics/apodization.hpp"
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/polynomial_evaluators.hpp"
@@ -12,7 +12,7 @@
 namespace principia {
 namespace numerics {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_apodization;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;

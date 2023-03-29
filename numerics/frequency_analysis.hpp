@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -13,8 +13,8 @@ namespace numerics {
 namespace _frequency_analysis {
 namespace internal {
 
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

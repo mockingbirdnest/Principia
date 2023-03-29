@@ -5,6 +5,7 @@
 #include <limits>
 #include <vector>
 
+#include "geometry/space.hpp"
 #include "physics/apsides.hpp"
 
 namespace principia {
@@ -13,7 +14,7 @@ namespace _orbit_ground_track {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_apsides;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;

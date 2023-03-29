@@ -1,7 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
@@ -22,7 +21,6 @@ namespace interface {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;

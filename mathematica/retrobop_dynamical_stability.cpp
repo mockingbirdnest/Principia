@@ -17,9 +17,11 @@
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/status_utilities.hpp"
-#include "ksp_plugin/frames.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/solar_system.hpp"
@@ -38,8 +40,9 @@ using namespace principia::base::_get_line;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
