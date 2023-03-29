@@ -25,7 +25,6 @@ using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_orbit_analyser;

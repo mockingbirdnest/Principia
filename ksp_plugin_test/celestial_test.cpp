@@ -1,5 +1,6 @@
 #include "ksp_plugin/celestial.hpp"
 
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/massive_body.hpp"
@@ -9,7 +10,7 @@ namespace principia {
 namespace ksp_plugin {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_massive_body;

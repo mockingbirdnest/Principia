@@ -1,8 +1,10 @@
 #include "ksp_plugin/part.hpp"
 
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
@@ -14,10 +16,12 @@ using ::testing::MockFunction;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;

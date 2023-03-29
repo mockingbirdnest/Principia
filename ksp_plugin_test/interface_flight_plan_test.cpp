@@ -4,7 +4,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
@@ -49,7 +49,7 @@ using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;

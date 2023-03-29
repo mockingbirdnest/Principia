@@ -2,7 +2,7 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -12,8 +12,8 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
 
