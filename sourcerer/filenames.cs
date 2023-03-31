@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace principia {
-namespace renamespacer {
+namespace sourcerer {
 
 public class Filenames {
 
@@ -28,5 +28,5 @@ public class Filenames {
   }
 }
 
-} // namespace renamespacer
+} // namespace sourcerer
 } // namespace principia

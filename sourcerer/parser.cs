@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 
 namespace principia {
-namespace renamespacer {
+namespace sourcerer {
 
 // Parses a file and produces a syntactic tree for it.
 public class Parser {
@@ -517,5 +517,5 @@ public class Parser {
   }
 }
 
-} // namespace renamespacer
+} // namespace sourcerer
 } // namespace principia

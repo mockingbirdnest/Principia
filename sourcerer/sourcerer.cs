@@ -1,10 +1,10 @@
 ﻿namespace principia {
-namespace renamespacer {
+namespace sourcerer {
 
 // Usage:
-//   renamespacer --project:quantities \
-//                --client:base --client:physics \
-//                --exclude:macros.hpp --dry_run:false
+//   sourcerer --project:quantities \
+//             --client:base --client:physics \
+//             --exclude:macros.hpp --dry_run:false
 // This will renamespace quantities and fix the references in the client
 // projects.  The files will be overwritten.
 internal class Sourcerer {
@@ -13,5 +13,5 @@ internal class Sourcerer {
   }
 }
 
-} // namespace renamespacer
+} // namespace sourcerer
 } // namespace principia

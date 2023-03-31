@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using static principia.renamespacer.Parser;
+using static principia.sourcerer.Parser;
 
 namespace principia {
-namespace renamespacer {
+namespace sourcerer {
 
 // A class for extracting information from a syntactic tree.  Does not change
 // the tree.
@@ -141,5 +141,5 @@ public class Analyser {
   }
 }
 
-} // namespace renamespacer
+} // namespace sourcerer
 } // namespace principia

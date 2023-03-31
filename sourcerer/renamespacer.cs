@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using static principia.renamespacer.Analyser;
-using static principia.renamespacer.Filenames;
-using static principia.renamespacer.Parser;
+using static principia.sourcerer.Analyser;
+using static principia.sourcerer.Filenames;
+using static principia.sourcerer.Parser;
 
 namespace principia {
-namespace renamespacer {
+namespace sourcerer {
 
 class Renamespacer {
 
@@ -402,5 +402,5 @@ class Renamespacer {
   }
 }
 
-} // namespace renamespacer
+} // namespace sourcerer
 } // namespace principia
