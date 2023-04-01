@@ -15,6 +15,8 @@ namespace base {
 namespace _recurring_thread {
 namespace internal {
 
+using namespace principia::base::_jthread;
+
 // A stoppable thread that supports cyclical execution of an action.  It is
 // connected to two monodirectional channels that can (optionally) hold a value
 // of |Input| (for incoming data) or |Output| (for outgoing data), respectively.
