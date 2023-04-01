@@ -79,6 +79,8 @@ namespace base {
 namespace _not_null {
 namespace internal {
 
+using namespace principia::base::_not_constructible;
+
 template<typename Pointer>
 class not_null;
 
@@ -375,9 +377,5 @@ using internal::remove_not_null;
 }  // namespace _not_null
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_not_null;
-}  // namespace principia::base
 
 #include "base/not_null_body.hpp"

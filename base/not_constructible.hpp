@@ -19,7 +19,3 @@ using internal::not_constructible;
 }  // namespace _not_constructible
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_not_constructible;
-}  // namespace principia::base

@@ -22,6 +22,7 @@ namespace _push_deserializer {
 namespace internal {
 
 using namespace principia::base::_array;
+using namespace principia::base::_not_null;
 
 using ::google::compression::Compressor;
 

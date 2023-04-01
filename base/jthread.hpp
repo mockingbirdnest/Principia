@@ -14,6 +14,8 @@ namespace base {
 namespace _jthread {
 namespace internal {
 
+using namespace principia::base::_not_null;
+
 // A minimal implementation of the C++20 jthread library, intended to be
 // compatible.
 

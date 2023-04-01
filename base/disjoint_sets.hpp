@@ -10,6 +10,8 @@ namespace base {
 namespace _disjoint_sets {
 namespace internal {
 
+using namespace principia::base::_not_null;
+
 // For the purposes of this class, |T| represents the set of its values, and
 // a single globally unique partition is being built.  If |MakeSingleton| is
 // called on an element |e| of type |T|, all properties of the subset previously
