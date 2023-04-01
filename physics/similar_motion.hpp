@@ -6,7 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/conformal_map.hpp"
-#include "geometry/similarity.hpp"
+#include "geometry/rigid_transformation.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"

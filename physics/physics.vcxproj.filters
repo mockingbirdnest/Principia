@@ -245,6 +245,9 @@
     <ClInclude Include="similar_motion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="similar_motion_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
