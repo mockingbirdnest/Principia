@@ -72,7 +72,3 @@ using internal::all_different_v;
 }  // namespace _traits
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_traits;
-}  // namespace principia::base

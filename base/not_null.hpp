@@ -80,6 +80,7 @@ namespace _not_null {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::base::_traits;
 
 template<typename Pointer>
 class not_null;
