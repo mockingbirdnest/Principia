@@ -12,6 +12,8 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
 
 namespace principia {
 namespace physics {
@@ -28,6 +30,8 @@ using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
 
 class SimilarMotionTest : public ::testing::Test {
  protected:
@@ -37,7 +41,7 @@ class SimilarMotionTest : public ::testing::Test {
   using World4 = Frame<struct World4Tag>;
 };
 
-TEST_F(SimilarMotionTest, Construction) {
+TEST_F(SimilarMotionTest, Smoke) {
   Signature<World1, World2> const signature(
       Sign::Negative(),
       Signature<World1, World1>::DeduceSign(),
@@ -60,6 +64,17 @@ TEST_F(SimilarMotionTest, Construction) {
 
   auto const transformed_unmoving_origin =
       similar_motion({World1::origin, World1::unmoving});
+  EXPECT_THAT(
+      transformed_unmoving_origin,
+      Componentwise(
+          AlmostEquals(
+              World3::origin + Displacement<World3>({4 * Metre,
+                                                     8 * Metre,
+                                                     0 * Metre}), 0),
+          AlmostEquals(
+              World3::unmoving + Velocity<World3>({-8 * Metre / Second,
+                                                   52 * Metre / Second,
+                                                   0 * Metre / Second}), 0)));
 }
 
 }  // namespace physics

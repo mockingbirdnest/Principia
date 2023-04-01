@@ -66,7 +66,7 @@ class SimilarMotion final {
   SimilarMotion(
       RigidMotion<FromFrame, ThroughFrame> const& rigid_motion,
       Homothecy<double, ThroughFrame, ToFrame> const& dilatation,
-      Variation<double> const& dilatation_rate);
+      Variation<double> const& dilatation_rate_of_to_frame);
 
   Similarity<FromFrame, ToFrame> const& similarity() const;
   // Returns |similarity().linear_map()|.
@@ -99,7 +99,7 @@ class SimilarMotion final {
 
   RigidMotion<FromFrame, Through> rigid_motion_;
   Homothecy<double, Through, ToFrame> dilatation_;
-  Variation<double> dilatation_rate_;
+  Variation<double> dilatation_rate_of_to_frame_;
 
   template<typename, typename>
   friend class SimilarMotion;
