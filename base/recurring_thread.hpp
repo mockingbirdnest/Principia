@@ -117,8 +117,4 @@ using internal::RecurringThread;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_recurring_thread;
-}  // namespace principia::base
-
 #include "base/recurring_thread_body.hpp"

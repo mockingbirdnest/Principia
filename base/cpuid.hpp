@@ -47,7 +47,3 @@ using internal::HasCPUFeatures;
 }  // namespace _cpuid
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_cpuid;
-}  // namespace principia::base

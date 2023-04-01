@@ -49,8 +49,4 @@ using internal::HexadecimalEncoder;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_hexadecimal;
-}  // namespace principia::base
-
 #include "base/hexadecimal_body.hpp"

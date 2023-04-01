@@ -73,7 +73,3 @@ using internal::FingerprintCat2011;
 }  // namespace _fingerprint2011
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_fingerprint2011;
-}  // namespace principia::base

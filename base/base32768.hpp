@@ -40,8 +40,4 @@ using internal::Base32768Encoder;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_base32768;
-}  // namespace principia::base
-
 #include "base/base32768_body.hpp"

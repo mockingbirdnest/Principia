@@ -86,8 +86,4 @@ using internal::Subset;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_disjoint_sets;
-}  // namespace principia::base
-
 #include "base/disjoint_sets_body.hpp"

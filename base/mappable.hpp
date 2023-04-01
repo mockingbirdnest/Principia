@@ -31,7 +31,3 @@ using internal::Mappable;
 }  // namespace _mappable
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_mappable;
-}  // namespace principia::base

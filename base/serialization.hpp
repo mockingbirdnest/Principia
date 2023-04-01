@@ -26,8 +26,4 @@ using internal::SerializeAsBytes;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_serialization;
-}  // namespace principia::base
-
 #include "base/serialization_body.hpp"

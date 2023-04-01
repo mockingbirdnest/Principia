@@ -29,8 +29,4 @@ using internal::Graveyard;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_graveyard;
-}  // namespace principia::base
-
 #include "base/graveyard_body.hpp"

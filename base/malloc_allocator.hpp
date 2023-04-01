@@ -61,7 +61,3 @@ using internal::operator==;
 }  // namespace _malloc_allocator
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_malloc_allocator;
-}  // namespace principia::base

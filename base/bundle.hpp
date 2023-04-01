@@ -71,7 +71,3 @@ using internal::Bundle;
 }  // namespace _bundle
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_bundle;
-}  // namespace principia::base

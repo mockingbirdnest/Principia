@@ -146,8 +146,4 @@ using internal::PushDeserializer;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_push_deserializer;
-}  // namespace principia::base
-
 #include "base/push_deserializer_body.hpp"

@@ -39,8 +39,4 @@ using internal::Base64Encoder;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_base64;
-}  // namespace principia::base
-
 #include "base/base64_body.hpp"
