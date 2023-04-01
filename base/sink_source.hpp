@@ -59,8 +59,4 @@ using internal::ArraySource;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_sink_source;
-}  // namespace principia::base
-
 #include "base/sink_source_body.hpp"
