@@ -28,6 +28,7 @@ namespace _continuous_trajectory {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_polynomial;

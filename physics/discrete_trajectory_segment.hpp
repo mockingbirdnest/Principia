@@ -39,6 +39,7 @@ namespace _discrete_trajectory_segment {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_hermite3;
 using namespace principia::physics::_degrees_of_freedom;

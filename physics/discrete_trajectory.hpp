@@ -32,6 +32,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_types;
