@@ -277,9 +277,9 @@ Rotation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Rotation<FromFrame, ToFrame>, T>::type
+typename Mappable<Rotation<FromFrame, ToFrame>, T>::type
 Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Rotation, T>::Do(*this, t);
+  return Mappable<Rotation, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>

@@ -793,7 +793,7 @@ Ephemeris<Frame>::Ephemeris(
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     lock_.AssertReaderHeld();
     if (checkpointer_->WriteToCheckpointIfNeeded(
             time, max_time_between_checkpoints)) {
@@ -807,7 +807,7 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
 Ephemeris<Frame>::MakeCheckpointerWriter() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](
                not_null<serialization::Ephemeris::Checkpoint*> const message) {
       lock_.AssertReaderHeld();
@@ -821,7 +821,7 @@ Ephemeris<Frame>::MakeCheckpointerWriter() {
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Reader
 Ephemeris<Frame>::MakeCheckpointerReader() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](serialization::Ephemeris::Checkpoint const& message) {
       absl::MutexLock l(&lock_);
       instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
@@ -867,7 +867,7 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
            t_final = following_checkpoint.value(),
            t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            if constexpr (base::is_serializable_v<Frame>) {
+            if constexpr (is_serializable_v<Frame>) {
               return ReanimateOneCheckpoint(message, t_initial, t_final);
             } else {
               return absl::UnknownError(

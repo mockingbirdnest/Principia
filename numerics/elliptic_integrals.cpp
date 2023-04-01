@@ -35,7 +35,7 @@ namespace {
 // |Angle| performs the computation.
 
 struct UnusedResult {
-  constexpr UnusedResult(base::uninitialized_t) {}
+  constexpr UnusedResult(uninitialized_t) {}
 };
 
 inline constexpr UnusedResult unused{uninitialized};

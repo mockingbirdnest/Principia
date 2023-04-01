@@ -936,7 +936,7 @@ Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
 absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // This method is very similar to Ephemeris::Reanimate.  See the comments
   // there for some of the subtle points.
-  static_assert(base::is_serializable_v<Barycentric>);
+  static_assert(is_serializable_v<Barycentric>);
   absl::btree_set<Instant> checkpoints;
   LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
             << desired_t_min;

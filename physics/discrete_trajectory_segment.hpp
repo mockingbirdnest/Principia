@@ -136,7 +136,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       std::vector<iterator> const& exact) const;
 
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static DiscreteTrajectorySegment ReadFromMessage(
       serialization::DiscreteTrajectorySegment const& message,
       DiscreteTrajectorySegmentIterator<Frame> self);

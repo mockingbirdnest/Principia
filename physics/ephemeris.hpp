@@ -234,7 +234,7 @@ class Ephemeris {
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the ephemeris must be restored
   // at a checkpoint such that, once the ephemeris is prolonged, its |t_min()|
   // is at or before |desired_t_min|.

@@ -115,7 +115,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the trajectory must be
   // restored at a checkpoint such that, once it is appended to, its t_min() is
   // at or before |desired_t_min|.

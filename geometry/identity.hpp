@@ -23,7 +23,9 @@ FORWARD_DECLARE_FROM(
 namespace _identity {
 namespace internal {
 
+using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
@@ -59,7 +61,7 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<typename T>
-  typename base::Mappable<Identity, T>::type operator()(T const& t) const;
+  typename Mappable<Identity, T>::type operator()(T const& t) const;
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
@@ -67,15 +69,15 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Identity ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Identity*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Identity ReadFromMessage(serialization::Identity const& message);
 
  private:

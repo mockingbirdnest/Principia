@@ -71,9 +71,9 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Permutation<FromFrame, ToFrame>, T>::type
+typename Mappable<Permutation<FromFrame, ToFrame>, T>::type
 Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Permutation, T>::Do(*this, t);
+  return Mappable<Permutation, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>

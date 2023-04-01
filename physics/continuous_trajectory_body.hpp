@@ -503,7 +503,7 @@ absl::Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Writer
 ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](
         not_null<
             serialization::ContinuousTrajectory::Checkpoint*> const message) {
@@ -530,7 +530,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Reader
 ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
       absl::MutexLock l(&lock_);

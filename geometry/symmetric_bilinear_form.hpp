@@ -20,6 +20,7 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_named_quantities;
 
@@ -55,13 +56,13 @@ class SymmetricBilinearForm {
   // which is the generalization to nonsymmetric F.
   // This operation is linear in |*this|.
   template<template<typename, typename> typename M = Multivector,
-           typename = std::enable_if_t<base::is_same_template_v<M, Vector>>>
+           typename = std::enable_if_t<is_same_template_v<M, Vector>>>
   SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
 
   // This function is the inverse of |Anticommutator()|.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
   template<template<typename, typename> typename M = Multivector,
-           typename = std::enable_if_t<base::is_same_template_v<M, Bivector>>>
+           typename = std::enable_if_t<is_same_template_v<M, Bivector>>>
   SymmetricBilinearForm<Scalar, Frame, Vector> AnticommutatorInverse() const;
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
@@ -82,7 +83,7 @@ class SymmetricBilinearForm {
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static SymmetricBilinearForm ReadFromMessage(
       serialization::SymmetricBilinearForm const& message);
 

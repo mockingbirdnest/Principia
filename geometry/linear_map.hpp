@@ -9,6 +9,7 @@ namespace geometry {
 namespace _linear_map {
 namespace internal {
 
+using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 
@@ -31,7 +32,7 @@ class LinearMap {
       Vector<Scalar, FromFrame> const& vector) const;
 
   template<typename T>
-  typename base::Mappable<Map, T>::type operator()(T const& t) const;
+  typename Mappable<Map, T>::type operator()(T const& t) const;
 
   // Apologies for the commented-out code, but we cannot write the return type
   // of this function.
@@ -46,8 +47,8 @@ class LinearMap {
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static void ReadFromMessage(serialization::LinearMap const& message);
 };
 

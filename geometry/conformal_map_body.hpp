@@ -49,9 +49,9 @@ ConformalMap<Scalar, FromFrame, ToFrame>::operator()(
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<ConformalMap<Scalar, FromFrame, ToFrame>, T>::type
+typename Mappable<ConformalMap<Scalar, FromFrame, ToFrame>, T>::type
 ConformalMap<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<ConformalMap, T>::Do(*this, t);
+  return Mappable<ConformalMap, T>::Do(*this, t);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
