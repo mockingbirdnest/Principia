@@ -4,11 +4,13 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
-#include "geometry/affine_map.hpp"
 #include "geometry/conformal_map.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/homothecy.hpp"
 #include "geometry/rigid_transformation.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
 
@@ -18,11 +20,13 @@ namespace _similar_motion {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_conformal_map;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_homothecy;
 using namespace principia::geometry::_rigid_transformation;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -58,19 +62,10 @@ class SimilarMotion final {
   using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
 
  public:
+  template<typename ThroughFrame>
   SimilarMotion(
-      Similarity<FromFrame, ToFrame> const& similarity,
-      AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
-      Velocity<FromFrame> const& velocity_of_to_frame_origin,
-      Variation<double> const& dilatation_rate);
-
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>>
-  SimilarMotion(
-      Similarity<FromFrame, ToFrame> const& similarity,
-      AngularVelocity<ToFrame> const& angular_velocity_of_from_frame,
-      Velocity<ToFrame> const& velocity_of_from_frame_origin,
+      RigidMotion<FromFrame, ThroughFrame> const& rigid_motion,
+      Homothecy<double, ThroughFrame, ToFrame> const& dilatation,
       Variation<double> const& dilatation_rate);
 
   Similarity<FromFrame, ToFrame> const& similarity() const;
@@ -100,14 +95,10 @@ class SimilarMotion final {
   static SimilarMotion Identity();
 
  private:
-  Similarity<FromFrame, ToFrame> similarity_;
-  // d/dt similarity⁻¹(basis of ToFrame). The positively oriented
-  // orthogonal bases of |FromFrame| are acted upon faithfully and transitively
-  // by SO(FromFrame), so this lies in the tangent space, i.e., the Lie algebra
-  // 𝖘𝔬(FromFrame) ≅ FromFrame ∧ FromFrame.
-  AngularVelocity<FromFrame> angular_velocity_of_to_frame_;
-  // d/dt similarity⁻¹(ToFrame::origin).
-  Velocity<FromFrame> velocity_of_to_frame_origin_;
+  using Through = Frame<struct ThroughTag, Arbitrary, ToFrame::handedness>;
+
+  RigidMotion<FromFrame, Through> rigid_motion_;
+  Homothecy<double, Through, ToFrame> dilatation_;
   Variation<double> dilatation_rate_;
 
   template<typename, typename>

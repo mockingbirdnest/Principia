@@ -8,39 +8,25 @@ namespace _similar_motion {
 namespace internal {
 
 template<typename FromFrame, typename ToFrame>
+template<typename ThroughFrame>
 SimilarMotion<FromFrame, ToFrame>::SimilarMotion(
-    Similarity<FromFrame, ToFrame> const& similarity,
-    AngularVelocity<FromFrame> const& angular_velocity_of_to_frame,
-    Velocity<FromFrame> const& velocity_of_to_frame_origin,
+    RigidMotion<FromFrame, ThroughFrame> const& rigid_motion,
+    Homothecy<double, ThroughFrame, ToFrame> const& dilatation,
     Variation<double> const& dilatation_rate)
-    : similarity_(similarity),
-      angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
-      velocity_of_to_frame_origin_(velocity_of_to_frame_origin),
+    : rigid_motion_(RigidMotion<ThroughFrame, Through>::Identity() *
+                    rigid_motion),
+      dilatation_(Homothecy<double, ThroughFrame, Through>::Identity() *
+                  dilatation),
       dilatation_rate_(dilatation_rate) {}
-
-template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
-SimilarMotion<FromFrame, ToFrame>::SimilarMotion(
-    Similarity<FromFrame, ToFrame> const& similarity,
-    AngularVelocity<FromFrame> const& angular_velocity_of_from_frame,
-    Velocity<FromFrame> const& velocity_of_from_frame_origin,
-    Variation<double> const& dilatation_rate)
-    : similarity_(similarity),
-      angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
-      velocity_of_to_frame_origin_(velocity_of_to_frame_origin),
-      dilatation_rate_(dilatation_rate) {}
-
 
 template<typename FromFrame, typename ToFrame>
 DegreesOfFreedom<ToFrame> SimilarMotion<FromFrame, ToFrame>::operator()(
     DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const {
-  return {similarity_(degrees_of_freedom.position()),
-          orthogonal_map()(
-              degrees_of_freedom.velocity() - velocity_of_to_frame_origin_ -
-              angular_velocity_of_to_frame_ *
-                  (degrees_of_freedom.position() -
-                   rigid_transformation_.Inverse()(ToFrame::origin)) /
-                  Radian)};
+  auto const degrees_of_freedom_in_through = rigid_motion_(degrees_of_freedom);
+  auto const& qᴿ = degrees_of_freedom_in_through.position();
+  auto const& q̇ᴿ = degrees_of_freedom_in_through.velocity();
+  return {dilatation_(qᴿ),
+          dilatation_rate_ * (qᴿ - Through::origin) + dilatation_(q̇ᴿ)};
 }
 
 }  // namespace internal
