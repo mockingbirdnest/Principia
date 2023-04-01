@@ -10,6 +10,7 @@ namespace _hexadecimal {
 namespace internal {
 
 using namespace principia::base::_array;
+using namespace principia::base::_encoder;
 
 template<bool null_terminated>
 class HexadecimalEncoder : public Encoder<char, null_terminated> {

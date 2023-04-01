@@ -10,6 +10,7 @@ namespace _base32768 {
 namespace internal {
 
 using namespace principia::base::_array;
+using namespace principia::base::_encoder;
 
 // An encoder the base 32768 encoding defined by
 // https://github.com/qntm/base32768.  This is a complete reimplementation in
