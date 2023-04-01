@@ -77,6 +77,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
+using namespace principia::base::_version;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_named_quantities;
@@ -612,8 +613,8 @@ void __cdecl principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
-  *CHECK_NOTNULL(build_date) = base::BuildDate;
-  *CHECK_NOTNULL(version) = base::Version;
+  *CHECK_NOTNULL(build_date) = BuildDate;
+  *CHECK_NOTNULL(version) = Version;
   return m.Return();
 }
 
@@ -675,8 +676,8 @@ void __cdecl principia__InitGoogleLogging() {
         });
 
     LOG(ERROR) << "Initialized Google logging for Principia";
-    LOG(ERROR) << "Principia version " << principia::base::Version
-               << " built on " << principia::base::BuildDate
+    LOG(ERROR) << "Principia version " << Version
+               << " built on " << BuildDate
                << " by " << principia::base::CompilerName
                << " version " << principia::base::CompilerVersion
                << " for " << principia::base::OperatingSystem

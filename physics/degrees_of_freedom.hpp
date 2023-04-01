@@ -17,6 +17,7 @@ namespace _degrees_of_freedom {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_pair;
 

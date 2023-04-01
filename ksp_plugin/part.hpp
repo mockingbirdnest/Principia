@@ -227,6 +227,8 @@ using internal::MakeWaterSphereInertiaTensor;
 }  // namespace ksp_plugin
 
 namespace base {
+namespace _disjoint_sets {
+namespace internal {
 
 using namespace principia::ksp_plugin::_part;
 
@@ -235,6 +237,8 @@ inline not_null<Subset<Part>::Node*> Subset<Part>::Node::Get(Part& element) {
   return element.subset_node_.get();
 }
 
+}  // namespace internal
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia
 

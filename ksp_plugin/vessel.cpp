@@ -26,6 +26,7 @@ using ::std::placeholders::_1;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_clientele;
