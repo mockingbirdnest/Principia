@@ -18,6 +18,9 @@ namespace principia {
 namespace base {
 
 using namespace principia::base::_array;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_base32768;
+using namespace principia::base::_base64;
 
 template<typename Encoder>
 void BM_Encode(benchmark::State& state) {
