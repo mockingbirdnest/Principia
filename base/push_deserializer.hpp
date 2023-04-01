@@ -21,6 +21,8 @@ namespace base {
 namespace _push_deserializer {
 namespace internal {
 
+using namespace principia::base::_array;
+
 using ::google::compression::Compressor;
 
 // An input stream based on an array that delegates to a function the handling

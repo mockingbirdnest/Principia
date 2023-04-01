@@ -20,6 +20,8 @@ namespace base {
 namespace _pull_serializer {
 namespace internal {
 
+using namespace principia::base::_array;
+
 using ::google::compression::Compressor;
 
 // An output stream based on an array that delegates to a function the handling

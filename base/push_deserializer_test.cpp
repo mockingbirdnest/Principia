@@ -29,6 +29,7 @@ using serialization::Quantity;
 using ::google::compression::Compressor;
 using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
+using namespace principia::base::_array;
 using namespace principia::base::_not_null;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;

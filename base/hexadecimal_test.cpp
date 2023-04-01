@@ -14,6 +14,8 @@ using ::testing::ElementsAre;
 namespace principia {
 namespace base {
 
+using namespace principia::base::_array;
+
 using namespace principia::base::_hexadecimal;
 
 class HexadecimalTest : public testing::Test {

@@ -9,6 +9,8 @@ namespace base {
 namespace _base64 {
 namespace internal {
 
+using namespace principia::base::_array;
+
 // This function implements RFC 4648 section 5 (base64url).  The encoded text is
 // *not* padded.
 template<bool null_terminated>

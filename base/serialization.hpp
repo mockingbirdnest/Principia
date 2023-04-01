@@ -9,6 +9,8 @@ namespace base {
 namespace _serialization {
 namespace internal {
 
+using namespace principia::base::_array;
+
 inline UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message);
 
