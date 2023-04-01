@@ -17,6 +17,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_array;
+
 template<typename Encoder>
 void BM_Encode(benchmark::State& state) {
   constexpr int preallocated_size = 1 << 20;
