@@ -107,8 +107,10 @@ template<typename LScalar, typename RScalar,
 Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
     Homothecy<RScalar, FromFrame, ThroughFrame> const& right) {
-  return Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame>(left.scale_ *
-                                                                  right.scale_);
+  return Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame>(
+      typename Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame>::
+          PrivateConstructor{},
+      left.scale_ * right.scale_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

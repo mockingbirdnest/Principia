@@ -364,5 +364,8 @@
     <ClCompile Include="..\geometry\instant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="similar_motion_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
