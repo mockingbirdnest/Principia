@@ -8,7 +8,6 @@ namespace principia {
 namespace base {
 
 using namespace principia::base::_array;
-
 using namespace principia::base::_base64;
 
 class Base64Test : public ::testing::Test {
