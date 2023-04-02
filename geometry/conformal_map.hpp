@@ -3,9 +3,11 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/identity.hpp"
+#include "geometry/homothecy.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/signature.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -30,6 +32,9 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
                                       FromFrame, ToFrame> {
  public:
+  // The only way to construct conformal maps is as a product of conformal maps
+  // obtained by forgetting other linear maps.
+
   Cube<Scalar> Determinant() const;
 
   ConformalMap<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
@@ -74,7 +79,7 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
 
   static constexpr Signature<FromFrame, SignedFrame> MakeSignature();
   Rotation<SignedFrame, RotatedAndSignedFrame> MakeRotation() const;
-  Homothecy<RotatedAndSignedFrame, ToFrame> MakeHomothecy() const;
+  Homothecy<Scalar, RotatedAndSignedFrame, ToFrame> MakeHomothecy() const;
 
   Scalar const scale_;
   Quaternion const quaternion_;

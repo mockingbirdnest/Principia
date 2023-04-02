@@ -2,8 +2,10 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/homothecy.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -20,6 +22,9 @@ namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_conformal_map;
+using namespace principia::geometry::_homothecy;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -38,8 +43,9 @@ class ConformalMapTest : public testing::Test {
                       serialization::Frame::TEST2>;
   using DirectConf = ConformalMap<Amount, DirectWorld, DirectWorld>;
   using MirrorConf = ConformalMap<Amount, MirrorWorld, DirectWorld>;
-  using DirectOrth = OrthogonalMap<DirectWorld, DirectWorld>;
-  using MirrorOrth = OrthogonalMap<MirrorWorld, DirectWorld>;
+  using DirectSign = Signature<DirectWorld, DirectWorld>;
+  using MirrorSign = Signature<MirrorWorld, DirectWorld>;
+  using Hom = Homothecy<Amount, DirectWorld, DirectWorld>;
   using Rot = Rotation<DirectWorld, DirectWorld>;
 
   ConformalMapTest()
@@ -47,11 +53,13 @@ class ConformalMapTest : public testing::Test {
             {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
         mirror_vector_(Vector<Length, MirrorWorld>(
             {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
-        conformal_a_(
-            MirrorConf(5 * Mole,
-                       MirrorOrth(Rot(120 * Degree,
-                                      Bivector<double, DirectWorld>({1, 1, 1}))
-                                      .quaternion()))),
+        conformal_a_(Hom(5 * Mole).Forget<ConformalMap>() *
+                     Rot(120 * Degree, Bivector<double, DirectWorld>({1, 1, 1}))
+                         .Forget<ConformalMap>() *
+                     MirrorSign(Sign::Positive(),
+                                Sign::Positive(),
+                                MirrorSign::DeduceSign())
+                         .Forget<ConformalMap>()),
         conformal_b_(
             DirectConf(5 * Mole,
                        DirectOrth(Rot(90 * Degree,

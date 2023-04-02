@@ -90,8 +90,8 @@ ConformalMap<Scalar, FromFrame, ToFrame>::ConformalMap(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-constexpr Signature<FromFrame, SignedFrame>
-ConformalMap<Scalar, FromFrame, ToFrame>::MakeSignature() {
+constexpr auto ConformalMap<Scalar, FromFrame, ToFrame>::MakeSignature() ->
+Signature<FromFrame, SignedFrame> {
   if constexpr (FromFrame::handedness == ToFrame::handedness) {
     return Signature<FromFrame, SignedFrame>::Identity();
   } else {
@@ -100,15 +100,15 @@ ConformalMap<Scalar, FromFrame, ToFrame>::MakeSignature() {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-Rotation<SignedFrame, RotatedAndSignedFrame>
-ConformalMap<Scalar, FromFrame, ToFrame>::MakeRotation() const {
+auto ConformalMap<Scalar, FromFrame, ToFrame>::MakeRotation() const ->
+Rotation<SignedFrame, RotatedAndSignedFrame> {
   return Rotation<SignedFrame, RotatedAndSignedFrame>(quaternion_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-Homothecy<RotatedAndSignedFrame, ToFrame>
-ConformalMap<Scalar, FromFrame, ToFrame>::MakeHomothecy() const {
-  return Homothecy<RotatedAndSignedFrame, ToFrame>(scale_);
+auto ConformalMap<Scalar, FromFrame, ToFrame>::MakeHomothecy() const ->
+Homothecy<Scalar, RotatedAndSignedFrame, ToFrame> {
+  return Homothecy<Scalar, RotatedAndSignedFrame, ToFrame>(scale_);
 }
 
 template<typename LScalar, typename RScalar,
