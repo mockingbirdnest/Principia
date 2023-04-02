@@ -1006,7 +1006,8 @@ constexpr bool operator!=(TimeOfDay const& left, TimeOfDay const& right) {
   return !(left == right);
 }
 
-constexpr TimeOfDay operator""_Time(char const* const str, std::size_t const size) {
+constexpr TimeOfDay operator""_Time(char const* const str,
+                                    std::size_t const size) {
   return TimeParser::Parse(str, size);
 }
 
