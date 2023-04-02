@@ -23,9 +23,17 @@ SimilarMotion<FromFrame, ToFrame>::SimilarMotion(
       dilatation_rate_of_to_frame_(dilatition_rate_of_to_frame) {}
 
 template<typename FromFrame, typename ToFrame>
+template<typename ThroughFrame>
+SimilarMotion<FromFrame, ToFrame>::SimilarMotion(
+    Homothecy<double, FromFrame, ThroughFrame> const& dilatation,
+    RigidMotion<ThroughFrame, ToFrame> const& rigid_motion,
+    Variation<double> const& dilatation_rate_of_to_frame) {}
+
+template<typename FromFrame, typename ToFrame>
 ConformalMap<double, FromFrame, ToFrame> const&
 SimilarMotion<FromFrame, ToFrame>::conformal_map() const {
-  return dilatation_ * rigid_motion_.orthogonal_map();
+  return dilatation_.Forget<ConformalMap>() *
+         rigid_motion_.orthogonal_map().Forget<ConformalMap>();
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -72,10 +80,9 @@ DegreesOfFreedom<ToFrame> SimilarMotion<FromFrame, ToFrame>::operator()(
 template<typename FromFrame, typename ToFrame>
 SimilarMotion<ToFrame, FromFrame>
 SimilarMotion<FromFrame, ToFrame>::Inverse() const {
-  ///?
-  return SimilarMotion<ToFrame, FromFrame>(rigid_motion_.Inverse(),
-    dilatation_.Inverse(),
-    );
+  return SimilarMotion<ToFrame, FromFrame>(dilatation_.Inverse(),
+                                           rigid_motion_.Inverse(),
+                                           -dilatation_rate_of_to_frame_);
 }
 
 template<typename FromFrame, typename ToFrame>

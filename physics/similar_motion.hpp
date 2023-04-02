@@ -62,10 +62,17 @@ class SimilarMotion final {
   using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
 
  public:
+  //TODO(phl)comment
   template<typename ThroughFrame>
   SimilarMotion(
       RigidMotion<FromFrame, ThroughFrame> const& rigid_motion,
       Homothecy<double, ThroughFrame, ToFrame> const& dilatation,
+      Variation<double> const& dilatation_rate_of_to_frame);
+
+  template<typename ThroughFrame>
+  SimilarMotion(
+      Homothecy<double, FromFrame, ThroughFrame> const& dilatation,
+      RigidMotion<ThroughFrame, ToFrame> const& rigid_motion,
       Variation<double> const& dilatation_rate_of_to_frame);
 
   // Returns the conformal map resulting from |rigid_motion| and |dilatation|.
