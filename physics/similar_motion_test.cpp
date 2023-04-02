@@ -75,6 +75,22 @@ TEST_F(SimilarMotionTest, Smoke) {
               World3::unmoving + Velocity<World3>({-8 * Metre / Second,
                                                    52 * Metre / Second,
                                                    0 * Metre / Second}), 0)));
+
+  auto const conformal_map = similar_motion.conformal_map();
+
+  auto const angular_velocity_of_from_frame =
+      similar_motion.angular_velocity_of<World1>();
+  auto const angular_velocity_of_to_frame =
+      similar_motion.angular_velocity_of<World3>();
+
+  auto const velocity_of_origin_of_from_frame =
+      similar_motion.velocity_of_origin_of<World1>();
+  auto const velocity_of_origin_of_to_frame =
+      similar_motion.velocity_of_origin_of<World3>();
+
+  auto const inverse = similar_motion.Inverse();
+
+  auto const identity = SimilarMotion<World1, World3>::Identity();
 }
 
 }  // namespace physics

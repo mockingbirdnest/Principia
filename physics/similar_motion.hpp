@@ -68,8 +68,7 @@ class SimilarMotion final {
       Homothecy<double, ThroughFrame, ToFrame> const& dilatation,
       Variation<double> const& dilatation_rate_of_to_frame);
 
-  Similarity<FromFrame, ToFrame> const& similarity() const;
-  // Returns |similarity().linear_map()|.
+  // Returns the conformal map resulting from |rigid_motion| and |dilatation|.
   ConformalMap<double, FromFrame, ToFrame> const& conformal_map() const;
 
   template<typename F>
