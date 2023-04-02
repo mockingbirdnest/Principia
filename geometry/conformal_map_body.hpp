@@ -12,13 +12,6 @@ namespace internal {
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename>
-ConformalMap<Scalar, FromFrame, ToFrame>::ConformalMap(
-    Scalar const& scale,
-    OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map)
-    : ConformalMap(PrivateConstructor{}, scale, orthogonal_map) {}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
 Cube<Scalar> ConformalMap<Scalar, FromFrame, ToFrame>::Determinant() const {
   return Pow<3>(scale_);
 }
@@ -27,15 +20,14 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 ConformalMap<Inverse<Scalar>, ToFrame, FromFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::Inverse() const {
   return ConformalMap<quantities::Inverse<Scalar>, ToFrame, FromFrame>(
-    1 / scale_, orthogonal_map_.Inverse());
+    1 / scale_, quaternion_.Inverse());
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename, typename>
 ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::Identity() {
-  return ConformalMap(
-      PrivateConstructor{}, 1, OrthogonalMap<FromFrame, ToFrame>::Identity());
+  return ConformalMap(1, Quaternion(1));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -43,8 +35,7 @@ template<typename VScalar>
 Vector<Product<VScalar, Scalar>, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::operator()(
     Vector<VScalar, FromFrame> const& vector) const {
-  return Vector<Product<VScalar, Scalar>, ToFrame>(
-      orthogonal_map_(vector).coordinates() * scale_);
+  return MakeHomothecy()(MakeRotation()(MakeSignature()(vector)));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -77,7 +68,7 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::ConformalMap*> const message) const {
   scale_.WriteToMessage(message->mutable_scale());
-  orthogonal_map_.WriteToMessage(message->mutable_orthogonal_map());
+  quaternion_.WriteToMessage(message->mutable_quaternion());
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -85,20 +76,39 @@ template<typename, typename, typename>
 ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::ConformalMap const& message) {
-  return ConformalMap(PrivateConstructor{},
-                      Scalar::ReadFromMessage(message.scale()),
-                      OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
-                          message.orthogonal_map()));
+  return ConformalMap(Scalar::ReadFromMessage(message.scale()),
+                      Quaternion::ReadFromMessage(message.quaternion()));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ConformalMap(
-    PrivateConstructor,
     Scalar const& scale,
-    OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map)
+    Quaternion const& quaternion)
     : scale_(scale),
-      orthogonal_map_(orthogonal_map) {
+      quaternion_(quaternion) {
   CHECK_LT(Scalar{}, scale_);
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+constexpr Signature<FromFrame, SignedFrame>
+ConformalMap<Scalar, FromFrame, ToFrame>::MakeSignature() {
+  if constexpr (FromFrame::handedness == ToFrame::handedness) {
+    return Signature<FromFrame, SignedFrame>::Identity();
+  } else {
+    return Signature<FromFrame, SignedFrame>::CentralInversion();
+  }
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Rotation<SignedFrame, RotatedAndSignedFrame>
+ConformalMap<Scalar, FromFrame, ToFrame>::MakeRotation() const {
+  return Rotation<SignedFrame, RotatedAndSignedFrame>(quaternion_);
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+Homothecy<RotatedAndSignedFrame, ToFrame>
+ConformalMap<Scalar, FromFrame, ToFrame>::MakeHomothecy() const {
+  return Homothecy<RotatedAndSignedFrame, ToFrame>(scale_);
 }
 
 template<typename LScalar, typename RScalar,
@@ -108,9 +118,8 @@ ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     ConformalMap<RScalar, FromFrame, ThroughFrame> const& right) {
   using Map = ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame>;
   return Map(
-      typename Map::PrivateConstructor{},
       left.scale_ * right.scale_,
-      left.orthogonal_map_ * right.orthogonal_map_);
+      left.quaternion_ * right.quaternion_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -118,7 +127,7 @@ std::ostream& operator<<(
     std::ostream& out,
     ConformalMap<Scalar, FromFrame, ToFrame> const& conformal_map) {
   return out << "{scale: " << conformal_map.scale_
-             << ", orthogonal_map: " << conformal_map.orthogonal_map_ << "}";
+             << ", quaternion: " << conformal_map.quaternion_ << "}";
 }
 
 }  // namespace internal

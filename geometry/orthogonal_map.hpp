@@ -83,6 +83,9 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   template<typename T>
   typename base::Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
+
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<F::handedness == T::handedness>>

@@ -2,9 +2,10 @@
 
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
-#include "geometry/orthogonal_map.hpp"
+#include "geometry/quaternion.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -14,8 +15,12 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_homothecy;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_signature;
 using namespace principia::quantities::_named_quantities;
 
 // This is really a *linear* conformal map, but we don't call it
@@ -24,12 +29,6 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
                                       FromFrame, ToFrame> {
  public:
-  template<typename S = Scalar,
-           typename = std::enable_if_t<!std::is_floating_point_v<S> &&
-                                       !std::is_integral_v<S>>>
-  ConformalMap(Scalar const& scale,
-               OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
-
   Cube<Scalar> Determinant() const;
 
   ConformalMap<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
@@ -62,13 +61,22 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
       serialization::ConformalMap const& message);
 
  private:
-  struct PrivateConstructor {};
-  ConformalMap(PrivateConstructor,
-               Scalar const& scale,
-               OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
+  ConformalMap(Scalar const& scale,
+               Quaternion const& quaternion);
+
+  using RotatedAndSignedFrame = Frame<struct RotatedAndSignedFrameTag,
+                                      ToFrame::motion,
+                                      ToFrame::handedness>;
+  using SignedFrame = Frame<struct SignedFrameTag,
+                            ToFrame::motion,
+                            ToFrame::handedness>;
+
+  static constexpr Signature<FromFrame, SignedFrame> MakeSignature();
+  Rotation<SignedFrame, RotatedAndSignedFrame> MakeRotation() const;
+  Homothecy<RotatedAndSignedFrame, ToFrame> MakeHomothecy() const;
 
   Scalar const scale_;
-  OrthogonalMap<FromFrame, ToFrame> const orthogonal_map_;
+  Quaternion const quaternion_;
 
   template<typename L, typename R,
            typename From, typename Through, typename To>
