@@ -51,8 +51,4 @@ using internal::function;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_function;
-}  // namespace principia::base
-
 #include "base/function_body.hpp"

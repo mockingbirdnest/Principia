@@ -25,6 +25,7 @@ using ::std::placeholders::_1;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::physics::_clientele;
 using namespace principia::quantities::_named_quantities;
@@ -934,7 +935,7 @@ Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
 absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // This method is very similar to Ephemeris::Reanimate.  See the comments
   // there for some of the subtle points.
-  static_assert(base::is_serializable_v<Barycentric>);
+  static_assert(is_serializable_v<Barycentric>);
   absl::btree_set<Instant> checkpoints;
   LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
             << desired_t_min;

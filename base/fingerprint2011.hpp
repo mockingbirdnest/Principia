@@ -26,6 +26,8 @@ namespace base {
 namespace _fingerprint2011 {
 namespace internal {
 
+using namespace principia::base::_array;
+
 inline std::uint64_t FingerprintCat2011(std::uint64_t const fp1,
                                         std::uint64_t const fp2) {
   // Two big prime numbers.
@@ -73,7 +75,3 @@ using internal::FingerprintCat2011;
 }  // namespace _fingerprint2011
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_fingerprint2011;
-}  // namespace principia::base

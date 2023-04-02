@@ -77,15 +77,15 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Signature ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Signature*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Signature ReadFromMessage(serialization::Signature const& message);
 
  private:

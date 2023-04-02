@@ -10,6 +10,8 @@ namespace base {
 namespace _sink_source {
 namespace internal {
 
+using namespace principia::base::_array;
+
 template<typename Element>
 class ArraySource : public google::compression::Source {
  public:
@@ -56,9 +58,5 @@ using internal::ArraySource;
 }  // namespace _sink_source
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_sink_source;
-}  // namespace principia::base
 
 #include "base/sink_source_body.hpp"

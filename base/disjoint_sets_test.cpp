@@ -11,6 +11,7 @@ namespace principia {
 namespace base {
 
 using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_not_null;
 
 namespace {
 

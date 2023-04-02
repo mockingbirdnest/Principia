@@ -26,8 +26,4 @@ using internal::PowerOf2Le;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_bits;
-}  // namespace principia::base
-
 #include "base/bits_body.hpp"

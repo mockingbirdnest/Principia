@@ -29,7 +29,7 @@ struct Hilbert<T1, T2,
                std::enable_if_t<
                    std::conjunction_v<is_quantity<T1>, is_quantity<T2>,
                                       std::negation<std::is_same<T1, T2>>>>>
-    : base::not_constructible {
+    : not_constructible {
   static constexpr int dimension = 1;
 
   using InnerProductType = Product<T1, T2>;
@@ -37,8 +37,7 @@ struct Hilbert<T1, T2,
 };
 
 template<typename T>
-struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>
-    : base::not_constructible {
+struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>> : not_constructible {
   static constexpr int dimension = 1;
 
   using InnerProductType = Square<T>;
@@ -57,7 +56,7 @@ template<typename T1, typename T2>
 struct Hilbert<T1, T2,
                std::void_t<decltype(InnerProduct(std::declval<T1>(),
                                                  std::declval<T2>()))>>
-    : base::not_constructible {
+    : not_constructible {
   static_assert(T1::dimension == T2::dimension);
   static constexpr int dimension = T1::dimension;
 
@@ -78,7 +77,7 @@ template<typename T>
 struct Hilbert<T, T,
                std::void_t<decltype(InnerProduct(std::declval<T>(),
                                                  std::declval<T>()))>>
-    : base::not_constructible {
+    : not_constructible {
   static constexpr int dimension = T::dimension;
 
   using InnerProductType =

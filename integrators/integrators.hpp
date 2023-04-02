@@ -18,6 +18,7 @@ namespace _integrators {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
@@ -99,7 +100,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
     template<typename S = typename ODE::State,
-             typename = std::enable_if_t<base::is_serializable_v<S>>>
+             typename = std::enable_if_t<is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
@@ -195,7 +196,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
     template<typename S = typename ODE::State,
-             typename = std::enable_if_t<base::is_serializable_v<S>>>
+             typename = std::enable_if_t<is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,

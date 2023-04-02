@@ -34,7 +34,7 @@ void Recorder::WriteAtDestruction(serialization::Method const& method) {
   lock_.Unlock();
 }
 
-void Recorder::Activate(base::not_null<Recorder*> const recorder) {
+void Recorder::Activate(not_null<Recorder*> const recorder) {
   CHECK(active_recorder_ == nullptr);
   active_recorder_ = recorder;
 

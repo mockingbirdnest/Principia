@@ -48,9 +48,9 @@ Homothecy<Scalar, FromFrame, ToFrame>::operator()(
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Homothecy<Scalar, FromFrame, ToFrame>, T>::type
+typename Mappable<Homothecy<Scalar, FromFrame, ToFrame>, T>::type
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Homothecy, T>::Do(*this, t);
+  return Mappable<Homothecy, T>::Do(*this, t);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

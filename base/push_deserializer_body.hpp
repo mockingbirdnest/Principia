@@ -14,6 +14,8 @@ namespace base {
 namespace _push_deserializer {
 namespace internal {
 
+using namespace principia::base::_sink_source;
+
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
     std::function<Array<std::uint8_t>()> on_empty)
     : on_empty_(std::move(on_empty)),

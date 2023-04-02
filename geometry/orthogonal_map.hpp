@@ -37,7 +37,9 @@ class OrthogonalMapTest;
 namespace _orthogonal_map {
 namespace internal {
 
+using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
@@ -81,7 +83,7 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<typename T>
-  typename base::Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
+  typename Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -91,15 +93,15 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static OrthogonalMap ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::OrthogonalMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static OrthogonalMap ReadFromMessage(
       serialization::OrthogonalMap const& message);
 

@@ -10,6 +10,7 @@ namespace geometry {
 namespace _homothecy {
 namespace internal {
 
+using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_linear_map;
@@ -42,7 +43,7 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
       Vector<VScalar, FromFrame> const& vector) const;
 
   template<typename T>
-  typename base::Mappable<Homothecy, T>::type operator()(T const& t) const;
+  typename Mappable<Homothecy, T>::type operator()(T const& t) const;
 
   template<template<typename, typename, typename> typename ConformalMap>
   ConformalMap<Scalar, FromFrame, ToFrame> Forget() const;
@@ -50,15 +51,15 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Homothecy ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Homothecy*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Homothecy ReadFromMessage(serialization::Homothecy const& message);
 
  private:

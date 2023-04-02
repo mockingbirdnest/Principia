@@ -17,6 +17,8 @@ class RecorderTest;
 namespace _recorder {
 namespace internal {
 
+using namespace principia::base::_not_null;
+
 class Recorder final {
  public:
   explicit Recorder(std::filesystem::path const& path);
@@ -25,7 +27,7 @@ class Recorder final {
   void WriteAtConstruction(serialization::Method const& method);
   void WriteAtDestruction(serialization::Method const& method);
 
-  static void Activate(base::not_null<Recorder*> recorder);
+  static void Activate(not_null<Recorder*> recorder);
   static void Deactivate();
   static bool IsActivated();
 

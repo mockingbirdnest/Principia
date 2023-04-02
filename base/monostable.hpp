@@ -30,8 +30,4 @@ using internal::Monostable;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_monostable;
-}  // namespace principia::base
-
 #include "base/monostable_body.hpp"

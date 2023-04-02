@@ -78,7 +78,3 @@ using internal::FindOrDie;
 }  // namespace _map_util
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_map_util;
-}  // namespace principia::base

@@ -43,7 +43,3 @@ using internal::Flags;
 }  // namespace _flags
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_flags;
-}  // namespace principia::base

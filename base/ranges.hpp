@@ -60,8 +60,4 @@ using internal::Range;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_ranges;
-}  // namespace principia::base
-
 #include "base/ranges_body.hpp"

@@ -17,6 +17,7 @@ namespace _degrees_of_freedom {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_pair;
 using namespace principia::geometry::_space;
 
@@ -38,7 +39,7 @@ class DegreesOfFreedom : public Pair<Position<Frame>, Velocity<Frame>> {
            Velocity<Frame>> const& base);  // NOLINT(runtime/explicit)
 
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static DegreesOfFreedom ReadFromMessage(serialization::Pair const& message);
 
   Position<Frame> const& position() const;
