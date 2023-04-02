@@ -249,42 +249,42 @@ constexpr Date::Date(int const year, int const month, int const day,
         day_(day),
         calendar_(calendar) {}
 
-// Implementation of class Time.
+// Implementation of class TimeOfDay.
 
-constexpr Time Time::hhmmss_ms(int const hhmmss, int ms) {
+constexpr TimeOfDay TimeOfDay::hhmmss_ms(int const hhmmss, int ms) {
   CONSTEXPR_CHECK(hhmmss >= 0);
   CONSTEXPR_CHECK(hhmmss <= 99'99'99);
-  return Time(digit_range(hhmmss, 4, 6),
+  return TimeOfDay(digit_range(hhmmss, 4, 6),
               digit_range(hhmmss, 2, 4),
               digit_range(hhmmss, 0, 2),
               ms);
 }
 
-constexpr int Time::hour() const {
+constexpr int TimeOfDay::hour() const {
   return hour_;
 }
 
-constexpr int Time::minute() const {
+constexpr int TimeOfDay::minute() const {
   return minute_;
 }
 
-constexpr int Time::second() const {
+constexpr int TimeOfDay::second() const {
   return second_;
 }
 
-constexpr int Time::millisecond() const {
+constexpr int TimeOfDay::millisecond() const {
   return millisecond_;
 }
 
-constexpr bool Time::is_leap_second() const {
+constexpr bool TimeOfDay::is_leap_second() const {
   return second_ == 60;
 }
 
-constexpr bool Time::is_end_of_day() const {
+constexpr bool TimeOfDay::is_end_of_day() const {
   return hour_ == 24;
 }
 
-constexpr Time::Time(int const hour,
+constexpr TimeOfDay::TimeOfDay(int const hour,
                      int const minute,
                      int const second,
                      int const millisecond)
@@ -304,14 +304,14 @@ constexpr Time::Time(int const hour,
 // Implementation of class DateTime.
 
 constexpr DateTime DateTime::BeginningOfDay(Date const & date) {
-  return DateTime(date, Time::hhmmss_ms(00'00'00, 0));
+  return DateTime(date, TimeOfDay::hhmmss_ms(00'00'00, 0));
 }
 
 constexpr Date const& DateTime::date() const {
   return date_;
 }
 
-constexpr Time const& DateTime::time() const {
+constexpr TimeOfDay const& DateTime::time() const {
   return time_;
 }
 
@@ -319,7 +319,7 @@ constexpr DateTime DateTime::normalized_end_of_day() const {
   return time_.is_end_of_day() ? BeginningOfDay(date_.next_day()) : *this;
 }
 
-constexpr DateTime::DateTime(Date const date, Time const time)
+constexpr DateTime::DateTime(Date const date, TimeOfDay const time)
     : date_(date),
       time_(time) {
   CONSTEXPR_CHECK(!time_.is_leap_second() ||
@@ -659,17 +659,17 @@ constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
   }
 }
 
-// Time parsing.
+// TimeOfDay parsing.
 
 // A |TimeParser| contains information about a string necessary to interpret it
 // as a time representation.
 class TimeParser final {
  public:
-  // Returns a |Time| corresponding to the representation |str|.
+  // Returns a |TimeOfDay| corresponding to the representation |str|.
   // Fails unless |str| is a valid time representation of one of the following
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
   // [hhmmss,ss̲], with at most three digits after the decimal mark.
-  static constexpr Time Parse(char const* str, std::size_t size);
+  static constexpr TimeOfDay Parse(char const* str, std::size_t size);
 
  private:
   constexpr TimeParser(std::int64_t digits,
@@ -697,9 +697,9 @@ class TimeParser final {
                                         bool has_decimal_mark,
                                         int decimal_mark_index);
 
-  // Returns a |Time| corresponding to the string that |*this| describes.
+  // Returns a |TimeOfDay| corresponding to the string that |*this| describes.
   // Fails if the format is invalid or the string represents an invalid time.
-  constexpr Time ToTime() const;
+  constexpr TimeOfDay ToTime() const;
 
   // The number formed by all digits in the string.
   std::int64_t const digits_;
@@ -717,7 +717,7 @@ class TimeParser final {
   int const decimal_mark_index_;
 };
 
-constexpr Time TimeParser::Parse(char const* const str,
+constexpr TimeOfDay TimeParser::Parse(char const* const str,
                                  std::size_t const size) {
   return ReadToEnd(str, size).ToTime();
 }
@@ -816,7 +816,7 @@ constexpr TimeParser TimeParser::ReadToEnd(CStringIterator const str,
   }
 }
 
-constexpr Time TimeParser::ToTime() const {
+constexpr TimeOfDay TimeParser::ToTime() const {
   // Length of the hhmmss part before the decimal mark (after stripping colons).
   constexpr int hhmmss = 6;
   CONSTEXPR_CHECK(digit_count_ >= hhmmss);
@@ -829,7 +829,7 @@ constexpr Time TimeParser::ToTime() const {
       (digit_count_ == hhmmss && !has_decimal_mark_) ||
       (has_decimal_mark_ && ((colons_ == 0 && decimal_mark_index_ == 6) ||
                              (colons_ != 0 && decimal_mark_index_ == 8))));
-  return Time::hhmmss_ms(
+  return TimeOfDay::hhmmss_ms(
       digit_range(digits_, digit_count_ - hhmmss, digit_count_),
       shift_left(digit_range(digits_, 0, digit_count_ - hhmmss),
                  3 - (digit_count_ - hhmmss)));
@@ -995,22 +995,23 @@ inline std::ostream& operator<<(std::ostream& out, Date const& date) {
              << std::setfill(fill);
 }
 
-constexpr bool operator==(Time const& left, Time const& right) {
+constexpr bool operator==(TimeOfDay const& left, TimeOfDay const& right) {
   return left.hour() == right.hour() &&
          left.minute() == right.minute() &&
          left.second() == right.second() &&
          left.millisecond() == right.millisecond();
 }
 
-constexpr bool operator!=(Time const& left, Time const& right) {
+constexpr bool operator!=(TimeOfDay const& left, TimeOfDay const& right) {
   return !(left == right);
 }
 
-constexpr Time operator""_Time(char const* const str, std::size_t const size) {
+constexpr TimeOfDay operator""_Time(char const* const str,
+                                    std::size_t const size) {
   return TimeParser::Parse(str, size);
 }
 
-inline std::ostream& operator<<(std::ostream& out, Time const& time) {
+inline std::ostream& operator<<(std::ostream& out, TimeOfDay const& time) {
   char const fill = out.fill();
   out << std::setfill('0') << std::setw(2) << time.hour() << ":" << std::setw(2)
       << time.minute() << ":" << std::setw(2) << time.second();
