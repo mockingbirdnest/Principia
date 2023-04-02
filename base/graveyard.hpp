@@ -10,6 +10,8 @@ namespace base {
 namespace _graveyard {
 namespace internal {
 
+using namespace principia::base::_thread_pool;
+
 class Graveyard {
  public:
   explicit Graveyard(std::int64_t number_of_threads);
@@ -28,9 +30,5 @@ using internal::Graveyard;
 }  // namespace _graveyard
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_graveyard;
-}  // namespace principia::base
 
 #include "base/graveyard_body.hpp"

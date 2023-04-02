@@ -13,6 +13,7 @@ namespace internal {
 
 using std::placeholders::_1;
 using std::swap;
+using namespace principia::base::_sink_source;
 
 inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
     Array<std::uint8_t> const bytes,

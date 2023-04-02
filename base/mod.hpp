@@ -26,7 +26,3 @@ using internal::mod;
 }  // namespace _mod
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_mod;
-}  // namespace principia::base

@@ -17,6 +17,7 @@ namespace _grassmann {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_traits;
@@ -48,7 +49,7 @@ class Multivector<Scalar, Frame, 1> final {
   void WriteToMessage(
       not_null<serialization::Multivector*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -89,7 +90,7 @@ class Multivector<Scalar, Frame, 2> final {
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -123,7 +124,7 @@ class Multivector<Scalar, Frame, 3> final {
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:

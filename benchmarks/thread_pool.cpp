@@ -11,6 +11,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_thread_pool;
+
 absl::Mutex lock;
 std::mt19937_64 random(42);
 std::uniform_int_distribution<int> distribution(0, 1e5);

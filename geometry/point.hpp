@@ -17,6 +17,7 @@ namespace _point {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_traits;
 
@@ -52,7 +53,7 @@ class Point final {
 
   void WriteToMessage(not_null<serialization::Point*> message) const;
   template<typename V = Vector,
-           typename = std::enable_if_t<base::is_serializable_v<V>>>
+           typename = std::enable_if_t<is_serializable_v<V>>>
   static Point ReadFromMessage(serialization::Point const& message);
 
  private:

@@ -20,6 +20,9 @@ namespace base {
 namespace _pull_serializer {
 namespace internal {
 
+using namespace principia::base::_array;
+using namespace principia::base::_not_null;
+
 using ::google::compression::Compressor;
 
 // An output stream based on an array that delegates to a function the handling
@@ -146,9 +149,5 @@ using internal::PullSerializer;
 }  // namespace _pull_serializer
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_pull_serializer;
-}  // namespace principia::base
 
 #include "base/pull_serializer_body.hpp"

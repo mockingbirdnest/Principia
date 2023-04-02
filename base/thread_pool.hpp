@@ -56,8 +56,4 @@ using internal::ThreadPool;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_thread_pool;
-}  // namespace principia::base
-
 #include "base/thread_pool_body.hpp"

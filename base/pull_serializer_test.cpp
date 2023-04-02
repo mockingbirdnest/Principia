@@ -21,6 +21,8 @@ using ::google::compression::Compressor;
 using ::std::placeholders::_1;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
+using namespace principia::base::_array;
+using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 
 namespace this_internal = _pull_serializer::internal;

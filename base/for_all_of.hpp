@@ -45,8 +45,4 @@ using internal::for_all_of;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_for_all_of;
-}  // namespace principia::base
-
 #include "base/for_all_of_body.hpp"

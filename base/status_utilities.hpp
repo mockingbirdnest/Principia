@@ -34,7 +34,3 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
 }  // namespace _status_utilities
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_status_utilities;
-}  // namespace principia::base

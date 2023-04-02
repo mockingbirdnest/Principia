@@ -30,7 +30,3 @@ using internal::Identically;
 }  // namespace _constant_function
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_constant_function;
-}  // namespace principia::base

@@ -55,6 +55,7 @@ namespace _plugin {
 namespace internal {
 
 using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_monostable;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_affine_map;
@@ -495,7 +496,7 @@ class Plugin {
   bool is_loaded(not_null<Vessel*> vessel) const;
 
   // Initialization objects.
-  base::Monostable initializing_;
+  Monostable initializing_;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;

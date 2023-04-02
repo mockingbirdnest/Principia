@@ -26,6 +26,7 @@ FORWARD_DECLARE_FROM(
 namespace _rotation {
 namespace internal {
 
+using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
@@ -233,7 +234,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<typename T>
-  typename base::Mappable<Rotation, T>::type operator()(T const& t) const;
+  typename Mappable<Rotation, T>::type operator()(T const& t) const;
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
@@ -245,15 +246,15 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Rotation ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Rotation*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:

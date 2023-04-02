@@ -12,6 +12,8 @@ namespace base {
 namespace _zfp_compressor {
 namespace internal {
 
+using namespace principia::base::_array;
+
 // ZFP headers limit the dimensions to 2^(48 / N).  For N = 4, this is way too
 // small for our purposes.  Therefore, we must not include the bit
 // ZFP_HEADER_META.  We still need a header, though, to record the compression

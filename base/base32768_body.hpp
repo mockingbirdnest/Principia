@@ -25,6 +25,8 @@ namespace base {
 namespace _base32768 {
 namespace internal {
 
+using namespace principia::base::_bits;
+
 // A repertoire is used to encode or decode integers into Basic Multilingual
 // Plane code points.
 class Repertoire {

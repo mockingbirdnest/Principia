@@ -11,10 +11,10 @@ namespace journal {
 
 // This file is not included from other headers, only translation units, so we
 // allow pollution of the |journal| namespace.
-using base::not_constructible;
-using base::not_null;
-using base::PullSerializer;
-using base::PushDeserializer;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
 using interface::AdaptiveStepParameters;
 using interface::BodyGeopotentialElement;
 using interface::BodyParameters;
