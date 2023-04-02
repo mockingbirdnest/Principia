@@ -129,6 +129,13 @@ LinearMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Signature<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
+}
+
+template<typename FromFrame, typename ToFrame>
 void Signature<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<Signature, FromFrame, ToFrame>::WriteToMessage(message);

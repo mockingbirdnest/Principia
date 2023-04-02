@@ -98,6 +98,13 @@ LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Permutation<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
   return Permutation(EvenPermutation::XYZ);

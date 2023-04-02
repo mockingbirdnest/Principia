@@ -85,6 +85,9 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   template<typename T>
   typename Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
+
   template<typename F = FromFrame,
            typename T = ToFrame,
            typename = std::enable_if_t<F::handedness == T::handedness>>
@@ -122,9 +125,9 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
                                                    : Sign::Negative();
 
   template<typename From, typename To>
-  friend class _identity::Identity;
-  template<typename From, typename To>
   friend class OrthogonalMap;
+  template<typename From, typename To>
+  friend class _identity::Identity;
   template<typename From, typename To>
   friend class _permutation::Permutation;
   template<typename From, typename To>
