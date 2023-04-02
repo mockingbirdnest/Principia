@@ -101,7 +101,7 @@ template<typename FromFrame, typename ToFrame>
 template<template<typename, typename, typename> typename ConformalMap>
 ConformalMap<double, FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::Forget() const {
-  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
+  return this->Forget<OrthogonalMap>().template Forget<ConformalMap>();
 }
 
 template<typename FromFrame, typename ToFrame>
