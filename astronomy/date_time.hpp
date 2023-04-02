@@ -78,14 +78,14 @@ class Date final {
   _date_time::Calendar calendar_;
 };
 
-class Time final {
+class TimeOfDay final {
  public:
   // Checks that this represents a valid time of day as per ISO 8601, thus
   // that the components are in the normal range, or that the object represents
   // a time in a leap second, or that it represents the end of the day.
-  constexpr Time(int hour, int minute, int second, int millisecond);
+  constexpr TimeOfDay(int hour, int minute, int second, int millisecond);
 
-  static constexpr Time hhmmss_ms(int hhmmss, int ms);
+  static constexpr TimeOfDay hhmmss_ms(int hhmmss, int ms);
 
   constexpr int hour() const;
   constexpr int minute() const;
@@ -109,12 +109,12 @@ class DateTime final {
  public:
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of the month.
-  constexpr DateTime(Date date, Time time);
+  constexpr DateTime(Date date, TimeOfDay time);
 
   static constexpr DateTime BeginningOfDay(Date const& date);
 
   constexpr Date const& date() const;
-  constexpr Time const& time() const;
+  constexpr TimeOfDay const& time() const;
 
   // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
   // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
@@ -122,7 +122,7 @@ class DateTime final {
 
  private:
   Date const date_;
-  Time const time_;
+  TimeOfDay const time_;
 
   friend constexpr DateTime operator""_DateTime(char const* str,
                                                 std::size_t size);
@@ -164,10 +164,10 @@ constexpr bool operator>=(Date const& left, Date const& right);
 constexpr Date operator""_Date(char const* str, std::size_t size);
 std::ostream& operator<<(std::ostream& out, Date const& date);
 
-constexpr bool operator==(Time const& left, Time const& right);
-constexpr bool operator!=(Time const& left, Time const& right);
-constexpr Time operator""_Time(char const* str, std::size_t size);
-std::ostream& operator<<(std::ostream& out, Time const& time);
+constexpr bool operator==(TimeOfDay const& left, TimeOfDay const& right);
+constexpr bool operator!=(TimeOfDay const& left, TimeOfDay const& right);
+constexpr TimeOfDay operator""_Time(char const* str, std::size_t size);
+std::ostream& operator<<(std::ostream& out, TimeOfDay const& time);
 
 // 24:00 on one day and 00:00 on the next compare equal.
 constexpr bool operator==(DateTime const& left, DateTime const& right);
@@ -189,7 +189,7 @@ using internal::operator""_Date;
 using internal::operator""_DateTime;
 using internal::operator""_Julian;
 using internal::operator""_Time;
-using internal::Time;
+using internal::TimeOfDay;
 namespace date_time = _date_time;
 
 }  // namespace _date_time
