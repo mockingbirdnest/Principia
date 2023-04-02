@@ -73,6 +73,8 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,

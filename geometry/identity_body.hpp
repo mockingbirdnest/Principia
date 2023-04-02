@@ -4,12 +4,15 @@
 
 #include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _identity {
 namespace internal {
+
+using namespace principia::geometry::_orthogonal_map;
 
 template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
@@ -62,6 +65,13 @@ template<typename FromFrame, typename ToFrame>
 template<template<typename, typename> typename LinearMap>
 LinearMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
   return LinearMap<FromFrame, ToFrame>::Identity();
+}
+
+template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Identity<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
 }
 
 template<typename FromFrame, typename ToFrame>

@@ -108,7 +108,8 @@ Rotation<SignedFrame, RotatedAndSignedFrame> {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 auto ConformalMap<Scalar, FromFrame, ToFrame>::MakeHomothecy() const ->
 Homothecy<Scalar, RotatedAndSignedFrame, ToFrame> {
-  return Homothecy<Scalar, RotatedAndSignedFrame, ToFrame>(scale_);
+  using H = Homothecy<Scalar, RotatedAndSignedFrame, ToFrame>;
+  return H(typename H::PrivateConstructor{}, scale_);
 }
 
 template<typename LScalar, typename RScalar,

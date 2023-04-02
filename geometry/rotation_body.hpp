@@ -291,6 +291,13 @@ LinearMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Rotation<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
+}
+
+template<typename FromFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Identity() {
   return Rotation(Quaternion(1));
 }

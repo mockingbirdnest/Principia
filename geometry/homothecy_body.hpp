@@ -31,13 +31,6 @@ Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename>
-Homothecy<Scalar, FromFrame, ToFrame>
-Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
-  return Homothecy(PrivateConstructor{}, 1);
-}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename VScalar>
 Vector<Product<VScalar, Scalar>, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(
@@ -58,6 +51,13 @@ template<template<typename, typename, typename> typename ConformalMap>
 ConformalMap<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Forget() const {
   return ConformalMap<Scalar, FromFrame, ToFrame>(scale_, Quaternion(1));
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+template<typename, typename>
+Homothecy<Scalar, FromFrame, ToFrame>
+Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
+  return Homothecy(PrivateConstructor{}, 1);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

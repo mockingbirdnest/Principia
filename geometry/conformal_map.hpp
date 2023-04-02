@@ -12,6 +12,16 @@
 
 namespace principia {
 namespace geometry {
+
+FORWARD_DECLARE_FROM(homothecy,
+                     TEMPLATE(typename Scalar,
+                              typename FromFrame,
+                              typename ToFrame) class,
+                     Homothecy);
+FORWARD_DECLARE_FROM(orthogonal_map,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     OrthogonalMap);
+
 namespace _conformal_map {
 namespace internal {
 
@@ -83,6 +93,13 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
 
   Scalar const scale_;
   Quaternion const quaternion_;
+
+  template<typename S, typename From, typename To>
+  friend class ConformalMap;
+  template<typename S, typename From, typename To>
+  friend class _homothecy::Homothecy;
+  template<typename From, typename To>
+  friend class _orthogonal_map::OrthogonalMap;
 
   template<typename L, typename R,
            typename From, typename Through, typename To>

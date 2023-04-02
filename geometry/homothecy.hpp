@@ -7,6 +7,13 @@
 
 namespace principia {
 namespace geometry {
+
+FORWARD_DECLARE_FROM(conformal_map,
+                     TEMPLATE(typename Scalar,
+                              typename FromFrame,
+                              typename ToFrame) class,
+                     ConformalMap);
+
 namespace _homothecy {
 namespace internal {
 
@@ -33,11 +40,6 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
 
   Homothecy<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
 
-  template<typename S = Scalar,
-           typename = std::enable_if_t<std::is_floating_point_v<S> ||
-                                       std::is_integral_v<S>>>
-  static Homothecy Identity();
-
   template<typename VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
@@ -47,6 +49,11 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
 
   template<template<typename, typename, typename> typename ConformalMap>
   ConformalMap<Scalar, FromFrame, ToFrame> Forget() const;
+
+  template<typename S = Scalar,
+           typename = std::enable_if_t<std::is_floating_point_v<S> ||
+                                       std::is_integral_v<S>>>
+  static Homothecy Identity();
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
@@ -67,6 +74,9 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   Homothecy(PrivateConstructor, Scalar const& scale);
 
   Scalar const scale_;
+
+  template<typename S, typename From, typename To>
+  friend class _conformal_map::ConformalMap;
 
   template<typename L, typename R,
            typename From, typename Through, typename To>

@@ -5,7 +5,6 @@
 #include "geometry/homothecy.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
-#include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -43,8 +42,7 @@ class ConformalMapTest : public testing::Test {
                       serialization::Frame::TEST2>;
   using DirectConf = ConformalMap<Amount, DirectWorld, DirectWorld>;
   using MirrorConf = ConformalMap<Amount, MirrorWorld, DirectWorld>;
-  using DirectSign = Signature<DirectWorld, DirectWorld>;
-  using MirrorSign = Signature<MirrorWorld, DirectWorld>;
+  using Mirror = Signature<MirrorWorld, DirectWorld>;
   using Hom = Homothecy<Amount, DirectWorld, DirectWorld>;
   using Rot = Rotation<DirectWorld, DirectWorld>;
 
@@ -53,23 +51,19 @@ class ConformalMapTest : public testing::Test {
             {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
         mirror_vector_(Vector<Length, MirrorWorld>(
             {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
-        conformal_a_(Hom(5 * Mole).Forget<ConformalMap>() *
-                     Rot(120 * Degree, Bivector<double, DirectWorld>({1, 1, 1}))
-                         .Forget<ConformalMap>() *
-                     MirrorSign(Sign::Positive(),
-                                Sign::Positive(),
-                                MirrorSign::DeduceSign())
+        conformal_a_(
+            Hom(5 * Mole).Forget<ConformalMap>() *
+            Rot(120 * Degree, Bivector<double, DirectWorld>({1, 1, 1}))
+                .Forget<ConformalMap>() *
+            Mirror::CentralInversion().Forget<ConformalMap>()),
+        conformal_b_(Hom(5 * Mole).Forget<ConformalMap>() *
+                     Rot(90 * Degree, Bivector<double, DirectWorld>({1, 0, 0}))
                          .Forget<ConformalMap>()),
-        conformal_b_(
-            DirectConf(5 * Mole,
-                       DirectOrth(Rot(90 * Degree,
-                                      Bivector<double, DirectWorld>({1, 0, 0}))
-                                      .quaternion()))),
         conformal_c_(
-            MirrorConf(5 * Mole,
-                       MirrorOrth(Rot(90 * Degree,
-                                      Bivector<double, DirectWorld>({1, 0, 0}))
-                                      .quaternion()))) {}
+            Hom(5 * Mole).Forget<ConformalMap>() *
+            Rot(90 * Degree, Bivector<double, DirectWorld>({1, 0, 0}))
+                .Forget<ConformalMap>() *
+            Mirror::CentralInversion().Forget<ConformalMap>()) {}
 
   Vector<Length, DirectWorld> direct_vector_;
   Vector<Length, MirrorWorld> mirror_vector_;
@@ -149,17 +143,13 @@ TEST_F(ConformalMapTest, SerializationSuccess) {
       serialization::ConformalMap::extension));
   serialization::ConformalMap const& extension =
       message.GetExtension(serialization::ConformalMap::extension);
-  EXPECT_THAT(extension.orthogonal_map().quaternion().real_part(),
-              AlmostEquals(0.5, 1));
-  EXPECT_THAT(
-      extension.orthogonal_map().quaternion().imaginary_part().x().double_(),
-      AlmostEquals(0.5, 0));
-  EXPECT_THAT(
-      extension.orthogonal_map().quaternion().imaginary_part().y().double_(),
-      AlmostEquals(0.5, 0));
-  EXPECT_THAT(
-      extension.orthogonal_map().quaternion().imaginary_part().z().double_(),
-      AlmostEquals(0.5, 0));
+  EXPECT_THAT(extension.quaternion().real_part(), AlmostEquals(0.5, 1));
+  EXPECT_THAT(extension.quaternion().imaginary_part().x().double_(),
+              AlmostEquals(0.5, 0));
+  EXPECT_THAT(extension.quaternion().imaginary_part().y().double_(),
+              AlmostEquals(0.5, 0));
+  EXPECT_THAT(extension.quaternion().imaginary_part().z().double_(),
+              AlmostEquals(0.5, 0));
   MirrorConf const o = MirrorConf::ReadFromMessage(message);
   EXPECT_THAT(conformal_a_(mirror_vector_), Eq(o(mirror_vector_)));
 }

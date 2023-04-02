@@ -84,6 +84,8 @@ class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,

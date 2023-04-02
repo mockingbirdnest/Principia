@@ -125,9 +125,9 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
                                                    : Sign::Negative();
 
   template<typename From, typename To>
-  friend class _identity::Identity;
-  template<typename From, typename To>
   friend class OrthogonalMap;
+  template<typename From, typename To>
+  friend class _identity::Identity;
   template<typename From, typename To>
   friend class _permutation::Permutation;
   template<typename From, typename To>
