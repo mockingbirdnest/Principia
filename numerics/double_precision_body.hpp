@@ -22,6 +22,7 @@ namespace numerics {
 namespace _double_precision {
 namespace internal {
 
+using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
@@ -49,7 +50,7 @@ struct ComponentwiseComparator<DoublePrecision<T>, DoublePrecision<U>> {
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
+struct ComponentwiseComparator<Point<T>, U> : not_constructible {
   static bool GreaterThanOrEqualOrZero(Point<T> const& left,
                                        U const& right) {
     // We only care about the coordinates, the geometric structure is
@@ -60,7 +61,7 @@ struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<T, Point<U>> : base::not_constructible {
+struct ComponentwiseComparator<T, Point<U>> : not_constructible {
   static bool GreaterThanOrEqualOrZero(T const& left,
                                        Point<U> const& right) {
     // We only care about the coordinates, the geometric structure is
@@ -74,7 +75,7 @@ template<typename T, typename TFrame, int trank,
          typename U, typename UFrame, int urank>
 struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
                                Multivector<U, UFrame, urank>>
-    : base::not_constructible {
+    : not_constructible {
   static bool GreaterThanOrEqualOrZero(
       Multivector<T, TFrame, trank> const& left,
       Multivector<U, UFrame, urank> const& right) {
@@ -85,8 +86,7 @@ struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<R3Element<T>, R3Element<U>>
-    : base::not_constructible {
+struct ComponentwiseComparator<R3Element<T>, R3Element<U>> : not_constructible {
   static bool GreaterThanOrEqualOrZero(R3Element<T> const& left,
                                        R3Element<U> const& right) {
     bool result = true;

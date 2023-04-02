@@ -9,6 +9,9 @@ namespace base {
 namespace _base32768 {
 namespace internal {
 
+using namespace principia::base::_array;
+using namespace principia::base::_encoder;
+
 // An encoder the base 32768 encoding defined by
 // https://github.com/qntm/base32768.  This is a complete reimplementation in
 // C++.
@@ -37,9 +40,5 @@ using internal::Base32768Encoder;
 }  // namespace _base32768
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_base32768;
-}  // namespace principia::base
 
 #include "base/base32768_body.hpp"

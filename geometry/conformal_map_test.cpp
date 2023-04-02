@@ -2,6 +2,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/homothecy.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
@@ -20,6 +21,9 @@ namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_conformal_map;
+using namespace principia::geometry::_homothecy;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -38,8 +42,8 @@ class ConformalMapTest : public testing::Test {
                       serialization::Frame::TEST2>;
   using DirectConf = ConformalMap<Amount, DirectWorld, DirectWorld>;
   using MirrorConf = ConformalMap<Amount, MirrorWorld, DirectWorld>;
-  using DirectOrth = OrthogonalMap<DirectWorld, DirectWorld>;
-  using MirrorOrth = OrthogonalMap<MirrorWorld, DirectWorld>;
+  using Mirror = Signature<MirrorWorld, DirectWorld>;
+  using Hom = Homothecy<Amount, DirectWorld, DirectWorld>;
   using Rot = Rotation<DirectWorld, DirectWorld>;
 
   ConformalMapTest()
@@ -48,20 +52,18 @@ class ConformalMapTest : public testing::Test {
         mirror_vector_(Vector<Length, MirrorWorld>(
             {1.0 * Metre, 2.0 * Metre, 3.0 * Metre})),
         conformal_a_(
-            MirrorConf(5 * Mole,
-                       MirrorOrth(Rot(120 * Degree,
-                                      Bivector<double, DirectWorld>({1, 1, 1}))
-                                      .quaternion()))),
-        conformal_b_(
-            DirectConf(5 * Mole,
-                       DirectOrth(Rot(90 * Degree,
-                                      Bivector<double, DirectWorld>({1, 0, 0}))
-                                      .quaternion()))),
+            Hom(5 * Mole).Forget<ConformalMap>() *
+            Rot(120 * Degree, Bivector<double, DirectWorld>({1, 1, 1}))
+                .Forget<ConformalMap>() *
+            Mirror::CentralInversion().Forget<ConformalMap>()),
+        conformal_b_(Hom(5 * Mole).Forget<ConformalMap>() *
+                     Rot(90 * Degree, Bivector<double, DirectWorld>({1, 0, 0}))
+                         .Forget<ConformalMap>()),
         conformal_c_(
-            MirrorConf(5 * Mole,
-                       MirrorOrth(Rot(90 * Degree,
-                                      Bivector<double, DirectWorld>({1, 0, 0}))
-                                      .quaternion()))) {}
+            Hom(5 * Mole).Forget<ConformalMap>() *
+            Rot(90 * Degree, Bivector<double, DirectWorld>({1, 0, 0}))
+                .Forget<ConformalMap>() *
+            Mirror::CentralInversion().Forget<ConformalMap>()) {}
 
   Vector<Length, DirectWorld> direct_vector_;
   Vector<Length, MirrorWorld> mirror_vector_;
@@ -141,17 +143,13 @@ TEST_F(ConformalMapTest, SerializationSuccess) {
       serialization::ConformalMap::extension));
   serialization::ConformalMap const& extension =
       message.GetExtension(serialization::ConformalMap::extension);
-  EXPECT_THAT(extension.orthogonal_map().quaternion().real_part(),
-              AlmostEquals(0.5, 1));
-  EXPECT_THAT(
-      extension.orthogonal_map().quaternion().imaginary_part().x().double_(),
-      AlmostEquals(0.5, 0));
-  EXPECT_THAT(
-      extension.orthogonal_map().quaternion().imaginary_part().y().double_(),
-      AlmostEquals(0.5, 0));
-  EXPECT_THAT(
-      extension.orthogonal_map().quaternion().imaginary_part().z().double_(),
-      AlmostEquals(0.5, 0));
+  EXPECT_THAT(extension.quaternion().real_part(), AlmostEquals(0.5, 1));
+  EXPECT_THAT(extension.quaternion().imaginary_part().x().double_(),
+              AlmostEquals(0.5, 0));
+  EXPECT_THAT(extension.quaternion().imaginary_part().y().double_(),
+              AlmostEquals(0.5, 0));
+  EXPECT_THAT(extension.quaternion().imaginary_part().z().double_(),
+              AlmostEquals(0.5, 0));
   MirrorConf const o = MirrorConf::ReadFromMessage(message);
   EXPECT_THAT(conformal_a_(mirror_vector_), Eq(o(mirror_vector_)));
 }

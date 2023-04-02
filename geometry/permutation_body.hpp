@@ -71,9 +71,9 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Permutation<FromFrame, ToFrame>, T>::type
+typename Mappable<Permutation<FromFrame, ToFrame>, T>::type
 Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Permutation, T>::Do(*this, t);
+  return Mappable<Permutation, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -95,6 +95,13 @@ LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
       quaternions[INDEX_MASK &
                   (static_cast<int>(coordinate_permutation_) >> INDEX)];
   return LinearMap<FromFrame, ToFrame>(quaternion);
+}
+
+template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Permutation<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
 }
 
 template<typename FromFrame, typename ToFrame>

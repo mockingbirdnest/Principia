@@ -40,6 +40,7 @@ namespace _discrete_trajectory_segment {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
@@ -138,7 +139,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       std::vector<iterator> const& exact) const;
 
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static DiscreteTrajectorySegment ReadFromMessage(
       serialization::DiscreteTrajectorySegment const& message,
       DiscreteTrajectorySegmentIterator<Frame> self);

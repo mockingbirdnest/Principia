@@ -84,7 +84,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
         not_null<serialization::IntegratorInstance*> message) const override;
 #if 0
     template<typename... DV = DependentVariable...,
-             typename = std::enable_if_t<base::is_serializable_v<DV...>>>
+             typename = std::enable_if_t<is_serializable_v<DV...>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&

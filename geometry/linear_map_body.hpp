@@ -21,9 +21,9 @@ Vector<Scalar, ToFrame> LinearMap<Map, FromFrame, ToFrame>::operator()(
 
 template<typename Map, typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Map, T>::type
-LinearMap<Map, FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Map, T>::Do(static_cast<Map>(*this), t);
+typename Mappable<Map, T>::type LinearMap<Map, FromFrame, ToFrame>::operator()(
+    T const& t) const {
+  return Mappable<Map, T>::Do(static_cast<Map>(*this), t);
 }
 
 template<typename Map, typename FromFrame, typename ToFrame>

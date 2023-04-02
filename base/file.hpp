@@ -31,8 +31,4 @@ using internal::OFStream;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_file;
-}  // namespace principia::base
-
 #include "base/file_body.hpp"

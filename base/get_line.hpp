@@ -21,8 +21,4 @@ using internal::GetLine;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_get_line;
-}  // namespace principia::base
-
 #include "base/get_line_body.hpp"

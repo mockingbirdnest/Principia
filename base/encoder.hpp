@@ -9,6 +9,8 @@ namespace base {
 namespace _encoder {
 namespace internal {
 
+using namespace principia::base::_array;
+
 // Encodes/decodes an array of bytes to/from an array of Char.  If
 // |null_terminated| is true a null Char is appended to the encoded form and
 // taken into account in the encoded length.
@@ -49,7 +51,3 @@ using internal::Encoder;
 }  // namespace _encoder
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_encoder;
-}  // namespace principia::base

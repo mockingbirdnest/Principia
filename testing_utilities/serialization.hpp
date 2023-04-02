@@ -14,6 +14,8 @@ namespace testing_utilities {
 namespace _serialization {
 namespace internal {
 
+using namespace principia::base::_array;
+
 #if PRINCIPIA_COMPILER_MSVC
 inline std::u16string ReadFromBase32768File(
     std::filesystem::path const& filename);
@@ -36,14 +38,14 @@ inline serialization::TabulatedData ReadFromTabulatedData(
 
 #if PRINCIPIA_COMPILER_MSVC
 inline void WriteToBase32768File(std::filesystem::path const& filename,
-                                 base::Array<std::uint8_t const> serialized);
+                                 Array<std::uint8_t const> serialized);
 #endif
 
 inline void WriteToBinaryFile(std::filesystem::path const& filename,
-                              base::Array<std::uint8_t const> serialized);
+                              Array<std::uint8_t const> serialized);
 
 inline void WriteToHexadecimalFile(std::filesystem::path const& filename,
-                                   base::Array<std::uint8_t const> serialized);
+                                   Array<std::uint8_t const> serialized);
 
 }  // namespace internal
 

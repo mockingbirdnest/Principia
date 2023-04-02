@@ -312,7 +312,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
     serialization::DiscreteTrajectory message;
     vessel.trajectory().WriteToMessage(
         &message, /*tracked=*/{history, psychohistory}, /*exact=*/{});
-    auto const serialized_message = base::SerializeAsBytes(message);
+    auto const serialized_message = SerializeAsBytes(message);
     WriteToBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin",
                       serialized_message.get());
   }

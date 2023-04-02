@@ -86,7 +86,7 @@ message ConformalMap {
     optional ConformalMap extension = 1006;
   }
   required Quantity scale = 1;
-  required OrthogonalMap orthogonal_map = 2;
+  required Quaternion quaternion = 2;
 }
 
 message Identity {

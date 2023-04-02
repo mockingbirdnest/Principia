@@ -11,6 +11,7 @@ namespace _affine_map {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
@@ -36,8 +37,8 @@ class AffineMap final {
   void WriteToMessage(not_null<serialization::AffineMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:

@@ -2,7 +2,7 @@
 
 #include "geometry/homothecy.hpp"
 
-#include "geometry/orthogonal_map.hpp"
+#include "geometry/quaternion.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -10,7 +10,7 @@ namespace geometry {
 namespace _homothecy {
 namespace internal {
 
-using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_quaternion;
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -31,13 +31,6 @@ Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename>
-Homothecy<Scalar, FromFrame, ToFrame>
-Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
-  return Homothecy(PrivateConstructor{}, 1);
-}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename VScalar>
 Vector<Product<VScalar, Scalar>, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(
@@ -48,17 +41,23 @@ Homothecy<Scalar, FromFrame, ToFrame>::operator()(
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Homothecy<Scalar, FromFrame, ToFrame>, T>::type
+typename Mappable<Homothecy<Scalar, FromFrame, ToFrame>, T>::type
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Homothecy, T>::Do(*this, t);
+  return Mappable<Homothecy, T>::Do(*this, t);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 template<template<typename, typename, typename> typename ConformalMap>
 ConformalMap<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Forget() const {
-  return ConformalMap<Scalar, FromFrame, ToFrame>(
-      scale_, OrthogonalMap<FromFrame, ToFrame>::Identity());
+  return ConformalMap<Scalar, FromFrame, ToFrame>(scale_, Quaternion(1));
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+template<typename, typename>
+Homothecy<Scalar, FromFrame, ToFrame>
+Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
+  return Homothecy(PrivateConstructor{}, 1);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

@@ -168,8 +168,4 @@ using internal::UniqueArray;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_array;
-}  // namespace principia::base
-
 #include "base/array_body.hpp"

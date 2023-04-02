@@ -29,6 +29,7 @@ namespace _continuous_trajectory {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_piecewise_poisson_series;
@@ -117,7 +118,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the trajectory must be
   // restored at a checkpoint such that, once it is appended to, its t_min() is
   // at or before |desired_t_min|.

@@ -9,6 +9,8 @@ namespace base {
 namespace _serialization {
 namespace internal {
 
+using namespace principia::base::_array;
+
 inline UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message);
 
@@ -23,9 +25,5 @@ using internal::SerializeAsBytes;
 }  // namespace _serialization
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_serialization;
-}  // namespace principia::base
 
 #include "base/serialization_body.hpp"

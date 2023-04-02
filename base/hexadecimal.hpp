@@ -9,6 +9,9 @@ namespace base {
 namespace _hexadecimal {
 namespace internal {
 
+using namespace principia::base::_array;
+using namespace principia::base::_encoder;
+
 template<bool null_terminated>
 class HexadecimalEncoder : public Encoder<char, null_terminated> {
  public:
@@ -46,9 +49,5 @@ using internal::HexadecimalEncoder;
 }  // namespace _hexadecimal
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_hexadecimal;
-}  // namespace principia::base
 
 #include "base/hexadecimal_body.hpp"

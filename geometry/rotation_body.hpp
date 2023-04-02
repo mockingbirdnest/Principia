@@ -277,9 +277,9 @@ Rotation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Rotation<FromFrame, ToFrame>, T>::type
+typename Mappable<Rotation<FromFrame, ToFrame>, T>::type
 Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Rotation, T>::Do(*this, t);
+  return Mappable<Rotation, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -288,6 +288,13 @@ LinearMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
   static_assert(is_same_template_v<LinearMap, OrthogonalMap>,
                 "Unable to forget rotation");
   return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Rotation<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().Forget<ConformalMap>();
 }
 
 template<typename FromFrame, typename ToFrame>

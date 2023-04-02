@@ -17,6 +17,7 @@ namespace _signature {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
@@ -73,19 +74,21 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Signature ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Signature*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Signature ReadFromMessage(serialization::Signature const& message);
 
  private:

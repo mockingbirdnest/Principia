@@ -35,6 +35,7 @@ MATCHER_P(EqualsBytes, expected, "") {
 namespace principia {
 namespace base {
 
+using namespace principia::base::_array;
 using namespace principia::base::_base32768;
 
 void PrintTo(Array<std::uint8_t> bytes, std::ostream* os) {

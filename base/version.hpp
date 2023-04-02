@@ -22,7 +22,3 @@ using internal::Version;
 }  // namespace _version
 }  // namespace base
 }  // namespace principia
-
-namespace principia::base {
-using namespace principia::base::_version;
-}  // namespace principia::base

@@ -67,8 +67,4 @@ using internal::ZfpCompressor;
 }  // namespace base
 }  // namespace principia
 
-namespace principia::base {
-using namespace principia::base::_zfp_compressor;
-}  // namespace principia::base
-
 #include "base/zfp_compressor_body.hpp"
