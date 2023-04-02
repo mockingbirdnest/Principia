@@ -26,6 +26,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_malloc_allocator;
+
 // AllocatorIs<container, alloc>() returns true iff container's allocator is
 // alloc.
 template <typename T, typename Allocator>
