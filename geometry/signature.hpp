@@ -17,6 +17,7 @@ namespace _signature {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
