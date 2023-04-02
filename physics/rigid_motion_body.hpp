@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "geometry/homothecy.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 
@@ -12,6 +13,7 @@ namespace physics {
 namespace _rigid_motion {
 namespace internal {
 
+using namespace principia::geometry::_homothecy;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
 
@@ -99,6 +101,24 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename> typename SimilarMotion>
+SimilarMotion<FromFrame, ToFrame>
+RigidMotion<FromFrame, ToFrame>::Forget() const {
+  return SimilarMotion<FromFrame, ToFrame>(
+      *this,
+      Homothecy<double, ToFrame, ToFrame>::Identity(),
+      Variation<double>{});
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
+  return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
+                     FromFrame::nonrotating,
+                     FromFrame::unmoving);
+}
+
+template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>
 RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
     DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin) {
@@ -145,14 +165,6 @@ RigidMotion<FromFrame, ToFrame>::ReadFromMessage(
                          message.angular_velocity_of_to_frame()),
                      Velocity<FromFrame>::ReadFromMessage(
                          message.velocity_of_to_frame_origin()));
-}
-
-template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
-RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
-  return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
-                     FromFrame::nonrotating,
-                     FromFrame::unmoving);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

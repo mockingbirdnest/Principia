@@ -26,8 +26,8 @@ Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Inverse<Scalar>, ToFrame, FromFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
-  return Homothecy<quantities::Inverse<Scalar>, ToFrame, FromFrame>(
-    1 / scale_);
+  using H = Homothecy<quantities::Inverse<Scalar>, ToFrame, FromFrame>;
+  return H(typename H::PrivateConstructor{}, 1 / scale_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

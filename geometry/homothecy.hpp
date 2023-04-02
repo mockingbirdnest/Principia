@@ -76,6 +76,8 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   Scalar const scale_;
 
   template<typename S, typename From, typename To>
+  friend class Homothecy;
+  template<typename S, typename From, typename To>
   friend class _conformal_map::ConformalMap;
 
   template<typename L, typename R,

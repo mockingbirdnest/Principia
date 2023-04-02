@@ -76,7 +76,7 @@ class SimilarMotion final {
       Variation<double> const& dilatation_rate_of_to_frame);
 
   // Returns the conformal map resulting from |rigid_motion| and |dilatation|.
-  ConformalMap<double, FromFrame, ToFrame> const& conformal_map() const;
+  ConformalMap<double, FromFrame, ToFrame> conformal_map() const;
 
   template<typename F>
   AngularVelocity<other_frame_t<F>> angular_velocity_of() const;
@@ -102,6 +102,13 @@ class SimilarMotion final {
 
  private:
   using Through = Frame<struct ThroughTag, Arbitrary, ToFrame::handedness>;
+
+  template<typename ThroughOtherFrame>
+  struct CommutedSplit {
+    explicit CommutedSplit(SimilarMotion const& similar_motion);
+    Homothecy<double, ToFrame, ThroughOtherFrame> dilatation;
+    RigidMotion<ThroughOtherFrame, FromFrame> rigid_motion;
+  };
 
   RigidMotion<FromFrame, Through> rigid_motion_;
   Homothecy<double, Through, ToFrame> dilatation_;

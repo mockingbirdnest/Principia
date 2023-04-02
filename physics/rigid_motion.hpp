@@ -84,6 +84,9 @@ class RigidMotion final {
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
+  template<template<typename, typename> typename SimilarMotion>
+  SimilarMotion<FromFrame, ToFrame> Forget() const;
+
   // A rigid motion expressing that |FromFrame| and |ToFrame| have the same
   // axes, origin, and instantaneous motion.
   // This function is enabled only if both frames have the same handedness (this
