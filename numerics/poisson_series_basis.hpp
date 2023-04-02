@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "geometry/hilbert.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -15,7 +15,7 @@ namespace _poisson_series_basis {
 namespace internal {
 
 using namespace principia::geometry::_hilbert;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 
 // A |PoissonSeriesSubspace| represents a linear subspace of the space of

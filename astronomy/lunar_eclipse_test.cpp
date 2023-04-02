@@ -1,7 +1,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -22,7 +22,7 @@ namespace astronomy {
 
 using ::testing::Eq;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;

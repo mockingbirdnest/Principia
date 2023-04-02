@@ -4,7 +4,6 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -15,7 +14,6 @@ namespace principia {
 namespace interface {
 
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_sign;
 using namespace principia::ksp_plugin::_frames;

@@ -2,8 +2,9 @@
 
 #include <optional>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/dynamic_frame.hpp"
@@ -18,8 +19,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_dynamic_frame;

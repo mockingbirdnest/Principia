@@ -36,7 +36,6 @@
 #include "gipfeli/gipfeli.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
@@ -50,6 +49,7 @@
 #include "ksp_plugin/part.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -80,7 +80,6 @@ using namespace principia::base::_serialization;
 using namespace principia::base::_version;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
@@ -95,6 +94,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_frame_field;
+using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rigid_motion;

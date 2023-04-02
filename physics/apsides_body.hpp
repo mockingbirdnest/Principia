@@ -7,6 +7,7 @@
 
 #include "base/array.hpp"
 #include "base/jthread.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/root_finders.hpp"
 
 namespace principia {
@@ -16,7 +17,7 @@ namespace internal {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;

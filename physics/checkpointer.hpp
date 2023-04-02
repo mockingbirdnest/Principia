@@ -7,7 +7,7 @@
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "google/protobuf/repeated_field.h"
 #include "quantities/quantities.hpp"
 
@@ -17,7 +17,7 @@ namespace _checkpointer {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_quantities;
 
 // The checkpointer helps with compact serialization of timelines, i.e., classes

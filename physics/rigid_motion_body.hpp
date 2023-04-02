@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "geometry/identity.hpp"
-#include "geometry/linear_map.hpp"
 #include "geometry/permutation.hpp"
 
 namespace principia {
@@ -14,7 +13,6 @@ namespace _rigid_motion {
 namespace internal {
 
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_permutation;
 
 template<typename FromFrame, typename ToFrame>

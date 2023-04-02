@@ -4,7 +4,7 @@
 #include <cmath>
 #include <vector>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "numerics/polynomial.hpp"
@@ -20,7 +20,7 @@
 namespace principia {
 namespace numerics {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_newhall;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

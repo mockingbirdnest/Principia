@@ -13,17 +13,11 @@
 
 namespace principia {
 namespace geometry {
-
-FORWARD_DECLARE_FROM(rotation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Rotation);
-
 namespace _grassmann {
 namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_traits;
@@ -208,10 +202,6 @@ Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
-// Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) → SO(𝑉).
-template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent);
-
 // The result is in [0, π]; the function is commutative.
 template<typename LScalar, typename RScalar, typename Frame>
 Angle AngleBetween(Vector<LScalar, Frame> const& v,
@@ -376,7 +366,6 @@ std::ostream& operator<<(std::ostream& out,
 using internal::AngleBetween;
 using internal::Bivector;
 using internal::Commutator;
-using internal::Exp;
 using internal::InnerProduct;
 using internal::Multivector;
 using internal::Normalize;

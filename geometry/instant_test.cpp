@@ -1,7 +1,8 @@
+#include "geometry/instant.hpp"
+
 #include <strstream>
 
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -12,7 +13,7 @@ namespace geometry {
 using ::testing::Eq;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

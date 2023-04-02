@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28917.182
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -158,7 +158,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_adapter_stub", "ksp_plugin_adapter_stub\ksp_plugin_adapter_stub.csproj", "{34D500D6-4197-4665-BFDC-594957137CD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "renamespacer", "renamespacer\renamespacer.csproj", "{3B974058-FF80-4341-9744-6A9E4F8CE9E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sourcerer", "sourcerer\sourcerer.csproj", "{28F20764-FBF8-40CF-A930-1562D1562B83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -479,6 +479,22 @@ Global
 		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|x64.ActiveCfg = Release|Any CPU
 		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|x64.Build.0 = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|x64.Build.0 = Debug|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release KSP 1.7.3|Any CPU.ActiveCfg = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release KSP 1.7.3|Any CPU.Build.0 = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release KSP 1.7.3|x64.ActiveCfg = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release KSP 1.7.3|x64.Build.0 = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release_LLVM|Any CPU.ActiveCfg = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release_LLVM|Any CPU.Build.0 = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release_LLVM|x64.ActiveCfg = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release_LLVM|x64.Build.0 = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release|x64.ActiveCfg = Release|Any CPU
+		{28F20764-FBF8-40CF-A930-1562D1562B83}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -488,7 +504,7 @@ Global
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+		{28F20764-FBF8-40CF-A930-1562D1562B83} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {332981CB-A6C7-4BD0-9EE0-8E8C6FB4E01A}

@@ -6,6 +6,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/logger.hpp"
@@ -27,7 +28,7 @@ using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;

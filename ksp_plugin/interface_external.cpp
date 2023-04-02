@@ -18,7 +18,6 @@ namespace interface {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;

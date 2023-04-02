@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -27,9 +29,9 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
-using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::numerics::_root_finders;

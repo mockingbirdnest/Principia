@@ -10,7 +10,7 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -26,7 +26,7 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_gradient_descent;

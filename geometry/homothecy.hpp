@@ -2,7 +2,6 @@
 
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
-#include "geometry/identity.hpp"
 #include "geometry/linear_map.hpp"
 #include "quantities/named_quantities.hpp"
 

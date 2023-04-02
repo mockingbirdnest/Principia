@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 
+#include "geometry/instant.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
@@ -13,7 +14,7 @@ namespace _kepler_orbit {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

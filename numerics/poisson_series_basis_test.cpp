@@ -3,7 +3,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gtest/gtest.h"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -19,7 +19,7 @@ namespace numerics {
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_poisson_series_basis;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

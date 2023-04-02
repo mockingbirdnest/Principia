@@ -14,9 +14,10 @@
 #include "base/thread_pool.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -44,9 +45,10 @@ using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;

@@ -4,12 +4,14 @@
 
 #include <vector>
 
+#include "geometry/instant.hpp"
+
 namespace principia {
 namespace physics {
 namespace _jacobi_coordinates {
 namespace internal {
 
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 
 template<typename Frame>
 JacobiCoordinates<Frame>::JacobiCoordinates(MassiveBody const& primary) {

@@ -6,7 +6,6 @@
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
-#include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
@@ -27,7 +26,6 @@ using interface::principia__SerializePlugin;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::ksp_plugin::_plugin_io;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

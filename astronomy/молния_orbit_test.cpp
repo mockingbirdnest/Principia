@@ -5,7 +5,7 @@
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -33,7 +33,7 @@ namespace astronomy {
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_degrees_of_freedom;

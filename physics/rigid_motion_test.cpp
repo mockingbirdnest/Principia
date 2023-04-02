@@ -6,6 +6,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -23,7 +24,6 @@ namespace physics {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_point;
@@ -31,6 +31,7 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -7,6 +7,9 @@
 #include "astronomy/time_scales.hpp"
 #include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
+#include "geometry/instant.hpp"
+#include "geometry/rigid_transformation.hpp"
+#include "geometry/space.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
@@ -18,10 +21,12 @@ namespace geometry {
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_rigid_transformation;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;

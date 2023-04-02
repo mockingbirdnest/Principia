@@ -10,7 +10,6 @@
 
 #include "absl/container/btree_set.h"
 #include "base/zfp_compressor.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
 #include "quantities/quantities.hpp"
@@ -22,7 +21,6 @@ namespace _discrete_trajectory_segment {
 namespace internal {
 
 using namespace principia::base::_zfp_compressor;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::numerics::_fit_hermite_spline;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

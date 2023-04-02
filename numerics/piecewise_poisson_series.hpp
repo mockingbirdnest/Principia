@@ -10,8 +10,8 @@
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -49,8 +49,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

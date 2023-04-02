@@ -2,7 +2,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -23,7 +23,7 @@ using ::testing::IsEmpty;
 using ::testing::_;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

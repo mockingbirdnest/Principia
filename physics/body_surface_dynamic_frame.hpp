@@ -10,7 +10,8 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
@@ -26,7 +27,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the centre of mass of the body.  The X axis is at

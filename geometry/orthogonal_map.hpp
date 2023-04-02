@@ -40,7 +40,10 @@ namespace internal {
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
+using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;

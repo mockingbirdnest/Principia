@@ -8,7 +8,6 @@
 
 #include "astronomy/date_time.hpp"
 #include "astronomy/epoch.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
 #include "quantities/elementary_functions.hpp"

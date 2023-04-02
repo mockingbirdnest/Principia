@@ -4,8 +4,8 @@
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/space.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/quantities.hpp"
@@ -16,8 +16,8 @@ namespace numerics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

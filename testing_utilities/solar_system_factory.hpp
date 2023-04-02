@@ -7,7 +7,6 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"

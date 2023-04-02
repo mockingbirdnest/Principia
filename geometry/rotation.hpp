@@ -13,9 +13,6 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     OrthogonalMap);
 FORWARD_DECLARE_FROM(permutation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Permutation);
@@ -31,14 +28,11 @@ namespace internal {
 
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_quantities;
-
-template<typename FromFrame, typename ToFrame>
-std::ostream& operator<<(std::ostream& out,
-                         Rotation<FromFrame, ToFrame> const& rotation);
 
 // |EulerAngles| and |CardanoAngles| have values in binary-coded ternary
 // representing the sequence of rotation axes.
@@ -288,6 +282,10 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
                                   Rotation<From, To> const& rotation);
 };
 
+// Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) → SO(𝑉).
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent);
+
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
@@ -308,6 +306,7 @@ std::ostream& operator<<(std::ostream& out,
 
 using internal::CardanoAngles;
 using internal::DefinesFrame;
+using internal::Exp;
 using internal::EulerAngles;
 using internal::Rotation;
 

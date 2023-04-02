@@ -15,7 +15,6 @@ namespace _discrete_trajectory_factories {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_named_quantities;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;

@@ -9,6 +9,8 @@
 #include "benchmark/benchmark.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -22,7 +24,8 @@ namespace physics {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::quantities::_elementary_functions;

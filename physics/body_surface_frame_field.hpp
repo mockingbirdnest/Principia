@@ -1,8 +1,9 @@
 #pragma once
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/rotating_body.hpp"
@@ -14,8 +15,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 
 // The z-axis goes from the point |q| to the centre of |body| at |t|  The
 // x-axis is orthogonal to the z-axis and in the plane defined by the z-axis and

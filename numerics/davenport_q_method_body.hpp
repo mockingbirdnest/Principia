@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "geometry/quaternion.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"

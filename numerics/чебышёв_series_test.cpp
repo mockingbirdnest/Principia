@@ -2,7 +2,7 @@
 
 #include "astronomy/frames.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "quantities/named_quantities.hpp"
@@ -13,7 +13,7 @@ namespace numerics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

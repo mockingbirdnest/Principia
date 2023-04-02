@@ -3,6 +3,7 @@
 #include "geometry/signature.hpp"
 
 #include "base/traits.hpp"
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace geometry {
@@ -10,6 +11,7 @@ namespace _signature {
 namespace internal {
 
 using namespace principia::base::_traits;
+using namespace principia::geometry::_rotation;
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,

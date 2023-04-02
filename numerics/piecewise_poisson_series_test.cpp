@@ -6,7 +6,8 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -26,7 +27,8 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

@@ -2,8 +2,9 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin_test/mock_celestial.hpp"
@@ -28,8 +29,9 @@ using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_named_quantities;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
