@@ -59,8 +59,10 @@ TEST_F(SimilarMotionTest, Smoke) {
   Homothecy<double, World2, World3> homothecy =
       Homothecy<Length, World4, World3>(4 * Metre) *
       Homothecy<Inverse<Length>, World2, World4>(1 / Metre);
-  SimilarMotion<World1, World3> const similar_motion(
-      rigid_motion, homothecy, /*dilatation_rate=*/5 / Second);
+  SimilarMotion<World1, World3> const similar_motion =
+      SimilarMotion<World2, World3>::DilatationAboutOrigin(
+          homothecy, /*dilatation_rate=*/5 / Second) *
+      rigid_motion.Forget<SimilarMotion>();
 
   auto const transformed_unmoving_origin =
       similar_motion({World1::origin, World1::unmoving});
@@ -91,6 +93,16 @@ TEST_F(SimilarMotionTest, Smoke) {
   auto const inverse = similar_motion.Inverse();
 
   auto const identity = SimilarMotion<World1, World3>::Identity();
+
+  auto const q = World1::origin +
+                 Displacement<World1>({-5 * Metre, 7 * Metre, 11 * Metre});
+  auto const v = Velocity<World1>(
+      {-2 * Metre / Second, 4 * Metre / Second, -8 * Metre / Second});
+
+  EXPECT_THAT((similar_motion.Inverse() * similar_motion)({q, v}),
+              Componentwise(AlmostEquals(q, 0), AlmostEquals(v, 0)));
+  EXPECT_THAT(similar_motion.Inverse()(similar_motion({q, v})),
+              Componentwise(AlmostEquals(q, 0), AlmostEquals(v, 0)));
 }
 
 }  // namespace physics

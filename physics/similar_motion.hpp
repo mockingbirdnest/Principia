@@ -62,21 +62,9 @@ class SimilarMotion final {
   using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
 
  public:
-  //TODO(phl)comment
-  template<typename ThroughFrame>
-  SimilarMotion(
-      RigidMotion<FromFrame, ThroughFrame> const& rigid_motion,
-      Homothecy<double, ThroughFrame, ToFrame> const& dilatation,
-      Variation<double> const& dilatation_rate_of_to_frame);
 
-  template<typename ThroughFrame>
-  SimilarMotion(
-      Homothecy<double, FromFrame, ThroughFrame> const& dilatation,
-      RigidMotion<ThroughFrame, ToFrame> const& rigid_motion,
-      Variation<double> const& dilatation_rate_of_to_frame);
-
-  // Returns the conformal map resulting from |rigid_motion| and |dilatation|.
-  ConformalMap<double, FromFrame, ToFrame> conformal_map() const;
+  Similarity<FromFrame, ToFrame> const& similarity() const;
+  ConformalMap<double, FromFrame, ToFrame> const& conformal_map() const;
 
   template<typename F>
   AngularVelocity<other_frame_t<F>> angular_velocity_of() const;
@@ -87,6 +75,10 @@ class SimilarMotion final {
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
 
   SimilarMotion<ToFrame, FromFrame> Inverse() const;
+
+  static SimilarMotion DilatationAboutOrigin(
+      Homothecy<double, FromFrame, ToFrame> const& homothecy,
+      Variation<double> dilatation_rate);
 
   // A similar motion expressing that |FromFrame| and |ToFrame| have the same
   // axes, origin, and instantaneous motion.
@@ -101,17 +93,14 @@ class SimilarMotion final {
   static SimilarMotion Identity();
 
  private:
-  using Through = Frame<struct ThroughTag, Arbitrary, ToFrame::handedness>;
+  SimilarMotion(Similarity<FromFrame, ToFrame> similarity,
+                AngularVelocity<FromFrame> angular_velocity_of_to_frame,
+                Velocity<FromFrame> velocity_of_to_frame_origin,
+                Variation<double> dilatation_rate_of_to_frame);
 
-  template<typename ThroughOtherFrame>
-  struct CommutedSplit {
-    explicit CommutedSplit(SimilarMotion const& similar_motion);
-    Homothecy<double, ToFrame, ThroughOtherFrame> dilatation;
-    RigidMotion<ThroughOtherFrame, FromFrame> rigid_motion;
-  };
-
-  RigidMotion<FromFrame, Through> rigid_motion_;
-  Homothecy<double, Through, ToFrame> dilatation_;
+  Similarity<FromFrame, ToFrame> similarity_;
+  AngularVelocity<FromFrame> angular_velocity_of_to_frame_;
+  Velocity<FromFrame> velocity_of_to_frame_origin_;
   Variation<double> dilatation_rate_of_to_frame_;
 
   template<typename, typename>
@@ -121,6 +110,9 @@ class SimilarMotion final {
   friend SimilarMotion<From, To> operator*(
       SimilarMotion<Through, To> const& left,
       SimilarMotion<From, Through> const& right);
+
+  template<typename, typename>
+  friend class RigidMotion;
 };
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>

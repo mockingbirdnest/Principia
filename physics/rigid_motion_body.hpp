@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "geometry/homothecy.hpp"
+#include "geometry/conformal_map.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 
@@ -13,7 +13,7 @@ namespace physics {
 namespace _rigid_motion {
 namespace internal {
 
-using namespace principia::geometry::_homothecy;
+using namespace principia::geometry::_conformal_map;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
 
@@ -105,8 +105,11 @@ template<template<typename, typename> typename SimilarMotion>
 SimilarMotion<FromFrame, ToFrame>
 RigidMotion<FromFrame, ToFrame>::Forget() const {
   return SimilarMotion<FromFrame, ToFrame>(
-      *this,
-      Homothecy<double, ToFrame, ToFrame>::Identity(),
+      Similarity<FromFrame, ToFrame>(FromFrame::origin,
+                                     rigid_transformation_(FromFrame::origin),
+                                     orthogonal_map().Forget<ConformalMap>()),
+      angular_velocity_of_to_frame_,
+      velocity_of_to_frame_origin_,
       Variation<double>{});
 }
 

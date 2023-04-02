@@ -81,6 +81,11 @@ ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
+Quaternion const& ConformalMap<Scalar, FromFrame, ToFrame>::quaternion() const {
+  return quaternion_;
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ConformalMap(
     Scalar const& scale,
     Quaternion const& quaternion)

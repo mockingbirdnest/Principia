@@ -76,6 +76,8 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   static ConformalMap ReadFromMessage(
       serialization::ConformalMap const& message);
 
+  Quaternion const& quaternion() const;
+
  private:
   ConformalMap(Scalar const& scale,
                Quaternion const& quaternion);
