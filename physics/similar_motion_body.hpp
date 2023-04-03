@@ -30,10 +30,7 @@ SimilarMotion<FromFrame, ToFrame>::angular_velocity_of() const {
   if constexpr (std::is_same_v<F, ToFrame>) {
     return angular_velocity_of_to_frame_;
   } else if constexpr (std::is_same_v<F, FromFrame>) {
-    // Angular velocities are once contravariant and once covariant; we do not
-    // reprensent variance in the type system, so we extract the coordinates.
-    return -Rotation<FromFrame, ToFrame>(similarity_.linear_map().quaternion())(
-        angular_velocity_of_to_frame_);
+    return -similarity_.linear_map()(angular_velocity_of_to_frame_);
   } else {
     static_assert(std::is_same_v<F, ToFrame> || std::is_same_v<F, FromFrame>,
                   "Nonsensical frame");
@@ -116,8 +113,7 @@ SimilarMotion<FromFrame, ToFrame> operator*(
   return SimilarMotion<FromFrame, ToFrame>(
       left.similarity() * right.similarity(),
       right.angular_velocity_of_to_frame_ +
-          Rotation<FromFrame, ThroughFrame>(right.conformal_map().quaternion())
-              .Inverse()(left.angular_velocity_of_to_frame_),
+          right.conformal_map().Inverse()(left.angular_velocity_of_to_frame_),
       right.Inverse()(left.Inverse()({ToFrame::origin, ToFrame::unmoving}))
           .velocity(),
       left.dilatation_rate_of_to_frame_ + right.dilatation_rate_of_to_frame_);

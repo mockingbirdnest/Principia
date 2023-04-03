@@ -14,9 +14,10 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)
-    : Homothecy(PrivateConstructor{}, scale) {}
+    : scale_(scale) {
+  CHECK_LT(Scalar{}, scale_);
+}
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
@@ -26,8 +27,7 @@ Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Inverse<Scalar>, ToFrame, FromFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
-  using H = Homothecy<quantities::Inverse<Scalar>, ToFrame, FromFrame>;
-  return H(typename H::PrivateConstructor{}, 1 / scale_);
+  return Homothecy<quantities::Inverse<Scalar>, ToFrame, FromFrame>(1 / scale_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -37,6 +37,12 @@ Homothecy<Scalar, FromFrame, ToFrame>::operator()(
     Vector<VScalar, FromFrame> const& vector) const {
   return Vector<Product<VScalar, Scalar>, ToFrame>(vector.coordinates() *
                                                    scale_);
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
+AngularVelocity<ToFrame> Homothecy<Scalar, FromFrame, ToFrame>::operator()(
+    AngularVelocity<FromFrame> const& angular_velocity) const {
+  return AngularVelocity<ToFrame>(angular_velocity.coordinates());
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -57,7 +63,7 @@ template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
-  return Homothecy(PrivateConstructor{}, 1);
+  return Homothecy(1);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -90,15 +96,7 @@ template<typename, typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::Homothecy const& message) {
-  return Homothecy(PrivateConstructor{},
-                   Scalar::ReadFromMessage(message.scale()));
-}
-
-template<typename Scalar, typename FromFrame, typename ToFrame>
-Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(PrivateConstructor,
-                                                 Scalar const& scale)
-    : scale_(scale) {
-  CHECK_LT(Scalar{}, scale_);
+  return Homothecy(Scalar::ReadFromMessage(message.scale()));
 }
 
 template<typename LScalar, typename RScalar,
@@ -107,8 +105,6 @@ Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
     Homothecy<RScalar, FromFrame, ThroughFrame> const& right) {
   return Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame>(
-      typename Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame>::
-          PrivateConstructor{},
       left.scale_ * right.scale_);
 }
 
