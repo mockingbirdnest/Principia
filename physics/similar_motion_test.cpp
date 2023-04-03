@@ -197,5 +197,12 @@ TEST_F(SimilarMotionTest, Associativity) {
                     AlmostEquals(qv9.velocity(), 4)));
 }
 
+TEST_F(SimilarMotionTest, Forget) {
+  auto const qv2 = rigid_motion_a_({q1_, v1_});
+  EXPECT_THAT(rigid_motion_a_.Forget<SimilarMotion>()({q1_, v1_}),
+              Componentwise(AlmostEquals(qv2.position(), 0),
+                            AlmostEquals(qv2.velocity(), 1)));
+}
+
 }  // namespace physics
 }  // namespace principia
