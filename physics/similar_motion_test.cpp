@@ -46,6 +46,9 @@ class SimilarMotionTest : public ::testing::Test {
   using World4 = Frame<struct World4Tag>;
   using World5 = Frame<struct World5Tag, Arbitrary, Handedness::Left>;
   using World6 = Frame<struct World6Tag, Arbitrary, Handedness::Left>;
+  using World7 = Frame<struct World7Tag, Arbitrary, Handedness::Left>;
+  using World8 = Frame<struct World8Tag>;
+  using World9 = Frame<struct World9Tag>;
 
   SimilarMotionTest()
       : rotation_a_(
@@ -57,8 +60,16 @@ class SimilarMotionTest : public ::testing::Test {
             Vector<double, World4>({-Sin(0.8 * Radian), 0, Cos(0.8 * Radian)}),
             Bivector<double, World4>(
                 {-Cos(0.8 * Radian), 0, -Sin(0.8 * Radian)})),
+        rotation_c_(
+            Vector<double, World6>({-1, 0, 0}),
+            Vector<double, World6>({0, -Sin(0.7 * Radian), Cos(0.7 * Radian)}),
+            Bivector<double, World6>(
+                {0, Cos(0.7 * Radian), Sin(0.7 * Radian)})),
         signature_b_(Sign::Negative(),
                      Signature<World4, World5>::DeduceSign(),
+                     Sign::Negative()),
+        signature_c_(Sign::Positive(),
+                     Signature<World7, World8>::DeduceSign(),
                      Sign::Negative()),
         rigid_transformation_a_(
             World1::origin +
@@ -73,6 +84,13 @@ class SimilarMotionTest : public ::testing::Test {
                 Displacement<World5>({-1 * Metre, 2 * Metre, 11 * Metre}),
             signature_b_.Forget<OrthogonalMap>() *
                 rotation_b_.Forget<OrthogonalMap>()),
+        rigid_transformation_c_(
+            World6::origin +
+                Displacement<World6>({7 * Metre, -3 * Metre, 2 * Metre}),
+            World8::origin +
+                Displacement<World8>({-13 * Metre, 2 * Metre, 1 * Metre}),
+            signature_c_.Forget<OrthogonalMap>() *
+                rotation_c_.Forget<OrthogonalMap>()),
         rigid_motion_a_(
             rigid_transformation_a_,
             AngularVelocity<World1>({0 * Radian / Second,
@@ -87,8 +105,16 @@ class SimilarMotionTest : public ::testing::Test {
                                      -3 * Radian / Second}),
             Velocity<World5>(
                 {-1 * Metre / Second, 4 * Metre / Second, 0 * Metre / Second})),
+        rigid_motion_c_(
+            rigid_transformation_c_,
+            AngularVelocity<World6>({7 * Radian / Second,
+                                     1 * Radian / Second,
+                                     -3 * Radian / Second}),
+            Velocity<World6>(
+                {-5 * Metre / Second, 4 * Metre / Second, 5 * Metre / Second})),
         homothecy_a_(5),
         homothecy_b_(0.25),
+        homothecy_c_(0.4),
         similar_motion_a_(SimilarMotion<World2, World3>::DilatationAboutOrigin(
                               homothecy_a_,
                               /*dilatation_rate=*/5 / Second) *
@@ -97,6 +123,10 @@ class SimilarMotionTest : public ::testing::Test {
                               homothecy_b_,
                               /*dilatation_rate=*/0.3 / Second) *
                           rigid_motion_b_.Forget<SimilarMotion>()),
+        similar_motion_c_(SimilarMotion<World8, World9>::DilatationAboutOrigin(
+                              homothecy_c_,
+                              /*dilatation_rate=*/0.3 / Second) *
+                          rigid_motion_c_.Forget<SimilarMotion>()),
         q1_(World1::origin +
             Displacement<World1>({-5 * Metre, 7 * Metre, 11 * Metre})),
         v1_({-2 * Metre / Second, 4 * Metre / Second, -8 * Metre / Second}),
@@ -106,15 +136,21 @@ class SimilarMotionTest : public ::testing::Test {
 
   Rotation<World1, World2> const rotation_a_;
   Rotation<World3, World4> const rotation_b_;
+  Rotation<World6, World7> const rotation_c_;
   Signature<World4, World5> const signature_b_;
+  Signature<World7, World8> const signature_c_;
   RigidTransformation<World1, World2> const rigid_transformation_a_;
   RigidTransformation<World3, World5> const rigid_transformation_b_;
+  RigidTransformation<World6, World8> const rigid_transformation_c_;
   RigidMotion<World1, World2> const rigid_motion_a_;
   RigidMotion<World3, World5> const rigid_motion_b_;
+  RigidMotion<World6, World8> const rigid_motion_c_;
   Homothecy<double, World2, World3> homothecy_a_;
   Homothecy<double, World5, World6> homothecy_b_;
+  Homothecy<double, World8, World9> homothecy_c_;
   SimilarMotion<World1, World3> const similar_motion_a_;
   SimilarMotion<World3, World6> const similar_motion_b_;
+  SimilarMotion<World6, World9> const similar_motion_c_;
 
   Position<World1> q1_;
   Velocity<World1> v1_;
@@ -138,6 +174,27 @@ TEST_F(SimilarMotionTest, Composition) {
   EXPECT_THAT((similar_motion_b_ * similar_motion_a_)({q1_, v1_}),
               Componentwise(AlmostEquals(qv6.position(), 11),
                             AlmostEquals(qv6.velocity(), 6)));
+}
+
+TEST_F(SimilarMotionTest, Associativity) {
+  auto const qv9 =
+      similar_motion_c_(similar_motion_b_(similar_motion_a_({q1_, v1_})));
+  EXPECT_THAT(
+      ((similar_motion_c_ * similar_motion_b_) * similar_motion_a_)({q1_, v1_}),
+      Componentwise(AlmostEquals(qv9.position(), 8),
+                    AlmostEquals(qv9.velocity(), 6)));
+  EXPECT_THAT(
+      (similar_motion_c_ * (similar_motion_b_ * similar_motion_a_))({q1_, v1_}),
+      Componentwise(AlmostEquals(qv9.position(), 4),
+                    AlmostEquals(qv9.velocity(), 6)));
+  EXPECT_THAT(
+      (similar_motion_c_ * similar_motion_b_)(similar_motion_a_({ q1_, v1_ })),
+      Componentwise(AlmostEquals(qv9.position(), 8),
+                    AlmostEquals(qv9.velocity(), 7)));
+  EXPECT_THAT(
+      similar_motion_c_((similar_motion_b_ * similar_motion_a_)({q1_, v1_})),
+      Componentwise(AlmostEquals(qv9.position(), 8),
+                    AlmostEquals(qv9.velocity(), 4)));
 }
 
 }  // namespace physics
