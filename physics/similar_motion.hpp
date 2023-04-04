@@ -40,7 +40,7 @@ using namespace principia::quantities::_si;
 template<typename FromFrame, typename ToFrame>
 class SimilarMotion final {
   template<typename T>
-  using other_frame_t = typename other_type_t<T, FromFrame, ToFrame>;
+  using other_frame_t = other_type_t<T, FromFrame, ToFrame>;
 
  public:
 

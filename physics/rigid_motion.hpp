@@ -36,7 +36,7 @@ using namespace principia::quantities::_si;
 template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
   template<typename T>
-  using other_frame_t = typename other_type_t<T, FromFrame, ToFrame>;
+  using other_frame_t = other_type_t<T, FromFrame, ToFrame>;
 
  public:
   RigidMotion(
@@ -118,7 +118,7 @@ RigidMotion<FromFrame, ToFrame> operator*(
 template<typename FromFrame, typename ToFrame>
 class AcceleratedRigidMotion final {
   template<typename T>
-  using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
+  using other_frame_t = other_type_t<T, FromFrame, ToFrame>;
 
  public:
   AcceleratedRigidMotion(
