@@ -43,7 +43,6 @@ class SimilarMotion final {
   using other_frame_t = other_type_t<T, FromFrame, ToFrame>;
 
  public:
-
   Similarity<FromFrame, ToFrame> const& similarity() const;
   ConformalMap<double, FromFrame, ToFrame> const& conformal_map() const;
 

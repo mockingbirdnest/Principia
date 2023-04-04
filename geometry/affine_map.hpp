@@ -14,9 +14,11 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> class LinearMap>
+         template<typename, typename> class LinearMap_>
 class AffineMap final {
  public:
+  template<typename F, typename T>
+  using LinearMap = LinearMap_<F, T>;
   using FromVector = Vector<Scalar, FromFrame>;
   using ToVector = Vector<Scalar, ToFrame>;
 
@@ -24,8 +26,11 @@ class AffineMap final {
             Point<ToVector> const& to_origin,
             LinearMap<FromFrame, ToFrame> linear_map);
 
-  AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
+  AffineMap<ToFrame, FromFrame, Scalar, LinearMap_> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
+
+  template<template<typename, typename> typename OtherAffineMap>
+  OtherAffineMap<FromFrame, ToFrame> Forget() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
