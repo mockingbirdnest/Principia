@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/conformal_map.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/homothecy.hpp"
@@ -20,6 +21,7 @@ namespace _similar_motion {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_conformal_map;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -31,27 +33,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-// A trait to determine if Frame is FromFrame or ToFrame and return the other
-// one as the |type| member.
-//TODO(phl)move to a common place
-template<typename Frame, typename FromFrame, typename ToFrame>
-struct other_frame;
-
-template<typename Frame>
-struct other_frame<Frame, Frame, Frame> {
-  using type = Frame;
-};
-
-template<typename FromFrame, typename ToFrame>
-struct other_frame<FromFrame, FromFrame, ToFrame> {
-  using type = ToFrame;
-};
-
-template<typename FromFrame, typename ToFrame>
-struct other_frame<ToFrame, FromFrame, ToFrame> {
-  using type = FromFrame;
-};
-
 // The instantaneous motion of |ToFrame| with respect to |FromFrame|.  This is
 // the derivative of a |Similarity<FromFrame, ToFrame>|.  In order to invert,
 // the |Similarity| is needed, and we need its linear part anyway, so we store
@@ -59,7 +40,7 @@ struct other_frame<ToFrame, FromFrame, ToFrame> {
 template<typename FromFrame, typename ToFrame>
 class SimilarMotion final {
   template<typename T>
-  using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
+  using other_frame_t = typename other_type_t<T, FromFrame, ToFrame>;
 
  public:
 
