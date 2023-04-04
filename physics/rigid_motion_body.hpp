@@ -105,9 +105,7 @@ template<template<typename, typename> typename SimilarMotion>
 SimilarMotion<FromFrame, ToFrame>
 RigidMotion<FromFrame, ToFrame>::Forget() const {
   return SimilarMotion<FromFrame, ToFrame>(
-      Similarity<FromFrame, ToFrame>(FromFrame::origin,
-                                     rigid_transformation_(FromFrame::origin),
-                                     orthogonal_map().Forget<ConformalMap>()),
+      rigid_transformation_.Forget<Similarity>(),
       angular_velocity_of_to_frame_,
       velocity_of_to_frame_origin_,
       Variation<double>{});

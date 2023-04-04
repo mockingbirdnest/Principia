@@ -160,20 +160,20 @@ class SimilarMotionTest : public ::testing::Test {
 
 TEST_F(SimilarMotionTest, Inverse) {
   EXPECT_THAT((similar_motion_a_.Inverse() * similar_motion_a_)({q1_, v1_}),
-              Componentwise(AlmostEquals(q1_, 0), AlmostEquals(v1_, 6)));
+              Componentwise(AlmostEquals(q1_, 0), AlmostEquals(v1_, 5)));
   EXPECT_THAT(similar_motion_a_.Inverse()(similar_motion_a_({q1_, v1_})),
-              Componentwise(AlmostEquals(q1_, 0), AlmostEquals(v1_, 16)));
+              Componentwise(AlmostEquals(q1_, 0), AlmostEquals(v1_, 24)));
   EXPECT_THAT((similar_motion_b_ * similar_motion_b_.Inverse())({q6_, v6_}),
-              Componentwise(AlmostEquals(q6_, 0), AlmostEquals(v6_, 12)));
+              Componentwise(AlmostEquals(q6_, 0), AlmostEquals(v6_, 3)));
   EXPECT_THAT(similar_motion_b_(similar_motion_b_.Inverse()({q6_, v6_})),
-              Componentwise(AlmostEquals(q6_, 2), AlmostEquals(v6_, 512)));
+              Componentwise(AlmostEquals(q6_, 8), AlmostEquals(v6_, 512)));
 }
 
 TEST_F(SimilarMotionTest, Composition) {
   auto const qv6 = similar_motion_b_(similar_motion_a_({q1_, v1_}));
   EXPECT_THAT((similar_motion_b_ * similar_motion_a_)({q1_, v1_}),
-              Componentwise(AlmostEquals(qv6.position(), 11),
-                            AlmostEquals(qv6.velocity(), 6)));
+              Componentwise(AlmostEquals(qv6.position(), 7),
+                            AlmostEquals(qv6.velocity(), 3)));
 }
 
 TEST_F(SimilarMotionTest, Associativity) {
@@ -182,19 +182,19 @@ TEST_F(SimilarMotionTest, Associativity) {
   EXPECT_THAT(
       ((similar_motion_c_ * similar_motion_b_) * similar_motion_a_)({q1_, v1_}),
       Componentwise(AlmostEquals(qv9.position(), 8),
-                    AlmostEquals(qv9.velocity(), 6)));
+                    AlmostEquals(qv9.velocity(), 12)));
   EXPECT_THAT(
       (similar_motion_c_ * (similar_motion_b_ * similar_motion_a_))({q1_, v1_}),
       Componentwise(AlmostEquals(qv9.position(), 4),
                     AlmostEquals(qv9.velocity(), 6)));
   EXPECT_THAT(
       (similar_motion_c_ * similar_motion_b_)(similar_motion_a_({ q1_, v1_ })),
-      Componentwise(AlmostEquals(qv9.position(), 8),
+      Componentwise(AlmostEquals(qv9.position(), 4),
                     AlmostEquals(qv9.velocity(), 7)));
   EXPECT_THAT(
       similar_motion_c_((similar_motion_b_ * similar_motion_a_)({q1_, v1_})),
-      Componentwise(AlmostEquals(qv9.position(), 8),
-                    AlmostEquals(qv9.velocity(), 4)));
+      Componentwise(AlmostEquals(qv9.position(), 5),
+                    AlmostEquals(qv9.velocity(), 5)));
 }
 
 TEST_F(SimilarMotionTest, Forget) {
