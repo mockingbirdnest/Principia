@@ -4,7 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/homothecy.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/rigid_transformation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
@@ -24,7 +24,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_homothecy;
 using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;

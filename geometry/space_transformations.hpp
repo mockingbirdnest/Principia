@@ -8,7 +8,7 @@
 //TODO(phl)rename
 namespace principia {
 namespace geometry {
-namespace _rigid_transformation {
+namespace _space_transformations {
 namespace internal {
 
 using namespace principia::geometry::_affine_map;
@@ -34,6 +34,6 @@ using Similarity =
 using internal::RigidTransformation;
 using internal::Similarity;
 
-}  // namespace _rigid_transformation
+}  // namespace _space_transformations
 }  // namespace geometry
 }  // namespace principia

@@ -7,7 +7,7 @@
 #include "base/traits.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/rigid_transformation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
@@ -23,7 +23,7 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

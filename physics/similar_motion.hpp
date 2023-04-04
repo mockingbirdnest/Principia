@@ -8,7 +8,7 @@
 #include "geometry/conformal_map.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/homothecy.hpp"
-#include "geometry/rigid_transformation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
@@ -26,7 +26,7 @@ using namespace principia::geometry::_conformal_map;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_homothecy;
-using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
