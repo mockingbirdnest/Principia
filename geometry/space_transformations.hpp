@@ -5,7 +5,6 @@
 #include "geometry/orthogonal_map.hpp"
 #include "quantities/quantities.hpp"
 
-//TODO(phl)rename
 namespace principia {
 namespace geometry {
 namespace _space_transformations {
