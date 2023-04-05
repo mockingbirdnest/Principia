@@ -50,9 +50,10 @@ template<template<typename, typename> typename OtherAffineMap>
 OtherAffineMap<FromFrame, ToFrame>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Forget() const {
   return OtherAffineMap<FromFrame, ToFrame>(
-      from_origin_, to_origin_,
-      linear_map_
-          .Forget<OtherAffineMap<FromFrame, ToFrame>::template LinearMap>());
+      from_origin_,
+      to_origin_,
+      linear_map_.template Forget<
+          OtherAffineMap<FromFrame, ToFrame>::template LinearMap>());
 }
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
