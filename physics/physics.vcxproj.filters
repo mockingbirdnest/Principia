@@ -242,6 +242,12 @@
     <ClInclude Include="inertia_tensor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="similar_motion.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="similar_motion_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -357,6 +363,9 @@
     </ClCompile>
     <ClCompile Include="..\geometry\instant.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="similar_motion_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

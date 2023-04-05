@@ -39,6 +39,12 @@ ConformalMap<Scalar, FromFrame, ToFrame>::operator()(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
+AngularVelocity<ToFrame> ConformalMap<Scalar, FromFrame, ToFrame>::operator()(
+    AngularVelocity<FromFrame> const& angular_velocity) const {
+  return MakeHomothecy()(MakeRotation()(MakeSignature()(angular_velocity)));
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
 template<typename T>
 typename Mappable<ConformalMap<Scalar, FromFrame, ToFrame>, T>::type
 ConformalMap<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
@@ -108,8 +114,7 @@ Rotation<SignedFrame, RotatedAndSignedFrame> {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 auto ConformalMap<Scalar, FromFrame, ToFrame>::MakeHomothecy() const ->
 Homothecy<Scalar, RotatedAndSignedFrame, ToFrame> {
-  using H = Homothecy<Scalar, RotatedAndSignedFrame, ToFrame>;
-  return H(typename H::PrivateConstructor{}, scale_);
+  return Homothecy<Scalar, RotatedAndSignedFrame, ToFrame>(scale_);
 }
 
 template<typename LScalar, typename RScalar,

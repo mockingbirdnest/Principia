@@ -4,7 +4,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
-#include "geometry/rigid_transformation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
@@ -29,7 +29,7 @@ using ::testing::IsEmpty;
 using ::testing::SizeIs;
 using ::testing::_;
 using namespace principia::geometry::_perspective;
-using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;

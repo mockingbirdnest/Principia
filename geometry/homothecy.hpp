@@ -3,17 +3,11 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/linear_map.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace geometry {
-
-FORWARD_DECLARE_FROM(conformal_map,
-                     TEMPLATE(typename Scalar,
-                              typename FromFrame,
-                              typename ToFrame) class,
-                     ConformalMap);
-
 namespace _homothecy {
 namespace internal {
 
@@ -21,6 +15,7 @@ using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -31,9 +26,6 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
                 "handedness");
 
  public:
-  template<typename S = Scalar,
-           typename = std::enable_if_t<!std::is_floating_point_v<S> &&
-                                       !std::is_integral_v<S>>>
   explicit Homothecy(Scalar const& scale);
 
   Cube<Scalar> Determinant() const;
@@ -43,6 +35,9 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   template<typename VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
+
+  AngularVelocity<ToFrame> operator()(
+      AngularVelocity<FromFrame> const& angular_velocity) const;
 
   template<typename T>
   typename Mappable<Homothecy, T>::type operator()(T const& t) const;
@@ -70,13 +65,10 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   static Homothecy ReadFromMessage(serialization::Homothecy const& message);
 
  private:
-  struct PrivateConstructor {};
-  Homothecy(PrivateConstructor, Scalar const& scale);
-
   Scalar const scale_;
 
   template<typename S, typename From, typename To>
-  friend class _conformal_map::ConformalMap;
+  friend class Homothecy;
 
   template<typename L, typename R,
            typename From, typename Through, typename To>

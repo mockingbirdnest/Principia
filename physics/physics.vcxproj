@@ -87,6 +87,8 @@
     <ClInclude Include="oblate_body_body.hpp" />
     <ClInclude Include="rotating_body.hpp" />
     <ClInclude Include="rotating_body_body.hpp" />
+    <ClInclude Include="similar_motion.hpp" />
+    <ClInclude Include="similar_motion_body.hpp" />
     <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="solar_system_body.hpp" />
     <ClInclude Include="trajectory.hpp" />
@@ -130,6 +132,7 @@
     <ClCompile Include="protector_test.cpp" />
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
+    <ClCompile Include="similar_motion_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
   </ItemGroup>
 </Project>

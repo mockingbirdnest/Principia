@@ -7,7 +7,7 @@
 
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
-#include "geometry/rigid_transformation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -17,7 +17,7 @@
 namespace principia {
 namespace geometry {
 
-using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;

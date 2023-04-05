@@ -48,7 +48,7 @@
     <ClInclude Include="r3x3_matrix_body.hpp" />
     <ClInclude Include="r3_element_body.hpp" />
     <ClInclude Include="r3_element.hpp" />
-    <ClInclude Include="rigid_transformation.hpp" />
+    <ClInclude Include="space_transformations.hpp" />
     <ClInclude Include="rotation_body.hpp" />
     <ClInclude Include="rotation.hpp" />
     <ClInclude Include="rp2_point.hpp" />

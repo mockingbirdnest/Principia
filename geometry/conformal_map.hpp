@@ -8,6 +8,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -34,6 +35,7 @@ using namespace principia::geometry::_homothecy;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 
 // This is really a *linear* conformal map, but we don't call it
@@ -57,6 +59,9 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   template<typename VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
+
+  AngularVelocity<ToFrame> operator()(
+      AngularVelocity<FromFrame> const& angular_velocity) const;
 
   template<typename T>
   typename Mappable<ConformalMap, T>::type operator()(T const& t) const;

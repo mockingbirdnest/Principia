@@ -70,6 +70,13 @@ OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename> typename ConformalMap>
+ConformalMap<FromFrame, ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::Forget() const {
+  return ConformalMap<FromFrame, ToFrame>(1, quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
 template<template<typename, typename, typename> typename ConformalMap>
 ConformalMap<double, FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Forget() const {

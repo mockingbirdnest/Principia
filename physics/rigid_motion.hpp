@@ -4,9 +4,10 @@
 #include <type_traits>
 
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/rigid_transformation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
@@ -18,34 +19,15 @@ namespace _rigid_motion {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_rigid_transformation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-// A trait to determine if Frame is FromFrame or ToFrame and return the other
-// one as the |type| member.
-template<typename Frame, typename FromFrame, typename ToFrame>
-struct other_frame;
-
-template<typename Frame>
-struct other_frame<Frame, Frame, Frame> {
-  using type = Frame;
-};
-
-template<typename FromFrame, typename ToFrame>
-struct other_frame<FromFrame, FromFrame, ToFrame> {
-  using type = ToFrame;
-};
-
-template<typename FromFrame, typename ToFrame>
-struct other_frame<ToFrame, FromFrame, ToFrame> {
-  using type = FromFrame;
-};
 
 // The instantaneous motion of |ToFrame| with respect to |FromFrame|.
 // This is the derivative of a |RigidTransformation<FromFrame, ToFrame>|.
@@ -54,7 +36,7 @@ struct other_frame<ToFrame, FromFrame, ToFrame> {
 template<typename FromFrame, typename ToFrame>
 class RigidMotion final {
   template<typename T>
-  using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
+  using other_frame_t = other_type_t<T, FromFrame, ToFrame>;
 
  public:
   RigidMotion(
@@ -83,6 +65,9 @@ class RigidMotion final {
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
 
   RigidMotion<ToFrame, FromFrame> Inverse() const;
+
+  template<template<typename, typename> typename SimilarMotion>
+  SimilarMotion<FromFrame, ToFrame> Forget() const;
 
   // A rigid motion expressing that |FromFrame| and |ToFrame| have the same
   // axes, origin, and instantaneous motion.
@@ -133,7 +118,7 @@ RigidMotion<FromFrame, ToFrame> operator*(
 template<typename FromFrame, typename ToFrame>
 class AcceleratedRigidMotion final {
   template<typename T>
-  using other_frame_t = typename other_frame<T, FromFrame, ToFrame>::type;
+  using other_frame_t = other_type_t<T, FromFrame, ToFrame>;
 
  public:
   AcceleratedRigidMotion(

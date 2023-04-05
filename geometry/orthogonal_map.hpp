@@ -85,6 +85,8 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   template<typename T>
   typename Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
 
+  template<template<typename, typename> typename ConformalMap>
+  ConformalMap<FromFrame, ToFrame> Forget() const;
   template<template<typename, typename, typename> typename ConformalMap>
   ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
