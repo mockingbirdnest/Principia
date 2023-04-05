@@ -78,8 +78,9 @@ SimilarMotion<FromFrame, ToFrame>::DilatationAboutOrigin(
     Homothecy<double, FromFrame, ToFrame> const& homothecy,
     Variation<double> dilatation_rate) {
   return SimilarMotion(
-      Similarity<FromFrame, ToFrame>(
-          FromFrame::origin, ToFrame::origin, homothecy.Forget<ConformalMap>()),
+      Similarity<FromFrame, ToFrame>(FromFrame::origin,
+                                     ToFrame::origin,
+                                     homothecy.template Forget<ConformalMap>()),
       AngularVelocity<FromFrame>{},
       Velocity<FromFrame>{},
       dilatation_rate);

@@ -17,6 +17,11 @@
 
 namespace principia {
 namespace physics {
+
+FORWARD_DECLARE_FROM(rigid_motion,
+                     TEMPLATE(typename FromFrame, typename ToFrame) class,
+                     RigidMotion);
+
 namespace _similar_motion {
 namespace internal {
 
@@ -83,7 +88,10 @@ class SimilarMotion final {
   Velocity<FromFrame> velocity_of_to_frame_origin_;
   Variation<double> dilatation_rate_of_to_frame_;
 
-  template<typename, typename>
+  template<typename From, typename To>
+  friend class _rigid_motion::RigidMotion;
+
+  template<typename From, typename To>
   friend class SimilarMotion;
 
   template<typename From, typename Through, typename To>
