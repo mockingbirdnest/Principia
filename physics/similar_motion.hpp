@@ -17,11 +17,6 @@
 
 namespace principia {
 namespace physics {
-
-FORWARD_DECLARE_FROM(rigid_motion,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     RigidMotion);
-
 namespace _similar_motion {
 namespace internal {
 
