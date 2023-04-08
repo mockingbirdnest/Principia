@@ -12,7 +12,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"

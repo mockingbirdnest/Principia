@@ -14,7 +14,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"

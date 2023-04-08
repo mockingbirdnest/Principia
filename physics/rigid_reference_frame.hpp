@@ -132,6 +132,6 @@ namespace principia::physics {
 using namespace principia::physics::_reference_frame;
 }  // namespace principia::physics
 
-#include "physics/reference_frame_body.hpp"
+#include "physics/rigid_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

@@ -22,7 +22,7 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/quantities.hpp"
 

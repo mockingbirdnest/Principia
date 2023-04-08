@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"

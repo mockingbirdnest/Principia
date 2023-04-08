@@ -1,4 +1,4 @@
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"

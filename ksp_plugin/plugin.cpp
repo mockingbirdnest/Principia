@@ -46,7 +46,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"

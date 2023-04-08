@@ -10,7 +10,7 @@
 #include "geometry/space.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/integration_parameters.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"

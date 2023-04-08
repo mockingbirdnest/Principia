@@ -26,7 +26,7 @@
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"

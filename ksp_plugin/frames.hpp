@@ -5,7 +5,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/permutation.hpp"
 #include "ksp_plugin/manœuvre.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 
 namespace principia {
 namespace ksp_plugin {

@@ -7,7 +7,7 @@
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"

@@ -21,7 +21,7 @@
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_reference_frame.hpp"

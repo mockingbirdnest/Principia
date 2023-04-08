@@ -3,7 +3,7 @@
 // class will end up being reincluded as part of the implementation of its
 // parent.
 #ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #else
 #ifndef PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_DYNAMIC_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_DYNAMIC_FRAME_HPP_
@@ -15,7 +15,7 @@
 #include "geometry/space.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"

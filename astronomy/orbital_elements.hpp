@@ -6,7 +6,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "physics/body.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"

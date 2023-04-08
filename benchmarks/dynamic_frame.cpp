@@ -26,7 +26,7 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
