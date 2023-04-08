@@ -48,9 +48,9 @@ class ReferenceFrame {
   // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
   // overriden in derived classes; the default implementation inverts the other
   // one.
-  virtual SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
+  virtual SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTimeSimilarly(
       Instant const& t) const;
-  virtual SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
+  virtual SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTimeSimilarly(
       Instant const& t) const;
 
   // The acceleration due to the non-inertial motion of |ThisFrame| and gravity.

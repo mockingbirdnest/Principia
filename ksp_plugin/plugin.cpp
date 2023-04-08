@@ -1221,17 +1221,19 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
                                    sun_world_position_,
                                    planetarium_rotation)(q);
 
-      OrthogonalMap<RightHandedNavball, Barycentric> const
-          right_handed_navball_to_barycentric =
-              barycentric_right_handed_field_ == nullptr
-                  ? renderer.PlottingToBarycentric(current_time) *
-                        navigation_right_handed_field_->
-                            FromThisFrame(q_in_plotting).Forget<OrthogonalMap>()
-                  : barycentric_right_handed_field_->FromThisFrame(
-                        renderer.WorldToBarycentric(
-                            current_time,
-                            sun_world_position_,
-                            planetarium_rotation)(q)).Forget<OrthogonalMap>();
+      OrthogonalMap<RightHandedNavball,
+                    Barycentric> const right_handed_navball_to_barycentric =
+          barycentric_right_handed_field_ == nullptr
+              ? renderer.PlottingToBarycentric(current_time)
+                        .orthogonal_map¹₁() *
+                    navigation_right_handed_field_->FromThisFrame(q_in_plotting)
+                        .Forget<OrthogonalMap>()
+              : barycentric_right_handed_field_
+                    ->FromThisFrame(
+                        renderer.WorldToBarycentric(current_time,
+                                                    sun_world_position_,
+                                                    planetarium_rotation)(q))
+                    .Forget<OrthogonalMap>();
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.

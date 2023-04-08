@@ -66,6 +66,10 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   template<typename T>
   typename Mappable<ConformalMap, T>::type operator()(T const& t) const;
 
+  // This is the orthogonal map that applies to multivectors that are once
+  // contravariant, once covariant.
+  OrthogonalMap<FromFrame, ToFrame> orthogonal_map¹₁() const;
+
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
