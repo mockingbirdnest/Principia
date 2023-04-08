@@ -1,19 +1,17 @@
-#ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
+#pragma once
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/reference_frame.hpp"
-#include "physics/rigid_motion.hpp"
+#include "physics/similar_motion.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
-namespace _rigid_reference_frame {
+namespace _reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -22,7 +20,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 
 // The Frenet frame of a free fall trajectory in |Frame|.
@@ -36,16 +34,23 @@ using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
-class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
+class ReferenceFrame {
+  static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
+
  public:
-  virtual ~RigidReferenceFrame() = default;
+  virtual ~ReferenceFrame() = default;
+
+  // The operations that take an |Instant| are valid in the range
+  // [t_min, t_max].
+  virtual Instant t_min() const = 0;
+  virtual Instant t_max() const = 0;
 
   // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
   // overriden in derived classes; the default implementation inverts the other
   // one.
-  virtual RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
+  virtual SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const;
-  virtual RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
+  virtual SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
       Instant const& t) const;
 
   // The acceleration due to the non-inertial motion of |ThisFrame| and gravity.
@@ -86,12 +91,12 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::RigidReferenceFrame*> message) const = 0;
+      not_null<serialization::ReferenceFrame*> message) const = 0;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
-  static not_null<std::unique_ptr<RigidReferenceFrame>>
-      ReadFromMessage(serialization::RigidReferenceFrame const& message,
+  static not_null<std::unique_ptr<ReferenceFrame>>
+      ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
@@ -116,17 +121,9 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
 
 }  // namespace internal
 
-using internal::RigidReferenceFrame;
+using internal::ReferenceFrame;
 using internal::Frenet;
 
-}  // namespace _rigid_reference_frame
+}  // namespace _reference_frame
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_rigid_reference_frame;
-}  // namespace principia::physics
-
-#include "physics/rigid_reference_frame_body.hpp"
-
-#endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_

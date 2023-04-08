@@ -20,16 +20,16 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_degrees_of_freedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
-                   not_null<std::unique_ptr<NavigationFrame>> plotting_frame)
+                   not_null<std::unique_ptr<PlottingFrame>> plotting_frame)
     : sun_(sun),
       plotting_frame_(std::move(plotting_frame)) {}
 
 void Renderer::SetPlottingFrame(
-    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
+    not_null<std::unique_ptr<PlottingFrame>> plotting_frame) {
   plotting_frame_ = std::move(plotting_frame);
 }
 
-not_null<NavigationFrame const*> Renderer::GetPlottingFrame() const {
+not_null<PlottingFrame const*> Renderer::GetPlottingFrame() const {
   return target_ ? target_->target_frame.get()
                  : plotting_frame_.get();
 }
@@ -219,7 +219,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
-    NavigationFrame const& navigation_frame,
+    PlottingFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const back = vessel.psychohistory()->back();
   auto const to_navigation = navigation_frame.ToThisFrameAtTime(back.time);
@@ -300,7 +300,7 @@ not_null<std::unique_ptr<Renderer>> Renderer::ReadFromMessage(
     not_null<Ephemeris<Barycentric> const*> const ephemeris) {
   return make_not_null_unique<Renderer>(
       sun,
-      NavigationFrame::ReadFromMessage(message.plotting_frame(), ephemeris));
+      PlottingFrame::ReadFromMessage(message.plotting_frame(), ephemeris));
 }
 
 Renderer::Target::Target(

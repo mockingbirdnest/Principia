@@ -57,6 +57,7 @@
     <ClInclude Include="continuous_trajectory.hpp" />
     <ClInclude Include="degrees_of_freedom.hpp" />
     <ClInclude Include="degrees_of_freedom_body.hpp" />
+    <ClInclude Include="reference_frame.hpp" />
     <ClInclude Include="rigid_reference_frame.hpp" />
     <ClInclude Include="rigid_reference_frame_body.hpp" />
     <ClInclude Include="euler_solver.hpp" />
