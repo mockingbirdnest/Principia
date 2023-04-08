@@ -33,7 +33,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"

@@ -12,7 +12,7 @@
 
 namespace principia {
 namespace physics {
-namespace _reference_frame {
+namespace _rigid_reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -124,7 +124,7 @@ class RigidReferenceFrame {
 using internal::RigidReferenceFrame;
 using internal::Frenet;
 
-}  // namespace _reference_frame
+}  // namespace _rigid_reference_frame
 }  // namespace physics
 }  // namespace principia
 

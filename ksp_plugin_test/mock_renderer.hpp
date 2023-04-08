@@ -3,7 +3,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "gmock/gmock.h"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "ksp_plugin_test/mock_celestial.hpp"
 
 namespace principia {
@@ -20,7 +20,7 @@ class MockRenderer : public Renderer {
   MockRenderer()
       : Renderer(
             sun,
-            std::make_unique<MockReferenceFrame<Barycentric, Navigation>>()){};
+            std::make_unique<MockRigidReferenceFrame<Barycentric, Navigation>>()){};
 
   MOCK_METHOD(void,
               SetPlottingFrame,

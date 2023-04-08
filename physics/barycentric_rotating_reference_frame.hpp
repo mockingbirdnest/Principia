@@ -15,10 +15,10 @@
 #include "geometry/space.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {

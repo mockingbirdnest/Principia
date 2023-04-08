@@ -9,7 +9,7 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -54,15 +54,15 @@ class InterfaceRendererTest : public ::testing::Test {
 };
 
 TEST_F(InterfaceRendererTest, SetPlottingFrame) {
-  StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
+  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
+         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
       .WillOnce(
           Return(ByMove(std::unique_ptr<
-                        StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
+                        StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
@@ -77,15 +77,15 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
 }
 
 TEST_F(InterfaceRendererTest, Frenet) {
-  StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
+  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
+         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
       .WillOnce(
           Return(ByMove(std::unique_ptr<
-                        StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
+                        StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,

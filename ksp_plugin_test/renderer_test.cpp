@@ -12,7 +12,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
@@ -50,13 +50,13 @@ class RendererTest : public ::testing::Test {
   RendererTest()
       : renderer_(
             &celestial_,
-            std::make_unique<MockReferenceFrame<Barycentric, Navigation>>()),
+            std::make_unique<MockRigidReferenceFrame<Barycentric, Navigation>>()),
         reference_frame_(renderer_.GetPlottingFrame()) {}
 
   Instant const t0_;
   MockCelestial const celestial_;
   Renderer renderer_;
-  not_null<MockReferenceFrame<Barycentric, Navigation> const*> const
+  not_null<MockRigidReferenceFrame<Barycentric, Navigation> const*> const
       reference_frame_;
 };
 

@@ -12,11 +12,11 @@
 #include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -52,10 +52,10 @@ using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -77,16 +77,16 @@ class ManœuvreTest : public ::testing::Test {
                           Handedness::Right,
                           serialization::Frame::TEST>;
 
-  not_null<std::unique_ptr<StrictMock<MockReferenceFrame<World, Rendering>>>>
+  not_null<std::unique_ptr<StrictMock<MockRigidReferenceFrame<World, Rendering>>>>
   MakeMockReferenceFrame() {
     auto owned_mock_reference_frame =
-        make_not_null_unique<StrictMock<MockReferenceFrame<World, Rendering>>>();
+        make_not_null_unique<StrictMock<MockRigidReferenceFrame<World, Rendering>>>();
     mock_reference_frame_ = owned_mock_reference_frame.get();
     return owned_mock_reference_frame;
   }
 
   Instant const t0_;
-  StrictMock<MockReferenceFrame<World, Rendering>> const* mock_reference_frame_;
+  StrictMock<MockRigidReferenceFrame<World, Rendering>> const* mock_reference_frame_;
   DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),

@@ -21,12 +21,12 @@
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -65,10 +65,10 @@ using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -228,7 +228,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
       .WillOnce(Return(
           ByMove(std::make_unique<
-                 StrictMock<MockReferenceFrame<Barycentric, Navigation>>>())));
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   EXPECT_CALL(
       flight_plan,
       Insert(AllOf(HasThrust(1 * Kilo(Newton)),
@@ -249,7 +249,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                        vessel_guid));
 
   auto const plotting_frame =
-      make_not_null_unique<MockReferenceFrame<Barycentric, Navigation>>();
+      make_not_null_unique<MockRigidReferenceFrame<Barycentric, Navigation>>();
 
   MockEphemeris<Barycentric> ephemeris;
   MassiveBody const centre(MassiveBody::Parameters("centre", 1 * Kilogram));
@@ -379,7 +379,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
       .WillOnce(Return(
           ByMove(std::make_unique<
-                 StrictMock<MockReferenceFrame<Barycentric, Navigation>>>())));
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
   EXPECT_CALL(
       flight_plan,

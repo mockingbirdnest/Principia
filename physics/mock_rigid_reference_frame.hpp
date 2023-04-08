@@ -10,14 +10,14 @@
 
 namespace principia {
 namespace physics {
-namespace _reference_frame {
+namespace _rigid_reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 
 template<typename InertialFrame, typename ThisFrame>
-class MockReferenceFrame : public RigidReferenceFrame<InertialFrame, ThisFrame> {
+class MockRigidReferenceFrame : public RigidReferenceFrame<InertialFrame, ThisFrame> {
  public:
   MOCK_METHOD((RigidMotion<InertialFrame, ThisFrame>),
               ToThisFrameAtTime,
@@ -53,8 +53,8 @@ class MockReferenceFrame : public RigidReferenceFrame<InertialFrame, ThisFrame> 
 
 }  // namespace internal
 
-using internal::MockReferenceFrame;
+using internal::MockRigidReferenceFrame;
 
-}  // namespace _reference_frame
+}  // namespace _rigid_reference_frame
 }  // namespace physics
 }  // namespace principia

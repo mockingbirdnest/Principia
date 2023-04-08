@@ -23,7 +23,7 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -517,15 +517,15 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       celestial_index,
       parent_index};
   {
-    StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
+    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
-            new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
+            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBarycentricRotatingNavigationFrame(celestial_index,
                                                       parent_index))
         .WillOnce(Return(
             ByMove(std::unique_ptr<
-                   StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
+                   StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
@@ -535,14 +535,14 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       serialization::BodyCentredNonRotatingReferenceFrame::kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
   {
-    StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
+    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
-            new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
+            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
         .WillOnce(Return(
             ByMove(std::unique_ptr<
-                   StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
+                   StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
@@ -550,15 +550,15 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
+  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
+         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
       .WillOnce(
           Return(ByMove(std::unique_ptr<
-                        StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
+                        StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,

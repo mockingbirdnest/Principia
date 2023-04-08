@@ -5,7 +5,7 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -68,7 +68,7 @@ class ReferenceFrameTest : public testing::Test {
                                             (potential_Δz - potential) / Δl});
   }
 
-  StrictMock<MockReferenceFrame<Inertial, Rotating>> mock_frame_;
+  StrictMock<MockRigidReferenceFrame<Inertial, Rotating>> mock_frame_;
   Instant const t0_;
 
   // General values used to check that the acceleration does not depend on some
@@ -528,8 +528,8 @@ TEST_F(ReferenceFrameTest, FrenetFrame) {
   using FixedJaw = Frame<struct FixedJawTag, geometry::Inertial>;
   using MovingJaw = Frame<struct MovingJawTag, geometry::Inertial>;
 
-  StrictMock<MockReferenceFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
-  StrictMock<MockReferenceFrame<MovingJaw, Handle>> jaw_to_handle_frame;
+  StrictMock<MockRigidReferenceFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
+  StrictMock<MockRigidReferenceFrame<MovingJaw, Handle>> jaw_to_handle_frame;
 
   Speed const v = 1 * Centi(Metre) / Second;
   AngularFrequency const ω = 1 * Radian / Second;

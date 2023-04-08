@@ -17,7 +17,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -121,7 +121,7 @@ class PlanetariumTest : public ::testing::Test {
 
   Instant const t0_;
   Perspective<Navigation, Camera> const perspective_;
-  MockReferenceFrame<Barycentric, Navigation> plotting_frame_;
+  MockRigidReferenceFrame<Barycentric, Navigation> plotting_frame_;
   std::function<ScaledSpacePoint(Position<Navigation> const&)>
       plotting_to_scaled_space_;
   RotatingBody<Barycentric> const body_;

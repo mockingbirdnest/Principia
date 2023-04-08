@@ -11,7 +11,7 @@
 
 namespace principia {
 namespace physics {
-namespace _reference_frame {
+namespace _rigid_reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
@@ -218,6 +218,6 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeGeometricAcceleration
 }
 
 }  // namespace internal
-}  // namespace _reference_frame
+}  // namespace _rigid_reference_frame
 }  // namespace physics
 }  // namespace principia
