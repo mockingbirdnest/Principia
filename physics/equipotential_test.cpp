@@ -337,7 +337,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = *moon_elements.argument_of_periapsis + Degree,
       .mean_anomaly = 0 * Degree};
-  auto const earth_world_dof = reference_frame.ToThisFrameAtTime(t0_)(earth_dof);
+  auto const earth_world_dof =
+      reference_frame.ToThisFrameAtTime(t0_)(earth_dof);
   auto const moon_world_dof = reference_frame.ToThisFrameAtTime(t0_)(moon_dof);
   Position<World> const q_earth = earth_world_dof.position();
   Position<World> const q_moon = moon_world_dof.position();

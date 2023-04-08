@@ -27,7 +27,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
@@ -79,8 +79,8 @@ Burn GetBurn(Plugin const& plugin,
             &*manœuvre.frame());
     if (barycentric_rotating_reference_frame != nullptr) {
       ++number_of_subclasses;
-      parameters.extension =
-          serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber;
+      parameters.extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber;
       parameters.primary_index = plugin.CelestialIndexOfBody(
           *barycentric_rotating_reference_frame->primary());
       parameters.secondary_index = plugin.CelestialIndexOfBody(
@@ -109,8 +109,8 @@ Burn GetBurn(Plugin const& plugin,
             &*manœuvre.frame());
     if (body_centred_non_rotating_reference_frame != nullptr) {
       ++number_of_subclasses;
-      parameters.extension = serialization::BodyCentredNonRotatingReferenceFrame::
-          kExtensionFieldNumber;
+      parameters.extension = serialization::
+          BodyCentredNonRotatingReferenceFrame::kExtensionFieldNumber;
       parameters.centre_index = plugin.CelestialIndexOfBody(
           *body_centred_non_rotating_reference_frame->centre());
     }

@@ -77,16 +77,18 @@ class ManœuvreTest : public ::testing::Test {
                           Handedness::Right,
                           serialization::Frame::TEST>;
 
-  not_null<std::unique_ptr<StrictMock<MockRigidReferenceFrame<World, Rendering>>>>
+  not_null<
+      std::unique_ptr<StrictMock<MockRigidReferenceFrame<World, Rendering>>>>
   MakeMockReferenceFrame() {
-    auto owned_mock_reference_frame =
-        make_not_null_unique<StrictMock<MockRigidReferenceFrame<World, Rendering>>>();
+    auto owned_mock_reference_frame = make_not_null_unique<
+        StrictMock<MockRigidReferenceFrame<World, Rendering>>>();
     mock_reference_frame_ = owned_mock_reference_frame.get();
     return owned_mock_reference_frame;
   }
 
   Instant const t0_;
-  StrictMock<MockRigidReferenceFrame<World, Rendering>> const* mock_reference_frame_;
+  StrictMock<MockRigidReferenceFrame<World, Rendering>> const*
+      mock_reference_frame_;
   DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
@@ -153,9 +155,11 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(t0_ + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
 
   EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
-  EXPECT_CALL(*mock_reference_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(*mock_reference_frame_, MotionOfThisFrame(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              MotionOfThisFrame(manœuvre.initial_time()))
       .WillOnce(Return(accelerated_rigid_motion_));
   EXPECT_CALL(*mock_reference_frame_,
               GravitationalAcceleration(manœuvre.initial_time(), _))
@@ -213,9 +217,11 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(t0_, manœuvre.time_of_half_Δv());
 
   EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
-  EXPECT_CALL(*mock_reference_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(*mock_reference_frame_, MotionOfThisFrame(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              MotionOfThisFrame(manœuvre.initial_time()))
       .WillOnce(Return(accelerated_rigid_motion_));
   EXPECT_CALL(*mock_reference_frame_,
               GravitationalAcceleration(manœuvre.initial_time(), _))

@@ -48,9 +48,9 @@ using namespace principia::testing_utilities::_discrete_trajectory_factories;
 class RendererTest : public ::testing::Test {
  protected:
   RendererTest()
-      : renderer_(
-            &celestial_,
-            std::make_unique<MockRigidReferenceFrame<Barycentric, Navigation>>()),
+      : renderer_(&celestial_,
+                  std::make_unique<
+                      MockRigidReferenceFrame<Barycentric, Navigation>>()),
         reference_frame_(renderer_.GetPlottingFrame()) {}
 
   Instant const t0_;

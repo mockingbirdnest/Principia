@@ -227,8 +227,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
       .WillOnce(Return(
-          ByMove(std::make_unique<
-                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>())));
+          ByMove(std::make_unique<StrictMock<
+                     MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   EXPECT_CALL(
       flight_plan,
       Insert(AllOf(HasThrust(1 * Kilo(Newton)),
@@ -378,8 +378,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
       .WillOnce(Return(
-          ByMove(std::make_unique<
-                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>())));
+          ByMove(std::make_unique<StrictMock<
+                     MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
   EXPECT_CALL(
       flight_plan,

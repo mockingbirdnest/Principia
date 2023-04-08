@@ -523,9 +523,9 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
     EXPECT_CALL(*plugin_,
                 NewBarycentricRotatingNavigationFrame(celestial_index,
                                                       parent_index))
-        .WillOnce(Return(
-            ByMove(std::unique_ptr<
-                   StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
+        .WillOnce(Return(ByMove(
+            std::unique_ptr<
+                StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
@@ -540,9 +540,9 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
             new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
-        .WillOnce(Return(
-            ByMove(std::unique_ptr<
-                   StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
+        .WillOnce(Return(ByMove(
+            std::unique_ptr<
+                StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
@@ -556,9 +556,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
-      .WillOnce(
-          Return(ByMove(std::unique_ptr<
-                        StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
+      .WillOnce(Return(
+          ByMove(std::unique_ptr<
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,

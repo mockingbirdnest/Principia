@@ -60,9 +60,9 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
-      .WillOnce(
-          Return(ByMove(std::unique_ptr<
-                        StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
+      .WillOnce(Return(
+          ByMove(std::unique_ptr<
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
@@ -83,9 +83,9 @@ TEST_F(InterfaceRendererTest, Frenet) {
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
-      .WillOnce(
-          Return(ByMove(std::unique_ptr<
-                        StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
+      .WillOnce(Return(
+          ByMove(std::unique_ptr<
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,

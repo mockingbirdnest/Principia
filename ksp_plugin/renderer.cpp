@@ -16,7 +16,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_permutation;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_degrees_of_freedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,

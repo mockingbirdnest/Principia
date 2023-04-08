@@ -76,7 +76,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
@@ -1168,9 +1168,9 @@ Plugin::NewBodySurfaceNavigationFrame(
   CHECK(!initializing_);
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
-  return make_not_null_unique<BodySurfaceReferenceFrame<Barycentric, Navigation>>(
-      ephemeris_.get(),
-      reference_body.body());
+  return make_not_null_unique<
+      BodySurfaceReferenceFrame<Barycentric, Navigation>>(
+      ephemeris_.get(), reference_body.body());
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,

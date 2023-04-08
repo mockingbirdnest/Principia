@@ -102,8 +102,9 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                     /*declination_of_pole=*/π / 2 * Radian)),
         massive_centre_(&centre_) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
-    big_frame_ = std::make_unique<BodySurfaceReferenceFrame<ICRS, BigSmallFrame>>(
-        ephemeris_.get(), big_);
+    big_frame_ =
+        std::make_unique<BodySurfaceReferenceFrame<ICRS, BigSmallFrame>>(
+            ephemeris_.get(), big_);
   }
 
   Time const period_;

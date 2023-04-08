@@ -107,7 +107,8 @@ class BodyCentredNonRotatingReferenceFrameTest : public ::testing::Test {
   DegreesOfFreedom<ICRS> const small_initial_state_;
   GravitationalParameter const small_gravitational_parameter_;
   std::unique_ptr<BodyCentredNonRotatingReferenceFrame<ICRS, Big>> big_frame_;
-  std::unique_ptr<BodyCentredNonRotatingReferenceFrame<ICRS, Small>> small_frame_;
+  std::unique_ptr<BodyCentredNonRotatingReferenceFrame<ICRS, Small>>
+      small_frame_;
 };
 
 
@@ -210,7 +211,8 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
   EXPECT_EQ(1, extension.centre());
 
   auto const read_small_frame =
-      RigidReferenceFrame<ICRS, Small>::ReadFromMessage(message, ephemeris_.get());
+      RigidReferenceFrame<ICRS, Small>::ReadFromMessage(message,
+                                                        ephemeris_.get());
   EXPECT_THAT(read_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

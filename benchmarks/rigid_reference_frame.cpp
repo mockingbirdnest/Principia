@@ -69,7 +69,8 @@ void FillLinearTrajectory(Position<F> const& initial,
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyReferenceFrame(
     not_null<Body const*> const body,
-    not_null<RigidReferenceFrame<Barycentric, Rendering>*> const reference_frame,
+    not_null<RigidReferenceFrame<Barycentric,
+                                 Rendering>*> const reference_frame,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end) {
   std::vector<std::pair<Position<Barycentric>,

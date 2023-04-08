@@ -68,7 +68,8 @@ class Manœuvre {
     // individual thrust divided by the exhaust velocity).
     SpecificImpulse specific_impulse;
     // Defines the Frenet frame.
-    not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>> frame;
+    not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
+        frame;
     // If true, the direction of the burn remains fixed in a nonrotating frame.
     // Otherwise, the direction of the burn remains fixed in the Frenet frame of
     // the trajectory.
