@@ -80,11 +80,11 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

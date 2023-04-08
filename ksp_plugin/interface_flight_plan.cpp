@@ -31,8 +31,8 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
