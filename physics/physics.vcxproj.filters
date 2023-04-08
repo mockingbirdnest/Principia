@@ -218,35 +218,35 @@
     <ClInclude Include="barycentric_rotating_reference_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="barycentric_rotating_reference_frame_body.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="body_centred_non_rotating_reference_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_centred_non_rotating_reference_frame_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="body_centred_body_direction_reference_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="body_centred_body_direction_reference_frame_body.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="body_surface_reference_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_surface_reference_frame_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rigid_reference_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rigid_reference_frame_body.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mock_rigid_reference_frame.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="barycentric_rotating_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_body_direction_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_non_rotating_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_surface_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rigid_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="reference_frame.hpp">
       <Filter>Header Files</Filter>
@@ -356,19 +356,19 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="barycentric_rotating_reference_frame_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_centred_non_rotating_reference_frame_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="body_centred_body_direction_reference_frame_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="body_centred_non_rotating_reference_frame_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="body_surface_reference_frame_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="rigid_reference_frame_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

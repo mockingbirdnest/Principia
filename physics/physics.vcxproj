@@ -21,14 +21,14 @@
     <ClInclude Include="barycentric_rotating_reference_frame_body.hpp" />
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
-    <ClInclude Include="body_centred_non_rotating_reference_frame.hpp" />
-    <ClInclude Include="body_centred_non_rotating_reference_frame_body.hpp" />
-    <ClInclude Include="body_centred_body_direction_reference_frame.hpp" />
     <ClInclude Include="body_centred_body_direction_reference_frame_body.hpp" />
+    <ClInclude Include="body_centred_non_rotating_reference_frame.hpp" />
+    <ClInclude Include="body_centred_body_direction_reference_frame.hpp" />
+    <ClInclude Include="body_centred_non_rotating_reference_frame_body.hpp" />
     <ClInclude Include="body_surface_reference_frame.hpp" />
-    <ClInclude Include="body_surface_reference_frame_body.hpp" />
     <ClInclude Include="body_surface_frame_field.hpp" />
     <ClInclude Include="body_surface_frame_field_body.hpp" />
+    <ClInclude Include="body_surface_reference_frame_body.hpp" />
     <ClInclude Include="checkpointer.hpp" />
     <ClInclude Include="checkpointer_body.hpp" />
     <ClInclude Include="clientele_body.hpp" />
@@ -59,7 +59,6 @@
     <ClInclude Include="degrees_of_freedom_body.hpp" />
     <ClInclude Include="reference_frame.hpp" />
     <ClInclude Include="rigid_reference_frame.hpp" />
-    <ClInclude Include="rigid_reference_frame_body.hpp" />
     <ClInclude Include="euler_solver.hpp" />
     <ClInclude Include="euler_solver_body.hpp" />
     <ClInclude Include="geopotential.hpp" />
@@ -86,6 +85,7 @@
     <ClInclude Include="mock_ephemeris.hpp" />
     <ClInclude Include="oblate_body.hpp" />
     <ClInclude Include="oblate_body_body.hpp" />
+    <ClInclude Include="rigid_reference_frame_body.hpp" />
     <ClInclude Include="rotating_body.hpp" />
     <ClInclude Include="rotating_body_body.hpp" />
     <ClInclude Include="similar_motion.hpp" />
@@ -106,10 +106,10 @@
     <ClCompile Include="analytical_series_test.cpp" />
     <ClCompile Include="apsides_test.cpp" />
     <ClCompile Include="barycentric_rotating_reference_frame_test.cpp" />
-    <ClCompile Include="body_centred_non_rotating_reference_frame_test.cpp" />
     <ClCompile Include="body_centred_body_direction_reference_frame_test.cpp" />
-    <ClCompile Include="body_surface_reference_frame_test.cpp" />
+    <ClCompile Include="body_centred_non_rotating_reference_frame_test.cpp" />
     <ClCompile Include="body_surface_frame_field_test.cpp" />
+    <ClCompile Include="body_surface_reference_frame_test.cpp" />
     <ClCompile Include="body_test.cpp" />
     <ClCompile Include="checkpointer_test.cpp" />
     <ClCompile Include="clientele_test.cpp" />
@@ -123,7 +123,6 @@
     <ClCompile Include="mechanical_system_test.cpp" />
     <ClCompile Include="continuous_trajectory_test.cpp" />
     <ClCompile Include="degrees_of_freedom_test.cpp" />
-    <ClCompile Include="rigid_reference_frame_test.cpp" />
     <ClCompile Include="euler_solver_test.cpp" />
     <ClCompile Include="geopotential_test.cpp" />
     <ClCompile Include="hierarchical_system_test.cpp" />
@@ -133,6 +132,7 @@
     <ClCompile Include="protector_test.cpp" />
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
+    <ClCompile Include="rigid_reference_frame_test.cpp" />
     <ClCompile Include="similar_motion_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
   </ItemGroup>
