@@ -1,5 +1,5 @@
-// The files containing the tree of child classes of |RigidReferenceFrame| must be
-// included in the order of inheritance to avoid circular dependencies.  This
+// The files containing the tree of child classes of |RigidReferenceFrame| must
+// be included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
 #ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
@@ -39,7 +39,8 @@ using namespace principia::quantities::_named_quantities;
 // of the IAU WGCCRE if |polar_axis| is the north pole, or figure 2 if
 // |polar_axis| is the positive pole.
 template<typename InertialFrame, typename ThisFrame>
-class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame, ThisFrame> {
+class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
+                                                             ThisFrame> {
   static_assert(ThisFrame::may_rotate);
 
  public:

@@ -42,7 +42,8 @@ constexpr double energy_tolerance = 0x1p-24;
 template<typename InertialFrame, typename Frame>
 Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,
-    not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const reference_frame)
+    not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const
+        reference_frame)
     : adaptive_parameters_(adaptive_parameters),
       reference_frame_(reference_frame) {}
 
@@ -176,7 +177,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // The BFGS algorithm will put us at the minimum of f, but that may be a
     // point that has (significantly) less energy that our total energy.  No
     // point in building a line in that case.
-    if (reference_frame_->GeometricPotential(t, equipotential_position.value()) <
+    if (reference_frame_->GeometricPotential(t,
+                                             equipotential_position.value()) <
         total_energy - Abs(total_energy) * energy_tolerance) {
       lines.push_back(Line{});
       continue;

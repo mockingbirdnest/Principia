@@ -59,7 +59,8 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
 
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, ThisFrame>
-RigidReferenceFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
+RigidReferenceFrame<InertialFrame, ThisFrame>::
+RotationFreeGeometricAccelerationAtRest(
     Instant const& t,
     Position<ThisFrame> const& position) const {
   Vector<Acceleration, ThisFrame> gravitational_acceleration;
@@ -81,7 +82,8 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAcceleration
 }
 
 template<typename InertialFrame, typename ThisFrame>
-SpecificEnergy RigidReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
+SpecificEnergy
+RigidReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
     Instant const& t,
     Position<ThisFrame> const& position) const {
   AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion =
@@ -133,16 +135,18 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   std::unique_ptr<RigidReferenceFrame> result;
   int extensions_found = 0;
   // NOTE(egg): the |static_cast|ing below is needed on MSVC, because the silly
-  // compiler doesn't see the |operator std::unique_ptr<RigidReferenceFrame>() &&|.
+  // compiler doesn't see the
+  // |operator std::unique_ptr<RigidReferenceFrame>() &&|.
   if (message.HasExtension(
           serialization::BarycentricRotatingReferenceFrame::extension)) {
     ++extensions_found;
     result = static_cast<not_null<std::unique_ptr<RigidReferenceFrame>>>(
         BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-            ReadFromMessage(ephemeris,
-                            message.GetExtension(
-                                serialization::BarycentricRotatingReferenceFrame::
-                                    extension)));
+            ReadFromMessage(
+                ephemeris,
+                message.GetExtension(
+                    serialization::BarycentricRotatingReferenceFrame::
+                        extension)));
   }
   if (message.HasExtension(
           serialization::BodyCentredBodyDirectionReferenceFrame::extension)) {
@@ -181,7 +185,8 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeGeometricAccelerations(
+void RigidReferenceFrame<InertialFrame, ThisFrame>::
+ComputeGeometricAccelerations(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
     Vector<Acceleration, ThisFrame>& gravitational_acceleration,

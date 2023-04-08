@@ -92,9 +92,9 @@ class BarycentricRotatingReferenceFrameTest : public ::testing::Test {
                 {big_gravitational_parameter_,
                  small_gravitational_parameter_})) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
-    big_small_frame_ =
-        std::make_unique<BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
-            ephemeris_.get(), big_, small_);
+    big_small_frame_ = std::make_unique<
+        BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
+        ephemeris_.get(), big_, small_);
   }
 
   Time const period_;

@@ -51,9 +51,9 @@ class Equipotential {
   using Line = std::vector<DependentVariables>;
   using Lines = std::vector<Line>;
 
-  Equipotential(
-      AdaptiveParameters const& adaptive_parameters,
-      not_null<RigidReferenceFrame<InertialFrame, Frame> const*> reference_frame);
+  Equipotential(AdaptiveParameters const& adaptive_parameters,
+                not_null<RigidReferenceFrame<InertialFrame, Frame> const*>
+                    reference_frame);
 
   // Computes an equipotential line going through the given point.
   Line ComputeLine(Plane<Frame> const& plane,
@@ -142,7 +142,8 @@ class Equipotential {
                              std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
-  not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const reference_frame_;
+  not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const
+      reference_frame_;
 };
 
 }  // namespace internal

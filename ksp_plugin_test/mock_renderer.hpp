@@ -18,9 +18,9 @@ MockCelestial* const sun = new MockCelestial;
 class MockRenderer : public Renderer {
  public:
   MockRenderer()
-      : Renderer(
-            sun,
-            std::make_unique<MockRigidReferenceFrame<Barycentric, Navigation>>()){};
+      : Renderer(sun,
+                 std::make_unique<
+                     MockRigidReferenceFrame<Barycentric, Navigation>>()){};
 
   MOCK_METHOD(void,
               SetPlottingFrame,

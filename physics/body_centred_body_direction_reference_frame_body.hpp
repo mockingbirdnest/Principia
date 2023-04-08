@@ -72,15 +72,15 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::secondary()
 }
 
 template<typename InertialFrame, typename ThisFrame>
-Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::t_min()
-    const {
+Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame,
+                                               ThisFrame>::t_min() const {
   return std::max(primary_trajectory_().t_min(),
                   secondary_trajectory_->t_min());
 }
 
 template<typename InertialFrame, typename ThisFrame>
-Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::t_max()
-    const {
+Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame,
+                                               ThisFrame>::t_max() const {
   return std::min(primary_trajectory_().t_max(),
                   secondary_trajectory_->t_max());
 }
@@ -114,7 +114,8 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
-WriteToMessage(not_null<serialization::RigidReferenceFrame*> const message) const {
+WriteToMessage(
+    not_null<serialization::RigidReferenceFrame*> const message) const {
   auto* const extension =
       message->MutableExtension(
           serialization::BodyCentredBodyDirectionReferenceFrame::extension);
@@ -126,7 +127,8 @@ WriteToMessage(not_null<serialization::RigidReferenceFrame*> const message) cons
 template<typename InertialFrame, typename ThisFrame>
 not_null<std::unique_ptr<
     BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>>>
-BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
+ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     serialization::BodyCentredBodyDirectionReferenceFrame const & message) {
   return std::make_unique<BodyCentredBodyDirectionReferenceFrame>(
@@ -144,7 +146,8 @@ GravitationalAcceleration(Instant const& t,
 }
 
 template<typename InertialFrame, typename ThisFrame>
-SpecificEnergy BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
+SpecificEnergy
+BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 GravitationalPotential(Instant const& t,
                        Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalPotential(q, t);

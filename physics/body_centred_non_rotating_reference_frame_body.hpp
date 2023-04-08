@@ -57,8 +57,8 @@ Instant BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::t_max()
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
-BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
-    Instant const& t) const {
+BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
+ToThisFrameAtTime(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t);
 
@@ -74,10 +74,11 @@ BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTim
 
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
-WriteToMessage(not_null<serialization::RigidReferenceFrame*> const message) const {
+WriteToMessage(
+    not_null<serialization::RigidReferenceFrame*> const message) const {
   message->MutableExtension(
-      serialization::BodyCentredNonRotatingReferenceFrame::extension)->set_centre(
-          ephemeris_->serialization_index_for_body(centre_));
+      serialization::BodyCentredNonRotatingReferenceFrame::extension)->
+      set_centre(ephemeris_->serialization_index_for_body(centre_));
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -108,8 +109,8 @@ GravitationalPotential(Instant const& t,
 
 template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
-BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
-    Instant const& t) const {
+BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
+MotionOfThisFrame(Instant const& t) const {
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              ToThisFrameAtTime(t),
              /*angular_acceleration_of_to_frame=*/{},

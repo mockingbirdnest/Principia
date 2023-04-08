@@ -1,5 +1,5 @@
-// The files containing the tree of child classes of |RigidReferenceFrame| must be
-// included in the order of inheritance to avoid circular dependencies.  This
+// The files containing the tree of child classes of |RigidReferenceFrame| must
+// be included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
 #ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
@@ -110,7 +110,8 @@ using internal::BodyCentredBodyDirectionReferenceFrame;
 }  // namespace principia
 
 namespace principia::physics {
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::
+    _body_centred_body_direction_reference_frame;
 }  // namespace principia::physics
 
 #include "physics/body_centred_body_direction_reference_frame_body.hpp"
