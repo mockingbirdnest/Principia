@@ -1,12 +1,12 @@
-// The files containing the tree of child classes of |ReferenceFrame| must be
+// The files containing the tree of child classes of |RigidReferenceFrame| must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
-#ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 #include "physics/rigid_reference_frame.hpp"
 #else
-#ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -39,7 +39,7 @@ using namespace principia::quantities::_named_quantities;
 // of the IAU WGCCRE if |polar_axis| is the north pole, or figure 2 if
 // |polar_axis| is the positive pole.
 template<typename InertialFrame, typename ThisFrame>
-class BodySurfaceReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
+class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame, ThisFrame> {
   static_assert(ThisFrame::may_rotate);
 
  public:
@@ -55,7 +55,7 @@ class BodySurfaceReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::ReferenceFrame*> message) const override;
+      not_null<serialization::RigidReferenceFrame*> message) const override;
 
   static not_null<std::unique_ptr<BodySurfaceReferenceFrame>> ReadFromMessage(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
@@ -90,5 +90,5 @@ using namespace principia::physics::_body_surface_reference_frame;
 
 #include "physics/body_surface_reference_frame_body.hpp"
 
-#endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
-#endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_

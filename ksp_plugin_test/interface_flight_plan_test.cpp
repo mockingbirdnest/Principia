@@ -65,7 +65,7 @@ using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
@@ -274,7 +274,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       timing,
       10 * Kilo(Newton),
       30 * Second * StandardGravity,
-      std::unique_ptr<ReferenceFrame<Barycentric, Navigation> const>(
+      std::unique_ptr<RigidReferenceFrame<Barycentric, Navigation> const>(
           navigation_manœuvre_frame),
       /*is_inertially_fixed=*/true};
   MockManœuvre<Barycentric, Navigation> navigation_manœuvre(20 * Tonne, burn);

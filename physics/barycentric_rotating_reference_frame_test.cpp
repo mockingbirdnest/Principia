@@ -200,7 +200,7 @@ TEST_F(BarycentricRotatingReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
-  serialization::ReferenceFrame message;
+  serialization::RigidReferenceFrame message;
   big_small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
@@ -213,7 +213,7 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
   EXPECT_EQ(1, extension.secondary());
 
   auto const read_big_small_frame =
-      ReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
+      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
                                                          ephemeris_.get());
   EXPECT_THAT(read_big_small_frame, Not(IsNull()));
 

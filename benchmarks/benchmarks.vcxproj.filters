@@ -23,7 +23,7 @@
     <ClCompile Include="ephemeris.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="reference_frame.cpp">
+    <ClCompile Include="rigid_reference_frame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp">

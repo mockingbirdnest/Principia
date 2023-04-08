@@ -130,7 +130,7 @@ class OrbitAnalysisTest : public ::testing::Test {
   not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
       SP3Orbit const& sp3_orbit) {
     BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_.get(),
-                                                        &earth_};
+                                                          &earth_};
     BodySurfaceReferenceFrame<ICRS, ITRS> itrs{ephemeris_.get(), &earth_};
 
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();

@@ -123,7 +123,7 @@ Manœuvre<InertialFrame, Frame>::specific_impulse() const {
 }
 
 template<typename InertialFrame, typename Frame>
-not_null<std::shared_ptr<ReferenceFrame<InertialFrame, Frame> const>>
+not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
 Manœuvre<InertialFrame, Frame>::frame() const {
   return burn_.frame;
 }
@@ -243,7 +243,7 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
                   timing,
                   Force::ReadFromMessage(message.thrust()),
                   SpecificImpulse::ReadFromMessage(message.specific_impulse()),
-                  ReferenceFrame<InertialFrame, Frame>::ReadFromMessage(
+                  RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(
                       message.frame(), ephemeris),
                   message.is_inertially_fixed()};
   return Manœuvre(Mass::ReadFromMessage(message.initial_mass()), burn);

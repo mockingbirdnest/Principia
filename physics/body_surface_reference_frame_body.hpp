@@ -66,7 +66,7 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 
 template<typename InertialFrame, typename ThisFrame>
 void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
-WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
+WriteToMessage(not_null<serialization::RigidReferenceFrame*> const message) const {
   message->MutableExtension(
       serialization::BodySurfaceReferenceFrame::extension)->set_centre(
           ephemeris_->serialization_index_for_body(centre_));

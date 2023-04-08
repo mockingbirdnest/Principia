@@ -14,7 +14,7 @@ namespace internal {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_permutation;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
@@ -77,7 +77,7 @@ using Navball = Frame<serialization::Frame::PluginTag,
                       serialization::Frame::NAVBALL>;
 
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
-// depends on the choice of a subclass of ReferenceFrame.
+// depends on the choice of a subclass of RigidReferenceFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
                          Arbitrary,
                          Handedness::Right,
@@ -152,7 +152,7 @@ using MainBodyCentred = Frame<serialization::Frame::PluginTag,
                               serialization::Frame::MAIN_BODY_CENTRED>;
 
 // Convenient instances of types from |physics| for the above frames.
-using NavigationFrame = ReferenceFrame<Barycentric, Navigation>;
+using NavigationFrame = RigidReferenceFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.

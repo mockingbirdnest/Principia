@@ -473,7 +473,7 @@ TEST_F(OrbitalElementsTest, Years) {
       OrbitalElements::OrbitalElements::ForTrajectory(
           *ephemeris->trajectory(&sun),
           BodyCentredNonRotatingReferenceFrame<ICRS, GCRS>(ephemeris.get(),
-                                                         &earth),
+                                                           &earth),
           /*primary=*/earth,
           /*secondary=*/sun);
   LOG(ERROR) << "Done.";

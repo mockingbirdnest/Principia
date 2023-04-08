@@ -13,7 +13,7 @@ enum Encoding {
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
 message NavigationFrameParameters {
-  required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
+  required int32 extension = 1;  // 6000 to 6999, see RigidReferenceFrame.
   required int32 centre_index = 2;
   required int32 primary_index = 3;
   required int32 secondary_index = 4;

@@ -49,7 +49,7 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rotating_body;

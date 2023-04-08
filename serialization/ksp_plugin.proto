@@ -43,7 +43,7 @@ message Manoeuvre {
   required Multivector direction = 4;
   required Quantity duration = 5;
   required Point initial_time = 6;
-  required ReferenceFrame frame = 7;
+  required RigidReferenceFrame frame = 7;
   // Required, addded in Чебышёв.
   optional bool is_inertially_fixed = 8 [default = true];
 }
@@ -136,7 +136,7 @@ message Plugin {
   required Point game_epoch = 15;
   required Point current_time = 5;
   required int32 sun_index = 6;
-  optional ReferenceFrame pre_cauchy_plotting_frame = 11;
+  optional RigidReferenceFrame pre_cauchy_plotting_frame = 11;
   repeated PileUp pile_up = 17;
   optional Renderer renderer = 18;  // Added in Cauchy.
   repeated ZombieAndProperties zombie = 19;  // Added in Frege.
@@ -157,7 +157,7 @@ message Plugin {
 
 // Added in Cauchy.
 message Renderer {
-  required ReferenceFrame plotting_frame = 1;
+  required RigidReferenceFrame plotting_frame = 1;
 }
 
 message Vessel {

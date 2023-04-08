@@ -53,7 +53,7 @@ using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_ephemeris;
@@ -271,7 +271,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                              "planetarium_ephemeris.proto.bin")));
 
   auto plotting_frame = NavigationFrame::ReadFromMessage(
-      ParseFromBytes<serialization::ReferenceFrame>(
+      ParseFromBytes<serialization::RigidReferenceFrame>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_plotting_frame.proto.bin")),
       ephemeris.get());

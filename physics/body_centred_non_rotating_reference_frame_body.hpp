@@ -74,7 +74,7 @@ BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTim
 
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
-WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
+WriteToMessage(not_null<serialization::RigidReferenceFrame*> const message) const {
   message->MutableExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::extension)->set_centre(
           ephemeris_->serialization_index_for_body(centre_));

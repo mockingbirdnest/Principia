@@ -197,7 +197,7 @@ TEST_F(BodySurfaceReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
-  serialization::ReferenceFrame message;
+  serialization::RigidReferenceFrame message;
   big_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
@@ -208,7 +208,7 @@ TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
   EXPECT_EQ(0, extension.centre());
 
   auto const read_big_frame =
-      ReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
+      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
                                                          ephemeris_.get());
   EXPECT_THAT(read_big_frame, Not(IsNull()));
 

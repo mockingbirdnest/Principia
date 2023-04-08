@@ -17,7 +17,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 
 template<typename InertialFrame, typename ThisFrame>
-class MockReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
+class MockReferenceFrame : public RigidReferenceFrame<InertialFrame, ThisFrame> {
  public:
   MOCK_METHOD((RigidMotion<InertialFrame, ThisFrame>),
               ToThisFrameAtTime,
@@ -33,7 +33,7 @@ class MockReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
 
   MOCK_METHOD(void,
               WriteToMessage,
-              (not_null<serialization::ReferenceFrame*> message),
+              (not_null<serialization::RigidReferenceFrame*> message),
               (const, override));
 
   MOCK_METHOD((Vector<Acceleration, InertialFrame>),

@@ -90,7 +90,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
         /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
 
     BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs(ephemeris_,
-                                                              earth_);
+                                                                earth_);
     ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTrajectory<GCRS>;
     for (auto const& [time, degrees_of_freedom] :
          *ilrsa_lageos2_trajectory_icrs_) {

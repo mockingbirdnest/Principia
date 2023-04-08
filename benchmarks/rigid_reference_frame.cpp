@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=ReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=RigidReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -69,7 +69,7 @@ void FillLinearTrajectory(Position<F> const& initial,
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyReferenceFrame(
     not_null<Body const*> const body,
-    not_null<ReferenceFrame<Barycentric, Rendering>*> const reference_frame,
+    not_null<RigidReferenceFrame<Barycentric, Rendering>*> const reference_frame,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end) {
   std::vector<std::pair<Position<Barycentric>,
@@ -149,9 +149,9 @@ void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
       reference_frame(ephemeris.get(), earth);
   for (auto _ : state) {
     auto v = ApplyReferenceFrame(&probe,
-                               &reference_frame,
-                               probe_trajectory.begin(),
-                               probe_trajectory.end());
+                                 &reference_frame,
+                                 probe_trajectory.begin(),
+                                 probe_trajectory.end());
   }
 }
 
@@ -200,9 +200,9 @@ void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
       reference_frame(ephemeris.get(), earth, venus);
   for (auto _ : state) {
     auto v = ApplyReferenceFrame(&probe,
-                               &reference_frame,
-                               probe_trajectory.begin(),
-                               probe_trajectory.end());
+                                 &reference_frame,
+                                 probe_trajectory.begin(),
+                                 probe_trajectory.end());
   }
 }
 

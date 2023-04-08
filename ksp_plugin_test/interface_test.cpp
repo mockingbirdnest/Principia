@@ -72,7 +72,7 @@ using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;

@@ -199,7 +199,7 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
-  serialization::ReferenceFrame message;
+  serialization::RigidReferenceFrame message;
   small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
@@ -210,7 +210,7 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
   EXPECT_EQ(1, extension.centre());
 
   auto const read_small_frame =
-      ReferenceFrame<ICRS, Small>::ReadFromMessage(message, ephemeris_.get());
+      RigidReferenceFrame<ICRS, Small>::ReadFromMessage(message, ephemeris_.get());
   EXPECT_THAT(read_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

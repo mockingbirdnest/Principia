@@ -52,7 +52,7 @@ using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
@@ -400,7 +400,7 @@ TEST_F(ManœuvreTest, Serialization) {
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
 
-  serialization::ReferenceFrame serialized_mock_reference_frame;
+  serialization::RigidReferenceFrame serialized_mock_reference_frame;
   serialized_mock_reference_frame.MutableExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::
           extension)->set_centre(666);

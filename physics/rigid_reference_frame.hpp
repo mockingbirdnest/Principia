@@ -1,5 +1,5 @@
-#ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -34,11 +34,11 @@ using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
-class ReferenceFrame {
+class RigidReferenceFrame {
   static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
 
  public:
-  virtual ~ReferenceFrame() = default;
+  virtual ~RigidReferenceFrame() = default;
 
   // The operations that take an |Instant| are valid in the range
   // [t_min, t_max].
@@ -91,12 +91,12 @@ class ReferenceFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::ReferenceFrame*> message) const = 0;
+      not_null<serialization::RigidReferenceFrame*> message) const = 0;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
-  static not_null<std::unique_ptr<ReferenceFrame>>
-      ReadFromMessage(serialization::ReferenceFrame const& message,
+  static not_null<std::unique_ptr<RigidReferenceFrame>>
+      ReadFromMessage(serialization::RigidReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
@@ -121,7 +121,7 @@ class ReferenceFrame {
 
 }  // namespace internal
 
-using internal::ReferenceFrame;
+using internal::RigidReferenceFrame;
 using internal::Frenet;
 
 }  // namespace _reference_frame
@@ -129,9 +129,9 @@ using internal::Frenet;
 }  // namespace principia
 
 namespace principia::physics {
-using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 }  // namespace principia::physics
 
 #include "physics/rigid_reference_frame_body.hpp"
 
-#endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_

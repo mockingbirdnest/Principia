@@ -233,7 +233,7 @@
     <ClInclude Include="body_centred_body_direction_reference_frame_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="body_surface_dynamic_frame.hpp">
+    <ClInclude Include="body_surface_reference_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="body_surface_reference_frame_body.hpp">
