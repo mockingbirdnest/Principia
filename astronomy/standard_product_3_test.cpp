@@ -8,7 +8,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -32,7 +32,7 @@ using namespace principia::base::_not_null;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -285,7 +285,7 @@ class StandardProduct3DynamicsTest
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<RotatingBody<ICRS> const*> const earth_;
   ContinuousTrajectory<ICRS> const& earth_trajectory_;
-  BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
+  BodySurfaceReferenceFrame<ICRS, ITRS> itrs_;
 };
 
 INSTANTIATE_TEST_SUITE_P(

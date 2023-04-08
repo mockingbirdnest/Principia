@@ -18,7 +18,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "physics/apsides.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
@@ -52,7 +52,7 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_apsides;
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -156,7 +156,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // |KeplerOrbit| should check that; this is good enough for a test.
   using Selenocentric = Frame<struct SelenocentricTag, Inertial>;
 
-  // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
+  // We do not use a |BodyCentredNonRotatingReferenceFrame| since that would use
   // ICRS axes.
   RigidMotion<ICRS, Selenocentric> ToSelenocentric(Instant const& t) {
     return RigidMotion<ICRS, Selenocentric>(
@@ -174,7 +174,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<OblateBody<ICRS> const*> const moon_;
 
-  BodySurfaceDynamicFrame<ICRS, LunarSurface> const lunar_frame_;
+  BodySurfaceReferenceFrame<ICRS, LunarSurface> const lunar_frame_;
   DegreesOfFreedom<Selenocentric> selenocentre_;
 
   MasslessBody const satellite_;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 
 #include <utility>
 
@@ -9,7 +9,7 @@
 
 namespace principia {
 namespace physics {
-namespace _body_surface_dynamic_frame {
+namespace _body_surface_reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -18,8 +18,8 @@ using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_named_quantities;
 
 template<typename InertialFrame, typename ThisFrame>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
-BodySurfaceDynamicFrame(
+BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
+BodySurfaceReferenceFrame(
     not_null<Ephemeris<InertialFrame> const*> ephemeris,
     not_null<RotatingBody<InertialFrame> const*> centre)
     : ephemeris_(std::move(ephemeris)),
@@ -28,25 +28,25 @@ BodySurfaceDynamicFrame(
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<RotatingBody<InertialFrame> const*>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::centre() const {
+BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::centre() const {
   return centre_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
-Instant BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::t_min()
+Instant BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::t_min()
     const {
   return centre_trajectory_->t_min();
 }
 
 template<typename InertialFrame, typename ThisFrame>
-Instant BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::t_max()
+Instant BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::t_max()
     const {
   return centre_trajectory_->t_max();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
+BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t);
@@ -65,20 +65,21 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-void BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
-WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
+void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
+WriteToMessage(
+    not_null<serialization::RigidReferenceFrame*> const message) const {
   message->MutableExtension(
-      serialization::BodySurfaceDynamicFrame::extension)->set_centre(
+      serialization::BodySurfaceReferenceFrame::extension)->set_centre(
           ephemeris_->serialization_index_for_body(centre_));
 }
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<std::unique_ptr<
-    BodySurfaceDynamicFrame<InertialFrame, ThisFrame>>>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame>>>
+BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    serialization::BodySurfaceDynamicFrame const& message) {
-  return std::make_unique<BodySurfaceDynamicFrame>(
+    serialization::BodySurfaceReferenceFrame const& message) {
+  return std::make_unique<BodySurfaceReferenceFrame>(
              ephemeris,
              dynamic_cast_not_null<RotatingBody<InertialFrame> const*>(
                  ephemeris->body_for_serialization_index(message.centre())));
@@ -86,14 +87,14 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, InertialFrame>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
 GravitationalAcceleration(Instant const& t,
                           Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(q, t);
 }
 
 template<typename InertialFrame, typename ThisFrame>
-SpecificEnergy BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+SpecificEnergy BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
 GravitationalPotential(Instant const& t,
                        Position<InertialFrame> const& q) const {
   return ephemeris_->ComputeGravitationalPotential(q, t);
@@ -101,7 +102,7 @@ GravitationalPotential(Instant const& t,
 
 template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
+BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t);
@@ -121,6 +122,6 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
 }
 
 }  // namespace internal
-}  // namespace _body_surface_dynamic_frame
+}  // namespace _body_surface_reference_frame
 }  // namespace physics
 }  // namespace principia

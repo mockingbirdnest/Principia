@@ -28,7 +28,7 @@
     <ClCompile Include="apsides.cpp" />
     <ClCompile Include="checkpointer_benchmark.cpp" />
     <ClCompile Include="discrete_trajectory.cpp" />
-    <ClCompile Include="dynamic_frame.cpp" />
+    <ClCompile Include="rigid_reference_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />

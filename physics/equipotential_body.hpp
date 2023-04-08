@@ -42,9 +42,10 @@ constexpr double energy_tolerance = 0x1p-24;
 template<typename InertialFrame, typename Frame>
 Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,
-    not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame)
+    not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const
+        reference_frame)
     : adaptive_parameters_(adaptive_parameters),
-      dynamic_frame_(dynamic_frame) {}
+      reference_frame_(reference_frame) {}
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
@@ -94,7 +95,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> Line {
   // Compute the total (specific) energy.
   auto const potential_energy =
-      dynamic_frame_->GeometricPotential(t, degrees_of_freedom.position());
+      reference_frame_->GeometricPotential(t, degrees_of_freedom.position());
   auto const kinetic_energy = 0.5 * degrees_of_freedom.velocity().Norm²();
   auto const total_energy = potential_energy + kinetic_energy;
 
@@ -121,7 +122,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
-    return Pow<2>(dynamic_frame_->GeometricPotential(t, position) -
+    return Pow<2>(reference_frame_->GeometricPotential(t, position) -
                   total_energy);
   };
 
@@ -130,9 +131,10 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // To keep the problem bidimensional we eliminate any off-plane component of
     // the gradient.
     return Projection(
-        -2 * (dynamic_frame_->GeometricPotential(t, position) - total_energy) *
-            dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t,
-                                                                    position),
+        -2 *
+            (reference_frame_->GeometricPotential(t, position) - total_energy) *
+            reference_frame_->RotationFreeGeometricAccelerationAtRest(t,
+                                                                      position),
         plane);
   };
 
@@ -175,7 +177,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // The BFGS algorithm will put us at the minimum of f, but that may be a
     // point that has (significantly) less energy that our total energy.  No
     // point in building a line in that case.
-    if (dynamic_frame_->GeometricPotential(t, equipotential_position.value()) <
+    if (reference_frame_->GeometricPotential(t,
+                                             equipotential_position.value()) <
         total_energy - Abs(total_energy) * energy_tolerance) {
       lines.push_back(Line{});
       continue;
@@ -220,7 +223,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
     // Ignore |peak| if it is below |energy|.
-    if (dynamic_frame_->GeometricPotential(t, peak) < energy) {
+    if (reference_frame_->GeometricPotential(t, peak) < energy) {
       LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
       continue;
     }
@@ -236,7 +239,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         expected_delineated_well = *delineation.indistinct_wells.begin();
         Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
-        if (dynamic_frame_->GeometricPotential(
+        if (reference_frame_->GeometricPotential(
                 t,
                 Barycentre(std::pair(peak, well.position),
                            std::pair(well.radius, r - well.radius))) >=
@@ -251,7 +254,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
         Length const x = numerics::Brent(
             [&](Length const& x) {
-              return dynamic_frame_->GeometricPotential(
+              return reference_frame_->GeometricPotential(
                          t,
                          Barycentre(std::pair(peak, well.position),
                                     std::pair(x, r - x))) -
@@ -267,7 +270,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         LOG(ERROR) << "Not delineated from infinity";
         expect_delineation_from_infinity = true;
         Position<Frame> const far_away = towards_infinity(peak);
-        if (dynamic_frame_->GeometricPotential(t, far_away) >= energy) {
+        if (reference_frame_->GeometricPotential(t, far_away) >= energy) {
           // TODO(phl): This happens when we find the peak at the centre of the
           // Earth.
           LOG(ERROR) << "far away point is weird";
@@ -276,7 +279,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
         double const x = numerics::Brent(
             [&](double const& x) {
-              return dynamic_frame_->GeometricPotential(
+              return reference_frame_->GeometricPotential(
                          t,
                          Barycentre(std::pair(peak, far_away),
                                     std::pair(x, 1 - x))) -
@@ -353,7 +356,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
   auto const& [γₛ, β] = values;
   // First state variable.
   auto const dVǀᵧ₍ₛ₎ =
-      dynamic_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
+      reference_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
       Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 

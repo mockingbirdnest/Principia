@@ -11,7 +11,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -31,7 +31,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
@@ -78,7 +78,7 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
       KeplerianElements<GCRS> const& initial_osculating_elements,
       Instant const& initial_time,
       Instant const& final_time) {
-    BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
     DiscreteTrajectory<ICRS> icrs_trajectory;
     icrs_trajectory.segments().front().SetDownsampling(
         DiscreteTrajectorySegment<ICRS>::DownsamplingParameters{

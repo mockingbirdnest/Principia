@@ -16,9 +16,9 @@ message AdaptiveStepParameters {
   optional Quantity speed_integration_tolerance = 4;
 }
 
-message BarycentricRotatingDynamicFrame {
-  extend DynamicFrame {
-    optional BarycentricRotatingDynamicFrame extension = 6001;
+message BarycentricRotatingReferenceFrame {
+  extend RigidReferenceFrame {
+    optional BarycentricRotatingReferenceFrame extension = 6001;
   }
   required int32 primary = 1;
   required int32 secondary = 2;
@@ -31,24 +31,24 @@ message Body {
   }
 }
 
-message BodyCentredBodyDirectionDynamicFrame {
-  extend DynamicFrame {
-    optional BodyCentredBodyDirectionDynamicFrame extension = 6002;
+message BodyCentredBodyDirectionReferenceFrame {
+  extend RigidReferenceFrame {
+    optional BodyCentredBodyDirectionReferenceFrame extension = 6002;
   }
   required int32 primary = 1;
   required int32 secondary = 2;
 }
 
-message BodyCentredNonRotatingDynamicFrame {
-  extend DynamicFrame {
-    optional BodyCentredNonRotatingDynamicFrame extension = 6000;
+message BodyCentredNonRotatingReferenceFrame {
+  extend RigidReferenceFrame {
+    optional BodyCentredNonRotatingReferenceFrame extension = 6000;
   }
   required int32 centre = 1;
 }
 
-message BodySurfaceDynamicFrame {
-  extend DynamicFrame {
-    optional BodySurfaceDynamicFrame extension = 6003;
+message BodySurfaceReferenceFrame {
+  extend RigidReferenceFrame {
+    optional BodySurfaceReferenceFrame extension = 6003;
   }
   required int32 centre = 1;
 }
@@ -149,7 +149,7 @@ message DiscreteTrajectorySegment {
   required Zfp zfp = 4;
 }
 
-message DynamicFrame {
+message RigidReferenceFrame {
   extensions 6000 to 6999;  // Last used: 6003.
 }
 

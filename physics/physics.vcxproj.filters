@@ -80,25 +80,10 @@
     <ClInclude Include="rigid_motion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dynamic_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="rigid_motion_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="dynamic_frame_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="barycentric_rotating_dynamic_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="barycentric_rotating_dynamic_frame_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="mock_continuous_trajectory.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mock_dynamic_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="kepler_orbit.hpp">
@@ -117,24 +102,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="hierarchical_system_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_centred_body_direction_dynamic_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_centred_body_direction_dynamic_frame_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_centred_non_rotating_dynamic_frame_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_centred_non_rotating_dynamic_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_surface_dynamic_frame.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="body_surface_dynamic_frame_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="body_surface_frame_field.hpp">
@@ -248,6 +215,39 @@
     <ClInclude Include="similar_motion_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="barycentric_rotating_reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_non_rotating_reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_body_direction_reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_surface_reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rigid_reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_rigid_reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="barycentric_rotating_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_body_direction_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_centred_non_rotating_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="body_surface_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rigid_reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -268,12 +268,6 @@
     <ClCompile Include="rigid_motion_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="dynamic_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="kepler_orbit_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -281,15 +275,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="hierarchical_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_surface_dynamic_frame_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="body_surface_frame_field_test.cpp">
@@ -365,6 +350,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="similar_motion_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="barycentric_rotating_reference_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="body_centred_body_direction_reference_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="body_centred_non_rotating_reference_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="body_surface_reference_frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rigid_reference_frame_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

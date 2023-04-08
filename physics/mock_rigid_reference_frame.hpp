@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics/dynamic_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -10,14 +10,15 @@
 
 namespace principia {
 namespace physics {
-namespace _dynamic_frame {
+namespace _rigid_reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 
 template<typename InertialFrame, typename ThisFrame>
-class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
+class MockRigidReferenceFrame : public RigidReferenceFrame<InertialFrame,
+                                                           ThisFrame> {
  public:
   MOCK_METHOD((RigidMotion<InertialFrame, ThisFrame>),
               ToThisFrameAtTime,
@@ -33,7 +34,7 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 
   MOCK_METHOD(void,
               WriteToMessage,
-              (not_null<serialization::DynamicFrame*> message),
+              (not_null<serialization::RigidReferenceFrame*> message),
               (const, override));
 
   MOCK_METHOD((Vector<Acceleration, InertialFrame>),
@@ -53,8 +54,8 @@ class MockDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 
 }  // namespace internal
 
-using internal::MockDynamicFrame;
+using internal::MockRigidReferenceFrame;
 
-}  // namespace _dynamic_frame
+}  // namespace _rigid_reference_frame
 }  // namespace physics
 }  // namespace principia

@@ -33,7 +33,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
@@ -89,11 +89,11 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
@@ -424,10 +424,10 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::extension));
+      serialization::BodyCentredNonRotatingReferenceFrame::extension));
   EXPECT_EQ(message.celestial(SolarSystemFactory::Venus).ephemeris_index(),
             message.renderer().plotting_frame().GetExtension(
-                serialization::BodyCentredNonRotatingDynamicFrame::extension).
+                serialization::BodyCentredNonRotatingReferenceFrame::extension).
                     centre());
 
   plugin = Plugin::ReadFromMessage(message);

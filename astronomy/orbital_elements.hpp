@@ -6,8 +6,8 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "physics/body.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -20,8 +20,8 @@ namespace internal {
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::physics::_body;
-using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -37,7 +37,7 @@ class OrbitalElements {
   template<typename Inertial, typename PrimaryCentred>
   static absl::StatusOr<OrbitalElements> ForTrajectory(
       Trajectory<Inertial> const& secondary_trajectory,
-      DynamicFrame<Inertial, PrimaryCentred> const& primary_centred,
+      RigidReferenceFrame<Inertial, PrimaryCentred> const& primary_centred,
       MassiveBody const& primary,
       Body const& secondary,
       bool fill_osculating_equinoctial_elements = false);

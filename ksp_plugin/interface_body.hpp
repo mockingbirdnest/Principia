@@ -628,19 +628,19 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     Plugin const& plugin,
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
-    case serialization::BarycentricRotatingDynamicFrame::
+    case serialization::BarycentricRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
-    case serialization::BodyCentredBodyDirectionDynamicFrame::
+    case serialization::BodyCentredBodyDirectionReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredBodyDirectionNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
-    case serialization::BodyCentredNonRotatingDynamicFrame::
+    case serialization::BodyCentredNonRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
-    case serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber:
+    case serialization::BodySurfaceReferenceFrame::kExtensionFieldNumber:
       return plugin.NewBodySurfaceNavigationFrame(parameters.centre_index);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;

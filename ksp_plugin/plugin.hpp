@@ -31,13 +31,13 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -72,13 +72,13 @@ using namespace principia::physics::_body;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
-using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_hierarchical_system;
 using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;

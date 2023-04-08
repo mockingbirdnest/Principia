@@ -22,8 +22,8 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -48,7 +48,7 @@ using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

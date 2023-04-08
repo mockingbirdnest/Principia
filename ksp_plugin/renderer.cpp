@@ -5,7 +5,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "physics/apsides.hpp"
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
@@ -16,7 +16,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_permutation;
-using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_degrees_of_freedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
@@ -311,7 +311,7 @@ Renderer::Target::Target(
       celestial(celestial),
       target_frame(
           make_not_null_unique<
-              BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
+              BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation>>(
               ephemeris,
               [this]() -> auto& { return *this->vessel->prediction(); },
               celestial->body())) {}

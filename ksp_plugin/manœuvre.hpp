@@ -7,8 +7,8 @@
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
@@ -24,8 +24,8 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -68,7 +68,8 @@ class Manœuvre {
     // individual thrust divided by the exhaust velocity).
     SpecificImpulse specific_impulse;
     // Defines the Frenet frame.
-    not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame;
+    not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
+        frame;
     // If true, the direction of the burn remains fixed in a nonrotating frame.
     // Otherwise, the direction of the burn remains fixed in the Frenet frame of
     // the trajectory.
@@ -101,8 +102,8 @@ class Manœuvre {
   // Individual burn fields.
   Force const& thrust() const;
   SpecificImpulse const& specific_impulse() const;
-  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame()
-      const;
+  not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
+  frame() const;
   bool is_inertially_fixed() const;
 
   // Derived quantities.

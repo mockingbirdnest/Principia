@@ -10,7 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/logger.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -31,7 +31,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -67,7 +67,7 @@ class OrbitalElementsTest : public ::testing::Test {
       Ephemeris<ICRS>& ephemeris) {
     MassiveBody const& earth = FindEarthOrDie(ephemeris);
     EXPECT_OK(ephemeris.Prolong(final_time));
-    BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{&ephemeris, &earth};
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{&ephemeris, &earth};
     DiscreteTrajectory<ICRS> icrs_trajectory;
     KeplerOrbit<GCRS> initial_osculating_orbit{earth,
                                                MasslessBody{},
@@ -472,8 +472,8 @@ TEST_F(OrbitalElementsTest, Years) {
   auto const status_or_elements =
       OrbitalElements::OrbitalElements::ForTrajectory(
           *ephemeris->trajectory(&sun),
-          BodyCentredNonRotatingDynamicFrame<ICRS, GCRS>(ephemeris.get(),
-                                                         &earth),
+          BodyCentredNonRotatingReferenceFrame<ICRS, GCRS>(ephemeris.get(),
+                                                           &earth),
           /*primary=*/earth,
           /*secondary=*/sun);
   LOG(ERROR) << "Done.";

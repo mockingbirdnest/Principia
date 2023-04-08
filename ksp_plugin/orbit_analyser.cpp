@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "ksp_plugin/integrators.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/astronomy.hpp"
@@ -18,7 +18,7 @@ namespace internal {
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
@@ -132,7 +132,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
     // in the progress bar being stuck at 100% while the elements and nodes
     // are being computed.
 
-    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const
+    BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const
         primary_centred(ephemeris_, primary);
     auto const status_or_primary_centred_trajectory =
         ToPrimaryCentred(primary_centred, trajectory);
@@ -243,7 +243,7 @@ absl::Status OrbitAnalyser::FlowWithProgressBar(
 absl::Status
 OrbitAnalyser::ComputeMeanSunIfPossible(
     Parameters const& parameters,
-    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+    BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
         primary_centred,
     std::optional<OrbitGroundTrack::MeanSun>& mean_sun) {
   mean_sun = std::nullopt;
@@ -294,7 +294,7 @@ OrbitAnalyser::ComputeMeanSunIfPossible(
 
 absl::StatusOr<DiscreteTrajectory<OrbitAnalyser::PrimaryCentred>>
 OrbitAnalyser::ToPrimaryCentred(
-    BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+    BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
         primary_centred,
     DiscreteTrajectory<Barycentric> const& trajectory) {
   DiscreteTrajectory<PrimaryCentred> primary_centred_trajectory;

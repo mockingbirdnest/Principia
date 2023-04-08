@@ -12,7 +12,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
@@ -36,9 +36,9 @@ using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_dynamic_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -48,16 +48,16 @@ using namespace principia::testing_utilities::_discrete_trajectory_factories;
 class RendererTest : public ::testing::Test {
  protected:
   RendererTest()
-      : renderer_(
-            &celestial_,
-            std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()),
-        dynamic_frame_(renderer_.GetPlottingFrame()) {}
+      : renderer_(&celestial_,
+                  std::make_unique<
+                      MockRigidReferenceFrame<Barycentric, Navigation>>()),
+        reference_frame_(renderer_.GetPlottingFrame()) {}
 
   Instant const t0_;
   MockCelestial const celestial_;
   Renderer renderer_;
-  not_null<MockDynamicFrame<Barycentric, Navigation> const*> const
-      dynamic_frame_;
+  not_null<MockRigidReferenceFrame<Barycentric, Navigation> const*> const
+      reference_frame_;
 };
 
 TEST_F(RendererTest, TargetVessel) {
@@ -109,7 +109,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
       Barycentric::nonrotating,
       Barycentric::unmoving);
   for (Instant t = t0_; t < t0_ + 10 * Second; t += 1 * Second) {
-    EXPECT_CALL(*dynamic_frame_, ToThisFrameAtTime(t))
+    EXPECT_CALL(*reference_frame_, ToThisFrameAtTime(t))
         .WillOnce(Return(rigid_motion));
   }
 
@@ -219,7 +219,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       RigidTransformation<Navigation, Barycentric>::Identity(),
       Navigation::nonrotating,
       Navigation::unmoving);
-  EXPECT_CALL(*dynamic_frame_, FromThisFrameAtTime(rendering_time))
+  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(rendering_time))
       .WillOnce(Return(rigid_motion));
   EXPECT_CALL(celestial_, current_position(rendering_time))
       .WillOnce(Return(Barycentric::origin));
@@ -247,7 +247,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
 
 TEST_F(RendererTest, Serialization) {
   serialization::Renderer message;
-  EXPECT_CALL(*dynamic_frame_, WriteToMessage(_));
+  EXPECT_CALL(*reference_frame_, WriteToMessage(_));
   renderer_.WriteToMessage(&message);
   EXPECT_TRUE(message.has_plotting_frame());
 }
