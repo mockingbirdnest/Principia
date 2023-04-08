@@ -18,7 +18,7 @@
     <ClInclude Include="apsides.hpp" />
     <ClInclude Include="apsides_body.hpp" />
     <ClInclude Include="barycentric_rotating_reference_frame.hpp" />
-    <ClInclude Include="barycentric_rotating_dynamic_reference_body.hpp" />
+    <ClInclude Include="barycentric_rotating_reference_frame_body.hpp" />
     <ClInclude Include="body.hpp" />
     <ClInclude Include="body_body.hpp" />
     <ClInclude Include="body_centred_non_rotating_reference_frame.hpp" />

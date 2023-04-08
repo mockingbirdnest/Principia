@@ -83,7 +83,7 @@ class EquipotentialTest : public ::testing::Test {
 
   Position<World> ComputePositionInWorld(
       Instant const& t,
-      ReferenceFrame<Barycentric, World> const& reference_frame,
+      RigidReferenceFrame<Barycentric, World> const& reference_frame,
       SolarSystemFactory::Index const body) {
     auto const to_this_frame = reference_frame.ToThisFrameAtTime(t);
     return to_this_frame.rigid_transformation()(
@@ -95,7 +95,7 @@ class EquipotentialTest : public ::testing::Test {
       SolarSystemFactory::Index const body1,
       SolarSystemFactory::Index const body2,
       Instant const& t,
-      ReferenceFrame<Barycentric, World> const& reference_frame,
+      RigidReferenceFrame<Barycentric, World> const& reference_frame,
       Plane<World> const& plane) {
     auto const body1_position =
         ComputePositionInWorld(t, reference_frame, body1);
@@ -120,7 +120,7 @@ class EquipotentialTest : public ::testing::Test {
       mathematica::Logger& logger,
       Plane<World> const& plane,
       Instant const& t,
-      ReferenceFrame<Barycentric, World> const& reference_frame,
+      RigidReferenceFrame<Barycentric, World> const& reference_frame,
       SolarSystemFactory::Index const body,
       std::string_view const suffix = "") {
     Equipotential<Barycentric, World> const equipotential(
@@ -150,7 +150,7 @@ class EquipotentialTest : public ::testing::Test {
   template<typename LineParameter>
   void LogFamilyOfEquipotentialLines(
       mathematica::Logger& logger,
-      ReferenceFrame<Barycentric, World> const& reference_frame,
+      RigidReferenceFrame<Barycentric, World> const& reference_frame,
       int const number_of_days,
       std::string_view const suffix,
       std::function<std::vector<LineParameter>(
