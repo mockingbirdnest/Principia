@@ -531,8 +531,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
     principia__SetPlottingFrame(plugin_.get(), parameters);
   }
 
-  parameters.extension =
-      serialization::BodyCentredNonRotatingReferenceFrame::kExtensionFieldNumber;
+  parameters.extension = serialization::BodyCentredNonRotatingReferenceFrame::
+      kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
   {
     StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
