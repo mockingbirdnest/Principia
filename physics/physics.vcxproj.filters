@@ -245,7 +245,7 @@
     <ClInclude Include="rigid_reference_frame_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mock_dynamic_frame.hpp">
+    <ClInclude Include="mock_rigid_reference_frame.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

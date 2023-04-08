@@ -208,8 +208,8 @@ TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
   EXPECT_EQ(0, extension.centre());
 
   auto const read_big_frame =
-      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
-                                                         ephemeris_.get());
+      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(
+          message, ephemeris_.get());
   EXPECT_THAT(read_big_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

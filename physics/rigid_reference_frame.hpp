@@ -1,5 +1,5 @@
-#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -134,4 +134,4 @@ using namespace principia::physics::_rigid_reference_frame;
 
 #include "physics/rigid_reference_frame_body.hpp"
 
-#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_

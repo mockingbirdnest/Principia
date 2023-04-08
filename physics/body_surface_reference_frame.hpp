@@ -2,7 +2,7 @@
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
-#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 #include "physics/rigid_reference_frame.hpp"
 #else
 #ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
@@ -91,4 +91,4 @@ using namespace principia::physics::_body_surface_reference_frame;
 #include "physics/body_surface_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
-#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_

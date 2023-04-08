@@ -213,8 +213,8 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
   EXPECT_EQ(1, extension.secondary());
 
   auto const read_big_small_frame =
-      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
-                                                         ephemeris_.get());
+      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(
+          message, ephemeris_.get());
   EXPECT_THAT(read_big_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

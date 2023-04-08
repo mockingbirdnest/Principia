@@ -71,7 +71,7 @@
     <ClInclude Include="kepler_orbit.hpp" />
     <ClInclude Include="kepler_orbit_body.hpp" />
     <ClInclude Include="mock_continuous_trajectory.hpp" />
-    <ClInclude Include="mock_dynamic_frame.hpp" />
+    <ClInclude Include="mock_rigid_reference_frame.hpp" />
     <ClInclude Include="rigid_motion.hpp" />
     <ClInclude Include="rigid_motion_body.hpp" />
     <ClInclude Include="ephemeris.hpp" />
