@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=DynamicFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=ReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -20,13 +20,13 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "physics/barycentric_rotating_dynamic_frame.hpp"
+#include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
@@ -67,9 +67,9 @@ void FillLinearTrajectory(Position<F> const& initial,
 
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
-ApplyDynamicFrame(
+ApplyReferenceFrame(
     not_null<Body const*> const body,
-    not_null<DynamicFrame<Barycentric, Rendering>*> const dynamic_frame,
+    not_null<ReferenceFrame<Barycentric, Rendering>*> const reference_frame,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end) {
   std::vector<std::pair<Position<Barycentric>,
@@ -81,7 +81,7 @@ ApplyDynamicFrame(
     auto const& [time, degrees_of_freedom] = *it;
     CHECK_OK(intermediate_trajectory.Append(
         time,
-        dynamic_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
+        reference_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
   }
 
   // Render the trajectory at current time in |Rendering|.
@@ -91,7 +91,7 @@ ApplyDynamicFrame(
   DiscreteTrajectory<Rendering>::iterator const intermediate_end =
       intermediate_trajectory.end();
   auto to_rendering_frame_at_current_time =
-      dynamic_frame->FromThisFrameAtTime(current_time).rigid_transformation();
+      reference_frame->FromThisFrameAtTime(current_time).rigid_transformation();
   if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
          ++final_it, final_it != intermediate_end;
@@ -105,7 +105,7 @@ ApplyDynamicFrame(
   return result;
 }
 
-void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
+void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
@@ -145,17 +145,17 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
                                                         steps,
                                                         probe_trajectory);
 
-  BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>
-      dynamic_frame(ephemeris.get(), earth);
+  BodyCentredNonRotatingReferenceFrame<Barycentric, Rendering>
+      reference_frame(ephemeris.get(), earth);
   for (auto _ : state) {
-    auto v = ApplyDynamicFrame(&probe,
-                               &dynamic_frame,
+    auto v = ApplyReferenceFrame(&probe,
+                               &reference_frame,
                                probe_trajectory.begin(),
                                probe_trajectory.end());
   }
 }
 
-void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
+void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
@@ -196,11 +196,11 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
                                                         steps,
                                                         probe_trajectory);
 
-  BarycentricRotatingDynamicFrame<Barycentric, Rendering>
-      dynamic_frame(ephemeris.get(), earth, venus);
+  BarycentricRotatingReferenceFrame<Barycentric, Rendering>
+      reference_frame(ephemeris.get(), earth, venus);
   for (auto _ : state) {
-    auto v = ApplyDynamicFrame(&probe,
-                               &dynamic_frame,
+    auto v = ApplyReferenceFrame(&probe,
+                               &reference_frame,
                                probe_trajectory.begin(),
                                probe_trajectory.end());
   }
@@ -208,10 +208,10 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
 
 int const iterations = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)
+BENCHMARK(BM_BodyCentredNonRotatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)
+BENCHMARK(BM_BarycentricRotatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
 

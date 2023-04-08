@@ -17,7 +17,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -53,7 +53,7 @@ using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_ephemeris;
@@ -121,7 +121,7 @@ class PlanetariumTest : public ::testing::Test {
 
   Instant const t0_;
   Perspective<Navigation, Camera> const perspective_;
-  MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
+  MockReferenceFrame<Barycentric, Navigation> plotting_frame_;
   std::function<ScaledSpacePoint(Position<Navigation> const&)>
       plotting_to_scaled_space_;
   RotatingBody<Barycentric> const body_;
@@ -271,7 +271,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                              "planetarium_ephemeris.proto.bin")));
 
   auto plotting_frame = NavigationFrame::ReadFromMessage(
-      ParseFromBytes<serialization::DynamicFrame>(
+      ParseFromBytes<serialization::ReferenceFrame>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_plotting_frame.proto.bin")),
       ephemeris.get());

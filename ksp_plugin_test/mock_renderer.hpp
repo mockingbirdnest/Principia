@@ -3,7 +3,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "gmock/gmock.h"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_reference_frame.hpp"
 #include "ksp_plugin_test/mock_celestial.hpp"
 
 namespace principia {
@@ -11,7 +11,7 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 
 MockCelestial* const sun = new MockCelestial;
 
@@ -20,7 +20,7 @@ class MockRenderer : public Renderer {
   MockRenderer()
       : Renderer(
             sun,
-            std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()){};
+            std::make_unique<MockReferenceFrame<Barycentric, Navigation>>()){};
 
   MOCK_METHOD(void,
               SetPlottingFrame,

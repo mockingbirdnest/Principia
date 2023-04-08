@@ -45,7 +45,7 @@ constexpr Length eerk_a_tolerance = 10 * Milli(Metre);
 template<typename Inertial, typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Trajectory<Inertial> const& secondary_trajectory,
-    DynamicFrame<Inertial, PrimaryCentred> const& primary_centred,
+    ReferenceFrame<Inertial, PrimaryCentred> const& primary_centred,
     MassiveBody const& primary,
     Body const& secondary,
     bool fill_osculating_equinoctial_elements) {

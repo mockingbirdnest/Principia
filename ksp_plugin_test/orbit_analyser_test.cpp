@@ -28,7 +28,7 @@ using namespace principia::base::_not_null;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_orbit_analyser;
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
@@ -66,7 +66,7 @@ class OrbitAnalyserTest : public testing::Test {
   SolarSystem<Barycentric> earth_1957_;
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> ephemeris_;
   RotatingBody<Barycentric> const& earth_;
-  BodySurfaceDynamicFrame<Barycentric, ITRS> itrs_;
+  BodySurfaceReferenceFrame<Barycentric, ITRS> itrs_;
   StandardProduct3 topex_poséidon_;
 
  private:

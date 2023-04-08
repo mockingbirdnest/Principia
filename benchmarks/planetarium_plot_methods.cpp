@@ -10,7 +10,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -31,7 +31,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -109,7 +109,7 @@ class Satellites {
             SolarSystemFactory::name(SolarSystemFactory::Earth))),
         earth_centred_inertial_(
             make_not_null_unique<
-                BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+                BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
                 ephemeris_.get(),
                 earth_)) {
     // Two-line elements for GOES-8:

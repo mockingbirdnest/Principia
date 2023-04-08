@@ -1,17 +1,17 @@
 #pragma once
 
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 
-#include "physics/barycentric_rotating_dynamic_frame.hpp"
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/barycentric_rotating_reference_frame.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
-namespace _dynamic_frame {
+namespace _reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
@@ -22,21 +22,21 @@ using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
-DynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
+ReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   return FromThisFrameAtTime(t).Inverse();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<ThisFrame, InertialFrame>
-DynamicFrame<InertialFrame, ThisFrame>::FromThisFrameAtTime(
+ReferenceFrame<InertialFrame, ThisFrame>::FromThisFrameAtTime(
     Instant const& t) const {
   return ToThisFrameAtTime(t).Inverse();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, ThisFrame>
-DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
+ReferenceFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
   Vector<Acceleration, ThisFrame> gravitational_acceleration;
@@ -59,7 +59,7 @@ DynamicFrame<InertialFrame, ThisFrame>::GeometricAcceleration(
 
 template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, ThisFrame>
-DynamicFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
+ReferenceFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
     Instant const& t,
     Position<ThisFrame> const& position) const {
   Vector<Acceleration, ThisFrame> gravitational_acceleration;
@@ -81,7 +81,7 @@ DynamicFrame<InertialFrame, ThisFrame>::RotationFreeGeometricAccelerationAtRest(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-SpecificEnergy DynamicFrame<InertialFrame, ThisFrame>::GeometricPotential(
+SpecificEnergy ReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
     Instant const& t,
     Position<ThisFrame> const& position) const {
   AcceleratedRigidMotion<InertialFrame, ThisFrame> const motion =
@@ -109,7 +109,7 @@ SpecificEnergy DynamicFrame<InertialFrame, ThisFrame>::GeometricPotential(
 
 template<typename InertialFrame, typename ThisFrame>
 Rotation<Frenet<ThisFrame>, ThisFrame>
-DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
+ReferenceFrame<InertialFrame, ThisFrame>::FrenetFrame(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
   Velocity<ThisFrame> const& velocity = degrees_of_freedom.velocity();
@@ -126,62 +126,62 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-not_null<std::unique_ptr<DynamicFrame<InertialFrame, ThisFrame>>>
-DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
-    serialization::DynamicFrame const& message,
+not_null<std::unique_ptr<ReferenceFrame<InertialFrame, ThisFrame>>>
+ReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    serialization::ReferenceFrame const& message,
     not_null<Ephemeris<InertialFrame> const*> const ephemeris) {
-  std::unique_ptr<DynamicFrame> result;
+  std::unique_ptr<ReferenceFrame> result;
   int extensions_found = 0;
   // NOTE(egg): the |static_cast|ing below is needed on MSVC, because the silly
-  // compiler doesn't see the |operator std::unique_ptr<DynamicFrame>() &&|.
+  // compiler doesn't see the |operator std::unique_ptr<ReferenceFrame>() &&|.
   if (message.HasExtension(
-          serialization::BarycentricRotatingDynamicFrame::extension)) {
+          serialization::BarycentricRotatingReferenceFrame::extension)) {
     ++extensions_found;
-    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
-        BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::
+    result = static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
+        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
             ReadFromMessage(ephemeris,
                             message.GetExtension(
-                                serialization::BarycentricRotatingDynamicFrame::
+                                serialization::BarycentricRotatingReferenceFrame::
                                     extension)));
   }
   if (message.HasExtension(
-          serialization::BodyCentredBodyDirectionDynamicFrame::extension)) {
+          serialization::BodyCentredBodyDirectionReferenceFrame::extension)) {
     ++extensions_found;
-    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
-        BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
+    result = static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
+        BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
             ReadFromMessage(
                 ephemeris,
                 message.GetExtension(
-                    serialization::BodyCentredBodyDirectionDynamicFrame::
+                    serialization::BodyCentredBodyDirectionReferenceFrame::
                         extension)));
   }
   if (message.HasExtension(
-          serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
+          serialization::BodyCentredNonRotatingReferenceFrame::extension)) {
     ++extensions_found;
-    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
-        BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::
+    result = static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
+        BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
             ReadFromMessage(
                 ephemeris,
                 message.GetExtension(
-                    serialization::BodyCentredNonRotatingDynamicFrame::
+                    serialization::BodyCentredNonRotatingReferenceFrame::
                         extension)));
   }
   if (message.HasExtension(
-          serialization::BodySurfaceDynamicFrame::extension)) {
+          serialization::BodySurfaceReferenceFrame::extension)) {
     ++extensions_found;
-    result = static_cast<not_null<std::unique_ptr<DynamicFrame>>>(
-        BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
+    result = static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
+        BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
             ReadFromMessage(
                 ephemeris,
                 message.GetExtension(
-                    serialization::BodySurfaceDynamicFrame::extension)));
+                    serialization::BodySurfaceReferenceFrame::extension)));
   }
   CHECK_EQ(extensions_found, 1) << message.DebugString();
   return std::move(result);
 }
 
 template<typename InertialFrame, typename ThisFrame>
-void DynamicFrame<InertialFrame, ThisFrame>::ComputeGeometricAccelerations(
+void ReferenceFrame<InertialFrame, ThisFrame>::ComputeGeometricAccelerations(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
     Vector<Acceleration, ThisFrame>& gravitational_acceleration,
@@ -218,6 +218,6 @@ void DynamicFrame<InertialFrame, ThisFrame>::ComputeGeometricAccelerations(
 }
 
 }  // namespace internal
-}  // namespace _dynamic_frame
+}  // namespace _reference_frame
 }  // namespace physics
 }  // namespace principia

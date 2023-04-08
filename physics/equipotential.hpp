@@ -10,7 +10,7 @@
 #include "geometry/space.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/integration_parameters.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -53,7 +53,7 @@ class Equipotential {
 
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
-      not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame);
+      not_null<ReferenceFrame<InertialFrame, Frame> const*> reference_frame);
 
   // Computes an equipotential line going through the given point.
   Line ComputeLine(Plane<Frame> const& plane,
@@ -142,7 +142,7 @@ class Equipotential {
                              std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
-  not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame_;
+  not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame_;
 };
 
 }  // namespace internal

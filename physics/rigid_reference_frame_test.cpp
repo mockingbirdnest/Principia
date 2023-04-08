@@ -1,11 +1,11 @@
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_reference_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -30,7 +30,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -42,7 +42,7 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
-class DynamicFrameTest : public testing::Test {
+class ReferenceFrameTest : public testing::Test {
  protected:
   using Inertial = Frame<struct InertialFrameTag, geometry::Inertial>;
   using Rotating = Frame<struct RotatingFrameTag, Arbitrary>;
@@ -68,7 +68,7 @@ class DynamicFrameTest : public testing::Test {
                                             (potential_Δz - potential) / Δl});
   }
 
-  StrictMock<MockDynamicFrame<Inertial, Rotating>> mock_frame_;
+  StrictMock<MockReferenceFrame<Inertial, Rotating>> mock_frame_;
   Instant const t0_;
 
   // General values used to check that the acceleration does not depend on some
@@ -88,7 +88,7 @@ class DynamicFrameTest : public testing::Test {
 
 // A frame uniformly accelerated along the z axis.  The test point is in general
 // motion.  The acceleration is purely linear.
-TEST_F(DynamicFrameTest, LinearAcceleration) {
+TEST_F(ReferenceFrameTest, LinearAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
         Acceleration const γ = 10 * Metre / Second / Second;
@@ -199,7 +199,7 @@ TEST_F(DynamicFrameTest, LinearAcceleration) {
 // A frame in uniform rotation around the origin.  The test point is at the
 // origin and in motion along the x axis.  The acceleration is purely due to
 // Coriolis.
-TEST_F(DynamicFrameTest, CoriolisAcceleration) {
+TEST_F(ReferenceFrameTest, CoriolisAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
         AngularFrequency const ω = 10 * Radian / Second;
@@ -304,7 +304,7 @@ TEST_F(DynamicFrameTest, CoriolisAcceleration) {
 
 // A frame in uniform rotation around the origin.  The test point is on the x
 // axis.  The acceleration is purely due to centrifugal effects.
-TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
+TEST_F(ReferenceFrameTest, CentrifugalAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
         AngularFrequency const ω = 10 * Radian / Second;
@@ -414,7 +414,7 @@ TEST_F(DynamicFrameTest, CentrifugalAcceleration) {
 // A frame initially nonrotating and in uniformly accelerated rotation around
 // the origin.  The test point is on the x axis.  The acceleration is purely due
 // to Euler.
-TEST_F(DynamicFrameTest, EulerAcceleration) {
+TEST_F(ReferenceFrameTest, EulerAcceleration) {
   EXPECT_CALL(mock_frame_, MotionOfThisFrame(_))
       .WillRepeatedly(Invoke([this](Instant const& t) {
         AngularAcceleration const ωʹ = 10 * Radian / Second / Second;
@@ -523,13 +523,13 @@ TEST_F(DynamicFrameTest, EulerAcceleration) {
 // This in turns determines two distinct Frenet frames which share the same
 // normal (directed along -z) but different tangents: for the fixed jaw, the
 // tangent is directed along the lead angle of the screw.
-TEST_F(DynamicFrameTest, FrenetFrame) {
+TEST_F(ReferenceFrameTest, FrenetFrame) {
   using Handle = Frame<struct HangleTag, geometry::Inertial>;
   using FixedJaw = Frame<struct FixedJawTag, geometry::Inertial>;
   using MovingJaw = Frame<struct MovingJawTag, geometry::Inertial>;
 
-  StrictMock<MockDynamicFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
-  StrictMock<MockDynamicFrame<MovingJaw, Handle>> jaw_to_handle_frame;
+  StrictMock<MockReferenceFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
+  StrictMock<MockReferenceFrame<MovingJaw, Handle>> jaw_to_handle_frame;
 
   Speed const v = 1 * Centi(Metre) / Second;
   AngularFrequency const ω = 1 * Radian / Second;

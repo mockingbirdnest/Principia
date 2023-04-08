@@ -14,7 +14,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
@@ -31,7 +31,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_quantities;

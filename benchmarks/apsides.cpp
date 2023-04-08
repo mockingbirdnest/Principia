@@ -13,8 +13,8 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/apsides.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -71,7 +71,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
     auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
     CHECK_OK(ephemeris_->Prolong(begin->time));
 
-    BodySurfaceDynamicFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
+    BodySurfaceReferenceFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
     ilrsa_lageos2_trajectory_icrs_ = new DiscreteTrajectory<ICRS>;
     CHECK_OK(ilrsa_lageos2_trajectory_icrs_->Append(
         begin->time,
@@ -89,7 +89,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
         /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
 
-    BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> const gcrs(ephemeris_,
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs(ephemeris_,
                                                               earth_);
     ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTrajectory<GCRS>;
     for (auto const& [time, degrees_of_freedom] :

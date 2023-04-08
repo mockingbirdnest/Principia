@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 #include "mathematica/logger.hpp"
 #include "numerics/polynomial.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -36,8 +36,8 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massless_body;
@@ -129,9 +129,9 @@ class OrbitAnalysisTest : public ::testing::Test {
   // of |sp3_orbit.satellites| in |sp3_orbit.files|.
   not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
       SP3Orbit const& sp3_orbit) {
-    BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{ephemeris_.get(),
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_.get(),
                                                         &earth_};
-    BodySurfaceDynamicFrame<ICRS, ITRS> itrs{ephemeris_.get(), &earth_};
+    BodySurfaceReferenceFrame<ICRS, ITRS> itrs{ephemeris_.get(), &earth_};
 
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto const& file : sp3_orbit.files.names) {

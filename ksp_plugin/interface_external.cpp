@@ -23,7 +23,7 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_apsides;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rigid_motion;

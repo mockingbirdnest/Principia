@@ -14,7 +14,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -34,7 +34,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -159,14 +159,14 @@ class OrbitAnalyser {
   // integration would take too long, |mean_sun| is set to |std::nullopt|.
   absl::Status ComputeMeanSunIfPossible(
       Parameters const& parameters,
-      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+      BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
           primary_centred,
       std::optional<OrbitGroundTrack::MeanSun>& mean_sun);
 
   // Converts the |trajectory| to the given |primary_centred| frame.  This
   // function may be stopped.
   static absl::StatusOr<DiscreteTrajectory<PrimaryCentred>> ToPrimaryCentred(
-      BodyCentredNonRotatingDynamicFrame<Barycentric, PrimaryCentred> const&
+      BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
           primary_centred,
       DiscreteTrajectory<Barycentric> const& trajectory);
 

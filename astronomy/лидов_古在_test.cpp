@@ -9,7 +9,7 @@
 #include "geometry/interval.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #if PRINCIPIA_LOG_TO_MATHEMATICA
@@ -28,7 +28,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
@@ -73,7 +73,7 @@ class Лидов古在Test : public ::testing::Test {
   SolarSystem<ICRS> solar_system_1950_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
   MassiveBody const& mercury_;
-  BodyCentredNonRotatingDynamicFrame<ICRS, MercuryCentredInertial>
+  BodyCentredNonRotatingReferenceFrame<ICRS, MercuryCentredInertial>
       mercury_frame_;
 };
 

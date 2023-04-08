@@ -23,7 +23,7 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_reference_frame.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -72,7 +72,7 @@ using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
@@ -512,37 +512,37 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
 
   NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
       parent_index};
   {
-    StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+    StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
-            new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+            new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBarycentricRotatingNavigationFrame(celestial_index,
                                                       parent_index))
         .WillOnce(Return(
             ByMove(std::unique_ptr<
-                   StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+                   StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
   }
 
   parameters.extension =
-      serialization::BodyCentredNonRotatingDynamicFrame::kExtensionFieldNumber;
+      serialization::BodyCentredNonRotatingReferenceFrame::kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
   {
-    StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+    StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
-            new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+            new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
         .WillOnce(Return(
             ByMove(std::unique_ptr<
-                   StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+                   StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
@@ -550,18 +550,18 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+  StrictMock<MockReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+         new StrictMock<MockReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
       .WillOnce(
           Return(ByMove(std::unique_ptr<
-                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+                        StrictMock<MockReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
       parent_index};

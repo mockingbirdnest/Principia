@@ -46,10 +46,10 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_flight_plan;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rotating_body;
@@ -66,7 +66,7 @@ using namespace principia::testing_utilities::_numerics;
 class FlightPlanTest : public testing::Test {
  protected:
   using TestNavigationFrame =
-      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>;
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
 
   FlightPlanTest() {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

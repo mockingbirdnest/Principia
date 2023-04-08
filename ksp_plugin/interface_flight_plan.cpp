@@ -7,10 +7,10 @@
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
-#include "physics/barycentric_rotating_dynamic_frame.hpp"
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/barycentric_rotating_reference_frame.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
@@ -26,12 +26,12 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_vessel;
-using namespace principia::physics::_barycentric_rotating_dynamic_frame;
-using namespace principia::physics::_body_centred_body_direction_dynamic_frame;
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_barycentric_rotating_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
@@ -74,58 +74,58 @@ Burn GetBurn(Plugin const& plugin,
   int number_of_subclasses = 0;
 
   {
-    auto const* barycentric_rotating_dynamic_frame = dynamic_cast<
-        BarycentricRotatingDynamicFrame<Barycentric, Navigation> const*>(
+    auto const* barycentric_rotating_reference_frame = dynamic_cast<
+        BarycentricRotatingReferenceFrame<Barycentric, Navigation> const*>(
             &*manœuvre.frame());
-    if (barycentric_rotating_dynamic_frame != nullptr) {
+    if (barycentric_rotating_reference_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension =
-          serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber;
+          serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber;
       parameters.primary_index = plugin.CelestialIndexOfBody(
-          *barycentric_rotating_dynamic_frame->primary());
+          *barycentric_rotating_reference_frame->primary());
       parameters.secondary_index = plugin.CelestialIndexOfBody(
-          *barycentric_rotating_dynamic_frame->secondary());
+          *barycentric_rotating_reference_frame->secondary());
     }
   }
 
   {
-    auto const* body_centred_body_direction_dynamic_frame = dynamic_cast<
-        BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation> const*>(
+    auto const* body_centred_body_direction_reference_frame = dynamic_cast<
+        BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation> const*>(
             &*manœuvre.frame());
-    if (body_centred_body_direction_dynamic_frame != nullptr) {
+    if (body_centred_body_direction_reference_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension = serialization::
-          BodyCentredBodyDirectionDynamicFrame::kExtensionFieldNumber;
+          BodyCentredBodyDirectionReferenceFrame::kExtensionFieldNumber;
       parameters.primary_index = plugin.CelestialIndexOfBody(
-          *body_centred_body_direction_dynamic_frame->primary());
+          *body_centred_body_direction_reference_frame->primary());
       parameters.secondary_index = plugin.CelestialIndexOfBody(
-          *body_centred_body_direction_dynamic_frame->secondary());
+          *body_centred_body_direction_reference_frame->secondary());
     }
   }
 
   {
-    auto const* body_centred_non_rotating_dynamic_frame = dynamic_cast<
-        BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
+    auto const* body_centred_non_rotating_reference_frame = dynamic_cast<
+        BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation> const*>(
             &*manœuvre.frame());
-    if (body_centred_non_rotating_dynamic_frame != nullptr) {
+    if (body_centred_non_rotating_reference_frame != nullptr) {
       ++number_of_subclasses;
-      parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
+      parameters.extension = serialization::BodyCentredNonRotatingReferenceFrame::
           kExtensionFieldNumber;
       parameters.centre_index = plugin.CelestialIndexOfBody(
-          *body_centred_non_rotating_dynamic_frame->centre());
+          *body_centred_non_rotating_reference_frame->centre());
     }
   }
 
   {
-    auto const* body_surface_dynamic_frame = dynamic_cast<
-        BodySurfaceDynamicFrame<Barycentric, Navigation> const*>(
+    auto const* body_surface_reference_frame = dynamic_cast<
+        BodySurfaceReferenceFrame<Barycentric, Navigation> const*>(
             &*manœuvre.frame());
-    if (body_surface_dynamic_frame != nullptr) {
+    if (body_surface_reference_frame != nullptr) {
       ++number_of_subclasses;
       parameters.extension =
-          serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber;
+          serialization::BodySurfaceReferenceFrame::kExtensionFieldNumber;
       parameters.centre_index =
-          plugin.CelestialIndexOfBody(*body_surface_dynamic_frame->centre());
+          plugin.CelestialIndexOfBody(*body_surface_reference_frame->centre());
     }
   }
 

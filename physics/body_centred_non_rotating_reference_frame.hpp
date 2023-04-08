@@ -1,9 +1,9 @@
-// The files containing the tree of child classes of |DynamicFrame| must be
+// The files containing the tree of child classes of |ReferenceFrame| must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
 #ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #else
 #ifndef PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
@@ -15,7 +15,7 @@
 #include "geometry/space.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
@@ -23,7 +23,7 @@
 
 namespace principia {
 namespace physics {
-namespace _body_centred_non_rotating_dynamic_frame {
+namespace _body_centred_non_rotating_reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -50,12 +50,12 @@ using namespace principia::quantities::_named_quantities;
 // |ThisFrame| will not have the axes of its natural celestial reference frame,
 // as the X axis will not point towards its equinox.
 template<typename InertialFrame, typename ThisFrame>
-class BodyCentredNonRotatingDynamicFrame
-    : public DynamicFrame<InertialFrame, ThisFrame> {
+class BodyCentredNonRotatingReferenceFrame
+    : public ReferenceFrame<InertialFrame, ThisFrame> {
   static_assert(!ThisFrame::is_inertial);
 
  public:
-  BodyCentredNonRotatingDynamicFrame(
+  BodyCentredNonRotatingReferenceFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
       not_null<MassiveBody const*> centre);
 
@@ -68,12 +68,12 @@ class BodyCentredNonRotatingDynamicFrame
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const override;
+      not_null<serialization::ReferenceFrame*> message) const override;
 
-  static not_null<std::unique_ptr<BodyCentredNonRotatingDynamicFrame>>
+  static not_null<std::unique_ptr<BodyCentredNonRotatingReferenceFrame>>
   ReadFromMessage(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      serialization::BodyCentredNonRotatingDynamicFrame const& message);
+      serialization::BodyCentredNonRotatingReferenceFrame const& message);
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
@@ -94,17 +94,17 @@ class BodyCentredNonRotatingDynamicFrame
 
 }  // namespace internal
 
-using internal::BodyCentredNonRotatingDynamicFrame;
+using internal::BodyCentredNonRotatingReferenceFrame;
 
-}  // namespace _body_centred_non_rotating_dynamic_frame
+}  // namespace _body_centred_non_rotating_reference_frame
 }  // namespace physics
 }  // namespace principia
 
 namespace principia::physics {
-using namespace principia::physics::_body_centred_non_rotating_dynamic_frame;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 }  // namespace principia::physics
 
-#include "physics/body_centred_non_rotating_dynamic_frame_body.hpp"
+#include "physics/body_centred_non_rotating_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_DYNAMIC_FRAME_HPP_
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

@@ -1,9 +1,9 @@
-// The files containing the tree of child classes of |DynamicFrame| must be
+// The files containing the tree of child classes of |ReferenceFrame| must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
 #ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #else
 #ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
@@ -14,7 +14,7 @@
 #include "geometry/space.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/rigid_motion.hpp"
@@ -22,7 +22,7 @@
 
 namespace principia {
 namespace physics {
-namespace _body_surface_dynamic_frame {
+namespace _body_surface_reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -39,11 +39,11 @@ using namespace principia::quantities::_named_quantities;
 // of the IAU WGCCRE if |polar_axis| is the north pole, or figure 2 if
 // |polar_axis| is the positive pole.
 template<typename InertialFrame, typename ThisFrame>
-class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
+class BodySurfaceReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   static_assert(ThisFrame::may_rotate);
 
  public:
-  BodySurfaceDynamicFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
+  BodySurfaceReferenceFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
                           not_null<RotatingBody<InertialFrame> const*> centre);
 
   not_null<RotatingBody<InertialFrame> const*> centre() const;
@@ -55,11 +55,11 @@ class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const override;
+      not_null<serialization::ReferenceFrame*> message) const override;
 
-  static not_null<std::unique_ptr<BodySurfaceDynamicFrame>> ReadFromMessage(
+  static not_null<std::unique_ptr<BodySurfaceReferenceFrame>> ReadFromMessage(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      serialization::BodySurfaceDynamicFrame const& message);
+      serialization::BodySurfaceReferenceFrame const& message);
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
@@ -78,17 +78,17 @@ class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
 
 }  // namespace internal
 
-using internal::BodySurfaceDynamicFrame;
+using internal::BodySurfaceReferenceFrame;
 
-}  // namespace _body_surface_dynamic_frame
+}  // namespace _body_surface_reference_frame
 }  // namespace physics
 }  // namespace principia
 
 namespace principia::physics {
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 }  // namespace principia::physics
 
-#include "physics/body_surface_dynamic_frame_body.hpp"
+#include "physics/body_surface_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

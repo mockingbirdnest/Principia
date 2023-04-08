@@ -12,7 +12,7 @@
 
 namespace principia {
 namespace physics {
-namespace _dynamic_frame {
+namespace _reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -34,11 +34,11 @@ using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
-class DynamicFrame {
+class ReferenceFrame {
   static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
 
  public:
-  virtual ~DynamicFrame() = default;
+  virtual ~ReferenceFrame() = default;
 
   // The operations that take an |Instant| are valid in the range
   // [t_min, t_max].
@@ -91,12 +91,12 @@ class DynamicFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   virtual void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const = 0;
+      not_null<serialization::ReferenceFrame*> message) const = 0;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
-  static not_null<std::unique_ptr<DynamicFrame>>
-      ReadFromMessage(serialization::DynamicFrame const& message,
+  static not_null<std::unique_ptr<ReferenceFrame>>
+      ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
@@ -121,17 +121,17 @@ class DynamicFrame {
 
 }  // namespace internal
 
-using internal::DynamicFrame;
+using internal::ReferenceFrame;
 using internal::Frenet;
 
-}  // namespace _dynamic_frame
+}  // namespace _reference_frame
 }  // namespace physics
 }  // namespace principia
 
 namespace principia::physics {
-using namespace principia::physics::_dynamic_frame;
+using namespace principia::physics::_reference_frame;
 }  // namespace principia::physics
 
-#include "physics/dynamic_frame_body.hpp"
+#include "physics/reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_

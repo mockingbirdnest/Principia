@@ -6,7 +6,7 @@
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
@@ -27,7 +27,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::physics::_body_surface_dynamic_frame;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -70,7 +70,7 @@ class GeodesyTest : public ::testing::Test {
   // - a systematic error of 2.8 arcminutes;
   // - a systematic drift of 2.6 milliarcseconds per year;
   // - short-period errors at the milliarcsecond level;
-  BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
+  BodySurfaceReferenceFrame<ICRS, ITRS> itrs_;
 };
 
 #if !defined(_DEBUG)

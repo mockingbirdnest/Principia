@@ -23,10 +23,10 @@
 #include "mathematica/logger.hpp"
 #include "numerics/global_optimization.hpp"
 #include "numerics/root_finders.hpp"
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -83,9 +83,9 @@ class EquipotentialTest : public ::testing::Test {
 
   Position<World> ComputePositionInWorld(
       Instant const& t,
-      DynamicFrame<Barycentric, World> const& dynamic_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       SolarSystemFactory::Index const body) {
-    auto const to_this_frame = dynamic_frame.ToThisFrameAtTime(t);
+    auto const to_this_frame = reference_frame.ToThisFrameAtTime(t);
     return to_this_frame.rigid_transformation()(
         solar_system_->trajectory(*ephemeris_, SolarSystemFactory::name(body))
             .EvaluatePosition(t));
@@ -95,12 +95,12 @@ class EquipotentialTest : public ::testing::Test {
       SolarSystemFactory::Index const body1,
       SolarSystemFactory::Index const body2,
       Instant const& t,
-      DynamicFrame<Barycentric, World> const& dynamic_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       Plane<World> const& plane) {
     auto const body1_position =
-        ComputePositionInWorld(t, dynamic_frame, body1);
+        ComputePositionInWorld(t, reference_frame, body1);
     auto const body2_position =
-        ComputePositionInWorld(t, dynamic_frame, body2);
+        ComputePositionInWorld(t, reference_frame, body2);
     auto const body2_body1 = body1_position - body2_position;
 
     auto const binormal = plane.UnitBinormals().front();
@@ -115,22 +115,22 @@ class EquipotentialTest : public ::testing::Test {
   }
 
   // Logs to Mathematica the equipotential line for the given |body| in the
-  // specified |dynamic_frame|.
+  // specified |reference_frame|.
   void LogEquipotentialLine(
       mathematica::Logger& logger,
       Plane<World> const& plane,
       Instant const& t,
-      DynamicFrame<Barycentric, World> const& dynamic_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       SolarSystemFactory::Index const body,
       std::string_view const suffix = "") {
     Equipotential<Barycentric, World> const equipotential(
-        equipotential_parameters_, &dynamic_frame);
+        equipotential_parameters_, &reference_frame);
     std::string const name = SolarSystemFactory::name(body);
 
     CHECK_OK(ephemeris_->Prolong(t));
     auto const line =
         equipotential.ComputeLine(
-            plane, t, ComputePositionInWorld(t0_, dynamic_frame, body));
+            plane, t, ComputePositionInWorld(t0_, reference_frame, body));
     std::vector<Position<World>> positions;
     std::vector<double> βs;
     for (auto const& state : line) {
@@ -150,14 +150,14 @@ class EquipotentialTest : public ::testing::Test {
   template<typename LineParameter>
   void LogFamilyOfEquipotentialLines(
       mathematica::Logger& logger,
-      DynamicFrame<Barycentric, World> const& dynamic_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       int const number_of_days,
       std::string_view const suffix,
       std::function<std::vector<LineParameter>(
           Position<World> const& l4,
           Position<World> const& l5)> const& get_line_parameters) {
     Equipotential<Barycentric, World> const equipotential(
-        equipotential_parameters_, &dynamic_frame);
+        equipotential_parameters_, &reference_frame);
     auto const plane =
         Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
@@ -172,7 +172,7 @@ class EquipotentialTest : public ::testing::Test {
       auto const& [l4, l5] = ComputeLagrangePoints(SolarSystemFactory::Earth,
                                                     SolarSystemFactory::Moon,
                                                     t,
-                                                    dynamic_frame,
+                                                    reference_frame,
                                                     plane);
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
@@ -205,13 +205,13 @@ class EquipotentialTest : public ::testing::Test {
 TEST_F(EquipotentialTest, BodyCentredNonRotating) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
                              /*make_unique=*/false);
-  auto const dynamic_frame(
-      BodyCentredNonRotatingDynamicFrame<Barycentric, World>(
+  auto const reference_frame(
+      BodyCentredNonRotatingReferenceFrame<Barycentric, World>(
           ephemeris_.get(),
           solar_system_->massive_body(
               *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Sun))));
   Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_, &dynamic_frame);
+      equipotential_parameters_, &reference_frame);
 
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({2, 3, -5}));
@@ -219,30 +219,30 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
   LogEquipotentialLine(logger,
                        plane,
                        t0_ + 1 * Day,
-                       dynamic_frame,
+                       reference_frame,
                        SolarSystemFactory::Mercury);
   LogEquipotentialLine(logger,
                        plane,
                        t0_ + 1 * Day,
-                       dynamic_frame,
+                       reference_frame,
                        SolarSystemFactory::Earth);
   LogEquipotentialLine(logger,
                        plane,
                        t0_ + 1 * Day,
-                       dynamic_frame,
+                       reference_frame,
                        SolarSystemFactory::Jupiter, "Close");
   LogEquipotentialLine(logger,
                        plane,
                        t0_ + 100 * Day,
-                       dynamic_frame,
+                       reference_frame,
                        SolarSystemFactory::Jupiter, "Far");
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_distances.wl",
                              /*make_unique=*/false);
-  auto const dynamic_frame(
-      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
+  auto const reference_frame(
+      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
           ephemeris_.get(),
           solar_system_->massive_body(
               *ephemeris_,
@@ -253,7 +253,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
 
   LogFamilyOfEquipotentialLines<Position<World>>(
       logger,
-      dynamic_frame,
+      reference_frame,
       /*number_of_days=*/30,
       /*suffix=*/"Distances",
       [](Position<World> const& l4, Position<World> const& l5) {
@@ -269,8 +269,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_energies.wl",
                              /*make_unique=*/false);
-  auto const dynamic_frame(
-      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
+  auto const reference_frame(
+      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
           ephemeris_.get(),
           solar_system_->massive_body(
               *ephemeris_,
@@ -281,7 +281,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 
   LogFamilyOfEquipotentialLines<DegreesOfFreedom<World>>(
       logger,
-      dynamic_frame,
+      reference_frame,
       /*number_of_days=*/30,
       /*suffix=*/"Energies",
       [](Position<World> const& l4, Position<World> const& l5) {
@@ -313,8 +313,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
-  auto const dynamic_frame(
-      BodyCentredBodyDirectionDynamicFrame<Barycentric, World>(
+  auto const reference_frame(
+      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
           ephemeris_.get(), moon, earth));
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
@@ -337,8 +337,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = *moon_elements.argument_of_periapsis + Degree,
       .mean_anomaly = 0 * Degree};
-  auto const earth_world_dof = dynamic_frame.ToThisFrameAtTime(t0_)(earth_dof);
-  auto const moon_world_dof = dynamic_frame.ToThisFrameAtTime(t0_)(moon_dof);
+  auto const earth_world_dof = reference_frame.ToThisFrameAtTime(t0_)(earth_dof);
+  auto const moon_world_dof = reference_frame.ToThisFrameAtTime(t0_)(moon_dof);
   Position<World> const q_earth = earth_world_dof.position();
   Position<World> const q_moon = moon_world_dof.position();
   Velocity<World> const v_earth = earth_world_dof.velocity();
@@ -348,15 +348,15 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       (q_earth - q_moon).Norm() *
           Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
   // The initial states for three trajectories:
-  // [0]: initially stationary in |dynamic_frame| at L5;
+  // [0]: initially stationary in |reference_frame| at L5;
   // [1]: initially stationary in the rotating-pulsating frame at L5;
   // [2]: in an elliptic Earth orbit that reaches 80% of the way to the Moon.
   std::vector<DegreesOfFreedom<Barycentric>> const initial_states{
-      dynamic_frame.FromThisFrameAtTime(t0_)(
+      reference_frame.FromThisFrameAtTime(t0_)(
           {q_moon + 2 * (q_earth - q_moon), World::unmoving}),
-      dynamic_frame.FromThisFrameAtTime(t0_)(
+      reference_frame.FromThisFrameAtTime(t0_)(
           {initial_earth_moon_l5, World::unmoving}),
-      dynamic_frame.FromThisFrameAtTime(t0_)(
+      reference_frame.FromThisFrameAtTime(t0_)(
           {initial_earth_moon_l5,
            Barycentre(std::pair(v_earth, v_moon), std::pair(1, 1)) +
                InnerProduct(q_earth - q_moon, v_earth - v_moon) /
@@ -390,14 +390,14 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
 
   Instant t = t0_;
-  auto const potential = [&dynamic_frame,
+  auto const potential = [&reference_frame,
                           &t](Position<World> const& position) {
-    return dynamic_frame.GeometricPotential(t, position);
+    return reference_frame.GeometricPotential(t, position);
   };
-  auto const acceleration = [&dynamic_frame,
+  auto const acceleration = [&reference_frame,
                               &t](Position<World> const& position) {
     auto const acceleration =
-        dynamic_frame.GeometricAcceleration(t, {position, Velocity<World>{}});
+        reference_frame.GeometricAcceleration(t, {position, Velocity<World>{}});
     // Note the sign.
     return -Vector<Acceleration, World>({acceleration.coordinates()[0],
                                          acceleration.coordinates()[1],
@@ -415,7 +415,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
       box, potential, acceleration);
   Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_, &dynamic_frame);
+      equipotential_parameters_, &reference_frame);
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
@@ -441,10 +441,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
 
     Position<World> const earth_position =
-        dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+        reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
             ephemeris_->trajectory(earth)->EvaluatePosition(t));
     Position<World> const moon_position =
-        dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+        reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
             ephemeris_->trajectory(moon)->EvaluatePosition(t));
     for (auto const& arg_maximum : arg_maximorum) {
       maxima.push_back(potential(arg_maximum));
@@ -465,7 +465,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
 
     for (int i = 0; i < trajectories.size(); ++i) {
-      DegreesOfFreedom<World> const dof = dynamic_frame.ToThisFrameAtTime(t)(
+      DegreesOfFreedom<World> const dof = reference_frame.ToThisFrameAtTime(t)(
           trajectories[i]->EvaluateDegreesOfFreedom(t));
       trajectory_positions[i].push_back(dof.position());
     }
@@ -501,7 +501,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     world_trajectories.emplace_back();
     for (auto const& [t, dof] : *trajectory) {
       world_trajectories.back().push_back(
-          dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+          reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
               dof.position()));
     }
   }
@@ -510,7 +510,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     pulsating_trajectories.emplace_back();
     for (auto const& [t, dof] : *trajectory) {
       pulsating_trajectories.back().push_back(
-          (dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(
+          (reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
                dof.position()) -
            World::origin) /
           (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
