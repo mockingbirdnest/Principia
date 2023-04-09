@@ -12,6 +12,11 @@
 namespace principia {
 namespace geometry {
 
+FORWARD_DECLARE_FROM(conformal_map,
+                     TEMPLATE(typename Scalar,
+                              typename FromFrame,
+                              typename ToFrame) class,
+                     ConformalMap);
 FORWARD_DECLARE_FROM(identity,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Identity);
@@ -128,6 +133,8 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
 
   template<typename From, typename To>
   friend class OrthogonalMap;
+  template<typename Scalar, typename From, typename To>
+  friend class _conformal_map::ConformalMap;
   template<typename From, typename To>
   friend class _identity::Identity;
   template<typename From, typename To>

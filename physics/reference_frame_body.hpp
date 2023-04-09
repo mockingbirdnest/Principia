@@ -60,7 +60,7 @@ ReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   } else {
     return static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
         RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
-            ephemeris, message));
+            message, ephemeris));
   }
 }
 
