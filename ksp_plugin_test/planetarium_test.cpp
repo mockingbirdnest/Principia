@@ -271,7 +271,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                              "planetarium_ephemeris.proto.bin")));
 
   auto plotting_frame = NavigationFrame::ReadFromMessage(
-      ParseFromBytes<serialization::RigidReferenceFrame>(
+      ParseFromBytes<serialization::ReferenceFrame>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_plotting_frame.proto.bin")),
       ephemeris.get());

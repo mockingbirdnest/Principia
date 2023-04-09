@@ -200,7 +200,7 @@ TEST_F(BarycentricRotatingReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
-  serialization::RigidReferenceFrame message;
+  serialization::ReferenceFrame message;
   big_small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(

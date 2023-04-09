@@ -85,13 +85,10 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
-  virtual void WriteToMessage(
-      not_null<serialization::RigidReferenceFrame*> message) const = 0;
-
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
   static not_null<std::unique_ptr<RigidReferenceFrame>>
-      ReadFromMessage(serialization::RigidReferenceFrame const& message,
+      ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:

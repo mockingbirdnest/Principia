@@ -90,7 +90,6 @@ class ReferenceFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
-#if 0
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
 
@@ -99,7 +98,6 @@ class ReferenceFrame {
   static not_null<std::unique_ptr<ReferenceFrame>>
       ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
-#endif
 
  private:
   void ComputeGeometricAccelerations(

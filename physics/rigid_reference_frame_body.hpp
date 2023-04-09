@@ -130,7 +130,7 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::FrenetFrame(
 template<typename InertialFrame, typename ThisFrame>
 not_null<std::unique_ptr<RigidReferenceFrame<InertialFrame, ThisFrame>>>
 RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
-    serialization::RigidReferenceFrame const& message,
+    serialization::ReferenceFrame const& message,
     not_null<Ephemeris<InertialFrame> const*> const ephemeris) {
   std::unique_ptr<RigidReferenceFrame> result;
   int extensions_found = 0;

@@ -200,7 +200,7 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
-  serialization::RigidReferenceFrame message;
+  serialization::ReferenceFrame message;
   small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
