@@ -38,12 +38,10 @@ using Segments = std::vector<Segment<Frame>>;
 template<typename FromFrame, typename ToFrame>
 class Perspective final {
  public:
-  Perspective(
-      RigidTransformation<ToFrame, FromFrame> const& from_camera,
-      Length const& focal);
-  Perspective(
-      RigidTransformation<FromFrame, ToFrame> const& to_camera,
-      Length const& focal);
+  Perspective(Similarity<ToFrame, FromFrame> const& from_camera,
+              Length const& focal);
+  Perspective(Similarity<FromFrame, ToFrame> const& to_camera,
+              Length const& focal);
 
   Length const& focal() const;
 
@@ -85,8 +83,8 @@ class Perspective final {
       std::vector<Sphere<FromFrame>> const& spheres) const;
 
  private:
-  RigidTransformation<ToFrame, FromFrame> const from_camera_;
-  RigidTransformation<FromFrame, ToFrame> const to_camera_;
+  Similarity<ToFrame, FromFrame> const from_camera_;
+  Similarity<FromFrame, ToFrame> const to_camera_;
   Position<FromFrame> const camera_;
   Length const focal_;
 

@@ -2,10 +2,7 @@
 
 #include "physics/reference_frame.hpp"
 
-#include "physics/barycentric_rotating_reference_frame.hpp"
-#include "physics/body_centred_body_direction_reference_frame.hpp"
-#include "physics/body_centred_non_rotating_reference_frame.hpp"
-#include "physics/body_surface_reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
