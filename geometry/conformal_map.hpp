@@ -100,8 +100,8 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   Rotation<SignedFrame, RotatedAndSignedFrame> MakeRotation() const;
   Homothecy<Scalar, RotatedAndSignedFrame, ToFrame> MakeHomothecy() const;
 
-  Scalar const scale_;
-  Quaternion const quaternion_;
+  Scalar scale_;
+  Quaternion quaternion_;
 
   template<typename S, typename From, typename To>
   friend class ConformalMap;

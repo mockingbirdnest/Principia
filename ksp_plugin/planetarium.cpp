@@ -8,6 +8,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/point.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/similar_motion.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -20,6 +21,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sign;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -40,7 +42,7 @@ Planetarium::Planetarium(
     Parameters const& parameters,
     Perspective<Navigation, Camera> perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
-    not_null<NavigationFrame const*> const plotting_frame,
+    not_null<PlottingFrame const*> const plotting_frame,
     PlottingToScaledSpaceConversion plotting_to_scaled_space)
     : parameters_(parameters),
       perspective_(std::move(perspective)),
@@ -173,8 +175,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   if (direction * (final_time - previous_time) <= Time{}) {
     return lines;
   }
-  RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
-      plotting_frame_->ToThisFrameAtTime(previous_time);
+  SimilarMotion<Barycentric, Navigation> to_plotting_frame_at_t =
+      plotting_frame_->ToThisFrameAtTimeSimilarly(previous_time);
   DegreesOfFreedom<Navigation> const initial_degrees_of_freedom =
       to_plotting_frame_at_t(
           trajectory.EvaluateDegreesOfFreedom(previous_time));
@@ -213,10 +215,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       }
       Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
-      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
+      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTimeSimilarly(t);
       degrees_of_freedom_in_barycentric =
           trajectory.EvaluateDegreesOfFreedom(t);
-      position = to_plotting_frame_at_t.rigid_transformation()(
+      position = to_plotting_frame_at_t.similarity()(
                      degrees_of_freedom_in_barycentric->position());
 
       // The quadratic term of the error between the linear interpolation and
@@ -307,8 +309,8 @@ void Planetarium::PlotMethod3(
   if (direction * (final_time - previous_time) <= Time{}) {
     return;
   }
-  RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
-      plotting_frame_->ToThisFrameAtTime(previous_time);
+  SimilarMotion<Barycentric, Navigation> to_plotting_frame_at_t =
+      plotting_frame_->ToThisFrameAtTimeSimilarly(previous_time);
   DegreesOfFreedom<Navigation> const initial_degrees_of_freedom =
       to_plotting_frame_at_t(
           trajectory.EvaluateDegreesOfFreedom(previous_time));
@@ -346,10 +348,10 @@ void Planetarium::PlotMethod3(
       }
       Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
-      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
+      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTimeSimilarly(t);
       degrees_of_freedom_in_barycentric =
           trajectory.EvaluateDegreesOfFreedom(t);
-      position = to_plotting_frame_at_t.rigid_transformation()(
+      position = to_plotting_frame_at_t.similarity()(
                      degrees_of_freedom_in_barycentric->position());
 
       // The quadratic term of the error between the linear interpolation and
@@ -382,8 +384,8 @@ void Planetarium::PlotMethod3(
 
 std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
     Instant const& now) const {
-  RigidMotion<Barycentric, Navigation> const rigid_motion_at_now =
-      plotting_frame_->ToThisFrameAtTime(now);
+  SimilarMotion<Barycentric, Navigation> const similar_motion_at_now =
+      plotting_frame_->ToThisFrameAtTimeSimilarly(now);
   std::vector<Sphere<Navigation>> plottable_spheres;
 
   auto const& bodies = ephemeris_->bodies();
@@ -393,7 +395,7 @@ std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
     Position<Barycentric> const centre_in_barycentric =
         trajectory->EvaluatePosition(now);
     Sphere<Navigation> plottable_sphere(
-        rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
+        similar_motion_at_now.similarity()(centre_in_barycentric),
         parameters_.sphere_radius_multiplier_ * mean_radius);
     // If the sphere is seen under an angle that is very small it doesn't
     // participate in hiding.
@@ -415,10 +417,10 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
   }
   auto it1 = begin;
   Instant t1 = it1->time;
-  RigidMotion<Barycentric, Navigation> rigid_motion_at_t1 =
-      plotting_frame_->ToThisFrameAtTime(t1);
+  SimilarMotion<Barycentric, Navigation> similar_motion_at_t1 =
+      plotting_frame_->ToThisFrameAtTimeSimilarly(t1);
   Position<Navigation> p1 =
-      rigid_motion_at_t1(it1->degrees_of_freedom).position();
+      similar_motion_at_t1(it1->degrees_of_freedom).position();
 
   auto it2 = it1;
   while (++it2 != end) {
@@ -426,10 +428,10 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
     Instant const t2 = it2->time;
 
     // Transform the degrees of freedom to the plotting frame.
-    RigidMotion<Barycentric, Navigation> const rigid_motion_at_t2 =
-        plotting_frame_->ToThisFrameAtTime(t2);
+    SimilarMotion<Barycentric, Navigation> const similar_motion_at_t2 =
+        plotting_frame_->ToThisFrameAtTimeSimilarly(t2);
     Position<Navigation> const p2 =
-        rigid_motion_at_t2(it2->degrees_of_freedom).position();
+        similar_motion_at_t2(it2->degrees_of_freedom).position();
 
     // Find the part of the segment that is behind the focal plane.  We don't
     // care about things that are in front of the focal plane.
@@ -448,7 +450,7 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
 
     it1 = it2;
     t1 = t2;
-    rigid_motion_at_t1 = rigid_motion_at_t2;
+    similar_motion_at_t1 = similar_motion_at_t2;
     p1 = p2;
   }
 
