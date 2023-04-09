@@ -114,11 +114,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   private void ClearBurnEditors() {
-    foreach (BurnEditor editor in burn_editors_) {
-      editor.Close();
+    if (burn_editors_ != null) {
+      foreach (BurnEditor editor in burn_editors_) {
+        editor.Close();
+      }
+      burn_editors_ = null;
+      Shrink();
     }
-    burn_editors_ = null;
-    Shrink();
   }
 
   private void UpdateVesselAndBurnEditors() {
@@ -129,9 +131,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           !plugin.FlightPlanExists(vessel_guid) ||
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
           burn_editors_?.Count) {
-        if (burn_editors_ != null) {
-          ClearBurnEditors();
-        }
+        ClearBurnEditors();
         previous_predicted_vessel_ = predicted_vessel;
       }
     }
