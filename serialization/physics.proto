@@ -150,7 +150,7 @@ message DiscreteTrajectorySegment {
 }
 
 message ReferenceFrame {
-  extensions 6000 to 6999;  // Last used: 6003.
+  extensions 6000 to 6999;  // Last used: 6004.
 }
 
 message Ephemeris {
@@ -304,4 +304,13 @@ message RotatingBody {
   // Pre-Cardano.
   reserved 4;
   reserved "angular_velocity";
+}
+
+// Added in Ὑπατία.
+message TwoBodyRotatingPulsatingReferenceFrame {
+  extend ReferenceFrame {
+    optional TwoBodyRotatingPulsatingReferenceFrame extension = 6004;
+  }
+  required int32 primary = 1;
+  required int32 secondary = 2;
 }
