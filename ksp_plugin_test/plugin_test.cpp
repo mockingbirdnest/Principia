@@ -841,7 +841,7 @@ TEST_F(PluginTest, Navball) {
   plugin.EndInitialization();
   not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
       plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::Sun);
-  not_null<const NavigationFrame*> const navigation_frame_copy =
+  not_null<const PlottingFrame*> const navigation_frame_copy =
       navigation_frame.get();
   plugin.renderer().SetPlottingFrame(std::move(navigation_frame));
   EXPECT_EQ(navigation_frame_copy, plugin.renderer().GetPlottingFrame());

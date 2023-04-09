@@ -24,10 +24,10 @@ class MockRenderer : public Renderer {
 
   MOCK_METHOD(void,
               SetPlottingFrame,
-              (not_null<std::unique_ptr<NavigationFrame>> plotting_frame),
+              (not_null<std::unique_ptr<PlottingFrame>> plotting_frame),
               (override));
 
-  MOCK_METHOD(not_null<NavigationFrame const*>,
+  MOCK_METHOD(not_null<PlottingFrame const*>,
               GetPlottingFrame,
               (),
               (const, override));
@@ -45,13 +45,13 @@ class MockRenderer : public Renderer {
               BarycentricToWorldSun,
               ((Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
               (const, override));
-  MOCK_METHOD((RigidTransformation<Navigation, World>),
+  MOCK_METHOD((Similarity<Navigation, World>),
               PlottingToWorld,
               (Instant const& time,
                Position<World> const& sun_world_position,
                (Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
               (const, override));
-  MOCK_METHOD((RigidTransformation<World, Navigation>),
+  MOCK_METHOD((Similarity<World, Navigation>),
               WorldToPlotting,
               (Instant const& time,
                Position<World> const& sun_world_position,

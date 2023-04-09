@@ -50,6 +50,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
@@ -79,15 +80,17 @@ class PlanetariumTest : public ::testing::Test {
                                          {0 * Metre, 20 * Metre, 0 * Metre}),
                 Camera::origin,
                 Rotation<LeftNavigation, Camera>(
-                    Vector<double, LeftNavigation>({ 1, 0, 0 }),
-                    Vector<double, LeftNavigation>({ 0, 0, 1 }),
-                    Bivector<double, LeftNavigation>({ 0, -1, 0 }))
-                    .Forget<OrthogonalMap>() *
-                Signature<Navigation, LeftNavigation>(
-                    Sign::Positive(),
-                    Sign::Positive(),
-                    DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
-          /*focal=*/5 * Metre),
+                    Vector<double, LeftNavigation>({1, 0, 0}),
+                    Vector<double, LeftNavigation>({0, 0, 1}),
+                    Bivector<double, LeftNavigation>({0, -1, 0}))
+                        .Forget<OrthogonalMap>() *
+                    Signature<Navigation, LeftNavigation>(
+                        Sign::Positive(),
+                        Sign::Positive(),
+                        DeduceSignReversingOrientation{})
+                        .Forget<OrthogonalMap>())
+                .Forget<Similarity>(),
+            /*focal=*/5 * Metre),
         plotting_to_scaled_space_(
             [](Position<Navigation> const& plotted_point) {
               constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
