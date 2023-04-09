@@ -9,8 +9,9 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Sqrt;
-using testing_utilities::AlmostEquals;
+using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::testing_utilities::_almost_equals;
 
 class UnboundedArraysTest : public ::testing::Test {
  protected:

@@ -5,7 +5,8 @@
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -30,58 +31,42 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::J2000;
-using base::not_null;
-using base::make_not_null_shared;
-using base::make_not_null_unique;
-using geometry::Barycentre;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::RotatingBody;
-using quantities::Force;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::StatusIs;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::MockFunction;
+using namespace principia::astronomy::_epoch;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
 
 class FlightPlanTest : public testing::Test {
  protected:
   using TestNavigationFrame =
-      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>;
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
 
   FlightPlanTest() {
     std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

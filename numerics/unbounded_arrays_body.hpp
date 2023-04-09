@@ -11,12 +11,12 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_unbounded_arrays {
+namespace _unbounded_arrays {
+namespace internal {
 
-using base::uninitialized;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Square;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<class T>
 template<class U, class... Args>
@@ -590,6 +590,7 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-}  // namespace internal_unbounded_arrays
+}  // namespace internal
+}  // namespace _unbounded_arrays
 }  // namespace numerics
 }  // namespace principia

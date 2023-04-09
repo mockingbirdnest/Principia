@@ -22,13 +22,13 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_runge_kutta_integrator {
+namespace _explicit_runge_kutta_integrator {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_null;
-using numerics::FixedStrictlyLowerTriangularMatrix;
-using numerics::FixedVector;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_named_quantities;
 
 // This class solves ordinary differential equations of the form q′ = f(q, t)
 // using a Runge-Kutta method.  We follow the standard conventions for the
@@ -103,15 +103,19 @@ class ExplicitRungeKuttaIntegrator
   static constexpr auto b_ = Method::b;
 };
 
-}  // namespace internal_explicit_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE>
-internal_explicit_runge_kutta_integrator::
-    ExplicitRungeKuttaIntegrator<Method, ODE> const&
+internal::ExplicitRungeKuttaIntegrator<Method, ODE> const&
 ExplicitRungeKuttaIntegrator();
 
+}  // namespace _explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_explicit_runge_kutta_integrator;
+}  // namespace principia::integrators
 
 #include "integrators/explicit_runge_kutta_integrator_body.hpp"
 

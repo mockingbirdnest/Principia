@@ -8,16 +8,17 @@
 #include "absl/status/status.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
@@ -30,44 +31,7 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_pile_up {
 
-using base::check_not_null;
-using base::make_not_null_unique;
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::NonRotating;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::MockFixedStepSizeIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN6B;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using physics::DegreesOfFreedom;
-using physics::MassiveBody;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using quantities::Acceleration;
-using quantities::Length;
-using quantities::MomentOfInertia;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::VanishesBefore;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
@@ -78,7 +42,32 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
-namespace si = quantities::si;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
@@ -743,6 +732,5 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   EXPECT_OK(p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second));
 }
 
-}  // namespace internal_pile_up
 }  // namespace ksp_plugin
 }  // namespace principia

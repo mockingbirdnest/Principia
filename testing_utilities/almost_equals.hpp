@@ -19,7 +19,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_almost_equals {
+namespace _almost_equals {
+namespace internal {
 
 template<typename T>
 class AlmostEqualsMatcher;
@@ -120,11 +121,16 @@ class AlmostEqualsMatcher final {
   std::int64_t const max_ulps_;
 };
 
-}  // namespace internal_almost_equals
+}  // namespace internal
 
-using internal_almost_equals::AlmostEquals;
+using internal::AlmostEquals;
 
+}  // namespace _almost_equals
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_almost_equals;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/almost_equals_body.hpp"

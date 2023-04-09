@@ -4,12 +4,14 @@
 
 #include <vector>
 
+#include "geometry/instant.hpp"
+
 namespace principia {
 namespace physics {
-namespace internal_jacobi_coordinates {
+namespace _jacobi_coordinates {
+namespace internal {
 
-using geometry::Instant;
-using geometry::Velocity;
+using namespace principia::geometry::_instant;
 
 template<typename Frame>
 JacobiCoordinates<Frame>::JacobiCoordinates(MassiveBody const& primary) {
@@ -67,6 +69,7 @@ template<typename Frame>
 Identity<Frame, typename JacobiCoordinates<Frame>::PrimocentricFrame> const
     JacobiCoordinates<Frame>::id_fp_;
 
-}  // namespace internal_jacobi_coordinates
+}  // namespace internal
+}  // namespace _jacobi_coordinates
 }  // namespace physics
 }  // namespace principia

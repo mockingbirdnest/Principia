@@ -4,14 +4,18 @@
 
 #include <utility>
 
+#include "geometry/conformal_map.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/linear_map.hpp"
+#include "geometry/permutation.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_rigid_motion {
+namespace _rigid_motion {
+namespace internal {
 
-using geometry::LinearMap;
+using namespace principia::geometry::_conformal_map;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_permutation;
 
 template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
@@ -97,6 +101,25 @@ RigidMotion<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename> typename SimilarMotion>
+SimilarMotion<FromFrame, ToFrame>
+RigidMotion<FromFrame, ToFrame>::Forget() const {
+  return SimilarMotion<FromFrame, ToFrame>(
+      rigid_transformation_.template Forget<Similarity>(),
+      angular_velocity_of_to_frame_,
+      velocity_of_to_frame_origin_,
+      Variation<double>{});
+}
+
+template<typename FromFrame, typename ToFrame>
+template<typename F, typename T, typename>
+RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
+  return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
+                     FromFrame::nonrotating,
+                     FromFrame::unmoving);
+}
+
+template<typename FromFrame, typename ToFrame>
 RigidMotion<FromFrame, ToFrame>
 RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
     DegreesOfFreedom<ToFrame> const& degrees_of_freedom_of_from_frame_origin) {
@@ -104,7 +127,7 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
     return RigidMotion(RigidTransformation<FromFrame, ToFrame>(
                            FromFrame::origin,
                            degrees_of_freedom_of_from_frame_origin.position(),
-                           geometry::Identity<FromFrame, ToFrame>().Forget()),
+                           Identity<FromFrame, ToFrame>().Forget()),
                        ToFrame::nonrotating,
                        degrees_of_freedom_of_from_frame_origin.velocity());
   } else {
@@ -114,9 +137,9 @@ RigidMotion<FromFrame, ToFrame>::MakeNonRotatingMotion(
         RigidTransformation<FromFrame, ToFrame>(
             FromFrame::origin,
             degrees_of_freedom_of_from_frame_origin.position(),
-            geometry::Permutation<FromFrame, ToFrame>(
-                geometry::Permutation<FromFrame,
-                                      ToFrame>::CoordinatePermutation::XZY)
+            Permutation<FromFrame, ToFrame>(
+                Permutation<FromFrame,
+                            ToFrame>::CoordinatePermutation::XZY)
                 .template Forget<OrthogonalMap>()),
         ToFrame::nonrotating,
         degrees_of_freedom_of_from_frame_origin.velocity());
@@ -143,14 +166,6 @@ RigidMotion<FromFrame, ToFrame>::ReadFromMessage(
                          message.angular_velocity_of_to_frame()),
                      Velocity<FromFrame>::ReadFromMessage(
                          message.velocity_of_to_frame_origin()));
-}
-
-template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
-RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
-  return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
-                     FromFrame::nonrotating,
-                     FromFrame::unmoving);
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
@@ -240,6 +255,7 @@ AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_origin_of() const {
   }
 }
 
-}  // namespace internal_rigid_motion
+}  // namespace internal
+}  // namespace _rigid_motion
 }  // namespace physics
 }  // namespace principia

@@ -7,14 +7,18 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_affine_map {
+namespace _affine_map {
+namespace internal {
 
-using base::not_null;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> class LinearMap>
+         template<typename, typename> class LinearMap_>
 class AffineMap final {
  public:
+  template<typename F, typename T>
+  using LinearMap = LinearMap_<F, T>;
   using FromVector = Vector<Scalar, FromFrame>;
   using ToVector = Vector<Scalar, ToFrame>;
 
@@ -22,8 +26,11 @@ class AffineMap final {
             Point<ToVector> const& to_origin,
             LinearMap<FromFrame, ToFrame> linear_map);
 
-  AffineMap<ToFrame, FromFrame, Scalar, LinearMap> Inverse() const;
+  AffineMap<ToFrame, FromFrame, Scalar, LinearMap_> Inverse() const;
   Point<ToVector> operator()(Point<FromVector> const& point) const;
+
+  template<template<typename, typename> typename OtherAffineMap>
+  OtherAffineMap<FromFrame, ToFrame> Forget() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -35,8 +42,8 @@ class AffineMap final {
   void WriteToMessage(not_null<serialization::AffineMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static AffineMap ReadFromMessage(serialization::AffineMap const& message);
 
  private:
@@ -68,11 +75,16 @@ std::ostream& operator<<(
     std::ostream& out,
     AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& affine_map);
 
-}  // namespace internal_affine_map
+}  // namespace internal
 
-using internal_affine_map::AffineMap;
+using internal::AffineMap;
 
+}  // namespace _affine_map
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_affine_map;
+}  // namespace principia::geometry
 
 #include "geometry/affine_map_body.hpp"

@@ -11,7 +11,10 @@
 
 namespace principia {
 namespace base {
-namespace internal_push_deserializer {
+namespace _push_deserializer {
+namespace internal {
+
+using namespace principia::base::_sink_source;
 
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
     std::function<Array<std::uint8_t>()> on_empty)
@@ -242,6 +245,7 @@ inline Array<std::uint8_t> PushDeserializer::Pull() {
   return result;
 }
 
-}  // namespace internal_push_deserializer
+}  // namespace internal
+}  // namespace _push_deserializer
 }  // namespace base
 }  // namespace principia

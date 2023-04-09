@@ -8,7 +8,6 @@
 
 #include "astronomy/date_time.hpp"
 #include "astronomy/epoch.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -16,21 +15,13 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_time_scales {
+namespace _time_scales {
+namespace internal {
 
-using astronomy::date_time::IsJulian;
-using astronomy::date_time::JulianDate;
-using astronomy::date_time::operator""_Date;
-using astronomy::date_time::operator""_DateTime;
-using astronomy::date_time::operator""_Julian;
-using numerics::DoublePrecision;
-using numerics::TwoDifference;
-using quantities::NextDown;
-using quantities::si::Day;
-using quantities::si::Hour;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::astronomy::_date_time;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
 // timescale), not counting any leap seconds that may have occurred in the past.
@@ -39,7 +30,7 @@ using quantities::si::Second;
 // to which it is interpreted.
 // On a time scale with leap seconds, this is not injective: a positive leap
 // second and the following second map to the same interval.
-constexpr quantities::Time TimeSince20000101T120000Z(
+constexpr Time TimeSince20000101T120000Z(
     DateTime const& date_time) {
   return (date_time.time().millisecond() / 1e3) * Second +
          (date_time.time().second() +
@@ -50,28 +41,28 @@ constexpr quantities::Time TimeSince20000101T120000Z(
                           "2000-01-01"_Date.mjd())))) * Second;
 }
 
-constexpr quantities::Time TimeSinceJ2000(JulianDate const& jd) {
+constexpr Time TimeSinceJ2000(JulianDate const& jd) {
   return (jd.day() + (static_cast<double>(jd.fraction_numerator()) /
                       static_cast<double>(jd.fraction_denominator()))) * Day;
 }
 
-constexpr double mjd(quantities::Time const& from_j2000) {
+constexpr double mjd(Time const& from_j2000) {
   return from_j2000 / Day + 51544.5;
 }
 
-constexpr Instant FromTT(quantities::Time const& from_j2000) {
+constexpr Instant FromTT(Time const& from_j2000) {
   return J2000 + from_j2000;
 }
 
-constexpr Instant FromTAI(quantities::Time const& tai) {
+constexpr Instant FromTAI(Time const& tai) {
   return FromTT(tai + 32.184 * Second);
 }
 
-constexpr Instant FromGPSTime(quantities::Time const& gps) {
+constexpr Instant FromGPSTime(Time const& gps) {
   return FromTAI(gps + 19 * Second);
 }
 
-constexpr Instant From北斗Time(quantities::Time const& 北斗) {
+constexpr Instant From北斗Time(Time const& 北斗) {
   return FromTAI(北斗 + 33 * Second);
 }
 
@@ -145,7 +136,7 @@ constexpr int LeapSecond(int const year, int const month) {
 }
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
-constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
+constexpr Time ModernUTCMinusTAI(Date const& utc_date) {
   if (utc_date.month() == 1 && utc_date.day() == 1) {
     if (utc_date.year() == 1972) {
       return -10 * Second;
@@ -171,7 +162,7 @@ constexpr bool IsValidModernUTC(DateTime const& date_time) {
 
 // The (MJD - d) * t term from
 // https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history.
-constexpr quantities::Time RateTAIMinusStretchyUTC(DateTime const& utc) {
+constexpr Time RateTAIMinusStretchyUTC(DateTime const& utc) {
   return utc.date() < "1962-01-01"_Date
              ? (mjd(TimeSince20000101T120000Z(utc)) - 37'300) *
                0.001'296 * Second
@@ -186,7 +177,7 @@ constexpr quantities::Time RateTAIMinusStretchyUTC(DateTime const& utc) {
 }
 
 // The constant term.
-constexpr quantities::Time OffsetTAIMinusStretchyUTC(Date const& utc_date) {
+constexpr Time OffsetTAIMinusStretchyUTC(Date const& utc_date) {
   return utc_date < "1961-08-01"_Date ? 1.422'818'0 * Second
        : utc_date < "1962-01-01"_Date ? 1.372'818'0 * Second
        : utc_date < "1963-11-01"_Date ? 1.845'858'0 * Second
@@ -203,15 +194,15 @@ constexpr quantities::Time OffsetTAIMinusStretchyUTC(Date const& utc_date) {
 }
 
 // Returns TAI - UTC at the given point on the UTC timescale.
-constexpr quantities::Time TAIMinusStretchyUTC(DateTime const& utc) {
+constexpr Time TAIMinusStretchyUTC(DateTime const& utc) {
   return OffsetTAIMinusStretchyUTC(utc.date()) + RateTAIMinusStretchyUTC(utc);
 }
 
 // Returns |true| if |utc| is within a leap of the given number of
 // |milliseconds| inserted before |next_day|.
 constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
-                                             Date const& next_day,
-                                             double const& milliseconds) {
+                                              Date const& next_day,
+                                              double const& milliseconds) {
   return utc.time().is_leap_second() &&
          utc.date().next_day() == next_day &&
          utc.time().millisecond() < milliseconds;
@@ -252,51 +243,47 @@ constexpr bool IsValidStretchyUTC(DateTime const& utc) {
 // An entry in the Experimental EOP C02 time series; represents UT1 - TAI at the
 // given |ut1_mjd|.
 struct ExperimentalEOPC02Entry final {
-  constexpr ExperimentalEOPC02Entry(double ut1_mjd,
-                                    quantities::Time ut1_minus_tai);
+  constexpr ExperimentalEOPC02Entry(double ut1_mjd, Time ut1_minus_tai);
 
   double const ut1_mjd;
-  quantities::Time const ut1_minus_tai;
+  Time const ut1_minus_tai;
 };
 
 constexpr ExperimentalEOPC02Entry::ExperimentalEOPC02Entry(
     double const ut1_mjd,
-    quantities::Time const ut1_minus_tai)
-    : ut1_mjd(ut1_mjd),
-      ut1_minus_tai(ut1_minus_tai) {}
+    Time const ut1_minus_tai)
+    : ut1_mjd(ut1_mjd), ut1_minus_tai(ut1_minus_tai) {}
 
 // An entry in the EOP (IERS) 08 C04 time series; represents UT1 - UTC at
 // 00:00:00 on the given |utc_date|.  The date is given as an integer of the
 // form YYYY'MM'DD, which is then interpreted on demand, in order to limit the
 // number of constexpr steps.
 struct EOPC04Entry final {
-  constexpr EOPC04Entry(int utc_date, quantities::Time const& ut1_minus_utc);
+  constexpr EOPC04Entry(int utc_date, Time const& ut1_minus_utc);
 
   constexpr DateTime utc() const;
-  constexpr quantities::Time ut1() const;
-  constexpr quantities::Time ut1_minus_tai() const;
+  constexpr Time ut1() const;
+  constexpr Time ut1_minus_tai() const;
 
   constexpr Instant tt() const;
 
   int const utc_date;
-  quantities::Time const ut1_minus_utc;
+  Time const ut1_minus_utc;
 };
 
-constexpr EOPC04Entry::EOPC04Entry(
-    int const utc_date,
-    quantities::Time const& ut1_minus_utc)
-    : utc_date(utc_date),
-      ut1_minus_utc(ut1_minus_utc) {}
+constexpr EOPC04Entry::EOPC04Entry(int const utc_date,
+                                   Time const& ut1_minus_utc)
+    : utc_date(utc_date), ut1_minus_utc(ut1_minus_utc) {}
 
 constexpr DateTime EOPC04Entry::utc() const {
   return DateTime::BeginningOfDay(Date::YYYYMMDD(utc_date));
 }
 
-constexpr quantities::Time EOPC04Entry::ut1() const {
+constexpr Time EOPC04Entry::ut1() const {
   return TimeSince20000101T120000Z(utc()) + ut1_minus_utc;
 }
 
-constexpr quantities::Time EOPC04Entry::ut1_minus_tai() const {
+constexpr Time EOPC04Entry::ut1_minus_tai() const {
   return utc().date().year() >= 1972
              ? ut1_minus_utc + ModernUTCMinusTAI(utc().date())
              : ut1_minus_utc - TAIMinusStretchyUTC(utc());
@@ -321,7 +308,7 @@ constexpr Instant EOPC04Entry::tt() const {
 // otherwise MSVC complains about undefinedness of |end - begin| (even though
 // Intellisense is fine with it).
 constexpr ExperimentalEOPC02Entry const* LookupUT1(
-    quantities::Time const& ut1,
+    Time const& ut1,
     ExperimentalEOPC02Entry const* begin,
     std::ptrdiff_t const size) {
   CONSTEXPR_CHECK(size > 0);
@@ -335,7 +322,7 @@ constexpr ExperimentalEOPC02Entry const* LookupUT1(
   }
 }
 
-constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
+constexpr EOPC04Entry const* LookupUT1(Time const& ut1,
                                        EOPC04Entry const* begin,
                                        std::ptrdiff_t const size) {
   CONSTEXPR_CHECK(size > 0);
@@ -364,12 +351,11 @@ constexpr EOPC04Entry const* LookupTT(Instant const& tt,
 }
 
 constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
-    quantities::Time const& ut1) {
+    Time const& ut1) {
   return LookupUT1(ut1, &experimental_eop_c02[0], experimental_eop_c02.size());
 }
 
-constexpr EOPC04Entry const* LookupInEOPC04(
-    quantities::Time const& ut1) {
+constexpr EOPC04Entry const* LookupInEOPC04(Time const& ut1) {
   return LookupUT1(ut1, &eop_c04[0], eop_c04.size());
 }
 
@@ -379,7 +365,7 @@ constexpr EOPC04Entry const* LookupInEOPC04(Instant const& tt) {
 
 // Linear interpolation of TT on the UT1 range [low->ut1(), (low + 1)->ut1()].
 constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
-                                     quantities::Time const& ut1) {
+                                     Time const& ut1) {
   // TODO(egg): figure out whether using the divided difference of the
   // |p->ut1_minus_tai()|s leads to less catastrophic cancellation than using
   // the divided difference of the |DateTimeAsUTC(p->utc())|s.
@@ -416,7 +402,7 @@ constexpr double InterpolatedEOPC04JulianDayFraction(EOPC04Entry const* low,
 // [low->ut1_mjd, (low + 1)->ut1_mjd].
 constexpr Instant InterpolatedExperimentalEOPC02(
     ExperimentalEOPC02Entry const* low,
-    quantities::Time const& ut1) {
+    Time const& ut1) {
   return FromTAI(ut1 - (low->ut1_minus_tai +
                         (mjd(ut1) - low->ut1_mjd) *
                             ((low + 1)->ut1_minus_tai - low->ut1_minus_tai) /
@@ -427,14 +413,14 @@ constexpr Instant InterpolatedExperimentalEOPC02(
 // |high.ut1()|, used to get continuity when switching between the series.
 constexpr Instant ExperimentalEOPC02ToEOPC04(ExperimentalEOPC02Entry const& low,
                                              EOPC04Entry const& high,
-                                             quantities::Time const& ut1) {
+                                             Time const& ut1) {
   return FromTAI(ut1 - (low.ut1_minus_tai +
                         (mjd(ut1) - low.ut1_mjd) *
                             (high.ut1_minus_tai() - low.ut1_minus_tai) /
                             ((mjd(high.ut1()) - low.ut1_mjd))));
 }
 
-constexpr Instant FromUT1(quantities::Time const ut1) {
+constexpr Instant FromUT1(Time const ut1) {
   if (ut1 < eop_c04.front().ut1()) {
     if ((LookupInExperimentalEOPC02(ut1) + 1)->ut1_mjd >
         mjd(eop_c04.front().ut1())) {
@@ -595,15 +581,14 @@ constexpr DateTime TTSecond(Instant const& t) {
   Instant const beginning_of_day = DateTimeAsTT(DateTime::BeginningOfDay(date));
   // Close to J2000, Sterbenz’s lemma can fail to apply to this subtraction.  We
   // compute it exactly and round by hand.
-  DoublePrecision<quantities::Time> const time_of_day =
-      TwoDifference(t, beginning_of_day);
-  quantities::Time const time_of_day_rounded_down =
-      time_of_day.error >= 0 * Second ? time_of_day.value
-                                      : NextDown(time_of_day.value);
+  DoublePrecision<Time> const time_of_day = TwoDifference(t, beginning_of_day);
+  Time const time_of_day_rounded_down = time_of_day.error >= 0 * Second
+                                            ? time_of_day.value
+                                            : NextDown(time_of_day.value);
   int const second_of_day = static_cast<int>(time_of_day_rounded_down / Second);
   return DateTime(
       date,
-      date_time::Time(
+      TimeOfDay(
           /*hour=*/second_of_day / (Hour / Second),
           /*minute=*/second_of_day % static_cast<int>(Hour / Second) /
               (Minute / Second),
@@ -611,6 +596,7 @@ constexpr DateTime TTSecond(Instant const& t) {
           /*millisecond=*/0));
 }
 
-}  // namespace internal_time_scales
+}  // namespace internal
+}  // namespace _time_scales
 }  // namespace astronomy
 }  // namespace principia

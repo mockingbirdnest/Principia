@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_componentwise {
+namespace _componentwise {
+namespace internal {
 
 using ::testing::SafeMatcherCast;
 
@@ -391,6 +392,7 @@ DescribeNegationTo(std::ostream* out) const {
   z_matcher_.DescribeNegationTo(out);
 }
 
-}  // namespace internal_componentwise
+}  // namespace internal
+}  // namespace _componentwise
 }  // namespace testing_utilities
 }  // namespace principia

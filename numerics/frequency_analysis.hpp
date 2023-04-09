@@ -3,22 +3,20 @@
 #include <algorithm>
 #include <type_traits>
 
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
-namespace frequency_analysis {
-namespace internal_frequency_analysis {
+namespace _frequency_analysis {
+namespace internal {
 
-using geometry::Instant;
-using geometry::Interval;
-using quantities::AngularFrequency;
-using quantities::Primitive;
-using quantities::Product;
-using quantities::Time;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Computes the precise mode of a quasi-periodic |function|, assuming that the
 // mode is over the interval |fft_mode| (so named because it has presumably been
@@ -89,14 +87,18 @@ IncrementalProjection(Function const& function,
                       Instant const& t_min,
                       Instant const& t_max);
 
-}  // namespace internal_frequency_analysis
+}  // namespace internal
 
-using internal_frequency_analysis::IncrementalProjection;
-using internal_frequency_analysis::PreciseMode;
-using internal_frequency_analysis::Projection;
+using internal::IncrementalProjection;
+using internal::PreciseMode;
+using internal::Projection;
 
-}  // namespace frequency_analysis
+}  // namespace _frequency_analysis
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_frequency_analysis;
+}  // namespace principia::numerics
 
 #include "numerics/frequency_analysis_body.hpp"

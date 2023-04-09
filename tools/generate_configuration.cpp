@@ -9,7 +9,6 @@
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/serialization.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/solar_system.hpp"
@@ -21,25 +20,22 @@
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
-
-using astronomy::ICRS;
-using astronomy::J2000;
-using base::Fingerprint2011;
-using base::SerializeAsBytes;
-using physics::DegreesOfFreedom;
-using physics::SolarSystem;
-using quantities::DebugString;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
-using quantities::ParseQuantity;
-using quantities::Pow;
-using quantities::constants::GravitationalConstant;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Second;
-
 namespace tools {
+namespace _generate_configuration {
+namespace internal {
+
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_serialization;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 constexpr char cfg[] = "cfg";
@@ -312,5 +308,7 @@ void GenerateConfiguration(std::string const& game_epoch,
   numerics_blueprint_cfg << "}\n";
 }
 
+}  // namespace internal
+}  // namespace _generate_configuration
 }  // namespace tools
 }  // namespace principia

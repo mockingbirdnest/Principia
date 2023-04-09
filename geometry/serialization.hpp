@@ -4,9 +4,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_serialization {
+namespace _serialization {
+namespace internal {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 // A helper class that serializes a |double|, a |Quantity|, a |Point| or a
 // |Multivector| to a protobuf structure like:
@@ -59,14 +60,19 @@ struct PointOrMultivectorSerializer : not_constructible {};
 template<typename T, typename Message>
 struct QuantityOrMultivectorSerializer : not_constructible {};
 
-}  // namespace internal_serialization
+}  // namespace internal
 
-using internal_serialization::DoubleOrQuantityOrPointOrMultivectorSerializer;
-using internal_serialization::DoubleOrQuantityOrMultivectorSerializer;
-using internal_serialization::PointOrMultivectorSerializer;
-using internal_serialization::QuantityOrMultivectorSerializer;
+using internal::DoubleOrQuantityOrPointOrMultivectorSerializer;
+using internal::DoubleOrQuantityOrMultivectorSerializer;
+using internal::PointOrMultivectorSerializer;
+using internal::QuantityOrMultivectorSerializer;
 
+}  // namespace _serialization
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_serialization;
+}  // namespace principia::geometry
 
 #include "geometry/serialization_body.hpp"

@@ -8,10 +8,11 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body {
+namespace _body {
+namespace internal {
 
-using base::not_constructible;
-using base::not_null;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
 
 class Body {
  public:
@@ -49,12 +50,17 @@ class Body {
   };
 };
 
-}  // namespace internal_body
+}  // namespace internal
 
-using internal_body::Body;
+using internal::Body;
 
+}  // namespace _body
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_body;
+}  // namespace principia::physics
 
 #include "physics/body_body.hpp"
 

@@ -15,16 +15,14 @@
 
 namespace principia {
 namespace physics {
-namespace internal_oblate_body {
+namespace _oblate_body {
+namespace internal {
 
-using base::not_null;
-using geometry::Vector;
-using numerics::FixedLowerTriangularMatrix;
-using quantities::Degree2SphericalHarmonicCoefficient;
-using quantities::Degree3SphericalHarmonicCoefficient;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Quotient;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 class OblateBody : public RotatingBody<Frame> {
@@ -105,12 +103,17 @@ class OblateBody : public RotatingBody<Frame> {
   Parameters parameters_;
 };
 
-}  // namespace internal_oblate_body
+}  // namespace internal
 
-using internal_oblate_body::OblateBody;
+using internal::OblateBody;
 
+}  // namespace _oblate_body
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_oblate_body;
+}  // namespace principia::physics
 
 #include "physics/oblate_body_body.hpp"
 

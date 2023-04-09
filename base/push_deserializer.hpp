@@ -18,9 +18,13 @@
 
 namespace principia {
 namespace base {
-namespace internal_push_deserializer {
+namespace _push_deserializer {
+namespace internal {
 
-using google::compression::Compressor;
+using namespace principia::base::_array;
+using namespace principia::base::_not_null;
+
+using ::google::compression::Compressor;
 
 // An input stream based on an array that delegates to a function the handling
 // of the case where the array is empty.  It calls the |on_empty| function
@@ -135,10 +139,11 @@ class PushDeserializer final {
   std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_push_deserializer
+}  // namespace internal
 
-using internal_push_deserializer::PushDeserializer;
+using internal::PushDeserializer;
 
+}  // namespace _push_deserializer
 }  // namespace base
 }  // namespace principia
 

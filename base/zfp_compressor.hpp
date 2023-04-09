@@ -9,9 +9,10 @@
 
 namespace principia {
 namespace base {
-namespace zfp_compressor_internal {
+namespace _zfp_compressor {
+namespace internal {
 
-using base::not_null;
+using namespace principia::base::_not_null;
 
 // Helper class for ZFP compression.  This class compresses doubles, not
 // quantities, because we don't want to depend on the layout of Quantity in
@@ -58,10 +59,11 @@ class ZfpCompressor {
   std::optional<double> const accuracy_;
 };
 
-}  // namespace zfp_compressor_internal
+}  // namespace internal
 
-using zfp_compressor_internal::ZfpCompressor;
+using internal::ZfpCompressor;
 
+}  // namespace _zfp_compressor
 }  // namespace base
 }  // namespace principia
 

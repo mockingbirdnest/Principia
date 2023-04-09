@@ -15,16 +15,14 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_root_finders {
+namespace _root_finders {
+namespace internal {
 
-using geometry::Barycentre;
-using geometry::Sign;
-using quantities::Abs;
-using quantities::Difference;
-using quantities::Product;
-using quantities::Sqrt;
-using quantities::Square;
-namespace si = quantities::si;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_sign;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
@@ -391,6 +389,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
   }
 }
 
-}  // namespace internal_root_finders
+}  // namespace internal
+}  // namespace _root_finders
 }  // namespace numerics
 }  // namespace principia

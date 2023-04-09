@@ -24,26 +24,6 @@
 namespace principia {
 namespace interface {
 
-using astronomy::operator""_TT;
-using astronomy::MercuryOrbiterInitialDegreesOfFreedom;
-using astronomy::MercuryOrbiterInitialTime;
-using astronomy::TTSecond;
-using astronomy::date_time::DateTime;
-using astronomy::date_time::operator""_DateTime;
-using base::not_null;
-using base::ParseFromBytes;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Plugin;
-using physics::DiscreteTrajectory;
-using quantities::Speed;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Second;
-using testing_utilities::operator""_;
-using testing_utilities::IsNear;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::StringLogSink;
-using testing_utilities::WriteToBinaryFile;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
@@ -54,6 +34,21 @@ using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
+using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_mercury_orbiter;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_string_log_sink;
 
 using namespace std::chrono_literals;
 
@@ -317,7 +312,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
     serialization::DiscreteTrajectory message;
     vessel.trajectory().WriteToMessage(
         &message, /*tracked=*/{history, psychohistory}, /*exact=*/{});
-    auto const serialized_message = base::SerializeAsBytes(message);
+    auto const serialized_message = SerializeAsBytes(message);
     WriteToBinaryFile(TEMP_DIR / "trajectory_3136.proto.bin",
                       serialized_message.get());
   }

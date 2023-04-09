@@ -11,7 +11,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_cpuid {
+namespace _cpuid {
+namespace internal {
 
 struct CPUIDResult {
   std::uint32_t eax;
@@ -57,6 +58,7 @@ bool HasCPUFeatures(CPUFeatureFlags const flags) {
              static_cast<std::uint64_t>(flags)) == flags;
 }
 
-}  // namespace internal_cpuid
+}  // namespace internal
+}  // namespace _cpuid
 }  // namespace base
 }  // namespace principia

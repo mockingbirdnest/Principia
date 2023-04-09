@@ -1,7 +1,8 @@
+#include "geometry/instant.hpp"
+
 #include <strstream>
 
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -9,15 +10,12 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::J2000;
-using astronomy::operator""_TT;
-using astronomy::operator""_UT1;
-using astronomy::operator""_UTC;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using quantities::Time;
-using quantities::si::Second;
 using ::testing::Eq;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class InstantOutputTest : public ::testing::Test {};
 

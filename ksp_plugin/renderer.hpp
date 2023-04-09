@@ -6,49 +6,55 @@
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/conformal_map.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
+#include "physics/similar_motion.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_renderer {
+namespace _renderer {
+namespace internal {
 
-using base::not_null;
-using geometry::AffineMap;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::Frenet;
-using physics::RigidMotion;
-using quantities::Length;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_conformal_map;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_similar_motion;
+using namespace principia::quantities::_quantities;
 
 class Renderer {
  public:
   Renderer(not_null<Celestial const*> sun,
-           not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
+           not_null<std::unique_ptr<PlottingFrame>> plotting_frame);
 
   virtual ~Renderer() = default;
 
   // Changes the plotting frame of the renderer.
   virtual void SetPlottingFrame(
-      not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
+      not_null<std::unique_ptr<PlottingFrame>> plotting_frame);
 
   // Returns the current plotting frame.  This may not be the last set by
   // |SetPlottingFrame| if it is overridden by a target vessel.
-  virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
+  virtual not_null<PlottingFrame const*> GetPlottingFrame() const;
 
   // Overrides the current plotting frame with one that is centred on the given
   // |vessel|.
@@ -100,7 +106,7 @@ class Renderer {
 
   // Coordinate transforms.
 
-  virtual RigidMotion<Barycentric, Navigation> BarycentricToPlotting(
+  virtual SimilarMotion<Barycentric, Navigation> BarycentricToPlotting(
       Instant const& time) const;
 
   virtual RigidTransformation<Barycentric, World> BarycentricToWorld(
@@ -134,15 +140,15 @@ class Renderer {
       NavigationFrame const& navigation_frame,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(
+  virtual ConformalMap<double, Navigation, Barycentric> PlottingToBarycentric(
       Instant const& time) const;
 
-  virtual RigidTransformation<Navigation, World> PlottingToWorld(
+  virtual Similarity<Navigation, World> PlottingToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual OrthogonalMap<Navigation, World> PlottingToWorld(
+  virtual ConformalMap<double, Navigation, World> PlottingToWorld(
       Instant const& time,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
@@ -154,7 +160,7 @@ class Renderer {
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual RigidTransformation<World, Navigation> WorldToPlotting(
+  virtual Similarity<World, Navigation> WorldToPlotting(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -179,19 +185,24 @@ class Renderer {
            not_null<Ephemeris<Barycentric> const*> ephemeris);
     not_null<Vessel*> const vessel;
     not_null<Celestial const*> const celestial;
-    not_null<std::unique_ptr<NavigationFrame>> const target_frame;
+    not_null<std::unique_ptr<PlottingFrame>> const target_frame;
   };
 
   not_null<Celestial const*> const sun_;
 
-  not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;
+  not_null<std::unique_ptr<PlottingFrame>> plotting_frame_;
 
   std::optional<Target> target_;
 };
 
-}  // namespace internal_renderer
+}  // namespace internal
 
-using internal_renderer::Renderer;
+using internal::Renderer;
 
+}  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_renderer;
+}  // namespace principia::ksp_plugin

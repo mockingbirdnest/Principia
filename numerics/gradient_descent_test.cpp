@@ -1,7 +1,7 @@
 #include "numerics/gradient_descent.hpp"
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -15,22 +15,19 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Vector;
-using quantities::Exponentiation;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Pow;
-using quantities::si::Micro;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::Optional;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_gradient_descent;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class GradientDescentTest : public ::testing::Test {
  protected:

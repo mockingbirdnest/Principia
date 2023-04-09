@@ -3,6 +3,8 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -13,18 +15,17 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_celestial {
+namespace _celestial {
+namespace internal {
 
-using base::not_null;
-using base::make_not_null_unique;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using physics::Body;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::RotatingBody;
-using quantities::GravitationalParameter;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_body;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_named_quantities;
 
 // Represents a KSP |CelestialBody|.
 class Celestial {
@@ -59,9 +60,14 @@ class Celestial {
   ContinuousTrajectory<Barycentric> const* trajectory_ = nullptr;
 };
 
-}  // namespace internal_celestial
+}  // namespace internal
 
-using internal_celestial::Celestial;
+using internal::Celestial;
 
+}  // namespace _celestial
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_celestial;
+}  // namespace principia::ksp_plugin

@@ -2,7 +2,7 @@
 
 #include "astronomy/frames.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "quantities/named_quantities.hpp"
@@ -10,15 +10,14 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_чебышёв_series {
 
-using astronomy::ICRS;
-using geometry::Instant;
-using geometry::Vector;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Metre;
-using quantities::si::Second;
+using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_чебышёв_series;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
@@ -202,6 +201,5 @@ TEST_F(ЧебышёвSeriesTest, SerializationSuccess) {
   }
 }
 
-}  // namespace internal_чебышёв_series
 }  // namespace numerics
 }  // namespace principia

@@ -9,14 +9,15 @@
 
 namespace principia {
 namespace geometry {
+namespace _permutation {
+namespace internal {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     OrthogonalMap);
-
-namespace internal_permutation {
-
-using base::not_null;
+using namespace principia::base::_mappable;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_sign;
 
 // Declare shorter names for the protocol buffer enums.
 static constexpr int EVEN = serialization::Permutation::EVEN;
@@ -53,7 +54,8 @@ enum class OddPermutation {
 // practical.  There are no precision losses when composing or applying
 // permutations.
 template<typename FromFrame, typename ToFrame>
-class Permutation : public LinearMap<FromFrame, ToFrame> {
+class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
+                                     FromFrame, ToFrame> {
  public:
   using CoordinatePermutation =
       std::conditional_t<FromFrame::handedness == ToFrame::handedness,
@@ -62,7 +64,7 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
 
   explicit Permutation(CoordinatePermutation coordinate_permutation);
 
-  Sign Determinant() const override;
+  Sign Determinant() const;
 
   Permutation<ToFrame, FromFrame> Inverse() const;
 
@@ -79,10 +81,12 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<typename T>
-  typename base::Mappable<Permutation, T>::type operator()(T const& t) const;
+  typename Mappable<Permutation, T>::type operator()(T const& t) const;
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -92,15 +96,15 @@ class Permutation : public LinearMap<FromFrame, ToFrame> {
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Permutation ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Permutation*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Permutation ReadFromMessage(serialization::Permutation const& message);
 
  public:
@@ -132,13 +136,18 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Permutation<FromFrame, ToFrame> const& permutation);
 
-}  // namespace internal_permutation
+}  // namespace internal
 
-using internal_permutation::EvenPermutation;
-using internal_permutation::OddPermutation;
-using internal_permutation::Permutation;
+using internal::EvenPermutation;
+using internal::OddPermutation;
+using internal::Permutation;
 
+}  // namespace _permutation
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_permutation;
+}  // namespace principia::geometry
 
 #include "geometry/permutation_body.hpp"

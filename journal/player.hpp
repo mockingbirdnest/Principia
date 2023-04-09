@@ -10,6 +10,12 @@
 namespace principia {
 namespace journal {
 
+class PlayerTest;
+class RecorderTest;
+
+namespace _player {
+namespace internal {
+
 class Player final {
  public:
   using PointerMap = std::map<std::uint64_t, void*>;
@@ -45,11 +51,20 @@ class Player final {
   std::unique_ptr<serialization::Method> last_method_in_;
   std::unique_ptr<serialization::Method> last_method_out_return_;
 
-  friend class PlayerTest;
-  friend class RecorderTest;
+  friend class journal::PlayerTest;
+  friend class journal::RecorderTest;
 };
 
+}  // namespace internal
+
+using internal::Player;
+
+}  // namespace _player
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_player;
+}  // namespace principia::journal
 
 #include "journal/player_body.hpp"

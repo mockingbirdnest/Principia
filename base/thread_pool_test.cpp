@@ -9,6 +9,8 @@
 namespace principia {
 namespace base {
 
+using namespace principia::base::_thread_pool;
+
 class ThreadPoolTest : public ::testing::Test {
  protected:
   ThreadPoolTest() : pool_(std::thread::hardware_concurrency()) {

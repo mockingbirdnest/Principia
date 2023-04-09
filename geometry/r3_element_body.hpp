@@ -15,17 +15,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3_element {
+namespace _r3_element {
+namespace internal {
 
-using numerics::CanEmitFMAInstructions;
-using quantities::ArcSin;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::DebugString;
-using quantities::DoubleOrQuantitySerializer;
-using quantities::Quantity;
-using quantities::Sin;
-using quantities::ToM128D;
+using namespace principia::numerics::_fma;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_serialization;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -436,6 +432,7 @@ R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
 
 template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
+  using quantities::_quantities::DebugString;
   std::string result = "{";
   result += DebugString(r3_element.x);
   result += ", ";
@@ -477,6 +474,7 @@ inline R3Element<double> BasisVector(int const i) {
           static_cast<double>(i == 2)};
 }
 
-}  // namespace internal_r3_element
+}  // namespace internal
+}  // namespace _r3_element
 }  // namespace geometry
 }  // namespace principia

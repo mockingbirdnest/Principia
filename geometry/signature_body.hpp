@@ -3,12 +3,15 @@
 #include "geometry/signature.hpp"
 
 #include "base/traits.hpp"
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_signature {
+namespace _signature {
+namespace internal {
 
-using base::is_same_template_v;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_rotation;
 
 template<typename FromFrame, typename ToFrame>
 constexpr Signature<FromFrame, ToFrame>::Signature(Sign const x,
@@ -126,9 +129,16 @@ LinearMap<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Signature<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().template Forget<ConformalMap>();
+}
+
+template<typename FromFrame, typename ToFrame>
 void Signature<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Signature, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::Signature::extension));
 }
@@ -137,7 +147,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Signature, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Signature::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Signature::extension));
@@ -183,6 +193,7 @@ std::ostream& operator<<(std::ostream& out,
              << signature.z_ << "}";
 }
 
-}  // namespace internal_signature
+}  // namespace internal
+}  // namespace _signature
 }  // namespace geometry
 }  // namespace principia

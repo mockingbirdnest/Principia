@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_segment_iterator {
+namespace _discrete_trajectory_segment_iterator {
+namespace internal {
 
 // Note the use of DCHECK, not DCHECK_NOTNULL, below, because the latter does
 // not go away when compiled in non-debug mode (don't ask).
@@ -99,6 +100,7 @@ DiscreteTrajectorySegmentIterator<Frame>::iterator() const {
   return iterator_;
 }
 
-}  // namespace internal_discrete_trajectory_segment_iterator
+}  // namespace internal
+}  // namespace _discrete_trajectory_segment_iterator
 }  // namespace physics
 }  // namespace principia

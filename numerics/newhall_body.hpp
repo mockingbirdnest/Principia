@@ -12,13 +12,13 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_newhall {
+namespace _newhall {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::Barycentre;
-using quantities::Exponentiation;
-using quantities::Frequency;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;
@@ -263,6 +263,7 @@ NewhallApproximationInMonomialBasis(int degree,
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE
 
-}  // namespace internal_newhall
+}  // namespace internal
+}  // namespace _newhall
 }  // namespace numerics
 }  // namespace principia

@@ -7,24 +7,22 @@
 
 #include "base/array.hpp"
 #include "base/jthread.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/root_finders.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_apsides {
+namespace _apsides {
+namespace internal {
 
-using base::BoundedArray;
-using geometry::Barycentre;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
-using numerics::Brent;
-using numerics::Hermite3;
-using quantities::IsFinite;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Square;
-using quantities::Variation;
+using namespace principia::base::_array;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_sign;
+using namespace principia::numerics::_hermite3;
+using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -209,6 +207,7 @@ absl::Status ComputeNodes(
   return absl::OkStatus();
 }
 
-}  // namespace internal_apsides
+}  // namespace internal
+}  // namespace _apsides
 }  // namespace physics
 }  // namespace principia

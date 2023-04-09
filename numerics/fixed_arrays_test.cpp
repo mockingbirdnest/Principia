@@ -7,7 +7,9 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Sqrt;
+using namespace principia::numerics::_fixed_arrays;
+
+using namespace principia::quantities::_elementary_functions;
 
 class FixedArraysTest : public ::testing::Test {
  protected:

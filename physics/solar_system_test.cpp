@@ -6,32 +6,27 @@
 #include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
-#include "integrators/methods.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_solar_system {
 
-using astronomy::ICRS;
-using base::Fingerprint2011;
-using geometry::Inertial;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Second;
-using quantities::si::Yotta;
-using quantities::si::Zetta;
-using testing_utilities::RelativeError;
 using ::testing::ElementsAreArray;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_numerics;
 
 class SolarSystemTest : public ::testing::Test {};
 
@@ -306,6 +301,5 @@ TEST_F(SolarSystemTest, FingerprintKeplerian) {
   CHECK_NE(fingerprint3, fingerprint4);
 }
 
-}  // namespace internal_solar_system
 }  // namespace physics
 }  // namespace principia

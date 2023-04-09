@@ -3,7 +3,7 @@
 #include <list>
 #include <vector>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"
@@ -11,28 +11,20 @@
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
+namespace numerics {
 
-using base::Range;
-using geometry::Instant;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Centi;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Nano;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ResultOf;
-
-namespace numerics {
+using namespace principia::base::_ranges;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_fit_hermite_spline;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class FitHermiteSplineTest : public ::testing::Test {
  protected:

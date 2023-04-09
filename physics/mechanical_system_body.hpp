@@ -2,25 +2,28 @@
 
 #include "physics/mechanical_system.hpp"
 
+#include "geometry/space.hpp"
+#include "physics/inertia_tensor.hpp"
+
 namespace principia {
 namespace physics {
-namespace internal_mechanical_system {
+namespace _mechanical_system {
+namespace internal {
 
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::SymmetricSquare;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
-using quantities::Momentum;
-using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_space;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename SystemFrame>
 template<typename BodyFrame>
 void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
     RigidMotion<BodyFrame, InertialFrame> const& motion,
     Mass const& mass,
-    geometry::InertiaTensor<BodyFrame> const& inertia_tensor) {
+    _inertia_tensor::InertiaTensor<BodyFrame> const& inertia_tensor) {
   DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
   SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> const
@@ -95,6 +98,7 @@ MechanicalSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   return result.Anticommutator();
 }
 
-}  // namespace internal_mechanical_system
+}  // namespace internal
+}  // namespace _mechanical_system
 }  // namespace physics
 }  // namespace principia

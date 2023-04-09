@@ -8,9 +8,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_hilbert {
+namespace _hilbert {
+namespace internal {
 
-using quantities::Abs;
+using namespace principia::quantities::_elementary_functions;
 
 template<typename T1, typename T2>
 auto Hilbert<T1, T2,
@@ -39,7 +40,9 @@ auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::Norm(
   return Abs(t);
 }
 
-#if !(_MSC_FULL_VER == 193'431'937)
+#if !(_MSC_FULL_VER == 193'431'937 || \
+      _MSC_FULL_VER == 193'431'942 || \
+    _MSC_FULL_VER == 193'532'216)
 template<typename T1, typename T2>
 auto Hilbert<T1, T2,
              std::void_t<decltype(InnerProduct(std::declval<T1>(),
@@ -47,7 +50,7 @@ auto Hilbert<T1, T2,
     InnerProduct(T1 const& t1, T2 const& t2) -> InnerProductType {
   // Is there a better way to avoid recursion than to put our fingers inside
   // grassmann?
-  return internal_grassmann::InnerProduct(t1, t2);
+  return _grassmann::internal::InnerProduct(t1, t2);
 }
 
 template<typename T>
@@ -57,7 +60,7 @@ auto Hilbert<T, T,
     InnerProduct(T const& t1, T const& t2) -> InnerProductType {
   // Is there a better way to avoid recursion than to put our fingers inside
   // grassmann?
-  return internal_grassmann::InnerProduct(t1, t2);
+  return _grassmann::internal::InnerProduct(t1, t2);
 }
 
 template<typename T>
@@ -77,6 +80,7 @@ Norm(T const& t) -> NormType {
 }
 #endif
 
-}  // namespace internal_hilbert
+}  // namespace internal
+}  // namespace _hilbert
 }  // namespace geometry
 }  // namespace principia

@@ -9,18 +9,16 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "base/status_utilities.hpp"
-#include "geometry/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory {
+namespace _discrete_trajectory {
+namespace internal {
 
-using base::make_not_null_unique;
-using base::uninitialized;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using quantities::Length;
+using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 DiscreteTrajectory<Frame>::DiscreteTrajectory()
@@ -999,6 +997,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
   }
 }
 
-}  // namespace internal_discrete_trajectory
+}  // namespace internal
+}  // namespace _discrete_trajectory
 }  // namespace physics
 }  // namespace principia

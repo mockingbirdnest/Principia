@@ -1,12 +1,13 @@
 #pragma once
 
-#include <functional>
+#include "physics/frame_field.hpp"
 
-#include "geometry/named_quantities.hpp"
+#include <functional>
 
 namespace principia {
 namespace physics {
-namespace internal_frame_field {
+namespace _frame_field {
+namespace internal {
 
 template<typename Frame, typename ThisFrame>
 Rotation<ThisFrame, Frame> FrameField<Frame, ThisFrame>::FromThisFrame(
@@ -27,6 +28,7 @@ CoordinateFrameField<Frame, ThisFrame>::FromThisFrame(
   return Rotation<ThisFrame, Frame>::Identity();
 }
 
-}  // namespace internal_frame_field
+}  // namespace internal
+}  // namespace _frame_field
 }  // namespace physics
 }  // namespace principia

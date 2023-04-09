@@ -1,7 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include "geometry/affine_map.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
@@ -16,25 +16,22 @@
 namespace principia {
 namespace interface {
 
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using ksp_plugin::Camera;
-using ksp_plugin::Navigation;
-using ksp_plugin::MockPlanetarium;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using quantities::Length;
 using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::quantities::_quantities;
 
 class InterfacePlanetariumTest : public ::testing::Test {
  protected:

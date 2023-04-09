@@ -3,14 +3,15 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/quaternion.hpp"
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace numerics {
-namespace internal_davenport_q_method {
+namespace _davenport_q_method {
+namespace internal {
 
-using geometry::Rotation;
-using geometry::Vector;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_rotation;
 
 template<typename FromFrame, typename ToFrame, typename Weight>
 Rotation<FromFrame, ToFrame> DavenportQMethod(
@@ -18,11 +19,16 @@ Rotation<FromFrame, ToFrame> DavenportQMethod(
     std::vector<Vector<double, ToFrame>> const& b,
     std::vector<Weight> const& weights);
 
-}  // namespace internal_davenport_q_method
+}  // namespace internal
 
-using internal_davenport_q_method::DavenportQMethod;
+using internal::DavenportQMethod;
 
+}  // namespace _davenport_q_method
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_davenport_q_method;
+}  // namespace principia::numerics
 
 #include "numerics/davenport_q_method_body.hpp"

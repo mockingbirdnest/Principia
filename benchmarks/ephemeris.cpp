@@ -14,9 +14,10 @@
 #include "base/thread_pool.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -36,53 +37,31 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
-
-using astronomy::ICRS;
-using base::make_not_null_unique;
-using base::not_null;
-using base::ThreadPool;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::Rotation;
-using geometry::Velocity;
-using integrators::Integrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using ksp_plugin::Barycentric;
-using quantities::DebugString;
-using quantities::Frequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::bipm::NauticalMile;
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Degree;
-using quantities::si::Hertz;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::SolarSystemFactory;
-
 namespace physics {
+
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::base::_thread_pool;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_bipm;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 

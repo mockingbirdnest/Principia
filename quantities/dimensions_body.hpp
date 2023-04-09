@@ -6,9 +6,10 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_dimensions {
+namespace _dimensions {
+namespace internal {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 class ExponentSerializer : not_constructible {
  public:
@@ -97,15 +98,14 @@ struct DimensionsAreSerializable : std::true_type {
 
 template<typename Dimensions, int n>
 struct DimensionsExponentiationGenerator : not_constructible {
-  using Type =
-      internal_dimensions::Dimensions<Dimensions::Length * n,
-                                      Dimensions::Mass * n,
-                                      Dimensions::Time * n,
-                                      Dimensions::Current * n,
-                                      Dimensions::Temperature * n,
-                                      Dimensions::Amount * n,
-                                      Dimensions::LuminousIntensity * n,
-                                      Dimensions::Angle * n>;
+  using Type = _dimensions::Dimensions<Dimensions::Length * n,
+                                       Dimensions::Mass * n,
+                                       Dimensions::Time * n,
+                                       Dimensions::Current * n,
+                                       Dimensions::Temperature * n,
+                                       Dimensions::Amount * n,
+                                       Dimensions::LuminousIntensity * n,
+                                       Dimensions::Angle * n>;
 };
 
 template<typename Dimensions, int n>
@@ -120,15 +120,14 @@ struct DimensionsNthRootGenerator : not_constructible {
                 (Dimensions::Angle % n) == 0,
                 "Dimensions not suitable for Nth root");
 
-  using Type =
-      internal_dimensions::Dimensions<Dimensions::Length / n,
-                                      Dimensions::Mass / n,
-                                      Dimensions::Time / n,
-                                      Dimensions::Current / n,
-                                      Dimensions::Temperature / n,
-                                      Dimensions::Amount / n,
-                                      Dimensions::LuminousIntensity / n,
-                                      Dimensions::Angle / n>;
+  using Type = _dimensions::Dimensions<Dimensions::Length / n,
+                                       Dimensions::Mass / n,
+                                       Dimensions::Time / n,
+                                       Dimensions::Current / n,
+                                       Dimensions::Temperature / n,
+                                       Dimensions::Amount / n,
+                                       Dimensions::LuminousIntensity / n,
+                                       Dimensions::Angle / n>;
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -157,6 +156,7 @@ struct DimensionsQuotientGenerator : not_constructible {
                           LDimensions::Angle - RDimensions::Angle>;
 };
 
-}  // namespace internal_dimensions
+}  // namespace internal
+}  // namespace _dimensions
 }  // namespace quantities
 }  // namespace principia

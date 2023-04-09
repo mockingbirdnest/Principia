@@ -6,10 +6,10 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
+namespace _finite_difference {
+namespace internal {
 
-using quantities::Derivative;
-using quantities::Difference;
+using namespace principia::quantities::_named_quantities;
 
 // Given n equally-spaced values f(xᵢ) = f(x₀ + i h),
 // approximates the derivative f′(xⱼ) at xⱼ for j = |offset|, where 0 ≤ j < n.
@@ -27,11 +27,16 @@ Derivative<Value, Argument> FiniteDifference(
     Argument const& step,
     int offset);
 
-}  // namespace internal_finite_difference
+}  // namespace internal
 
-using internal_finite_difference::FiniteDifference;
+using internal::FiniteDifference;
 
+}  // namespace _finite_difference
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_finite_difference;
+}  // namespace principia::numerics
 
 #include "numerics/finite_difference_body.hpp"

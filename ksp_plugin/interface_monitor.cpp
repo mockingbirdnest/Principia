@@ -12,10 +12,8 @@
 namespace principia {
 namespace interface {
 
-using quantities::Infinity;
-using quantities::Time;
-using quantities::si::Nano;
-using quantities::si::Second;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 constexpr int monitor_count = 64;

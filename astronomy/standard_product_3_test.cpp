@@ -8,7 +8,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -17,27 +17,6 @@
 namespace principia {
 namespace astronomy {
 
-using base::dynamic_cast_not_null;
-using base::not_null;
-using geometry::Position;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodySurfaceDynamicFrame;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::RotatingBody;
-using physics::SolarSystem;
-using quantities::astronomy::JulianYear;
-using quantities::si::Deci;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::Componentwise;
 using ::testing::AllOf;
 using ::testing::Each;
 using ::testing::ElementsAre;
@@ -48,6 +27,22 @@ using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 using ::testing::ValuesIn;
+using namespace principia::astronomy::_standard_product_3;
+using namespace principia::base::_not_null;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_numerics;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:
@@ -290,7 +285,7 @@ class StandardProduct3DynamicsTest
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<RotatingBody<ICRS> const*> const earth_;
   ContinuousTrajectory<ICRS> const& earth_trajectory_;
-  BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
+  BodySurfaceReferenceFrame<ICRS, ITRS> itrs_;
 };
 
 INSTANTIATE_TEST_SUITE_P(

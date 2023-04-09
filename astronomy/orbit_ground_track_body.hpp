@@ -5,18 +5,19 @@
 #include <limits>
 #include <vector>
 
+#include "geometry/space.hpp"
 #include "physics/apsides.hpp"
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbit_ground_track {
+namespace _orbit_ground_track {
+namespace internal {
 
-using geometry::Position;
-using geometry::Vector;
-using physics::ComputeNodes;
-using quantities::Mod;
-using quantities::UnwindFrom;
-using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_apsides;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // Note that the origin of this celestial longitude is arbitrary: it is not the
 // node of the orbit around the sun (the equinox).  If |PrimaryCentred| is the
@@ -196,6 +197,7 @@ OrbitGroundTrack::mean_solar_times_of_descending_nodes() const {
   return mean_solar_times_of_descending_nodes_;
 }
 
-}  // namespace internal_orbit_ground_track
+}  // namespace internal
+}  // namespace _orbit_ground_track
 }  // namespace astronomy
 }  // namespace principia

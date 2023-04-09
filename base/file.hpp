@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_file {
+namespace _file {
+namespace internal {
 
 // A RAII wrapper for a |std::ofstream|.
 class OFStream {
@@ -22,10 +23,11 @@ class OFStream {
   std::ofstream stream_;
 };
 
-}  // namespace internal_file
+}  // namespace internal
 
-using internal_file::OFStream;
+using internal::OFStream;
 
+}  // namespace _file
 }  // namespace base
 }  // namespace principia
 

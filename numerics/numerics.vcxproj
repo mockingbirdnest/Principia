@@ -90,7 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\geometry\instant_output.cpp" />
+    <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />

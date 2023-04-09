@@ -13,7 +13,8 @@
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -25,34 +26,20 @@
 #include "testing_utilities/integration.hpp"
 
 namespace principia {
+namespace integrators {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Stiffness;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration3D;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
-
-namespace integrators {
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_integration;
 
 namespace {
 

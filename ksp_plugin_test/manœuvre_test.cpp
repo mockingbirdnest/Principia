@@ -3,19 +3,20 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -33,52 +34,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using base::not_null;
-using base::make_not_null_unique;
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::AcceleratedRigidMotion;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using quantities::Acceleration;
-using quantities::AngularAcceleration;
-using quantities::Force;
-using quantities::GravitationalParameter;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Variation;
-using quantities::constants::StandardGravity;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Second;
-using quantities::uk::Foot;
-using testing_utilities::make_not_null;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
@@ -86,7 +41,33 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
-namespace si = quantities::si;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_make_not_null;
+using namespace principia::testing_utilities::_numerics;
 
 class ManœuvreTest : public ::testing::Test {
  protected:
@@ -96,16 +77,18 @@ class ManœuvreTest : public ::testing::Test {
                           Handedness::Right,
                           serialization::Frame::TEST>;
 
-  not_null<std::unique_ptr<StrictMock<MockDynamicFrame<World, Rendering>>>>
-  MakeMockDynamicFrame() {
-    auto owned_mock_dynamic_frame =
-        make_not_null_unique<StrictMock<MockDynamicFrame<World, Rendering>>>();
-    mock_dynamic_frame_ = owned_mock_dynamic_frame.get();
-    return owned_mock_dynamic_frame;
+  not_null<
+      std::unique_ptr<StrictMock<MockRigidReferenceFrame<World, Rendering>>>>
+  MakeMockReferenceFrame() {
+    auto owned_mock_reference_frame = make_not_null_unique<
+        StrictMock<MockRigidReferenceFrame<World, Rendering>>>();
+    mock_reference_frame_ = owned_mock_reference_frame.get();
+    return owned_mock_reference_frame;
   }
 
   Instant const t0_;
-  StrictMock<MockDynamicFrame<World, Rendering>> const* mock_dynamic_frame_;
+  StrictMock<MockRigidReferenceFrame<World, Rendering>> const*
+      mock_reference_frame_;
   DiscreteTrajectory<World> discrete_trajectory_;
   DegreesOfFreedom<World> const dof_ = {
       World::origin + Displacement<World>({1 * Metre, 9 * Metre, 5 * Metre}),
@@ -146,7 +129,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
       timing,
       /*thrust=*/1 * Newton,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-      MakeMockDynamicFrame(),
+      MakeMockReferenceFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
@@ -172,11 +155,13 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(t0_ + (2 - Sqrt(2)) * Second, manœuvre.time_of_half_Δv());
 
   EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
-  EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_, MotionOfThisFrame(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              MotionOfThisFrame(manœuvre.initial_time()))
       .WillOnce(Return(accelerated_rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               GravitationalAcceleration(manœuvre.initial_time(), _))
       .WillOnce(Return(gravitational_acceleration_));
   manœuvre.set_coasting_trajectory(discrete_trajectory_.segments().begin());
@@ -206,7 +191,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
       timing,
       /*thrust=*/1 * Newton,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-      MakeMockDynamicFrame(),
+      MakeMockReferenceFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
@@ -232,11 +217,13 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(t0_, manœuvre.time_of_half_Δv());
 
   EXPECT_OK(discrete_trajectory_.Append(manœuvre.initial_time(), dof_));
-  EXPECT_CALL(*mock_dynamic_frame_, ToThisFrameAtTime(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              ToThisFrameAtTime(manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_, MotionOfThisFrame(manœuvre.initial_time()))
+  EXPECT_CALL(*mock_reference_frame_,
+              MotionOfThisFrame(manœuvre.initial_time()))
       .WillOnce(Return(accelerated_rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               GravitationalAcceleration(manœuvre.initial_time(), _))
       .WillOnce(Return(gravitational_acceleration_));
   manœuvre.set_coasting_trajectory(discrete_trajectory_.segments().begin());
@@ -299,7 +286,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       first_burn_timing,
       thrust_1st,
       specific_impulse_1st,
-      MakeMockDynamicFrame(),
+      MakeMockReferenceFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> first_manœuvre(
       total_vehicle_at_s_ivb_1st_90_percent_thrust,
@@ -317,13 +304,13 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   EXPECT_OK(discrete_trajectory_.Append(first_manœuvre.initial_time(), dof_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               ToThisFrameAtTime(first_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               MotionOfThisFrame(first_manœuvre.initial_time()))
       .WillOnce(Return(accelerated_rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               GravitationalAcceleration(first_manœuvre.initial_time(), _))
       .WillOnce(Return(gravitational_acceleration_));
   first_manœuvre.set_coasting_trajectory(
@@ -348,7 +335,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       second_burn_timing,
       thrust_2nd,
       specific_impulse_2nd,
-      MakeMockDynamicFrame(),
+      MakeMockReferenceFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> second_manœuvre(
       total_vehicle_at_s_ivb_2nd_90_percent_thrust,
@@ -366,13 +353,13 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   // Final acceleration from Table 4-2. Comparison of Significant Trajectory
   // Events.
   EXPECT_OK(discrete_trajectory_.Append(second_manœuvre.initial_time(), dof_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               ToThisFrameAtTime(second_manœuvre.initial_time()))
       .WillOnce(Return(rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               MotionOfThisFrame(second_manœuvre.initial_time()))
       .WillOnce(Return(accelerated_rigid_motion_));
-  EXPECT_CALL(*mock_dynamic_frame_,
+  EXPECT_CALL(*mock_reference_frame_,
               GravitationalAcceleration(second_manœuvre.initial_time(), _))
       .WillOnce(Return(gravitational_acceleration_));
   second_manœuvre.set_coasting_trajectory(
@@ -402,8 +389,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 }
 
 TEST_F(ManœuvreTest, Serialization) {
-  auto mock_dynamic_frame = MakeMockDynamicFrame();
-  auto const unowned_dynamic_frame = mock_dynamic_frame.get();
+  auto mock_reference_frame = MakeMockReferenceFrame();
+  auto const unowned_reference_frame = mock_reference_frame.get();
   Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
 
   Manœuvre<World, Rendering>::Intensity intensity;
@@ -415,16 +402,16 @@ TEST_F(ManœuvreTest, Serialization) {
       timing,
       /*thrust=*/1 * Newton,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
-      std::move(mock_dynamic_frame),
+      std::move(mock_reference_frame),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
 
-  serialization::DynamicFrame serialized_mock_dynamic_frame;
-  serialized_mock_dynamic_frame.MutableExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::
+  serialization::ReferenceFrame serialized_mock_reference_frame;
+  serialized_mock_reference_frame.MutableExtension(
+      serialization::BodyCentredNonRotatingReferenceFrame::
           extension)->set_centre(666);
-  EXPECT_CALL(*unowned_dynamic_frame, WriteToMessage(_))
-      .WillOnce(SetArgPointee<0>(serialized_mock_dynamic_frame));
+  EXPECT_CALL(*unowned_reference_frame, WriteToMessage(_))
+      .WillOnce(SetArgPointee<0>(serialized_mock_reference_frame));
   serialization::Manoeuvre message;
   manœuvre.WriteToMessage(&message);
 

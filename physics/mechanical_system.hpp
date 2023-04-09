@@ -7,26 +7,25 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/quantities.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_mechanical_system {
+namespace _mechanical_system {
+namespace internal {
 
-using geometry::BarycentreCalculator;
-using geometry::Bivector;
-using geometry::InertiaTensor;
-using geometry::Frame;
-using geometry::OrthogonalMap;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
-using quantities::AngularMomentum;
-using quantities::Mass;
-using quantities::MomentOfInertia;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Computes the instantaneous overall properties of a mechanical system.
 // Effectively an extension of
@@ -98,11 +97,16 @@ class MechanicalSystem {
       sum_of_inertia_tensors_;
 };
 
-}  // namespace internal_mechanical_system
+}  // namespace internal
 
-using internal_mechanical_system::MechanicalSystem;
+using internal::MechanicalSystem;
 
+}  // namespace _mechanical_system
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_mechanical_system;
+}  // namespace principia::physics
 
 #include "physics/mechanical_system_body.hpp"

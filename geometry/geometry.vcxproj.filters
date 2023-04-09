@@ -71,9 +71,6 @@
     <ClInclude Include="affine_map_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="named_quantities.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="identity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -176,6 +173,27 @@
     <ClInclude Include="plane_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="homothecy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="conformal_map.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="conformal_map_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="instant.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="space.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="space_transformations.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -244,13 +262,19 @@
     <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="instant_output.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="instant_output_test.cpp">
+    <ClCompile Include="plane_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="plane_test.cpp">
+    <ClCompile Include="homothecy_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="conformal_map_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="instant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="instant_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

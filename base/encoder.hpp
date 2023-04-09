@@ -6,7 +6,10 @@
 
 namespace principia {
 namespace base {
-namespace internal_encoder {
+namespace _encoder {
+namespace internal {
+
+using namespace principia::base::_array;
 
 // Encodes/decodes an array of bytes to/from an array of Char.  If
 // |null_terminated| is true a null Char is appended to the encoded form and
@@ -41,9 +44,10 @@ class Encoder {
   virtual std::int64_t DecodedLength(Array<Char const> input) = 0;
 };
 
-}  // namespace internal_encoder
+}  // namespace internal
 
-using internal_encoder::Encoder;
+using internal::Encoder;
 
+}  // namespace _encoder
 }  // namespace base
 }  // namespace principia

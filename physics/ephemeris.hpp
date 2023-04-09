@@ -12,11 +12,13 @@
 #include "base/recurring_thread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "google/protobuf/repeated_field.h"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/checkpointer.hpp"
+#include "physics/clientele.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -31,25 +33,19 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
+namespace _ephemeris {
+namespace internal {
 
-using base::not_null;
-using base::RecurringThread;
-using geometry::InfinitePast;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::FixedStepSizeIntegrator;
-using integrators::InitialValueProblem;
-using integrators::Integrator;
-using integrators::SpecialSecondOrderDifferentialEquation;
-using quantities::Acceleration;
-using quantities::Length;
-using quantities::SpecificEnergy;
-using quantities::Speed;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::base::_recurring_thread;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Note on thread-safety: the integration functions (Prolong, FlowWithFixedStep,
 // FlowWithAdaptiveStep) can be called concurrently as long as their parameters
@@ -140,9 +136,9 @@ class Ephemeris {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min);
 
-  // Blocks until the |t_min()| of the ephemeris is at or before
-  // |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the ephemeris is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min);
 
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized
@@ -241,7 +237,7 @@ class Ephemeris {
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the ephemeris must be restored
   // at a checkpoint such that, once the ephemeris is prolonged, its |t_min()|
   // is at or before |desired_t_min|.
@@ -426,6 +422,7 @@ class Ephemeris {
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
+  Clientele<Instant> reanimator_clientele_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that |ContinuousTrajectory| is thread-safe.  |lock_| is
@@ -442,11 +439,16 @@ class Ephemeris {
   absl::Status last_severe_integration_status_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_ephemeris
+}  // namespace internal
 
-using internal_ephemeris::Ephemeris;
+using internal::Ephemeris;
 
+}  // namespace _ephemeris
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_ephemeris;
+}  // namespace principia::physics
 
 #include "physics/ephemeris_body.hpp"

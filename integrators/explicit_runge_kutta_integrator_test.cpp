@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -21,25 +21,16 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_runge_kutta_integrator {
 
-using geometry::Instant;
-using quantities::Length;
-using quantities::Mass;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::IsNear;
-using testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using testing_utilities::RelativeError;
-using testing_utilities::Slope;
-using testing_utilities::operator""_;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_explicit_runge_kutta_integrator;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
 
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
@@ -154,6 +145,5 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
 #endif
 }
 
-}  // namespace internal_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

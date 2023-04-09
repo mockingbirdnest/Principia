@@ -4,11 +4,15 @@
 
 #include "base/mappable.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_identity {
+namespace _identity {
+namespace internal {
+
+using namespace principia::geometry::_orthogonal_map;
 
 template<typename FromFrame, typename ToFrame>
 Sign Identity<FromFrame, ToFrame>::Determinant() const {
@@ -52,9 +56,9 @@ Identity<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Identity<FromFrame, ToFrame>, T>::type
+typename Mappable<Identity<FromFrame, ToFrame>, T>::type
 Identity<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Identity, T>::Do(*this, t);
+  return Mappable<Identity, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -64,9 +68,16 @@ LinearMap<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Identity<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().template Forget<ConformalMap>();
+}
+
+template<typename FromFrame, typename ToFrame>
 void Identity<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Identity, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(message->MutableExtension(serialization::Identity::extension));
 }
 
@@ -74,7 +85,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Identity, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Identity::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Identity::extension));
@@ -104,6 +115,7 @@ std::ostream& operator<<(std::ostream& out,
   return out << "𝟙";
 }
 
-}  // namespace internal_identity
+}  // namespace internal
+}  // namespace _identity
 }  // namespace geometry
 }  // namespace principia

@@ -15,15 +15,15 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_nearest_neighbour {
+namespace _nearest_neighbour {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::Barycentre;
-using geometry::Bivector;
-using geometry::SymmetricBilinearForm;
-using geometry::Wedge;
-using quantities::Infinity;
-using quantities::Pow;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 constexpr std::int32_t no_min_index = -1;
 
@@ -365,6 +365,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   }
 }
 
-}  // namespace internal_nearest_neighbour
+}  // namespace internal
+}  // namespace _nearest_neighbour
 }  // namespace numerics
 }  // namespace principia

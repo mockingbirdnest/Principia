@@ -41,7 +41,7 @@ namespace std {
 using namespace ::std;
 
 template <typename T>
-using allocator = ::principia::base::MallocAllocator<T>;
+using allocator = ::principia::base::_malloc_allocator::MallocAllocator<T>;
 
 template <typename T, typename Allocator = allocator<T>>
 using vector = ::std::vector<T, Allocator>;

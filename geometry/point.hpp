@@ -13,11 +13,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_point {
+namespace _point {
+namespace internal {
 
-using base::not_null;
-using quantities::is_quantity_v;
-using quantities::Product;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -51,7 +53,7 @@ class Point final {
 
   void WriteToMessage(not_null<serialization::Point*> message) const;
   template<typename V = Vector,
-           typename = std::enable_if_t<base::is_serializable_v<V>>>
+           typename = std::enable_if_t<is_serializable_v<V>>>
   static Point ReadFromMessage(serialization::Point const& message);
 
  private:
@@ -96,7 +98,7 @@ class Point final {
   friend std::string DebugString(Point<V> const& point);
 
   template<typename V, typename S>
-  friend class geometry::BarycentreCalculator;
+  friend class _barycentre_calculator::BarycentreCalculator;
 };
 
 template<typename Vector>
@@ -141,12 +143,19 @@ std::string DebugString(Point<Vector> const& point);
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
 
-}  // namespace internal_point
+}  // namespace internal
 
-using internal_point::Point;
+using internal::Point;
+
+}  // namespace _point
 
 // Specialize BarycentreCalculator to make it applicable to Points.
-namespace internal_barycentre_calculator {
+namespace _barycentre_calculator {
+namespace internal {
+
+using namespace principia::geometry::_point;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {
@@ -164,8 +173,13 @@ class BarycentreCalculator<Point<Vector>, Weight> final {
   Weight weight_;
 };
 
-}  // namespace internal_barycentre_calculator
+}  // namespace internal
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_point;
+}  // namespace principia::geometry
 
 #include "geometry/point_body.hpp"

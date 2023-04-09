@@ -10,12 +10,14 @@
 #include "journal/profiles.hpp"
 
 namespace principia {
-
-using base::HexadecimalEncoder;
-using base::SerializeAsBytes;
-using base::UniqueArray;
-
 namespace journal {
+namespace _recorder {
+namespace internal {
+
+using namespace principia::base::_array;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_serialization;
+using namespace principia::base::_version;
 
 Recorder::Recorder(std::filesystem::path const& path)
     : stream_(path, std::ios::out) {
@@ -32,7 +34,7 @@ void Recorder::WriteAtDestruction(serialization::Method const& method) {
   lock_.Unlock();
 }
 
-void Recorder::Activate(base::not_null<Recorder*> const recorder) {
+void Recorder::Activate(not_null<Recorder*> const recorder) {
   CHECK(active_recorder_ == nullptr);
   active_recorder_ = recorder;
 
@@ -45,8 +47,8 @@ void Recorder::Activate(base::not_null<Recorder*> const recorder) {
   active_recorder_->WriteAtConstruction(method);
   not_null<serialization::GetVersion::Out*> const out =
       get_version->mutable_out();
-  out->set_build_date(base::BuildDate);
-  out->set_version(base::Version);
+  out->set_build_date(BuildDate);
+  out->set_version(Version);
   active_recorder_->WriteAtDestruction(method);
 }
 
@@ -70,5 +72,7 @@ void Recorder::WriteLocked(serialization::Method const& method) {
 
 Recorder* Recorder::active_recorder_ = nullptr;
 
+}  // namespace internal
+}  // namespace _recorder
 }  // namespace journal
 }  // namespace principia

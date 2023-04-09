@@ -16,9 +16,10 @@
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/point.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
@@ -30,12 +31,13 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -49,50 +51,39 @@ namespace ksp_plugin {
 
 class TestablePlugin;
 
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
-using base::not_null;
-using base::Subset;
-using base::ThreadPool;
-using geometry::AffineMap;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InertiaTensor;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Point;
-using geometry::Perspective;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::FixedStepSizeIntegrator;
-using integrators::AdaptiveStepSizeIntegrator;
-using physics::Body;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::DynamicFrame;
-using physics::Ephemeris;
-using physics::FrameField;
-using physics::Frenet;
-using physics::HierarchicalSystem;
-using physics::MassiveBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::Trajectory;
-using quantities::Angle;
-using quantities::Force;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Time;
-using quantities::Torque;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
+using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_monostable;
+using namespace principia::base::_not_null;
+using namespace principia::base::_thread_pool;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_body;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_hierarchical_system;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
@@ -505,7 +496,7 @@ class Plugin {
   bool is_loaded(not_null<Vessel*> vessel) const;
 
   // Initialization objects.
-  base::Monostable initializing_;
+  Monostable initializing_;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;
@@ -577,10 +568,15 @@ class Plugin {
   friend class ksp_plugin::TestablePlugin;
 };
 
-}  // namespace internal_plugin
+}  // namespace internal
 
-using internal_plugin::Index;
-using internal_plugin::Plugin;
+using internal::Index;
+using internal::Plugin;
 
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_plugin;
+}  // namespace principia::ksp_plugin

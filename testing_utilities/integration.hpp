@@ -3,7 +3,8 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -12,20 +13,16 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_integration {
+namespace _integration {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using physics::MassiveBody;
-using quantities::Acceleration;
-using quantities::Force;
-using quantities::Length;
-using quantities::Momentum;
-using quantities::Speed;
-using quantities::Time;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_massive_body;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.
@@ -88,16 +85,21 @@ absl::Status ComputeLegendrePolynomialSecondDerivative(
     std::vector<Variation<Variation<double>>>& pʺ,
     int* evaluations);
 
-}  // namespace internal_integration
+}  // namespace internal
 
-using internal_integration::ComputeЧебышёвPolynomialSecondDerivative;
-using internal_integration::ComputeHarmonicOscillatorAcceleration1D;
-using internal_integration::ComputeHarmonicOscillatorAcceleration3D;
-using internal_integration::ComputeHarmonicOscillatorDerivatives1D;
-using internal_integration::ComputeKeplerAcceleration;
-using internal_integration::ComputeLegendrePolynomialSecondDerivative;
+using internal::ComputeЧебышёвPolynomialSecondDerivative;
+using internal::ComputeHarmonicOscillatorAcceleration1D;
+using internal::ComputeHarmonicOscillatorAcceleration3D;
+using internal::ComputeHarmonicOscillatorDerivatives1D;
+using internal::ComputeKeplerAcceleration;
+using internal::ComputeLegendrePolynomialSecondDerivative;
 
+}  // namespace _integration
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_integration;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/integration_body.hpp"

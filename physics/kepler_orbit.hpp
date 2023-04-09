@@ -4,23 +4,19 @@
 #include <ostream>
 #include <string>
 
+#include "geometry/instant.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
+namespace _kepler_orbit {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::SpecificAngularMomentum;
-using quantities::SpecificEnergy;
-using quantities::Speed;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 struct KeplerianElements final {
@@ -133,12 +129,17 @@ class KeplerOrbit final {
   Instant const epoch_;
 };
 
-}  // namespace internal_kepler_orbit
+}  // namespace internal
 
-using internal_kepler_orbit::KeplerianElements;
-using internal_kepler_orbit::KeplerOrbit;
+using internal::KeplerianElements;
+using internal::KeplerOrbit;
 
+}  // namespace _kepler_orbit
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_kepler_orbit;
+}  // namespace principia::physics
 
 #include "physics/kepler_orbit_body.hpp"

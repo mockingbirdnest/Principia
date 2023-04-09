@@ -2,7 +2,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,29 +18,24 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Vector;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Pow;
-using quantities::si::Metre;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Branin;
-using testing_utilities::Componentwise;
-using testing_utilities::GoldsteinPrice;
-using testing_utilities::Hartmann3;
-using testing_utilities::IsNear;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::𝛁Branin;
-using testing_utilities::𝛁GoldsteinPrice;
-using testing_utilities::𝛁Hartmann3;
-using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_global_optimization;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_optimization_test_functions;
+using namespace principia::testing_utilities::_vanishes_before;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.

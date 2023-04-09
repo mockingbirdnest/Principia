@@ -3,7 +3,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gtest/gtest.h"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -16,20 +16,16 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Hilbert;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Vector;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Sqrt;
-using quantities::si::Kelvin;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_poisson_series_basis;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class PoissonSeriesBasisTest : public ::testing::Test {
  protected:

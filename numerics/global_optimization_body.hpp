@@ -15,15 +15,15 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_global_optimization {
+namespace _global_optimization {
+namespace internal {
 
-using base::make_not_null_unique;
 using base::noreturn;
-using geometry::Barycentre;
-using geometry::Wedge;
-using quantities::Cbrt;
-using quantities::Infinity;
-using quantities::Pow;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 // Values that are too small cause extra activity in |Add| and deeper recursion
 // in |FindNearestNeighbour|.  Values that are too large cause extra function
@@ -305,6 +305,7 @@ typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Norm²Type
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
     double const σ,
     std::int64_t const kN) {
+  using quantities::_elementary_functions::Cbrt;
   if constexpr (dimensions == 1) {
     return Pow<2>(box_measure_ * σ * std::log(kN) / (2.0 * kN));
   } else if constexpr (dimensions == 2) {
@@ -315,6 +316,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
   noreturn();
 }
 
-}  // namespace internal_global_optimization
+}  // namespace internal
+}  // namespace _global_optimization
 }  // namespace numerics
 }  // namespace principia

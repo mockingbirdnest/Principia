@@ -8,7 +8,8 @@
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
@@ -35,18 +36,21 @@ class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
 class DiscreteTrajectorySegmentTest;
 
-namespace internal_discrete_trajectory_segment {
+namespace _discrete_trajectory_segment {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using numerics::Hermite3;
-using physics::DegreesOfFreedom;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_hermite3;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {
-  using Timeline = internal_discrete_trajectory_types::Timeline<Frame>;
+  using Timeline = _discrete_trajectory_types::Timeline<Frame>;
 
  public:
   using key_type = typename Timeline::key_type;
@@ -57,7 +61,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   using reverse_iterator = std::reverse_iterator<iterator>;
 
   using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
+      _discrete_trajectory_types::DownsamplingParameters;
 
   // TODO(phl): Decide which constructors should be public.
   DiscreteTrajectorySegment() = default;
@@ -135,7 +139,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       std::vector<iterator> const& exact) const;
 
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static DiscreteTrajectorySegment ReadFromMessage(
       serialization::DiscreteTrajectorySegment const& message,
       DiscreteTrajectorySegmentIterator<Frame> self);
@@ -220,23 +224,30 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   Timeline timeline_;
 
   template<typename F>
-  friend class physics::DiscreteTrajectory;
+  friend class _discrete_trajectory::internal::DiscreteTrajectory;
   template<typename F>
-  friend class physics::DiscreteTrajectoryIterator;
+  friend class _discrete_trajectory_iterator::internal::
+      DiscreteTrajectoryIterator;
 
   // For testing.
   friend class physics::DiscreteTrajectoryIteratorTest;
   friend class physics::DiscreteTrajectorySegmentIteratorTest;
   friend class physics::DiscreteTrajectorySegmentTest;
   template<typename F>
-  friend class testing_utilities::DiscreteTrajectoryFactoriesFriend;
+  friend class testing_utilities::_discrete_trajectory_factories::
+      DiscreteTrajectoryFactoriesFriend;
 };
 
-}  // namespace internal_discrete_trajectory_segment
+}  // namespace internal
 
-using internal_discrete_trajectory_segment::DiscreteTrajectorySegment;
+using internal::DiscreteTrajectorySegment;
 
+}  // namespace _discrete_trajectory_segment
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory_segment;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_segment_body.hpp"

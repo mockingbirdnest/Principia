@@ -10,11 +10,12 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_approximate_quantity {
+namespace _approximate_quantity {
+namespace internal {
 
-using quantities::Abs;
-using quantities::Format;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Dimensions>
 Quantity<Dimensions> ApproximateQuantity<Quantity<Dimensions>>::min() const {
@@ -218,6 +219,7 @@ inline ApproximateQuantity<double> NumericLiteral::operator()(int const ulp) {
   return ApproximateQuantity<double>::Parse(representation, ulp);
 }
 
-}  // namespace internal_approximate_quantity
+}  // namespace internal
+}  // namespace _approximate_quantity
 }  // namespace testing_utilities
 }  // namespace principia

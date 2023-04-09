@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -19,38 +19,24 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_integrator {
 
-using geometry::Instant;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Sin;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Centi;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::ComputeHarmonicOscillatorDerivatives1D;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::StatusIs;
-using testing_utilities::operator""_;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_integration;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
 
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
@@ -505,22 +491,20 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Serialization) {
 }
 #endif
 
-}  // namespace internal_embedded_explicit_runge_kutta_integrator
-
 // Reopen this namespace to allow printing out the system state.
-namespace internal_ordinary_differential_equations {
+namespace _ordinary_differential_equations {
+namespace internal {
 
-void PrintTo(
-    typename internal_embedded_explicit_runge_kutta_integrator::ODE::
-        State const& state,
-    std::ostream* const out) {
+void PrintTo(typename ODE::State const& state,
+             std::ostream* const out) {
   auto const& [position, velocity] = state.y;
   *out << "\nTime: " << state.s << "\n";
   *out << "Position: " << position << "\n";
   *out << "Velocity: " << velocity << "\n";
 }
 
-}  // namespace internal_ordinary_differential_equations
+}  // namespace internal
+}  // namespace _ordinary_differential_equations
 
 }  // namespace integrators
 }  // namespace principia

@@ -5,6 +5,8 @@
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -15,20 +17,18 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::J2000;
-using astronomy::operator""_TT;
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
-using numerics::CanEmitFMAInstructions;
-using quantities::Length;
-using quantities::Time;
-using quantities::Volume;
-using quantities::si::Day;
-using quantities::si::Litre;
-using quantities::si::Metre;
-using quantities::si::Second;
-using testing::Eq;
-using testing_utilities::AlmostEquals;
+using ::testing::Eq;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_cpuid;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_fma;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class PointTest : public testing::Test {
  protected:

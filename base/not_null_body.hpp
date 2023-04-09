@@ -9,6 +9,8 @@
 
 namespace principia {
 namespace base {
+namespace _not_null {
+namespace internal {
 
 template<typename Pointer>
 struct is_unique : std::false_type, not_constructible {};
@@ -225,5 +227,7 @@ not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer) {
   return std::move(owned_pointer);
 }
 
+}  // namespace internal
+}  // namespace _not_null
 }  // namespace base
 }  // namespace principia

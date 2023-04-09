@@ -7,15 +7,12 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_frame_field {
+namespace _body_surface_frame_field {
+namespace internal {
 
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Normalize;
-using geometry::Wedge;
-using quantities::Length;
-using quantities::Sqrt;
+using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame, typename ThisFrame>
 BodySurfaceFrameField<Frame, ThisFrame>::BodySurfaceFrameField(
@@ -48,6 +45,7 @@ BodySurfaceFrameField<Frame, ThisFrame>::FromThisFrame(
   return Rotation<ThisFrame, Frame>(north, east, nadir);
 }
 
-}  // namespace internal_body_surface_frame_field
+}  // namespace internal
+}  // namespace _body_surface_frame_field
 }  // namespace physics
 }  // namespace principia

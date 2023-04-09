@@ -18,8 +18,9 @@
 #include "base/graveyard.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -39,60 +40,35 @@
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
+namespace astronomy {
 
-using base::Bundle;
-using base::Graveyard;
-using base::not_null;
-using base::OFStream;
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Instant;
-using geometry::OrientedAngleBetween;
-using geometry::Position;
-using geometry::Sign;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::Quinlan1999Order8A;
-using mathematica::PreserveUnits;
-using numerics::Bisect;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::ParseGravityModel;
-using physics::ParseInitialState;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
-using quantities::Abs;
-using quantities::Angle;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::Derivative;
-using quantities::Difference;
-using quantities::Mod;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Centi;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
-
+using namespace principia::base::_bundle;
+using namespace principia::base::_file;
+using namespace principia::base::_graveyard;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using namespace std::chrono_literals;
-
-namespace astronomy {
 
 namespace genetics {
 

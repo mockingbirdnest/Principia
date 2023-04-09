@@ -1,34 +1,35 @@
-// The files containing the tree of child classes of |DynamicFrame| must be
-// included in the order of inheritance to avoid circular dependencies.  This
+// The files containing the tree of child classes of |RigidReferenceFrame| must
+// be included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
-#ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
-#include "physics/dynamic_frame.hpp"
+#ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
+#include "physics/rigid_reference_frame.hpp"
 #else
-#ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
+namespace _body_surface_reference_frame {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using quantities::Acceleration;
-using quantities::SpecificEnergy;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the centre of mass of the body.  The X axis is at
 // the intersection of the equator and the prime meridian.  The Z axis is the
@@ -38,11 +39,12 @@ using quantities::SpecificEnergy;
 // of the IAU WGCCRE if |polar_axis| is the north pole, or figure 2 if
 // |polar_axis| is the positive pole.
 template<typename InertialFrame, typename ThisFrame>
-class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
+class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
+                                                             ThisFrame> {
   static_assert(ThisFrame::may_rotate);
 
  public:
-  BodySurfaceDynamicFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
+  BodySurfaceReferenceFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
                           not_null<RotatingBody<InertialFrame> const*> centre);
 
   not_null<RotatingBody<InertialFrame> const*> centre() const;
@@ -54,11 +56,11 @@ class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const override;
+      not_null<serialization::ReferenceFrame*> message) const override;
 
-  static not_null<std::unique_ptr<BodySurfaceDynamicFrame>> ReadFromMessage(
+  static not_null<std::unique_ptr<BodySurfaceReferenceFrame>> ReadFromMessage(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      serialization::BodySurfaceDynamicFrame const& message);
+      serialization::BodySurfaceReferenceFrame const& message);
 
  private:
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
@@ -75,14 +77,19 @@ class BodySurfaceDynamicFrame : public DynamicFrame<InertialFrame, ThisFrame> {
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
 };
 
-}  // namespace internal_body_surface_dynamic_frame
+}  // namespace internal
 
-using internal_body_surface_dynamic_frame::BodySurfaceDynamicFrame;
+using internal::BodySurfaceReferenceFrame;
 
+}  // namespace _body_surface_reference_frame
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/body_surface_dynamic_frame_body.hpp"
+namespace principia::physics {
+using namespace principia::physics::_body_surface_reference_frame;
+}  // namespace principia::physics
 
-#endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_DYNAMIC_FRAME_HPP_
-#endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#include "physics/body_surface_reference_frame_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_

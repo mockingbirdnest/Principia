@@ -116,7 +116,8 @@ With[
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
+namespace _finite_difference {
+namespace internal {
 
 constexpr auto Numerators = std::make_tuple(\n    "<>
 StringRiffle[
@@ -151,8 +152,9 @@ With[
    {n,1,\[ScriptCapitalN]}]]]<>
 "};
 
-}  // namespace principia
+}  // namespace internal
+}  // namespace _finite_difference
 }  // namespace numerics
-}  // namespace internal_finite_difference
+}  // namespace principia
 "],
 "text"]

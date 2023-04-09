@@ -6,21 +6,22 @@
 #include "absl/status/statusor.h"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbit_ground_track {
+namespace _orbit_ground_track {
+namespace internal {
 
-using geometry::Instant;
-using geometry::Interval;
-using physics::DiscreteTrajectory;
-using physics::RotatingBody;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Time;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 class OrbitGroundTrack {
  public:
@@ -103,11 +104,16 @@ class OrbitGroundTrack {
   std::optional<Interval<Angle>> mean_solar_times_of_descending_nodes_;
 };
 
-}  // namespace internal_orbit_ground_track
+}  // namespace internal
 
-using internal_orbit_ground_track::OrbitGroundTrack;
+using internal::OrbitGroundTrack;
 
+}  // namespace _orbit_ground_track
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_orbit_ground_track;
+}  // namespace principia::astronomy
 
 #include "astronomy/orbit_ground_track_body.hpp"

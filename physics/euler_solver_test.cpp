@@ -11,11 +11,12 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -33,51 +34,32 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
-using astronomy::operator""_UTC;
-using geometry::AngleBetween;
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::EulerAngles;
-using geometry::EvenPermutation;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::R3Element;
-using geometry::RadiusLatitudeLongitude;
-using geometry::Rotation;
-using quantities::Abs;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::AngularMomentum;
-using quantities::Cos;
-using quantities::Energy;
-using quantities::MomentOfInertia;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::ApproximateQuantity;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Matcher;
-namespace si = quantities::si;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_euler_solver;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class EulerSolverTest : public ::testing::Test {
  protected:

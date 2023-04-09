@@ -12,9 +12,10 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_tuples {
+namespace _tuples {
+namespace internal {
 
-using base::not_constructible;
+using namespace principia::base::_not_constructible;
 
 // A helper for getting the type of an element even for an index that is not in
 // range.  In that case, the member Type is defined to be void.  Doing this with
@@ -61,6 +62,7 @@ struct DerivativesGenerator<Value, Argument, n,
   using Type = std::tuple<Derivative<Value, Argument, orders>...>;
 };
 
-}  // namespace internal_tuples
+}  // namespace internal
+}  // namespace _tuples
 }  // namespace quantities
 }  // namespace principia

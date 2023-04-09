@@ -3,6 +3,8 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -12,23 +14,23 @@
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
 
-using astronomy::ICRS;
-using astronomy::J2000;
-using astronomy::operator""_TT;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 // Target body name : Moon(301) { source: DE431mx }
 // Centre body name : Earth(399) { source: DE431mx }
@@ -1645,6 +1647,5 @@ TEST_F(KeplerOrbitTest,
                                    /*apoapsis_distance_ulps=*/0);
 }
 
-}  // namespace internal_kepler_orbit
 }  // namespace physics
 }  // namespace principia

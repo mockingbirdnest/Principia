@@ -11,6 +11,8 @@
 #include "base/bundle.hpp"
 #include "base/file.hpp"
 #include "base/status_utilities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -51,53 +53,33 @@
   }
 
 namespace principia {
+namespace mathematica {
+namespace _integrator_plots {
+namespace internal {
 
-using base::Bundle;
-using base::not_null;
-using base::OFStream;
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Inertial;
-using geometry::InnerProduct;
-using geometry::Instant;
-using geometry::Velocity;
-using integrators::FixedStepSizeIntegrator;
-using integrators::InitialValueProblem;
-using integrators::SpecialSecondOrderDifferentialEquation;
-using numerics::DoublePrecision;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Energy;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::SpecificEnergy;
-using quantities::Stiffness;
-using quantities::Time;
-using quantities::si::Degree;
-using quantities::si::Joule;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using testing_utilities::AbsoluteError;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
-using testing_utilities::ComputeKeplerAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
-namespace si = quantities::si;
-
-namespace mathematica {
+using namespace principia::base::_bundle;
+using namespace principia::base::_file;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::numerics::_double_precision;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_integration;
+using namespace principia::testing_utilities::_numerics;
 
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
@@ -408,5 +390,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   file << generator.GetMathematicaData();
 }
 
+}  // namespace internal
+}  // namespace _integrator_plots
 }  // namespace mathematica
 }  // namespace principia

@@ -2,36 +2,32 @@
 
 #include <optional>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
+namespace _manœuvre {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::DynamicFrame;
-using physics::Ephemeris;
-using physics::Frenet;
-using quantities::Acceleration;
-using quantities::Force;
-using quantities::Mass;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // This class represents a constant-thrust burn.  |InertialFrame| is an
 // underlying inertial reference frame, |Frame| is the reference frame used to
@@ -72,7 +68,8 @@ class Manœuvre {
     // individual thrust divided by the exhaust velocity).
     SpecificImpulse specific_impulse;
     // Defines the Frenet frame.
-    not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame;
+    not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
+        frame;
     // If true, the direction of the burn remains fixed in a nonrotating frame.
     // Otherwise, the direction of the burn remains fixed in the Frenet frame of
     // the trajectory.
@@ -105,8 +102,8 @@ class Manœuvre {
   // Individual burn fields.
   Force const& thrust() const;
   SpecificImpulse const& specific_impulse() const;
-  not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>> frame()
-      const;
+  not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
+  frame() const;
   bool is_inertially_fixed() const;
 
   // Derived quantities.
@@ -176,11 +173,16 @@ class Manœuvre {
   DiscreteTrajectorySegmentIterator<InertialFrame> coasting_trajectory_;
 };
 
-}  // namespace internal_manœuvre
+}  // namespace internal
 
-using internal_manœuvre::Manœuvre;
+using internal::Manœuvre;
 
+}  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_manœuvre;
+}  // namespace principia::ksp_plugin
 
 #include "ksp_plugin/manœuvre_body.hpp"

@@ -5,7 +5,8 @@
 #include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/constants.hpp"
@@ -23,37 +24,20 @@
 #endif
 
 namespace principia {
-
-using geometry::Frame;
-using geometry::Displacement;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
-using quantities::Acceleration;
-using quantities::Energy;
-using quantities::Entropy;
-using quantities::Length;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Current;
-using quantities::Temperature;
-using quantities::Time;
-using quantities::constants::BoltzmannConstant;
-using quantities::constants::SpeedOfLight;
-using quantities::si::Ampere;
-using quantities::si::Joule;
-using quantities::si::Kelvin;
-using quantities::si::Metre;
-using quantities::si::Second;
-using quantities::si::Watt;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
-using ::testing::Eq;
-
 namespace numerics {
+
+using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_polynomial;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
 
 class PolynomialTest : public ::testing::Test {
  protected:

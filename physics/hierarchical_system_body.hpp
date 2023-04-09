@@ -10,11 +10,11 @@
 
 namespace principia {
 namespace physics {
-namespace internal_hierarchical_system {
+namespace _hierarchical_system {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::Identity;
-using geometry::Velocity;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_identity;
 
 template<typename Frame>
 HierarchicalSystem<Frame>::HierarchicalSystem(
@@ -195,6 +195,7 @@ void HierarchicalSystem<Frame>::WriteToMessage(
   }
 }
 
-}  // namespace internal_hierarchical_system
+}  // namespace internal
+}  // namespace _hierarchical_system
 }  // namespace physics
 }  // namespace principia

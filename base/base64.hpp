@@ -6,7 +6,11 @@
 
 namespace principia {
 namespace base {
-namespace internal_base64 {
+namespace _base64 {
+namespace internal {
+
+using namespace principia::base::_array;
+using namespace principia::base::_encoder;
 
 // This function implements RFC 4648 section 5 (base64url).  The encoded text is
 // *not* padded.
@@ -28,10 +32,11 @@ class Base64Encoder : public Encoder<char, null_terminated> {
   std::int64_t DecodedLength(Array<char const> input) override;
 };
 
-}  // namespace internal_base64
+}  // namespace internal
 
-using internal_base64::Base64Encoder;
+using internal::Base64Encoder;
 
+}  // namespace _base64
 }  // namespace base
 }  // namespace principia
 

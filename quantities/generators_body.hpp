@@ -10,15 +10,11 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_generators {
+namespace _generators {
+namespace internal {
 
-using base::not_constructible;
-using internal_dimensions::Dimensions;
-using internal_dimensions::DimensionsExponentiationGenerator;
-using internal_dimensions::DimensionsNthRootGenerator;
-using internal_dimensions::DimensionsProductGenerator;
-using internal_dimensions::DimensionsQuotientGenerator;
-using internal_dimensions::NoDimensions;
+using namespace principia::base::_not_constructible;
+using namespace principia::quantities::_dimensions;
 
 // The template template parameter |Quantity| on specializations lifts a
 // circular dependency.
@@ -103,6 +99,7 @@ struct QuotientGenerator<double, double> : not_constructible {
   using Type = double;
 };
 
-}  // namespace internal_generators
+}  // namespace internal
+}  // namespace _generators
 }  // namespace quantities
 }  // namespace principia

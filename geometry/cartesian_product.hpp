@@ -11,7 +11,8 @@ namespace geometry {
 
 // These operators live in a separate (non-internal) namespace to avoid
 // polluting the entire universe in cases where they are not useful.
-namespace cartesian_product {
+namespace _cartesian_product {
+namespace vector_space {
 
 template<typename RTuple>
 constexpr auto operator+(RTuple const& right);
@@ -40,7 +41,7 @@ constexpr auto operator*(Tuple const& left, Scalar const& right);
 template<typename Scalar, typename Tuple>
 constexpr auto operator/(Tuple const& left, Scalar const& right);
 
-}  // namespace cartesian_product
+}  // namespace vector_space
 
 namespace polynomial_ring {
 
@@ -63,7 +64,7 @@ template<typename LTuple, typename RTuple,
 constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
 }  // namespace pointwise_inner_product
-
+}  // namespace _cartesian_product
 }  // namespace geometry
 }  // namespace principia
 

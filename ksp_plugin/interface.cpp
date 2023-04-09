@@ -36,7 +36,6 @@
 #include "gipfeli/gipfeli.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
@@ -50,6 +49,7 @@
 #include "ksp_plugin/part.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -62,73 +62,50 @@
 namespace principia {
 namespace interface {
 
-using astronomy::J2000;
-using astronomy::ParseTT;
-using base::Array;
-using base::Base64Encoder;
-using base::check_not_null;
-using base::Encoder;
-using base::Fingerprint2011;
-using base::Flags;
-using base::HexadecimalEncoder;
-using base::make_not_null_unique;
-using base::PullSerializer;
-using base::PushDeserializer;
-using base::SerializeAsBytes;
-using base::UniqueArray;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::InertiaTensor;
-using geometry::OrthogonalMap;
-using geometry::Quaternion;
-using geometry::R3x3Matrix;
-using geometry::RadiusLatitudeLongitude;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::FixedStepSizeIntegrator;
-using integrators::ParseAdaptiveStepSizeIntegrator;
-using integrators::ParseFixedStepSizeIntegrator;
-using ksp_plugin::AliceSun;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Part;
-using ksp_plugin::PartId;
-using ksp_plugin::RigidPart;
-using ksp_plugin::TypedIterator;
-using ksp_plugin::VesselSet;
-using ksp_plugin::World;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::FrameField;
-using physics::MassiveBody;
-using physics::OblateBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::SolarSystem;
-using quantities::Acceleration;
-using quantities::DebugString;
-using quantities::Mass;
-using quantities::MomentOfInertia;
-using quantities::ParseQuantity;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tonne;
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
-namespace si = quantities::si;
+using ::operator<<;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_array;
+using namespace principia::base::_base64;
+using namespace principia::base::_encoder;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_flags;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::base::_serialization;
+using namespace principia::base::_version;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 
@@ -636,8 +613,8 @@ void __cdecl principia__GetVersion(
     char const** const build_date,
     char const** const version) {
   journal::Method<journal::GetVersion> m({build_date, version});
-  *CHECK_NOTNULL(build_date) = base::BuildDate;
-  *CHECK_NOTNULL(version) = base::Version;
+  *CHECK_NOTNULL(build_date) = BuildDate;
+  *CHECK_NOTNULL(version) = Version;
   return m.Return();
 }
 
@@ -699,8 +676,8 @@ void __cdecl principia__InitGoogleLogging() {
         });
 
     LOG(ERROR) << "Initialized Google logging for Principia";
-    LOG(ERROR) << "Principia version " << principia::base::Version
-               << " built on " << principia::base::BuildDate
+    LOG(ERROR) << "Principia version " << Version
+               << " built on " << BuildDate
                << " by " << principia::base::CompilerName
                << " version " << principia::base::CompilerVersion
                << " for " << principia::base::OperatingSystem

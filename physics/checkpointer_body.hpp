@@ -8,14 +8,11 @@
 
 #include "absl/container/btree_set.h"
 #include "base/status_utilities.hpp"
-#include "geometry/named_quantities.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_checkpointer {
-
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
+namespace _checkpointer {
+namespace internal {
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
@@ -238,6 +235,7 @@ void Checkpointer<Message>::WriteToCheckpointLocked(Instant const& t) {
   lock_.Lock();
 }
 
-}  // namespace internal_checkpointer
+}  // namespace internal
+}  // namespace _checkpointer
 }  // namespace physics
 }  // namespace principia

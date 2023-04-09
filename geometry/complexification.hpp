@@ -8,12 +8,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_complexification {
+namespace _complexification {
+namespace internal {
 
-using quantities::Difference;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Sum;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Vector>
 class Complexification {
@@ -120,11 +118,16 @@ InnerProduct(Complexification<LVector> const& left,
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Complexification<Vector> const& z);
 
-}  // namespace internal_complexification
+}  // namespace internal
 
-using internal_complexification::Complexification;
+using internal::Complexification;
 
+}  // namespace _complexification
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_complexification;
+}  // namespace principia::geometry
 
 #include "geometry/complexification_body.hpp"

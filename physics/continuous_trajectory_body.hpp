@@ -11,7 +11,6 @@
 
 #include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
 #include "numerics/ulp_distance.hpp"
@@ -20,22 +19,18 @@
 
 namespace principia {
 namespace physics {
-namespace internal_continuous_trajectory {
+namespace _continuous_trajectory {
+namespace internal {
 
-using base::dynamic_cast_not_null;
-using base::make_not_null_unique;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Interval;
-using numerics::EstrinEvaluator;
-using numerics::PoissonSeries;
-using numerics::PolynomialInMonomialBasis;
-using numerics::ULPDistance;
-using numerics::ЧебышёвSeries;
-using quantities::DebugString;
-using quantities::si::Metre;
-using quantities::si::Second;
-namespace si = quantities::si;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_interval;
+using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_ulp_distance;
+using namespace principia::numerics::_чебышёв_series;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 constexpr int max_degree = 17;
 constexpr int min_degree = 3;
@@ -506,7 +501,7 @@ absl::Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Writer
 ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](
         not_null<
             serialization::ContinuousTrajectory::Checkpoint*> const message) {
@@ -533,7 +528,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Reader
 ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
       absl::MutexLock l(&lock_);
@@ -797,6 +792,7 @@ ContinuousTrajectory<Frame>::FindPolynomialForInstantLocked(
   }
 }
 
-}  // namespace internal_continuous_trajectory
+}  // namespace internal
+}  // namespace _continuous_trajectory
 }  // namespace physics
 }  // namespace principia

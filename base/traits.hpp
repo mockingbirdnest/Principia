@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_traits {
+namespace _traits {
+namespace internal {
 
 template<typename... Ts>
 constexpr bool all_different_v = false;
@@ -48,26 +49,48 @@ struct has_unconditional_read_from_message<
     T, std::void_t<decltype(&T::ReadFromMessage)>>
     : std::true_type {};
 
-}  // namespace internal_traits
+template<typename T, typename T1, typename T2>
+struct other_type;
+
+template<typename T>
+struct other_type<T, T, T> {
+  using type = T;
+};
+
+template<typename T1, typename T2>
+struct other_type<T1, T1, T2> {
+  using type = T2;
+};
+
+template<typename T1, typename T2>
+struct other_type<T2, T1, T2> {
+  using type = T1;
+};
+
+}  // namespace internal
+
+using internal::all_different_v;
 
 // True if and only if U is an instance of T.
 template<template<typename...> typename T, typename U>
-inline constexpr bool is_instance_of_v =
-    internal_traits::is_instance_of<T, U>::value;
+inline constexpr bool is_instance_of_v = internal::is_instance_of<T, U>::value;
 
 // True if and only if T and U are the same template.
 template<template<typename...> typename T, template<typename...> typename U>
 inline constexpr bool is_same_template_v =
-    internal_traits::is_same_template<T, U>::value;
+    internal::is_same_template<T, U>::value;
 
 // True if and only if T has a (possibly templated) static member function named
 // ReadFromMessage.
 template<typename T>
 inline constexpr bool is_serializable_v =
-    internal_traits::has_sfinae_read_from_message<T>::value ||
-    internal_traits::has_unconditional_read_from_message<T>::value;
+    internal::has_sfinae_read_from_message<T>::value ||
+    internal::has_unconditional_read_from_message<T>::value;
 
-using internal_traits::all_different_v;
+// If T is T1, returns T2.  If T is T2, returns T1.  Otherwise fails.
+template<typename T, typename T1, typename T2>
+using other_type_t = typename internal::other_type<T, T1, T2>::type;
 
+}  // namespace _traits
 }  // namespace base
 }  // namespace principia

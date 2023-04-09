@@ -9,23 +9,12 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
 
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Rotation;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Index;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
-using ksp_plugin::Navigation;
-using physics::MockDynamicFrame;
-using quantities::si::Metre;
 using ::testing::ByMove;
 using ::testing::IsNull;
 using ::testing::Pointer;
@@ -34,6 +23,14 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_rotation;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_si;
 
 namespace {
 
@@ -57,18 +54,18 @@ class InterfaceRendererTest : public ::testing::Test {
 };
 
 TEST_F(InterfaceRendererTest, SetPlottingFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
-      .WillOnce(
-          Return(ByMove(std::unique_ptr<
-                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+      .WillOnce(Return(
+          ByMove(std::unique_ptr<
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
       parent_index};
@@ -80,18 +77,18 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
 }
 
 TEST_F(InterfaceRendererTest, Frenet) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
-      .WillOnce(
-          Return(ByMove(std::unique_ptr<
-                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+      .WillOnce(Return(
+          ByMove(std::unique_ptr<
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
       parent_index};

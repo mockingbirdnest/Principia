@@ -18,6 +18,7 @@
 namespace principia {
 namespace journal {
 
+using namespace principia::journal::_player;
 using namespace std::chrono_literals;
 
 void BM_PlayForReal(benchmark::State& state) {
@@ -110,7 +111,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // |method_out_return| protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Crashes\3375\JOURNAL.20220610-092143)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Issues\3520\JOURNAL.20230218-092106)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -131,19 +132,17 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::ReportPartCollision::extension);
+        serialization::DeletePlugin::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(3174370143056);
-    in->set_part1_id(238837834);
-    in->set_part2_id(1852216795);
+    in->set_plugin(2734566559920);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::ReportPartCollision::extension);
+        serialization::DeletePlugin::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<ReportPartCollision>(
+  CHECK(RunIfAppropriate<DeletePlugin>(
       method_in, method_out_return, player));
 #endif
 #if 0

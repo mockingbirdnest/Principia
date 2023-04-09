@@ -50,7 +50,7 @@ decimalFloatLiteral[x_Real|x:0,exponentWidth_Integer,signed_]:=
     {{If[signed&&m>=0,"+",Nothing]},{#[[1]]},
      If[Length[#]>1,{"."},Nothing],
      If[Length[#]>1,StringPartition[#[[2]],UpTo[5]],Nothing],
-     If[e!=0,"e"<>If[e>0,"+","-"]<>IntegerString[e,10,exponentWidth],Nothing]}&[
+     If[e!=0,{"e"<>If[e>0,"+","-"]<>IntegerString[e,10,exponentWidth]},Nothing]}&[
      StringSplit[ToString[m],"."]]]]
 
 
@@ -66,6 +66,8 @@ Export[
 
 namespace principia {
 namespace numerics {
+namespace _legendre_roots {
+namespace internal {
 
 // Roots of the Legendre polynomials of degree up to 50.
 constexpr FixedStrictlyLowerTriangularMatrix<double, "<>ToString[51]<>">
@@ -76,6 +78,11 @@ With[
  "    /*"<>If[k==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"k="<>StringPadLeft[ToString[k],2]<>"*/"<>decimalFloatLiteral[z,1,True]<>",\n"]&,
 nodes,{2}]<>"}}};
 
+}  // namespace internal
+
+using internal::LegendreRoots;
+
+}  // namespace _legendre_roots
 }  // namespace numerics
 }  // namespace principia
 ",
@@ -91,6 +98,8 @@ Export[
 
 namespace principia {
 namespace numerics {
+namespace _gauss_legendre_weights {
+namespace internal {
 
 // Weights for Gauss-Legendre quadrature with up to 50 points.
 constexpr FixedStrictlyLowerTriangularMatrix<double, "<>ToString[51]<>">
@@ -101,6 +110,11 @@ With[
  "    /*"<>If[k==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"k="<>StringPadLeft[ToString[k],2]<>"*/"<>decimalFloatLiteral[z,1,False]<>",\n"]&,
 weights,{2}]<>"}}};
 
+}  // namespace internal
+
+using internal::GaussLegendreWeights;
+
+}  // namespace _gauss_legendre_weights
 }  // namespace numerics
 }  // namespace principia
 ",

@@ -11,14 +11,12 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-
-using geometry::Frame;
-using quantities::Entropy;
-using quantities::KinematicViscosity;
-using testing_utilities::AlmostEquals;
-namespace si = quantities::si;
-
 namespace geometry {
+
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class BarycentreCalculatorTest : public testing::Test {
  protected:

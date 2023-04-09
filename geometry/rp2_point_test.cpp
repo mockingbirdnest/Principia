@@ -12,12 +12,11 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rp2_point {
 
-using quantities::Infinity;
-using quantities::Length;
-using quantities::si::Metre;
-using testing_utilities::AlmostEquals;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class RP2PointTest : public ::testing::Test {
  protected:
@@ -69,6 +68,5 @@ TEST_F(RP2PointTest, Basic) {
   EXPECT_THAT(p7.y(), AlmostEquals(Infinity<Length>, 0));
 }
 
-}  // namespace internal_rp2_point
 }  // namespace geometry
 }  // namespace principia

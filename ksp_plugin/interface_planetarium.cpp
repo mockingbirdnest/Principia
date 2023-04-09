@@ -5,11 +5,11 @@
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
@@ -24,24 +24,20 @@
 namespace principia {
 namespace interface {
 
-using geometry::AffineMap;
-using geometry::Multivector;
-using geometry::OrthogonalMap;
-using geometry::Perspective;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::RP2Lines;
-using ksp_plugin::Camera;
-using ksp_plugin::Navigation;
-using ksp_plugin::Planetarium;
-using ksp_plugin::Renderer;
-using ksp_plugin::TypedIterator;
-using physics::DiscreteTrajectory;
-using quantities::Length;
-using quantities::si::ArcMinute;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Radian;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 Planetarium* __cdecl principia__PlanetariumCreate(
     Plugin const* const plugin,
@@ -85,7 +81,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       Camera::origin,
       camera_position_in_world,
       camera_to_world_rotation.Forget<OrthogonalMap>());
-  RigidTransformation<World, Navigation> const
+  Similarity<World, Navigation> const
       world_to_plotting_affine_map =
           renderer.WorldToPlotting(plugin->CurrentTime(),
                                    FromXYZ<Position<World>>(sun_world_position),
@@ -96,7 +92,8 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       /*angular_resolution=*/0.4 * ArcMinute,
       field_of_view * Radian);
   Perspective<Navigation, Camera> perspective(
-      world_to_plotting_affine_map * camera_to_world_affine_map,
+      world_to_plotting_affine_map *
+          camera_to_world_affine_map.Forget<Similarity>(),
       focal * Metre);
 
   auto const plotting_to_scaled_space =

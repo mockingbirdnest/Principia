@@ -4,7 +4,8 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
@@ -14,17 +15,14 @@
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
-
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using quantities::Length;
-using quantities::si::Metre;
-using quantities::si::Second;
-
 namespace numerics {
+
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_hermite2;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class Hermite2Test : public ::testing::Test {
  protected:

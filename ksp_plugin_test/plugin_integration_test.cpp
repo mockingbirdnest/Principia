@@ -9,7 +9,9 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/permutation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -23,45 +25,7 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
 
-using astronomy::ICRS;
-using astronomy::ParseTT;
-using base::make_not_null_unique;
-using geometry::AffineMap;
-using geometry::Bivector;
-using geometry::Identity;
-using geometry::OddPermutation;
-using geometry::Permutation;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using physics::KeplerianElements;
-using physics::MassiveBody;
-using physics::SolarSystem;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::NaN;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using testing_utilities::AbsoluteError;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -70,6 +34,33 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::SizeIs;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 
@@ -745,6 +736,5 @@ TEST_F(PluginIntegrationTest, Prediction) {
               IsNear(29_(1) * Milli(Metre)));
 }
 
-}  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

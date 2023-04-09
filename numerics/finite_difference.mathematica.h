@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
+namespace _finite_difference {
+namespace internal {
 
 constexpr auto Numerators = std::make_tuple(
     FixedMatrix<double, 1, 1>{{
@@ -86,6 +87,7 @@ constexpr std::array<double, 9> Denominators{
     840,
 };
 
-}  // namespace principia
+}  // namespace internal
+}  // namespace _finite_difference
 }  // namespace numerics
-}  // namespace internal_finite_difference
+}  // namespace principia

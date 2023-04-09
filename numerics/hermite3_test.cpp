@@ -4,7 +4,8 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
@@ -14,29 +15,21 @@
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
+namespace numerics {
 
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Displacement;
-using geometry::Position;
-using geometry::Velocity;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::si::Centi;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-
-namespace numerics {
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_hermite3;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class Hermite3Test : public ::testing::Test {
  protected:
@@ -110,6 +103,17 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       Eq(1 / 16.0));
+
+  EXPECT_TRUE(not_a_quartic.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/0.1));
+  EXPECT_FALSE(not_a_quartic.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/0.05));
 }
 
 TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
@@ -138,6 +142,17 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
           /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
           /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       IsNear(1.5_(1) * Centi(Metre)));
+
+  EXPECT_TRUE(not_a_circle.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/2 * Centi(Metre)));
+  EXPECT_FALSE(not_a_circle.LInfinityErrorIsWithin(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
+      /*tolerance=*/1 * Centi(Metre)));
 }
 
 }  // namespace numerics

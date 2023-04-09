@@ -114,11 +114,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   }
 
   private void ClearBurnEditors() {
-    foreach (BurnEditor editor in burn_editors_) {
-      editor.Close();
+    if (burn_editors_ != null) {
+      foreach (BurnEditor editor in burn_editors_) {
+        editor.Close();
+      }
+      burn_editors_ = null;
+      Shrink();
     }
-    burn_editors_ = null;
-    Shrink();
   }
 
   private void UpdateVesselAndBurnEditors() {
@@ -129,9 +131,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           !plugin.FlightPlanExists(vessel_guid) ||
           plugin.FlightPlanNumberOfManoeuvres(vessel_guid) !=
           burn_editors_?.Count) {
-        if (burn_editors_ != null) {
-          ClearBurnEditors();
-        }
+        ClearBurnEditors();
         previous_predicted_vessel_ = predicted_vessel;
       }
     }
@@ -481,9 +481,11 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                       coast_analysis.elements?.nodal_period);
       orbit_description = OrbitAnalyser.OrbitDescription(
           primary,
+          coast_analysis.mission_duration,
           coast_analysis.elements,
           coast_analysis.recurrence,
-          coast_analysis.ground_track,
+          coast_analysis.ground_track_equatorial_crossings,
+          coast_analysis.solar_times_of_nodes,
           nodal_revolutions);
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {

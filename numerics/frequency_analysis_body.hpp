@@ -18,8 +18,8 @@
 
 namespace principia {
 namespace numerics {
-namespace frequency_analysis {
-namespace internal_frequency_analysis {
+namespace _frequency_analysis {
+namespace internal {
 
 // Note that using CGS and R in some tests produces imprecise results, possibly
 // because CGS doesn't yield a good value for R ([Bjö94] is silent on this
@@ -28,14 +28,12 @@ namespace internal_frequency_analysis {
 #define PRINCIPIA_USE_CGS 0
 #define PRINCIPIA_USE_R 1
 
-using base::uninitialized;
-using geometry::Hilbert;
-using geometry::Vector;
-using quantities::Inverse;
-using quantities::IsFinite;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::SquareRoot;
+using namespace principia::base::_tags;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
 // number of elements that were appended.
@@ -372,7 +370,7 @@ IncrementalProjection(Function const& function,
 #undef PRINCIPIA_USE_CGS
 #undef PRINCIPIA_USE_R
 
-}  // namespace internal_frequency_analysis
-}  // namespace frequency_analysis
+}  // namespace internal
+}  // namespace _frequency_analysis
 }  // namespace numerics
 }  // namespace principia

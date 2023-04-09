@@ -8,8 +8,9 @@
 #include <tuple>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -17,26 +18,22 @@
 
 namespace principia {
 namespace physics {
-namespace internal_equipotential {
+namespace _equipotential {
+namespace internal {
 
-using geometry::Normalize;
-using geometry::Displacement;
-using geometry::Trivector;  // We don't use this every day.
-using geometry::Vector;
-using geometry::Wedge;
-using integrators::InitialValueProblem;
-using numerics::BroydenFletcherGoldfarbShanno;
-using numerics::DoublePrecision;
-using quantities::Abs;
-using quantities::Frequency;
-using quantities::Pow;
-using quantities::SpecificEnergy;
-using quantities::Square;
-using quantities::Time;
-using quantities::si::Radian;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_gradient_descent;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // If the potential is below the total energy by this factor, return an empty
 // equipotential line.
@@ -45,25 +42,9 @@ constexpr double energy_tolerance = 0x1p-24;
 template<typename InertialFrame, typename Frame>
 Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,
-    not_null<DynamicFrame<InertialFrame, Frame> const*> const dynamic_frame,
-    std::function<SpecificEnergy(Instant const&, Position<Frame> const&)>
-        potential,
-    std::function<Vector<Acceleration, Frame>(Instant const&,
-                                              Position<Frame> const&)> gradient)
+    not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame)
     : adaptive_parameters_(adaptive_parameters),
-      potential_(
-          potential
-              ? potential
-              : [dynamic_frame](Instant const& t, Position<Frame> const& q) {
-                  return dynamic_frame->GeometricPotential(t, q);
-                }),
-      gradient_(
-          gradient
-              ? gradient
-              : [dynamic_frame](Instant const& t, Position<Frame> const& q) {
-                  return dynamic_frame->RotationFreeGeometricAccelerationAtRest(
-                      t, q);
-                }) {}
+      reference_frame_(reference_frame) {}
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
@@ -113,7 +94,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
     DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> Line {
   // Compute the total (specific) energy.
   auto const potential_energy =
-      potential_(t, degrees_of_freedom.position());
+      reference_frame_->GeometricPotential(t, degrees_of_freedom.position());
   auto const kinetic_energy = 0.5 * degrees_of_freedom.velocity().Norm²();
   auto const total_energy = potential_energy + kinetic_energy;
 
@@ -140,7 +121,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
   // The function on which we perform gradient descent is defined to have a
   // minimum at a position where the potential is equal to the total energy.
   auto const f = [this, t, total_energy](Position<Frame> const& position) {
-    return Pow<2>(potential_(t, position) -
+    return Pow<2>(reference_frame_->GeometricPotential(t, position) -
                   total_energy);
   };
 
@@ -149,9 +130,10 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // To keep the problem bidimensional we eliminate any off-plane component of
     // the gradient.
     return Projection(
-        -2 * (potential_(t, position) - total_energy) *
-            gradient_(t,
-                                                                    position),
+        -2 *
+            (reference_frame_->GeometricPotential(t, position) - total_energy) *
+            reference_frame_->RotationFreeGeometricAccelerationAtRest(t,
+                                                                      position),
         plane);
   };
 
@@ -194,7 +176,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     // The BFGS algorithm will put us at the minimum of f, but that may be a
     // point that has (significantly) less energy that our total energy.  No
     // point in building a line in that case.
-    if (potential_(t, equipotential_position.value()) <
+    if (reference_frame_->GeometricPotential(t,
+                                             equipotential_position.value()) <
         total_energy - Abs(total_energy) * energy_tolerance) {
       lines.push_back(Line{});
       continue;
@@ -239,8 +222,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
     // Ignore |peak| if it is below |energy|.
-    if (potential_(t, peak) < energy) {
-      //LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
+    if (reference_frame_->GeometricPotential(t, peak) < energy) {
+      LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
       continue;
     }
     //LOG(ERROR) << "Delineating peak " << i;
@@ -255,7 +238,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         expected_delineated_well = *delineation.indistinct_wells.begin();
         Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
-        if (potential_(
+        if (reference_frame_->GeometricPotential(
                 t,
                 Barycentre(std::pair(peak, well.position),
                            std::pair(well.radius, r - well.radius))) >=
@@ -270,7 +253,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
         Length const x = numerics::Brent(
             [&](Length const& x) {
-              return potential_(
+              return reference_frame_->GeometricPotential(
                          t,
                          Barycentre(std::pair(peak, well.position),
                                     std::pair(x, r - x))) -
@@ -286,7 +269,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         //LOG(ERROR) << "Not delineated from infinity";
         expect_delineation_from_infinity = true;
         Position<Frame> const far_away = towards_infinity(peak);
-        if (potential_(t, far_away) >= energy) {
+        if (reference_frame_->GeometricPotential(t, far_away) >= energy) {
           // TODO(phl): This happens when we find the peak at the centre of the
           // Earth.
           LOG(ERROR) << "far away point is weird";
@@ -295,7 +278,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
         double const x = numerics::Brent(
             [&](double const& x) {
-              return potential_(
+              return reference_frame_->GeometricPotential(
                          t,
                          Barycentre(std::pair(peak, far_away),
                                     std::pair(x, 1 - x))) -
@@ -371,7 +354,8 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
     DependentVariableDerivatives& derivatives) const {
   auto const& [γₛ, β] = values;
   // First state variable.
-  auto const dVǀᵧ₍ₛ₎ = gradient_(t, γₛ);
+  auto const dVǀᵧ₍ₛ₎ =
+      reference_frame_->RotationFreeGeometricAccelerationAtRest(t, γₛ);
   Displacement<Frame> const γʹ =
       Normalize(binormal * dVǀᵧ₍ₛ₎) * characteristic_length_;
 
@@ -417,6 +401,7 @@ std::int64_t Equipotential<InertialFrame, Frame>::WindingNumber(
   return static_cast<std::int64_t>(std::round(Abs(angle) / (2 * π * Radian)));
 }
 
-}  // namespace internal_equipotential
+}  // namespace internal
+}  // namespace _equipotential
 }  // namespace physics
 }  // namespace principia

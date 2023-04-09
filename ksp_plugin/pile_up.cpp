@@ -11,6 +11,7 @@
 
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "numerics/davenport_q_method.hpp"
@@ -18,55 +19,33 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_pile_up {
+namespace _pile_up {
+namespace internal {
 
-using base::check_not_null;
-using base::FindOrDie;
-using base::make_not_null_unique;
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Bivector;
-using geometry::Commutator;
-using geometry::DeduceSignPreservingOrientation;
-using geometry::DeduceSignReversingOrientation;
-using geometry::EvenPermutation;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::NonRotating;
-using geometry::Normalize;
-using geometry::NormalizeOrZero;
-using geometry::OddPermutation;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Signature;
-using geometry::Velocity;
-using geometry::Wedge;
-using numerics::DavenportQMethod;
-using physics::DegreesOfFreedom;
-using physics::RigidMotion;
-using quantities::Abs;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::AngularMomentum;
-using quantities::Infinity;
-using quantities::Inverse;
-using quantities::Mass;
-using quantities::ParseQuantity;
-using quantities::Sqrt;
-using quantities::Tanh;
-using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_davenport_q_method;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 const auto part_x = Vector<double, RigidPart>({1, 0, 0});
 const auto part_y = Vector<double, RigidPart>({0, 1, 0});
@@ -713,6 +692,7 @@ PileUpFuture::PileUpFuture(not_null<PileUp const*> const pile_up,
     : pile_up(pile_up),
       future(std::move(future)) {}
 
-}  // namespace internal_pile_up
+}  // namespace internal
+}  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia

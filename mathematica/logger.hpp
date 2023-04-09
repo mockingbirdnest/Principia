@@ -13,10 +13,11 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_logger {
+namespace _logger {
+namespace internal {
 
-using base::not_null;
-using base::OFStream;
+using namespace principia::base::_file;
+using namespace principia::base::_not_null;
 
 // Define this value to 1 to force the logger to append "_new" to the file
 // names, which is useful for regression testing of the logger.
@@ -83,12 +84,17 @@ class Logger final {
   static absl::Mutex construction_callback_lock_;
 };
 
-}  // namespace internal_logger
+}  // namespace internal
 
-using internal_logger::Logger;
+using internal::Logger;
 
+}  // namespace _logger
 }  // namespace mathematica
 }  // namespace principia
+
+namespace principia::mathematica {
+using namespace principia::mathematica::_logger;
+}  // namespace principia::mathematica
 
 // It is not strictly necessary to have the body inline, but it avoids having to
 // add the .cpp file to a project when using the logger.

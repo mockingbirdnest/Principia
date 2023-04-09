@@ -13,19 +13,16 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using quantities::Acceleration;
-using quantities::si::Metre;
-using quantities::si::Second;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,
@@ -340,8 +337,7 @@ absl::Status FlightPlan::BurnSegment(
     // waiting if necessary.
     Instant const starting_time = segment->back().time;
     if (starting_time < ephemeris_->t_min()) {
-      ephemeris_->RequestReanimation(starting_time);
-      ephemeris_->WaitForReanimation(starting_time);
+      ephemeris_->AwaitReanimation(starting_time);
     }
 
     if (manœuvre.is_inertially_fixed()) {
@@ -371,8 +367,7 @@ absl::Status FlightPlan::CoastSegment(
   // waiting if necessary.
   Instant const starting_time = segment->back().time;
   if (starting_time < ephemeris_->t_min()) {
-    ephemeris_->RequestReanimation(starting_time);
-    ephemeris_->WaitForReanimation(starting_time);
+    ephemeris_->AwaitReanimation(starting_time);
   }
 
   return ephemeris_->FlowWithAdaptiveStep(
@@ -511,6 +506,7 @@ Instant FlightPlan::start_of_previous_coast(int const index) const {
   return index == 0 ? initial_time_ : manœuvres_[index - 1].final_time();
 }
 
-}  // namespace internal_flight_plan
+}  // namespace internal
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia

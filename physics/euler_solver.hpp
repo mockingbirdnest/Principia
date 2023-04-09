@@ -5,10 +5,11 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
+#include "geometry/space.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -16,23 +17,19 @@
 
 namespace principia {
 namespace physics {
-namespace internal_euler_solver {
+namespace _euler_solver {
+namespace internal {
 
-using base::not_null;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::R3Element;
-using geometry::Rotation;
-using geometry::Signature;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::AngularMomentum;
-using quantities::MomentOfInertia;
-using quantities::NaN;
-using quantities::Product;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A solver for Euler's rotation equations.  It follows [CFSZ07] and [CFSZ08].
 // See documentation/Celledoni.pdf for corrections and adaptations.
@@ -158,11 +155,16 @@ class EulerSolver {
   AngularFrequency ψ_t_multiplier_ = NaN<AngularFrequency>;
 };
 
-}  // namespace internal_euler_solver
+}  // namespace internal
 
-using internal_euler_solver::EulerSolver;
+using internal::EulerSolver;
 
+}  // namespace _euler_solver
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_euler_solver;
+}  // namespace principia::physics
 
 #include "physics/euler_solver_body.hpp"

@@ -15,6 +15,10 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _serialization {
+namespace internal {
+
+using namespace principia::base::_base32768;
 
 inline void PrintUtf16ToFile(char16_t const c, std::fstream& file) {
   char chars[sizeof(char16_t)];
@@ -130,11 +134,11 @@ serialization::TabulatedData ReadFromTabulatedData(
 
 #if PRINCIPIA_COMPILER_MSVC
 void WriteToBase32768File(std::filesystem::path const& filename,
-                          base::Array<std::uint8_t const> serialized) {
+                          Array<std::uint8_t const> serialized) {
   std::fstream file = std::fstream(filename,
                                    std::ios::binary | std::ios::out);
   CHECK(file.good()) << filename;
-  base::Base32768Encoder</*null_terminated=*/false> encoder;
+  Base32768Encoder</*null_terminated=*/false> encoder;
   auto const base32768 = encoder.Encode(serialized);
 
   PrintUtf16ToFile(u'\uFEFF', file);
@@ -157,7 +161,7 @@ void WriteToBase32768File(std::filesystem::path const& filename,
 
 void WriteToBinaryFile(
     std::filesystem::path const& filename,
-    base::Array<std::uint8_t const> const serialized) {
+    Array<std::uint8_t const> const serialized) {
   std::fstream file = std::fstream(filename,
                                    std::ios::binary | std::ios::out);
   CHECK(file.good()) << filename;
@@ -167,7 +171,7 @@ void WriteToBinaryFile(
 
 void WriteToHexadecimalFile(
     std::filesystem::path const& filename,
-    base::Array<std::uint8_t const> const serialized) {
+    Array<std::uint8_t const> const serialized) {
   std::fstream file = std::fstream(filename, std::ios::out);
   CHECK(file.good()) << filename;
   int index = 0;
@@ -185,5 +189,7 @@ void WriteToHexadecimalFile(
   file.close();
 }
 
+}  // namespace internal
+}  // namespace _serialization
 }  // namespace testing_utilities
 }  // namespace principia

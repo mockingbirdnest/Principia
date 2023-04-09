@@ -12,6 +12,13 @@ namespace journal {
 
 FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
 
+class RecorderTest;
+
+namespace _recorder {
+namespace internal {
+
+using namespace principia::base::_not_null;
+
 class Recorder final {
  public:
   explicit Recorder(std::filesystem::path const& path);
@@ -20,7 +27,7 @@ class Recorder final {
   void WriteAtConstruction(serialization::Method const& method);
   void WriteAtDestruction(serialization::Method const& method);
 
-  static void Activate(base::not_null<Recorder*> recorder);
+  static void Activate(not_null<Recorder*> recorder);
   static void Deactivate();
   static bool IsActivated();
 
@@ -33,9 +40,17 @@ class Recorder final {
   static Recorder* active_recorder_;
 
   template<typename>
-  friend class Method;
-  friend class RecorderTest;
+  friend class _method::Method;
 };
 
+}  // namespace internal
+
+using internal::Recorder;
+
+}  // namespace _recorder
 }  // namespace journal
 }  // namespace principia
+
+namespace principia::journal {
+using namespace principia::journal::_recorder;
+}  // namespace principia::journal

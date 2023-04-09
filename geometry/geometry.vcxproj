@@ -14,16 +14,19 @@
     <ClInclude Include="cartesian_product_body.hpp" />
     <ClInclude Include="complexification.hpp" />
     <ClInclude Include="complexification_body.hpp" />
+    <ClInclude Include="conformal_map.hpp" />
+    <ClInclude Include="conformal_map_body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="hilbert.hpp" />
     <ClInclude Include="hilbert_body.hpp" />
+    <ClInclude Include="homothecy.hpp" />
     <ClInclude Include="identity.hpp" />
     <ClInclude Include="identity_body.hpp" />
+    <ClInclude Include="instant.hpp" />
     <ClInclude Include="interval.hpp" />
     <ClInclude Include="interval_body.hpp" />
     <ClInclude Include="linear_map_body.hpp" />
-    <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="pair.hpp" />
     <ClInclude Include="pair_body.hpp" />
     <ClInclude Include="perspective.hpp" />
@@ -45,6 +48,7 @@
     <ClInclude Include="r3x3_matrix_body.hpp" />
     <ClInclude Include="r3_element_body.hpp" />
     <ClInclude Include="r3_element.hpp" />
+    <ClInclude Include="space_transformations.hpp" />
     <ClInclude Include="rotation_body.hpp" />
     <ClInclude Include="rotation.hpp" />
     <ClInclude Include="rp2_point.hpp" />
@@ -55,22 +59,26 @@
     <ClInclude Include="signature_body.hpp" />
     <ClInclude Include="sign_body.hpp" />
     <ClInclude Include="sign.hpp" />
+    <ClInclude Include="space.hpp" />
     <ClInclude Include="sphere.hpp" />
     <ClInclude Include="sphere_body.hpp" />
     <ClInclude Include="symmetric_bilinear_form.hpp" />
     <ClInclude Include="symmetric_bilinear_form_body.hpp" />
     <ClInclude Include="traits.hpp" />
+    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="complexification_test.cpp" />
+    <ClCompile Include="conformal_map_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="hilbert_test.cpp" />
+    <ClCompile Include="homothecy_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
-    <ClCompile Include="instant_output.cpp" />
-    <ClCompile Include="instant_output_test.cpp" />
+    <ClCompile Include="instant.cpp" />
+    <ClCompile Include="instant_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
     <ClCompile Include="perspective_test.cpp" />
     <ClCompile Include="plane_test.cpp" />

@@ -5,7 +5,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -16,17 +16,17 @@
 namespace principia {
 namespace physics {
 
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Frame;
-using geometry::Instant;
-using quantities::si::Second;
 using ::testing::Return;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::quantities::_si;
 
 class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<struct WorldTag>;
-  using Segments = internal_discrete_trajectory_types::Segments<World>;
+  using Segments = _discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentIteratorTest()
       : segments_(MakeSegments(3)) {

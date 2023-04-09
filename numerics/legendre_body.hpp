@@ -10,9 +10,10 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_legendre {
+namespace _legendre {
+namespace internal {
 
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
 
 template<int degree, typename>
 struct LegendreCoefficientsGenerator;
@@ -44,6 +45,7 @@ LegendrePolynomial() {
           std::make_index_sequence<degree_ + 1>>::coefficients);
 }
 
-}  // namespace internal_legendre
+}  // namespace internal
+}  // namespace _legendre
 }  // namespace numerics
 }  // namespace principia

@@ -11,13 +11,11 @@
 namespace principia {
 namespace testing_utilities {
 
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Second;
-using testing::Eq;
+using ::testing::Eq;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_statistics;
 
 class StatisticsTest : public testing::Test {
  protected:

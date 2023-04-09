@@ -7,10 +7,12 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/signature.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_orthogonal_map {
+namespace _orthogonal_map {
+namespace internal {
 
 template<typename FromFrame, typename ToFrame>
 Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
@@ -62,9 +64,23 @@ OrthogonalMap<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<OrthogonalMap<FromFrame, ToFrame>, T>::type
+typename Mappable<OrthogonalMap<FromFrame, ToFrame>, T>::type
 OrthogonalMap<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<OrthogonalMap, T>::Do(*this, t);
+  return Mappable<OrthogonalMap, T>::Do(*this, t);
+}
+
+template<typename FromFrame, typename ToFrame>
+template<template<typename, typename> typename ConformalMap>
+ConformalMap<FromFrame, ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::Forget() const {
+  return ConformalMap<FromFrame, ToFrame>(1, quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+OrthogonalMap<FromFrame, ToFrame>::Forget() const {
+  return ConformalMap<double, FromFrame, ToFrame>(1, quaternion_);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -77,7 +93,7 @@ OrthogonalMap<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<OrthogonalMap, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::OrthogonalMap::extension));
 }
@@ -87,7 +103,7 @@ template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<OrthogonalMap, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::OrthogonalMap::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::OrthogonalMap::extension));
@@ -151,6 +167,7 @@ std::ostream& operator<<(
              << ", quaternion: " << orthogonal_map.quaternion_ << "}";
 }
 
-}  // namespace internal_orthogonal_map
+}  // namespace internal
+}  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia

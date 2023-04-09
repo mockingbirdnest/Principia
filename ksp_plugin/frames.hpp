@@ -3,22 +3,20 @@
 #include <functional>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "ksp_plugin/manœuvre.hpp"
-#include "physics/dynamic_frame.hpp"
+#include "physics/reference_frame.hpp"
+#include "physics/rigid_reference_frame.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_frames {
+namespace _frames {
+namespace internal {
 
-using geometry::Arbitrary;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::NonRotating;
-using geometry::Permutation;
-using physics::DynamicFrame;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_permutation;
+using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_reference_frame;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
 // the active vessel, occasionally rotating with its surface, occasionally
@@ -81,7 +79,7 @@ using Navball = Frame<serialization::Frame::PluginTag,
                       serialization::Frame::NAVBALL>;
 
 // The frame used for trajectory plotting and manœuvre planning.  Its definition
-// depends on the choice of a subclass of DynamicFrame.
+// depends on the choice of a subclass of RigidReferenceFrame.
 using Navigation = Frame<serialization::Frame::PluginTag,
                          Arbitrary,
                          Handedness::Right,
@@ -156,35 +154,42 @@ using MainBodyCentred = Frame<serialization::Frame::PluginTag,
                               serialization::Frame::MAIN_BODY_CENTRED>;
 
 // Convenient instances of types from |physics| for the above frames.
-using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
+using NavigationFrame = RigidReferenceFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
+using PlottingFrame = ReferenceFrame<Barycentric, Navigation>;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
-}  // namespace internal_frames
+}  // namespace internal
 
-using internal_frames::AliceSun;
-using internal_frames::AliceWorld;
-using internal_frames::Apparent;
-using internal_frames::ApparentWorld;
-using internal_frames::Barycentric;
-using internal_frames::BodyWorld;
-using internal_frames::Camera;
-using internal_frames::CameraCompensatedReference;
-using internal_frames::CameraReference;
-using internal_frames::CelestialSphere;
-using internal_frames::EccentricPart;
-using internal_frames::MainBodyCentred;
-using internal_frames::Navball;
-using internal_frames::Navigation;
-using internal_frames::NavigationFrame;
-using internal_frames::NavigationManœuvre;
-using internal_frames::RigidPart;
-using internal_frames::World;
-using internal_frames::WorldSun;
-using internal_frames::sun_looking_glass;
+using internal::AliceSun;
+using internal::AliceWorld;
+using internal::Apparent;
+using internal::ApparentWorld;
+using internal::Barycentric;
+using internal::BodyWorld;
+using internal::Camera;
+using internal::CameraCompensatedReference;
+using internal::CameraReference;
+using internal::CelestialSphere;
+using internal::EccentricPart;
+using internal::MainBodyCentred;
+using internal::Navball;
+using internal::Navigation;
+using internal::NavigationFrame;
+using internal::NavigationManœuvre;
+using internal::PlottingFrame;
+using internal::RigidPart;
+using internal::World;
+using internal::WorldSun;
+using internal::sun_looking_glass;
 
+}  // namespace _frames
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_frames;
+}  // namespace principia::ksp_plugin

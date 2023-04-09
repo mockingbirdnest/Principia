@@ -3,23 +3,24 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "gmock/gmock.h"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "ksp_plugin_test/mock_celestial.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_renderer {
+namespace _renderer {
+namespace internal {
 
-using physics::MockDynamicFrame;
+using namespace principia::physics::_rigid_reference_frame;
 
 MockCelestial* const sun = new MockCelestial;
 
 class MockRenderer : public Renderer {
  public:
   MockRenderer()
-      : Renderer(
-            sun,
-            std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()){};
+      : Renderer(sun,
+                 std::make_unique<
+                     MockRigidReferenceFrame<Barycentric, Navigation>>()){};
 
   MOCK_METHOD(void,
               SetPlottingFrame,
@@ -58,9 +59,10 @@ class MockRenderer : public Renderer {
               (const, override));
 };
 
-}  // namespace internal_renderer
+}  // namespace internal
 
-using internal_renderer::MockRenderer;
+using internal::MockRenderer;
 
+}  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia

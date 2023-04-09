@@ -13,11 +13,11 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Area;
-using quantities::Length;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::si::Metre;
+using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 using World = Frame<serialization::Frame::TestTag,
                     Inertial,

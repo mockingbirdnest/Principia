@@ -1,43 +1,28 @@
 #include "physics/mechanical_system.hpp"
 
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {
-
-using geometry::AngularVelocity;
-using geometry::Anticommutator;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::Inertial;
-using geometry::NonRotating;
-using geometry::OrthogonalMap;
-using geometry::R3x3Matrix;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::RigidMotion;
-using physics::RigidTransformation;
-using quantities::AngularMomentum;
-using quantities::Energy;
-using quantities::Length;
-using quantities::Mass;
-using quantities::MomentOfInertia;
-using quantities::Momentum;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tonne;
-using testing_utilities::Componentwise;
-using ::testing::Eq;
-
 namespace physics {
+
+using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_mechanical_system;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
 
 class MechanicalSystemTest : public testing::Test{
  protected:

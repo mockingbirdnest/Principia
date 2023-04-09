@@ -14,15 +14,18 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fast_fourier_transform {
 
-using base::FloorLog2;
-using geometry::Complexification;
-using geometry::Hilbert;
-using geometry::Interval;
-using quantities::Angle;
-using quantities::Derivative;
-using quantities::Difference;
+class FastFourierTransformTest;
+
+namespace _fast_fourier_transform {
+namespace internal {
+
+using namespace principia::base::_bits;
+using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_interval;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Given (u₀, ..., uₙ₋₁), this class computes the discrete Fourier transform
 //   Uₛ = ∑ᵣ uᵣ exp(-2πirs/n),
@@ -82,14 +85,19 @@ class FastFourierTransform {
   // The elements of transform_ are spaced in frequency by ω_.
   std::array<Complexification<Value>, size> transform_;
 
-  friend class FastFourierTransformTest;
+  friend class numerics::FastFourierTransformTest;
 };
 
-}  // namespace internal_fast_fourier_transform
+}  // namespace internal
 
-using internal_fast_fourier_transform::FastFourierTransform;
+using internal::FastFourierTransform;
 
+}  // namespace _fast_fourier_transform
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_fast_fourier_transform;
+}  // namespace principia::numerics
 
 #include "numerics/fast_fourier_transform_body.hpp"

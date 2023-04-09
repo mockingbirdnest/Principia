@@ -9,8 +9,9 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Sign;
 using ::testing::Eq;
+using namespace principia::geometry::_sign;
+using namespace principia::numerics::_next;
 
 class NextTest : public ::testing::Test {};
 

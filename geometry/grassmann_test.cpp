@@ -19,37 +19,21 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
-using numerics::CanEmitFMAInstructions;
-using quantities::Area;
-using quantities::Charge;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Pressure;
-using quantities::Product;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::Parsec;
-using quantities::constants::SpeedOfLight;
-using quantities::si::Coulomb;
-using quantities::si::Day;
-using quantities::si::Metre;
-using quantities::si::Pascal;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::uk::Foot;
-using quantities::uk::Furlong;
-using quantities::uk::Inch;
-using quantities::uk::Rod;
-using quantities::uk::admiralty::Fathom;
-using testing_utilities::AlmostEquals;
-using ::testing::Eq;
-
 namespace geometry {
+
+using ::testing::Eq;
+using namespace principia::base::_cpuid;
+using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_fma;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_uk;
+using namespace principia::quantities::_uk::admiralty;
+using namespace principia::testing_utilities::_almost_equals;
 
 struct TransparentInnerProduct final {
   template<typename Left, typename Right>

@@ -4,7 +4,7 @@
 #include <random>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"
@@ -17,28 +17,20 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_double_precision {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Point;
-using geometry::R3Element;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Momentum;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::Tan;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 constexpr double ε = std::numeric_limits<double>::epsilon();
 constexpr double ε² = ε * ε;
@@ -328,7 +320,6 @@ TEST_F(DoublePrecisionTest, Mod2π) {
               AlmostEquals(0x1.F123760000000p-15 * Radian, 0));
 }
 
-}  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia
 

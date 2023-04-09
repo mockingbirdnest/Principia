@@ -14,12 +14,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_orthogonal_map {
 
-using quantities::si::Degree;
-using quantities::si::Metre;
-using testing::Eq;
-using testing_utilities::AlmostEquals;
+using ::testing::Eq;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class OrthogonalMapTest : public testing::Test {
  protected:
@@ -186,6 +184,5 @@ TEST_F(OrthogonalMapTest, Output) {
   std::cout << orthogonal_a_ << "\n";
 }
 
-}  // namespace internal_orthogonal_map
 }  // namespace geometry
 }  // namespace principia

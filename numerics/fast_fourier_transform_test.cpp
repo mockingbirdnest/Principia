@@ -6,7 +6,8 @@
 
 #include "geometry/complexification.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -15,28 +16,20 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fast_fourier_transform {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::Voltage;
-using quantities::si::Metre;
-using quantities::si::Second;
-using quantities::si::Volt;
-using testing_utilities::AlmostEquals;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Pair;
+using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class FastFourierTransformTest : public ::testing::Test {
  protected:
@@ -235,6 +228,5 @@ TEST_F(FastFourierTransformTest, Inverse) {
   EXPECT_THAT(nv.frequency(1) - nv.frequency(0), AlmostEquals(Δt, 0));
 }
 
-}  // namespace internal_fast_fourier_transform
 }  // namespace numerics
 }  // namespace principia

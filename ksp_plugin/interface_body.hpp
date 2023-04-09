@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/array.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/ephemeris.hpp"
@@ -18,20 +17,14 @@
 namespace principia {
 namespace interface {
 
-using base::UniqueArray;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using integrators::AdaptiveStepSizeIntegrator;
-using physics::Ephemeris;
-using physics::RigidMotion;
-using quantities::Pow;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tonne;
-namespace si = quantities::si;
+using namespace principia::base::_array;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_integrators;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -226,7 +219,9 @@ inline bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
 
 inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
   return left.elements == right.elements &&
-         left.ground_track == right.ground_track &&
+         left.ground_track_equatorial_crossings ==
+             right.ground_track_equatorial_crossings &&
+         left.solar_times_of_nodes == right.solar_times_of_nodes &&
          left.mission_duration == right.mission_duration &&
          left.primary_index == right.primary_index &&
          left.progress_of_next_analysis == right.progress_of_next_analysis &&
@@ -239,21 +234,6 @@ inline bool operator==(EquatorialCrossings const& left,
              right.longitudes_reduced_to_ascending_pass &&
          left.longitudes_reduced_to_descending_pass ==
              right.longitudes_reduced_to_descending_pass;
-}
-
-inline bool operator==(OrbitGroundTrack const& left,
-                       OrbitGroundTrack const& right) {
-  return left.equatorial_crossings == right.equatorial_crossings;
-}
-
-inline bool operator==(OrbitRecurrence const& left,
-                       OrbitRecurrence const& right) {
-  return NaNIndependentEq(left.base_interval, right.base_interval) &&
-         left.cto == right.cto && left.dto == right.dto &&
-         NaNIndependentEq(left.equatorial_shift, right.equatorial_shift) &&
-         NaNIndependentEq(left.grid_interval, right.grid_interval) &&
-         left.number_of_revolutions == right.number_of_revolutions &&
-         left.nuo == right.nuo && left.subcycle == right.subcycle;
 }
 
 inline bool operator==(OrbitalElements const& left,
@@ -276,6 +256,14 @@ inline bool operator==(QP const& left, QP const& right) {
 
 inline bool operator==(QPRW const& left, QPRW const& right) {
   return left.qp == right.qp && left.r == right.r && left.w == right.w;
+}
+
+inline bool operator==(SolarTimesOfNodes const& left,
+                       SolarTimesOfNodes const& right) {
+  return left.mean_solar_times_of_ascending_nodes ==
+             right.mean_solar_times_of_ascending_nodes &&
+         left.mean_solar_times_of_descending_nodes ==
+             right.mean_solar_times_of_descending_nodes;
 }
 
 inline bool operator==(Status const& left, Status const& right) {
@@ -571,7 +559,8 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
             ToInterval(elements.mean_periapsis_distance_interval()),
         .mean_apoapsis_distance =
             ToInterval(elements.mean_apoapsis_distance_interval()),
-        .radial_distance = ToInterval(elements.radial_distance_interval()),
+        .radial_distance =
+            ToInterval(*vessel_analysis->radial_distance_interval()),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
@@ -599,19 +588,28 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .subcycle = recurrence.subcycle(),
     };
   }
-  if (vessel_analysis->ground_track().has_value() &&
-      vessel_analysis->equatorial_crossings().has_value()) {
-    auto const& equatorial_crossings = *vessel_analysis->equatorial_crossings();
-    analysis->ground_track = new OrbitGroundTrack{
-        .equatorial_crossings = {
-                .longitudes_reduced_to_ascending_pass =
-                    ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
-                        2 * ground_track_revolution - 1)),
-                .longitudes_reduced_to_descending_pass =
-                    ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
-                        2 * ground_track_revolution)),
-            },
-    };
+  if (auto const& ground_track = vessel_analysis->ground_track();
+      ground_track.has_value()) {
+    if (ground_track->mean_solar_times_of_ascending_nodes().has_value() &&
+        ground_track->mean_solar_times_of_descending_nodes().has_value()) {
+      analysis->solar_times_of_nodes = new SolarTimesOfNodes{
+          .mean_solar_times_of_ascending_nodes =
+              ToInterval(*ground_track->mean_solar_times_of_ascending_nodes()),
+          .mean_solar_times_of_descending_nodes = ToInterval(
+              *ground_track->mean_solar_times_of_descending_nodes())};
+    }
+    if (vessel_analysis->equatorial_crossings().has_value()) {
+      auto const& equatorial_crossings =
+          *vessel_analysis->equatorial_crossings();
+      analysis->ground_track_equatorial_crossings = new EquatorialCrossings{
+          .longitudes_reduced_to_ascending_pass =
+              ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                  2 * ground_track_revolution - 1)),
+          .longitudes_reduced_to_descending_pass =
+              ToInterval(equatorial_crossings.longitudes_reduced_to_pass(
+                  2 * ground_track_revolution)),
+      };
+    }
   }
   return analysis;
 }
@@ -630,19 +628,19 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     Plugin const& plugin,
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
-    case serialization::BarycentricRotatingDynamicFrame::
+    case serialization::BarycentricRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBarycentricRotatingNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
-    case serialization::BodyCentredBodyDirectionDynamicFrame::
+    case serialization::BodyCentredBodyDirectionReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredBodyDirectionNavigationFrame(
           parameters.primary_index, parameters.secondary_index);
-    case serialization::BodyCentredNonRotatingDynamicFrame::
+    case serialization::BodyCentredNonRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
           parameters.centre_index);
-    case serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber:
+    case serialization::BodySurfaceReferenceFrame::kExtensionFieldNumber:
       return plugin.NewBodySurfaceNavigationFrame(parameters.centre_index);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;

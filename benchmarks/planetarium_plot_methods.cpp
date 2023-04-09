@@ -7,7 +7,10 @@
 #include "astronomy/time_scales.hpp"
 #include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space_transformations.hpp"
+#include "geometry/space.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -15,53 +18,31 @@
 namespace principia {
 namespace geometry {
 
-using astronomy::operator""_UT1;
-using astronomy::operator""_TT;
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Bivector;
-using geometry::DeduceSignReversingOrientation;
-using geometry::Perspective;
-using geometry::RigidTransformation;
-using geometry::RP2Lines;
-using geometry::Signature;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using ksp_plugin::Camera;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationFrame;
-using ksp_plugin::Planetarium;
-using ksp_plugin::ScaledSpacePoint;
-using ksp_plugin::World;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::SolarSystem;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Time;
-using quantities::si::ArcMinute;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::SolarSystemFactory;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 
@@ -128,7 +109,7 @@ class Satellites {
             SolarSystemFactory::name(SolarSystemFactory::Earth))),
         earth_centred_inertial_(
             make_not_null_unique<
-                BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+                BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
                 ephemeris_.get(),
                 earth_)) {
     // Two-line elements for GOES-8:

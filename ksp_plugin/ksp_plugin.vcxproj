@@ -66,7 +66,7 @@
     <ClCompile Include="..\base\flags.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\base\zfp_compressor.cpp" />
-    <ClCompile Include="..\geometry\instant_output.cpp" />
+    <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />

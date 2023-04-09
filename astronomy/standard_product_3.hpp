@@ -8,18 +8,19 @@
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace astronomy {
-namespace internal_standard_product_3 {
+namespace _standard_product_3 {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using physics::DiscreteTrajectory;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_discrete_trajectory;
 
 // A representation of data in the extended standard product 3 orbit format.
 // Specification:
@@ -155,9 +156,14 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::SatelliteIdentifier const& id);
 
-}  // namespace internal_standard_product_3
+}  // namespace internal
 
-using internal_standard_product_3::StandardProduct3;
+using internal::StandardProduct3;
 
+}  // namespace _standard_product_3
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_standard_product_3;
+}  // namespace principia::astronomy

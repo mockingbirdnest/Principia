@@ -16,9 +16,9 @@ message AdaptiveStepParameters {
   optional Quantity speed_integration_tolerance = 4;
 }
 
-message BarycentricRotatingDynamicFrame {
-  extend DynamicFrame {
-    optional BarycentricRotatingDynamicFrame extension = 6001;
+message BarycentricRotatingReferenceFrame {
+  extend ReferenceFrame {
+    optional BarycentricRotatingReferenceFrame extension = 6001;
   }
   required int32 primary = 1;
   required int32 secondary = 2;
@@ -31,24 +31,24 @@ message Body {
   }
 }
 
-message BodyCentredBodyDirectionDynamicFrame {
-  extend DynamicFrame {
-    optional BodyCentredBodyDirectionDynamicFrame extension = 6002;
+message BodyCentredBodyDirectionReferenceFrame {
+  extend ReferenceFrame {
+    optional BodyCentredBodyDirectionReferenceFrame extension = 6002;
   }
   required int32 primary = 1;
   required int32 secondary = 2;
 }
 
-message BodyCentredNonRotatingDynamicFrame {
-  extend DynamicFrame {
-    optional BodyCentredNonRotatingDynamicFrame extension = 6000;
+message BodyCentredNonRotatingReferenceFrame {
+  extend ReferenceFrame {
+    optional BodyCentredNonRotatingReferenceFrame extension = 6000;
   }
   required int32 centre = 1;
 }
 
-message BodySurfaceDynamicFrame {
-  extend DynamicFrame {
-    optional BodySurfaceDynamicFrame extension = 6003;
+message BodySurfaceReferenceFrame {
+  extend ReferenceFrame {
+    optional BodySurfaceReferenceFrame extension = 6003;
   }
   required int32 centre = 1;
 }
@@ -149,8 +149,8 @@ message DiscreteTrajectorySegment {
   required Zfp zfp = 4;
 }
 
-message DynamicFrame {
-  extensions 6000 to 6999;  // Last used: 6003.
+message ReferenceFrame {
+  extensions 6000 to 6999;  // Last used: 6004.
 }
 
 message Ephemeris {
@@ -304,4 +304,13 @@ message RotatingBody {
   // Pre-Cardano.
   reserved 4;
   reserved "angular_velocity";
+}
+
+// Added in Ὑπατία.
+message TwoBodyRotatingPulsatingReferenceFrame {
+  extend ReferenceFrame {
+    optional TwoBodyRotatingPulsatingReferenceFrame extension = 6004;
+  }
+  required int32 primary = 1;
+  required int32 secondary = 2;
 }

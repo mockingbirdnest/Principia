@@ -3,9 +3,10 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
 #include "base/bundle.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
@@ -17,44 +18,28 @@
 namespace principia {
 namespace astronomy {
 
-using base::Bundle;
-using base::dynamic_cast_not_null;
-using base::not_null;
-using geometry::AngleBetween;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodySurfaceDynamicFrame;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::SolarSystem;
-using quantities::si::ArcMinute;
-using quantities::si::ArcSecond;
-using quantities::si::Centi;
-using quantities::si::Deci;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
+using namespace principia::base::_bundle;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 class GeodesyTest : public ::testing::Test {
  protected:
@@ -85,7 +70,7 @@ class GeodesyTest : public ::testing::Test {
   // - a systematic error of 2.8 arcminutes;
   // - a systematic drift of 2.6 milliarcseconds per year;
   // - short-period errors at the milliarcsecond level;
-  BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
+  BodySurfaceReferenceFrame<ICRS, ITRS> itrs_;
 };
 
 #if !defined(_DEBUG)

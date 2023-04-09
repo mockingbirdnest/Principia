@@ -9,12 +9,11 @@
 namespace principia {
 namespace testing_utilities {
 
-using quantities::Speed;
-using quantities::bipm::Knot;
-using quantities::bipm::NauticalMile;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Second;
+using namespace principia::quantities::_bipm;
+
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_is_near;
 
 class IsNearTest : public testing::Test {};
 

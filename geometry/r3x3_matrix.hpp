@@ -15,14 +15,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3x3_matrix {
+namespace _r3x3_matrix {
+namespace internal {
 
-using base::not_null;
-using base::uninitialized_t;
-using quantities::Cube;
-using quantities::is_quantity_v;
-using quantities::Product;
-using quantities::Quotient;
+using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
 
 // An |R3x3Matrix| is an element of the associative algebra of 3-by-3 matrices
 // over |Scalar|.  |Scalar| should be a vector space over ℝ, represented by
@@ -189,12 +188,17 @@ template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          R3x3Matrix<Scalar> const& r3x3_matrix);
 
-}  // namespace internal_r3x3_matrix
+}  // namespace internal
 
-using internal_r3x3_matrix::KroneckerProduct;
-using internal_r3x3_matrix::R3x3Matrix;
+using internal::KroneckerProduct;
+using internal::R3x3Matrix;
 
+}  // namespace _r3x3_matrix
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_r3x3_matrix;
+}  // namespace principia::geometry
 
 #include "geometry/r3x3_matrix_body.hpp"

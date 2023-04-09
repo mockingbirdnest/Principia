@@ -13,12 +13,13 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/mechanical_system.hpp"
 #include "physics/rigid_motion.hpp"
@@ -32,33 +33,28 @@ namespace ksp_plugin {
 
 FORWARD_DECLARE_FROM(part, class, Part);
 
-namespace internal_pile_up {
+class TestablePileUp;
 
-using base::not_null;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::InertiaTensor;
-using geometry::Instant;
-using geometry::NonRotating;
-using geometry::RigidTransformation;
-using geometry::Vector;
-using integrators::Integrator;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::EulerSolver;
-using physics::MasslessBody;
-using physics::MechanicalSystem;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using quantities::AngularMomentum;
-using quantities::Force;
-using quantities::Mass;
-using quantities::Time;
-using quantities::Torque;
+namespace _pile_up {
+namespace internal {
+
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_euler_solver;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_mechanical_system;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The axes are those of Barycentric. The origin is the centre of mass of the
 // pile up.  This frame is distinguished from NonRotatingPileUp in that it is
@@ -246,7 +242,7 @@ class PileUp {
   // Called in the destructor.
   std::function<void()> deletion_callback_;
 
-  friend class TestablePileUp;
+  friend class ksp_plugin::TestablePileUp;
 };
 
 // A convenient data object to track a pile-up and the result of integrating it.
@@ -257,10 +253,18 @@ struct PileUpFuture {
   std::future<absl::Status> future;
 };
 
-}  // namespace internal_pile_up
+}  // namespace internal
 
-using internal_pile_up::PileUp;
-using internal_pile_up::PileUpFuture;
+using internal::ApparentPileUp;
+using internal::NonRotatingPileUp;
+using internal::PileUp;
+using internal::PileUpFuture;
+using internal::PileUpPrincipalAxes;
 
+}  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_pile_up;
+}  // namespace principia::ksp_plugin

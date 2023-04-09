@@ -7,13 +7,14 @@
 #include "serialization/journal.pb.h"
 
 namespace principia {
+namespace journal {
 
 // This file is not included from other headers, only translation units, so we
-// allow pollution of the principia namespace.
-using base::not_constructible;
-using base::not_null;
-using base::PullSerializer;
-using base::PushDeserializer;
+// allow pollution of the |journal| namespace.
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
 using interface::AdaptiveStepParameters;
 using interface::BodyGeopotentialElement;
 using interface::BodyParameters;
@@ -32,11 +33,11 @@ using interface::NavigationManoeuvre;
 using interface::NavigationManoeuvreFrenetTrihedron;
 using interface::OrbitalElements;
 using interface::OrbitAnalysis;
-using interface::OrbitGroundTrack;
 using interface::OrbitRecurrence;
 using interface::Origin;
 using interface::QP;
 using interface::QPRW;
+using interface::SolarTimesOfNodes;
 using interface::Status;
 using interface::WXYZ;
 using interface::XY;
@@ -47,8 +48,6 @@ using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::ScaledSpacePoint;
-
-namespace journal {
 
 #include "journal/profiles.generated.h"
 

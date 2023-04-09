@@ -6,7 +6,8 @@
 #include "astronomy/time_scales.hpp"
 #include "base/serialization.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -26,39 +27,29 @@
 namespace principia {
 namespace physics {
 
-using astronomy::operator""_TT;
-using base::ParseFromBytes;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Velocity;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::operator""_;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::NewLinearTrajectoryTimeline;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::StringLogSink;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::Not;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_string_log_sink;
 
 class DiscreteTrajectoryTest : public ::testing::Test {
  protected:

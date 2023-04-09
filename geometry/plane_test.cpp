@@ -1,7 +1,7 @@
 #include "geometry/plane.hpp"
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -11,15 +11,13 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Current;
-using quantities::MagneticFluxDensity;
-using quantities::si::Ampere;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Tesla;
 using ::testing::Eq;
 using ::testing::UnorderedElementsAre;
+using namespace principia::geometry::_plane;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class PlaneTest : public ::testing::Test {
  protected:

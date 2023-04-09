@@ -3,16 +3,16 @@
 #include <string>
 
 #include "astronomy/date_time.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 
 namespace principia {
 namespace astronomy {
-namespace internal_time_scales {
+namespace _time_scales {
+namespace internal {
 
-using astronomy::date_time::Date;
-using astronomy::date_time::DateTime;
-using geometry::Instant;
-using quantities::Angle;
+using namespace principia::astronomy::_date_time;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_quantities;
 
 // NOTE(egg): We cannot use literal operator templates for strings, so if an
 // invalid date is given and the result does not need to be constexpr the
@@ -86,26 +86,31 @@ constexpr DateTime TTSecond(Instant const& t);
 
 constexpr Instant DateTimeAsTT(DateTime const& tt);
 
-}  // namespace internal_time_scales
+}  // namespace internal
 
-using internal_time_scales::DateTimeAsTT;
-using internal_time_scales::EarthRotationAngle;
-using internal_time_scales::Parse北斗Time;
-using internal_time_scales::ParseGPSTime;
-using internal_time_scales::ParseTAI;
-using internal_time_scales::ParseTT;
-using internal_time_scales::ParseUT1;
-using internal_time_scales::ParseUTC;
-using internal_time_scales::TTDay;
-using internal_time_scales::TTSecond;
-using internal_time_scales::operator""_北斗;
-using internal_time_scales::operator""_GPS;
-using internal_time_scales::operator""_TAI;
-using internal_time_scales::operator""_TT;
-using internal_time_scales::operator""_UT1;
-using internal_time_scales::operator""_UTC;
+using internal::DateTimeAsTT;
+using internal::EarthRotationAngle;
+using internal::Parse北斗Time;
+using internal::ParseGPSTime;
+using internal::ParseTAI;
+using internal::ParseTT;
+using internal::ParseUT1;
+using internal::ParseUTC;
+using internal::TTDay;
+using internal::TTSecond;
+using internal::operator""_北斗;
+using internal::operator""_GPS;
+using internal::operator""_TAI;
+using internal::operator""_TT;
+using internal::operator""_UT1;
+using internal::operator""_UTC;
 
+}  // namespace _time_scales
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_time_scales;
+}  // namespace principia::astronomy
 
 #include "astronomy/time_scales_body.hpp"

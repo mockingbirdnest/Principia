@@ -4,7 +4,6 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -14,22 +13,14 @@
 namespace principia {
 namespace interface {
 
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Sign;
-using geometry::Vector;
-using geometry::Velocity;
-using ksp_plugin::AliceSun;
-using ksp_plugin::Apparent;
-using physics::DegreesOfFreedom;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using quantities::Force;
-using quantities::si::Kilo;
-using quantities::si::Newton;
-using quantities::si::Tonne;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_sign;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
                                       char const* const vessel_guid) {

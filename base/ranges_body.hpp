@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace base {
+namespace _ranges {
+namespace internal {
 
 template<typename Iterator>
 IterableRange<Iterator>::IterableRange(Iterator const begin, Iterator const end)
@@ -49,5 +51,7 @@ IterableRange<Iterator> Range(Iterator const begin, Iterator const end) {
   return IterableRange<Iterator>(begin, end);
 }
 
+}  // namespace internal
+}  // namespace _ranges
 }  // namespace base
 }  // namespace principia

@@ -8,17 +8,23 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_integrators {
+namespace _integrators {
+namespace internal {
 
-using physics::DiscreteTrajectorySegment;
-using physics::Ephemeris;
-using quantities::Length;
-using quantities::si::Metre;
-using quantities::si::Milli;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_ephemeris;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // Parameters for downsampling after fixed-step integration.
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters();
+
+// Parameters for the orbit analyser.  Finer-grained than the default to obtain
+// reasonable element.  The 10'000 times smaller tolerance results in
+// trajectories that are about 10 times as big.
+DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
+OrbitAnalyserDownsamplingParameters();
 
 // Factories for parameters used to control integration.
 Ephemeris<Barycentric>::AccuracyParameters
@@ -31,15 +37,21 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPsychohistoryParameters();
 
-}  // namespace internal_integrators
+}  // namespace internal
 
-using internal_integrators::DefaultBurnParameters;
-using internal_integrators::DefaultDownsamplingParameters;
-using internal_integrators::DefaultEphemerisAccuracyParameters;
-using internal_integrators::DefaultEphemerisFixedStepParameters;
-using internal_integrators::DefaultHistoryParameters;
-using internal_integrators::DefaultPredictionParameters;
-using internal_integrators::DefaultPsychohistoryParameters;
+using internal::DefaultBurnParameters;
+using internal::DefaultDownsamplingParameters;
+using internal::DefaultEphemerisAccuracyParameters;
+using internal::DefaultEphemerisFixedStepParameters;
+using internal::DefaultHistoryParameters;
+using internal::DefaultPredictionParameters;
+using internal::DefaultPsychohistoryParameters;
+using internal::OrbitAnalyserDownsamplingParameters;
 
+}  // namespace _integrators
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_integrators;
+}  // namespace principia::ksp_plugin

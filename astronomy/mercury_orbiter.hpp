@@ -1,20 +1,20 @@
 #pragma once
 
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace astronomy {
-namespace internal_mercury_orbiter {
+namespace _mercury_orbiter {
+namespace internal {
 
-using astronomy::operator""_TT;
-using geometry::Displacement;
-using geometry::Velocity;
-using geometry::Instant;
-using physics::DegreesOfFreedom;
-using quantities::si::Metre;
-using quantities::si::Second;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::quantities::_si;
 
 // State of the spacecraft Mercury Orbiter 1 at the start of September, from a
 // save by Butcher given in issue #1119.  This is used both from a plugin
@@ -35,10 +35,15 @@ physics::DegreesOfFreedom<Barycentric> const
                                -2.23741500134468079e+04 * (Metre / Second),
                                -7.15344990825653076e+03 * (Metre / Second)})};
 
-}  // namespace internal_mercury_orbiter
+}  // namespace internal
 
-using internal_mercury_orbiter::MercuryOrbiterInitialDegreesOfFreedom;
-using internal_mercury_orbiter::MercuryOrbiterInitialTime;
+using internal::MercuryOrbiterInitialDegreesOfFreedom;
+using internal::MercuryOrbiterInitialTime;
 
+}  // namespace _mercury_orbiter
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_mercury_orbiter;
+}  // namespace principia::astronomy

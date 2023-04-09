@@ -1,17 +1,18 @@
 #pragma once
 
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_trajectory {
+namespace _trajectory {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 
 template<typename Frame>
 class Trajectory {
@@ -32,9 +33,14 @@ class Trajectory {
       Instant const& time) const = 0;
 };
 
-}  // namespace internal_trajectory
+}  // namespace internal
 
-using internal_trajectory::Trajectory;
+using internal::Trajectory;
 
+}  // namespace _trajectory
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_trajectory;
+}  // namespace principia::physics

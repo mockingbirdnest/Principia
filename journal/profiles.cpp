@@ -10,10 +10,10 @@
 #include "glog/logging.h"
 
 namespace principia {
-
-using base::FindOrDie;
-
 namespace journal {
+
+using namespace principia::base::_map_util;
+
 namespace {
 
 template<typename T>

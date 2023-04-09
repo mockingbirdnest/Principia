@@ -4,25 +4,22 @@
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/space.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
-
-using astronomy::ICRS;
-using geometry::Displacement;
-using geometry::Multivector;
-using geometry::R3Element;
-using quantities::Length;
-using quantities::Quantity;
-using quantities::Time;
-namespace si = quantities::si;
-
 namespace numerics {
+
+using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 constexpr int evaluations_per_iteration = 1000;

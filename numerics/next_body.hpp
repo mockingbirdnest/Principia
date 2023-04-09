@@ -10,6 +10,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _next {
+namespace internal {
 
 template<typename SourceFormat, typename>
 constexpr SourceFormat NextUp(SourceFormat const x) {
@@ -58,5 +60,7 @@ constexpr SourceFormat NextDown(SourceFormat const x) {
   return -NextUp(-x);
 }
 
+}  // namespace internal
+}  // namespace _next
 }  // namespace numerics
 }  // namespace principia

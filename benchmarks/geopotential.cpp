@@ -11,8 +11,9 @@
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/space.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre.hpp"
 #include "physics/solar_system.hpp"
@@ -24,32 +25,21 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
-using astronomy::ITRS;
-using base::not_null;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::R3Element;
-using geometry::Vector;
-using numerics::FixedMatrix;
-using numerics::LegendreNormalizationFactor;
-using physics::SolarSystem;
-using quantities::Acceleration;
-using quantities::Angle;
-using quantities::Exponentiation;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::ParseQuantity;
-using quantities::Pow;
-using quantities::Quotient;
-using quantities::Sqrt;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-namespace si = quantities::si;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -85,7 +75,7 @@ GeneralSphericalHarmonicsAccelerationF90(
   auto const acceleration_surface =
       Vector<Quotient<Acceleration, GravitationalParameter>, SurfaceFrame>(
           si::Unit<Quotient<Acceleration, GravitationalParameter>> *
-          astronomy::fortran_astrodynamics_toolkit::
+          astronomy::_fortran_astrodynamics_toolkit::
               ComputeGravityAccelerationLear<degree, order>(
                   r_surface.coordinates() / Metre, mu, rbar, cnm, snm));
   return from_surface_frame(acceleration_surface);

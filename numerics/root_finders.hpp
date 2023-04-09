@@ -11,11 +11,12 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_root_finders {
+namespace _root_finders {
+namespace internal {
 
-using base::BoundedArray;
-using quantities::Derivative;
-using quantities::Sqrt;
+using namespace principia::base::_array;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 // Approximates a root of |f| between |lower_bound| and |upper_bound| by
 // bisection.  The result is less than one ULP from a root of any continuous
@@ -72,14 +73,19 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
     Derivative<Value, Argument> const& a1,
     Derivative<Derivative<Value, Argument>, Argument> const& a2);
 
-}  // namespace internal_root_finders
+}  // namespace internal
 
-using internal_root_finders::Bisect;
-using internal_root_finders::Brent;
-using internal_root_finders::GoldenSectionSearch;
-using internal_root_finders::SolveQuadraticEquation;
+using internal::Bisect;
+using internal::Brent;
+using internal::GoldenSectionSearch;
+using internal::SolveQuadraticEquation;
 
+}  // namespace _root_finders
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_root_finders;
+}  // namespace principia::numerics
 
 #include "numerics/root_finders_body.hpp"

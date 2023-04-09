@@ -13,9 +13,9 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(orthogonal_map,
+FORWARD_DECLARE_FROM(permutation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     OrthogonalMap);
+                     Permutation);
 FORWARD_DECLARE_FROM(
     symmetric_bilinear_form,
     TEMPLATE(typename Scalar,
@@ -23,14 +23,17 @@ FORWARD_DECLARE_FROM(
             template<typename S, typename F> typename Multivector) class,
     SymmetricBilinearForm);
 
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
-using base::not_null;
-using quantities::Angle;
-
-template<typename FromFrame, typename ToFrame>
-std::ostream& operator<<(std::ostream& out,
-                         Rotation<FromFrame, ToFrame> const& rotation);
+using namespace principia::base::_mappable;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_quantities;
 
 // |EulerAngles| and |CardanoAngles| have values in binary-coded ternary
 // representing the sequence of rotation axes.
@@ -74,7 +77,8 @@ struct DefinesFrame final {};
 // |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
 // algebra.
 template<typename FromFrame, typename ToFrame>
-class Rotation : public LinearMap<FromFrame, ToFrame> {
+class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
+                                  FromFrame, ToFrame> {
   static_assert(FromFrame::handedness == ToFrame::handedness,
                 "Cannot rotate between frames of different handedness");
 
@@ -202,7 +206,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
            CardanoAngles axes,
            DefinesFrame<FromFrame> tag);
 
-  Sign Determinant() const override;
+  Sign Determinant() const;
 
   Rotation<ToFrame, FromFrame> Inverse() const;
 
@@ -231,10 +235,12 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
 
   template<typename T>
-  typename base::Mappable<Rotation, T>::type operator()(T const& t) const;
+  typename Mappable<Rotation, T>::type operator()(T const& t) const;
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   static Rotation Identity();
 
@@ -243,15 +249,15 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Rotation ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Rotation*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Rotation ReadFromMessage(serialization::Rotation const& message);
 
  private:
@@ -262,7 +268,7 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
 
   // For constructing a rotation using a quaternion.
   template<typename From, typename To>
-  friend class Permutation;
+  friend class _permutation::Permutation;
 
   template<typename From, typename Through, typename To>
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
@@ -278,6 +284,10 @@ class Rotation : public LinearMap<FromFrame, ToFrame> {
   friend std::ostream& operator<<(std::ostream& out,
                                   Rotation<From, To> const& rotation);
 };
+
+// Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) → SO(𝑉).
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent);
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
@@ -295,14 +305,20 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation);
 
-}  // namespace internal_rotation
+}  // namespace internal
 
-using internal_rotation::CardanoAngles;
-using internal_rotation::DefinesFrame;
-using internal_rotation::EulerAngles;
-using internal_rotation::Rotation;
+using internal::CardanoAngles;
+using internal::DefinesFrame;
+using internal::Exp;
+using internal::EulerAngles;
+using internal::Rotation;
 
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_rotation;
+}  // namespace principia::geometry
 
 #include "geometry/rotation_body.hpp"

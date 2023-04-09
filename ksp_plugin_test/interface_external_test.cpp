@@ -12,37 +12,27 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace interface {
 
-using astronomy::ICRS;
-using base::make_not_null_unique;
-using ksp_plugin::GUID;
-using ksp_plugin::Navigation;
-using ksp_plugin::PartId;
-using ksp_plugin::FakePlugin;
-using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::Vessel;
-using physics::SolarSystem;
-using quantities::Sqrt;
-using quantities::si::Centi;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Micro;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Tonne;
-using testing_utilities::Componentwise;
-using testing_utilities::IsNear;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::StatusIs;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_fake_plugin;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_solar_system_factory;
 
-namespace interface {
 namespace {
 
 constexpr PartId part_id = 1729;

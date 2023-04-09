@@ -3,10 +3,11 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "geometry/sphere.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -17,27 +18,23 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
+namespace _planetarium {
+namespace internal {
 
-using base::not_null;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Perspective;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::RP2Lines;
-using geometry::RP2Point;
-using geometry::Segment;
-using geometry::Segments;
-using geometry::Sphere;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::RigidMotion;
-using physics::Trajectory;
-using quantities::Angle;
-using quantities::Length;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_space;
+using namespace principia::geometry::_sphere;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_quantities;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
 // ScaledSpace.
@@ -83,7 +80,7 @@ class Planetarium {
   Planetarium(Parameters const& parameters,
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
-              not_null<NavigationFrame const*> plotting_frame,
+              not_null<PlottingFrame const*> plotting_frame,
               PlottingToScaledSpaceConversion plotting_to_scaled_space);
 
   // A no-op method that just returns all the points in the trajectory defined
@@ -161,7 +158,7 @@ class Planetarium {
   Parameters const parameters_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
-  not_null<NavigationFrame const*> const plotting_frame_;
+  not_null<PlottingFrame const*> const plotting_frame_;
   PlottingToScaledSpaceConversion plotting_to_scaled_space_;
 };
 
@@ -172,10 +169,15 @@ inline ScaledSpacePoint ScaledSpacePoint::FromCoordinates(
                           static_cast<float>(coordinates.z)};
 }
 
-}  // namespace internal_planetarium
+}  // namespace internal
 
-using internal_planetarium::Planetarium;
-using internal_planetarium::ScaledSpacePoint;
+using internal::Planetarium;
+using internal::ScaledSpacePoint;
 
+}  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_planetarium;
+}  // namespace principia::ksp_plugin

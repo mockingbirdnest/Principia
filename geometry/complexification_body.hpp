@@ -4,7 +4,8 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_complexification {
+namespace _complexification {
+namespace internal {
 
 template<typename Vector>
 template<typename V, typename>
@@ -213,6 +214,7 @@ std::ostream& operator<<(std::ostream& out, Complexification<Vector> const& z) {
   return out << z.real_part() << " + " << z.imaginary_part() << " i";
 }
 
-}  // namespace internal_complexification
+}  // namespace internal
+}  // namespace _complexification
 }  // namespace geometry
 }  // namespace principia

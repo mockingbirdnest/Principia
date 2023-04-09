@@ -13,13 +13,14 @@
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
 #include "base/recurring_thread.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/checkpointer.hpp"
+#include "physics/clientele.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
@@ -33,25 +34,25 @@ namespace ksp_plugin {
 
 class VesselTest;
 
-namespace internal_vessel {
+namespace _vessel {
+namespace internal {
 
-using base::not_null;
-using base::RecurringThread;
-using geometry::InfinitePast;
-using geometry::Instant;
-using geometry::Vector;
-using physics::Checkpointer;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::Ephemeris;
-using physics::MasslessBody;
-using physics::RotatingBody;
-using quantities::Force;
-using quantities::GravitationalParameter;
-using quantities::Mass;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::base::_recurring_thread;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_checkpointer;
+using namespace principia::physics::_clientele;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Represents a KSP |Vessel|.
 class Vessel {
@@ -183,8 +184,9 @@ class Vessel {
   // |desired_t_min|.
   void RequestReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
-  // Blocks until the |t_min()| of the vessel is at or before |desired_t_min|.
-  void WaitForReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+  // Same as |RequestReanimation|, but synchronous.  This function blocks until
+  // the |t_min()| of the vessel is at or before |desired_t_min|.
+  void AwaitReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
 
   // Creates a flight plan at the end of history using the given parameters;
   // selects that flight plan, which is the last one in |flight_plans_|.
@@ -377,6 +379,7 @@ class Vessel {
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
+  Clientele<Instant> reanimator_clientele_;
 
   // Parameter passed to the last call to |RequestReanimation|, if any.
   std::optional<Instant> last_desired_t_min_;
@@ -410,9 +413,14 @@ class Vessel {
   friend class ksp_plugin::VesselTest;
 };
 
-}  // namespace internal_vessel
+}  // namespace internal
 
-using internal_vessel::Vessel;
+using internal::Vessel;
 
+}  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_vessel;
+}  // namespace principia::ksp_plugin

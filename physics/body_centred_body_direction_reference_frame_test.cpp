@@ -1,12 +1,13 @@
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
 
 #include <memory>
 
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -26,32 +27,28 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_body_direction_dynamic_frame {
 
-using astronomy::ICRS;
-using geometry::Arbitrary;
-using geometry::Barycentre;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Vector;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 
@@ -60,7 +57,7 @@ char constexpr small[] = "Small";
 
 }  // namespace
 
-class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
+class BodyCentredBodyDirectionReferenceFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
@@ -68,7 +65,7 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
                               Handedness::Right,
                               serialization::Frame::TEST>;
 
-  BodyCentredBodyDirectionDynamicFrameTest()
+  BodyCentredBodyDirectionReferenceFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
@@ -93,7 +90,7 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
             solar_system_.gravitational_parameter(small)) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ = std::make_unique<
-        BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>(
+        BodyCentredBodyDirectionReferenceFrame<ICRS, BigSmallFrame>>(
         ephemeris_.get(), big_, small_);
   }
 
@@ -108,12 +105,12 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
   DegreesOfFreedom<ICRS> small_initial_state_;
   GravitationalParameter small_gravitational_parameter_;
 
-  std::unique_ptr<BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>
+  std::unique_ptr<BodyCentredBodyDirectionReferenceFrame<ICRS, BigSmallFrame>>
       big_small_frame_;
 };
 
 
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ToBigSmallFrameAtTime) {
   int const steps = 100;
 
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
@@ -149,7 +146,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
   }
 }
 
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Inverse) {
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Inverse) {
   int const steps = 100;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const from_big_small_frame_at_t =
@@ -169,7 +166,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Inverse) {
   }
 }
 
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, GeometricAcceleration) {
   Instant const t = t0_ + period_;
   DegreesOfFreedom<BigSmallFrame> const point_dof =
       {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
@@ -186,22 +183,22 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
                   -2.86351378905829182e6 * Metre / Pow<2>(Second)}), 0));
 }
 
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
-  serialization::DynamicFrame message;
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Serialization) {
+  serialization::ReferenceFrame message;
   big_small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
-      serialization::BodyCentredBodyDirectionDynamicFrame::extension));
+      serialization::BodyCentredBodyDirectionReferenceFrame::extension));
   auto const extension = message.GetExtension(
-      serialization::BodyCentredBodyDirectionDynamicFrame::extension);
+      serialization::BodyCentredBodyDirectionReferenceFrame::extension);
   EXPECT_TRUE(extension.has_primary());
   EXPECT_TRUE(extension.has_secondary());
   EXPECT_EQ(0, extension.primary());
   EXPECT_EQ(1, extension.secondary());
 
   auto const read_big_small_frame =
-      DynamicFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
-                                                         ephemeris_.get());
+      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(
+          message, ephemeris_.get());
   EXPECT_THAT(read_big_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
@@ -215,7 +212,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
             read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
 
-TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
   // A discrete trajectory that remains motionless at the barycentre.  Since
   // both bodies don't have the same mass, this means it has an intrinsic
   // acceleration.
@@ -234,12 +231,12 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
                 VanishesBefore(1 * Kilo(Metre) / Second, 0, 50));
     EXPECT_OK(barycentre_trajectory.Append(t0_ + t, barycentre));
   }
-  BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>
+  BodyCentredBodyDirectionReferenceFrame<ICRS, BigSmallFrame>
       barycentric_from_discrete{
           ephemeris_.get(),
           [&t = barycentre_trajectory]() -> auto& { return t; },
           small_};
-  BarycentricRotatingDynamicFrame<ICRS, BigSmallFrame>
+  BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>
       barycentric_from_both_bodies{ephemeris_.get(), big_, small_};
   for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
     auto const dof_from_discrete =
@@ -254,7 +251,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
         VanishesBefore(1 * Kilo(Metre) / Second, 0, 93));
-    // For the moment, the |BodyCentredBodyDirectionDynamicFrame| assumes that
+    // For the moment, the |BodyCentredBodyDirectionReferenceFrame| assumes that
     // its reference trajectories are free-falling, and gives us the wrong
     // geometric acceleration when this is not the case.
     auto const intrinsic_acceleration =
@@ -273,6 +270,5 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
   }
 }
 
-}  // namespace internal_body_centred_body_direction_dynamic_frame
 }  // namespace physics
 }  // namespace principia

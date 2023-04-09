@@ -1,12 +1,13 @@
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 
 #include <memory>
 
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -26,37 +27,29 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
 
-using astronomy::ICRS;
-using base::dynamic_cast_not_null;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::GravitationalParameter;
-using quantities::Pow;
-using quantities::Time;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 
@@ -65,7 +58,7 @@ char constexpr small[] = "Small";
 
 }  // namespace
 
-class BodySurfaceDynamicFrameTest : public ::testing::Test {
+class BodySurfaceReferenceFrameTest : public ::testing::Test {
  protected:
   // The rotating frame centred on the big body and directed to the small one.
   using BigSmallFrame = Frame<serialization::Frame::TestTag,
@@ -73,7 +66,7 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                               Handedness::Right,
                               serialization::Frame::TEST>;
 
-  BodySurfaceDynamicFrameTest()
+  BodySurfaceReferenceFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
@@ -97,7 +90,7 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)),
         // A body that rotates at the same speed as the one in
-        // BodyCentredBodyDirectionDynamicFrameTest, so it produces the same
+        // BodyCentredBodyDirectionReferenceFrameTest, so it produces the same
         // fictitious forces.
         centre_(MassiveBody::Parameters(1 * Kilogram),
                 RotatingBody<ICRS>::Parameters(
@@ -109,8 +102,9 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                     /*declination_of_pole=*/π / 2 * Radian)),
         massive_centre_(&centre_) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
-    big_frame_ = std::make_unique<BodySurfaceDynamicFrame<ICRS, BigSmallFrame>>(
-        ephemeris_.get(), big_);
+    big_frame_ =
+        std::make_unique<BodySurfaceReferenceFrame<ICRS, BigSmallFrame>>(
+            ephemeris_.get(), big_);
   }
 
   Time const period_;
@@ -125,11 +119,11 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
   RotatingBody<ICRS> const centre_;
   not_null<MassiveBody const*> const massive_centre_;
 
-  std::unique_ptr<BodySurfaceDynamicFrame<ICRS, BigSmallFrame>> big_frame_;
+  std::unique_ptr<BodySurfaceReferenceFrame<ICRS, BigSmallFrame>> big_frame_;
 };
 
 
-TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
+TEST_F(BodySurfaceReferenceFrameTest, ToBigSmallFrameAtTime) {
   int const steps = 100;
 
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
@@ -166,7 +160,7 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
   }
 }
 
-TEST_F(BodySurfaceDynamicFrameTest, Inverse) {
+TEST_F(BodySurfaceReferenceFrameTest, Inverse) {
   int const steps = 100;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const from_big_frame_at_t =
@@ -186,7 +180,7 @@ TEST_F(BodySurfaceDynamicFrameTest, Inverse) {
   }
 }
 
-TEST_F(BodySurfaceDynamicFrameTest, GeometricAcceleration) {
+TEST_F(BodySurfaceReferenceFrameTest, GeometricAcceleration) {
   Instant const t = t0_ + period_;
   DegreesOfFreedom<BigSmallFrame> const point_dof =
       {Displacement<BigSmallFrame>({10 * Metre, 20 * Metre, 30 * Metre}) +
@@ -203,20 +197,20 @@ TEST_F(BodySurfaceDynamicFrameTest, GeometricAcceleration) {
                   -2.86351379198155506e6 * Metre / Pow<2>(Second)}), 0, 2));
 }
 
-TEST_F(BodySurfaceDynamicFrameTest, Serialization) {
-  serialization::DynamicFrame message;
+TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
+  serialization::ReferenceFrame message;
   big_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
-      serialization::BodySurfaceDynamicFrame::extension));
+      serialization::BodySurfaceReferenceFrame::extension));
   auto const extension = message.GetExtension(
-      serialization::BodySurfaceDynamicFrame::extension);
+      serialization::BodySurfaceReferenceFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(0, extension.centre());
 
   auto const read_big_frame =
-      DynamicFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
-                                                         ephemeris_.get());
+      RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(
+          message, ephemeris_.get());
   EXPECT_THAT(read_big_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
@@ -230,6 +224,5 @@ TEST_F(BodySurfaceDynamicFrameTest, Serialization) {
             read_big_frame->GeometricAcceleration(t, point_dof));
 }
 
-}  // namespace internal_body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia

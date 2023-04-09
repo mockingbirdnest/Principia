@@ -4,7 +4,9 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/space.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -18,23 +20,19 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
-using quantities::ArcCos;
-using quantities::ArcSin;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class RotationTest : public testing::Test {
  protected:
@@ -574,6 +572,7 @@ TEST_F(RotationTest, CardanoAngles) {
   }
 }
 
-}  // namespace internal_rotation
+}  // namespace internal
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia

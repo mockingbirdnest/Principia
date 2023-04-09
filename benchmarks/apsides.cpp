@@ -9,13 +9,12 @@
 #include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/apsides.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -23,27 +22,17 @@
 #include "quantities/si.hpp"
 
 namespace principia {
-
-using astronomy::GCRS;
-using astronomy::ICRS;
-using astronomy::ITRS;
-using astronomy::StandardProduct3;
-using base::dynamic_cast_not_null;
-using base::not_null;
-using geometry::InfiniteFuture;
-using geometry::Position;
-using geometry::Vector;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::QuinlanTremaine1990Order12;
-using integrators::SymmetricLinearMultistepIntegrator;
-using quantities::astronomy::JulianYear;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
-
 namespace physics {
+
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_standard_product_3;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
 
 class ApsidesBenchmark : public benchmark::Fixture {
  protected:
@@ -82,7 +71,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
     auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
     CHECK_OK(ephemeris_->Prolong(begin->time));
 
-    BodySurfaceDynamicFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
+    BodySurfaceReferenceFrame<ICRS, ITRS> const itrs(ephemeris_, earth_);
     ilrsa_lageos2_trajectory_icrs_ = new DiscreteTrajectory<ICRS>;
     CHECK_OK(ilrsa_lageos2_trajectory_icrs_->Append(
         begin->time,
@@ -100,8 +89,8 @@ class ApsidesBenchmark : public benchmark::Fixture {
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
         /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
 
-    BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> const gcrs(ephemeris_,
-                                                              earth_);
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs(ephemeris_,
+                                                                earth_);
     ilrsa_lageos2_trajectory_gcrs_ = new DiscreteTrajectory<GCRS>;
     for (auto const& [time, degrees_of_freedom] :
          *ilrsa_lageos2_trajectory_icrs_) {

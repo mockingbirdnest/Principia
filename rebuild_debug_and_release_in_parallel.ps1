@@ -2,6 +2,7 @@ $ErrorActionPreference = "Stop"
 
 $msbuild = &".\find_msbuild.ps1"
 
+&$msbuild /t:Restore Principia.sln
 &$msbuild            `
     /t:"Clean;Build" `
     /m               `

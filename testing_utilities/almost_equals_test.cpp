@@ -22,30 +22,24 @@
 namespace principia {
 namespace testing_utilities {
 
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Trivector;
-using numerics::FixedLowerTriangularMatrix;
-using numerics::FixedUpperTriangularMatrix;
-using numerics::FixedVector;
-using numerics::UnboundedLowerTriangularMatrix;
-using numerics::UnboundedUpperTriangularMatrix;
-using numerics::UnboundedVector;
-using quantities::Length;
-using quantities::MagneticFlux;
-using quantities::Speed;
-using quantities::bipm::Knot;
-using quantities::cgs::Maxwell;
-using quantities::uk::Foot;
-using testing::Ne;
-using testing::Eq;
-using testing::Not;
-namespace si = quantities::si;
+using ::testing::Ne;
+using ::testing::Eq;
+using ::testing::Not;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_bipm;
+using namespace principia::quantities::_cgs;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 using World = Frame<struct WorldTag>;

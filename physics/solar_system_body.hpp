@@ -17,7 +17,7 @@
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -35,34 +35,23 @@
 
 namespace principia {
 namespace physics {
-namespace internal_solar_system {
+namespace _solar_system {
+namespace internal {
 
-using astronomy::J2000;
-using astronomy::ParseTT;
-using base::Contains;
-using base::dynamic_cast_not_null;
-using base::FindOrDie;
-using base::Fingerprint2011;
-using base::FingerprintCat2011;
-using base::make_not_null_unique;
-using base::SerializeAsBytes;
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Position;
-using geometry::RadiusLatitudeLongitude;
-using geometry::Vector;
-using geometry::Velocity;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::DebugString;
-using quantities::Length;
-using quantities::Mass;
-using quantities::ParseQuantity;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 inline serialization::GravityModel ParseGravityModel(
     std::filesystem::path const& gravity_model_filename) {
@@ -701,6 +690,7 @@ void SolarSystem<Frame>::CheckFrame(Message const& message) {
   }
 }
 
-}  // namespace internal_solar_system
+}  // namespace internal
+}  // namespace _solar_system
 }  // namespace physics
 }  // namespace principia

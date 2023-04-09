@@ -13,13 +13,12 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_matrix_computations {
+namespace _matrix_computations {
+namespace internal {
 
-using base::uninitialized;
-using quantities::Abs;
-using quantities::Pow;
-using quantities::Sqrt;
-namespace si = quantities::si;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
@@ -589,6 +588,7 @@ Solve(Matrix A, Vector b) {
   return x;
 }
 
-}  // namespace internal_matrix_computations
+}  // namespace internal
+}  // namespace _matrix_computations
 }  // namespace numerics
 }  // namespace principia

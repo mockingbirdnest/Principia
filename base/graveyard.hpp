@@ -7,6 +7,10 @@
 
 namespace principia {
 namespace base {
+namespace _graveyard {
+namespace internal {
+
+using namespace principia::base::_thread_pool;
 
 class Graveyard {
  public:
@@ -19,6 +23,11 @@ class Graveyard {
   ThreadPool<void> gravedigger_;
 };
 
+}  // namespace internal
+
+using internal::Graveyard;
+
+}  // namespace _graveyard
 }  // namespace base
 }  // namespace principia
 

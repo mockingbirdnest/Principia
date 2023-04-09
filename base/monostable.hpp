@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace base {
+namespace _monostable {
+namespace internal {
 
 // A boolean which is constructed true and becomes false when |Flop| is called.
 class Monostable final {
@@ -20,6 +22,11 @@ class Monostable final {
   bool transient_ = true;
 };
 
+}  // namespace internal
+
+using internal::Monostable;
+
+}  // namespace _monostable
 }  // namespace base
 }  // namespace principia
 

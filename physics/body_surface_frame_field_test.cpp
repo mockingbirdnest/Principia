@@ -3,6 +3,8 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -14,24 +16,20 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_dynamic_frame {
 
-using astronomy::ICRS;
-using astronomy::J2000;
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Frame;
-using geometry::Rotation;
-using geometry::Vector;
-using quantities::Sqrt;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::VanishesBefore;
 using ::testing::Return;
 using ::testing::_;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_body_surface_frame_field;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class BodySurfaceFrameFieldTest : public ::testing::Test {
  protected:
@@ -94,6 +92,5 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
   }
 }
 
-}  // namespace internal_body_surface_dynamic_frame
 }  // namespace physics
 }  // namespace principia

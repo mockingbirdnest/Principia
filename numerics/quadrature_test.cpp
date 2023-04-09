@@ -13,16 +13,16 @@ namespace principia {
 namespace numerics {
 namespace quadrature {
 
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::si::Radian;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::operator""_;
 using ::testing::AnyOf;
 using ::testing::Eq;
+using namespace principia::numerics::_quadrature;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class QuadratureTest : public ::testing::Test {};
 

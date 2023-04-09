@@ -1,5 +1,6 @@
 #include "ksp_plugin/celestial.hpp"
 
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/massive_body.hpp"
@@ -7,14 +8,14 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_celestial {
 
-using physics::MassiveBody;
-using quantities::si::Degree;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::ksp_plugin::_celestial;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_si;
 
 class CelestialTest : public testing::Test {
  protected:
@@ -60,6 +61,5 @@ TEST_F(CelestialTest, Initialization) {
   EXPECT_TRUE(celestial_->is_initialized());
 }
 
-}  // namespace internal_celestial
 }  // namespace ksp_plugin
 }  // namespace principia

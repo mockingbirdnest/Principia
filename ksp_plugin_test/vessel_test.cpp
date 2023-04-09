@@ -10,8 +10,9 @@
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
@@ -21,6 +22,7 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -37,46 +39,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::operator""_TT;
-using base::not_null;
-using base::make_not_null_unique;
-using geometry::Barycentre;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InertiaTensor;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Position;
-using geometry::R3x3Matrix;
-using geometry::Vector;
-using geometry::Velocity;
-using interface::ReadPluginFromFile;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::MassiveBody;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using quantities::Force;
-using quantities::Mass;
-using quantities::MomentOfInertia;
-using quantities::Pow;
-using quantities::Torque;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::NewAcceleratedTrajectoryTimeline;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::NewLinearTrajectoryTimeline;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -87,6 +49,30 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_matchers;
 
 class VesselTest : public testing::Test {
  protected:
@@ -963,11 +949,8 @@ TEST_F(VesselTest, Reanimator) {
             vessel->psychohistory()->back().time);
 
   // Reanimate the vessel that we just read.
-  vessel->RequestReanimation(t0_);
-
-  // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
-  vessel->WaitForReanimation(t0_);
+  vessel->AwaitReanimation(t0_);
   LOG(ERROR) << "Herbert West is finally done.";
 
   EXPECT_EQ("2000-01-01T12:00:30"_TT + 0.1399999999994463 * Second,

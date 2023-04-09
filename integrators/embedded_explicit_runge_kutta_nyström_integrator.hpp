@@ -14,6 +14,7 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -22,15 +23,15 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
+namespace _embedded_explicit_runge_kutta_nyström_integrator {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_null;
-using geometry::Instant;
-using numerics::FixedStrictlyLowerTriangularMatrix;
-using numerics::FixedVector;
-using quantities::Time;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // This class solves ordinary differential equations of the form q″ = f(q, t)
 // using an embedded Runge-Kutta-Nyström method.  We follow the standard
@@ -94,7 +95,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
     template<typename DV = typename ODE::DependentVariable,
-             typename = std::enable_if_t<base::is_serializable_v<DV>>>
+             typename = std::enable_if_t<is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
@@ -140,15 +141,19 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   static constexpr auto bʹ_ = Method::bʹ;
 };
 
-}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename Position>
-internal_embedded_explicit_runge_kutta_nyström_integrator::
-    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
+internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator();
 
+}  // namespace _embedded_explicit_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+}  // namespace principia::integrators
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp"
 

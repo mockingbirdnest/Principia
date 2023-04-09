@@ -8,18 +8,18 @@
 #include "ksp_plugin/pile_up.hpp"
 
 namespace principia {
-
-using base::make_not_null_shared;
-using geometry::Instant;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Part;
-using ksp_plugin::PileUp;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-
 namespace base {
+namespace _disjoint_sets {
+namespace internal {
 
-Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
+using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+
+Subset<Part>::Properties::Properties(not_null<Part*> const part) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->parts().size() - 1;
   }
@@ -118,5 +118,7 @@ bool Subset<Part>::Properties::StrictSubsetOfExistingPileUp()
   return SubsetOfExistingPileUp() && missing_ > 0;
 }
 
+}  // namespace internal
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia

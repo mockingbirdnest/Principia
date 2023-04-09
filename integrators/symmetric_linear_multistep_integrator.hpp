@@ -14,6 +14,7 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/starter.hpp"
@@ -22,14 +23,15 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symmetric_linear_multistep_integrator {
+namespace _symmetric_linear_multistep_integrator {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_null;
-using geometry::Instant;
-using numerics::DoublePrecision;
-using numerics::FixedVector;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_quantities;
 
 // This implementation follows [QT90].
 template<typename Method, typename ODE_>
@@ -52,7 +54,7 @@ class SymmetricLinearMultistepIntegrator
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
     template<typename DV = typename ODE::DependentVariable,
-             typename = std::enable_if_t<base::is_serializable_v<DV>>>
+             typename = std::enable_if_t<is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance const&
             extension,
@@ -75,7 +77,7 @@ class SymmetricLinearMultistepIntegrator
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> message) const;
       template<typename DV = typename ODE::DependentVariable,
-               typename = std::enable_if_t<base::is_serializable_v<DV>>>
+               typename = std::enable_if_t<is_serializable_v<DV>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message);
@@ -126,15 +128,19 @@ class SymmetricLinearMultistepIntegrator
   CohenHubbardOesterwinter<order> const& cohen_hubbard_oesterwinter_;
 };
 
-}  // namespace internal_symmetric_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename Position>
-internal_symmetric_linear_multistep_integrator::
-    SymmetricLinearMultistepIntegrator<Method, Position> const&
+internal::SymmetricLinearMultistepIntegrator<Method, Position> const&
 SymmetricLinearMultistepIntegrator();
 
+}  // namespace _symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+}  // namespace principia::integrators
 
 #include "symmetric_linear_multistep_integrator_body.hpp"
 

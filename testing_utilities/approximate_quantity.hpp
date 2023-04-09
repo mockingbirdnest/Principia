@@ -8,11 +8,11 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_approximate_quantity {
+namespace _approximate_quantity {
+namespace internal {
 
-using quantities::Product;
-using quantities::Quantity;
-using quantities::Quotient;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Quantity>
 class ApproximateQuantity;
@@ -141,14 +141,19 @@ struct NumericLiteral {
 
 NumericLiteral operator""_(char const* representation);
 
-}  // namespace internal_approximate_quantity
+}  // namespace internal
 
-using internal_approximate_quantity::ApproximateQuantity;
-using internal_approximate_quantity::operator*;
-using internal_approximate_quantity::operator/;
-using internal_approximate_quantity::operator""_;
+using internal::ApproximateQuantity;
+using internal::operator*;
+using internal::operator/;
+using internal::operator""_;
 
+}  // namespace _approximate_quantity
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_approximate_quantity;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/approximate_quantity_body.hpp"

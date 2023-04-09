@@ -6,13 +6,14 @@
 
 #include "absl/base/thread_annotations.h"
 #include "absl/synchronization/mutex.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_protector {
+namespace _protector {
+namespace internal {
 
-using geometry::Instant;
+using namespace principia::geometry::_instant;
 
 // The protector helps with preventing asynchronous changes to timelines, i.e.,
 // classes that associate some data with distinct instants.  It makes it
@@ -42,9 +43,14 @@ class Protector {
   std::multiset<Instant> protection_start_times_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_protector
+}  // namespace internal
 
-using internal_protector::Protector;
+using internal::Protector;
 
+}  // namespace _protector
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_protector;
+}  // namespace principia::physics

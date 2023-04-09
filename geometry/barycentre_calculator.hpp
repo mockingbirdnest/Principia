@@ -7,9 +7,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_barycentre_calculator {
+namespace _barycentre_calculator {
+namespace internal {
 
-using quantities::Product;
+using namespace principia::quantities::_named_quantities;
 
 // |Vector| must be a vector space over the field |Scalar|.
 template<typename Vector, typename Scalar>
@@ -36,12 +37,17 @@ T Barycentre(std::pair<T, T> const& ts,
 template<typename T, typename Scalar, template<typename...> class Container>
 T Barycentre(Container<T> const& ts, Container<Scalar> const& weights);
 
-}  // namespace internal_barycentre_calculator
+}  // namespace internal
 
-using internal_barycentre_calculator::Barycentre;
-using internal_barycentre_calculator::BarycentreCalculator;
+using internal::Barycentre;
+using internal::BarycentreCalculator;
 
+}  // namespace _barycentre_calculator
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_barycentre_calculator;
+}  // namespace principia::geometry
 
 #include "geometry/barycentre_calculator_body.hpp"

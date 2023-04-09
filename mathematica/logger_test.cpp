@@ -13,11 +13,11 @@
 namespace principia {
 namespace mathematica {
 
-using base::not_null;
-using geometry::Frame;
-using quantities::si::Metre;
-using quantities::si::Second;
 using ::testing::Optional;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::mathematica::_logger;
+using namespace principia::quantities::_si;
 
 class LoggerTest : public ::testing::Test {
  protected:

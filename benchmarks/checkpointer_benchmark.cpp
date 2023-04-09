@@ -7,6 +7,7 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
+#include "geometry/instant.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -17,14 +18,14 @@
 namespace principia {
 namespace physics {
 
-using base::not_null;
-using geometry::Instant;
-using quantities::si::Second;
 using serialization::DoublePrecision;
 using serialization::Ephemeris;
 using serialization::IntegratorInstance;
 using serialization::R3Element;
 using serialization::State;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_si;
 
 // Stub writer for checkpointer. Adds some data to the checkpoint.
 void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {

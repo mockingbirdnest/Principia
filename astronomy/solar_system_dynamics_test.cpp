@@ -7,7 +7,10 @@
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -29,69 +32,39 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
+namespace astronomy {
 
-using base::dynamic_cast_not_null;
-using geometry::AngleBetween;
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Bivector;
-using geometry::Commutator;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Velocity;
-using geometry::Wedge;
-using integrators::FixedStepSizeIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order8;
-using integrators::methods::QuinlanTremaine1990Order10;
-using integrators::methods::QuinlanTremaine1990Order12;
-using integrators::methods::BlanesMoan2002SRKN11B;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using mathematica::PreserveUnits;
-using physics::ContinuousTrajectory;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using physics::SolarSystem;
-using quantities::Angle;
-using quantities::AngularMomentum;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::ApproximateQuantity;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::operator""_;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
-
-namespace astronomy {
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 class SolarSystemDynamicsTest : public ::testing::Test {
  protected:

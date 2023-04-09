@@ -8,7 +8,8 @@
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -20,21 +21,21 @@
 
 namespace principia {
 namespace physics {
-namespace internal_continuous_trajectory {
-
-using base::not_null;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using quantities::Length;
-using quantities::Time;
-using numerics::EstrinEvaluator;
-using numerics::PiecewisePoissonSeries;
-using numerics::Polynomial;
 
 template<typename Frame>
 class TestableContinuousTrajectory;
+
+namespace _continuous_trajectory {
+namespace internal {
+
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_piecewise_poisson_series;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::quantities::_quantities;
 
 // This class is thread-safe, but the client must be aware that if, for
 // instance, the trajectory is appended to asynchronously, successive calls to
@@ -117,7 +118,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the trajectory must be
   // restored at a checkpoint such that, once it is appended to, its t_min() is
   // at or before |desired_t_min|.
@@ -252,11 +253,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   friend class TestableContinuousTrajectory<Frame>;
 };
 
-}  // namespace internal_continuous_trajectory
+}  // namespace internal
 
-using internal_continuous_trajectory::ContinuousTrajectory;
+using internal::ContinuousTrajectory;
 
+}  // namespace _continuous_trajectory
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_continuous_trajectory;
+}  // namespace principia::physics
 
 #include "physics/continuous_trajectory_body.hpp"

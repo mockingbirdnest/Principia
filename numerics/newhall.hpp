@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "numerics/polynomial.hpp"
 #include "quantities/quantities.hpp"
@@ -12,12 +12,12 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_newhall {
+namespace _newhall {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using quantities::Difference;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_named_quantities;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
 // |q| and |v| are the positions and velocities over a constant division of
@@ -57,12 +57,17 @@ NewhallApproximationInMonomialBasis(int degree,
                                     Instant const& t_max,
                                     Difference<Value>& error_estimate);
 
-}  // namespace internal_newhall
+}  // namespace internal
 
-using internal_newhall::NewhallApproximationInЧебышёвBasis;
-using internal_newhall::NewhallApproximationInMonomialBasis;
+using internal::NewhallApproximationInЧебышёвBasis;
+using internal::NewhallApproximationInMonomialBasis;
 
+}  // namespace _newhall
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_newhall;
+}  // namespace principia::numerics
 
 #include "numerics/newhall_body.hpp"

@@ -9,11 +9,11 @@
 
 namespace principia {
 namespace physics {
-namespace internal_apsides {
+namespace _apsides {
+namespace internal {
 
-using base::ConstantFunction;
-using base::Identically;
-using geometry::Vector;
+using namespace principia::base::_constant_function;
+using namespace principia::geometry::_grassmann;
 
 // Computes the apsides with respect to |reference| for the section given by
 // |begin| and |end| of |trajectory|.  Appends to the given output trajectories
@@ -54,12 +54,17 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
                     DiscreteTrajectory<Frame>& periapsides2);
 #endif
 
-}  // namespace internal_apsides
+}  // namespace internal
 
-using internal_apsides::ComputeApsides;
-using internal_apsides::ComputeNodes;
+using internal::ComputeApsides;
+using internal::ComputeNodes;
 
+}  // namespace _apsides
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_apsides;
+}  // namespace principia::physics
 
 #include "physics/apsides_body.hpp"

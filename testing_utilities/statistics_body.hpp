@@ -9,7 +9,8 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_statistics {
+namespace _statistics {
+namespace internal {
 
 template<typename T>
 T Mean(std::vector<T> const& x) {
@@ -75,6 +76,7 @@ std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
   return result;
 }
 
-}  // namespace internal_statistics
+}  // namespace internal
+}  // namespace _statistics
 }  // namespace testing_utilities
 }  // namespace principia

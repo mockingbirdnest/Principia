@@ -7,9 +7,10 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_celestial {
+namespace _celestial {
+namespace internal {
 
-using testing_utilities::make_not_null;
+using namespace principia::testing_utilities::_make_not_null;
 
 class MockCelestial : public Celestial {
  public:
@@ -30,9 +31,10 @@ class MockCelestial : public Celestial {
               (const, override));
 };
 
-}  // namespace internal_celestial
+}  // namespace internal
 
-using internal_celestial::MockCelestial;
+using internal::MockCelestial;
 
+}  // namespace _celestial
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -7,19 +7,23 @@
 #include "base/array.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "geometry/sphere.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_perspective {
+namespace _perspective {
+namespace internal {
 
-using base::BoundedArray;
-using quantities::Length;
-using quantities::Square;
+using namespace principia::base::_array;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 using Segment = std::pair<Position<Frame>, Position<Frame>>;
@@ -34,12 +38,10 @@ using Segments = std::vector<Segment<Frame>>;
 template<typename FromFrame, typename ToFrame>
 class Perspective final {
  public:
-  Perspective(
-      RigidTransformation<ToFrame, FromFrame> const& from_camera,
-      Length const& focal);
-  Perspective(
-      RigidTransformation<FromFrame, ToFrame> const& to_camera,
-      Length const& focal);
+  Perspective(Similarity<ToFrame, FromFrame> const& from_camera,
+              Length const& focal);
+  Perspective(Similarity<FromFrame, ToFrame> const& to_camera,
+              Length const& focal);
 
   Length const& focal() const;
 
@@ -81,8 +83,8 @@ class Perspective final {
       std::vector<Sphere<FromFrame>> const& spheres) const;
 
  private:
-  RigidTransformation<ToFrame, FromFrame> const from_camera_;
-  RigidTransformation<FromFrame, ToFrame> const to_camera_;
+  Similarity<ToFrame, FromFrame> const from_camera_;
+  Similarity<FromFrame, ToFrame> const to_camera_;
   Position<FromFrame> const camera_;
   Length const focal_;
 
@@ -96,13 +98,18 @@ std::ostream& operator<<(
     std::ostream& out,
     Perspective<FromFrame, ToFrame> const& perspective);
 
-}  // namespace internal_perspective
+}  // namespace internal
 
-using internal_perspective::Perspective;
-using internal_perspective::Segment;
-using internal_perspective::Segments;
+using internal::Perspective;
+using internal::Segment;
+using internal::Segments;
 
+}  // namespace _perspective
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_perspective;
+}  // namespace principia::geometry
 
 #include "geometry/perspective_body.hpp"

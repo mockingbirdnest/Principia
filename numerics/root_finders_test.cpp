@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "absl/base/casts.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/combinatorics.hpp"
@@ -18,32 +18,22 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace numerics {
 
-using geometry::Instant;
-using geometry::Point;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::Entropy;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Kelvin;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using quantities::si::Watt;
-using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::IsEmpty;
 using ::testing::Le;
-namespace si = quantities::si;
-
-namespace numerics {
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_point;
+using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class RootFindersTest : public ::testing::Test {};
 

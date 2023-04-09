@@ -6,7 +6,8 @@
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/legendre.hpp"
 #include "physics/solar_system.hpp"
@@ -24,38 +25,7 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
 
-using astronomy::ICRS;
-using astronomy::ITRS;
-using base::make_not_null_unique;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using numerics::LegendreNormalizationFactor;
-using physics::SolarSystem;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Degree2SphericalHarmonicCoefficient;
-using quantities::Degree3SphericalHarmonicCoefficient;
-using quantities::GravitationalParameter;
-using quantities::ParseQuantity;
-using quantities::Pow;
-using quantities::SpecificEnergy;
-using quantities::si::Degree;
-using quantities::si::Giga;
-using quantities::si::Kilo;
-using quantities::si::Mega;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::An;
 using ::testing::Each;
@@ -64,7 +34,27 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
-namespace si = quantities::si;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::physics::_geopotential;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class GeopotentialTest : public ::testing::Test {
  protected:
@@ -139,7 +129,7 @@ class GeopotentialTest : public ::testing::Test {
     }
     return Vector<Acceleration, ITRS>(
         si::Unit<Acceleration> *
-        astronomy::fortran_astrodynamics_toolkit::
+        astronomy::_fortran_astrodynamics_toolkit::
             ComputeGravityAccelerationLear<9, 9>(
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
   }
@@ -849,6 +839,5 @@ TEST_F(GeopotentialTest, Potential) {
   }
 }
 
-}  // namespace internal_geopotential
 }  // namespace physics
 }  // namespace principia

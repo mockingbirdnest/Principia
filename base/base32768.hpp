@@ -6,7 +6,11 @@
 
 namespace principia {
 namespace base {
-namespace internal_base32768 {
+namespace _base32768 {
+namespace internal {
+
+using namespace principia::base::_array;
+using namespace principia::base::_encoder;
 
 // An encoder the base 32768 encoding defined by
 // https://github.com/qntm/base32768.  This is a complete reimplementation in
@@ -29,10 +33,11 @@ class Base32768Encoder : public Encoder<char16_t, null_terminated> {
   std::int64_t DecodedLength(Array<char16_t const> input) override;
 };
 
-}  // namespace internal_base32768
+}  // namespace internal
 
-using internal_base32768::Base32768Encoder;
+using internal::Base32768Encoder;
 
+}  // namespace _base32768
 }  // namespace base
 }  // namespace principia
 

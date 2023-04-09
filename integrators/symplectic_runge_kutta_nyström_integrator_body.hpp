@@ -12,13 +12,14 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_runge_kutta_nyström_integrator {
+namespace _symplectic_runge_kutta_nyström_integrator {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::Sign;
-using numerics::DoublePrecision;
-using numerics::ULPDistance;
-using quantities::Abs;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_sign;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_ulp_distance;
+using namespace principia::quantities::_elementary_functions;
 
 template<typename Method, typename ODE_>
 absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::
@@ -257,39 +258,37 @@ void SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::WriteToMessage(
   message->set_composition_method(composition);
 }
 
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticRungeKuttaNyström, Method>::value,
       "Method must be derived from SymplecticRungeKuttaNyström");
-  static internal_symplectic_runge_kutta_nyström_integrator::
-      SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const integrator;
+  static internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const
+      integrator;
   return integrator;
 }
 
 template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<
-        typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                        composition>::Method,
-        ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<
+    typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                    composition>::Method,
+    ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
       "Method must be derived from SymplecticPartitionedRungeKutta");
-  static internal_symplectic_runge_kutta_nyström_integrator::
-      SymplecticRungeKuttaNyströmIntegrator<
-          typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                          composition>::Method,
-          ODE_> const integrator;
+  static internal::SymplecticRungeKuttaNyströmIntegrator<
+      typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                      composition>::Method,
+      ODE_> const integrator;
   return integrator;
 }
 
+}  // namespace _symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

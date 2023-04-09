@@ -4,7 +4,7 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -25,48 +25,28 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body {
 
-using astronomy::ICRS;
-using astronomy::operator""_UTC;
-using astronomy::J2000;
-using geometry::AngleBetween;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Normalize;
-using geometry::OrientedAngleBetween;
-using geometry::Position;
-using geometry::RadiusLatitudeLongitude;
-using geometry::SphericalCoordinates;
-using geometry::Vector;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using numerics::Bisect;
-using numerics::LegendreNormalizationFactor;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Degree2SphericalHarmonicCoefficient;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::IsNull;
 using ::testing::NotNull;
-namespace si = quantities::si;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3_element;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_body;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class BodyTest : public testing::Test {
  protected:
@@ -427,6 +407,5 @@ TEST_F(BodyTest, SolarNoon) {
 
 #endif
 
-}  // namespace internal_body
 }  // namespace physics
 }  // namespace principia

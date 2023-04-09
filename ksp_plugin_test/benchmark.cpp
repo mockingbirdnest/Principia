@@ -6,7 +6,6 @@
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
-#include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "ksp_plugin/interface.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
@@ -15,25 +14,23 @@
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
+namespace ksp_plugin {
+namespace _benchmark {
+namespace internal {
 
-using base::ParseFromBytes;
-using base::PullSerializer;
-using base::PushDeserializer;
-using geometry::Instant;
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
 using interface::principia__SerializePlugin;
-using interface::ReadPluginFromFile;
-using quantities::Frequency;
-using quantities::Time;
-using quantities::si::Hertz;
-using quantities::si::Second;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::ReadLinesFromHexadecimalFile;
-
-namespace ksp_plugin {
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::base::_serialization;
+using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_serialization;
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
   auto const plugin = Plugin::ReadFromMessage(
@@ -123,5 +120,7 @@ TEST(PluginBenchmark, DISABLED_All) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
+}  // namespace internal
+}  // namespace _benchmark
 }  // namespace ksp_plugin
 }  // namespace principia

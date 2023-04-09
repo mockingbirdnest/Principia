@@ -1,4 +1,4 @@
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 
 #include <memory>
 
@@ -6,8 +6,9 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -26,39 +27,27 @@
 
 namespace principia {
 namespace physics {
-namespace internal_body_centred_non_rotating_dynamic_frame {
 
-using astronomy::ICRS;
-using geometry::Arbitrary;
-using geometry::Barycentre;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Time;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::VanishesBefore;
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-namespace si = quantities::si;
+using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 
@@ -67,7 +56,7 @@ constexpr char small[] = "Small";
 
 }  // namespace
 
-class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
+class BodyCentredNonRotatingReferenceFrameTest : public ::testing::Test {
  protected:
   // The non-rotating frame centred on the big body.
   using Big = Frame<serialization::Frame::TestTag,
@@ -79,7 +68,7 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST1>;
 
-  BodyCentredNonRotatingDynamicFrameTest()
+  BodyCentredNonRotatingReferenceFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
@@ -102,10 +91,10 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
             solar_system_.gravitational_parameter(small)) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_frame_ =
-        std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Big>>(
+        std::make_unique<BodyCentredNonRotatingReferenceFrame<ICRS, Big>>(
             ephemeris_.get(), solar_system_.massive_body(*ephemeris_, big));
     small_frame_ =
-        std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Small>>(
+        std::make_unique<BodyCentredNonRotatingReferenceFrame<ICRS, Small>>(
             ephemeris_.get(), solar_system_.massive_body(*ephemeris_, small));
   }
 
@@ -117,14 +106,15 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
   GravitationalParameter const big_gravitational_parameter_;
   DegreesOfFreedom<ICRS> const small_initial_state_;
   GravitationalParameter const small_gravitational_parameter_;
-  std::unique_ptr<BodyCentredNonRotatingDynamicFrame<ICRS, Big>> big_frame_;
-  std::unique_ptr<BodyCentredNonRotatingDynamicFrame<ICRS, Small>> small_frame_;
+  std::unique_ptr<BodyCentredNonRotatingReferenceFrame<ICRS, Big>> big_frame_;
+  std::unique_ptr<BodyCentredNonRotatingReferenceFrame<ICRS, Small>>
+      small_frame_;
 };
 
 
 // Check that the small body has the right degrees of freedom in the frame of
 // the big body.
-TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
+TEST_F(BodyCentredNonRotatingReferenceFrameTest, SmallBodyInBigFrame) {
   int const steps = 100;
   Bivector<double, ICRS> const axis({0, 0, 1});
 
@@ -154,7 +144,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
   }
 }
 
-TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
+TEST_F(BodyCentredNonRotatingReferenceFrameTest, Inverse) {
   int const steps = 100;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const from_big_frame_at_t = big_frame_->FromThisFrameAtTime(t);
@@ -177,7 +167,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
   }
 }
 
-TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
+TEST_F(BodyCentredNonRotatingReferenceFrameTest, GeometricAcceleration) {
   int const steps = 10;
   RelativeDegreesOfFreedom<ICRS> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
@@ -209,19 +199,20 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
   }
 }
 
-TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
-  serialization::DynamicFrame message;
+TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
+  serialization::ReferenceFrame message;
   small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::extension));
+      serialization::BodyCentredNonRotatingReferenceFrame::extension));
   auto const extension = message.GetExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::extension);
+      serialization::BodyCentredNonRotatingReferenceFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(1, extension.centre());
 
   auto const read_small_frame =
-      DynamicFrame<ICRS, Small>::ReadFromMessage(message, ephemeris_.get());
+      RigidReferenceFrame<ICRS, Small>::ReadFromMessage(message,
+                                                        ephemeris_.get());
   EXPECT_THAT(read_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
@@ -235,6 +226,5 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
             read_small_frame->GeometricAcceleration(t, point_dof));
 }
 
-}  // namespace internal_body_centred_non_rotating_dynamic_frame
 }  // namespace physics
 }  // namespace principia

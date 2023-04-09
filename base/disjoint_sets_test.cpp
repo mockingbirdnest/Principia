@@ -5,10 +5,13 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-using testing::Eq;
+using ::testing::Eq;
 
 namespace principia {
 namespace base {
+
+using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_not_null;
 
 namespace {
 

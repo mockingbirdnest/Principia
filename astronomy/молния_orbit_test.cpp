@@ -5,7 +5,7 @@
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -28,45 +28,30 @@
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
-
-using astronomy::ICRS;
-using astronomy::J2000;
-using base::dynamic_cast_not_null;
-using geometry::Instant;
-using geometry::Position;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerOrbit;
-using physics::KeplerianElements;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::ArcSin;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Day;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::IsNear;
-using testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using testing_utilities::RelativeError;
-using testing_utilities::Slope;
-using testing_utilities::operator""_;
-
 namespace astronomy {
+
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
 
 class МолнияOrbitTest : public ::testing::Test {
  protected:

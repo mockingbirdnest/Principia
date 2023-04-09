@@ -4,16 +4,20 @@
 #include <string>
 
 #include "base/not_constructible.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "google/protobuf/descriptor.h"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
-namespace internal_frame {
+namespace _frame {
+namespace internal {
 
-using base::not_constructible;
-using base::not_null;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 
 // The enumerators of |FrameMotion| are ordered from most restrictive to least
 // restrictive; m1 <= m2 means that m1 satisfies the requirements of m2.
@@ -82,16 +86,21 @@ void ReadFrameFromMessage(
     google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,
     bool& is_inertial);
 
-}  // namespace internal_frame
+}  // namespace internal
 
-using internal_frame::Arbitrary;
-using internal_frame::Frame;
-using internal_frame::Handedness;
-using internal_frame::Inertial;
-using internal_frame::NonRotating;
-using internal_frame::ReadFrameFromMessage;
+using internal::Arbitrary;
+using internal::Frame;
+using internal::Handedness;
+using internal::Inertial;
+using internal::NonRotating;
+using internal::ReadFrameFromMessage;
 
+}  // namespace _frame
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_frame;
+}  // namespace principia::geometry
 
 #include "geometry/frame_body.hpp"

@@ -11,11 +11,11 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_quaternion {
+namespace _quaternion {
+namespace internal {
 
-using quantities::Abs;
-using quantities::DebugString;
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 inline Quaternion::Quaternion(double const real_part)
     : real_part_(real_part) {}
@@ -176,6 +176,7 @@ inline std::ostream& operator<<(std::ostream& out,
              << Sign(z) << " " << unsigned_debug_string(z) << " k";
 }
 
-}  // namespace internal_quaternion
+}  // namespace internal
+}  // namespace _quaternion
 }  // namespace geometry
 }  // namespace principia

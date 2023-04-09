@@ -13,12 +13,12 @@
 
 namespace principia {
 namespace physics {
-namespace internal_massive_body {
+namespace _massive_body {
+namespace internal {
 
-using base::not_null;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Mass;
+using namespace principia::base::_not_null;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 class MassiveBody : public Body {
  public:
@@ -84,12 +84,17 @@ class MassiveBody : public Body {
   Parameters const parameters_;
 };
 
-}  // namespace internal_massive_body
+}  // namespace internal
 
-using internal_massive_body::MassiveBody;
+using internal::MassiveBody;
 
+}  // namespace _massive_body
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_massive_body;
+}  // namespace principia::physics
 
 #include "physics/massive_body_body.hpp"
 

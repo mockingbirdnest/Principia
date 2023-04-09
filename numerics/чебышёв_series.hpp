@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -14,13 +14,13 @@ using ЧебышёвSeries = ChebyshevSeries;
 }  // namespace serialization
 
 namespace numerics {
-namespace internal_чебышёв_series {
+namespace _чебышёв_series {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using quantities::Inverse;
-using quantities::Time;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A helper class for implementing |Evaluate| that can be specialized for speed.
 template<typename Vector>
@@ -79,11 +79,16 @@ class ЧебышёвSeries final {
   EvaluationHelper<Vector> helper_;
 };
 
-}  // namespace internal_чебышёв_series
+}  // namespace internal
 
-using internal_чебышёв_series::ЧебышёвSeries;
+using internal::ЧебышёвSeries;
 
+}  // namespace _чебышёв_series
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_чебышёв_series;
+}  // namespace principia::numerics
 
 #include "numerics/чебышёв_series_body.hpp"

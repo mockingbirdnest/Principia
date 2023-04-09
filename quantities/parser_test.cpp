@@ -10,20 +10,12 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-
-using testing_utilities::AlmostEquals;
-
 namespace quantities {
 
-using astronomy::AstronomicalUnit;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Metre;
-using si::Radian;
-using si::Second;
-using si::Steradian;
-using si::Watt;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class ParserTest : public ::testing::Test {
 };

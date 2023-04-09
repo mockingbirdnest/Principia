@@ -1,0 +1,258 @@
+﻿.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:base `
+    --exclude:macos_allocator_replacement.hpp `
+    --exclude:macos_allocator_replacement_test.cpp `
+    --exclude:macos_filesystem_replacement.hpp `
+    --exclude:macos_filesystem_replacement_test.cpp `
+    --exclude:macros.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:geometry `
+    --exclude:macros.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:quantities `
+    --exclude:macros.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:numerics `
+    --exclude:macros.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:testing_utilities `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:integrators `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:astronomy `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:benchmarks `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:journal `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:ksp_plugin `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+  .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:ksp_plugin_test `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:mathematica `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:physics `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --extra_header:body.hpp `
+    --extra_header:massive_body.hpp `
+    --extra_header:massless_body.hpp `
+    --extra_header:oblate_body.hpp `
+    --extra_header:rotating_body.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools
+.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    --project:tools `
+    --exclude:macros.hpp `
+    --exclude:matchers.hpp `
+    --dry_run:false `
+    --client:astronomy `
+    --client:base `
+    --client:benchmarks `
+    --client:geometry `
+    --client:integrators `
+    --client:journal `
+    --client:ksp_plugin `
+    --client:ksp_plugin_test `
+    --client:mathematica `
+    --client:numerics `
+    --client:physics `
+    --client:quantities `
+    --client:testing_utilities `
+    --client:tools

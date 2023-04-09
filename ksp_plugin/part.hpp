@@ -12,10 +12,12 @@
 #include "ksp_plugin/part_subsets.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -23,24 +25,21 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_part {
+namespace _part {
+namespace internal {
 
-using base::not_null;
-using base::Subset;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::InertiaTensor;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::RigidMotion;
-using quantities::Force;
-using quantities::Mass;
-using quantities::Torque;
+using namespace principia::base::_disjoint_sets;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Represents a KSP part.
 class Part final {
@@ -223,20 +222,30 @@ InertiaTensor<RigidPart> MakeWaterSphereInertiaTensor(Mass const& mass);
 
 std::ostream& operator<<(std::ostream& out, Part const& part);
 
-}  // namespace internal_part
+}  // namespace internal
 
-using internal_part::Part;
-using internal_part::MakeWaterSphereInertiaTensor;
+using internal::Part;
+using internal::MakeWaterSphereInertiaTensor;
 
+}  // namespace _part
 }  // namespace ksp_plugin
 
 namespace base {
+namespace _disjoint_sets {
+namespace internal {
+
+using namespace principia::ksp_plugin::_part;
 
 template<>
-inline not_null<Subset<ksp_plugin::Part>::Node*>
-Subset<ksp_plugin::Part>::Node::Get(ksp_plugin::Part& element) {
+inline not_null<Subset<Part>::Node*> Subset<Part>::Node::Get(Part& element) {
   return element.subset_node_.get();
 }
 
+}  // namespace internal
+}  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_part;
+}  // namespace principia::ksp_plugin

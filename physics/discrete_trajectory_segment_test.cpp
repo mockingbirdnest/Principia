@@ -6,7 +6,8 @@
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory_types.hpp"
@@ -23,34 +24,25 @@
 namespace principia {
 namespace physics {
 
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::Velocity;
-using quantities::Abs;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Nano;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::NewLinearTrajectoryTimeline;
-using testing_utilities::operator""_;
 using ::testing::Eq;
 using ::testing::Le;
 using ::testing::Lt;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_types;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class DiscreteTrajectorySegmentTest : public ::testing::Test {
  protected:
@@ -59,7 +51,7 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Segments = internal_discrete_trajectory_types::Segments<World>;
+  using Segments = _discrete_trajectory_types::Segments<World>;
 
   DiscreteTrajectorySegmentTest()
       : segments_(MakeSegments(1)) {

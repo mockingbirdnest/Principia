@@ -18,7 +18,10 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_almost_equals {
+namespace _almost_equals {
+namespace internal {
+
+using namespace principia::numerics::_ulp_distance;
 
 // Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.
 inline double NormalizeNaN(double const x) {
@@ -26,7 +29,7 @@ inline double NormalizeNaN(double const x) {
 }
 
 inline std::int64_t NormalizedNaNULPDistance(double const x, double const y) {
-  return numerics::ULPDistance(NormalizeNaN(x), NormalizeNaN(y));
+  return ULPDistance(NormalizeNaN(x), NormalizeNaN(y));
 }
 
 template<typename T>
@@ -582,6 +585,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplainIdentical(
   }
 }
 
-}  // namespace internal_almost_equals
+}  // namespace internal
+}  // namespace _almost_equals
 }  // namespace testing_utilities
 }  // namespace principia

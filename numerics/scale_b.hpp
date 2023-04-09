@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _scale_b {
+namespace internal {
 
 // A constexpr implementation of the IEEE 754:2008 scaleB function.
 template<typename SourceFormat,
@@ -12,7 +14,16 @@ template<typename SourceFormat,
                                      std::is_integral_v<LogBFormat>>>
 constexpr SourceFormat ScaleB(SourceFormat x, LogBFormat N);
 
+}  // namespace internal
+
+using internal::ScaleB;
+
+}  // namespace _scale_b
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_scale_b;
+}  // namespace principia::numerics
 
 #include "numerics/scale_b_body.hpp"

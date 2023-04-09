@@ -7,47 +7,24 @@
 #include "base/optional_serialization.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_kepler_orbit {
+namespace _kepler_orbit {
+namespace internal {
 
-using geometry::AngleBetween;
-using geometry::Bivector;
-using geometry::Commutator;
-using geometry::DefinesFrame;
-using geometry::Displacement;
-using geometry::EulerAngles;
-using geometry::InnerProduct;
-using geometry::Normalize;
-using geometry::OrientedAngleBetween;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
-using numerics::Brent;
-using quantities::Abs;
-using quantities::ArcCos;
-using quantities::ArcCosh;
-using quantities::ArcSin;
-using quantities::ArcTan;
-using quantities::Cbrt;
-using quantities::Cos;
-using quantities::Cosh;
-using quantities::DebugString;
-using quantities::NaN;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sinh;
-using quantities::SpecificAngularMomentum;
-using quantities::SpecificEnergy;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Radian;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 void KeplerianElements<Frame>::WriteToMessage(
@@ -585,7 +562,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
 }
 
 template<typename Frame>
-void internal_kepler_orbit::KeplerOrbit<Frame>::CompleteOrientationParameters(
+void KeplerOrbit<Frame>::CompleteOrientationParameters(
     KeplerianElements<Frame>& elements) {
   auto& argument_of_periapsis = elements.argument_of_periapsis;
   auto& longitude_of_periapsis = elements.longitude_of_periapsis;
@@ -666,6 +643,7 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
   }
 }
 
-}  // namespace internal_kepler_orbit
+}  // namespace internal
+}  // namespace _kepler_orbit
 }  // namespace physics
 }  // namespace principia

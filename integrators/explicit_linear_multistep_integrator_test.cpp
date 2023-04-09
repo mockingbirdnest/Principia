@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -23,26 +23,17 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_runge_kutta_integrator {
 
-using geometry::Instant;
-using quantities::Length;
-using quantities::Mass;
-using quantities::SpecificImpulse;
-using quantities::Speed;
-using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::ApproximateQuantity;
-using testing_utilities::IsNear;
-using testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using testing_utilities::RelativeError;
-using testing_utilities::Slope;
-using testing_utilities::operator""_;
 using ::testing::ValuesIn;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_explicit_linear_multistep_integrator;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
 
 // The execution time is exponential in |step_sizes|.
 constexpr int step_sizes = 110;
@@ -159,7 +150,6 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
   Mass const initial_mass = 1 * Kilogram;
   SpecificImpulse const specific_impulse = 1 * Newton * Second / Kilogram;
   Instant const t_initial;
-  Instant const t_singular = t_initial + initial_mass / mass_flow;
   // Before the singularity.
   Instant const t_final = t_initial + 0.9 * initial_mass / mass_flow;
   Length const q_initial = 0 * Metre;
@@ -245,6 +235,5 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
 }
 #endif
 
-}  // namespace internal_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

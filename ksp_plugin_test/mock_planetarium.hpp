@@ -2,20 +2,20 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_planetarium {
+namespace _planetarium {
+namespace internal {
 
-using geometry::RigidTransformation;
-using geometry::Signature;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using testing_utilities::make_not_null;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_make_not_null;
 
 class MockPlanetarium : public Planetarium {
  public:
@@ -39,9 +39,10 @@ class MockPlanetarium : public Planetarium {
             }) {}
 };
 
-}  // namespace internal_planetarium
+}  // namespace internal
 
-using internal_planetarium::MockPlanetarium;
+using internal::MockPlanetarium;
 
+}  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia

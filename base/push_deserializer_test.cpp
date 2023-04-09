@@ -21,17 +21,22 @@
 
 namespace principia {
 namespace base {
-namespace internal_push_deserializer {
 
-using base::not_null;
-using base::SerializeAsBytes;
 using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
-using testing_utilities::EqualsProto;
+using ::google::compression::Compressor;
 using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
+using namespace principia::base::_array;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::base::_serialization;
+using namespace principia::testing_utilities::_matchers;
+
+namespace this_internal = _push_deserializer::internal;
 
 namespace {
 int const deserializer_chunk_size = 99;
@@ -152,7 +157,7 @@ class PushDeserializerTest : public ::testing::Test {
 
   std::unique_ptr<PullSerializer> pull_serializer_;
   std::unique_ptr<PushDeserializer> push_deserializer_;
-  DelegatingArrayInputStream stream_;
+  this_internal::DelegatingArrayInputStream stream_;
   std::list<std::string> strings_;
 };
 
@@ -331,6 +336,5 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
     }, "failed.*Parse");
 }
 
-}  // namespace internal_push_deserializer
 }  // namespace base
 }  // namespace principia

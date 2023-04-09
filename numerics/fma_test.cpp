@@ -8,9 +8,9 @@
 namespace principia {
 namespace numerics {
 
-using base::CPUFeatureFlags;
-using base::HasCPUFeatures;
-using testing_utilities::AlmostEquals;
+using namespace principia::base::_cpuid;
+using namespace principia::numerics::_fma;
+using namespace principia::testing_utilities::_almost_equals;
 
 class FMATest : public testing::Test {
  protected:

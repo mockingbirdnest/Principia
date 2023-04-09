@@ -78,13 +78,28 @@ message SymmetricBilinearForm {
 message LinearMap {
   required Frame from_frame = 1;
   required Frame to_frame = 2;
-  extensions 1000 to 1999;  // Last used: 1004.
+  extensions 1000 to 1999;  // Last used: 1006.
+}
+
+message ConformalMap {
+  extend LinearMap {
+    optional ConformalMap extension = 1006;
+  }
+  required Quantity scale = 1;
+  required Quaternion quaternion = 2;
 }
 
 message Identity {
   extend LinearMap {
     optional Identity extension = 1000;
   }
+}
+
+message Homothecy {
+  extend LinearMap {
+    optional Homothecy extension = 1005;
+  }
+  required Quantity scale = 1;
 }
 
 message OrthogonalMap {

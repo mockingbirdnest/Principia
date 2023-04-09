@@ -7,7 +7,10 @@
 
 namespace principia {
 namespace base {
-namespace internal_sink_source {
+namespace _sink_source {
+namespace internal {
+
+using namespace principia::base::_array;
 
 template<typename Element>
 class ArraySource : public google::compression::Source {
@@ -47,11 +50,12 @@ class ArraySink : public google::compression::Sink {
   std::int64_t next_to_write_ = 0;
 };
 
-}  // namespace internal_sink_source
+}  // namespace internal
 
-using internal_sink_source::ArraySink;
-using internal_sink_source::ArraySource;
+using internal::ArraySink;
+using internal::ArraySource;
 
+}  // namespace _sink_source
 }  // namespace base
 }  // namespace principia
 

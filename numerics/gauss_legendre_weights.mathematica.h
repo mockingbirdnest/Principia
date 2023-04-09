@@ -5,6 +5,8 @@
 
 namespace principia {
 namespace numerics {
+namespace _gauss_legendre_weights {
+namespace internal {
 
 // Weights for Gauss-Legendre quadrature with up to 50 points.
 constexpr FixedStrictlyLowerTriangularMatrix<double, 51>
@@ -1286,5 +1288,10 @@ GaussLegendreWeights{{{
     /*      k=49*/2.90862'25531'55140'95840'07243'42855'48080'66729'96460e-3,
 }}};
 
+}  // namespace internal
+
+using internal::GaussLegendreWeights;
+
+}  // namespace _gauss_legendre_weights
 }  // namespace numerics
 }  // namespace principia

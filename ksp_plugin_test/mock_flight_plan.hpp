@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
 class MockFlightPlan : public FlightPlan {
  public:
@@ -57,9 +58,10 @@ class MockFlightPlan : public FlightPlan {
               (const, override));
 };
 
-}  // namespace internal_flight_plan
+}  // namespace internal
 
-using internal_flight_plan::MockFlightPlan;
+using internal::MockFlightPlan;
 
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia

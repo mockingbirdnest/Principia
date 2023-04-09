@@ -12,7 +12,8 @@ namespace quantities {
 // This namespace contains the other non-SI units listed in the BIPM's
 // SI brochure 8, section 4.1, table 8,
 // http://www.bipm.org/en/si/si_brochure/chapter4/table8.html.
-namespace bipm {
+namespace _bipm {
+namespace internal {
 
 constexpr Pressure Bar                 = 1e5 * si::Pascal;
 constexpr Pressure MillimetreOfMercury = 133.322 * si::Pascal;
@@ -21,6 +22,19 @@ constexpr Length   NauticalMile        = 1852 * si::Metre;
 constexpr Speed    Knot                = 1 * NauticalMile / si::Hour;
 constexpr Area     Barn                = 1e-28 * Pow<2>(si::Metre);
 
-}  // namespace bipm
+}  // namespace internal
+
+using internal::Ångström;
+using internal::Bar;
+using internal::Barn;
+using internal::Knot;
+using internal::MillimetreOfMercury;
+using internal::NauticalMile;
+
+}  // namespace _bipm
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_bipm;
+}  // namespace principia::quantities

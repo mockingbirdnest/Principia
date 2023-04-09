@@ -9,12 +9,11 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fixed_arrays {
+namespace _fixed_arrays {
+namespace internal {
 
-using base::uninitialized_t;
-using quantities::Difference;
-using quantities::Product;
-using quantities::Quotient;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
@@ -238,15 +237,20 @@ std::ostream& operator<<(
     std::ostream& out,
     FixedUpperTriangularMatrix<Scalar, columns> const& matrix);
 
-}  // namespace internal_fixed_arrays
+}  // namespace internal
 
-using internal_fixed_arrays::FixedLowerTriangularMatrix;
-using internal_fixed_arrays::FixedMatrix;
-using internal_fixed_arrays::FixedStrictlyLowerTriangularMatrix;
-using internal_fixed_arrays::FixedUpperTriangularMatrix;
-using internal_fixed_arrays::FixedVector;
+using internal::FixedLowerTriangularMatrix;
+using internal::FixedMatrix;
+using internal::FixedStrictlyLowerTriangularMatrix;
+using internal::FixedUpperTriangularMatrix;
+using internal::FixedVector;
 
+}  // namespace _fixed_arrays
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_fixed_arrays;
+}  // namespace principia::numerics
 
 #include "numerics/fixed_arrays_body.hpp"

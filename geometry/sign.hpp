@@ -8,10 +8,11 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_sign {
+namespace _sign {
+namespace internal {
 
-using base::not_null;
-using quantities::Quantity;
+using namespace principia::base::_not_null;
+using namespace principia::quantities::_quantities;
 
 // An element of the multiplicative group ({+1, -1}, *). Useful for instance to
 // represent the determinant of an orthogonal map.
@@ -69,11 +70,16 @@ std::string DebugString(Sign sign);
 
 std::ostream& operator<<(std::ostream& out, Sign sign);
 
-}  // namespace internal_sign
+}  // namespace internal
 
-using internal_sign::Sign;
+using internal::Sign;
 
+}  // namespace _sign
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_sign;
+}  // namespace principia::geometry
 
 #include "geometry/sign_body.hpp"

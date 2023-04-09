@@ -4,36 +4,32 @@
 #include <optional>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "physics/apsides.hpp"
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_renderer {
+namespace _renderer {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::AngularVelocity;
-using geometry::OddPermutation;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::DegreesOfFreedom;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_permutation;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
+using namespace principia::physics::_degrees_of_freedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
-                   not_null<std::unique_ptr<NavigationFrame>> plotting_frame)
+                   not_null<std::unique_ptr<PlottingFrame>> plotting_frame)
     : sun_(sun),
       plotting_frame_(std::move(plotting_frame)) {}
 
 void Renderer::SetPlottingFrame(
-    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
+    not_null<std::unique_ptr<PlottingFrame>> plotting_frame) {
   plotting_frame_ = std::move(plotting_frame);
 }
 
-not_null<NavigationFrame const*> Renderer::GetPlottingFrame() const {
+not_null<PlottingFrame const*> Renderer::GetPlottingFrame() const {
   return target_ ? target_->target_frame.get()
                  : plotting_frame_.get();
 }
@@ -147,7 +143,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
   // camera is fixed in the plotting frame and project there; additional data
   // can be gathered from the velocities in the plotting frame as needed and
   // sent directly to be shown in markers.
-  RigidTransformation<Navigation, World> const
+  Similarity<Navigation, World> const
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
   for (auto it = begin; it != end; ++it) {
@@ -166,9 +162,9 @@ Renderer::RenderPlottingTrajectoryInWorld(
   return trajectory;
 }
 
-RigidMotion<Barycentric, Navigation> Renderer::BarycentricToPlotting(
+SimilarMotion<Barycentric, Navigation> Renderer::BarycentricToPlotting(
     Instant const& time) const {
-  return GetPlottingFrame()->ToThisFrameAtTime(time);
+  return GetPlottingFrame()->ToThisFrameAtTimeSimilarly(time);
 }
 
 RigidTransformation<Barycentric, World> Renderer::BarycentricToWorld(
@@ -197,9 +193,11 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Instant const& time,
     NavigationManœuvre const& manœuvre,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  // Same "abilities some consider unnatural" as above.
   Instant const& initial_time = manœuvre.initial_time();
-  return PlottingToWorld(time, planetarium_rotation) *
-         BarycentricToPlotting(initial_time).orthogonal_map() *
+  return PlottingToWorld(time, planetarium_rotation).orthogonal_map¹₁() *
+         BarycentricToPlotting(initial_time)
+             .conformal_map().orthogonal_map¹₁() *
          manœuvre.FrenetFrame();
 }
 
@@ -217,7 +215,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
               back.time,
               plotting_frame_degrees_of_freedom);
 
-  return PlottingToWorld(back.time, planetarium_rotation) *
+  return PlottingToWorld(back.time, planetarium_rotation).orthogonal_map¹₁() *
          frenet_frame_to_plotting_frame.Forget<OrthogonalMap>();
 }
 
@@ -236,23 +234,24 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
          frenet_frame;
 }
 
-OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(
+ConformalMap<double, Navigation, Barycentric> Renderer::PlottingToBarycentric(
     Instant const& time) const {
-  return GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map();
+  return GetPlottingFrame()->FromThisFrameAtTimeSimilarly(time).conformal_map();
 }
 
-RigidTransformation<Navigation, World> Renderer::PlottingToWorld(
+Similarity<Navigation, World> Renderer::PlottingToWorld(
     Instant const& time,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return BarycentricToWorld(time, sun_world_position, planetarium_rotation) *
-         GetPlottingFrame()-> FromThisFrameAtTime(time).rigid_transformation();
+  return BarycentricToWorld(time, sun_world_position, planetarium_rotation)
+             .Forget<Similarity>() *
+         GetPlottingFrame()->FromThisFrameAtTimeSimilarly(time).similarity();
 }
 
-OrthogonalMap<Navigation, World> Renderer::PlottingToWorld(
+ConformalMap<double, Navigation, World> Renderer::PlottingToWorld(
     Instant const& time,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return BarycentricToWorld(planetarium_rotation) *
+  return BarycentricToWorld(planetarium_rotation).Forget<ConformalMap>() *
          PlottingToBarycentric(time);
 }
 
@@ -269,12 +268,13 @@ OrthogonalMap<World, Barycentric> Renderer::WorldToBarycentric(
   return BarycentricToWorld(planetarium_rotation).Inverse();
 }
 
-RigidTransformation<World, Navigation> Renderer::WorldToPlotting(
+Similarity<World, Navigation> Renderer::WorldToPlotting(
     Instant const& time,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return BarycentricToPlotting(time).rigid_transformation() *
-         WorldToBarycentric(time, sun_world_position, planetarium_rotation);
+  return BarycentricToPlotting(time).similarity() *
+         WorldToBarycentric(time, sun_world_position, planetarium_rotation)
+             .Forget<Similarity>();
 }
 
 Rotation<CameraCompensatedReference, World> Renderer::CameraReferenceRotation(
@@ -287,7 +287,8 @@ Rotation<CameraCompensatedReference, World> Renderer::CameraReferenceRotation(
   Permutation<CameraReference, Navigation> const camera_mirror(
       OddPermutation::XZY);
   return (BarycentricToWorld(planetarium_rotation) *
-          GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map() *
+          GetPlottingFrame()->FromThisFrameAtTimeSimilarly(time)
+              .conformal_map().orthogonal_map¹₁() *
           camera_mirror.Forget<OrthogonalMap>()).AsRotation() *
          camera_compensation;
 }
@@ -304,7 +305,7 @@ not_null<std::unique_ptr<Renderer>> Renderer::ReadFromMessage(
     not_null<Ephemeris<Barycentric> const*> const ephemeris) {
   return make_not_null_unique<Renderer>(
       sun,
-      NavigationFrame::ReadFromMessage(message.plotting_frame(), ephemeris));
+      PlottingFrame::ReadFromMessage(message.plotting_frame(), ephemeris));
 }
 
 Renderer::Target::Target(
@@ -315,11 +316,12 @@ Renderer::Target::Target(
       celestial(celestial),
       target_frame(
           make_not_null_unique<
-              BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
+              BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation>>(
               ephemeris,
               [this]() -> auto& { return *this->vessel->prediction(); },
               celestial->body())) {}
 
-}  // namespace internal_renderer
+}  // namespace internal
+}  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia

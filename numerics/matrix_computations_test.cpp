@@ -12,8 +12,9 @@
 namespace principia {
 namespace numerics {
 
-using quantities::Sqrt;
-using testing_utilities::AlmostEquals;
+using namespace principia::numerics::_matrix_computations;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::testing_utilities::_almost_equals;
 
 template<typename T>
 class MatrixComputationsTest : public ::testing::Test {

@@ -16,12 +16,13 @@ FORWARD_DECLARE_FROM(rotation,
                      TEMPLATE(typename FromFrame, typename ToFrame) class,
                      Rotation);
 
-namespace internal_symmetric_bilinear_form {
+namespace _symmetric_bilinear_form {
+namespace internal {
 
-using base::not_null;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Square;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_named_quantities;
 
 // A symmetric bilinear form with dimensionality |Scalar|, on the given kind of
 // |Multivector|, expressed in the coordinates of |Frame|.
@@ -55,13 +56,13 @@ class SymmetricBilinearForm {
   // which is the generalization to nonsymmetric F.
   // This operation is linear in |*this|.
   template<template<typename, typename> typename M = Multivector,
-           typename = std::enable_if_t<base::is_same_template_v<M, Vector>>>
+           typename = std::enable_if_t<is_same_template_v<M, Vector>>>
   SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
 
   // This function is the inverse of |Anticommutator()|.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
   template<template<typename, typename> typename M = Multivector,
-           typename = std::enable_if_t<base::is_same_template_v<M, Bivector>>>
+           typename = std::enable_if_t<is_same_template_v<M, Bivector>>>
   SymmetricBilinearForm<Scalar, Frame, Vector> AnticommutatorInverse() const;
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
@@ -82,7 +83,7 @@ class SymmetricBilinearForm {
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static SymmetricBilinearForm ReadFromMessage(
       serialization::SymmetricBilinearForm const& message);
 
@@ -188,8 +189,6 @@ class SymmetricBilinearForm {
   template<typename S, typename F, template<typename, typename> typename M>
   friend std::ostream& operator<<(std::ostream& out,
                                   SymmetricBilinearForm<S, F, M> const& form);
-
-  friend class SymmetricBilinearFormTest;
 };
 
 // |InnerProductForm()| is the symmetric bilinear form such that for all v and
@@ -330,15 +329,20 @@ std::ostream& operator<<(
     std::ostream& out,
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& form);
 
-}  // namespace internal_symmetric_bilinear_form
+}  // namespace internal
 
-using internal_symmetric_bilinear_form::Anticommutator;
-using internal_symmetric_bilinear_form::InnerProductForm;
-using internal_symmetric_bilinear_form::SymmetricBilinearForm;
-using internal_symmetric_bilinear_form::SymmetricProduct;
-using internal_symmetric_bilinear_form::SymmetricSquare;
+using internal::Anticommutator;
+using internal::InnerProductForm;
+using internal::SymmetricBilinearForm;
+using internal::SymmetricProduct;
+using internal::SymmetricSquare;
 
+}  // namespace _symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_symmetric_bilinear_form;
+}  // namespace principia::geometry
 
 #include "geometry/symmetric_bilinear_form_body.hpp"

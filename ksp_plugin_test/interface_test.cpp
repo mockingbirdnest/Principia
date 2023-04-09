@@ -11,7 +11,8 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -22,7 +23,7 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -33,61 +34,6 @@
 namespace principia {
 namespace interface {
 
-using astronomy::operator""_TT;
-using base::check_not_null;
-using base::make_not_null_unique;
-using base::OFStream;
-using base::ParseFromBytes;
-using base::PullSerializer;
-using base::PushDeserializer;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::OrthogonalMap;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Vector;
-using geometry::Velocity;
-using ksp_plugin::AliceSun;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Index;
-using ksp_plugin::MockManœuvre;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
-using ksp_plugin::Navball;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::Part;
-using ksp_plugin::PartId;
-using ksp_plugin::World;
-using ksp_plugin::WorldSun;
-using physics::CoordinateFrameField;
-using physics::DegreesOfFreedom;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockDynamicFrame;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::constants::StandardGravity;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Second;
-using quantities::si::Tonne;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::ReadFromHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -107,7 +53,38 @@ using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
-namespace si = quantities::si;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_file;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::base::_serialization;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_serialization;
 
 namespace {
 
@@ -535,37 +512,37 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
 
   NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
       parent_index};
   {
-    StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
-            new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBarycentricRotatingNavigationFrame(celestial_index,
                                                       parent_index))
-        .WillOnce(Return(
-            ByMove(std::unique_ptr<
-                   StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+        .WillOnce(Return(ByMove(
+            std::unique_ptr<
+                StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
   }
 
-  parameters.extension =
-      serialization::BodyCentredNonRotatingDynamicFrame::kExtensionFieldNumber;
+  parameters.extension = serialization::BodyCentredNonRotatingReferenceFrame::
+      kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
   {
-    StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
-            new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
-        .WillOnce(Return(
-            ByMove(std::unique_ptr<
-                   StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+        .WillOnce(Return(ByMove(
+            std::unique_ptr<
+                StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
     EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
@@ -573,18 +550,18 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
+  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
+         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
-      .WillOnce(
-          Return(ByMove(std::unique_ptr<
-                        StrictMock<MockDynamicFrame<Barycentric, Navigation>>>(
+      .WillOnce(Return(
+          ByMove(std::unique_ptr<
+                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
   NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
+      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
       parent_index};

@@ -11,19 +11,21 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_runge_kutta_nyström_integrator {
+namespace _symplectic_runge_kutta_nyström_integrator {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_null;
-using geometry::Instant;
-using numerics::FixedVector;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_quantities;
 
 // This class solves ordinary differential equations of following forms using a
 // symplectic Runge-Kutta-Nyström method:
@@ -126,25 +128,28 @@ class SymplecticRungeKuttaNyströmIntegrator
   FixedVector<double, Method::stages> c_;
 };
 
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename ODE_>
-internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<
-        typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                        composition>::Method,
-        ODE_> const&
+internal::SymplecticRungeKuttaNyströmIntegrator<
+    typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                    composition>::Method,
+    ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
+}  // namespace _symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+}  // namespace principia::integrators
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"
 

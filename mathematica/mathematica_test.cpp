@@ -8,8 +8,9 @@
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
@@ -30,39 +31,31 @@
 namespace principia {
 namespace mathematica {
 
-using astronomy::OrbitalElements;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Interval;
-using geometry::Point;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
-using geometry::Velocity;
-using numerics::DoublePrecision;
-using numerics::FixedVector;
-using numerics::HornerEvaluator;
-using numerics::PiecewisePoissonSeries;
-using numerics::PoissonSeries;
-using numerics::PolynomialInMonomialBasis;
-using numerics::UnboundedLowerTriangularMatrix;
-using numerics::UnboundedUpperTriangularMatrix;
-using numerics::UnboundedVector;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::Degree;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::astronomy::_orbital_elements;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_piecewise_poisson_series;
+using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class MathematicaTest : public ::testing::Test {
  protected:

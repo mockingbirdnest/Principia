@@ -9,6 +9,9 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::base::_traits;
+using namespace principia::geometry::_frame;
+
 class FrameTest : public testing::Test {
  protected:
   using World1 = Frame<serialization::Frame::TestTag,
@@ -35,8 +38,8 @@ class FrameTest : public testing::Test {
   static_assert(!std::is_same_v<F1, F3>);
   static_assert(!std::is_same_v<F2, F3>);
 
-  static_assert(base::is_serializable_v<World1>);
-  static_assert(!base::is_serializable_v<F1>);
+  static_assert(is_serializable_v<World1>);
+  static_assert(!is_serializable_v<F1>);
 };
 
 using FrameDeathTest = FrameTest;

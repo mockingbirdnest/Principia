@@ -7,7 +7,8 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -15,16 +16,14 @@
 #include "quantities/si.hpp"
 
 namespace principia {
-
-using astronomy::ICRS;
-using base::not_null;
-using geometry::Displacement;
-using geometry::Instant;
-using quantities::Variation;
-using quantities::si::Metre;
-using quantities::si::Second;
-
 namespace numerics {
+
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Result,
          Result (*newhall)(int degree,

@@ -7,7 +7,6 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
@@ -19,14 +18,15 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_solar_system_factory {
+namespace _solar_system_factory {
+namespace internal {
 
-using astronomy::ICRS;
-using base::not_constructible;
-using base::not_null;
-using physics::Ephemeris;
-using physics::SolarSystem;
-using quantities::Length;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_quantities;
 
 // A helper class for constructing physics::SolarSystem objects for testing.
 // TODO(egg): should this be a namespace instead?  It contains only static
@@ -111,11 +111,16 @@ class SolarSystemFactory : not_constructible {
   static std::string name(int index);
 };
 
-}  // namespace internal_solar_system_factory
+}  // namespace internal
 
-using internal_solar_system_factory::SolarSystemFactory;
+using internal::SolarSystemFactory;
 
+}  // namespace _solar_system_factory
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_solar_system_factory;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/solar_system_factory_body.hpp"

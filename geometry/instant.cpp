@@ -1,21 +1,26 @@
+#include "geometry/instant.hpp"
+
 #include <limits>
 #include <string>
 #include <string_view>
 
 #include "absl/strings/str_format.h"
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_point {
+namespace _point {
+namespace internal {
 
-using astronomy::DateTimeAsTT;
-using astronomy::J2000;
-using astronomy::operator""_TT;
-using astronomy::TTSecond;
-using quantities::Time;
-using quantities::si::Second;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+
+std::string DebugString(const Instant& t) {
+  return (std::stringstream() << t).str();
+}
 
 std::ostream& operator<<(std::ostream& os, Instant const& t) {
   Time const from_j2000 = t - J2000;
@@ -45,10 +50,7 @@ std::ostream& operator<<(std::ostream& os, Instant const& t) {
   return os << "J2000" << from_j2000 << " (TT)";
 }
 
-std::string DebugString(const Instant& t) {
-  return (std::stringstream() << t).str();
-}
-
-}  // namespace internal_point
+}  // namespace internal
+}  // namespace _point
 }  // namespace geometry
 }  // namespace principia

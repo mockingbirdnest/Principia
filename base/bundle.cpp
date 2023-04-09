@@ -8,6 +8,8 @@
 
 namespace principia {
 namespace base {
+namespace _bundle {
+namespace internal {
 
 void Bundle::Add(Task task) {
   absl::MutexLock l(&lock_);
@@ -77,5 +79,7 @@ void Bundle::JoinAll() {
   }
 }
 
+}  // namespace internal
+}  // namespace _bundle
 }  // namespace base
 }  // namespace principia

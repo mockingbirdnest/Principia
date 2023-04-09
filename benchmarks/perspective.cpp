@@ -7,7 +7,8 @@
 
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space_transformations.hpp"
+#include "geometry/space.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -16,12 +17,11 @@
 namespace principia {
 namespace geometry {
 
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Length;
-using quantities::si::Metre;
-using quantities::si::Radian;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 using World = Frame<struct WorldTag>;

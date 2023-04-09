@@ -3,14 +3,14 @@
 #include "physics/discrete_trajectory_iterator.hpp"
 
 #include "astronomy/epoch.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_iterator {
+namespace _discrete_trajectory_iterator {
+namespace internal {
 
-using geometry::InfiniteFuture;
-using geometry::Instant;
+using namespace principia::geometry::_instant;
 
 template<typename Frame>
 FORCE_INLINE(inline) DiscreteTrajectoryIterator<Frame>&
@@ -313,6 +313,7 @@ DiscreteTrajectoryIterator<Frame> operator+(
   return mutable_it += n;
 }
 
-}  // namespace internal_discrete_trajectory_iterator
+}  // namespace internal
+}  // namespace _discrete_trajectory_iterator
 }  // namespace physics
 }  // namespace principia

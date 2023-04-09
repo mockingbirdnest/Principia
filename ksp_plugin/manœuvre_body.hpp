@@ -11,16 +11,17 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
+namespace _manœuvre {
+namespace internal {
 
-using base::check_not_null;
-using geometry::NormalizeOrZero;
-using geometry::Rotation;
-using physics::DiscreteTrajectory;
-using physics::RigidMotion;
-using quantities::Acceleration;
-using quantities::Sqrt;
 using std::placeholders::_1;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_rotation;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
@@ -122,7 +123,7 @@ Manœuvre<InertialFrame, Frame>::specific_impulse() const {
 }
 
 template<typename InertialFrame, typename Frame>
-not_null<std::shared_ptr<DynamicFrame<InertialFrame, Frame> const>>
+not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
 Manœuvre<InertialFrame, Frame>::frame() const {
   return burn_.frame;
 }
@@ -242,7 +243,7 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
                   timing,
                   Force::ReadFromMessage(message.thrust()),
                   SpecificImpulse::ReadFromMessage(message.specific_impulse()),
-                  DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
+                  RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(
                       message.frame(), ephemeris),
                   message.is_inertially_fixed()};
   return Manœuvre(Mass::ReadFromMessage(message.initial_mass()), burn);
@@ -287,6 +288,7 @@ Manœuvre<InertialFrame, Frame>::full_timing() const {
   return burn_.timing;
 }
 
-}  // namespace internal_manœuvre
+}  // namespace internal
+}  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia

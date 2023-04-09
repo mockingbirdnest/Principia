@@ -5,14 +5,14 @@
 #include <string>
 
 #include "base/fingerprint2011.hpp"
-#include "geometry/named_quantities.hpp"
 #include "google/protobuf/descriptor.h"
 
 namespace principia {
 namespace geometry {
-namespace internal_frame {
+namespace _frame {
+namespace internal {
 
-using base::Fingerprint2011;
+using namespace principia::base::_fingerprint2011;
 
 // Utility for fingerprinting.
 inline uint32_t Fingerprint(std::string const& s) {
@@ -108,6 +108,7 @@ inline void ReadFrameFromMessage(
   is_inertial = message.is_inertial();
 }
 
-}  // namespace internal_frame
+}  // namespace internal
+}  // namespace _frame
 }  // namespace geometry
 }  // namespace principia

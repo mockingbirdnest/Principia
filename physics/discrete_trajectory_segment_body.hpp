@@ -10,7 +10,6 @@
 
 #include "absl/container/btree_set.h"
 #include "base/zfp_compressor.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
 #include "quantities/quantities.hpp"
@@ -18,18 +17,13 @@
 
 namespace principia {
 namespace physics {
-namespace internal_discrete_trajectory_segment {
+namespace _discrete_trajectory_segment {
+namespace internal {
 
-using base::ZfpCompressor;
-using geometry::Displacement;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Position;
-using numerics::FitHermiteSpline;
-using quantities::Length;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Second;
+using namespace principia::base::_zfp_compressor;
+using namespace principia::numerics::_fit_hermite_spline;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 DiscreteTrajectorySegment<Frame>::DiscreteTrajectorySegment(
@@ -726,6 +720,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
 }
 
-}  // namespace internal_discrete_trajectory_segment
+}  // namespace internal
+}  // namespace _discrete_trajectory_segment
 }  // namespace physics
 }  // namespace principia

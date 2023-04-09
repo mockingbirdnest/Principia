@@ -13,17 +13,17 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_perspective {
+namespace _perspective {
+namespace internal {
 
-using geometry::InnerProduct;
-using numerics::SolveQuadraticEquation;
-using quantities::Pow;
-using quantities::Product;
-using quantities::Square;
+using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<typename FromFrame, typename ToFrame>
 Perspective<FromFrame, ToFrame>::Perspective(
-    RigidTransformation<ToFrame, FromFrame> const& from_camera,
+    Similarity<ToFrame, FromFrame> const& from_camera,
     Length const& focal)
     : from_camera_(from_camera),
       to_camera_(from_camera.Inverse()),
@@ -32,7 +32,7 @@ Perspective<FromFrame, ToFrame>::Perspective(
 
 template<typename FromFrame, typename ToFrame>
 Perspective<FromFrame, ToFrame>::Perspective(
-    RigidTransformation<FromFrame, ToFrame> const& to_camera,
+    Similarity<FromFrame, ToFrame> const& to_camera,
     Length const& focal)
     : from_camera_(to_camera.Inverse()),
       to_camera_(to_camera),
@@ -425,6 +425,7 @@ std::ostream& operator<<(std::ostream& out,
              << ", focal: " << perspective.focal_ << "}";
 }
 
-}  // namespace internal_perspective
+}  // namespace internal
+}  // namespace _perspective
 }  // namespace geometry
 }  // namespace principia

@@ -6,9 +6,9 @@
 namespace principia {
 namespace quantities {
 
-using si::Metre;
-using testing_utilities::SSEHighHalfIs;
-using testing_utilities::SSELowHalfIs;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_matchers;
 
 TEST(WideTest, Conversions) {
   __m128d m1 = ToM128D(2 * Metre);

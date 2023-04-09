@@ -18,17 +18,13 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_poisson_series {
+namespace _poisson_series {
+namespace internal {
 
-using quantities::Abs;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Infinity;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Variation;
-using quantities::si::Radian;
-namespace si = quantities::si;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months
 // with 10 periods.
@@ -370,7 +366,7 @@ Norm(PoissonSeries<double,
 
   AngularFrequency const max_ω = 2 * split.slow.max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -379,7 +375,7 @@ Norm(PoissonSeries<double,
   auto slow_integrand = [&split, &weight](Instant const& t) {
     return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
   };
-  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+  auto const slow_quadrature = _quadrature::AutomaticClenshawCurtis(
       slow_integrand,
       t_min, t_max,
       /*max_relative_error=*/clenshaw_curtis_relative_error,
@@ -953,7 +949,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   AngularFrequency const max_ω =
       left_split.slow.max_ω() + right_split.slow.max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -964,7 +960,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
                                                  right_split.slow(t)) *
            weight(t);
   };
-  auto const slow_quadrature = quadrature::AutomaticClenshawCurtis(
+  auto const slow_quadrature = _quadrature::AutomaticClenshawCurtis(
       slow_integrand,
       t_min, t_max,
       /*max_relative_error=*/clenshaw_curtis_relative_error,
@@ -980,6 +976,7 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
   return (slow_quadrature + fast_quadrature) / (t_max - t_min);
 }
 
-}  // namespace internal_poisson_series
+}  // namespace internal
+}  // namespace _poisson_series
 }  // namespace numerics
 }  // namespace principia

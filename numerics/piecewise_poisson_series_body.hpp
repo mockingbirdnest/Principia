@@ -9,12 +9,11 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_piecewise_poisson_series {
+namespace _piecewise_poisson_series {
+namespace internal {
 
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 // The minimum value of the max_point parameter passed to Clenshaw-Curtis
 // integration, irrespective of the frequencies of the argument function.
@@ -131,7 +130,7 @@ FourierTransform() const -> Spectrum {
     Primitive<Complexification<Value>, Instant> integral;
     int cache_index = 0;
     for (int k = 0; k < series_.size(); ++k) {
-      integral += quadrature::GaussLegendre<gauss_legendre_points>(
+      integral += _quadrature::GaussLegendre<gauss_legendre_points>(
           [this, &cache_index, &f = series_[k], t0, ω](
               Instant const& t) -> Complexification<Value> {
             Angle const θ = ω * (t - t0);
@@ -164,7 +163,7 @@ Norm(PoissonSeries<double,
      Instant const& t_max) const {
   AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
   std::optional<int> const max_points =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -173,7 +172,7 @@ Norm(PoissonSeries<double,
   auto integrand = [this, &weight](Instant const& t) {
     return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
   };
-  return Sqrt(quadrature::AutomaticClenshawCurtis(
+  return Sqrt(_quadrature::AutomaticClenshawCurtis(
                   integrand,
                   t_min, t_max,
                   /*max_relative_error=*/clenshaw_curtis_relative_error,
@@ -689,7 +688,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
              std::optional<int> max_points) {
   AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
   std::optional<int> const max_points_heuristic =
-      quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
+      _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
           max_ω,
           t_max - t_min,
           clenshaw_curtis_min_points_overall,
@@ -698,7 +697,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
   auto integrand = [&left, &right, &weight](Instant const& t) {
     return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
   };
-  return quadrature::AutomaticClenshawCurtis(
+  return _quadrature::AutomaticClenshawCurtis(
              integrand,
              t_min,
              t_max,
@@ -708,6 +707,7 @@ InnerProduct(PiecewisePoissonSeries<LValue,
          (t_max - t_min);
 }
 
-}  // namespace internal_piecewise_poisson_series
+}  // namespace internal
+}  // namespace _piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia

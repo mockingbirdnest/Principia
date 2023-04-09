@@ -28,39 +28,28 @@
 
 namespace principia {
 namespace mathematica {
-namespace internal_mathematica {
+namespace _mathematica {
+namespace internal {
 
-using base::all_different_v;
-using geometry::Bivector;
-using geometry::Point;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::R3x3Matrix;
-using geometry::SymmetricBilinearForm;
-using geometry::Vector;
-using numerics::DoublePrecision;
-using numerics::FixedVector;
-using numerics::PiecewisePoissonSeries;
-using numerics::PoissonSeries;
-using numerics::PolynomialInMonomialBasis;
-using numerics::UnboundedLowerTriangularMatrix;
-using numerics::UnboundedUpperTriangularMatrix;
-using numerics::UnboundedVector;
-using physics::DegreesOfFreedom;
-using quantities::Amount;
-using quantities::Angle;
-using quantities::Current;
-using quantities::Exponentiation;
-using quantities::is_tuple_v;
-using quantities::Length;
-using quantities::LuminousIntensity;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Quantity;
-using quantities::Quotient;
-using quantities::Temperature;
-using quantities::Time;
-namespace si = quantities::si;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_piecewise_poisson_series;
+using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_tuples;
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions in this file to remove the dimensions of quantities (we know that
@@ -309,20 +298,25 @@ std::string ToMathematica(std::string const& str,
 std::string RawApply(std::string const& function,
                      std::vector<std::string> const& arguments);
 
-}  // namespace internal_mathematica
+}  // namespace internal
 
-using internal_mathematica::Apply;
-using internal_mathematica::Evaluate;
-using internal_mathematica::ExpressIn;
-using internal_mathematica::ExpressInSIUnits;
-using internal_mathematica::PlottableDataset;
-using internal_mathematica::PreserveUnits;
-using internal_mathematica::Rule;
-using internal_mathematica::Set;
-using internal_mathematica::ToMathematica;
-using internal_mathematica::ToMathematicaBody;
+using internal::Apply;
+using internal::Evaluate;
+using internal::ExpressIn;
+using internal::ExpressInSIUnits;
+using internal::PlottableDataset;
+using internal::PreserveUnits;
+using internal::Rule;
+using internal::Set;
+using internal::ToMathematica;
+using internal::ToMathematicaBody;
 
+}  // namespace _mathematica
 }  // namespace mathematica
 }  // namespace principia
+
+namespace principia::mathematica {
+using namespace principia::mathematica::_mathematica;
+}  // namespace principia::mathematica
 
 #include "mathematica/mathematica_body.hpp"

@@ -10,27 +10,36 @@
 #include "astronomy/orbital_elements.hpp"
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_orbit_analyser {
+namespace _orbit_analyser {
+namespace internal {
 
-using astronomy::OrbitalElements;
-using astronomy::OrbitGroundTrack;
-using astronomy::OrbitRecurrence;
-using base::jthread;
-using base::not_null;
-using geometry::Instant;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::RotatingBody;
-using quantities::Time;
+using namespace principia::astronomy::_orbit_ground_track;
+using namespace principia::astronomy::_orbit_recurrence;
+using namespace principia::astronomy::_orbital_elements;
+using namespace principia::base::_jthread;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_quantities;
 
 // The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting
@@ -49,6 +58,7 @@ class OrbitAnalyser {
     Instant const& first_time() const;
     Time const& mission_duration() const;
     RotatingBody<Barycentric> const* primary() const;
+    std::optional<Interval<Length>> radial_distance_interval() const;
     std::optional<OrbitalElements> const& elements() const;
     std::optional<OrbitRecurrence> const& recurrence() const;
     std::optional<OrbitGroundTrack> const& ground_track() const;
@@ -74,6 +84,7 @@ class OrbitAnalyser {
     Instant first_time_;
     Time mission_duration_;
     RotatingBody<Barycentric> const* primary_ = nullptr;
+    std::optional<Interval<Length>> radial_distance_interval_;
     std::optional<OrbitalElements> elements_;
     std::optional<OrbitRecurrence> closest_recurrence_;
     std::optional<OrbitRecurrence> recurrence_;
@@ -122,7 +133,42 @@ class OrbitAnalyser {
   double progress_of_next_analysis() const;
 
  private:
-  absl::Status AnalyseOrbit(Parameters parameters);
+  using PrimaryCentred = Frame<struct PrimaryCentredTag, NonRotating>;
+
+  // Finds the primary body and analyze our orbit around it.
+  absl::Status AnalyseOrbit(Parameters const& parameters);
+
+  // Locates the body with the smallest osculating period and returns it and its
+  // period.  This function may be stopped.
+  absl::Status FindBodyWithSmallestOsculatingPeriod(
+      Parameters const& parameters,
+      RotatingBody<Barycentric> const*& primary,
+      Time& smallest_osculating_period);
+
+  // Flows the |trajectory| with a fixed step integrator using the given
+  // |parameters|.  This is done in small increments and
+  // |progress_of_next_analysis_| is updated after each increment to be able to
+  // display a progress bar.  This function may be stopped.
+  absl::Status FlowWithProgressBar(
+      Parameters const& parameters,
+      Time const& analysis_duration,
+      DiscreteTrajectory<Barycentric>& trajectory);
+
+  // If we can find a sun, computes its mean motion around the primary if it
+  // doesn't require too long an integration.  If there is no sun, or the
+  // integration would take too long, |mean_sun| is set to |std::nullopt|.
+  absl::Status ComputeMeanSunIfPossible(
+      Parameters const& parameters,
+      BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
+          primary_centred,
+      std::optional<OrbitGroundTrack::MeanSun>& mean_sun);
+
+  // Converts the |trajectory| to the given |primary_centred| frame.  This
+  // function may be stopped.
+  static absl::StatusOr<DiscreteTrajectory<PrimaryCentred>> ToPrimaryCentred(
+      BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
+          primary_centred,
+      DiscreteTrajectory<Barycentric> const& trajectory);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
   Ephemeris<Barycentric>::FixedStepParameters const
@@ -149,9 +195,14 @@ class OrbitAnalyser {
   std::atomic<double> progress_of_next_analysis_ = 0;
 };
 
-}  // namespace internal_orbit_analyser
+}  // namespace internal
 
-using internal_orbit_analyser::OrbitAnalyser;
+using internal::OrbitAnalyser;
 
+}  // namespace _orbit_analyser
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_orbit_analyser;
+}  // namespace principia::ksp_plugin

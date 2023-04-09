@@ -21,12 +21,13 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_linear_multistep_integrator {
+namespace _explicit_linear_multistep_integrator {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_null;
-using numerics::DoublePrecision;
-using numerics::FixedVector;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fixed_arrays;
 
 // This implementation follows [HW10], but restricts itself to explicit
 // integrators.
@@ -104,15 +105,19 @@ class ExplicitLinearMultistepIntegrator
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
 };
 
-}  // namespace internal_explicit_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename Position>
-internal_explicit_linear_multistep_integrator::
-    ExplicitLinearMultistepIntegrator<Method, Position> const&
+internal::ExplicitLinearMultistepIntegrator<Method, Position> const&
 ExplicitLinearMultistepIntegrator();
 
+}  // namespace _explicit_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_explicit_linear_multistep_integrator;
+}  // namespace principia::integrators
 
 #include "explicit_linear_multistep_integrator_body.hpp"
 

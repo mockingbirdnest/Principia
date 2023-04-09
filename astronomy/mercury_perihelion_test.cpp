@@ -24,36 +24,24 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
-
-using base::not_null;
-using geometry::AngleBetween;
-using geometry::Instant;
-using geometry::Position;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::ContinuousTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::SolarSystem;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Minute;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_;
-
 namespace astronomy {
+
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 class MercuryPerihelionTest : public testing::Test {
  protected:

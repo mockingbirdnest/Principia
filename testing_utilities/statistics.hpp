@@ -11,10 +11,10 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_statistics {
+namespace _statistics {
+namespace internal {
 
-using quantities::Product;
-using quantities::Quotient;
+using namespace principia::quantities::_named_quantities;
 
 // The population mean μ(x) = E[x].
 template<typename T>
@@ -65,17 +65,22 @@ template<typename T, typename U>
 std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
                                                  std::vector<U> const& y);
 
-}  // namespace internal_statistics
+}  // namespace internal
 
-using internal_statistics::BidimensionalDatasetMathematicaInput;
-using internal_statistics::Covariance;
-using internal_statistics::Mean;
-using internal_statistics::PearsonProductMomentCorrelationCoefficient;
-using internal_statistics::Slope;
-using internal_statistics::StandardDeviation;
-using internal_statistics::Variance;
+using internal::BidimensionalDatasetMathematicaInput;
+using internal::Covariance;
+using internal::Mean;
+using internal::PearsonProductMomentCorrelationCoefficient;
+using internal::Slope;
+using internal::StandardDeviation;
+using internal::Variance;
 
+}  // namespace _statistics
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_statistics;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/statistics_body.hpp"

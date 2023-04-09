@@ -4,7 +4,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
@@ -19,14 +19,14 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -35,48 +35,6 @@
 namespace principia {
 namespace interface {
 
-using base::check_not_null;
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::AngularVelocity;
-using geometry::Identity;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Index;
-using ksp_plugin::MockFlightPlan;
-using ksp_plugin::MockManœuvre;
-using ksp_plugin::MockPlugin;
-using ksp_plugin::MockRenderer;
-using ksp_plugin::MockVessel;
-using ksp_plugin::Navigation;
-using ksp_plugin::NavigationManœuvre;
-using ksp_plugin::WorldSun;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::MassiveBody;
-using physics::MockContinuousTrajectory;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using quantities::constants::StandardGravity;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Second;
-using quantities::si::Tonne;
-using testing_utilities::AlmostEquals;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -89,6 +47,31 @@ using ::testing::ReturnRef;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 
@@ -244,8 +227,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
       .WillOnce(Return(
-          ByMove(std::make_unique<
-                 StrictMock<MockDynamicFrame<Barycentric, Navigation>>>())));
+          ByMove(std::make_unique<StrictMock<
+                     MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   EXPECT_CALL(
       flight_plan,
       Insert(AllOf(HasThrust(1 * Kilo(Newton)),
@@ -266,7 +249,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                        vessel_guid));
 
   auto const plotting_frame =
-      make_not_null_unique<MockDynamicFrame<Barycentric, Navigation>>();
+      make_not_null_unique<MockRigidReferenceFrame<Barycentric, Navigation>>();
 
   MockEphemeris<Barycentric> ephemeris;
   MassiveBody const centre(MassiveBody::Parameters("centre", 1 * Kilogram));
@@ -275,9 +258,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(Return(&centre_trajectory));
   // Cannot use a mock here since we use |dynamic_cast| to find the type of the
   // actual frame.
-  BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const* const
+  BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation> const* const
       navigation_manœuvre_frame =
-          new BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>(
+          new BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>(
             &ephemeris,
             &centre);
 
@@ -291,7 +274,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       timing,
       10 * Kilo(Newton),
       30 * Second * StandardGravity,
-      std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
+      std::unique_ptr<RigidReferenceFrame<Barycentric, Navigation> const>(
           navigation_manœuvre_frame),
       /*is_inertially_fixed=*/true};
   MockManœuvre<Barycentric, Navigation> navigation_manœuvre(20 * Tonne, burn);
@@ -395,8 +378,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_,
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
       .WillOnce(Return(
-          ByMove(std::make_unique<
-                 StrictMock<MockDynamicFrame<Barycentric, Navigation>>>())));
+          ByMove(std::make_unique<StrictMock<
+                     MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
   EXPECT_CALL(
       flight_plan,

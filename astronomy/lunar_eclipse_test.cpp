@@ -1,7 +1,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -18,37 +18,24 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
-
-using geometry::AngleBetween;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using numerics::Bisect;
-using physics::Ephemeris;
-using physics::SolarSystem;
-using quantities::Abs;
-using quantities::Angle;
-using quantities::ArcSin;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Time;
-using quantities::astronomy::TerrestrialEquatorialRadius;
-using quantities::si::Day;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::ApproximateQuantity;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
-using ::testing::Eq;
-
 namespace astronomy {
+
+using ::testing::Eq;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_sign;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 namespace {
 

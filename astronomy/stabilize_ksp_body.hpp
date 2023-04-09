@@ -8,11 +8,11 @@
 
 namespace principia {
 namespace astronomy {
-namespace stabilize_ksp_internal {
+namespace _stabilize_ksp {
+namespace internal {
 
-using geometry::Position;
-using physics::KeplerianElements;
-using quantities::si::Degree;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 void StabilizeKSP(SolarSystem<Frame>& solar_system) {
@@ -47,6 +47,7 @@ void StabilizeKSP(SolarSystem<Frame>& solar_system) {
   solar_system.ReplaceElements("Bop", bop_elements);
 }
 
-}  // namespace stabilize_ksp_internal
+}  // namespace internal
+}  // namespace _stabilize_ksp
 }  // namespace astronomy
 }  // namespace principia

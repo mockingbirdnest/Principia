@@ -15,14 +15,15 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
+namespace _embedded_explicit_generalized_runge_kutta_nyström_integrator {
+namespace internal {
 
-using base::make_not_null_unique;
-using geometry::Sign;
-using numerics::DoublePrecision;
-using quantities::DebugString;
-using quantities::Difference;
-using quantities::Quotient;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_sign;
+using namespace principia::integrators::_methods;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Method, typename ODE_>
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
@@ -366,22 +367,23 @@ WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
-    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_> const&
+internal::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
+                                                                 ODE_> const&
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
                       Method>::value,
       "Method must be derived from "
       "EmbeddedExplicitGeneralizedRungeKuttaNyström");
-  static internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
-      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_> const
-          integrator;
+  static internal::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+      Method,
+      ODE_> const integrator;
   return integrator;
 }
 
+}  // namespace _embedded_explicit_generalized_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia

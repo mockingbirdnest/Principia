@@ -7,17 +7,18 @@
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "google/protobuf/repeated_field.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_checkpointer {
+namespace _checkpointer {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_quantities;
 
 // The checkpointer helps with compact serialization of timelines, i.e., classes
 // that associate some data with distinct instants.  The naïve implementation of
@@ -138,11 +139,16 @@ class Checkpointer {
   CheckpointsByTime checkpoints_;
 };
 
-}  // namespace internal_checkpointer
+}  // namespace internal
 
-using internal_checkpointer::Checkpointer;
+using internal::Checkpointer;
 
+}  // namespace _checkpointer
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_checkpointer;
+}  // namespace principia::physics
 
 #include "physics/checkpointer_body.hpp"

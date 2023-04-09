@@ -20,20 +20,20 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_symmetric_bilinear_form {
 
-using quantities::Length;
-using quantities::Pow;
-using quantities::Square;
-using quantities::si::Metre;
-using testing_utilities::AbsoluteErrorFrom;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_;
 using ::testing::Eq;
+using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
  protected:
@@ -618,6 +618,5 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
   }
 }
 
-}  // namespace internal_symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia

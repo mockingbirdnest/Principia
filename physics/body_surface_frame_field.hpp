@@ -1,21 +1,23 @@
 #pragma once
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/rotating_body.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_body_surface_frame_field {
+namespace _body_surface_frame_field {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 
 // The z-axis goes from the point |q| to the centre of |body| at |t|  The
 // x-axis is orthogonal to the z-axis and in the plane defined by the z-axis and
@@ -37,11 +39,16 @@ class BodySurfaceFrameField : public FrameField<Frame, ThisFrame> {
   Position<Frame> const body_position_;
 };
 
-}  // namespace internal_body_surface_frame_field
+}  // namespace internal
 
-using internal_body_surface_frame_field::BodySurfaceFrameField;
+using internal::BodySurfaceFrameField;
 
+}  // namespace _body_surface_frame_field
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_body_surface_frame_field;
+}  // namespace principia::physics
 
 #include "physics/body_surface_frame_field_body.hpp"

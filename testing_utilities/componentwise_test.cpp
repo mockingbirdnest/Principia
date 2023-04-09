@@ -19,19 +19,8 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace testing_utilities {
 
-using geometry::Bivector;
-using geometry::Frame;
-using geometry::Pair;
-using geometry::R3Element;
-using geometry::RP2Point;
-using geometry::Vector;
-using quantities::Action;
-using quantities::Amount;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Metre;
-using quantities::si::Second;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -39,9 +28,15 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::Not;
 using ::testing::_;
-namespace si = quantities::si;
-
-namespace testing_utilities {
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_pair;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rp2_point;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
 
 using World = Frame<struct WorldTag>;
 

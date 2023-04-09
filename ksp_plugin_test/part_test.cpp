@@ -1,27 +1,33 @@
 #include "ksp_plugin/part.hpp"
 
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "physics/inertia_tensor.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_part {
 
-using geometry::Displacement;
-using geometry::R3x3Matrix;
-using quantities::Force;
-using quantities::MomentOfInertia;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Newton;
-using quantities::si::Second;
 using ::testing::_;
 using ::testing::MockFunction;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
+using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_part;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
 
 class PartTest : public testing::Test {
  protected:
@@ -153,6 +159,5 @@ TEST_F(PartTest, Serialization) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
-}  // namespace internal_part
 }  // namespace ksp_plugin
 }  // namespace principia

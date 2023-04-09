@@ -17,10 +17,11 @@
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -32,7 +33,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
@@ -49,73 +50,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::ICRS;
-using astronomy::ParseTT;
-using base::FindOrDie;
-using base::make_not_null_unique;
-using base::not_null;
-using base::SerializeAsBytes;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Identity;
-using geometry::Instant;
-using geometry::OddPermutation;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Trivector;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::InitialValueProblem;
-using integrators::MockFixedStepSizeIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::ContinuousTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::SolarSystem;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::DebugString;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::make_not_null;
-using testing_utilities::RelativeError;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::VanishesBefore;
-using testing_utilities::WriteToBinaryFile;
-using testing_utilities::WriteToHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -136,6 +70,44 @@ using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::_;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_make_not_null;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_solar_system_factory;
+using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 
@@ -452,10 +424,10 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
-      serialization::BodyCentredNonRotatingDynamicFrame::extension));
+      serialization::BodyCentredNonRotatingReferenceFrame::extension));
   EXPECT_EQ(message.celestial(SolarSystemFactory::Venus).ephemeris_index(),
             message.renderer().plotting_frame().GetExtension(
-                serialization::BodyCentredNonRotatingDynamicFrame::extension).
+                serialization::BodyCentredNonRotatingReferenceFrame::extension).
                     centre());
 
   plugin = Plugin::ReadFromMessage(message);

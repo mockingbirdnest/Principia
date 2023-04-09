@@ -17,9 +17,13 @@
 
 namespace principia {
 namespace base {
-namespace internal_pull_serializer {
+namespace _pull_serializer {
+namespace internal {
 
-using google::compression::Compressor;
+using namespace principia::base::_array;
+using namespace principia::base::_not_null;
+
+using ::google::compression::Compressor;
 
 // An output stream based on an array that delegates to a function the handling
 // of the case where one array is full.  It calls the |on_full| function passed
@@ -138,10 +142,11 @@ class PullSerializer final {
   std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
 };
 
-}  // namespace internal_pull_serializer
+}  // namespace internal
 
-using internal_pull_serializer::PullSerializer;
+using internal::PullSerializer;
 
+}  // namespace _pull_serializer
 }  // namespace base
 }  // namespace principia
 

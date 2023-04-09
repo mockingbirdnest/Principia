@@ -31,7 +31,6 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
@@ -42,74 +41,58 @@
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "physics/apsides.hpp"
-#include "physics/barycentric_rotating_dynamic_frame_body.hpp"
-#include "physics/body_centred_body_direction_dynamic_frame.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/barycentric_rotating_reference_frame_body.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_plugin {
+namespace _plugin {
+namespace internal {
 
-using astronomy::KSP122;
-using astronomy::KSP191;
-using astronomy::KSPStabilizedSystemFingerprints;
-using astronomy::KSPStockSystemFingerprints;
-using astronomy::ParseTT;
-using astronomy::StabilizeKSP;
-using base::check_not_null;
-using base::dynamic_cast_not_null;
-using base::FindOrDie;
-using base::Fingerprint2011;
-using base::HexadecimalEncoder;
-using base::make_not_null_unique;
-using base::not_null;
-using base::OFStream;
-using base::SerializeAsBytes;
-using geometry::AffineMap;
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Bivector;
-using geometry::DefinesFrame;
-using geometry::EulerAngles;
-using geometry::Frame;
-using geometry::Identity;
-using geometry::Normalize;
-using geometry::OddPermutation;
-using geometry::Permutation;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::R3x3Matrix;
-using geometry::Sign;
-using physics::BarycentricRotatingDynamicFrame;
-using physics::BodyCentredBodyDirectionDynamicFrame;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::BodySurfaceDynamicFrame;
-using physics::BodySurfaceFrameField;
-using physics::ComputeApsides;
-using physics::ComputeNodes;
-using physics::CoordinateFrameField;
-using physics::DynamicFrame;
-using physics::Frenet;
-using physics::KeplerianElements;
-using physics::MassiveBody;
-using physics::RigidMotion;
-using physics::SolarSystem;
-using quantities::Force;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::MomentOfInertia;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
+using namespace principia::astronomy::_stabilize_ksp;
+using namespace principia::base::_file;
+using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
+using namespace principia::geometry::_affine_map;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::physics::_apsides;
+using namespace principia::physics::_barycentric_rotating_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_body_surface_frame_field;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using ::operator<<;
+using namespace principia::astronomy::_solar_system_fingerprints;
+using namespace principia::astronomy::_stabilize_ksp;
+using namespace principia::astronomy::_time_scales;
 
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
@@ -274,7 +257,7 @@ void Plugin::EndInitialization() {
   renderer_ = std::make_unique<Renderer>(
       sun_,
       make_not_null_unique<
-          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+          BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
               ephemeris_.get(),
               sun_->body()));
 
@@ -452,7 +435,7 @@ void Plugin::InsertOrKeepLoadedPart(
   OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
       Exp(Δt * angular_velocity_of_world_).Forget<OrthogonalMap>();
   // TODO(egg): Can we use |BarycentricToWorld| here?
-  BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
+  BodyCentredNonRotatingReferenceFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(),
                       FindOrDie(celestials_, main_body_index)->body()};
   RigidMotion<World, MainBodyCentred> const world_to_main_body_centred{
@@ -713,7 +696,7 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
     bool const reference_part_is_unmoving,
     PartId const reference_part_id,
     std::optional<Position<World>> const& main_body_centre) const {
-  BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
+  BodyCentredNonRotatingReferenceFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(), main_body_};
 
   auto const barycentric_to_main_body_motion =
@@ -1057,7 +1040,7 @@ void Plugin::ComputeAndRenderNodes(
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
 
   auto const* const cast_plotting_frame = dynamic_cast<
-      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation> const*>(
       &*renderer_->GetPlottingFrame());
   // The body-centred non rotating frame does not rotate; its reference plane is
   // not an inherent dynamical property.  When using this frame, discard the
@@ -1146,7 +1129,7 @@ Plugin::NewBarycentricRotatingNavigationFrame(
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
   return make_not_null_unique<
-      BarycentricRotatingDynamicFrame<Barycentric, Navigation>>(
+      BarycentricRotatingReferenceFrame<Barycentric, Navigation>>(
           ephemeris_.get(),
           primary.body(),
           secondary.body());
@@ -1161,7 +1144,7 @@ Plugin::NewBodyCentredBodyDirectionNavigationFrame(
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
   return make_not_null_unique<
-      BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
+      BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation>>(
           ephemeris_.get(),
           primary.body(),
           secondary.body());
@@ -1174,7 +1157,7 @@ Plugin::NewBodyCentredNonRotatingNavigationFrame(
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
   return make_not_null_unique<
-      BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
           ephemeris_.get(),
           reference_body.body());
 }
@@ -1185,9 +1168,9 @@ Plugin::NewBodySurfaceNavigationFrame(
   CHECK(!initializing_);
   Celestial const& reference_body =
       *FindOrDie(celestials_, reference_body_index);
-  return make_not_null_unique<BodySurfaceDynamicFrame<Barycentric, Navigation>>(
-      ephemeris_.get(),
-      reference_body.body());
+  return make_not_null_unique<
+      BodySurfaceReferenceFrame<Barycentric, Navigation>>(
+      ephemeris_.get(), reference_body.body());
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
@@ -1238,17 +1221,19 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
                                    sun_world_position_,
                                    planetarium_rotation)(q);
 
-      OrthogonalMap<RightHandedNavball, Barycentric> const
-          right_handed_navball_to_barycentric =
-              barycentric_right_handed_field_ == nullptr
-                  ? renderer.PlottingToBarycentric(current_time) *
-                        navigation_right_handed_field_->
-                            FromThisFrame(q_in_plotting).Forget<OrthogonalMap>()
-                  : barycentric_right_handed_field_->FromThisFrame(
-                        renderer.WorldToBarycentric(
-                            current_time,
-                            sun_world_position_,
-                            planetarium_rotation)(q)).Forget<OrthogonalMap>();
+      OrthogonalMap<RightHandedNavball,
+                    Barycentric> const right_handed_navball_to_barycentric =
+          barycentric_right_handed_field_ == nullptr
+              ? renderer.PlottingToBarycentric(current_time)
+                        .orthogonal_map¹₁() *
+                    navigation_right_handed_field_->FromThisFrame(q_in_plotting)
+                        .Forget<OrthogonalMap>()
+              : barycentric_right_handed_field_
+                    ->FromThisFrame(
+                        renderer.WorldToBarycentric(current_time,
+                                                    sun_world_position_,
+                                                    planetarium_rotation)(q))
+                    .Forget<OrthogonalMap>();
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
@@ -1274,10 +1259,10 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
   };
 
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
-  auto* const plotting_frame_as_body_surface_dynamic_frame =
-      dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation> const*>(
+  auto* const plotting_frame_as_body_surface_reference_frame =
+      dynamic_cast<BodySurfaceReferenceFrame<Barycentric, Navigation> const*>(
           &*renderer_->GetPlottingFrame());
-  if (plotting_frame_as_body_surface_dynamic_frame == nullptr) {
+  if (plotting_frame_as_body_surface_reference_frame == nullptr) {
     return std::make_unique<NavballFrameField>(
         this,
         make_not_null_unique<
@@ -1290,7 +1275,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
             BodySurfaceFrameField<Barycentric, RightHandedNavball>>(
                 *ephemeris_,
                 current_time_,
-                plotting_frame_as_body_surface_dynamic_frame->centre()),
+                plotting_frame_as_body_surface_reference_frame->centre()),
         sun_world_position);
   }
 }
@@ -1696,6 +1681,7 @@ bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
 
-}  // namespace internal_plugin
+}  // namespace internal
+}  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia

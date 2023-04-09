@@ -11,8 +11,9 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
+#include "geometry/space.hpp"
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
@@ -21,8 +22,8 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -32,38 +33,24 @@ namespace interface {
 // and generated code; we allow ourselves to pollute the |interface| namespace
 // with convenience |using|s.
 
-using base::not_null;
-using base::PullSerializer;
-using base::PushDeserializer;
-using geometry::AngularVelocity;
-using geometry::Bivector;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::R3Element;
-using geometry::Vector;
-using geometry::Velocity;
-using ksp_plugin::AliceSun;
-using ksp_plugin::ApparentWorld;
-using ksp_plugin::Barycentric;
-using ksp_plugin::Camera;
-using ksp_plugin::EccentricPart;
-using ksp_plugin::Iterator;
-using ksp_plugin::NavigationFrame;
-using ksp_plugin::PileUp;
-using ksp_plugin::PileUpFuture;
-using ksp_plugin::Planetarium;
-using ksp_plugin::Plugin;
-using ksp_plugin::ScaledSpacePoint;
-using ksp_plugin::Vessel;
-using ksp_plugin::World;
-using physics::DegreesOfFreedom;
-using physics::Frenet;
-using physics::RelativeDegreesOfFreedom;
-using quantities::AngularMomentum;
-using quantities::Length;
-using quantities::MomentOfInertia;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
@@ -99,11 +86,11 @@ bool operator==(NavigationManoeuvre const& left,
 bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
                 NavigationManoeuvreFrenetTrihedron const& right);
 bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right);
-bool operator==(OrbitGroundTrack const& left, OrbitGroundTrack const& right);
 bool operator==(OrbitRecurrence const& left, OrbitRecurrence const& right);
 bool operator==(OrbitalElements const& left, OrbitalElements const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(QPRW const& left, QPRW const& right);
+bool operator==(SolarTimesOfNodes const& left, SolarTimesOfNodes const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XY const& left, XY const& right);
 bool operator==(XYZ const& left, XYZ const& right);

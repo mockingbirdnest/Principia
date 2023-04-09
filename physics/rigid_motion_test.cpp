@@ -6,6 +6,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -21,40 +22,26 @@
 namespace principia {
 namespace physics {
 
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InnerProduct;
-using geometry::Normalize;
-using geometry::OddPermutation;
-using geometry::OrthogonalMap;
-using geometry::Permutation;
-using geometry::Point;
-using geometry::Position;
-using geometry::Quaternion;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Signature;
-using geometry::Vector;
-using geometry::Velocity;
-using geometry::Wedge;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::si::Day;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class RigidMotionTest : public testing::Test {
  protected:

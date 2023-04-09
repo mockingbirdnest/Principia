@@ -19,20 +19,13 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_elliptic_integrals {
+namespace _elliptic_integrals {
+namespace internal {
 
-using base::uninitialized;
-using quantities::Abs;
-using quantities::ArcSin;
-using quantities::Angle;
-using quantities::ArcTan;
-using quantities::ArcTanh;
-using quantities::Cos;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Tan;
-using quantities::si::Radian;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace {
 
@@ -42,7 +35,7 @@ namespace {
 // |Angle| performs the computation.
 
 struct UnusedResult {
-  constexpr UnusedResult(base::uninitialized_t) {}
+  constexpr UnusedResult(uninitialized_t) {}
 };
 
 inline constexpr UnusedResult unused{uninitialized};
@@ -2079,6 +2072,7 @@ Angle EllipticK(double const mʹ) {
   }
 }
 
-}  // namespace internal_elliptic_integrals
+}  // namespace internal
+}  // namespace _elliptic_integrals
 }  // namespace numerics
 }  // namespace principia

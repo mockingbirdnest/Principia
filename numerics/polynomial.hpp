@@ -27,7 +27,9 @@
                                 _MSC_FULL_VER == 192'930'139 || \
                                 _MSC_FULL_VER == 192'930'143 || \
                                 _MSC_FULL_VER == 192'930'147 || \
-                                _MSC_FULL_VER == 193'431'937)
+                                _MSC_FULL_VER == 193'431'937 || \
+                                _MSC_FULL_VER == 193'431'942 || \
+                                _MSC_FULL_VER == 193'532'216)
 
 namespace principia {
 namespace numerics {
@@ -45,27 +47,24 @@ FORWARD_DECLARE_FUNCTION_FROM(
              template<typename, typename, int> typename Evaluator,
              typename OptionalExpressIn) std::string,
     ToMathematicaBody,
-    (numerics::
+    (numerics::_polynomial::
          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
              polynomial,
      OptionalExpressIn express_in));
 }  // namespace mathematica
 
 namespace numerics {
-namespace internal_polynomial {
+namespace _polynomial {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_constructible;
-using base::not_null;
-using geometry::is_vector_v;
-using geometry::Hilbert;
-using geometry::Point;
-using quantities::Derivative;
-using quantities::Derivatives;
-using quantities::Difference;
-using quantities::Primitive;
-using quantities::Product;
-using quantities::Quotient;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_traits;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_tuples;
 
 // |Value_| must belong to an affine space.  |Argument_| must belong to a ring
 // or to Point based on a ring.
@@ -258,7 +257,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   template<typename V, typename A, int d,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
       O express_in);
 };
@@ -407,12 +406,17 @@ std::ostream& operator<<(
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
         polynomial);
 
-}  // namespace internal_polynomial
+}  // namespace internal
 
-using internal_polynomial::Polynomial;
-using internal_polynomial::PolynomialInMonomialBasis;
+using internal::Polynomial;
+using internal::PolynomialInMonomialBasis;
 
+}  // namespace _polynomial
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_polynomial;
+}  // namespace principia::numerics
 
 #include "numerics/polynomial_body.hpp"

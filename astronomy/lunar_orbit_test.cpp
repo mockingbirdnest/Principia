@@ -9,14 +9,16 @@
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space_transformations.hpp"
+#include "geometry/space.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "physics/apsides.hpp"
-#include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
@@ -35,70 +37,40 @@
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
-
-using astronomy::ICRS;
-using astronomy::J2000;
-using base::dynamic_cast_not_null;
-using base::not_null;
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodySurfaceDynamicFrame;
-using physics::ComputeApsides;
-using physics::ComputeNodes;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::RelativeDegreesOfFreedom;
-using physics::RigidMotion;
-using physics::RigidTransformation;
-using physics::SolarSystem;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::ArcSin;
-using quantities::Cbrt;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::GravitationalParameter;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::ArcMinute;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::Slope;
-using testing_utilities::operator""_;
-using ::testing::Lt;
-
 namespace astronomy {
+
+using ::testing::Lt;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_apsides;
+using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
 
 // A minimum bounding rectangle for a set of values of the eccentricity vector.
 struct EccentricityVectorRange {
@@ -184,7 +156,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   // |KeplerOrbit| should check that; this is good enough for a test.
   using Selenocentric = Frame<struct SelenocentricTag, Inertial>;
 
-  // We do not use a |BodyCentredNonRotatingDynamicFrame| since that would use
+  // We do not use a |BodyCentredNonRotatingReferenceFrame| since that would use
   // ICRS axes.
   RigidMotion<ICRS, Selenocentric> ToSelenocentric(Instant const& t) {
     return RigidMotion<ICRS, Selenocentric>(
@@ -202,7 +174,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<OblateBody<ICRS> const*> const moon_;
 
-  BodySurfaceDynamicFrame<ICRS, LunarSurface> const lunar_frame_;
+  BodySurfaceReferenceFrame<ICRS, LunarSurface> const lunar_frame_;
   DegreesOfFreedom<Selenocentric> selenocentre_;
 
   MasslessBody const satellite_;

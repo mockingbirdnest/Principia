@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -20,48 +22,32 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
-
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::AngularVelocity;
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Instant;
-using geometry::OrthogonalMap;
-using geometry::Position;
-using geometry::Sign;
-using geometry::Vector;
-using geometry::Velocity;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using numerics::Bisect;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::MassiveBody;
-using physics::SolarSystem;
-using quantities::GravitationalParameter;
-using quantities::Infinity;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::operator""_;
-using ::testing::Eq;
-
 namespace astronomy {
+
+using ::testing::Eq;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
 
 namespace {
 constexpr Time Δt = 45 * Minute;

@@ -4,7 +4,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
@@ -19,18 +19,18 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_flight_plan {
+namespace _flight_plan {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using integrators::AdaptiveStepSizeIntegrator;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegmentIterator;
-using physics::Ephemeris;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Speed;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_integrators;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::physics::_ephemeris;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A chain of trajectories obtained by executing the corresponding
 // |NavigationManœuvre|s.
@@ -224,9 +224,14 @@ class FlightPlan {
       generalized_adaptive_step_parameters_;
 };
 
-}  // namespace internal_flight_plan
+}  // namespace internal
 
-using internal_flight_plan::FlightPlan;
+using internal::FlightPlan;
 
+}  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_flight_plan;
+}  // namespace principia::ksp_plugin

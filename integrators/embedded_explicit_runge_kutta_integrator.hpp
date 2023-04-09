@@ -22,13 +22,13 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_integrator {
+namespace _embedded_explicit_runge_kutta_integrator {
+namespace internal {
 
-using base::is_instance_of_v;
-using base::not_null;
-using numerics::FixedStrictlyLowerTriangularMatrix;
-using numerics::FixedVector;
-using quantities::Variation;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_named_quantities;
 
 // This class solves ordinary differential equations of the form q′ = f(q, t)
 // using an embedded Runge-Kutta method.  We follow the standard conventions for
@@ -84,7 +84,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
         not_null<serialization::IntegratorInstance*> message) const override;
 #if 0
     template<typename... DV = DependentVariable...,
-             typename = std::enable_if_t<base::is_serializable_v<DV...>>>
+             typename = std::enable_if_t<is_serializable_v<DV...>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
@@ -129,15 +129,19 @@ class EmbeddedExplicitRungeKuttaIntegrator
   static constexpr auto b_ = Method::b;
 };
 
-}  // namespace internal_embedded_explicit_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE>
-internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE> const&
+internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE> const&
 EmbeddedExplicitRungeKuttaIntegrator();
 
+}  // namespace _embedded_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
+}  // namespace principia::integrators
 
 #include "integrators/embedded_explicit_runge_kutta_integrator_body.hpp"
 

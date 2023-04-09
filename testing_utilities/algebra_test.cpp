@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _algebra {
+namespace internal {
 
 class AlgebraTest : public testing::Test {};
 
@@ -16,5 +18,7 @@ TEST_F(AlgebraTest, Group) {
                     [](double const& x) { return 1 / x; }, 0, 0);
 }
 
+}  // namespace internal
+}  // namespace _algebra
 }  // namespace testing_utilities
 }  // namespace principia

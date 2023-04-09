@@ -19,19 +19,18 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_double_precision {
+namespace _double_precision {
+namespace internal {
 
-using geometry::DoubleOrQuantityOrMultivectorSerializer;
-using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
-using geometry::Multivector;
-using geometry::Point;
-using geometry::R3Element;
-using quantities::Abs;
-using quantities::FusedMultiplySubtract;
-using quantities::is_quantity;
-using quantities::Quantity;
-using quantities::si::Radian;
-namespace si = quantities::si;
+using namespace principia::base::_not_constructible;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_serialization;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_traits;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
 // complicated as it needs to peel off all of our abstractions until it reaches
@@ -51,7 +50,7 @@ struct ComponentwiseComparator<DoublePrecision<T>, DoublePrecision<U>> {
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
+struct ComponentwiseComparator<Point<T>, U> : not_constructible {
   static bool GreaterThanOrEqualOrZero(Point<T> const& left,
                                        U const& right) {
     // We only care about the coordinates, the geometric structure is
@@ -62,7 +61,7 @@ struct ComponentwiseComparator<Point<T>, U> : base::not_constructible {
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<T, Point<U>> : base::not_constructible {
+struct ComponentwiseComparator<T, Point<U>> : not_constructible {
   static bool GreaterThanOrEqualOrZero(T const& left,
                                        Point<U> const& right) {
     // We only care about the coordinates, the geometric structure is
@@ -76,7 +75,7 @@ template<typename T, typename TFrame, int trank,
          typename U, typename UFrame, int urank>
 struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
                                Multivector<U, UFrame, urank>>
-    : base::not_constructible {
+    : not_constructible {
   static bool GreaterThanOrEqualOrZero(
       Multivector<T, TFrame, trank> const& left,
       Multivector<U, UFrame, urank> const& right) {
@@ -87,8 +86,7 @@ struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<R3Element<T>, R3Element<U>>
-    : base::not_constructible {
+struct ComponentwiseComparator<R3Element<T>, R3Element<U>> : not_constructible {
   static bool GreaterThanOrEqualOrZero(R3Element<T> const& left,
                                        R3Element<U> const& right) {
     bool result = true;
@@ -242,6 +240,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if (UseHardwareFMA) {
+    using quantities::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(a * b);
     result.error = FusedMultiplySubtract(a, b, result.value);
     return result;
@@ -404,6 +403,7 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-}  // namespace internal_double_precision
+}  // namespace internal
+}  // namespace _double_precision
 }  // namespace numerics
 }  // namespace principia

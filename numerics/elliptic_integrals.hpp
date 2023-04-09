@@ -4,9 +4,10 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_elliptic_integrals {
+namespace _elliptic_integrals {
+namespace internal {
 
-using quantities::Angle;
+using namespace principia::quantities::_quantities;
 
 // Computes the associate incomplete elliptic integrals of the second kind
 // B(φ|m) and D(φ|m), as well as Fukushima’s associate incomplete elliptic
@@ -56,16 +57,21 @@ void EllipticFEΠ(Angle const& φ,
 // m = 1 - mc.
 Angle EllipticK(double mc);
 
-}  // namespace internal_elliptic_integrals
+}  // namespace internal
 
-using internal_elliptic_integrals::EllipticE;
-using internal_elliptic_integrals::EllipticF;
-using internal_elliptic_integrals::EllipticFE;
-using internal_elliptic_integrals::EllipticFEΠ;
-using internal_elliptic_integrals::EllipticK;
-using internal_elliptic_integrals::EllipticΠ;
-using internal_elliptic_integrals::FukushimaEllipticBD;
-using internal_elliptic_integrals::FukushimaEllipticBDJ;
+using internal::EllipticE;
+using internal::EllipticF;
+using internal::EllipticFE;
+using internal::EllipticFEΠ;
+using internal::EllipticK;
+using internal::EllipticΠ;
+using internal::FukushimaEllipticBD;
+using internal::FukushimaEllipticBDJ;
 
+}  // namespace _elliptic_integrals
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_elliptic_integrals;
+}  // namespace principia::numerics

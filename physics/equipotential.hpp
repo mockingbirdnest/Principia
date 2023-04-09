@@ -6,37 +6,33 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/plane.hpp"
+#include "geometry/space.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/integration_parameters.hpp"
+#include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_equipotential {
+namespace _equipotential {
+namespace internal {
 
-using base::not_null;
-using geometry::Bivector;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Plane;
-using geometry::Position;
-using geometry::Vector;
-using integrators::AdaptiveStepSizeIntegrator;
-using integrators::ExplicitFirstOrderOrdinaryDifferentialEquation;
-using quantities::Acceleration;
-using quantities::Angle;
-using quantities::Difference;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::SpecificEnergy;
-using quantities::si::Metre;
-using quantities::si::Second;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_plane;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::physics::_reference_frame;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename Frame>
 class Equipotential {
@@ -57,14 +53,9 @@ class Equipotential {
   using Line = std::vector<DependentVariables>;
   using Lines = std::vector<Line>;
 
-  Equipotential(
-      AdaptiveParameters const& adaptive_parameters,
-      not_null<DynamicFrame<InertialFrame, Frame> const*> dynamic_frame,
-      std::function<SpecificEnergy(Instant const&, Position<Frame> const&)>
-          potential = nullptr,
-      std::function<Vector<Acceleration, Frame>(Instant const&,
-                                                Position<Frame> const&)>
-          gradient = nullptr);
+  Equipotential(AdaptiveParameters const& adaptive_parameters,
+                not_null<ReferenceFrame<InertialFrame, Frame> const*>
+                    reference_frame);
 
   // Computes an equipotential line going through the given point.
   Line ComputeLine(Plane<Frame> const& plane,
@@ -154,18 +145,19 @@ class Equipotential {
                              std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
-  std::function<SpecificEnergy(Instant const&, Position<Frame> const&)>
-      potential_;
-  std::function<Vector<Acceleration, Frame>(Instant const&,
-                                            Position<Frame> const&)>
-      gradient_;
+  not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame_;
 };
 
-}  // namespace internal_equipotential
+}  // namespace internal
 
-using internal_equipotential::Equipotential;
+using internal::Equipotential;
 
+}  // namespace _equipotential
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_equipotential;
+}  // namespace principia::physics
 
 #include "physics/equipotential_body.hpp"

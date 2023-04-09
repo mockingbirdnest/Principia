@@ -10,9 +10,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_sign {
+namespace _sign {
+namespace internal {
 
-namespace si = quantities::si;
+using namespace principia::quantities::_si;
 
 // Must be defined first because it is called by member functions below.
 template<typename T>
@@ -93,6 +94,7 @@ inline std::ostream& operator<<(std::ostream& out, Sign const sign) {
   return out;
 }
 
-}  // namespace internal_sign
+}  // namespace internal
+}  // namespace _sign
 }  // namespace geometry
 }  // namespace principia

@@ -41,6 +41,8 @@
 
 namespace principia {
 namespace base {
+namespace _map_util {
+namespace internal {
 
 // Returns true if and only if the given collection contains the given key.
 template <class Collection>
@@ -68,5 +70,11 @@ typename Collection::value_type::second_type& FindOrDie(
   return it->second;
 }
 
+}  // namespace internal
+
+using internal::Contains;
+using internal::FindOrDie;
+
+}  // namespace _map_util
 }  // namespace base
 }  // namespace principia

@@ -1,5 +1,6 @@
 #include "physics/protector.hpp"
 
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
@@ -7,9 +8,10 @@
 namespace principia {
 namespace physics {
 
-using geometry::Instant;
-using quantities::si::Second;
 using ::testing::MockFunction;
+using namespace principia::geometry::_instant;
+using namespace principia::physics::_protector;
+using namespace principia::quantities::_si;
 
 class ProtectorTest : public ::testing::Test {
  protected:

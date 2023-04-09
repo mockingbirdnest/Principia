@@ -5,8 +5,7 @@
 #include <algorithm>
 
 #include "base/traits.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/linear_map.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
@@ -14,13 +13,13 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rotation {
+namespace _rotation {
+namespace internal {
 
-using base::is_same_template_v;
-using base::not_null;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::Sin;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::quantities::_elementary_functions;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
@@ -278,9 +277,9 @@ Rotation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Rotation<FromFrame, ToFrame>, T>::type
+typename Mappable<Rotation<FromFrame, ToFrame>, T>::type
 Rotation<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Rotation, T>::Do(*this, t);
+  return Mappable<Rotation, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -289,6 +288,13 @@ LinearMap<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::Forget() const {
   static_assert(is_same_template_v<LinearMap, OrthogonalMap>,
                 "Unable to forget rotation");
   return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Rotation<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().template Forget<ConformalMap>();
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -304,7 +310,7 @@ Quaternion const& Rotation<FromFrame, ToFrame>::quaternion() const {
 template<typename FromFrame, typename ToFrame>
 void Rotation<FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Rotation, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(message->MutableExtension(serialization::Rotation::extension));
 }
 
@@ -312,7 +318,7 @@ template<typename FromFrame, typename ToFrame>
 template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Rotation, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Rotation::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Rotation::extension));
@@ -342,6 +348,16 @@ R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
                                       real_part * r3_element);
 }
 
+template<typename Frame>
+Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent) {
+  Angle const angle = exponent.Norm();
+  if (angle == Angle()) {
+    return Rotation<Frame, Frame>::Identity();
+  } else {
+    return Rotation<Frame, Frame>(angle, exponent);
+  }
+}
+
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
@@ -367,6 +383,7 @@ std::ostream& operator<<(std::ostream& out,
   return out << rotation.quaternion_;
 }
 
-}  // namespace internal_rotation
+}  // namespace internal
+}  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia

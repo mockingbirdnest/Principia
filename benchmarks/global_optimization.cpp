@@ -8,6 +8,7 @@
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -16,18 +17,13 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Vector;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::si::Metre;
-using testing_utilities::Branin;
-using testing_utilities::GoldsteinPrice;
-using testing_utilities::Hartmann3;
-using testing_utilities::𝛁Branin;
-using testing_utilities::𝛁GoldsteinPrice;
-using testing_utilities::𝛁Hartmann3;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_optimization_test_functions;
 
 using World = Frame<struct WorldTag>;
 

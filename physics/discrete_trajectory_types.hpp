@@ -4,7 +4,7 @@
 
 #include "absl/container/btree_set.h"
 #include "base/macros.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 
@@ -17,11 +17,13 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory_types {
+namespace _discrete_trajectory_types {
+namespace internal {
 
-using geometry::Instant;
-using physics::DegreesOfFreedom;
-using quantities::Length;
+using namespace principia::geometry::_instant;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::quantities::_quantities;
 
 // |max_dense_intervals| is the maximal number of dense intervals before
 // downsampling occurs.  |tolerance| is the tolerance for downsampling with
@@ -59,8 +61,18 @@ using Segments = std::list<DiscreteTrajectorySegment<Frame>>;
 template<typename Frame>
 using Timeline = absl::btree_set<value_type<Frame>, Earlier>;
 
-}  // namespace internal_discrete_trajectory_types
+}  // namespace internal
+
+using internal::DownsamplingParameters;
+using internal::Segments;
+using internal::Timeline;
+
+}  // namespace _discrete_trajectory_types
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory_types;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_types_body.hpp"

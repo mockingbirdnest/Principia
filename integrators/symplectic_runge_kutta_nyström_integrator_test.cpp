@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -20,35 +21,8 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace integrators {
 
-using geometry::Instant;
-using quantities::Abs;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Energy;
-using quantities::Length;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Power;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Stiffness;
-using quantities::Time;
-using quantities::si::Joule;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using testing_utilities::Slope;
-using testing_utilities::VanishesBefore;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -58,7 +32,19 @@ using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
-namespace si = quantities::si;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_integration;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
+using namespace principia::testing_utilities::_vanishes_before;
 
 #define INSTANCE(integrator,                                             \
                  beginning_of_convergence,                               \
@@ -91,8 +77,6 @@ namespace si = quantities::si;
       (expected_velocity_error),                                          \
       (expected_energy_error),                                            \
       false)
-
-namespace integrators {
 
 using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 

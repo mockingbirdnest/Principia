@@ -7,7 +7,8 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_starter {
+namespace _starter {
+namespace internal {
 
 template<typename ODE, typename Step, int steps>
 Starter<ODE, Step, steps>::Starter(
@@ -116,6 +117,7 @@ Starter<ODE, Step, steps>::instance() const {
   return *instance_;
 }
 
-}  // namespace internal_starter
+}  // namespace internal
+}  // namespace _starter
 }  // namespace integrators
 }  // namespace principia

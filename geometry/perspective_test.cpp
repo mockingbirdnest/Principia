@@ -3,10 +3,11 @@
 #include "geometry/affine_map.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/perspective.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "geometry/sphere.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -19,21 +20,23 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_perspective {
 
-using quantities::Length;
-using quantities::Sqrt;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
-using ::testing::Pair;
+// TODO(phl): Cannot do this presumably because of the compatibility namespace.
+// using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::_;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_space_transformations;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class PerspectiveTest : public ::testing::Test {
  protected:
@@ -279,7 +282,7 @@ TEST_F(VisibleSegmentsTest, TangentBittenBittenBitten) {
           {9.8 * Metre, Sqrt(3.96) * (1 - ε) * Metre, -9 * Metre});
   Segment<World> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
-              ElementsAre(Pair(p1, _), Pair(_, p2)));
+              ElementsAre(testing::Pair(p1, _), testing::Pair(_, p2)));
 }
 
 // A segment entirely in front of the sphere, smaller than the sphere.
@@ -377,8 +380,8 @@ TEST_F(VisibleSegmentsTest, IntersectingFrontOfTheSphere) {
       Displacement<World>({-0.5 * Metre, 0 * Metre, Sqrt(3.0) / 2 * Metre});
   Segment<World> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
-              ElementsAre(Pair(p1, AlmostEquals(p3, 0)),
-                          Pair(AlmostEquals(p4, 2), p2)));
+              ElementsAre(testing::Pair(p1, AlmostEquals(p3, 0)),
+                          testing::Pair(AlmostEquals(p4, 2), p2)));
 }
 
 // A segment intersecting the cone in front of the centre of the sphere, both
@@ -400,8 +403,8 @@ TEST_F(VisibleSegmentsTest, IntersectingConeInFrontOfTheSphereCentre) {
           {-0.05 * Metre, 0 * Metre, 199.0 / (60.0 * Sqrt(11.0)) * Metre});
   Segment<World> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
-              ElementsAre(Pair(p1, AlmostEquals(p3, 4)),
-                          Pair(AlmostEquals(p4, 4), p2)));
+              ElementsAre(testing::Pair(p1, AlmostEquals(p3, 4)),
+                          testing::Pair(AlmostEquals(p4, 4), p2)));
 }
 
 // A segment intersecting the cone behind the centre of the sphere, both
@@ -423,8 +426,8 @@ TEST_F(VisibleSegmentsTest, IntersectingConeTwoVisibleSegments) {
           {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
   Segment<World> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
-              ElementsAre(Pair(p1, AlmostEquals(p3, 3)),
-                          Pair(AlmostEquals(p4, 15), p2)));
+              ElementsAre(testing::Pair(p1, AlmostEquals(p3, 3)),
+                          testing::Pair(AlmostEquals(p4, 15), p2)));
 }
 
 // A segment intersecting the cone behind the centre of the sphere, only one
@@ -443,7 +446,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeOneVisibleSegment) {
           {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
   Segment<World> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
-              ElementsAre(Pair(p1, AlmostEquals(p3, 95))));
+              ElementsAre(testing::Pair(p1, AlmostEquals(p3, 95))));
 }
 
 // A segment intersecting the sphere on one side and the cone behind the
@@ -466,8 +469,8 @@ TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
                            10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre});
   Segment<World> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
-              ElementsAre(Pair(p1, AlmostEquals(p3, 1)),
-                          Pair(AlmostEquals(p4, 4), p2)));
+              ElementsAre(testing::Pair(p1, AlmostEquals(p3, 1)),
+                          testing::Pair(AlmostEquals(p4, 4), p2)));
 }
 
 // A segment vaguely parallel to the axis of the cone.  It does intersect the
@@ -617,6 +620,5 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
               SizeIs(3));
 }
 
-}  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

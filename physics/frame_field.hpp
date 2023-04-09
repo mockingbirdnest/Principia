@@ -2,15 +2,16 @@
 
 #include <functional>
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_frame_field {
+namespace _frame_field {
+namespace internal {
 
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
 
 // A section of the frame bundle of the manifold |Position|, i.e., a smooth
 // assignment of an orthonormal basis to the tangent space of positions at every
@@ -37,12 +38,17 @@ class CoordinateFrameField : public FrameField<Frame, ThisFrame> {
       Position<Frame> const& q) const override;
 };
 
-}  // namespace internal_frame_field
+}  // namespace internal
 
-using internal_frame_field::FrameField;
-using internal_frame_field::CoordinateFrameField;
+using internal::FrameField;
+using internal::CoordinateFrameField;
 
+}  // namespace _frame_field
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_frame_field;
+}  // namespace principia::physics
 
 #include "physics/frame_field_body.hpp"

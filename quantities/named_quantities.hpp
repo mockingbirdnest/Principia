@@ -5,6 +5,8 @@
 
 namespace principia {
 namespace quantities {
+namespace _named_quantities {
+namespace internal {
 
 // The result type of +, -, * and / on arguments of types |Left| and |Right|.
 template<typename Left, typename Right>
@@ -21,14 +23,14 @@ using Inverse = Quotient<double, Q>;
 
 template<typename T, int exponent>
 using Exponentiation =
-    typename internal_generators::ExponentiationGenerator<T, exponent>::Type;
+    typename _generators::ExponentiationGenerator<T, exponent>::Type;
 template<typename Q>
 using Square = Exponentiation<Q, 2>;
 template<typename Q>
 using Cube = Exponentiation<Q, 3>;
 
 template<typename Q, int n>
-using NthRoot = typename internal_generators::NthRootGenerator<Q, n>::Type;
+using NthRoot = typename _generators::NthRootGenerator<Q, n>::Type;
 template<typename Q>
 using SquareRoot = NthRoot<Q, 2>;
 template<typename Q>
@@ -158,5 +160,89 @@ using Illuminance      = Quotient<LuminousFlux, Area>;
 using LuminousExposure = Product<Illuminance, Time>;
 using LuminousEfficacy = Quotient<LuminousFlux, RadiantFlux>;
 
+}  // namespace internal
+
+using internal::Acceleration;
+using internal::Action;
+using internal::AngularAcceleration;
+using internal::AngularFrequency;
+using internal::AngularMomentum;
+using internal::Area;
+using internal::Capacitance;
+using internal::CatalyticActivity;
+using internal::Charge;
+using internal::Concentration;
+using internal::Conductance;
+using internal::Cube;
+using internal::CubeRoot;
+using internal::Degree2SphericalHarmonicCoefficient;
+using internal::Degree3SphericalHarmonicCoefficient;
+using internal::Density;
+using internal::Derivative;
+using internal::Difference;
+using internal::DynamicViscosity;
+using internal::ElectricDisplacementField;
+using internal::ElectricField;
+using internal::Energy;
+using internal::Entropy;
+using internal::Exponentiation;
+using internal::Force;
+using internal::Frequency;
+using internal::GravitationalParameter;
+using internal::Illuminance;
+using internal::Inductance;
+using internal::Inverse;
+using internal::Irradiance;
+using internal::Jerk;
+using internal::KinematicViscosity;
+using internal::Luminance;
+using internal::LuminousEfficacy;
+using internal::LuminousEnergy;
+using internal::LuminousExposure;
+using internal::LuminousFlux;
+using internal::MagneticField;
+using internal::MagneticFlux;
+using internal::MagneticFluxDensity;
+using internal::MolarMass;
+using internal::MolarVolume;
+using internal::MomentOfInertia;
+using internal::Momentum;
+using internal::NthRoot;
+using internal::Permeability;
+using internal::Permittivity;
+using internal::Power;
+using internal::Pressure;
+using internal::Primitive;
+using internal::Product;
+using internal::Quotient;
+using internal::Radiance;
+using internal::RadiantEnergy;
+using internal::RadiantExposure;
+using internal::RadiantFlux;
+using internal::RadiantIntensity;
+using internal::Resistance;
+using internal::Snap;
+using internal::SolidAngle;
+using internal::SpecificAngularMomentum;
+using internal::SpecificEnergy;
+using internal::SpecificImpulse;
+using internal::SpecificVolume;
+using internal::SpectroscopicWavenumber;
+using internal::Speed;
+using internal::Square;
+using internal::SquareRoot;
+using internal::Stiffness;
+using internal::Sum;
+using internal::Torque;
+using internal::Variation;
+using internal::Voltage;
+using internal::Volume;
+using internal::Wavenumber;
+
+}  // namespace _named_quantities
 }  // namespace quantities
 }  // namespace principia
+
+namespace principia::quantities {
+using namespace principia::quantities::_named_quantities;
+}  // namespace principia::quantities

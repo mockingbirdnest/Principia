@@ -4,7 +4,7 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -13,20 +13,16 @@
 
 namespace principia {
 namespace physics {
-namespace internal_degrees_of_freedom {
 
-using geometry::Barycentre;
-using geometry::BarycentreCalculator;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Position;
-using geometry::Velocity;
-using quantities::Entropy;
-using quantities::Length;
-using quantities::Speed;
-using testing_utilities::Componentwise;
 using ::testing::Eq;
-namespace si = quantities::si;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_componentwise;
 
 class DegreesOfFreedomTest : public testing::Test {
  protected:
@@ -147,6 +143,5 @@ TEST_F(DegreesOfFreedomTest, BarycentreCalculator) {
                                       -50.0 * si::Unit<Speed>}))));
 }
 
-}  // namespace internal_degrees_of_freedom
 }  // namespace physics
 }  // namespace principia

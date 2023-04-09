@@ -8,7 +8,8 @@
 
 namespace principia {
 namespace base {
-namespace internal_jthread {
+namespace _jthread {
+namespace internal {
 
 class StopState {
  public:
@@ -178,6 +179,7 @@ inline stop_token this_stoppable_thread::get_stop_token() {
   return stop_token_;
 }
 
-}  // namespace internal_jthread
+}  // namespace internal
+}  // namespace _jthread
 }  // namespace base
 }  // namespace principia

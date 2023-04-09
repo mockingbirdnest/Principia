@@ -8,14 +8,12 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_double_precision {
+namespace _double_precision {
+namespace internal {
 
-using base::not_null;
-using quantities::Angle;
-using quantities::Difference;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Sum;
+using namespace principia::base::_not_null;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A simple container for accumulating a value using double precision.  The
 // type of the value must be an affine space.  The notations follow [HLB08].
@@ -130,16 +128,21 @@ template<typename T>
 std::ostream& operator<<(std::ostream& os,
                          DoublePrecision<T> const& double_precision);
 
-}  // namespace internal_double_precision
+}  // namespace internal
 
-using internal_double_precision::DoublePrecision;
-using internal_double_precision::Mod2π;
-using internal_double_precision::TwoDifference;
-using internal_double_precision::TwoProduct;
-using internal_double_precision::TwoSum;
-using internal_double_precision::VeltkampDekkerProduct;
+using internal::DoublePrecision;
+using internal::Mod2π;
+using internal::TwoDifference;
+using internal::TwoProduct;
+using internal::TwoSum;
+using internal::VeltkampDekkerProduct;
 
+}  // namespace _double_precision
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_double_precision;
+}  // namespace principia::numerics
 
 #include "numerics/double_precision_body.hpp"

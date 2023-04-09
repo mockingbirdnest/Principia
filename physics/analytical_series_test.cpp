@@ -5,8 +5,8 @@
 
 #include "absl/strings/str_cat.h"
 #include "astronomy/frames.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -30,28 +30,19 @@
 namespace principia {
 namespace physics {
 
-using astronomy::ICRS;
-using geometry::Displacement;
-using geometry::Instant;
-using geometry::Interval;
-using geometry::Position;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using numerics::EstrinEvaluator;
-using numerics::FastFourierTransform;
-using numerics::PoissonSeries;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Day;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
+using namespace principia::astronomy::_frames;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::numerics::_fast_fourier_transform;
+using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_analytical_series;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 namespace apodization = numerics::apodization;
 namespace frequency_analysis = numerics::frequency_analysis;

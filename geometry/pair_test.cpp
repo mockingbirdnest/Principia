@@ -14,20 +14,12 @@
 #undef CHECK_ILLEGAL
 
 namespace principia {
-
-using quantities::Action;
-using quantities::Amount;
-using quantities::Angle;
-using quantities::CatalyticActivity;
-using quantities::Energy;
-using quantities::Entropy;
-using quantities::Product;
-using quantities::Quantity;
-using quantities::SolidAngle;
-using quantities::Time;
-namespace si = quantities::si;
-
 namespace geometry {
+
+using namespace principia::geometry::_pair;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class PairTest : public testing::Test {
  protected:

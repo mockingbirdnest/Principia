@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/macros.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -20,34 +21,27 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
-using numerics::EstrinEvaluator;
-using numerics::LegendrePolynomial;
-using quantities::Abs;
-using quantities::Time;
-using quantities::Variation;
-using quantities::si::Centi;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Newton;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::ComputeЧебышёвPolynomialSecondDerivative;
-using testing_utilities::ComputeLegendrePolynomialSecondDerivative;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::StatusIs;
-using testing_utilities::operator""_;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::std::placeholders::_4;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::numerics::_legendre;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_integration;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
 
 using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<double>;
 
@@ -147,6 +141,5 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   EXPECT_THAT(max_derivative_error, IsNear(4.54e-3_(1) / Second));
 }
 
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 }  // namespace integrators
 }  // namespace principia

@@ -5,6 +5,8 @@
 #include <optional>
 #include <vector>
 
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -18,37 +20,24 @@
 
 namespace principia {
 namespace physics {
-namespace internal_apsides {
 
-using base::not_null;
-using geometry::Displacement;
-using geometry::Inertial;
-using geometry::Frame;
-using geometry::Inertial;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::QuinlanTremaine1990Order12;
-using quantities::GravitationalParameter;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::SolarGravitationalParameter;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::SizeIs;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_apsides;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -278,6 +267,5 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
 #endif
 
-}  // namespace internal_apsides
 }  // namespace physics
 }  // namespace principia

@@ -7,7 +7,8 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -27,37 +28,27 @@
 
 namespace principia {
 namespace physics {
-namespace internal_continuous_trajectory {
 
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::Velocity;
-using numerics::Polynomial;
-using numerics::PolynomialInMonomialBasis;
-using numerics::HornerEvaluator;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
 
 template<typename Frame>
 class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
@@ -1056,6 +1047,5 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_EQ(trajectory_read->t_max(), checkpoint_time);
 }
 
-}  // namespace internal_continuous_trajectory
 }  // namespace physics
 }  // namespace principia

@@ -29,44 +29,32 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
+namespace _ephemeris {
+namespace internal {
 
-using astronomy::J2000;
-using base::dynamic_cast_not_null;
-using base::FindOrDie;
-using base::make_not_null_unique;
-using base::MakeStoppableThread;
-using geometry::Barycentre;
-using geometry::Displacement;
-using geometry::InnerProduct;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::Sign;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
-using integrators::InitialValueProblem;
-using integrators::Integrator;
-using integrators::methods::Fine1987RKNG34;
-using numerics::Brent;
-using numerics::DoublePrecision;
-using numerics::Hermite3;
-using quantities::Abs;
-using quantities::Exponentiation;
-using quantities::GravitationalParameter;
-using quantities::Inverse;
-using quantities::Quotient;
-using quantities::Sqrt;
-using quantities::Square;
-using quantities::Time;
-using quantities::Variation;
-using quantities::si::Day;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using namespace principia::astronomy::_epoch;
+using namespace principia::base::_jthread;
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_sign;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_hermite3;
+using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 using namespace std::chrono_literals;
 
@@ -122,7 +110,8 @@ Ephemeris<Frame>::Ephemeris(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
           },
-          20ms) {  // 50 Hz.
+          20ms),  // 50 Hz.
+      reanimator_clientele_(/*default_value=*/InfiniteFuture) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -243,30 +232,37 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
     // the time between checkpoints) than it is currently doing, interrupt it.
     // Note that this is fundamentally racy: for instance the reanimator may not
     // have picked the last input given by Put.  But it helps if the user was
-    // doing a very long reanimation and wants to shorten it.
+    // doing a very long reanimation and wants to shorten it.  Note however that
+    // we must not move the desired t_min beyond the point where there are
+    // clients waiting for reanimation (e.g., vessels) as they would never
+    // succeed.
+    Instant const allowable_desired_t_min =
+        std::min(desired_t_min, reanimator_clientele_.first());
     must_restart = last_desired_t_min_.has_value() &&
                    last_desired_t_min_.value() + max_time_between_checkpoints <
-                       desired_t_min;
+                       allowable_desired_t_min;
     LOG_IF(WARNING, must_restart)
         << "Restarting reanimator because desired t_min went from "
-        << last_desired_t_min_.value() << " to " << desired_t_min;
-    last_desired_t_min_ = desired_t_min;
+        << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
+    last_desired_t_min_ = allowable_desired_t_min;
   }
 
   // Don't hold the lock while restarting, the reanimator needs it.
   if (must_restart) {
     reanimator_.Restart();
   }
-  reanimator_.Put(desired_t_min);
+  reanimator_.Put(last_desired_t_min_.value());
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::WaitForReanimation(Instant const& desired_t_min) {
+void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
   auto desired_t_min_reached = [this, desired_t_min]() {
     lock_.AssertReaderHeld();
     return t_min_locked() <= desired_t_min;
   };
 
+  Client me(desired_t_min, reanimator_clientele_);
+  RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached));
 }
@@ -792,11 +788,12 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               /*reader=*/nullptr, /*writer=*/nullptr)),
-      reanimator_(/*action=*/nullptr, 0ms) {}
+      reanimator_(/*action=*/nullptr, 0ms),
+      reanimator_clientele_(InfiniteFuture) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     lock_.AssertReaderHeld();
     if (checkpointer_->WriteToCheckpointIfNeeded(
             time, max_time_between_checkpoints)) {
@@ -810,7 +807,7 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
 Ephemeris<Frame>::MakeCheckpointerWriter() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](
                not_null<serialization::Ephemeris::Checkpoint*> const message) {
       lock_.AssertReaderHeld();
@@ -824,7 +821,7 @@ Ephemeris<Frame>::MakeCheckpointerWriter() {
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Reader
 Ephemeris<Frame>::MakeCheckpointerReader() {
-  if constexpr (base::is_serializable_v<Frame>) {
+  if constexpr (is_serializable_v<Frame>) {
     return [this](serialization::Ephemeris::Checkpoint const& message) {
       absl::MutexLock l(&lock_);
       instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
@@ -870,7 +867,7 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
            t_final = following_checkpoint.value(),
            t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            if constexpr (base::is_serializable_v<Frame>) {
+            if constexpr (is_serializable_v<Frame>) {
               return ReanimateOneCheckpoint(message, t_initial, t_final);
             } else {
               return absl::UnknownError(
@@ -1188,7 +1185,6 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
       Exponentiation<Length, -3> const one_over_Δq³ =
           one_over_Δq_norm * one_over_Δq_norm * one_over_Δq_norm;
 
-      auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
       Quotient<SpecificEnergy, GravitationalParameter> const
           spherical_harmonics_effect =
               geopotentials_[b1].GeneralSphericalHarmonicsPotential(
@@ -1430,6 +1426,7 @@ template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
     Ephemeris<Frame>::NoIntrinsicAccelerations;
 
-}  // namespace internal_ephemeris
+}  // namespace internal
+}  // namespace _ephemeris
 }  // namespace physics
 }  // namespace principia

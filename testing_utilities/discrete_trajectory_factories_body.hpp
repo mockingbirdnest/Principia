@@ -11,20 +11,16 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_discrete_trajectory_factories {
+namespace _discrete_trajectory_factories {
+namespace internal {
 
-using base::check_not_null;
-using base::make_not_null_unique;
-using geometry::Displacement;
-using geometry::Velocity;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectorySegment;
-using physics::DiscreteTrajectorySegmentIterator;
-using quantities::Cos;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Speed;
-using quantities::si::Radian;
+using namespace principia::base::_not_null;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 absl::Status DiscreteTrajectoryFactoriesFriend<Frame>::Append(
@@ -163,6 +159,7 @@ void AppendTrajectoryTimeline(
   }
 }
 
-}  // namespace internal_discrete_trajectory_factories
+}  // namespace internal
+}  // namespace _discrete_trajectory_factories
 }  // namespace testing_utilities
 }  // namespace principia

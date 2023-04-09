@@ -6,9 +6,10 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_interval {
+namespace _interval {
+namespace internal {
 
-using quantities::NaN;
+using namespace principia::quantities::_quantities;
 
 template<typename T>
 Difference<T> Interval<T>::measure() const {
@@ -31,6 +32,7 @@ std::ostream& operator<<(std::ostream& out, Interval<T> const& interval) {
   return out << interval.midpoint() << " ± " << interval.measure() / 2;
 }
 
-}  // namespace internal_interval
+}  // namespace internal
+}  // namespace _interval
 }  // namespace geometry
 }  // namespace principia

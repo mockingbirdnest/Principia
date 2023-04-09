@@ -14,12 +14,12 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-
-using quantities::Length;
-using quantities::si::Metre;
-using ::testing::Eq;
-
 namespace geometry {
+
+using ::testing::Eq;
+using namespace principia::geometry::_identity;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class IdentityTest : public testing::Test {
  protected:

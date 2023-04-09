@@ -15,33 +15,14 @@
 namespace principia {
 namespace quantities {
 
-using astronomy::JovianGravitationalParameter;
-using astronomy::JulianYear;
-using astronomy::LightYear;
-using astronomy::Parsec;
-using astronomy::TerrestrialGravitationalParameter;
-using constants::ElectronMass;
-using constants::ProtonMass;
-using constants::SpeedOfLight;
-using si::Ampere;
-using si::Candela;
-using si::Day;
-using si::Hour;
-using si::Joule;
-using si::Kelvin;
-using si::Kilogram;
-using si::Metre;
-using si::Mole;
-using si::Radian;
-using si::Second;
-using si::Steradian;
-using uk::Foot;
-using uk::Furlong;
-using uk::Gallon;
-using uk::Mile;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_constants;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::quantities::_uk;
 
 class QuantitiesTest : public testing::Test {};
 

@@ -6,6 +6,8 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::geometry::_sign;
+
 class SignTest : public testing::Test {
  protected:
   Sign const positive_ = Sign::Positive();

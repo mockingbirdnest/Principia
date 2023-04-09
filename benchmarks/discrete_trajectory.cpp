@@ -9,6 +9,8 @@
 #include "benchmark/benchmark.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -19,27 +21,18 @@
 namespace principia {
 namespace physics {
 
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Barycentre;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::Inertial;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::Velocity;
-using ksp_plugin::World;
-using physics::internal_discrete_trajectory_types::Timeline;
-using quantities::AngularFrequency;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Time;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::NewMotionlessTrajectoryTimeline;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_discrete_trajectory_types;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
 
 namespace {
 

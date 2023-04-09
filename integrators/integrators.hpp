@@ -6,7 +6,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
@@ -14,12 +14,14 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_integrators {
+namespace _integrators {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using numerics::DoublePrecision;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_quantities;
 
 // A base class for integrators.
 template<typename ODE_>
@@ -98,7 +100,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
     template<typename S = typename ODE::State,
-             typename = std::enable_if_t<base::is_serializable_v<S>>>
+             typename = std::enable_if_t<is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
@@ -194,7 +196,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
     template<typename S = typename ODE::State,
-             typename = std::enable_if_t<base::is_serializable_v<S>>>
+             typename = std::enable_if_t<is_serializable_v<S>>>
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
@@ -236,16 +238,21 @@ template<typename Equation>
 AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
     std::string const& integrator_kind);
 
-}  // namespace internal_integrators
+}  // namespace internal
 
-using internal_integrators::AdaptiveStepSizeIntegrator;
-using internal_integrators::FixedStepSizeIntegrator;
-using internal_integrators::Integrator;
-using internal_integrators::ParseAdaptiveStepSizeIntegrator;
-using internal_integrators::ParseFixedStepSizeIntegrator;
+using internal::AdaptiveStepSizeIntegrator;
+using internal::FixedStepSizeIntegrator;
+using internal::Integrator;
+using internal::ParseAdaptiveStepSizeIntegrator;
+using internal::ParseFixedStepSizeIntegrator;
 
+}  // namespace _integrators
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_integrators;
+}  // namespace principia::integrators
 
 #include "integrators/integrators_body.hpp"
 

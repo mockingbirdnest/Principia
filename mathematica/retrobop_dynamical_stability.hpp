@@ -2,6 +2,8 @@
 
 namespace principia {
 namespace mathematica {
+namespace _retrobop_dynamical_stability {
+namespace internal {
 
 // Generates data for plotting the positions of the Joolian system over 5 years.
 // See |AnalyseGlobalError| for a motivation for that figure.
@@ -29,5 +31,17 @@ void AnalyseGlobalError();
 // potentially control it, and to detect close encounters.
 void StatisticallyAnalyseStability();
 
+}  // namespace internal
+
+using internal::AnalyseGlobalError;
+using internal::PlotCentury;
+using internal::PlotPredictableYears;
+using internal::StatisticallyAnalyseStability;
+
+}  // namespace _retrobop_dynamical_stability
 }  // namespace mathematica
 }  // namespace principia
+
+namespace principia::mathematica {
+using namespace principia::mathematica::_retrobop_dynamical_stability;
+}  // namespace principia::mathematica

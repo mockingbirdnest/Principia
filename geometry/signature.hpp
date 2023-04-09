@@ -1,14 +1,25 @@
 #pragma once
 
-#include "geometry/frame.hpp"
-#include "geometry/orthogonal_map.hpp"
+#include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {
-namespace internal_signature {
 
-using base::not_null;
+FORWARD_DECLARE_FROM(
+    symmetric_bilinear_form,
+    TEMPLATE(typename Scalar,
+             typename Frame,
+             template<typename, typename> typename Multivector) class,
+    SymmetricBilinearForm);
+
+namespace _signature {
+namespace internal {
+
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_symmetric_bilinear_form;
 
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};
@@ -18,7 +29,8 @@ struct DeduceSignReversingOrientation final {};
 // identity 𝟙, the central inversion -𝟙, the 180° rotations around all three
 // axes, and the reflections across the planes orthogonal to all three axes.
 template<typename FromFrame, typename ToFrame>
-class Signature : public LinearMap<FromFrame, ToFrame> {
+class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
+                                   FromFrame, ToFrame> {
  public:
   using DeduceSign =
       std::conditional_t<FromFrame::handedness == ToFrame::handedness,
@@ -29,7 +41,7 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
   constexpr Signature(Sign x, DeduceSign y, Sign z);
   constexpr Signature(DeduceSign x, Sign y, Sign z);
 
-  constexpr Sign Determinant() const override;
+  constexpr Sign Determinant() const;
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -62,19 +74,21 @@ class Signature : public LinearMap<FromFrame, ToFrame> {
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
+  template<template<typename, typename, typename> typename ConformalMap>
+  ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Signature ReadFromMessage(serialization::LinearMap const& message);
 
   void WriteToMessage(not_null<serialization::Signature*> message) const;
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<base::is_serializable_v<F> &&
-                                       base::is_serializable_v<T>>>
+           typename = std::enable_if_t<is_serializable_v<F> &&
+                                       is_serializable_v<T>>>
   static Signature ReadFromMessage(serialization::Signature const& message);
 
  private:
@@ -109,13 +123,18 @@ template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Signature<FromFrame, ToFrame> const& signature);
 
-}  // namespace internal_signature
+}  // namespace internal
 
-using internal_signature::DeduceSignPreservingOrientation;
-using internal_signature::DeduceSignReversingOrientation;
-using internal_signature::Signature;
+using internal::DeduceSignPreservingOrientation;
+using internal::DeduceSignReversingOrientation;
+using internal::Signature;
 
+}  // namespace _signature
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_signature;
+}  // namespace principia::geometry
 
 #include "geometry/signature_body.hpp"

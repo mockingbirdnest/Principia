@@ -14,9 +14,10 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_cbrt {
+namespace _cbrt {
+namespace internal {
 
-using quantities::Sqrt;
+using namespace principia::quantities::_elementary_functions;
 
 // The computations in this file are described in documentation/cbrt.pdf; the
 // identifiers match the notation in that document.
@@ -341,6 +342,7 @@ double Cbrt(double const y) {
                         : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
 }
 
-}  // namespace internal_cbrt
+}  // namespace internal
+}  // namespace _cbrt
 }  // namespace numerics
 }  // namespace principia

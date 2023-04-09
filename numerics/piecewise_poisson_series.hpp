@@ -10,8 +10,8 @@
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -35,25 +35,24 @@ FORWARD_DECLARE_FUNCTION_FROM(
              template<typename, typename, int> class Evaluator,
              typename OptionalExpressIn) std::string,
     ToMathematicaBody,
-    (numerics::PiecewisePoissonSeries<Value,
-                                      aperiodic_degree, periodic_degree,
-                                      Evaluator> const& series,
+    (numerics::_piecewise_poisson_series::PiecewisePoissonSeries<
+         Value,
+         aperiodic_degree, periodic_degree,
+         Evaluator> const& series,
      OptionalExpressIn express_in));
 }  // namespace mathematica
 
 namespace numerics {
-namespace internal_piecewise_poisson_series {
+namespace _piecewise_poisson_series {
+namespace internal {
 
-using base::not_null;
-using geometry::Complexification;
-using geometry::Hilbert;
-using geometry::Instant;
-using geometry::Interval;
-using quantities::AngularFrequency;
-using quantities::Primitive;
-using quantities::Product;
-using quantities::Quotient;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The trigonometric functions are by default assumed to look like a polynomial
 // of this degree over an interval of a piecewise series.
@@ -225,7 +224,7 @@ class PiecewisePoissonSeries {
   template<typename V, int ad, int pd,
            template<typename, typename, int> class E,
            typename O>
-  friend std::string mathematica::internal_mathematica::ToMathematicaBody(
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       PiecewisePoissonSeries<V, ad, pd, E> const& polynomial,
       O express_in);
 };
@@ -463,11 +462,16 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
     Instant const& t_max,
     std::optional<int> max_points = std::nullopt);
 
-}  // namespace internal_piecewise_poisson_series
+}  // namespace internal
 
-using internal_piecewise_poisson_series::PiecewisePoissonSeries;
+using internal::PiecewisePoissonSeries;
 
+}  // namespace _piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_piecewise_poisson_series;
+}  // namespace principia::numerics
 
 #include "numerics/piecewise_poisson_series_body.hpp"

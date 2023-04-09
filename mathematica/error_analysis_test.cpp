@@ -12,19 +12,23 @@
 #include "mathematica/mathematica.hpp"
 #include "mathematica/local_error_analysis.hpp"
 #include "mathematica/retrobop_dynamical_stability.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
-
-using base::Contains;
-using base::make_not_null_unique;
-using quantities::ParseQuantity;
-using integrators::ParseFixedStepSizeIntegrator;
-using ksp_plugin::Barycentric;
-
 namespace mathematica {
+
+using namespace principia::base::_map_util;
+using namespace principia::base::_not_null;
+using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_quantities;
 
 class ErrorAnalysisTest : public ::testing::Test {
  protected:

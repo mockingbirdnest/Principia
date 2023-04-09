@@ -15,22 +15,18 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_part {
+namespace _part {
+namespace internal {
 
-using base::Array;
-using base::HexadecimalEncoder;
-using base::make_not_null_unique;
-using base::UniqueArray;
-using geometry::OrthogonalMap;
-using geometry::R3x3Matrix;
-using physics::RigidTransformation;
-using quantities::Cbrt;
-using quantities::Density;
-using quantities::MomentOfInertia;
-using quantities::Pow;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
+using namespace principia::base::_array;
+using namespace principia::base::_hexadecimal;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 constexpr Mass untruthful_part_mass = 1 * Kilogram;
 
@@ -416,6 +412,7 @@ std::ostream& operator<<(std::ostream& out, Part const& part) {
   return out << "{" << part.part_id() << ", " << part.mass() << "}";
 }
 
-}  // namespace internal_part
+}  // namespace internal
+}  // namespace _part
 }  // namespace ksp_plugin
 }  // namespace principia

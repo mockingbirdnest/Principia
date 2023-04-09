@@ -9,25 +9,25 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
-namespace internal_rotating_body {
+namespace _rotating_body {
+namespace internal {
 
-using base::not_null;
-using geometry::AngularVelocity;
-using geometry::DefinesFrame;
-using geometry::EulerAngles;
-using geometry::Instant;
-using geometry::Rotation;
-using geometry::Vector;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::si::Radian;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {
@@ -184,12 +184,17 @@ Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
   return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
 }
 
-}  // namespace internal_rotating_body
+}  // namespace internal
 
-using internal_rotating_body::RotatingBody;
+using internal::RotatingBody;
 
+}  // namespace _rotating_body
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_rotating_body;
+}  // namespace principia::physics
 
 #include "physics/rotating_body_body.hpp"
 

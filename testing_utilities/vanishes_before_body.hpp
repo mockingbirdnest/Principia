@@ -15,9 +15,10 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_vanishes_before {
+namespace _vanishes_before {
+namespace internal {
 
-using numerics::ULPDistance;
+using namespace principia::numerics::_ulp_distance;
 
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
@@ -83,6 +84,7 @@ void VanishesBeforeMatcher<T>::DescribeNegationTo(std::ostream* out) const {
        << min_ulps_ << " to " << max_ulps_ << " ULP";
 }
 
-}  // namespace internal_vanishes_before
+}  // namespace internal
+}  // namespace _vanishes_before
 }  // namespace testing_utilities
 }  // namespace principia

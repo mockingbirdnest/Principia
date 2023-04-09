@@ -7,17 +7,17 @@
 #include "base/serialization.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/linear_map.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -32,52 +32,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using base::not_null;
-using base::make_not_null_unique;
-using base::ParseFromBytes;
-using geometry::AngularVelocity;
-using geometry::Arbitrary;
-using geometry::Bivector;
-using geometry::DeduceSignReversingOrientation;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Handedness;
-using geometry::InfinitePast;
-using geometry::InfiniteFuture;
-using geometry::Instant;
-using geometry::LinearMap;
-using geometry::OrthogonalMap;
-using geometry::Perspective;
-using geometry::Position;
-using geometry::RigidTransformation;
-using geometry::Rotation;
-using geometry::Sign;
-using geometry::Signature;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::MassiveBody;
-using physics::MockContinuousTrajectory;
-using physics::MockDynamicFrame;
-using physics::MockEphemeris;
-using physics::RigidMotion;
-using physics::RotatingBody;
-using quantities::Cos;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::si::ArcMinute;
-using quantities::si::Degree;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AlmostEquals;
-using testing_utilities::AppendTrajectoryTimeline;
-using testing_utilities::NewCircularTrajectoryTimeline;
-using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::VanishesBefore;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Ge;
@@ -85,6 +39,33 @@ using ::testing::Le;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SizeIs;
+using namespace principia::base::_not_null;
+using namespace principia::base::_serialization;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_signature;
+using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class PlanetariumTest : public ::testing::Test {
   using LeftNavigation =
@@ -140,7 +121,7 @@ class PlanetariumTest : public ::testing::Test {
 
   Instant const t0_;
   Perspective<Navigation, Camera> const perspective_;
-  MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
+  MockRigidReferenceFrame<Barycentric, Navigation> plotting_frame_;
   std::function<ScaledSpacePoint(Position<Navigation> const&)>
       plotting_to_scaled_space_;
   RotatingBody<Barycentric> const body_;
@@ -290,7 +271,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                              "planetarium_ephemeris.proto.bin")));
 
   auto plotting_frame = NavigationFrame::ReadFromMessage(
-      ParseFromBytes<serialization::DynamicFrame>(
+      ParseFromBytes<serialization::ReferenceFrame>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_plotting_frame.proto.bin")),
       ephemeris.get());

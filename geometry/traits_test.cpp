@@ -1,16 +1,20 @@
 #include "geometry/traits.hpp"
 
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "physics/inertia_tensor.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace geometry {
 
-using quantities::Area;
-using quantities::Entropy;
-using quantities::Frequency;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::geometry::_traits;
+using namespace principia::physics::_inertia_tensor;
+using namespace principia::quantities::_named_quantities;
 
 TEST(Traits, IsVectorV) {
   static_assert(is_vector_v<int>);

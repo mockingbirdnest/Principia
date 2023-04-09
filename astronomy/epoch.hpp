@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 
 // |geometry::Instant| represents instants of Terrestrial Time (TT).  The
 // utilities in this file provide its standard epoch and two ways of specifying
@@ -8,9 +8,10 @@
 
 namespace principia {
 namespace astronomy {
-namespace internal_epoch {
+namespace _epoch {
+namespace internal {
 
-using geometry::Instant;
+using namespace principia::geometry::_instant;
 
 // |J2000| represents to the standard epoch J2000.0.
 // According to Resolution B1 (On the Use of Julian Dates) of the XXIIIrd IAU
@@ -22,9 +23,14 @@ using geometry::Instant;
 // "2000-01-01T11:58:55,816"_UTC
 constexpr Instant J2000;
 
-}  // namespace internal_epoch
+}  // namespace internal
 
-using internal_epoch::J2000;
+using internal::J2000;
 
+}  // namespace _epoch
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_epoch;
+}  // namespace principia::astronomy

@@ -6,10 +6,11 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_equator_relevance_threshold {
+namespace _equator_relevance_threshold {
+namespace internal {
 
-using quantities::Length;
-using physics::RotatingBody;
+using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_quantities;
 
 // Returns a distance from |body| that we consider is too far for the equator to
 // be of interest.  Specifically, this distance is the maximum of
@@ -19,9 +20,14 @@ using physics::RotatingBody;
 //   damping dynamical oblateness;
 Length EquatorRelevanceThreshold(RotatingBody<Barycentric> const& body);
 
-}  // namespace internal_equator_relevance_threshold
+}  // namespace internal
 
-using internal_equator_relevance_threshold::EquatorRelevanceThreshold;
+using internal::EquatorRelevanceThreshold;
 
+}  // namespace _equator_relevance_threshold
 }  // namespace ksp_plugin
 }  // namespace principia
+
+namespace principia::ksp_plugin {
+using namespace principia::ksp_plugin::_equator_relevance_threshold;
+}  // namespace principia::ksp_plugin

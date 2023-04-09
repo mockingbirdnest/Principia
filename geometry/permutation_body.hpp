@@ -1,12 +1,13 @@
 #pragma once
 
+#include "geometry/permutation.hpp"
+
 #include <array>
 #include <string>
 #include <utility>
 
 #include "base/traits.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/linear_map.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
@@ -14,9 +15,11 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_permutation {
+namespace _permutation {
+namespace internal {
 
-using base::is_same_template_v;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_orthogonal_map;
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>::Permutation(
@@ -68,9 +71,9 @@ Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<typename T>
-typename base::Mappable<Permutation<FromFrame, ToFrame>, T>::type
+typename Mappable<Permutation<FromFrame, ToFrame>, T>::type
 Permutation<FromFrame, ToFrame>::operator()(T const& t) const {
-  return base::Mappable<Permutation, T>::Do(*this, t);
+  return Mappable<Permutation, T>::Do(*this, t);
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -95,6 +98,13 @@ LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
+template<template<typename, typename, typename> typename ConformalMap>
+ConformalMap<double, FromFrame, ToFrame>
+Permutation<FromFrame, ToFrame>::Forget() const {
+  return this->Forget<OrthogonalMap>().template Forget<ConformalMap>();
+}
+
+template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename>
 Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
   return Permutation(EvenPermutation::XYZ);
@@ -103,7 +113,7 @@ Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
 template<typename FromFrame, typename ToFrame>
 void Permutation<FromFrame, ToFrame>::WriteToMessage(
       not_null<serialization::LinearMap*> const message) const {
-  LinearMap<FromFrame, ToFrame>::WriteToMessage(message);
+  LinearMap<Permutation, FromFrame, ToFrame>::WriteToMessage(message);
   WriteToMessage(
       message->MutableExtension(serialization::Permutation::extension));
 }
@@ -113,7 +123,7 @@ template<typename, typename, typename>
 Permutation<FromFrame, ToFrame>
 Permutation<FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message) {
-  LinearMap<FromFrame, ToFrame>::ReadFromMessage(message);
+  LinearMap<Permutation, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Permutation::extension));
   return ReadFromMessage(
       message.GetExtension(serialization::Permutation::extension));
@@ -192,6 +202,7 @@ std::ostream& operator<<(std::ostream& out,
                                   INDEX)];
 }
 
-}  // namespace internal_permutation
+}  // namespace internal
+}  // namespace _permutation
 }  // namespace geometry
 }  // namespace principia

@@ -10,6 +10,8 @@ using ::testing::Eq;
 namespace principia {
 namespace base {
 
+using namespace principia::base::_function;
+
 class FunctionTest : public testing::Test {};
 
 TEST_F(FunctionTest, MovableFunction) {

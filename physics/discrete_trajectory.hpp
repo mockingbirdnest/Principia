@@ -10,7 +10,8 @@
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -27,22 +28,22 @@ FORWARD_DECLARE_FROM(discrete_trajectory_segment,
                      TEMPLATE(typename Frame) class,
                      DiscreteTrajectorySegment);
 
-namespace internal_discrete_trajectory {
+namespace _discrete_trajectory {
+namespace internal {
 
-using base::not_null;
-using base::uninitialized_t;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using physics::DegreesOfFreedom;
+using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
 class DiscreteTrajectory : public Trajectory<Frame> {
  public:
-  using key_type =
-      typename internal_discrete_trajectory_types::Timeline<Frame>::key_type;
-  using value_type =
-      typename internal_discrete_trajectory_types::Timeline<Frame>::value_type;
+  using key_type = typename Timeline<Frame>::key_type;
+  using value_type = typename Timeline<Frame>::value_type;
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
   using reference = value_type const&;
@@ -147,15 +148,15 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   // serialization and deserialization.  Upon return, the iterators in |tracked|
   // are past-the-end iff they were past-the-end at serialization time.
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static DiscreteTrajectory ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked);
 
  private:
   using DownsamplingParameters =
-      internal_discrete_trajectory_types::DownsamplingParameters;
-  using Segments = internal_discrete_trajectory_types::Segments<Frame>;
+      _discrete_trajectory_types::DownsamplingParameters;
+  using Segments = _discrete_trajectory_types::Segments<Frame>;
   using SegmentByLeftEndpoint =
       absl::btree_map<Instant, typename Segments::iterator>;
 
@@ -223,11 +224,16 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   SegmentByLeftEndpoint segment_by_left_endpoint_;
 };
 
-}  // namespace internal_discrete_trajectory
+}  // namespace internal
 
-using internal_discrete_trajectory::DiscreteTrajectory;
+using internal::DiscreteTrajectory;
 
+}  // namespace _discrete_trajectory
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_discrete_trajectory;
+}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_body.hpp"

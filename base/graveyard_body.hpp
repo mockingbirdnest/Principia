@@ -4,6 +4,8 @@
 
 namespace principia {
 namespace base {
+namespace _graveyard {
+namespace internal {
 
 inline Graveyard::Graveyard(std::int64_t const number_of_threads)
     : gravedigger_(number_of_threads) {}
@@ -17,5 +19,7 @@ void Graveyard::Bury(std::unique_ptr<T> t) {
   });
 }
 
+}  // namespace internal
+}  // namespace _graveyard
 }  // namespace base
 }  // namespace principia

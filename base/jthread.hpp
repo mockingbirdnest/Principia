@@ -11,7 +11,10 @@
 
 namespace principia {
 namespace base {
-namespace internal_jthread {
+namespace _jthread {
+namespace internal {
+
+using namespace principia::base::_not_null;
 
 // A minimal implementation of the C++20 jthread library, intended to be
 // compatible.
@@ -124,23 +127,24 @@ class this_stoppable_thread {
   friend jthread MakeStoppableThread(Function&& f, Args&&... args);
 };
 
-#define RETURN_IF_STOPPED                                          \
-  do {                                                             \
-    if (::principia::base::this_stoppable_thread::get_stop_token() \
-            .stop_requested()) {                                   \
-      return ::absl::CancelledError("Cancelled by stop token");    \
-    }                                                              \
+#define RETURN_IF_STOPPED                                                    \
+  do {                                                                       \
+    if (::principia::base::_jthread::this_stoppable_thread::get_stop_token() \
+            .stop_requested()) {                                             \
+      return ::absl::CancelledError("Cancelled by stop token");              \
+    }                                                                        \
   } while (false)
 
-}  // namespace internal_jthread
+}  // namespace internal
 
-using internal_jthread::MakeStoppableThread;
-using internal_jthread::jthread;
-using internal_jthread::stop_callback;
-using internal_jthread::stop_source;
-using internal_jthread::stop_token;
-using internal_jthread::this_stoppable_thread;
+using internal::MakeStoppableThread;
+using internal::jthread;
+using internal::stop_callback;
+using internal::stop_source;
+using internal::stop_token;
+using internal::this_stoppable_thread;
 
+}  // namespace _jthread
 }  // namespace base
 }  // namespace principia
 

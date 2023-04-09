@@ -6,7 +6,8 @@
 
 namespace principia {
 namespace quantities {
-namespace si {
+namespace _si {
+namespace internal {
 
 template<typename D>
 constexpr Quantity<D> Yotta(Quantity<D> base) {
@@ -89,6 +90,7 @@ constexpr Quantity<D> Yocto(Quantity<D> base) {
   return 1e-24 * base;
 }
 
-}  // namespace si
+}  // namespace internal
+}  // namespace _si
 }  // namespace quantities
 }  // namespace principia

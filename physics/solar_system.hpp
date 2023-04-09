@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -21,12 +22,13 @@
 
 namespace principia {
 namespace physics {
-namespace internal_solar_system {
+namespace _solar_system {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using quantities::GravitationalParameter;
-using quantities::Length;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 serialization::GravityModel ParseGravityModel(
     std::filesystem::path const& gravity_model_filename);
@@ -175,13 +177,18 @@ class SolarSystem final {
       keplerian_initial_state_map_;
 };
 
-}  // namespace internal_solar_system
+}  // namespace internal
 
-using internal_solar_system::ParseGravityModel;
-using internal_solar_system::ParseInitialState;
-using internal_solar_system::SolarSystem;
+using internal::ParseGravityModel;
+using internal::ParseInitialState;
+using internal::SolarSystem;
 
+}  // namespace _solar_system
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_solar_system;
+}  // namespace principia::physics
 
 #include "physics/solar_system_body.hpp"

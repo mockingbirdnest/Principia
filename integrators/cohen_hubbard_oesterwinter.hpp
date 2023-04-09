@@ -4,9 +4,10 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_cohen_hubbard_oesterwinter {
+namespace _cohen_hubbard_oesterwinter {
+namespace internal {
 
-using numerics::FixedVector;
+using namespace principia::numerics::_fixed_arrays;
 
 // Definition of a modified Cohen-Hubbard-Oesterwinter formula, see [CHO73],
 // p. 21.  Our formula is:
@@ -25,14 +26,20 @@ struct CohenHubbardOesterwinter final {
   double denominator;
 };
 
-}  // namespace internal_cohen_hubbard_oesterwinter
-
-using internal_cohen_hubbard_oesterwinter::CohenHubbardOesterwinter;
-
 template<int order>
 CohenHubbardOesterwinter<order> const& CohenHubbardOesterwinterOrder();
 
+}  // namespace internal
+
+using internal::CohenHubbardOesterwinter;
+using internal::CohenHubbardOesterwinterOrder;
+
+}  // namespace _cohen_hubbard_oesterwinter
 }  // namespace integrators
 }  // namespace principia
+
+namespace principia::integrators {
+using namespace principia::integrators::_cohen_hubbard_oesterwinter;
+}  // namespace principia::integrators
 
 #include "integrators/cohen_hubbard_oesterwinter_body.hpp"

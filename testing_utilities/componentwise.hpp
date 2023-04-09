@@ -6,25 +6,24 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_componentwise {
+namespace _componentwise {
+namespace internal {
 
-using geometry::Displacement;
-using geometry::Position;
-using geometry::R3Element;
-using geometry::Velocity;
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_space;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
@@ -219,11 +218,16 @@ class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&> final
   Matcher<Scalar> const z_matcher_;
 };
 
-}  // namespace internal_componentwise
+}  // namespace internal
 
-using internal_componentwise::Componentwise;
+using internal::Componentwise;
 
+}  // namespace _componentwise
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_componentwise;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/componentwise_body.hpp"

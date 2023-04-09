@@ -10,18 +10,20 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_hermite3 {
+namespace _hermite3 {
+namespace internal {
 
-using base::BoundedArray;
-using quantities::Derivative;
-using quantities::Difference;
-using geometry::Hilbert;
+using namespace principia::base::_array;
+using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_named_quantities;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
 // TODO(phl): Invert the two template arguments for consistency with Derivative.
 template<typename Argument, typename Value>
 class Hermite3 final {
+  using NormType = typename Hilbert<Difference<Value>>::NormType;
+
  public:
   using Derivative1 = Derivative<Value, Argument>;
 
@@ -43,12 +45,23 @@ class Hermite3 final {
   // Returns the largest error (in the given |norm|) between this polynomial and
   // the given |samples|.
   template<typename Samples>
-  typename Hilbert<Difference<Value>>::NormType LInfinityError(
+  NormType LInfinityError(
       Samples const& samples,
       std::function<Argument const&(typename Samples::value_type const&)> const&
           get_argument,
       std::function<Value const&(typename Samples::value_type const&)> const&
           get_value) const;
+
+  // Returns true if the |LInfinityError| is less than |tolerance|.  More
+  // efficient than the above function in the case where it returns false.
+  template<typename Samples>
+  bool LInfinityErrorIsWithin(
+      Samples const& samples,
+      std::function<Argument const&(typename Samples::value_type const&)> const&
+          get_argument,
+      std::function<Value const&(typename Samples::value_type const&)> const&
+          get_value,
+      NormType const& tolerance) const;
 
  private:
   using Derivative2 = Derivative<Derivative1, Argument>;
@@ -63,11 +76,16 @@ class Hermite3 final {
   Derivative3 a3_;
 };
 
-}  // namespace internal_hermite3
+}  // namespace internal
 
-using internal_hermite3::Hermite3;
+using internal::Hermite3;
 
+}  // namespace _hermite3
 }  // namespace numerics
 }  // namespace principia
+
+namespace principia::numerics {
+using namespace principia::numerics::_hermite3;
+}  // namespace principia::numerics
 
 #include "numerics/hermite3_body.hpp"

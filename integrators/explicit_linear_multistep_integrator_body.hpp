@@ -15,11 +15,12 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_explicit_linear_multistep_integrator {
+namespace _explicit_linear_multistep_integrator {
+namespace internal {
 
-using base::for_all_of;
-using base::make_not_null_unique;
-using geometry::QuantityOrMultivectorSerializer;
+using namespace principia::base::_for_all_of;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_serialization;
 
 int const startup_step_divisor = 16;
 
@@ -116,7 +117,7 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
           y_stage = yₙ₊₁.value;
           y = yₙ₊₁;
         });
-    current_step.y = yₙ₊₁;
+    current_step.y = std::move(yₙ₊₁);
     termination_condition::UpdateWithAbort(
         equation.compute_derivative(s.value, y_stage, current_step.yʹ),
         status);
@@ -207,11 +208,10 @@ void ExplicitLinearMultistepIntegrator<Method, ODE_>::WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_explicit_linear_multistep_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_explicit_linear_multistep_integrator::
-    ExplicitLinearMultistepIntegrator<Method, ODE_> const&
+internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const&
 ExplicitLinearMultistepIntegrator() {
   static_assert(
       std::is_base_of<methods::ExplicitLinearMultistep, Method>::value,
@@ -219,11 +219,11 @@ ExplicitLinearMultistepIntegrator() {
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
   // this Runge-Kutta integrator as a gift.
-  static internal_explicit_linear_multistep_integrator::
-      ExplicitLinearMultistepIntegrator<Method, ODE_> const integrator(
-          ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE_>());
+  static internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const
+      integrator(ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE_>());
   return integrator;
 }
 
+}  // namespace _explicit_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia

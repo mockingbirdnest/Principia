@@ -15,16 +15,17 @@
 
 namespace principia {
 namespace numerics {
-namespace quadrature {
-namespace internal_quadrature {
+namespace _quadrature {
+namespace internal {
 
-using base::BitReversedIncrement;
-using base::FloorLog2;
-using geometry::Hilbert;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::Difference;
-using quantities::si::Radian;
+using namespace principia::base::_bits;
+using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_gauss_legendre_weights;
+using namespace principia::numerics::_legendre_roots;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 template<int points, typename Argument, typename Function>
 Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(
@@ -321,7 +322,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Midpoint(
   return result;
 }
 
-}  // namespace internal_quadrature
-}  // namespace quadrature
+}  // namespace internal
+}  // namespace _quadrature
 }  // namespace numerics
 }  // namespace principia

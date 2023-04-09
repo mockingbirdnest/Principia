@@ -11,9 +11,10 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_solar_system_factory {
+namespace _solar_system_factory {
+namespace internal {
 
-using base::Contains;
+using namespace principia::base::_map_util;
 
 template<typename Frame>
 void SolarSystemFactory::AdjustAccuracy(
@@ -111,7 +112,7 @@ SolarSystemFactory::MakeAccuracyParameters(Length const& fitting_tolerance,
 
 inline not_null<std::unique_ptr<SolarSystem<ICRS>>>
 SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
-  auto solar_system = base::make_not_null_unique<SolarSystem<ICRS>>(
+  auto solar_system = make_not_null_unique<SolarSystem<ICRS>>(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2436116_311504629.proto.txt");
@@ -121,7 +122,7 @@ SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
 
 inline not_null<std::unique_ptr<SolarSystem<ICRS>>>
 SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
-  auto solar_system = base::make_not_null_unique<SolarSystem<ICRS>>(
+  auto solar_system = make_not_null_unique<SolarSystem<ICRS>>(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2436145_604166667.proto.txt");
@@ -225,6 +226,7 @@ inline std::string SolarSystemFactory::name(int const index) {
 #undef BODY_NAME
 }
 
-}  // namespace internal_solar_system_factory
+}  // namespace internal
+}  // namespace _solar_system_factory
 }  // namespace testing_utilities
 }  // namespace principia

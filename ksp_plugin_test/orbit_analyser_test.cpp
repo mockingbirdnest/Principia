@@ -15,33 +15,28 @@
 namespace principia {
 namespace ksp_plugin {
 
-using astronomy::ITRS;
-using astronomy::J2000;
-using astronomy::OrbitRecurrence;
-using astronomy::StandardProduct3;
-using base::not_null;
-using geometry::Position;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodySurfaceDynamicFrame;
-using physics::Ephemeris;
-using physics::RotatingBody;
-using physics::SolarSystem;
-using quantities::Abs;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::TerrestrialEquatorialRadius;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Radian;
-using testing_utilities::IsNear;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::IsNull;
 using ::testing::Optional;
 using ::testing::Property;
+using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_orbit_recurrence;
+using namespace principia::astronomy::_standard_product_3;
+using namespace principia::base::_not_null;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_orbit_analyser;
+using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 class OrbitAnalyserTest : public testing::Test {
  protected:
@@ -71,7 +66,7 @@ class OrbitAnalyserTest : public testing::Test {
   SolarSystem<Barycentric> earth_1957_;
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> ephemeris_;
   RotatingBody<Barycentric> const& earth_;
-  BodySurfaceDynamicFrame<Barycentric, ITRS> itrs_;
+  BodySurfaceReferenceFrame<Barycentric, ITRS> itrs_;
   StandardProduct3 topex_poséidon_;
 
  private:

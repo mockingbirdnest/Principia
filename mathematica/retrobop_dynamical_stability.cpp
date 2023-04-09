@@ -17,9 +17,11 @@
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/status_utilities.hpp"
-#include "ksp_plugin/frames.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/solar_system.hpp"
@@ -27,47 +29,36 @@
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
-
-using base::Bundle;
-using base::not_null;
-using base::GetLine;
-using base::OFStream;
-using base::UniqueArray;
-using geometry::BarycentreCalculator;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Sign;
-using geometry::Vector;
-using integrators::FixedStepSizeIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::BlanesMoan2002SRKN14A;
-using ksp_plugin::Barycentric;
-using physics::DegreesOfFreedom;
-using physics::Ephemeris;
-using physics::HierarchicalSystem;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using quantities::Angle;
-using quantities::Cos;
-using quantities::GravitationalParameter;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::Sqrt;
-using quantities::Time;
-using quantities::astronomy::JulianYear;
-using quantities::si::Degree;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
-using quantities::si::Radian;
-using testing_utilities::AbsoluteError;
-
 namespace mathematica {
+namespace _retrobop_dynamical_stability {
+namespace internal {
+
+using namespace principia::base::_array;
+using namespace principia::base::_bundle;
+using namespace principia::base::_file;
+using namespace principia::base::_get_line;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_hierarchical_system;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_numerics;
 
 namespace {
 
@@ -647,5 +638,7 @@ void StatisticallyAnalyseStability() {
   }
 }
 
+}  // namespace internal
+}  // namespace _retrobop_dynamical_stability
 }  // namespace mathematica
 }  // namespace principia

@@ -4,7 +4,8 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -14,21 +15,19 @@
 
 namespace principia {
 namespace testing_utilities {
-namespace internal_discrete_trajectory_factories {
+namespace _discrete_trajectory_factories {
+namespace internal {
 
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Vector;
-using geometry::Velocity;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::DiscreteTrajectorySegment;
-using physics::internal_discrete_trajectory_types::Timeline;
-using quantities::Acceleration;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_types;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // A helper class to avoid having to declare friendship for all the individual
 // functions in this file.
@@ -116,15 +115,20 @@ void AppendTrajectoryTimeline(
         Instant const& time,
         DegreesOfFreedom<Frame> const& degrees_of_freedom)> const& append_to);
 
-}  // namespace internal_discrete_trajectory_factories
+}  // namespace internal
 
-using internal_discrete_trajectory_factories::AppendTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewAcceleratedTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewCircularTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewLinearTrajectoryTimeline;
-using internal_discrete_trajectory_factories::NewMotionlessTrajectoryTimeline;
+using internal::AppendTrajectoryTimeline;
+using internal::NewAcceleratedTrajectoryTimeline;
+using internal::NewCircularTrajectoryTimeline;
+using internal::NewLinearTrajectoryTimeline;
+using internal::NewMotionlessTrajectoryTimeline;
 
+}  // namespace _discrete_trajectory_factories
 }  // namespace testing_utilities
 }  // namespace principia
+
+namespace principia::testing_utilities {
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
+}  // namespace principia::testing_utilities
 
 #include "testing_utilities/discrete_trajectory_factories_body.hpp"

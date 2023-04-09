@@ -13,19 +13,17 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_finite_difference {
 
-using quantities::Infinity;
-using quantities::Pow;
-using quantities::Sqrt;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::Slope;
 using ::testing::Each;
 using ::testing::Lt;
 using ::testing::Types;
+using namespace principia::numerics::_finite_difference;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_statistics;
 
 template<typename T>
 class FiniteDifferenceTest : public ::testing::Test {
@@ -89,6 +87,5 @@ TYPED_TEST(FiniteDifferenceTest, HighDegreePolynomial) {
   }
 }
 
-}  // namespace internal_finite_difference
 }  // namespace numerics
 }  // namespace principia

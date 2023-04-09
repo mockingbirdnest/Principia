@@ -19,25 +19,19 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
+namespace _geopotential {
+namespace internal {
 
-using base::uninitialized;
-using numerics::FixedLowerTriangularMatrix;
-using numerics::FixedVector;
-using numerics::HornerEvaluator;
-using numerics::LegendreNormalizationFactor;
-using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
-using geometry::Bivector;
-using geometry::InnerProduct;
-using geometry::R3Element;
-using quantities::ArcTan;
-using quantities::Cos;
-using quantities::Derivative;
-using quantities::Length;
-using quantities::NaN;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Sin;
+using namespace principia::base::_tags;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::numerics::_max_abs_normalized_associated_legendre_function;  // NOLINT
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 
@@ -938,6 +932,7 @@ template<typename Frame>
 const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
     Geopotential<Frame>::y_({0, 1, 0});
 
-}  // namespace internal_geopotential
+}  // namespace internal
+}  // namespace _geopotential
 }  // namespace physics
 }  // namespace principia

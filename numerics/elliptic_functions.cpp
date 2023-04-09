@@ -13,13 +13,11 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_elliptic_functions {
+namespace _elliptic_functions {
+namespace internal {
 
-using quantities::Abs;
-using quantities::ArcTan;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::si::Radian;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 namespace {
 
@@ -268,6 +266,7 @@ void JacobiSNCNDN(Angle const& u,
   }
 }
 
-}  // namespace internal_elliptic_functions
+}  // namespace internal
+}  // namespace _elliptic_functions
 }  // namespace numerics
 }  // namespace principia

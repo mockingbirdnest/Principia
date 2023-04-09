@@ -16,15 +16,15 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_integrator {
+namespace _embedded_explicit_runge_kutta_integrator {
+namespace internal {
 
-using base::for_all_of;
-using base::make_not_null_unique;
-using geometry::Sign;
-using numerics::DoublePrecision;
-using quantities::DebugString;
-using quantities::Difference;
-using quantities::Quotient;
+using namespace principia::base::_for_all_of;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_sign;
+using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 template<typename Method, typename ODE_>
 EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_>::
@@ -207,12 +207,12 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
       for (int i = 0; i < stages_; ++i) {
         for_all_of(k[i], ŷ, Δŷ, Σᵢ_b̂ᵢ_kᵢ, Σᵢ_bᵢ_kᵢ, error_estimate)
-            .loop([&a, &b, &b̂, i](auto const& kᵢ,
-                                  auto const& ŷ,
-                                  auto& Δŷ,
-                                  auto& Σᵢ_b̂ᵢ_kᵢ,
-                                  auto& Σᵢ_bᵢ_kᵢ,
-                                  auto& error_estimate) {
+            .loop([&b, &b̂, i](auto const& kᵢ,
+                              auto const& ŷ,
+                              auto& Δŷ,
+                              auto& Σᵢ_b̂ᵢ_kᵢ,
+                              auto& Σᵢ_bᵢ_kᵢ,
+                              auto& error_estimate) {
               Σᵢ_b̂ᵢ_kᵢ += b̂[i] * kᵢ;
               Σᵢ_bᵢ_kᵢ += b[i] * kᵢ;
               Δŷ = Σᵢ_b̂ᵢ_kᵢ;
@@ -361,20 +361,19 @@ WriteToMessage(
   message->set_kind(Method::kind);
 }
 
-}  // namespace internal_embedded_explicit_runge_kutta_integrator
+}  // namespace internal
 
 template<typename Method, typename ODE_>
-internal_embedded_explicit_runge_kutta_integrator::
-    EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
+internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitRungeKutta,
-                      Method>::value,
+      std::is_base_of<methods::EmbeddedExplicitRungeKutta, Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
-  static internal_embedded_explicit_runge_kutta_integrator::
-      EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const integrator;
+  static internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const
+      integrator;
   return integrator;
 }
 
+}  // namespace _embedded_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia

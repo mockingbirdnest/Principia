@@ -1,49 +1,45 @@
+#define PRINCIPIA_LOG_TO_MATHEMATICA 0
+
 #include <memory>
 
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/frames.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/solar_system.hpp"
+#if PRINCIPIA_LOG_TO_MATHEMATICA
 #include "mathematica/logger.hpp"
+#endif
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace astronomy {
 
-using base::not_null;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Interval;
-using geometry::NonRotating;
-using geometry::Position;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::SolarSystem;
-using physics::Trajectory;
-using quantities::Cos;
-using quantities::Length;
-using quantities::Pow;
-using quantities::Sin;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::operator""_;
-using testing_utilities::IsNear;
+using namespace principia::astronomy::_date_time;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].
@@ -77,7 +73,7 @@ class Лидов古在Test : public ::testing::Test {
   SolarSystem<ICRS> solar_system_1950_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
   MassiveBody const& mercury_;
-  BodyCentredNonRotatingDynamicFrame<ICRS, MercuryCentredInertial>
+  BodyCentredNonRotatingReferenceFrame<ICRS, MercuryCentredInertial>
       mercury_frame_;
 };
 
@@ -87,8 +83,9 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_OK(icrs_trajectory.Append(
       MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
+  // Carefully tuned.
   icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
-                                .tolerance = 10 * Metre});
+                                .tolerance = 1 * Milli(Metre)});
   auto const instance =
       ephemeris_->NewInstance({&icrs_trajectory},
                               Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -107,21 +104,26 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       break;
     }
   }
+#if PRINCIPIA_LOG_TO_MATHEMATICA
   mathematica::Logger logger(
       SOLUTION_DIR / "mathematica" /
           PRINCIPIA_UNICODE_PATH("лидов_古在.generated.wl"),
       /*make_unique=*/false);
+#endif
 
   DiscreteTrajectory<MercuryCentredInertial> mercury_centred_trajectory;
   for (auto const& [t, dof] : icrs_trajectory) {
     EXPECT_OK(mercury_centred_trajectory.Append(
         t, mercury_frame_.ToThisFrameAtTime(t)(dof)));
+#if PRINCIPIA_LOG_TO_MATHEMATICA
     logger.Append(
         "q",
         mercury_centred_trajectory.back().degrees_of_freedom.position(),
         mathematica::ExpressIn(Metre));
+#endif
   }
 
+  EXPECT_EQ(1'534'438, mercury_centred_trajectory.size());
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
   // The constants c₁ and c₂ are defined in [Лид61], equations (58) and (59)
@@ -135,6 +137,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     double const sin²_ω = Pow<2>(Sin(elements.argument_of_periapsis));
     c₁.Include(ε * cos²_i);
     c₂.Include((1 - ε) * (2.0 / 5.0 - sin²_i * sin²_ω));
+#if PRINCIPIA_LOG_TO_MATHEMATICA
     logger.Append("t", elements.time, mathematica::ExpressIn(Second));
     logger.Append("a", elements.semimajor_axis, mathematica::ExpressIn(Metre));
     logger.Append("e", elements.eccentricity);
@@ -142,6 +145,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
     logger.Append(R"(\[Omega])",
                   elements.argument_of_periapsis,
                   mathematica::ExpressIn(Radian));
+#endif
   }
   // The elements e, i, and ω all vary quite a lot.
   EXPECT_THAT(elements.mean_eccentricity_interval().min, IsNear(0.40_(1)));
@@ -157,11 +161,12 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
   // is excellent: while the sun is nudging and deforming the orbit, it is not
-  // pumping energy into nor out of it.
+  // pumping energy into nor out of it.  The true values are 14'910.01 and
+  // 14'910.28 km.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
-              IsNear(14'910.0_(1) * Kilo(Metre)));
+              IsNear(14'910.02_(1) * Kilo(Metre)));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
-              IsNear(14'910.3_(1) * Kilo(Metre)));
+              IsNear(14'910.28_(1) * Kilo(Metre)));
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.
@@ -181,3 +186,4 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
 }  // namespace astronomy
 }  // namespace principia
+#undef PRINCIPIA_LOG_TO_MATHEMATICA

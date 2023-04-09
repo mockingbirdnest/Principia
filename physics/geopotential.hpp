@@ -5,7 +5,8 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "physics/harmonic_damping.hpp"
@@ -14,24 +15,17 @@
 
 namespace principia {
 namespace physics {
-namespace internal_geopotential {
+namespace _geopotential {
+namespace internal {
 
-using base::not_null;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Vector;
-using numerics::PolynomialInMonomialBasis;
-using quantities::Acceleration;
-using quantities::Angle;
-using quantities::Exponentiation;
-using quantities::GravitationalParameter;
-using quantities::Infinity;
-using quantities::Inverse;
-using quantities::Length;
-using quantities::Quotient;
-using quantities::SpecificEnergy;
-using quantities::Square;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_polynomial;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Representation of the geopotential model of an oblate body.
 template<typename Frame>
@@ -115,11 +109,16 @@ class Geopotential {
   HarmonicDamping sectoral_damping_;
 };
 
-}  // namespace internal_geopotential
+}  // namespace internal
 
-using internal_geopotential::Geopotential;
+using internal::Geopotential;
 
+}  // namespace _geopotential
 }  // namespace physics
 }  // namespace principia
+
+namespace principia::physics {
+using namespace principia::physics::_geopotential;
+}  // namespace principia::physics
 
 #include "physics/geopotential_body.hpp"

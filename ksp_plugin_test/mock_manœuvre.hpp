@@ -5,7 +5,8 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_manœuvre {
+namespace _manœuvre {
+namespace internal {
 
 template<typename InertialFrame, typename Frame>
 class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
@@ -29,9 +30,10 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
               (const, override));
 };
 
-}  // namespace internal_manœuvre
+}  // namespace internal
 
-using internal_manœuvre::MockManœuvre;
+using internal::MockManœuvre;
 
+}  // namespace _manœuvre
 }  // namespace ksp_plugin
 }  // namespace principia

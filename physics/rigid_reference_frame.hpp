@@ -1,26 +1,29 @@
-#ifndef PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
-#define PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 
 #include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
-namespace internal_dynamic_frame {
+namespace _rigid_reference_frame {
+namespace internal {
 
-using base::not_null;
-using geometry::Arbitrary;
-using geometry::Handedness;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Rotation;
-using geometry::Vector;
-using quantities::Acceleration;
-using quantities::SpecificEnergy;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_reference_frame;
+using namespace principia::quantities::_named_quantities;
 
 // The Frenet frame of a free fall trajectory in |Frame|.
 // TODO(egg): this should actually depend on its template parameter somehow.
@@ -33,16 +36,9 @@ using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
-class DynamicFrame {
-  static_assert(InertialFrame::is_inertial, "InertialFrame must be inertial");
-
+class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
  public:
-  virtual ~DynamicFrame() = default;
-
-  // The operations that take an |Instant| are valid in the range
-  // [t_min, t_max].
-  virtual Instant t_min() const = 0;
-  virtual Instant t_max() const = 0;
+  virtual ~RigidReferenceFrame() = default;
 
   // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
   // overriden in derived classes; the default implementation inverts the other
@@ -89,13 +85,10 @@ class DynamicFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
-  virtual void WriteToMessage(
-      not_null<serialization::DynamicFrame*> message) const = 0;
-
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
-  static not_null<std::unique_ptr<DynamicFrame>>
-      ReadFromMessage(serialization::DynamicFrame const& message,
+  static not_null<std::unique_ptr<RigidReferenceFrame>>
+      ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
@@ -118,14 +111,19 @@ class DynamicFrame {
       Instant const& t) const = 0;
 };
 
-}  // namespace internal_dynamic_frame
+}  // namespace internal
 
-using internal_dynamic_frame::DynamicFrame;
-using internal_dynamic_frame::Frenet;
+using internal::RigidReferenceFrame;
+using internal::Frenet;
 
+}  // namespace _rigid_reference_frame
 }  // namespace physics
 }  // namespace principia
 
-#include "physics/dynamic_frame_body.hpp"
+namespace principia::physics {
+using namespace principia::physics::_rigid_reference_frame;
+}  // namespace principia::physics
 
-#endif  // PRINCIPIA_PHYSICS_DYNAMIC_FRAME_HPP_
+#include "physics/rigid_reference_frame_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_

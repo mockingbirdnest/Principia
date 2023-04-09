@@ -18,6 +18,9 @@
 namespace principia {
 namespace journal {
 
+using namespace principia::base::_version;
+using namespace principia::journal::_recorder;
+
 class RecorderTest : public testing::Test {
  protected:
   RecorderTest()
@@ -99,8 +102,8 @@ TEST_F(RecorderTest, Recording) {
     auto const& extension =
         it->GetExtension(serialization::GetVersion::extension);
     EXPECT_TRUE(extension.has_out());
-    EXPECT_EQ(base::BuildDate, extension.out().build_date());
-    EXPECT_EQ(base::Version, extension.out().version());
+    EXPECT_EQ(BuildDate, extension.out().build_date());
+    EXPECT_EQ(Version, extension.out().version());
   }
   ++it;
   {

@@ -13,7 +13,8 @@
 #include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -47,67 +48,44 @@
 
 namespace principia {
 namespace physics {
-namespace internal_ephemeris {
 
-using astronomy::ICRS;
-using base::not_null;
-using geometry::Barycentre;
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::Frame;
-using geometry::InfiniteFuture;
-using geometry::InfinitePast;
-using geometry::Rotation;
-using geometry::Velocity;
-using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::Fine1987RKNG34;
-using integrators::methods::McLachlanAtela1992Order4Optimal;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using integrators::methods::Quinlan1999Order8A;
-using integrators::methods::QuinlanTremaine1990Order12;
-using mathematica::PreserveUnits;
-using quantities::Abs;
-using quantities::ArcTan;
-using quantities::Area;
-using quantities::Mass;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::astronomy::SolarGravitationalParameter;
-using quantities::astronomy::TerrestrialEquatorialRadius;
-using quantities::astronomy::TerrestrialPolarRadius;
-using quantities::si::Hour;
-using quantities::si::Kilo;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-using testing_utilities::AbsoluteError;
-using testing_utilities::AlmostEquals;
-using testing_utilities::Componentwise;
-using testing_utilities::EqualsProto;
-using testing_utilities::IsNear;
-using testing_utilities::RelativeError;
-using testing_utilities::RelativeErrorFrom;
-using testing_utilities::SolarSystemFactory;
-using testing_utilities::StatusIs;
-using testing_utilities::VanishesBefore;
-using testing_utilities::operator""_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Ref;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_ephemeris;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_solar_system_factory;
+using namespace principia::testing_utilities::_vanishes_before;
 using namespace std::chrono_literals;
-namespace si = quantities::si;
 
 namespace {
 
@@ -1222,11 +1200,8 @@ TEST(EphemerisTestNoFixture, Reanimator) {
       message);
 
   // Reanimate the ephemeris that we just read.
-  ephemeris2->RequestReanimation(t_initial);
-
-  // Wait for reanimation to happen.
   LOG(ERROR) << "Waiting until Herbert West is done...";
-  ephemeris2->WaitForReanimation(t_initial);
+  ephemeris2->AwaitReanimation(t_initial);
   LOG(ERROR) << "Herbert West is finally done.";
   EXPECT_OK(ephemeris2->Prolong(t_final));
 
@@ -1260,6 +1235,5 @@ INSTANTIATE_TEST_SUITE_P(
                           Quinlan1999Order8A,
                           Ephemeris<ICRS>::NewtonianMotionEquation>()));
 
-}  // namespace internal_ephemeris
 }  // namespace physics
 }  // namespace principia

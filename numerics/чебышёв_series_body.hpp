@@ -11,12 +11,13 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_чебышёв_series {
+namespace _чебышёв_series {
+namespace internal {
 
-using geometry::DoubleOrQuantityOrMultivectorSerializer;
-using geometry::Multivector;
-using geometry::R3Element;
-namespace si = quantities::si;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_serialization;
+using namespace principia::quantities::_si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
 // |Vector<Quantity>| so we specialize this case.
@@ -281,6 +282,7 @@ template<typename Vector>
                        Instant::ReadFromMessage(message.t_max()));
 }
 
-}  // namespace internal_чебышёв_series
+}  // namespace internal
+}  // namespace _чебышёв_series
 }  // namespace numerics
 }  // namespace principia

@@ -10,9 +10,10 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_hermite2 {
+namespace _hermite2 {
+namespace internal {
 
-using quantities::Difference;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument>
 Hermite2<Value, Argument>::Hermite2(
@@ -55,6 +56,7 @@ Argument Hermite2<Value, Argument>::FindExtremum() const {
   return arguments_.first - a1_ / (2 * a2_);
 }
 
-}  // namespace internal_hermite2
+}  // namespace internal
+}  // namespace _hermite2
 }  // namespace numerics
 }  // namespace principia

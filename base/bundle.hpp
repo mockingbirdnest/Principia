@@ -13,6 +13,8 @@
 
 namespace principia {
 namespace base {
+namespace _bundle {
+namespace internal {
 
 // A bundle manages a number of threads that execute independently.  A thread is
 // created for each call to |Add|.  When one of the |Join*| is called, no more
@@ -62,5 +64,10 @@ class Bundle final {
   static_assert(std::atomic_int::is_always_lock_free, "int not lock-free");
 };
 
+}  // namespace internal
+
+using internal::Bundle;
+
+}  // namespace _bundle
 }  // namespace base
 }  // namespace principia

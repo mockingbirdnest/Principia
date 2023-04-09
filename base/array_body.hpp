@@ -6,6 +6,8 @@
 
 namespace principia {
 namespace base {
+namespace _array {
+namespace internal {
 
 template<typename Element>
 template<typename OtherElement, typename>
@@ -184,5 +186,7 @@ bool operator==(UniqueArray<LeftElement> const& left,
   return left.get() == right.get();
 }
 
+}  // namespace internal
+}  // namespace _array
 }  // namespace base
 }  // namespace principia

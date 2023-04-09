@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=DynamicFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=RigidReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <utility>
@@ -10,7 +10,8 @@
 #include "base/status_utilities.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -19,46 +20,33 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "physics/barycentric_rotating_dynamic_frame.hpp"
+#include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
-
-using base::not_null;
-using geometry::AngularVelocity;
-using geometry::Displacement;
-using geometry::Exp;
-using geometry::Frame;
-using geometry::Instant;
-using geometry::Position;
-using geometry::Velocity;
-using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::McLachlanAtela1992Order5Optimal;
-using ksp_plugin::Barycentric;
-using quantities::AngularFrequency;
-using quantities::Length;
-using quantities::Speed;
-using quantities::Time;
-using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::JulianYear;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Radian;
-using quantities::si::Second;
-namespace si = quantities::si;
-
 namespace physics {
+
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 using Rendering = Frame<struct RenderingTag>;
 
@@ -79,9 +67,10 @@ void FillLinearTrajectory(Position<F> const& initial,
 
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
-ApplyDynamicFrame(
+ApplyReferenceFrame(
     not_null<Body const*> const body,
-    not_null<DynamicFrame<Barycentric, Rendering>*> const dynamic_frame,
+    not_null<RigidReferenceFrame<Barycentric,
+                                 Rendering>*> const reference_frame,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end) {
   std::vector<std::pair<Position<Barycentric>,
@@ -93,7 +82,7 @@ ApplyDynamicFrame(
     auto const& [time, degrees_of_freedom] = *it;
     CHECK_OK(intermediate_trajectory.Append(
         time,
-        dynamic_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
+        reference_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
   }
 
   // Render the trajectory at current time in |Rendering|.
@@ -103,7 +92,7 @@ ApplyDynamicFrame(
   DiscreteTrajectory<Rendering>::iterator const intermediate_end =
       intermediate_trajectory.end();
   auto to_rendering_frame_at_current_time =
-      dynamic_frame->FromThisFrameAtTime(current_time).rigid_transformation();
+      reference_frame->FromThisFrameAtTime(current_time).rigid_transformation();
   if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
          ++final_it, final_it != intermediate_end;
@@ -117,7 +106,7 @@ ApplyDynamicFrame(
   return result;
 }
 
-void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
+void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
@@ -157,17 +146,17 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
                                                         steps,
                                                         probe_trajectory);
 
-  BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>
-      dynamic_frame(ephemeris.get(), earth);
+  BodyCentredNonRotatingReferenceFrame<Barycentric, Rendering>
+      reference_frame(ephemeris.get(), earth);
   for (auto _ : state) {
-    auto v = ApplyDynamicFrame(&probe,
-                               &dynamic_frame,
-                               probe_trajectory.begin(),
-                               probe_trajectory.end());
+    auto v = ApplyReferenceFrame(&probe,
+                                 &reference_frame,
+                                 probe_trajectory.begin(),
+                                 probe_trajectory.end());
   }
 }
 
-void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
+void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
@@ -208,22 +197,22 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
                                                         steps,
                                                         probe_trajectory);
 
-  BarycentricRotatingDynamicFrame<Barycentric, Rendering>
-      dynamic_frame(ephemeris.get(), earth, venus);
+  BarycentricRotatingReferenceFrame<Barycentric, Rendering>
+      reference_frame(ephemeris.get(), earth, venus);
   for (auto _ : state) {
-    auto v = ApplyDynamicFrame(&probe,
-                               &dynamic_frame,
-                               probe_trajectory.begin(),
-                               probe_trajectory.end());
+    auto v = ApplyReferenceFrame(&probe,
+                                 &reference_frame,
+                                 probe_trajectory.begin(),
+                                 probe_trajectory.end());
   }
 }
 
 int const iterations = (1000 << 10) + 1;
 
-BENCHMARK(BM_BodyCentredNonRotatingDynamicFrame)
+BENCHMARK(BM_BodyCentredNonRotatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_BarycentricRotatingDynamicFrame)
+BENCHMARK(BM_BarycentricRotatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
 

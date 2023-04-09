@@ -13,20 +13,14 @@
 
 namespace principia {
 namespace geometry {
+namespace _grassmann {
+namespace internal {
 
-FORWARD_DECLARE_FROM(rotation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Rotation);
-
-namespace internal_grassmann {
-
-using base::not_null;
-using quantities::Angle;
-using quantities::is_quantity_v;
-using quantities::Product;
-using quantities::Quantity;
-using quantities::Quotient;
-using quantities::Square;
+using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_traits;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of
@@ -55,7 +49,7 @@ class Multivector<Scalar, Frame, 1> final {
   void WriteToMessage(
       not_null<serialization::Multivector*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -96,7 +90,7 @@ class Multivector<Scalar, Frame, 2> final {
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -130,7 +124,7 @@ class Multivector<Scalar, Frame, 3> final {
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   template<typename F = Frame,
-           typename = std::enable_if_t<base::is_serializable_v<F>>>
+           typename = std::enable_if_t<is_serializable_v<F>>>
   static Multivector ReadFromMessage(serialization::Multivector const& message);
 
  private:
@@ -207,10 +201,6 @@ template<typename LScalar, typename RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
-
-// Exponential map 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) → SO(𝑉).
-template<typename Frame>
-Rotation<Frame, Frame> Exp(Bivector<Angle, Frame> const& exponent);
 
 // The result is in [0, π]; the function is commutative.
 template<typename LScalar, typename RScalar, typename Frame>
@@ -371,22 +361,26 @@ template<typename Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
-}  // namespace internal_grassmann
+}  // namespace internal
 
-using internal_grassmann::AngleBetween;
-using internal_grassmann::Bivector;
-using internal_grassmann::Commutator;
-using internal_grassmann::Exp;
-using internal_grassmann::InnerProduct;
-using internal_grassmann::Multivector;
-using internal_grassmann::Normalize;
-using internal_grassmann::NormalizeOrZero;
-using internal_grassmann::OrientedAngleBetween;
-using internal_grassmann::Trivector;
-using internal_grassmann::Vector;
-using internal_grassmann::Wedge;
+using internal::AngleBetween;
+using internal::Bivector;
+using internal::Commutator;
+using internal::InnerProduct;
+using internal::Multivector;
+using internal::Normalize;
+using internal::NormalizeOrZero;
+using internal::OrientedAngleBetween;
+using internal::Trivector;
+using internal::Vector;
+using internal::Wedge;
 
+}  // namespace _grassmann
 }  // namespace geometry
 }  // namespace principia
+
+namespace principia::geometry {
+using namespace principia::geometry::_grassmann;
+}  // namespace principia::geometry
 
 #include "geometry/grassmann_body.hpp"

@@ -3,29 +3,28 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
+#include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "geometry/named_quantities.hpp"
 #include "physics/body.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rigid_reference_frame.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace astronomy {
-namespace internal_orbital_elements {
+namespace _orbital_elements {
+namespace internal {
 
-using geometry::Instant;
-using geometry::Interval;
-using physics::Body;
-using physics::DiscreteTrajectory;
-using physics::MassiveBody;
-using quantities::Angle;
-using quantities::AngularFrequency;
-using quantities::Difference;
-using quantities::Infinity;
-using quantities::Length;
-using quantities::Time;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
+using namespace principia::physics::_body;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 class OrbitalElements {
  public:
@@ -35,11 +34,20 @@ class OrbitalElements {
   OrbitalElements& operator=(OrbitalElements const&) = delete;
   OrbitalElements& operator=(OrbitalElements&&) = default;
 
+  template<typename Inertial, typename PrimaryCentred>
+  static absl::StatusOr<OrbitalElements> ForTrajectory(
+      Trajectory<Inertial> const& secondary_trajectory,
+      RigidReferenceFrame<Inertial, PrimaryCentred> const& primary_centred,
+      MassiveBody const& primary,
+      Body const& secondary,
+      bool fill_osculating_equinoctial_elements = false);
+
   template<typename PrimaryCentred>
   static absl::StatusOr<OrbitalElements> ForTrajectory(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+      Trajectory<PrimaryCentred> const& trajectory,
       MassiveBody const& primary,
-      Body const& secondary);
+      Body const& secondary,
+      bool fill_osculating_equinoctial_elements = false);
 
   // The classical Keplerian elements (a, e, i, Ω, ω, M),
   // together with an epoch.
@@ -112,7 +120,6 @@ class OrbitalElements {
 
   Interval<Length> mean_periapsis_distance_interval() const;
   Interval<Length> mean_apoapsis_distance_interval() const;
-  Interval<Length> radial_distance_interval() const;
 
   // The equinoctial elements, and in particular the osculating equinoctial
   // elements, are not directly interesting; anything that could be derived from
@@ -144,26 +151,37 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
-  template<typename PrimaryCentred>
-  static std::vector<EquinoctialElements> OsculatingEquinoctialElements(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory,
+  // For |t| between |t_min| and |t_max|,
+  // |relative_degrees_of_freedom_at_time(t)| should return
+  // |DegreesOfFreedom<Frame>|.
+  template<typename Frame, typename RelativeDegreesOfFreedomComputation>
+  static absl::StatusOr<OrbitalElements> ForRelativeDegreesOfFreedom(
+      RelativeDegreesOfFreedomComputation const&
+          relative_degrees_of_freedom_at_time,
+      Instant const& t_min,
+      Instant const& t_max,
       MassiveBody const& primary,
-      Body const& secondary);
+      Body const& secondary,
+      bool fill_osculating_equinoctial_elements);
 
-  template<typename PrimaryCentred>
-  static std::vector<Length> RadialDistances(
-      DiscreteTrajectory<PrimaryCentred> const& trajectory);
-
-  // |equinoctial_elements| must contain at least 2 elements.
+  // The functor EquinoctialElementsComputation must have the profile
+  // |EquinoctialElements(Instant const&)|.
+  template<typename EquinoctialElementsComputation>
   static absl::StatusOr<Time> SiderealPeriod(
-      std::vector<EquinoctialElements> const& equinoctial_elements);
+      EquinoctialElementsComputation const& equinoctial_elements,
+      Instant const& t_min,
+      Instant const& t_max);
 
   // |osculating| must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
   // their |EquinoctialElements::t|.
+  template<typename EquinoctialElementsComputation>
   static absl::StatusOr<std::vector<EquinoctialElements>>
-  MeanEquinoctialElements(std::vector<EquinoctialElements> const& osculating,
-                          Time const& period);
+  MeanEquinoctialElements(
+      EquinoctialElementsComputation const& equinoctial_elements,
+      Instant const& t_min,
+      Instant const& t_max,
+      Time const& period);
 
   static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);
@@ -174,20 +192,17 @@ class OrbitalElements {
   // element computation is based on it, so it gets computed earlier).
   absl::Status ComputePeriodsAndPrecession();
 
-  // |radial_distances_| and |mean_classical_elements_| must have been computed;
-  // sets |radial_distance_interval_| and |mean_*_interval_| accordingly.
+  // The |mean_classical_elements_| must have been computed; sets
+  // |mean_*_interval_| accordingly.
   absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;
-  std::vector<Length> radial_distances_;
   Time sidereal_period_;
   std::vector<EquinoctialElements> mean_equinoctial_elements_;
   std::vector<ClassicalElements> mean_classical_elements_;
   Time anomalistic_period_;
   Time nodal_period_;
   AngularFrequency nodal_precession_;
-
-  Interval<Length> radial_distance_interval_;
 
   Interval<Length> mean_semimajor_axis_interval_;
   Interval<Length> mean_periapsis_distance_interval_;
@@ -198,11 +213,16 @@ class OrbitalElements {
   Interval<Angle> mean_argument_of_periapsis_interval_;
 };
 
-}  // namespace internal_orbital_elements
+}  // namespace internal
 
-using internal_orbital_elements::OrbitalElements;
+using internal::OrbitalElements;
 
+}  // namespace _orbital_elements
 }  // namespace astronomy
 }  // namespace principia
+
+namespace principia::astronomy {
+using namespace principia::astronomy::_orbital_elements;
+}  // namespace principia::astronomy
 
 #include "astronomy/orbital_elements_body.hpp"

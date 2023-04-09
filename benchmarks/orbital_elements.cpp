@@ -7,13 +7,14 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
-#include "geometry/named_quantities.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -25,35 +26,23 @@
 namespace principia {
 namespace astronomy {
 
-using astronomy::GCRS;
-using base::dynamic_cast_not_null;
-using base::make_not_null_unique;
-using base::not_null;
-using geometry::Instant;
-using geometry::Position;
-using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
-using integrators::methods::QuinlanTremaine1990Order12;
-using physics::BodyCentredNonRotatingDynamicFrame;
-using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
-using physics::Ephemeris;
-using physics::KeplerianElements;
-using physics::KeplerOrbit;
-using physics::MassiveBody;
-using physics::MasslessBody;
-using physics::OblateBody;
-using physics::SolarSystem;
-using quantities::Time;
-using quantities::si::ArcSecond;
-using quantities::si::Day;
-using quantities::si::Degree;
-using quantities::si::Kilo;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
-using quantities::si::Second;
+using namespace principia::astronomy::_frames;
+using namespace principia::base::_not_null;
+using namespace principia::geometry::_instant;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class OrbitalElementsBenchmark : public benchmark::Fixture {
  protected:
@@ -89,8 +78,13 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
       KeplerianElements<GCRS> const& initial_osculating_elements,
       Instant const& initial_time,
       Instant const& final_time) {
-    BodyCentredNonRotatingDynamicFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
     DiscreteTrajectory<ICRS> icrs_trajectory;
+    icrs_trajectory.segments().front().SetDownsampling(
+        DiscreteTrajectorySegment<ICRS>::DownsamplingParameters{
+            .max_dense_intervals = 10'000,
+            .tolerance = 1 * Milli(Metre),
+        });
     KeplerOrbit<GCRS> const initial_osculating_orbit{
         *earth_,
         MasslessBody{},
@@ -101,19 +95,15 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
         gcrs.FromThisFrameAtTime(initial_time)(
             DegreesOfFreedom<GCRS>{GCRS::origin, GCRS::unmoving} +
             initial_osculating_orbit.StateVectors(initial_time))));
-    CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
-        &icrs_trajectory,
-        Ephemeris<ICRS>::NoIntrinsicAcceleration,
-        final_time,
-        Ephemeris<ICRS>::AdaptiveStepParameters{
-            EmbeddedExplicitRungeKuttaNyströmIntegrator<
-                DormandالمكاوىPrince1986RKN434FM,
+    auto instance = ephemeris_->NewInstance(
+        {&icrs_trajectory},
+        Ephemeris<ICRS>::NoIntrinsicAccelerations,
+        Ephemeris<ICRS>::FixedStepParameters(
+            SymmetricLinearMultistepIntegrator<
+                Quinlan1999Order8A,
                 Ephemeris<ICRS>::NewtonianMotionEquation>(),
-            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*length_integration_tolerance=*/1 * Milli(Metre),
-            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second
-        },
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
+            /*step=*/10 * Second));
+    CHECK_OK(ephemeris_->FlowWithFixedStep(final_time, *instance));
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto const& [time, degrees_of_freedom] : icrs_trajectory) {
       CHECK_OK(result->Append(
@@ -131,7 +121,7 @@ SolarSystem<ICRS>* OrbitalElementsBenchmark::solar_system_ = nullptr;
 Ephemeris<ICRS>* OrbitalElementsBenchmark::ephemeris_ = nullptr;
 OblateBody<ICRS> const* OrbitalElementsBenchmark::earth_ = nullptr;
 
-BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
+BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElementsEquatorial)(
     benchmark::State& state) {
   Time const mission_duration = 180 * Day;
   Instant const final_time = J2000 + mission_duration;
@@ -144,11 +134,32 @@ BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElements)(
   initial_osculating.longitude_of_ascending_node = 10 * Degree;
   initial_osculating.argument_of_periapsis = 20 * Degree;
   initial_osculating.mean_anomaly = 30 * Degree;
+  auto const trajectory =
+      EarthCentredTrajectory(initial_osculating, J2000, final_time);
   for (auto _ : state) {
-    OrbitalElements::ForTrajectory(
-        *EarthCentredTrajectory(initial_osculating, J2000, final_time),
-        *earth_,
-        MasslessBody{}).IgnoreError();
+    benchmark::DoNotOptimize(
+        OrbitalElements::ForTrajectory(*trajectory, *earth_, MasslessBody{}));
+  }
+}
+
+BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElementsInclined)(
+    benchmark::State& state) {
+  Time const mission_duration = 180 * Day;
+  Instant const final_time = J2000 + mission_duration;
+  CHECK_OK(ephemeris_->Prolong(final_time));
+
+  KeplerianElements<GCRS> initial_osculating;
+  initial_osculating.semimajor_axis = 7000 * Kilo(Metre);
+  initial_osculating.eccentricity = 1e-6;
+  initial_osculating.inclination = 60 * Degree;
+  initial_osculating.longitude_of_ascending_node = 10 * Degree;
+  initial_osculating.argument_of_periapsis = 20 * Degree;
+  initial_osculating.mean_anomaly = 30 * Degree;
+  auto const trajectory =
+      EarthCentredTrajectory(initial_osculating, J2000, final_time);
+  for (auto _ : state) {
+    benchmark::DoNotOptimize(
+        OrbitalElements::ForTrajectory(*trajectory, *earth_, MasslessBody{}));
   }
 }
 

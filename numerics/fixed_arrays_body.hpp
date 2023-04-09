@@ -10,12 +10,12 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_fixed_arrays {
+namespace _fixed_arrays {
+namespace internal {
 
-using base::uninitialized;
-using quantities::Pow;
-using quantities::Sqrt;
-using quantities::Square;
+using namespace principia::base::_tags;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 // A helper class to compute the dot product of two arrays.  |ScalarLeft| and
 // |ScalarRight| are the types of the elements of the arrays.  |Left| and
@@ -499,6 +499,7 @@ std::ostream& operator<<(
   return out;
 }
 
-}  // namespace internal_fixed_arrays
+}  // namespace internal
+}  // namespace _fixed_arrays
 }  // namespace numerics
 }  // namespace principia
