@@ -23,6 +23,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 
 // The Frenet frame of a free fall trajectory in |Frame|.
@@ -39,6 +40,11 @@ template<typename InertialFrame, typename ThisFrame>
 class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
  public:
   virtual ~RigidReferenceFrame() = default;
+
+  SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTimeSimilarly(
+      Instant const& t) const final override;
+  SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTimeSimilarly(
+      Instant const& t) const final override;
 
   // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
   // overriden in derived classes; the default implementation inverts the other
@@ -78,12 +84,6 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   virtual SpecificEnergy GeometricPotential(
       Instant const& t,
       Position<ThisFrame> const& position) const;
-
-  // The definition of the Frenet frame of a free fall trajectory in |ThisFrame|
-  // with the given |degrees_of_freedom| at instant |t|.
-  virtual Rotation<Frenet<ThisFrame>, ThisFrame> FrenetFrame(
-      Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
