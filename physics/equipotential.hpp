@@ -11,7 +11,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/integration_parameters.hpp"
-#include "physics/rigid_reference_frame.hpp"
+#include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -28,6 +28,7 @@ using namespace principia::geometry::_plane;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -52,7 +53,7 @@ class Equipotential {
   using Lines = std::vector<Line>;
 
   Equipotential(AdaptiveParameters const& adaptive_parameters,
-                not_null<RigidReferenceFrame<InertialFrame, Frame> const*>
+                not_null<ReferenceFrame<InertialFrame, Frame> const*>
                     reference_frame);
 
   // Computes an equipotential line going through the given point.
@@ -142,8 +143,7 @@ class Equipotential {
                              std::vector<Position<Frame>> const& line) const;
 
   AdaptiveParameters const& adaptive_parameters_;
-  not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const
-      reference_frame_;
+  not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame_;
 };
 
 }  // namespace internal

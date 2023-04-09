@@ -26,9 +26,9 @@
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -49,6 +49,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::physics::_equipotential;
+using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -83,10 +84,10 @@ class EquipotentialTest : public ::testing::Test {
 
   Position<World> ComputePositionInWorld(
       Instant const& t,
-      RigidReferenceFrame<Barycentric, World> const& reference_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       SolarSystemFactory::Index const body) {
-    auto const to_this_frame = reference_frame.ToThisFrameAtTime(t);
-    return to_this_frame.rigid_transformation()(
+    auto const to_this_frame = reference_frame.ToThisFrameAtTimeSimilarly(t);
+    return to_this_frame.similarity()(
         solar_system_->trajectory(*ephemeris_, SolarSystemFactory::name(body))
             .EvaluatePosition(t));
   }
@@ -95,7 +96,7 @@ class EquipotentialTest : public ::testing::Test {
       SolarSystemFactory::Index const body1,
       SolarSystemFactory::Index const body2,
       Instant const& t,
-      RigidReferenceFrame<Barycentric, World> const& reference_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       Plane<World> const& plane) {
     auto const body1_position =
         ComputePositionInWorld(t, reference_frame, body1);
@@ -120,7 +121,7 @@ class EquipotentialTest : public ::testing::Test {
       mathematica::Logger& logger,
       Plane<World> const& plane,
       Instant const& t,
-      RigidReferenceFrame<Barycentric, World> const& reference_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       SolarSystemFactory::Index const body,
       std::string_view const suffix = "") {
     Equipotential<Barycentric, World> const equipotential(
@@ -150,7 +151,7 @@ class EquipotentialTest : public ::testing::Test {
   template<typename LineParameter>
   void LogFamilyOfEquipotentialLines(
       mathematica::Logger& logger,
-      RigidReferenceFrame<Barycentric, World> const& reference_frame,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
       int const number_of_days,
       std::string_view const suffix,
       std::function<std::vector<LineParameter>(
