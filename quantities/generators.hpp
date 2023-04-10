@@ -33,8 +33,4 @@ using internal::QuotientGenerator;
 }  // namespace quantities
 }  // namespace principia
 
-namespace principia::quantities {
-using namespace principia::quantities::_generators;
-}  // namespace principia::quantities
-
 #include "quantities/generators_body.hpp"

@@ -194,7 +194,7 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const & scale,
                                      DoublePrecision<U> const& right) {
 #ifdef _DEBUG
-  double const s = scale / quantities::si::Unit<T>;
+  double const s = scale / Unit<T>;
   if (s != 0.0) {
     int exponent;
     double const mantissa = std::frexp(s, &exponent);
@@ -253,7 +253,7 @@ template<typename T, typename U>
 FORCE_INLINE(constexpr)
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
-  using quantities::DebugString;
+  using quantities::_quantities::DebugString;
   using Comparator = ComponentwiseComparator<T, U>;
   CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
@@ -391,7 +391,7 @@ std::string DebugString(DoublePrecision<T> const& double_precision) {
   // ADL will not find it, so we need the |using|.  For some values of |T|,
   // |DebugString| will come from elsewhere, so we cannot directly call
   // |quantities::Multivector|.
-  using quantities::DebugString;
+  using quantities::_quantities::DebugString;
   return DebugString(double_precision.value) + "|" +
          DebugString(double_precision.error);
 }

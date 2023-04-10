@@ -177,8 +177,4 @@ using internal::ToM128D;
 }  // namespace quantities
 }  // namespace principia
 
-namespace principia::quantities {
-using namespace principia::quantities::_quantities;
-}  // namespace principia::quantities
-
 #include "quantities/quantities_body.hpp"

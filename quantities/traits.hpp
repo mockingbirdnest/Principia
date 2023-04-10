@@ -11,6 +11,7 @@ namespace _traits {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::quantities::_quantities;
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
@@ -31,7 +32,3 @@ using internal::is_quantity_v;
 }  // namespace _traits
 }  // namespace quantities
 }  // namespace principia
-
-namespace principia::quantities {
-using namespace principia::quantities::_traits;
-}  // namespace principia::quantities

@@ -98,7 +98,3 @@ namespace admiralty = internal::admiralty;
 }  // namespace _uk
 }  // namespace quantities
 }  // namespace principia
-
-namespace principia::quantities {
-using namespace principia::quantities::_uk;
-}  // namespace principia::quantities

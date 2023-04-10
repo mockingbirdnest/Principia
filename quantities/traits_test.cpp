@@ -6,6 +6,7 @@
 namespace principia {
 namespace quantities {
 
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_traits;
 
 TEST(Traits, IsQuantityV) {

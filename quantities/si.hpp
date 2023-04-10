@@ -15,6 +15,9 @@ namespace quantities {
 namespace _si {
 namespace internal {
 
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+
 // Returns the base or derived SI unit of |Q|.
 // For instance, |si::Unit<Action>() == Joule * Second|.
 template<typename Q>
@@ -163,9 +166,5 @@ namespace si = _si;
 }  // namespace _si
 }  // namespace quantities
 }  // namespace principia
-
-namespace principia::quantities {
-using namespace principia::quantities::_si;
-}  // namespace principia::quantities
 
 #include "quantities/si_body.hpp"
