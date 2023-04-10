@@ -143,7 +143,7 @@ class Equipotential {
                              Position<Frame> const& position,
                              std::vector<Position<Frame>> const& line) const;
 
-  AdaptiveParameters const& adaptive_parameters_;
+  AdaptiveParameters const adaptive_parameters_;
   not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame_;
   Length const characteristic_length_;
 };
