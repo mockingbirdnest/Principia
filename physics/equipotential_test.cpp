@@ -49,7 +49,7 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_integrato
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
@@ -401,7 +401,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
               Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*step=*/10 * Second));
 
-  
   LOG(ERROR) << "Flowing trajectories";
   CHECK_OK(
       ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
@@ -498,7 +497,8 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
         potential(Barycentre(std::pair(moon_position, earth_position),
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
     SpecificEnergy const approx_l2_energy = potential(Barycentre(
-        std::pair(moon_position, World::origin + 2 * (moon_position - World::origin)),
+        std::pair(moon_position,
+                  World::origin + 2 * (moon_position - World::origin)),
         std::pair(arg_approx_l2, 1 - arg_approx_l2)));
     for (int i = 0; i < trajectories.size(); ++i) {
       DegreesOfFreedom<World> const dof =
