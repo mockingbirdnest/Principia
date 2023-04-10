@@ -1,4 +1,12 @@
-#pragma once
+// The files containing the tree of child classes of |ReferenceFrame| must be
+// included in the order of inheritance to avoid circular dependencies.  This
+// class will end up being reincluded as part of the implementation of its
+// parent.
+#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#include "physics/reference_frame.hpp"
+#else
+#ifndef PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 
 #include "physics/reference_frame.hpp"
 
@@ -84,3 +92,6 @@ using internal::RotatingPulsatingReferenceFrame;
 }  // namespace principia
 
 #include "physics/rotating_pulsating_reference_frame_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
