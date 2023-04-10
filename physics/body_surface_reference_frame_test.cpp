@@ -198,7 +198,7 @@ TEST_F(BodySurfaceReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
-  serialization::RigidReferenceFrame message;
+  serialization::ReferenceFrame message;
   big_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(

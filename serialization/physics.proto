@@ -17,7 +17,7 @@ message AdaptiveStepParameters {
 }
 
 message BarycentricRotatingReferenceFrame {
-  extend RigidReferenceFrame {
+  extend ReferenceFrame {
     optional BarycentricRotatingReferenceFrame extension = 6001;
   }
   required int32 primary = 1;
@@ -32,7 +32,7 @@ message Body {
 }
 
 message BodyCentredBodyDirectionReferenceFrame {
-  extend RigidReferenceFrame {
+  extend ReferenceFrame {
     optional BodyCentredBodyDirectionReferenceFrame extension = 6002;
   }
   required int32 primary = 1;
@@ -40,14 +40,14 @@ message BodyCentredBodyDirectionReferenceFrame {
 }
 
 message BodyCentredNonRotatingReferenceFrame {
-  extend RigidReferenceFrame {
+  extend ReferenceFrame {
     optional BodyCentredNonRotatingReferenceFrame extension = 6000;
   }
   required int32 centre = 1;
 }
 
 message BodySurfaceReferenceFrame {
-  extend RigidReferenceFrame {
+  extend ReferenceFrame {
     optional BodySurfaceReferenceFrame extension = 6003;
   }
   required int32 centre = 1;
@@ -149,8 +149,8 @@ message DiscreteTrajectorySegment {
   required Zfp zfp = 4;
 }
 
-message RigidReferenceFrame {
-  extensions 6000 to 6999;  // Last used: 6003.
+message ReferenceFrame {
+  extensions 6000 to 6999;  // Last used: 6004.
 }
 
 message Ephemeris {
@@ -304,4 +304,13 @@ message RotatingBody {
   // Pre-Cardano.
   reserved 4;
   reserved "angular_velocity";
+}
+
+// Added in Ὑπατία.
+message TwoBodyRotatingPulsatingReferenceFrame {
+  extend ReferenceFrame {
+    optional TwoBodyRotatingPulsatingReferenceFrame extension = 6004;
+  }
+  required int32 primary = 1;
+  required int32 secondary = 2;
 }

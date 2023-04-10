@@ -95,8 +95,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-WriteToMessage(
-    not_null<serialization::RigidReferenceFrame*> const message) const {
+WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension = message->MutableExtension(
       serialization::BarycentricRotatingReferenceFrame::extension);
   extension->set_primary(ephemeris_->serialization_index_for_body(primary_));

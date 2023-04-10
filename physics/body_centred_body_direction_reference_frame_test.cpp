@@ -184,7 +184,7 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, GeometricAcceleration) {
 }
 
 TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Serialization) {
-  serialization::RigidReferenceFrame message;
+  serialization::ReferenceFrame message;
   big_small_frame_->WriteToMessage(&message);
 
   EXPECT_TRUE(message.HasExtension(

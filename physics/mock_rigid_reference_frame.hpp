@@ -34,7 +34,7 @@ class MockRigidReferenceFrame : public RigidReferenceFrame<InertialFrame,
 
   MOCK_METHOD(void,
               WriteToMessage,
-              (not_null<serialization::RigidReferenceFrame*> message),
+              (not_null<serialization::ReferenceFrame*> message),
               (const, override));
 
   MOCK_METHOD((Vector<Acceleration, InertialFrame>),

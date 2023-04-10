@@ -248,6 +248,12 @@
     <ClInclude Include="rigid_reference_frame_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="reference_frame.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reference_frame_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">

@@ -14,6 +14,7 @@ namespace internal {
 
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
 
@@ -27,7 +28,7 @@ class MockPlanetarium : public Planetarium {
                     Navigation::origin,
                     Camera::origin,
                     Signature<Navigation, Camera>::CentralInversion()
-                    .Forget<OrthogonalMap>()),
+                    .Forget<OrthogonalMap>()).Forget<Similarity>(),
                 1 * Metre),
             make_not_null<Ephemeris<Barycentric> const*>(),
             make_not_null<NavigationFrame const*>(),

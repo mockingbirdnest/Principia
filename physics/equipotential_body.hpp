@@ -42,8 +42,7 @@ constexpr double energy_tolerance = 0x1p-24;
 template<typename InertialFrame, typename Frame>
 Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,
-    not_null<RigidReferenceFrame<InertialFrame, Frame> const*> const
-        reference_frame)
+    not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame)
     : adaptive_parameters_(adaptive_parameters),
       reference_frame_(reference_frame) {}
 

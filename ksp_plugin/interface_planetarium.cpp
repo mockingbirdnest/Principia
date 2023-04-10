@@ -9,6 +9,7 @@
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
@@ -29,6 +30,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_planetarium;
@@ -79,7 +81,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       Camera::origin,
       camera_position_in_world,
       camera_to_world_rotation.Forget<OrthogonalMap>());
-  RigidTransformation<World, Navigation> const
+  Similarity<World, Navigation> const
       world_to_plotting_affine_map =
           renderer.WorldToPlotting(plugin->CurrentTime(),
                                    FromXYZ<Position<World>>(sun_world_position),
@@ -90,7 +92,8 @@ Planetarium* __cdecl principia__PlanetariumCreate(
       /*angular_resolution=*/0.4 * ArcMinute,
       field_of_view * Radian);
   Perspective<Navigation, Camera> perspective(
-      world_to_plotting_affine_map * camera_to_world_affine_map,
+      world_to_plotting_affine_map *
+          camera_to_world_affine_map.Forget<Similarity>(),
       focal * Metre);
 
   auto const plotting_to_scaled_space =

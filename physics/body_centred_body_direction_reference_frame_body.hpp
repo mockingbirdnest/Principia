@@ -114,8 +114,7 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
-WriteToMessage(
-    not_null<serialization::RigidReferenceFrame*> const message) const {
+WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension =
       message->MutableExtension(
           serialization::BodyCentredBodyDirectionReferenceFrame::extension);

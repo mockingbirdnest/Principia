@@ -59,7 +59,7 @@ class BarycentricRotatingReferenceFrame
       Instant const& t) const override;
 
   void WriteToMessage(
-      not_null<serialization::RigidReferenceFrame*> message) const override;
+      not_null<serialization::ReferenceFrame*> message) const override;
 
   static not_null<std::unique_ptr<BarycentricRotatingReferenceFrame>>
   ReadFromMessage(

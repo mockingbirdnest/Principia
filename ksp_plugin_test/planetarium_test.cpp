@@ -50,6 +50,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
@@ -79,15 +80,17 @@ class PlanetariumTest : public ::testing::Test {
                                          {0 * Metre, 20 * Metre, 0 * Metre}),
                 Camera::origin,
                 Rotation<LeftNavigation, Camera>(
-                    Vector<double, LeftNavigation>({ 1, 0, 0 }),
-                    Vector<double, LeftNavigation>({ 0, 0, 1 }),
-                    Bivector<double, LeftNavigation>({ 0, -1, 0 }))
-                    .Forget<OrthogonalMap>() *
-                Signature<Navigation, LeftNavigation>(
-                    Sign::Positive(),
-                    Sign::Positive(),
-                    DeduceSignReversingOrientation{}).Forget<OrthogonalMap>()),
-          /*focal=*/5 * Metre),
+                    Vector<double, LeftNavigation>({1, 0, 0}),
+                    Vector<double, LeftNavigation>({0, 0, 1}),
+                    Bivector<double, LeftNavigation>({0, -1, 0}))
+                        .Forget<OrthogonalMap>() *
+                    Signature<Navigation, LeftNavigation>(
+                        Sign::Positive(),
+                        Sign::Positive(),
+                        DeduceSignReversingOrientation{})
+                        .Forget<OrthogonalMap>())
+                .Forget<Similarity>(),
+            /*focal=*/5 * Metre),
         plotting_to_scaled_space_(
             [](Position<Navigation> const& plotted_point) {
               constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
@@ -271,7 +274,7 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
                              "planetarium_ephemeris.proto.bin")));
 
   auto plotting_frame = NavigationFrame::ReadFromMessage(
-      ParseFromBytes<serialization::RigidReferenceFrame>(
+      ParseFromBytes<serialization::ReferenceFrame>(
           ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
                              "planetarium_plotting_frame.proto.bin")),
       ephemeris.get());
@@ -288,12 +291,13 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          Perspective<Navigation, Camera>(rigid_transformation,
-                                                          /*focal=*/1 * Metre),
-                          ephemeris.get(),
-                          plotting_frame.get(),
-                          plotting_to_scaled_space_);
+  Planetarium planetarium(
+      parameters,
+      Perspective<Navigation, Camera>(rigid_transformation.Forget<Similarity>(),
+                                      /*focal=*/1 * Metre),
+      ephemeris.get(),
+      plotting_frame.get(),
+      plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory,
                               discrete_trajectory.begin(),

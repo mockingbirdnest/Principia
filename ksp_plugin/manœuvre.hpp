@@ -25,6 +25,7 @@ using namespace principia::geometry::_space;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

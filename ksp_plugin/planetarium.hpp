@@ -80,7 +80,7 @@ class Planetarium {
   Planetarium(Parameters const& parameters,
               Perspective<Navigation, Camera> perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
-              not_null<NavigationFrame const*> plotting_frame,
+              not_null<PlottingFrame const*> plotting_frame,
               PlottingToScaledSpaceConversion plotting_to_scaled_space);
 
   // A no-op method that just returns all the points in the trajectory defined
@@ -158,7 +158,7 @@ class Planetarium {
   Parameters const parameters_;
   Perspective<Navigation, Camera> const perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
-  not_null<NavigationFrame const*> const plotting_frame_;
+  not_null<PlottingFrame const*> const plotting_frame_;
   PlottingToScaledSpaceConversion plotting_to_scaled_space_;
 };
 

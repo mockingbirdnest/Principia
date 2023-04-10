@@ -63,8 +63,9 @@ TEST_F(PerspectiveTest, Basic) {
       camera_origin,
       Camera::origin,
       world_to_camera_rotation.Forget<OrthogonalMap>());
-  Perspective<World, Camera> perspective(world_to_camera_transformation,
-                                         /*focal=*/10 * Metre);
+  Perspective<World, Camera> perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/10 * Metre);
 
   // Check that points in the camera z axis get projected to the origin of ℝP².
   Displacement<World> const camera_z_axis = world_to_camera_rotation.Inverse()(
@@ -122,9 +123,8 @@ TEST_F(PerspectiveTest, Basic) {
 }
 
 TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
-  Perspective<World, Camera> perspective(
-      RigidTransformation<World, Camera>::Identity(),
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
+                                         /*focal=*/1 * Metre);
 
   // In front of the camera.
   Position<World> const p1 =
@@ -147,9 +147,8 @@ TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
 }
 
 TEST_F(PerspectiveTest, IsHiddenBySphere) {
-  Perspective<World, Camera> perspective(
-      RigidTransformation<World, Camera>::Identity(),
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
+                                         /*focal=*/1 * Metre);
 
   Sphere<World> const sphere(
       World::origin + Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre}),
@@ -179,9 +178,8 @@ TEST_F(PerspectiveTest, IsHiddenBySphere) {
 }
 
 TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
-  Perspective<World, Camera> perspective(
-      RigidTransformation<World, Camera>::Identity(),
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
+                                         /*focal=*/1 * Metre);
 
   Sphere<World> const sphere(
       World::origin + Displacement<World>({0 * Metre, 0 * Metre, 100 * Metre}),
@@ -192,9 +190,8 @@ TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
 }
 
 TEST_F(PerspectiveTest, Output) {
-  Perspective<World, Camera> perspective(
-      RigidTransformation<World, Camera>::Identity(),
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
+                                         /*focal=*/1 * Metre);
   std::cout << perspective << "\n";
 }
 
@@ -209,7 +206,7 @@ class VisibleSegmentsTest : public PerspectiveTest {
             camera_origin_,
             Camera::origin,
             OrthogonalMap<World, Camera>::Identity()),
-        perspective_(world_to_camera_transformation_,
+        perspective_(world_to_camera_transformation_.Forget<Similarity>(),
                      /*focal=*/1 * Metre),
         // The sphere is at the origin and has unit radius.
         sphere_(World::origin,
@@ -500,7 +497,7 @@ TEST_F(VisibleSegmentsTest, BehindCamera) {
   RigidTransformation<World, Camera> world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
   Perspective<World, Camera> const perspective(
-      world_to_camera_transformation,
+      world_to_camera_transformation.Forget<Similarity>(),
       /*focal=*/1.00000001794823179e+00 * Metre);
   Sphere<World> const sphere(
       World::origin + Displacement<World>({-1.35998847769040604e+10 * Metre,
@@ -529,8 +526,9 @@ TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
                                            -1.57980008827209473e+05 * Metre}));
   RigidTransformation<World, Camera> world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera> const perspective(world_to_camera_transformation,
-                                               /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/1 * Metre);
   Sphere<World> const sphere(
       World::origin + Displacement<World>({-1.35998843607365036e+10 * Metre,
                                            +5.00094497194097005e+06 * Metre,
@@ -558,8 +556,9 @@ TEST_F(VisibleSegmentsTest, AnotherHyperbolicIntersection) {
                                            -2.22307361124038696e+05 * Metre}));
   RigidTransformation<World, Camera> world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera> const perspective(world_to_camera_transformation,
-                                               /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/1 * Metre);
   Sphere<World> const sphere(
       World::origin + Displacement<World>({-1.35998825622369633e+10 * Metre,
                                            +2.59904061185893603e+06 * Metre,
@@ -587,8 +586,9 @@ TEST_F(VisibleSegmentsTest, SmallAngle) {
                                            -1.05537869332772680e+04 * Metre});
   RigidTransformation<World, Camera> world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera> const perspective(world_to_camera_transformation,
-                                               /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/1 * Metre);
   Sphere<World> const sphere(
       World::origin + Displacement<World>({+0.00000000000000000e+00 * Metre,
                                            +0.00000000000000000e+00 * Metre,

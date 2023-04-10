@@ -52,6 +52,12 @@ ConformalMap<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
+OrthogonalMap<FromFrame, ToFrame>
+ConformalMap<Scalar, FromFrame, ToFrame>::orthogonal_map¹₁() const {
+  return OrthogonalMap<FromFrame, ToFrame>(quaternion_);
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
 void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<ConformalMap, FromFrame, ToFrame>::WriteToMessage(message);
