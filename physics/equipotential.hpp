@@ -53,6 +53,7 @@ class Equipotential {
   using Line = std::vector<DependentVariables>;
   using Lines = std::vector<Line>;
 
+  // The |characteristic_length| is used in the stopping condition.
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
       not_null<ReferenceFrame<InertialFrame, Frame> const*> reference_frame,
