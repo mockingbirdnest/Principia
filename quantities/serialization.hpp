@@ -29,8 +29,4 @@ using internal::DoubleOrQuantitySerializer;
 }  // namespace quantities
 }  // namespace principia
 
-namespace principia::quantities {
-using namespace principia::quantities::_serialization;
-}  // namespace principia::quantities
-
 #include "quantities/serialization_body.hpp"

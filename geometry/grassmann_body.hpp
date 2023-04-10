@@ -56,7 +56,7 @@ Scalar Multivector<Scalar, Frame, 2>::Norm() const {
 template<typename Scalar, typename Frame>
 Scalar Multivector<Scalar, Frame, 3>::Norm() const {
   // When |Scalar| is double, ADL will not find |Abs|.
-  return quantities::Abs(coordinates_);
+  return Abs(coordinates_);
 }
 
 template<typename Scalar, typename Frame>
@@ -502,7 +502,7 @@ template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector) {
   // This |using| is required for the |Trivector|, whose |DebugString(Scalar)|
   // will not be found by ADL if |Scalar| is |double|.
-  using quantities::DebugString;
+  using quantities::_quantities::DebugString;
   return DebugString(multivector.coordinates());
 }
 

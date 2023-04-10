@@ -57,8 +57,4 @@ using internal::Dimensions;
 }  // namespace quantities
 }  // namespace principia
 
-namespace principia::quantities {
-using namespace principia::quantities::_dimensions;
-}  // namespace principia::quantities
-
 #include "quantities/dimensions_body.hpp"

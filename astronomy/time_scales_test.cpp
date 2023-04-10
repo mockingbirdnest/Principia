@@ -21,6 +21,7 @@ using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_instant;
 using namespace principia::quantities::_astronomy;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
@@ -243,8 +244,7 @@ TEST_F(TimeScalesTest, StretchyRates) {
   EXPECT_NE("1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 150e-10),
             "1961-01-01T00:00:00"_UTC + 1 * Minute / (1 - 130e-10));
 
-  quantities::Time utc_minute;
-  utc_minute = 1 * Minute / (1 - 150e-10);
+  Time utc_minute = 1 * Minute / (1 - 150e-10);
   EXPECT_THAT("1961-01-01T00:00:00"_UTC + utc_minute,
               Eq("1961-01-01T00:01:00"_UTC));
   EXPECT_THAT("1961-12-31T23:59:00"_UTC + utc_minute,

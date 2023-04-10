@@ -28,8 +28,4 @@ using internal::ParseQuantity;
 }  // namespace quantities
 }  // namespace principia
 
-namespace principia::quantities {
-using namespace principia::quantities::_parser;
-}  // namespace principia::quantities
-
 #include "quantities/parser_body.hpp"

@@ -61,7 +61,7 @@ AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T const& expected,
 template<typename T>
 template<typename Dimensions>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    quantities::Quantity<Dimensions> const& actual,
+    Quantity<Dimensions> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {

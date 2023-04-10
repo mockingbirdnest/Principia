@@ -12,6 +12,9 @@ namespace testing_utilities {
 namespace _statistics {
 namespace internal {
 
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
+
 template<typename T>
 T Mean(std::vector<T> const& x) {
   T total{};
@@ -39,7 +42,7 @@ Product<T, U> Covariance(std::vector<T> const& x, std::vector<U> const& y) {
 
 template<typename T>
 T StandardDeviation(std::vector<T> const& x) {
-  return quantities::Sqrt(Variance(x));
+  return Sqrt(Variance(x));
 }
 
 template<typename T, typename U>
@@ -63,9 +66,9 @@ std::string BidimensionalDatasetMathematicaInput(std::vector<T> const& x,
   for (std::size_t i = 0; i < x.size(); ++i) {
     result += "{";
     // We use |DebugString(double const)| in order to get enough digits.
-    result += quantities::DebugString(DoubleValue(x[i]));
+    result += DebugString(DoubleValue(x[i]));
     result += ",";
-    result += quantities::DebugString(DoubleValue(y[i]));
+    result += DebugString(DoubleValue(y[i]));
     result += "}";
     if (i + 1 < x.size()) {
       result += ",\n ";

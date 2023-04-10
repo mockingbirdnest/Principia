@@ -16,6 +16,7 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
@@ -36,22 +37,16 @@ class OrthogonalMapTest : public testing::Test {
   using MirrorSig = Signature<MirrorWorld, DirectWorld>;
 
   OrthogonalMapTest()
-      : direct_vector_(Vector<quantities::Length, DirectWorld>(
-            R3Element<quantities::Length>(
-                1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        direct_bivector_(Bivector<quantities::Length, DirectWorld>(
-            R3Element<quantities::Length>(
-                1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        direct_trivector_(
-            Trivector<quantities::Length, DirectWorld>(4.0 * Metre)),
-        mirror_vector_(Vector<quantities::Length, MirrorWorld>(
-          R3Element<quantities::Length>(
-            1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        mirror_bivector_(Bivector<quantities::Length, MirrorWorld>(
-          R3Element<quantities::Length>(
-            1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
-        mirror_trivector_(
-          Trivector<quantities::Length, MirrorWorld>(4.0 * Metre)),
+      : direct_vector_(Vector<Length, DirectWorld>(
+            R3Element<Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+        direct_bivector_(Bivector<Length, DirectWorld>(
+            R3Element<Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+        direct_trivector_(Trivector<Length, DirectWorld>(4.0 * Metre)),
+        mirror_vector_(Vector<Length, MirrorWorld>(
+            R3Element<Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+        mirror_bivector_(Bivector<Length, MirrorWorld>(
+            R3Element<Length>(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
+        mirror_trivector_(Trivector<Length, MirrorWorld>(4.0 * Metre)),
         orthogonal_a_(MirrorOrth(
             Rot(120 * Degree, Bivector<double, DirectWorld>({1, 1, 1}))
                 .quaternion())),
@@ -62,12 +57,12 @@ class OrthogonalMapTest : public testing::Test {
             Rot(90 * Degree, Bivector<double, DirectWorld>({1, 0, 0}))
                 .quaternion())) {}
 
-  Vector<quantities::Length, DirectWorld> direct_vector_;
-  Bivector<quantities::Length, DirectWorld> direct_bivector_;
-  Trivector<quantities::Length, DirectWorld> direct_trivector_;
-  Vector<quantities::Length, MirrorWorld> mirror_vector_;
-  Bivector<quantities::Length, MirrorWorld> mirror_bivector_;
-  Trivector<quantities::Length, MirrorWorld> mirror_trivector_;
+  Vector<Length, DirectWorld> direct_vector_;
+  Bivector<Length, DirectWorld> direct_bivector_;
+  Trivector<Length, DirectWorld> direct_trivector_;
+  Vector<Length, MirrorWorld> mirror_vector_;
+  Bivector<Length, MirrorWorld> mirror_bivector_;
+  Trivector<Length, MirrorWorld> mirror_trivector_;
   MirrorOrth orthogonal_a_;
   DirectOrth orthogonal_b_;
   MirrorOrth orthogonal_c_;
@@ -83,36 +78,36 @@ TEST_F(OrthogonalMapTest, Identity) {
 
 TEST_F(OrthogonalMapTest, AppliedToVector) {
   EXPECT_THAT(orthogonal_a_(mirror_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(-3.0 * Metre,
-                                                -1.0 * Metre,
-                                                -2.0 * Metre)), 4));
+              AlmostEquals(Vector<Length, DirectWorld>(
+                  R3Element<Length>(-3.0 * Metre,
+                                    -1.0 * Metre,
+                                    -2.0 * Metre)), 4));
   EXPECT_THAT(orthogonal_b_(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(1.0 * Metre,
-                                                -3.0 * Metre,
-                                                2.0 * Metre)), 1, 2));
+              AlmostEquals(Vector<Length, DirectWorld>(
+                  R3Element<Length>(1.0 * Metre,
+                                    -3.0 * Metre,
+                                    2.0 * Metre)), 1, 2));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToBivector) {
   EXPECT_THAT(orthogonal_a_(mirror_bivector_),
-              AlmostEquals(Bivector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(3.0 * Metre,
-                                                1.0 * Metre,
-                                                2.0 * Metre)), 4));
+              AlmostEquals(Bivector<Length, DirectWorld>(
+                  R3Element<Length>(3.0 * Metre,
+                                    1.0 * Metre,
+                                    2.0 * Metre)), 4));
   EXPECT_THAT(orthogonal_b_(direct_bivector_),
-              AlmostEquals(Bivector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(1.0 * Metre,
-                                                -3.0 * Metre,
-                                                2.0 * Metre)), 1, 2));
+              AlmostEquals(Bivector<Length, DirectWorld>(
+                  R3Element<Length>(1.0 * Metre,
+                                    -3.0 * Metre,
+                                    2.0 * Metre)), 1, 2));
 }
 
 TEST_F(OrthogonalMapTest, AppliedToTrivector) {
   EXPECT_THAT(orthogonal_a_(mirror_trivector_),
-              AlmostEquals(Trivector<quantities::Length, DirectWorld>(
+              AlmostEquals(Trivector<Length, DirectWorld>(
                   -4.0 * Metre), 0));
   EXPECT_THAT(orthogonal_b_(direct_trivector_),
-              AlmostEquals(Trivector<quantities::Length, DirectWorld>(
+              AlmostEquals(Trivector<Length, DirectWorld>(
                   4.0 * Metre), 0));
 }
 
@@ -124,24 +119,24 @@ TEST_F(OrthogonalMapTest, Determinant) {
 
 TEST_F(OrthogonalMapTest, Inverse) {
   EXPECT_THAT(orthogonal_a_.Inverse()(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, MirrorWorld>(
-                  R3Element<quantities::Length>(-2.0 * Metre,
-                                                -3.0 * Metre,
-                                                -1.0 * Metre)), 2));
+              AlmostEquals(Vector<Length, MirrorWorld>(
+                  R3Element<Length>(-2.0 * Metre,
+                                    -3.0 * Metre,
+                                    -1.0 * Metre)), 2));
   EXPECT_THAT(orthogonal_b_.Inverse()(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(1.0 * Metre,
-                                                3.0 * Metre,
-                                                -2.0 * Metre)), 1, 2));
+              AlmostEquals(Vector<Length, DirectWorld>(
+                  R3Element<Length>(1.0 * Metre,
+                                    3.0 * Metre,
+                                    -2.0 * Metre)), 1, 2));
 }
 
 TEST_F(OrthogonalMapTest, Composition) {
   DirectOrth const orthogonal_ac = orthogonal_a_ * orthogonal_c_.Inverse();
   EXPECT_THAT(orthogonal_ac(direct_vector_),
-              AlmostEquals(Vector<quantities::Length, DirectWorld>(
-                  R3Element<quantities::Length>(-2.0 * Metre,
-                                                1.0 * Metre,
-                                                3.0 * Metre)), 1, 6));
+              AlmostEquals(Vector<Length, DirectWorld>(
+                  R3Element<Length>(-2.0 * Metre,
+                                    1.0 * Metre,
+                                    3.0 * Metre)), 1, 6));
   EXPECT_TRUE((orthogonal_b_ * orthogonal_a_).Determinant().is_negative());
   EXPECT_TRUE((orthogonal_a_ * orthogonal_c_.Inverse()).
               Determinant().is_positive());

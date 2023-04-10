@@ -12,6 +12,7 @@ namespace internal {
 
 using namespace principia::geometry::_quaternion;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)
@@ -27,7 +28,8 @@ Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Inverse<Scalar>, ToFrame, FromFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
-  return Homothecy<quantities::Inverse<Scalar>, ToFrame, FromFrame>(1 / scale_);
+  return Homothecy<quantities::_named_quantities::Inverse<Scalar>,
+                   ToFrame, FromFrame>(1 / scale_);
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

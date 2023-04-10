@@ -66,7 +66,7 @@ Bivector<AngularMomentum, SystemFrame>
 MechanicalSystem<InertialFrame, SystemFrame>::AngularMomentum() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
       LinearMotion().Inverse();
-  Bivector<quantities::AngularMomentum, SystemFrame> result =
+  Bivector<quantities::_named_quantities::AngularMomentum, SystemFrame> result =
       to_system_frame.orthogonal_map()(sum_of_intrinsic_angular_momenta_);
   for (auto const& [degrees_of_freedom, m] : body_linear_motions_) {
     DegreesOfFreedom<SystemFrame> const degrees_of_freedom_in_system_frame =

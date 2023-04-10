@@ -511,8 +511,8 @@ inline XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum) {
 
 template<typename T>
 Interval ToInterval(geometry::Interval<T> const& interval) {
-  return {interval.min / quantities::si::Unit<T>,
-          interval.max / quantities::si::Unit<T>};
+  return {interval.min / si::Unit<T>,
+          interval.max / si::Unit<T>};
 }
 
 // Ownership is returned to the caller.  Note that the result may own additional

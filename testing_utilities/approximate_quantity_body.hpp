@@ -1,12 +1,13 @@
 #pragma once
 
+#include "testing_utilities/approximate_quantity.hpp"
+
 #include <optional>
 #include <string>
 
 #include "absl/strings/str_replace.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/approximate_quantity.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -46,12 +47,13 @@ double ApproximateQuantity<Quantity<Dimensions>>::UlpDistance(
 
 template<typename Dimensions>
 std::string ApproximateQuantity<Quantity<Dimensions>>::DebugString() const {
+  using quantities::_quantities::DebugString;
   if (has_trivial_unit()) {
     return (negated_ ? "-" : "") + representation_ + "(" +
            std::to_string(ulp_) + ") " + Format<Dimensions>();
   } else {
     return (negated_ ? "-" : "") + representation_ +
-           "(" + std::to_string(ulp_) + ") * " + quantities::DebugString(unit_);
+           "(" + std::to_string(ulp_) + ") * " + DebugString(unit_);
   }
 }
 

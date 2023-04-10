@@ -140,7 +140,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
 
 template<typename Scalar>
 Scalar R3Element<Scalar>::Norm() const {
-  return quantities::Sqrt(Norm²());
+  return Sqrt(Norm²());
 }
 
 template<typename Scalar>

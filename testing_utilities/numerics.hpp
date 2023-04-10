@@ -12,6 +12,8 @@ namespace testing_utilities {
 namespace _numerics {
 namespace internal {
 
+using namespace principia::quantities::_quantities;
+
 template<typename Scalar>
 double DoubleValue(Scalar const& scalar);
 
@@ -28,9 +30,8 @@ double AbsoluteError(double expected, double actual);
 
 // Equivalent to AbsoluteError(expected, actual, &Abs<Dimensions>).
 template<typename Dimensions>
-quantities::Quantity<Dimensions> AbsoluteError(
-    quantities::Quantity<Dimensions> const& expected,
-    quantities::Quantity<Dimensions> const& actual);
+Quantity<Dimensions> AbsoluteError(Quantity<Dimensions> const& expected,
+                                   Quantity<Dimensions> const& actual);
 
 // Uses |R3Element::Norm|.
 template<typename Scalar>
@@ -67,8 +68,8 @@ double RelativeError(double expected, double actual);
 
 // Equivalent to RelativeError(expected, actual, &Abs<Dimensions>).
 template<typename Dimensions>
-double RelativeError(quantities::Quantity<Dimensions> const& expected,
-                     quantities::Quantity<Dimensions> const& actual);
+double RelativeError(Quantity<Dimensions> const& expected,
+                     Quantity<Dimensions> const& actual);
 
 // Uses |R3Element::Norm|.
 template<typename Scalar>
