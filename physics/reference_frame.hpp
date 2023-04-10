@@ -45,9 +45,9 @@ class ReferenceFrame {
   virtual Instant t_min() const = 0;
   virtual Instant t_max() const = 0;
 
-  // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
-  // overriden in derived classes; the default implementation inverts the other
-  // one.
+  // At least one of |ToThisFrameAtTimeSimilarly| and
+  // |FromThisFrameAtTimeSimilarly| must be overriden in derived classes; the
+  // default implementation inverts the other one.
   virtual SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTimeSimilarly(
       Instant const& t) const;
   virtual SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTimeSimilarly(

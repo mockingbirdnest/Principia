@@ -41,8 +41,9 @@ void RandomSegmentsBenchmark(
       camera_origin,
       Camera::origin,
       OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera> const perspective(world_to_camera_transformation,
-                                               /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/1 * Metre);
 
   // The sphere is at the origin and has unit radius.
   Sphere<World> const sphere(World::origin,
@@ -91,8 +92,9 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
       camera_origin,
       Camera::origin,
       OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera> const perspective(world_to_camera_transformation,
-                                               /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/1 * Metre);
 
   // The sphere is at the origin and has unit radius.
   Sphere<World> const sphere(World::origin,
@@ -143,8 +145,9 @@ void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
       camera_origin,
       Camera::origin,
       OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera> const perspective(world_to_camera_transformation,
-                                               /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      world_to_camera_transformation.Forget<Similarity>(),
+      /*focal=*/1 * Metre);
 
   // The first sphere is at the origin and has unit radius.
   std::vector<Sphere<World>> spheres;

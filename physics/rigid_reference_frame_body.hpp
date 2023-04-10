@@ -21,6 +21,20 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>
+SimilarMotion<InertialFrame, ThisFrame>
+RigidReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTimeSimilarly(
+    Instant const& t) const {
+  return ToThisFrameAtTime(t).Forget<SimilarMotion>();
+}
+
+template<typename InertialFrame, typename ThisFrame>
+SimilarMotion<ThisFrame, InertialFrame>
+RigidReferenceFrame<InertialFrame, ThisFrame>::FromThisFrameAtTimeSimilarly(
+    Instant const& t) const {
+  return FromThisFrameAtTime(t).Forget<SimilarMotion>();
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 RigidReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
@@ -107,24 +121,6 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
   SpecificEnergy const centrifugal_potential = -0.5 * (Ω * r / Radian).Norm²();
 
   return gravitational_potential + (linear_potential + centrifugal_potential);
-}
-
-template<typename InertialFrame, typename ThisFrame>
-Rotation<Frenet<ThisFrame>, ThisFrame>
-RigidReferenceFrame<InertialFrame, ThisFrame>::FrenetFrame(
-    Instant const& t,
-    DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const {
-  Velocity<ThisFrame> const& velocity = degrees_of_freedom.velocity();
-  Vector<Acceleration, ThisFrame> const acceleration =
-      GeometricAcceleration(t, degrees_of_freedom);
-  Vector<Acceleration, ThisFrame> const normal_acceleration =
-      acceleration.OrthogonalizationAgainst(velocity);
-  Vector<double, ThisFrame> tangent = Normalize(velocity);
-  Vector<double, ThisFrame> normal = Normalize(normal_acceleration);
-  Bivector<double, ThisFrame> binormal = Wedge(tangent, normal);
-  // Maps |tangent| to {1, 0, 0}, |normal| to {0, 1, 0}, and |binormal| to
-  // {0, 0, 1}.
-  return Rotation<Frenet<ThisFrame>, ThisFrame>(tangent, normal, binormal);
 }
 
 template<typename InertialFrame, typename ThisFrame>

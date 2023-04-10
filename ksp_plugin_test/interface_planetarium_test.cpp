@@ -27,6 +27,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
@@ -57,7 +58,7 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
           Navigation::origin,
           Permutation<World, Navigation>(
               Permutation<World, Navigation>::CoordinatePermutation::YXZ)
-              .Forget<OrthogonalMap>())));
+              .Forget<OrthogonalMap>()).Forget<Similarity>()));
   EXPECT_CALL(*plugin_, NewPlanetarium(_, _, _))
       .WillOnce(Return(ByMove(std::make_unique<MockPlanetarium>())));
 

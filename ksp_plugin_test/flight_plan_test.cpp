@@ -51,6 +51,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
