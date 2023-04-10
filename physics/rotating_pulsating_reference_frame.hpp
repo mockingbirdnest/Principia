@@ -70,7 +70,8 @@ class RotatingPulsatingReferenceFrame
       Frame<struct RotatingTag, Arbitrary, ThisFrame::handedness>;
 
   template<int degree>
-  Derivatives<Length, Instant, degree + 1> r_derivatives(Instant const& t) const;
+  Derivatives<Length, Instant, degree + 1> r_derivatives(
+      Instant const& t) const;
 
 
   SimilarMotion<ThisFrame, RotatingFrame> ToRotatingFrame(
