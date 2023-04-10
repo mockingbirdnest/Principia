@@ -29,6 +29,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -50,6 +51,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -315,7 +317,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const reference_frame(
-      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
+      RotatingPulsatingReferenceFrame<Barycentric, World>(
           ephemeris_.get(), moon, earth));
   auto const r² = [&](Instant const& t) {
     return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
