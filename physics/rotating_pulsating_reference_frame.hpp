@@ -14,7 +14,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_space;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
+using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
@@ -71,7 +71,7 @@ class RotatingPulsatingReferenceFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
   not_null<MassiveBody const*> const secondary_;
-  BodyCentredBodyDirectionReferenceFrame<InertialFrame, RotatingFrame> const
+  BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;
 };
 
