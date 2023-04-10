@@ -51,7 +51,7 @@ template<typename InertialFrame, typename ThisFrame>
 SimilarMotion<InertialFrame, ThisFrame> RotatingPulsatingReferenceFrame<
     InertialFrame,
     ThisFrame>::ToThisFrameAtTimeSimilarly(Instant const& t) const {
-  return ToRotatingFrame(t).Inverse() *
+  return ToRotatingFrame(r_taylor<1>(t)).Inverse() *
          rotating_frame_.ToThisFrameAtTimeSimilarly(t);
 }
 
@@ -61,7 +61,7 @@ Vector<Acceleration, ThisFrame> RotatingPulsatingReferenceFrame<
     ThisFrame>::GeometricAcceleration(Instant const& t,
                                       DegreesOfFreedom<ThisFrame> const&
                                           degrees_of_freedom) const {
-  auto const [r, ṙ, r̈] = r_taylor<2>();
+  auto const [r, ṙ, r̈] = r_taylor<2>(t);
   SimilarMotion<ThisFrame, RotatingFrame> const to_rotating_frame =
       ToRotatingFrame({r, ṙ});
   SimilarMotion<RotatingFrame, ThisFrame> const from_rotating_frame =
@@ -82,7 +82,7 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     RotationFreeGeometricAccelerationAtRest(
         Instant const& t,
         Position<ThisFrame> const& position) const {
-  auto const [r, ṙ, r̈] = r_taylor<2>();
+  auto const [r, ṙ, r̈] = r_taylor<2>(t);
   SimilarMotion<ThisFrame, RotatingFrame> const to_rotating_frame =
       ToRotatingFrame({r, ṙ});
   SimilarMotion<RotatingFrame, ThisFrame> const from_rotating_frame =
@@ -100,7 +100,7 @@ SpecificEnergy
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
     Instant const& t,
     Position<ThisFrame> const& position) const {
-  auto const [r, ṙ, r̈] = r_taylor<2>();
+  auto const [r, ṙ, r̈] = r_taylor<2>(t);
   SimilarMotion<ThisFrame, RotatingFrame> const to_rotating_frame =
       ToRotatingFrame({r, ṙ});
   SimilarMotion<RotatingFrame, ThisFrame> const from_rotating_frame =
@@ -109,7 +109,7 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
       t, to_rotating_frame.similarity()(position));
   Displacement<ThisFrame> qᴾ = position - ThisFrame::origin;
   // See Vᴾ in equation (4.4).
-  return -r̈ * qᴾ.Norm²() / (2 * r) + Vᴿ / Pow<2>(r);
+  return -r̈ * qᴾ.Norm²() / (2 * r) + Vᴿ / Pow<2>(r / (1 * Metre));
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -124,15 +124,15 @@ Derivatives<Length, Instant, degree + 1>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_taylor(
     Instant const& t) const {
   Displacement<InertialFrame> const u =
-      ephemeris_->trajectory(primary_).EvaluatePosition(t) -
-      ephemeris_->trajectory(secondary_).EvaluatePosition(t);
+      ephemeris_->trajectory(primary_)->EvaluatePosition(t) -
+      ephemeris_->trajectory(secondary_)->EvaluatePosition(t);
   Length const r = u.Norm();
   if constexpr (degree == 0) {
     return {r};
   } else {
     Velocity<InertialFrame> const v =
-        ephemeris_->trajectory(primary_).EvaluateVelocity(t) -
-        ephemeris_->trajectory(secondary_).EvaluateVelocity(t);
+        ephemeris_->trajectory(primary_)->EvaluateVelocity(t) -
+        ephemeris_->trajectory(secondary_)->EvaluateVelocity(t);
     Speed const ṙ = InnerProduct(u, v) / r;
     if constexpr (degree == 1) {
       return {r, ṙ};
@@ -156,7 +156,7 @@ auto RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::ToRotatingFrame(
     -> SimilarMotion<ThisFrame, RotatingFrame> {
   auto const& [r, ṙ] = r_taylor_1;
   return SimilarMotion<ThisFrame, RotatingFrame>::DilatationAboutOrigin(
-      Homothecy<double, ThisFrame, RotatingFrame>(r / 1 * Metre), ṙ / r);
+      Homothecy<double, ThisFrame, RotatingFrame>(r / (1 * Metre)), ṙ / r);
 }
 
 }  // namespace internal

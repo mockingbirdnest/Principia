@@ -49,6 +49,7 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_integrato
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
@@ -319,117 +320,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   auto const reference_frame(
       RotatingPulsatingReferenceFrame<Barycentric, World>(
           ephemeris_.get(), moon, earth));
-  auto const r² = [&](Instant const& t) {
-    return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
-            ephemeris_->trajectory(moon)->EvaluatePosition(t))
-        .Norm²();
-  };
-  auto const r = [&](Instant const& t) -> quantities::Length {
-    return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
-            ephemeris_->trajectory(moon)->EvaluatePosition(t))
-        .Norm();
-  };
-  auto const dof_to_world_at_time =
-      [&](Instant const& t,
-          DegreesOfFreedom<Barycentric> const& dof) -> DegreesOfFreedom<World> {
-    auto const earth_dof =
-        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
-    auto const moon_dof =
-        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
-    Displacement<Barycentric> const u =
-        earth_dof.position() - moon_dof.position();
-    Velocity<Barycentric> const v = earth_dof.velocity() - moon_dof.velocity();
-    auto const r = u.Norm();
-    auto const rʹ = InnerProduct(u, v) / r;
-    auto const r² = u.Norm²();
-    auto const rdof = dynamic_frame.ToThisFrameAtTime(t)(dof);
-    return {
-        (rdof.position() - World::origin) / r * (1 * Metre) + World::origin,
-        (rdof.velocity() / r - (rdof.position() - World::origin) * rʹ / r²) *
-            (1 * Metre)};
-  };
-  auto const dof_from_world_at_time =
-      [&](Instant const& t,
-          DegreesOfFreedom<World> const& dof) -> DegreesOfFreedom<Barycentric> {
-    auto const earth_dof =
-        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
-    auto const moon_dof =
-        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
-    auto const d = earth_dof.position() - moon_dof.position();
-    auto const v = earth_dof.velocity() - moon_dof.velocity();
-    auto const r = d.Norm();
-    auto const rʹ = InnerProduct(d, v) / r;
-    auto const r² = d.Norm²();
-    Position<World> rdof_position =
-        (dof.position() - World::origin) / (1 * Metre) * r + World::origin;
-    DegreesOfFreedom<World> const rdof = {
-        rdof_position,
-        (dof.velocity() / (1 * Metre) +
-         (rdof_position - World::origin) * rʹ / r²) *
-            r};
-    return dynamic_frame.FromThisFrameAtTime(t)(rdof);
-  };
-  auto const position_to_world_at_time =
-      [&](Instant const& t, Position<Barycentric> const& q) -> Position<World> {
-    return (dynamic_frame.ToThisFrameAtTime(t).rigid_transformation()(q) -
-            World::origin) /
-               r(t) * (1 * Metre) +
-           World::origin;
-  };
-  auto const position_from_world_at_time =
-      [&](Instant const& t, Position<World> const& q) -> Position<Barycentric> {
-    return dynamic_frame.FromThisFrameAtTime(t).rigid_transformation()(
-        (q - World::origin) / (1 * Metre) * r(t) + World::origin);
-  };
-  auto const potential_at_time =
-      [&](Instant const& t, Position<World> const& q) -> SpecificEnergy {
-    auto const earth_dof =
-        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
-    auto const moon_dof =
-        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
-    Displacement<Barycentric> const u =
-        earth_dof.position() - moon_dof.position();
-    Velocity<Barycentric> const v = earth_dof.velocity() - moon_dof.velocity();
-    Vector<Acceleration, Barycentric> const γ =
-        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(earth, t) -
-        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(moon, t);
-    quantities::Length const r = u.Norm();
-    auto const r² = u.Norm²();
-    quantities::Speed const rʹ = InnerProduct(u, v) / r;
-    Acceleration const rʺ =
-        InnerProduct(u, γ) / r -
-        quantities::Pow<2>(InnerProduct(u, v)) / quantities::Pow<3>(r) +
-        v.Norm²() / r;
-    return (dynamic_frame.GeometricPotential(
-                t, (q - World::origin) / (1 * Metre) * r + World::origin) /
-                r² +
-            ((q - World::origin) / (1 * Metre)).Norm²() * rʺ / (2 * r)) *
-           (1 * quantities::Pow<2>(Metre));
-  };
-  auto const gradient_at_time =
-      [&](Instant const& t,
-          Position<World> const& q) -> Vector<Acceleration, World> {
-    auto const earth_dof =
-        ephemeris_->trajectory(earth)->EvaluateDegreesOfFreedom(t);
-    auto const moon_dof =
-        ephemeris_->trajectory(moon)->EvaluateDegreesOfFreedom(t);
-    Displacement<Barycentric> const u =
-        earth_dof.position() - moon_dof.position();
-    Velocity<Barycentric> const v = earth_dof.velocity() - moon_dof.velocity();
-    Vector<Acceleration, Barycentric> const γ =
-        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(earth, t) -
-        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(moon, t);
-    auto const r = u.Norm();
-    auto const rʹ = InnerProduct(u, v) / r;
-    auto const rʺ =
-        InnerProduct(u, γ) / r -
-        quantities::Pow<2>(InnerProduct(u, v)) / quantities::Pow<3>(r) +
-        v.Norm²() / r;
-    return (dynamic_frame.RotationFreeGeometricAccelerationAtRest(
-                t, (q - World::origin) / (1 * Metre) * r + World::origin) -
-            (q - World::origin) / (1 * Metre) * rʺ) /
-           r * (1 * Metre);
-  };
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
   DegreesOfFreedom<Barycentric> const earth_dof =
@@ -452,8 +342,9 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       .argument_of_periapsis = *moon_elements.argument_of_periapsis + Degree,
       .mean_anomaly = 0 * Degree};
   auto const earth_world_dof =
-      reference_frame.ToThisFrameAtTime(t0_)(earth_dof);
-  auto const moon_world_dof = reference_frame.ToThisFrameAtTime(t0_)(moon_dof);
+      reference_frame.ToThisFrameAtTimeSimilarly(t0_)(earth_dof);
+  auto const moon_world_dof =
+      reference_frame.ToThisFrameAtTimeSimilarly(t0_)(moon_dof);
   Position<World> const q_earth = earth_world_dof.position();
   Position<World> const q_moon = moon_world_dof.position();
   Velocity<World> const v_earth = earth_world_dof.velocity();
@@ -463,7 +354,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       (q_earth - q_moon).Norm() *
           Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
   using MEO = Frame<struct BarycentricTag, Arbitrary>;
-  BodyCentredBodyDirectionDynamicFrame<Barycentric, MEO> meo(
+  BodyCentredBodyDirectionReferenceFrame<Barycentric, MEO> meo(
       ephemeris_.get(), moon, earth);
   // The initial states for three trajectories:
   // [0]: initially stationary in the rotating-pulsating frame near L3;
@@ -471,13 +362,15 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   // [2]: initially stationary in the rotating-pulsating frame at L5;
   // [3]: in an elliptic Earth orbit that reaches 65% of the way to the Moon.
   std::vector<DegreesOfFreedom<Barycentric>> const initial_states{
-      dof_from_world_at_time(t0_,
-                             {q_earth + (q_earth - q_moon), World::unmoving}),
+      reference_frame.FromThisFrameAtTimeSimilarly(t0_)(
+          {q_earth + (q_earth - q_moon), World::unmoving}),
       meo.FromThisFrameAtTime(t0_)(
           {meo.ToThisFrameAtTime(t0_).rigid_transformation()(
-               position_from_world_at_time(t0_, initial_earth_moon_l5)),
+               reference_frame.FromThisFrameAtTimeSimilarly(t0_).similarity()(
+                   initial_earth_moon_l5)),
            MEO::unmoving}),
-      dof_from_world_at_time(t0_, {initial_earth_moon_l5, World::unmoving}),
+      reference_frame.FromThisFrameAtTimeSimilarly(t0_)(
+          {initial_earth_moon_l5, World::unmoving}),
       earth_dof +
           KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
               .StateVectors(t0_)};
@@ -560,10 +453,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
 
     Position<World> const earth_position =
-        reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
+        reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
             ephemeris_->trajectory(earth)->EvaluatePosition(t));
     Position<World> const moon_position =
-        reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
+        reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
             ephemeris_->trajectory(moon)->EvaluatePosition(t));
     for (auto const& arg_maximum : arg_maximorum) {
       maxima.push_back(potential(arg_maximum));
@@ -596,10 +489,17 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         std::pair(moon_position, World::origin + 2 * (moon_position - World::origin)),
         std::pair(arg_approx_l2, 1 - arg_approx_l2)));
     for (int i = 0; i < trajectories.size(); ++i) {
-      DegreesOfFreedom<World> const dof = reference_frame.ToThisFrameAtTime(t)(
-          trajectories[i]->EvaluateDegreesOfFreedom(t));
+      DegreesOfFreedom<World> const dof =
+          reference_frame.ToThisFrameAtTimeSimilarly(t)(
+              trajectories[i]->EvaluateDegreesOfFreedom(t));
       trajectory_positions[i].push_back(dof.position());
     }
+    // TODO(egg): Somehow extract that from the reference frame.
+    auto const r = [&](Instant const& t) -> quantities::Length {
+      return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
+              ephemeris_->trajectory(moon)->EvaluatePosition(t))
+          .Norm();
+    };
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
       all_positions.back().emplace_back();
@@ -650,7 +550,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     world_trajectories.emplace_back();
     for (auto const& [t, dof] : *trajectory) {
       world_trajectories.back().push_back(
-          position_to_world_at_time(t, dof.position()));
+          reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
+              dof.position()));
     }
   }
   logger.Set("trajectories", world_trajectories, mathematica::ExpressIn(Metre));
