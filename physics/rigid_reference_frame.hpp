@@ -42,9 +42,9 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   virtual ~RigidReferenceFrame() = default;
 
   SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTimeSimilarly(
-      Instant const& t) const final override;
+      Instant const& t) const final;
   SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTimeSimilarly(
-      Instant const& t) const final override;
+      Instant const& t) const final;
 
   // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
   // overriden in derived classes; the default implementation inverts the other
