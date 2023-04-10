@@ -291,12 +291,13 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          Perspective<Navigation, Camera>(rigid_transformation,
-                                                          /*focal=*/1 * Metre),
-                          ephemeris.get(),
-                          plotting_frame.get(),
-                          plotting_to_scaled_space_);
+  Planetarium planetarium(
+      parameters,
+      Perspective<Navigation, Camera>(rigid_transformation.Forget<Similarity>(),
+                                      /*focal=*/1 * Metre),
+      ephemeris.get(),
+      plotting_frame.get(),
+      plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory,
                               discrete_trajectory.begin(),
