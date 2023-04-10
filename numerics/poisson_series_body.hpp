@@ -49,7 +49,7 @@ constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 template<typename Value,
          int degree,
          template<typename, typename, int> class Evaluator>
-quantities::Primitive<Value, Time> AngularFrequencyIntegrate(
+Primitive<Value, Time> AngularFrequencyIntegrate(
     AngularFrequency const& ω,
     PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& p,
     PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& q,
@@ -303,14 +303,15 @@ PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::AtOrigin(
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
-PoissonSeries<quantities::Primitive<Value, Time>,
+PoissonSeries<Primitive<Value, Time>,
               aperiodic_degree_ + 1, periodic_degree_ + 1,
               Evaluator>
 PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 Primitive() const {
-  using Result = PoissonSeries<quantities::Primitive<Value, Time>,
-                               aperiodic_degree_ + 1, periodic_degree_ + 1,
-                               Evaluator>;
+  using Result =
+      PoissonSeries<quantities::_named_quantities::Primitive<Value, Time>,
+                    aperiodic_degree_ + 1, periodic_degree_ + 1,
+                    Evaluator>;
   typename Result::AperiodicPolynomial aperiodic = aperiodic_.Primitive();
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(periodic_.size());
@@ -327,11 +328,12 @@ Primitive() const {
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
-quantities::Primitive<Value, Time>
+Primitive<Value, Time>
 PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 Integrate(Instant const& t1,
           Instant const& t2) const {
-  quantities::Primitive<Value, Time> result = aperiodic_.Integrate(t1, t2);
+  quantities::_named_quantities::Primitive<Value, Time> result =
+      aperiodic_.Integrate(t1, t2);
   for (auto const& [ω, polynomials] : periodic_) {
     // This implementation follows [HO09], Theorem 1 and [INO06] equation 4.
     // The trigonometric functions are computed only once as we iterate through
@@ -908,7 +910,7 @@ std::ostream& operator<<(
       if (!is_start_of_output) {
         out << " + ";
       }
-      out <<"(" << polynomials.sin << ") * Sin(" << quantities::DebugString(ω)
+      out <<"(" << polynomials.sin << ") * Sin(" << DebugString(ω)
           << " * (T - " << series.origin_ << "))";
       is_start_of_output = false;
     }
@@ -916,7 +918,7 @@ std::ostream& operator<<(
       if (!is_start_of_output) {
         out << " + ";
       }
-      out << "(" << polynomials.cos << ") * Cos(" << quantities::DebugString(ω)
+      out << "(" << polynomials.cos << ") * Cos(" << DebugString(ω)
           << " * (T - " << series.origin_ << "))";
       is_start_of_output = false;
     }

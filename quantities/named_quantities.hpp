@@ -8,6 +8,8 @@ namespace quantities {
 namespace _named_quantities {
 namespace internal {
 
+using namespace principia::quantities::_quantities;
+
 // The result type of +, -, * and / on arguments of types |Left| and |Right|.
 template<typename Left, typename Right>
 using Sum = decltype(std::declval<Left>() + std::declval<Right>());
@@ -242,7 +244,3 @@ using internal::Wavenumber;
 }  // namespace _named_quantities
 }  // namespace quantities
 }  // namespace principia
-
-namespace principia::quantities {
-using namespace principia::quantities::_named_quantities;
-}  // namespace principia::quantities

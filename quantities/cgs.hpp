@@ -58,7 +58,3 @@ using internal::Stokes;
 }  // namespace _cgs
 }  // namespace quantities
 }  // namespace principia
-
-namespace principia::quantities {
-using namespace principia::quantities::_cgs;
-}  // namespace principia::quantities

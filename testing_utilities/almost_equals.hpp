@@ -22,6 +22,8 @@ namespace testing_utilities {
 namespace _almost_equals {
 namespace internal {
 
+using namespace principia::quantities::_quantities;
+
 template<typename T>
 class AlmostEqualsMatcher;
 
@@ -50,7 +52,7 @@ class AlmostEqualsMatcher final {
                                std::int64_t max_ulps);
 
   template<typename Dimensions>
-  bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
+  bool MatchAndExplain(Quantity<Dimensions> const& actual,
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(double actual,
                        testing::MatchResultListener* listener) const;

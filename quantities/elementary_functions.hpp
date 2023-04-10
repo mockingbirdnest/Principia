@@ -8,6 +8,9 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_named_quantities;
+
 // Equivalent to |std::fma(x, y, z)|.
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
@@ -111,9 +114,5 @@ using internal::UnwindFrom;
 }  // namespace _elementary_functions
 }  // namespace quantities
 }  // namespace principia
-
-namespace principia::quantities {
-using namespace principia::quantities::_elementary_functions;
-}  // namespace principia::quantities
 
 #include "quantities/elementary_functions_body.hpp"

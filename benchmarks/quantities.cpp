@@ -9,6 +9,7 @@ namespace principia {
 namespace quantities {
 
 using namespace principia::benchmarks::_quantities;
+using namespace principia::quantities::_named_quantities;
 
 void BM_DimensionfulDiscreteCosineTransform(benchmark::State& state) {
   std::vector<Momentum> output;

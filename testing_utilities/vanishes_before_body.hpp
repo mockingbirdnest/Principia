@@ -49,7 +49,7 @@ VanishesBeforeMatcher<T>::VanishesBeforeMatcher(T const& reference,
 template<typename T>
 template<typename Dimensions>
 bool VanishesBeforeMatcher<T>::MatchAndExplain(
-    quantities::Quantity<Dimensions> const& actual,
+    Quantity<Dimensions> const& actual,
     testing::MatchResultListener* listener) const {
   std::int64_t const distance =
       ULPDistance(DoubleValue(reference_), DoubleValue(actual + reference_));

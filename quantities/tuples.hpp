@@ -53,8 +53,4 @@ using Derivatives =
 }  // namespace quantities
 }  // namespace principia
 
-namespace principia::quantities {
-using namespace principia::quantities::_tuples;
-}  // namespace principia::quantities
-
 #include "quantities/tuples_body.hpp"

@@ -13,6 +13,8 @@ namespace testing_utilities {
 namespace _vanishes_before {
 namespace internal {
 
+using namespace principia::quantities::_quantities;
+
 template<typename T>
 class VanishesBeforeMatcher;
 
@@ -48,7 +50,7 @@ class VanishesBeforeMatcher final {
                                  std::int64_t max_ulps);
 
   template<typename Dimensions>
-  bool MatchAndExplain(quantities::Quantity<Dimensions> const& actual,
+  bool MatchAndExplain(Quantity<Dimensions> const& actual,
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(double actual,
                        testing::MatchResultListener* listener) const;

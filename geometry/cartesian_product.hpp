@@ -14,6 +14,8 @@ namespace geometry {
 namespace _cartesian_product {
 namespace vector_space {
 
+using namespace principia::quantities::_tuples;
+
 template<typename RTuple>
 constexpr auto operator+(RTuple const& right);
 
@@ -27,14 +29,14 @@ template<typename LTuple, typename RTuple>
 constexpr auto operator-(LTuple const& left, RTuple const& right);
 
 template<typename Scalar, typename Tuple,
-         typename = std::enable_if_t<!quantities::is_tuple_v<Scalar>>,
-         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
+         typename = std::enable_if_t<!is_tuple_v<Scalar>>,
+         typename = std::enable_if_t<is_tuple_v<Tuple>>>
 constexpr auto operator*(Scalar const& left, Tuple const& right);
 
 // The extra typename lifts an ambiguity on the definition.
 template<typename Tuple, typename Scalar,
-         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>,
-         typename = std::enable_if_t<!quantities::is_tuple_v<Scalar>>,
+         typename = std::enable_if_t<is_tuple_v<Tuple>>,
+         typename = std::enable_if_t<!is_tuple_v<Scalar>>,
          typename = void>
 constexpr auto operator*(Tuple const& left, Scalar const& right);
 
@@ -45,10 +47,12 @@ constexpr auto operator/(Tuple const& left, Scalar const& right);
 
 namespace polynomial_ring {
 
+using namespace principia::quantities::_tuples;
+
 // The product assumes that the tuple elements are in the monomial basis.
 template<typename LTuple, typename RTuple,
-         typename = std::enable_if_t<quantities::is_tuple_v<LTuple>>,
-         typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
+         typename = std::enable_if_t<is_tuple_v<LTuple>>,
+         typename = std::enable_if_t<is_tuple_v<RTuple>>>
 constexpr auto operator*(LTuple const& left, RTuple const& right);
 
 template<int exponent, typename Tuple>
@@ -58,9 +62,11 @@ constexpr auto Pow(Tuple const& tuple);
 
 namespace pointwise_inner_product {
 
+using namespace principia::quantities::_tuples;
+
 template<typename LTuple, typename RTuple,
-         typename = std::enable_if_t<quantities::is_tuple_v<LTuple>>,
-         typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
+         typename = std::enable_if_t<is_tuple_v<LTuple>>,
+         typename = std::enable_if_t<is_tuple_v<RTuple>>>
 constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
 }  // namespace pointwise_inner_product

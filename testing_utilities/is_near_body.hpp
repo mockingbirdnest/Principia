@@ -36,7 +36,7 @@ IsNearMatcher<T>::IsNearMatcher(ApproximateQuantity<T> expected)
 template<typename T>
 template<typename Dimensions>
 bool IsNearMatcher<T>::MatchAndExplain(
-    quantities::Quantity<Dimensions> const& actual,
+    Quantity<Dimensions> const& actual,
     testing::MatchResultListener* listener) const {
   bool const match =  expected_.min() <= actual && actual <= expected_.max();
   if (expected_.has_trivial_unit()) {

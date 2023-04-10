@@ -31,8 +31,8 @@ class CartesianProductAdditiveGroup<LTuple, RTuple,
   // specializations for the void case of Apply.
   template<typename L, typename R>
   struct TypesGenerator {
-    using Sum = quantities::Sum<L, R>;
-    using Difference = quantities::Difference<L, R>;
+    using Sum = quantities::_named_quantities::Sum<L, R>;
+    using Difference = quantities::_named_quantities::Difference<L, R>;
   };
   template<typename L>
   struct TypesGenerator<L, void> {
@@ -131,13 +131,13 @@ class CartesianProductVectorSpace<Scalar, Tuple,
                                   std::index_sequence<indices...>> {
  public:
   template<typename L, typename R>
-  using Product = quantities::Product<L, R>;
+  using Product = quantities::_named_quantities::Product<L, R>;
   template<typename T>
   using ScalarLeftProduct = Product<Scalar, T>;
   template<typename T>
   using ScalarRightProduct = Product<T, Scalar>;
   template<typename T>
-  using Quotient = quantities::Quotient<T, Scalar>;
+  using Quotient = quantities::_named_quantities::Quotient<T, Scalar>;
 
   FORCE_INLINE(static constexpr) Apply<ScalarLeftProduct, Tuple> Multiply(
       Scalar const& left,

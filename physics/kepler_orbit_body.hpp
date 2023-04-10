@@ -69,7 +69,7 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
   auto const append = [&result, &first_entry](std::string const& symbol,
                                               auto const& value) {
     result += (first_entry ? "" : ", ") + symbol + " = " +
-              quantities::DebugString(value);
+              quantities::_quantities::DebugString(value);
     first_entry = false;
   };
   auto const append_optional = [&append](std::string const& symbol,

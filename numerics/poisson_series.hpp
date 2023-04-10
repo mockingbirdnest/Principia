@@ -106,13 +106,14 @@ class PoissonSeries {
   PoissonSeries AtOrigin(Instant const& origin) const;
 
   // The constant term of the result is zero.
-  PoissonSeries<quantities::Primitive<Value, Time>,
+  PoissonSeries<Primitive<Value, Time>,
                 aperiodic_degree_ + 1, periodic_degree_ + 1,
                 Evaluator>
   Primitive() const;
 
-  quantities::Primitive<Value, Time> Integrate(Instant const& t1,
-                                               Instant const& t2) const;
+  quantities::_named_quantities::Primitive<Value, Time> Integrate(
+      Instant const& t1,
+      Instant const& t2) const;
 
   template<int aperiodic_wdegree, int periodic_wdegree>
   typename Hilbert<Value>::NormType Norm(
