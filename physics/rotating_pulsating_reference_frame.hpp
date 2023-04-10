@@ -18,6 +18,8 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_tuples;
 
 template<typename InertialFrame, typename ThisFrame>
 class RotatingPulsatingReferenceFrame
@@ -59,8 +61,12 @@ class RotatingPulsatingReferenceFrame
   using RotatingFrame =
       Frame<struct RotatingTag, Arbitrary, ThisFrame::handedness>;
 
+  template<int degree>
+  Derivatives<Length, Instant, degree + 1> r_taylor(Instant const& t) const;
+
+
   SimilarMotion<ThisFrame, RotatingFrame> ToRotatingFrame(
-      Instant const& t) const;
+      Derivatives<Length, Instant, 2> const& r_taylor_1) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;

@@ -89,6 +89,8 @@
     <ClInclude Include="rigid_reference_frame_body.hpp" />
     <ClInclude Include="rotating_body.hpp" />
     <ClInclude Include="rotating_body_body.hpp" />
+    <ClInclude Include="rotating_pulsating_reference_frame.hpp" />
+    <ClInclude Include="rotating_pulsating_reference_frame_body.hpp" />
     <ClInclude Include="similar_motion.hpp" />
     <ClInclude Include="similar_motion_body.hpp" />
     <ClInclude Include="solar_system.hpp" />
