@@ -24,14 +24,14 @@ template<typename InertialFrame, typename ThisFrame>
 SimilarMotion<InertialFrame, ThisFrame>
 RigidReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTimeSimilarly(
     Instant const& t) const {
-  return ToThisFrameAtTime(t).Forget<SimilarMotion>();
+  return ToThisFrameAtTime(t).template Forget<SimilarMotion>();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 SimilarMotion<ThisFrame, InertialFrame>
 RigidReferenceFrame<InertialFrame, ThisFrame>::FromThisFrameAtTimeSimilarly(
     Instant const& t) const {
-  return FromThisFrameAtTime(t).Forget<SimilarMotion>();
+  return FromThisFrameAtTime(t).template Forget<SimilarMotion>();
 }
 
 template<typename InertialFrame, typename ThisFrame>

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -110,3 +111,5 @@ using internal::Frenet;
 }  // namespace principia
 
 #include "physics/reference_frame_body.hpp"
+
+#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_

@@ -1,3 +1,10 @@
+// The files containing the tree of child classes of |ReferenceFrame| must be
+// included in the order of inheritance to avoid circular dependencies.  This
+// class will end up being reincluded as part of the implementation of its
+// parent.
+#ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
+#include "physics/reference_frame.hpp"
+#else
 #ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 
@@ -118,3 +125,4 @@ using namespace principia::physics::_rigid_reference_frame;
 #include "physics/rigid_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
+#endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
