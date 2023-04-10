@@ -109,7 +109,7 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
       t, to_rotating_frame.similarity()(position));
   Displacement<ThisFrame> qᴾ = position - ThisFrame::origin;
   // See Vᴾ in equation (4.4).
-  return -r̈ * qᴾ.Norm²() / (2 * r) + Vᴿ / Pow<2>(r / (1 * Metre));
+  return r̈ * qᴾ.Norm²() / (2 * r) + Vᴿ / Pow<2>(r / (1 * Metre));
 }
 
 template<typename InertialFrame, typename ThisFrame>
