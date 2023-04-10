@@ -20,6 +20,7 @@ namespace internal {
 
 using namespace principia::base::_traits;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::quantities::_elementary_functions;
 
 template<typename FromFrame, typename ToFrame>
 Permutation<FromFrame, ToFrame>::Permutation(
@@ -83,7 +84,7 @@ LinearMap<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Forget() const {
                 is_same_template_v<LinearMap, Rotation>,
                 "Unable to forget permutation");
   Quaternion quaternion;
-  static double const sqrt_half = quantities::Sqrt(0.5);
+  static double const sqrt_half = Sqrt(0.5);
   static std::array<Quaternion, 6> const quaternions = {
       /*XYZ*/ Quaternion(1),
       /*YZX*/ Quaternion(0.5, {-0.5, -0.5, -0.5}),

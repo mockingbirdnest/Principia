@@ -235,8 +235,7 @@ template<typename Argument, typename Tuple, std::size_t... indices>
 constexpr auto
 TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
     Tuple const& tuple) {
-  constexpr auto zero =
-      quantities::Primitive<std::tuple_element_t<0, Tuple>, Argument>{};
+  constexpr auto zero = Primitive<std::tuple_element_t<0, Tuple>, Argument>{};
   return std::make_tuple(
       zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
 }
@@ -473,7 +472,8 @@ PolynomialInMonomialBasis<
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 Derivative() const {
   return PolynomialInMonomialBasis<
-             quantities::Derivative<Value, Argument, order>, Argument,
+             quantities::_named_quantities::Derivative<Value, Argument, order>,
+             Argument,
              degree_ - order, Evaluator>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_),
              origin_);
@@ -487,7 +487,8 @@ PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_,
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 Primitive() const {
   return PolynomialInMonomialBasis<
-             quantities::Primitive<Value, Argument>, Argument,
+             quantities::_named_quantities::Primitive<Value, Argument>,
+             Argument,
              degree_ + 1, Evaluator>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
              origin_);
@@ -496,7 +497,7 @@ Primitive() const {
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 template<typename, typename>
-quantities::Primitive<Value_, Argument_>
+Primitive<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 Integrate(Argument const& argument1,
           Argument const& argument2) const {

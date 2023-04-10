@@ -69,7 +69,7 @@ class MechanicalSystem {
   // angular momenta with respect to their individual centres of mass.  This is
   // not the total angular momentum, to which the linear motions of the bodies
   // with respect to the centre of mass of the system also contribute.
-  Bivector<quantities::AngularMomentum, InertialFrame>
+  Bivector<quantities::_named_quantities::AngularMomentum, InertialFrame>
       sum_of_intrinsic_angular_momenta_;
   // The sum of the inertia tensors of the bodies with respect to their
   // individual centres of mass.  This is not the inertia tensor of the system

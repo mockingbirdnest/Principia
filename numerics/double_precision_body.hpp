@@ -194,7 +194,7 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const & scale,
                                      DoublePrecision<U> const& right) {
 #ifdef _DEBUG
-  double const s = scale / Unit<T>;
+  double const s = scale / si::Unit<T>;
   if (s != 0.0) {
     int exponent;
     double const mantissa = std::frexp(s, &exponent);

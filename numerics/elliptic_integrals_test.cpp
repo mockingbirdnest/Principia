@@ -67,11 +67,11 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         if (mm == 1.0 && i == iend) {
           EXPECT_THAT(mc, AlmostEquals(1.21000'00000'00000'04719e-32, 0));
           EXPECT_THAT(φ, AlmostEquals(1.57079'63267'94896'55800 * Radian, 0));
-          LOG(INFO) << " mc = " << quantities::DebugString(mc, 30) << " φ = "
-                    << quantities::DebugString(φ, 30);
+          LOG(INFO) << " mc = " << DebugString(mc, 30) << " φ = "
+                    << DebugString(φ, 30);
           if (l == 1) {
             EXPECT_THAT(nn, AlmostEquals(9.99755'99999'99999'78023e-1, 0));
-            LOG(INFO) << " n = " << quantities::DebugString(nn, 30);
+            LOG(INFO) << " n = " << DebugString(nn, 30);
           }
         }
 

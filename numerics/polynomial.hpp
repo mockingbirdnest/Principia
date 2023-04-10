@@ -150,13 +150,13 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // The constant term of the result is zero.
   template<typename V = Value,
            typename = std::enable_if_t<is_vector_v<V>>>
-  PolynomialInMonomialBasis<quantities::Primitive<Value, Argument>,
+  PolynomialInMonomialBasis<Primitive<Value, Argument>,
                             Argument, degree_ + 1, Evaluator>
   Primitive() const;
 
   template<typename V = Value,
            typename = std::enable_if_t<is_vector_v<V>>>
-  quantities::Primitive<Value, Argument> Integrate(
+  quantities::_named_quantities::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
       Argument const& argument2) const;
 

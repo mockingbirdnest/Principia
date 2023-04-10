@@ -10,6 +10,7 @@ namespace _conformal_map {
 namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Cube<Scalar> ConformalMap<Scalar, FromFrame, ToFrame>::Determinant() const {
@@ -19,7 +20,8 @@ Cube<Scalar> ConformalMap<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 ConformalMap<Inverse<Scalar>, ToFrame, FromFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::Inverse() const {
-  return ConformalMap<quantities::Inverse<Scalar>, ToFrame, FromFrame>(
+  return ConformalMap<quantities::_named_quantities::Inverse<Scalar>,
+                      ToFrame, FromFrame>(
     1 / scale_, quaternion_.Inverse());
 }
 
