@@ -535,6 +535,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       {1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4};
   private static readonly string[] prediction_length_tolerance_names_ =
       {"1 mm", "1 cm", "10 cm", "1 m", "10 m", "100 m", "1 km", "10 km"};
+  // Keep this consistent with |max_steps_in_prediction| in |plugin.cpp|.
   private static readonly long[] prediction_steps_ = {
       1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
       1 << 18, 1 << 20, 1 << 22, 1 << 24

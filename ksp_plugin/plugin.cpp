@@ -95,6 +95,9 @@ using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;
 
+// Keep this consistent with |prediction_steps_| in |main_window.cs|.
+constexpr std::int64_t max_steps_in_prediction = 1 << 24;
+
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
                Angle const& planetarium_rotation)
@@ -964,7 +967,8 @@ void Plugin::ExtendPredictionForFlightPlan(GUID const& vessel_guid) const {
       auto prediction_adaptive_step_parameters =
           target_vessel.prediction_adaptive_step_parameters();
       prediction_adaptive_step_parameters.set_max_steps(
-          prediction_adaptive_step_parameters.max_steps() * 4);
+          std::min(max_steps_in_prediction,
+                   prediction_adaptive_step_parameters.max_steps() * 4));
       target_vessel.set_prediction_adaptive_step_parameters(
           prediction_adaptive_step_parameters);
     }
