@@ -342,7 +342,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
 
   KeplerianElements<Barycentric> const elements{
       .periapsis_distance = 71'000 * Kilo(Metre),
-      .apoapsis_distance = 0.65 * *moon_elements.periapsis_distance,
+      .apoapsis_distance = 0.65 * moon_elements.periapsis_distance.value(),
       .inclination = moon_elements.inclination,
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = *moon_elements.argument_of_periapsis + Degree,
@@ -359,10 +359,10 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
       Barycentre(std::pair(q_earth, q_moon), std::pair(1, 1)) +
       (q_earth - q_moon).Norm() *
           Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
-  using MEO = Frame<struct BarycentricTag, Arbitrary>;
+  using MEO = Frame<struct MEOTag, Arbitrary>;
   BodyCentredBodyDirectionReferenceFrame<Barycentric, MEO> meo(
       ephemeris_.get(), moon, earth);
-  // The initial states for three trajectories:
+  // The initial states for four trajectories:
   // [0]: initially stationary in the rotating-pulsating frame near L3;
   // [1]: initially stationary in MEO at L5;
   // [2]: initially stationary in the rotating-pulsating frame at L5;
@@ -431,14 +431,15 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
 
   MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
       box, potential, acceleration);
+  constexpr Length characteristic_length = 1 * Nano(Metre);
   Equipotential<Barycentric, World> const equipotential(
       {EmbeddedExplicitRungeKuttaIntegrator<
            DormandPrince1986RK547FC,
            Equipotential<Barycentric, World>::ODE>(),
        /*max_steps=*/1000,
-       /*length_integration_tolerance=*/1 * Nano(Metre)},
+       /*length_integration_tolerance=*/characteristic_length},
       &reference_frame,
-      /*characteristic_length=*/1 * Nano(Metre));
+      characteristic_length);
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
@@ -476,7 +477,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
     logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
 
     double const arg_approx_l1 = numerics::Brent(
-        [&](double x) {
+        [&](double const x) {
           return potential(Barycentre(std::pair(moon_position, earth_position),
                                       std::pair(x, 1 - x)));
         },

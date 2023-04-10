@@ -62,11 +62,11 @@ class RotatingPulsatingReferenceFrame
       Frame<struct RotatingTag, Arbitrary, ThisFrame::handedness>;
 
   template<int degree>
-  Derivatives<Length, Instant, degree + 1> r_taylor(Instant const& t) const;
+  Derivatives<Length, Instant, degree + 1> r_derivatives(Instant const& t) const;
 
 
   SimilarMotion<ThisFrame, RotatingFrame> ToRotatingFrame(
-      Derivatives<Length, Instant, 2> const& r_taylor_1) const;
+      Derivatives<Length, Instant, 2> const& r_derivatives_1) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
