@@ -314,7 +314,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
                              /*make_unique=*/false);
   std::int64_t const number_of_days = 502;
   auto const earth = solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Jupiter));
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const reference_frame(
