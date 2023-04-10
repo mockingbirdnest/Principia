@@ -53,9 +53,10 @@ class Equipotential {
   using Line = std::vector<DependentVariables>;
   using Lines = std::vector<Line>;
 
-  Equipotential(AdaptiveParameters const& adaptive_parameters,
-                not_null<ReferenceFrame<InertialFrame, Frame> const*>
-                    reference_frame);
+  Equipotential(
+      AdaptiveParameters const& adaptive_parameters,
+      not_null<ReferenceFrame<InertialFrame, Frame> const*> reference_frame,
+      Length const& characteristic_length);
 
   // Computes an equipotential line going through the given point.
   Line ComputeLine(Plane<Frame> const& plane,
@@ -116,8 +117,6 @@ class Equipotential {
   static constexpr IndependentVariable const s_final_ =
       Infinity<IndependentVariable>;
   static constexpr IndependentVariableDifference const initial_s_step_ = 1;
-  // TODO(egg): Should be parameterized.
-  static constexpr Length const characteristic_length_ = 1e-9 * Metre;
 
   // TODO(phl): One or both of these values should probably be a parameter.
   static constexpr double β_max_ = 1e6;
@@ -146,6 +145,7 @@ class Equipotential {
 
   AdaptiveParameters const& adaptive_parameters_;
   not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame_;
+  Length const characteristic_length_;
 };
 
 }  // namespace internal

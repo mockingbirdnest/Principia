@@ -83,7 +83,7 @@ class EquipotentialTest : public ::testing::Test {
                 DormandPrince1986RK547FC,
                 Equipotential<Barycentric, World>::ODE>(),
             /*max_steps=*/1000,
-            /*length_integration_tolerance=*/1 * Nano(Metre)) {}
+            /*length_integration_tolerance=*/1 * Metre) {}
 
   Position<World> ComputePositionInWorld(
       Instant const& t,
@@ -128,7 +128,9 @@ class EquipotentialTest : public ::testing::Test {
       SolarSystemFactory::Index const body,
       std::string_view const suffix = "") {
     Equipotential<Barycentric, World> const equipotential(
-        equipotential_parameters_, &reference_frame);
+        equipotential_parameters_,
+        &reference_frame,
+        /*characteristic_length=*/1 * Metre);
     std::string const name = SolarSystemFactory::name(body);
 
     CHECK_OK(ephemeris_->Prolong(t));
@@ -161,7 +163,9 @@ class EquipotentialTest : public ::testing::Test {
           Position<World> const& l4,
           Position<World> const& l5)> const& get_line_parameters) {
     Equipotential<Barycentric, World> const equipotential(
-        equipotential_parameters_, &reference_frame);
+        equipotential_parameters_,
+        &reference_frame,
+        /*characteristic_length=*/1 * Metre);
     auto const plane =
         Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
@@ -215,7 +219,9 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
           solar_system_->massive_body(
               *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Sun))));
   Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_, &reference_frame);
+      equipotential_parameters_,
+      &reference_frame,
+      /*characteristic_length=*/1 * Metre);
 
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({2, 3, -5}));
@@ -309,8 +315,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
       });
 }
 
-TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
+TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
+  mathematica::Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
                              /*make_unique=*/false);
   std::int64_t const number_of_days = 502;
   auto const earth = solar_system_->massive_body(
@@ -427,7 +433,13 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
       box, potential, acceleration);
   Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_, &reference_frame);
+      {EmbeddedExplicitRungeKuttaIntegrator<
+           DormandPrince1986RK547FC,
+           Equipotential<Barycentric, World>::ODE>(),
+       /*max_steps=*/1000,
+       /*length_integration_tolerance=*/1 * Nano(Metre)},
+      &reference_frame,
+      /*characteristic_length=*/1 * Nano(Metre));
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
