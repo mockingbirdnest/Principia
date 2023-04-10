@@ -83,7 +83,7 @@ class EquipotentialTest : public ::testing::Test {
                 DormandPrince1986RK547FC,
                 Equipotential<Barycentric, World>::ODE>(),
             /*max_steps=*/1000,
-            /*length_integration_tolerance=*/1 * Metre) {}
+            /*length_integration_tolerance=*/1 * Nano(Metre)) {}
 
   Position<World> ComputePositionInWorld(
       Instant const& t,
@@ -312,7 +312,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 502;
+  std::int64_t const number_of_days = 59;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(

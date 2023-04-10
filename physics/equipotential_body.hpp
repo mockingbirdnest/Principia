@@ -223,7 +223,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Position<Frame> const& peak = peaks[i];
     // Ignore |peak| if it is below |energy|.
     if (reference_frame_->GeometricPotential(t, peak) < energy) {
-      LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
+      //LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
       continue;
     }
     //LOG(ERROR) << "Delineating peak " << i;
@@ -245,8 +245,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             energy) {
           // TODO(phl): This happens when we find the peak at the centre of the
           // Earth.
-          LOG(ERROR) << "well " << *expected_delineated_well - wells.begin()
-                     << " is weird";
+          //LOG(ERROR) << "well " << *expected_delineated_well - wells.begin()
+          //           << " is weird";
           peak_delineations[i].indistinct_wells.erase(
               *expected_delineated_well);
           continue;
@@ -272,7 +272,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         if (reference_frame_->GeometricPotential(t, far_away) >= energy) {
           // TODO(phl): This happens when we find the peak at the centre of the
           // Earth.
-          LOG(ERROR) << "far away point is weird";
+          //LOG(ERROR) << "far away point is weird";
           peak_delineations[i].delineated_from_infinity = true;
           continue;
         }
@@ -326,14 +326,14 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
           if (expected_delineated_well.has_value() &&
               peak_delineations[i].indistinct_wells.contains(
                   *expected_delineated_well)) {
-            LOG(ERROR) << "Failed to delineate peak " << i << " from well "
-                       << *expected_delineated_well - wells.begin();
+            //LOG(ERROR) << "Failed to delineate peak " << i << " from well "
+                       //<< *expected_delineated_well - wells.begin();
             peak_delineations[i].indistinct_wells.erase(
                 *expected_delineated_well);
           }
           if (expect_delineation_from_infinity &&
               !peak_delineations[i].delineated_from_infinity) {
-            LOG(ERROR) << "Failed to delineate peak " << i << " from infinity";
+            //LOG(ERROR) << "Failed to delineate peak " << i << " from infinity";
             peak_delineations[i].delineated_from_infinity = true;
           }
         }
