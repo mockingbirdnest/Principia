@@ -26,14 +26,6 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 
-// The Frenet frame of a free fall trajectory in |Frame|.
-// TODO(egg): this should actually depend on its template parameter somehow.
-template<typename Frame>
-using Frenet = geometry::Frame<serialization::Frame::PhysicsTag,
-                               Arbitrary,
-                               Handedness::Right,
-                               serialization::Frame::FRENET>;
-
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
 template<typename InertialFrame, typename ThisFrame>
@@ -114,7 +106,6 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
 }  // namespace internal
 
 using internal::RigidReferenceFrame;
-using internal::Frenet;
 
 }  // namespace _rigid_reference_frame
 }  // namespace physics
