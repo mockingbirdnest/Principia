@@ -27,6 +27,7 @@ using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
 using ::testing::ValuesIn;
+using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT

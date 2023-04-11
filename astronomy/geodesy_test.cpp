@@ -21,6 +21,7 @@ namespace astronomy {
 using ::testing::AnyOf;
 using ::testing::Eq;
 using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_bundle;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
