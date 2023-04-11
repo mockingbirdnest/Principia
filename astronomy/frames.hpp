@@ -152,7 +152,3 @@ using internal::TerrestrialIntermediateReferenceSystem;
 }  // namespace _frames
 }  // namespace astronomy
 }  // namespace principia
-
-namespace principia::astronomy {
-using namespace principia::astronomy::_frames;
-}  // namespace principia::astronomy

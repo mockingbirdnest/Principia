@@ -221,8 +221,4 @@ using internal::OrbitalElements;
 }  // namespace astronomy
 }  // namespace principia
 
-namespace principia::astronomy {
-using namespace principia::astronomy::_orbital_elements;
-}  // namespace principia::astronomy
-
 #include "astronomy/orbital_elements_body.hpp"

@@ -43,7 +43,3 @@ using internal::MercuryOrbiterInitialTime;
 }  // namespace _mercury_orbiter
 }  // namespace astronomy
 }  // namespace principia
-
-namespace principia::astronomy {
-using namespace principia::astronomy::_mercury_orbiter;
-}  // namespace principia::astronomy

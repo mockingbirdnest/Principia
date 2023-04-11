@@ -28,7 +28,3 @@ using internal::KSPStockSystemFingerprints;
 }  // namespace _solar_system_fingerprints
 }  // namespace astronomy
 }  // namespace principia
-
-namespace principia::astronomy {
-using namespace principia::astronomy::_solar_system_fingerprints;
-}  // namespace principia::astronomy

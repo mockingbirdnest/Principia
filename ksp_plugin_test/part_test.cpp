@@ -13,6 +13,7 @@ namespace ksp_plugin {
 
 using ::testing::_;
 using ::testing::MockFunction;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::geometry::_grassmann;
@@ -43,7 +44,7 @@ class PartTest : public testing::Test {
               /*deletion_callback=*/nullptr) {
     part_.apply_intrinsic_force(intrinsic_force_);
     part_.AppendToHistory(
-        astronomy::J2000,
+        J2000,
         {Barycentric::origin +
              Displacement<Barycentric>({11 * Metre, 22 * Metre, 33 * Metre}),
          Velocity<Barycentric>(

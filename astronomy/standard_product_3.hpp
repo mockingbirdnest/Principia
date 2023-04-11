@@ -17,6 +17,7 @@ namespace astronomy {
 namespace _standard_product_3 {
 namespace internal {
 
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
@@ -163,7 +164,3 @@ using internal::StandardProduct3;
 }  // namespace _standard_product_3
 }  // namespace astronomy
 }  // namespace principia
-
-namespace principia::astronomy {
-using namespace principia::astronomy::_standard_product_3;
-}  // namespace principia::astronomy

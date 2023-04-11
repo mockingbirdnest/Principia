@@ -45,6 +45,8 @@ namespace astronomy {
 using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_graveyard;

@@ -42,6 +42,7 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -585,7 +586,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Ephemeris<Barycentric> ephemeris{
       std::move(bodies),
       initial_state,
-      /*initial_time=*/astronomy::J2000,
+      /*initial_time=*/J2000,
       /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters{
@@ -609,7 +610,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
       /*speed_integration_tolerance=*/1 * Micro(Metre) / Second};
 
   EXPECT_CALL(deletion_callback_, Call()).Times(1);
-  TestablePileUp pile_up({&p1_}, astronomy::J2000,
+  TestablePileUp pile_up({&p1_}, J2000,
                          DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
@@ -617,7 +618,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   Velocity<Barycentric> const old_velocity =
       p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity();
 
-  EXPECT_OK(pile_up.AdvanceTime(astronomy::J2000 + 1.5 * fixed_step));
+  EXPECT_OK(pile_up.AdvanceTime(J2000 + 1.5 * fixed_step));
   pile_up.NudgeParts();
   EXPECT_THAT(
       p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity(),
@@ -628,7 +629,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
                                              504 * Metre / Pow<2>(Second)}};
   p1_.apply_intrinsic_force(p1_.mass() * a);
   pile_up.RecomputeFromParts();
-  EXPECT_OK(pile_up.AdvanceTime(astronomy::J2000 + 2 * fixed_step));
+  EXPECT_OK(pile_up.AdvanceTime(J2000 + 2 * fixed_step));
   pile_up.NudgeParts();
   EXPECT_THAT(
       p1_.rigid_motion()({RigidPart::origin, RigidPart::unmoving}).velocity(),
@@ -643,7 +644,7 @@ TEST_F(PileUpTest, Serialization) {
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
-                         astronomy::J2000,
+                         J2000,
                          DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
@@ -689,7 +690,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
-                         astronomy::J2000,
+                         J2000,
                          DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
@@ -729,7 +730,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
           Return(absl::OkStatus())));
-  EXPECT_OK(p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second));
+  EXPECT_OK(p->DeformAndAdvanceTime(J2000 + 1 * Second));
 }
 
 }  // namespace ksp_plugin

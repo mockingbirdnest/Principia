@@ -497,9 +497,8 @@ std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
 }
 
 template<typename OptionalExpressIn>
-std::string ToMathematica(
-    astronomy::OrbitalElements::EquinoctialElements const& elements,
-    OptionalExpressIn express_in) {
+std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
+                          OptionalExpressIn express_in) {
   return ToMathematica(std::make_tuple((elements.t - J2000),
                                        elements.a,
                                        elements.h,

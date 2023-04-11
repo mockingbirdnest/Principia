@@ -9,6 +9,7 @@
 namespace principia {
 namespace ksp_plugin {
 
+using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_celestial;
@@ -24,7 +25,7 @@ class CelestialTest : public testing::Test {
               RotatingBody<Barycentric>::Parameters(
                   /*mean_radius=*/1 * Metre,
                   /*reference_angle=*/0 * Degree,
-                  /*reference_instant=*/astronomy::J2000,
+                  /*reference_instant=*/J2000,
                   /*angular_frequency=*/1 * Radian / Second,
                   /*right_ascension_of_pole=*/0 * Degree,
                   /*declination_of_pole=*/90 * Degree)),

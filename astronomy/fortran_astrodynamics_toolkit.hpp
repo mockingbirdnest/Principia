@@ -61,8 +61,4 @@ using internal::ComputeGravityAccelerationLear;
 }  // namespace astronomy
 }  // namespace principia
 
-namespace principia::astronomy {
-using namespace principia::astronomy::_fortran_astrodynamics_toolkit;
-}  // namespace principia::astronomy
-
 #include "astronomy/fortran_astrodynamics_toolkit_body.hpp"

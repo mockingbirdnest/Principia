@@ -40,6 +40,7 @@ namespace principia {
 namespace physics {
 
 using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_frame;
@@ -102,7 +103,7 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
         SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt",
         /*ignore_frame=*/true);
-    astronomy::StabilizeKSP(*at_origin);
+    StabilizeKSP(*at_origin);
     Instant const final_time = at_origin->epoch() + 100 * JulianYear;
     auto const ephemeris = at_origin->MakeEphemeris(
         /*accuracy_parameters=*/{FittingTolerance(state.range(0)),

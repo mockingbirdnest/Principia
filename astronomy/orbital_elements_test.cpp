@@ -26,7 +26,9 @@ namespace astronomy {
 
 using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
+using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_orbital_elements;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;

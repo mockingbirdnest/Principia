@@ -14,6 +14,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::base::_not_null;
 using namespace principia::physics::_rotating_body;

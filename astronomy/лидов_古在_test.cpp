@@ -22,6 +22,10 @@ namespace principia {
 namespace astronomy {
 
 using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_mercury_orbiter;
+using namespace principia::astronomy::_orbital_elements;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;

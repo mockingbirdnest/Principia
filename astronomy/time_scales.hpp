@@ -109,8 +109,4 @@ using internal::operator""_UTC;
 }  // namespace astronomy
 }  // namespace principia
 
-namespace principia::astronomy {
-using namespace principia::astronomy::_time_scales;
-}  // namespace principia::astronomy
-
 #include "astronomy/time_scales_body.hpp"
