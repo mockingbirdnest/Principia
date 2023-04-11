@@ -33,6 +33,7 @@ namespace mathematica {
 namespace _retrobop_dynamical_stability {
 namespace internal {
 
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_array;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
@@ -137,7 +138,7 @@ HierarchicalSystem<Barycentric>::BarycentricSystem MakeStabilizedKSPSystem() {
     auto* const system = new physics::SolarSystem<Barycentric>(
         SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
-    astronomy::StabilizeKSP(*system);
+    StabilizeKSP(*system);
     return system;
   }();
   return system.MakeHierarchicalSystem()->ConsumeBarycentricSystem();

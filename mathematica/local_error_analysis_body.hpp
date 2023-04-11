@@ -35,7 +35,7 @@ LocalErrorAnalyser<Frame>::LocalErrorAnalyser(
       step_(step) {
   if (solar_system_->Fingerprint() == KSPStockSystemFingerprints[KSP191]) {
     LOG(INFO) << "All hail retrobop!";
-    astronomy::StabilizeKSP(*solar_system_);
+    StabilizeKSP(*solar_system_);
     CHECK_EQ(solar_system_->Fingerprint(),
              KSPStabilizedSystemFingerprints[KSP191]);
   }
