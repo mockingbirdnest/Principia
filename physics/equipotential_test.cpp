@@ -29,6 +29,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -48,8 +49,10 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_integrato
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -125,7 +128,9 @@ class EquipotentialTest : public ::testing::Test {
       SolarSystemFactory::Index const body,
       std::string_view const suffix = "") {
     Equipotential<Barycentric, World> const equipotential(
-        equipotential_parameters_, &reference_frame);
+        equipotential_parameters_,
+        &reference_frame,
+        /*characteristic_length=*/1 * Metre);
     std::string const name = SolarSystemFactory::name(body);
 
     CHECK_OK(ephemeris_->Prolong(t));
@@ -158,7 +163,9 @@ class EquipotentialTest : public ::testing::Test {
           Position<World> const& l4,
           Position<World> const& l5)> const& get_line_parameters) {
     Equipotential<Barycentric, World> const equipotential(
-        equipotential_parameters_, &reference_frame);
+        equipotential_parameters_,
+        &reference_frame,
+        /*characteristic_length=*/1 * Metre);
     auto const plane =
         Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
@@ -212,7 +219,9 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
           solar_system_->massive_body(
               *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Sun))));
   Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_, &reference_frame);
+      equipotential_parameters_,
+      &reference_frame,
+      /*characteristic_length=*/1 * Metre);
 
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({2, 3, -5}));
@@ -306,16 +315,16 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
       });
 }
 
-TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_global.wl",
+TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
+  mathematica::Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
                              /*make_unique=*/false);
-  std::int64_t const number_of_days = 100;
+  std::int64_t const number_of_days = 502;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
   auto const reference_frame(
-      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
+      RotatingPulsatingReferenceFrame<Barycentric, World>(
           ephemeris_.get(), moon, earth));
   CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
 
@@ -332,15 +341,16 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       moon_orbit.elements_at_epoch();
 
   KeplerianElements<Barycentric> const elements{
-      .periapsis_distance = 7000 * Kilo(Metre),
-      .apoapsis_distance = 0.8 * *moon_elements.periapsis_distance,
+      .periapsis_distance = 71'000 * Kilo(Metre),
+      .apoapsis_distance = 0.65 * moon_elements.periapsis_distance.value(),
       .inclination = moon_elements.inclination,
       .longitude_of_ascending_node = moon_elements.longitude_of_ascending_node,
       .argument_of_periapsis = *moon_elements.argument_of_periapsis + Degree,
       .mean_anomaly = 0 * Degree};
   auto const earth_world_dof =
-      reference_frame.ToThisFrameAtTime(t0_)(earth_dof);
-  auto const moon_world_dof = reference_frame.ToThisFrameAtTime(t0_)(moon_dof);
+      reference_frame.ToThisFrameAtTimeSimilarly(t0_)(earth_dof);
+  auto const moon_world_dof =
+      reference_frame.ToThisFrameAtTimeSimilarly(t0_)(moon_dof);
   Position<World> const q_earth = earth_world_dof.position();
   Position<World> const q_moon = moon_world_dof.position();
   Velocity<World> const v_earth = earth_world_dof.velocity();
@@ -349,21 +359,24 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
       Barycentre(std::pair(q_earth, q_moon), std::pair(1, 1)) +
       (q_earth - q_moon).Norm() *
           Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
-  // The initial states for three trajectories:
-  // [0]: initially stationary in |reference_frame| at L5;
-  // [1]: initially stationary in the rotating-pulsating frame at L5;
-  // [2]: in an elliptic Earth orbit that reaches 80% of the way to the Moon.
+  using MEO = Frame<struct MEOTag, Arbitrary>;
+  BodyCentredBodyDirectionReferenceFrame<Barycentric, MEO> meo(
+      ephemeris_.get(), moon, earth);
+  // The initial states for four trajectories:
+  // [0]: initially stationary in the rotating-pulsating frame near L3;
+  // [1]: initially stationary in MEO at L5;
+  // [2]: initially stationary in the rotating-pulsating frame at L5;
+  // [3]: in an elliptic Earth orbit that reaches 65% of the way to the Moon.
   std::vector<DegreesOfFreedom<Barycentric>> const initial_states{
-      reference_frame.FromThisFrameAtTime(t0_)(
-          {q_moon + 2 * (q_earth - q_moon), World::unmoving}),
-      reference_frame.FromThisFrameAtTime(t0_)(
+      reference_frame.FromThisFrameAtTimeSimilarly(t0_)(
+          {q_earth + (q_earth - q_moon), World::unmoving}),
+      meo.FromThisFrameAtTime(t0_)(
+          {meo.ToThisFrameAtTime(t0_).rigid_transformation()(
+               reference_frame.FromThisFrameAtTimeSimilarly(t0_).similarity()(
+                   initial_earth_moon_l5)),
+           MEO::unmoving}),
+      reference_frame.FromThisFrameAtTimeSimilarly(t0_)(
           {initial_earth_moon_l5, World::unmoving}),
-      reference_frame.FromThisFrameAtTime(t0_)(
-          {initial_earth_moon_l5,
-           Barycentre(std::pair(v_earth, v_moon), std::pair(1, 1)) +
-               InnerProduct(q_earth - q_moon, v_earth - v_moon) /
-                   (q_earth - q_moon).Norm() *
-                   Vector<double, World>({0, quantities::Sqrt(3) / 2, 0})}),
       earth_dof +
           KeplerOrbit<Barycentric>(*earth, MasslessBody{}, elements, t0_)
               .StateVectors(t0_)};
@@ -388,8 +401,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
               Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*step=*/10 * Second));
 
+  LOG(ERROR) << "Flowing trajectories";
   CHECK_OK(
       ephemeris_->FlowWithFixedStep(t0_ + number_of_days * Day, *instance));
+  LOG(ERROR) << "Flowed";
 
   Instant t = t0_;
   auto const potential = [&reference_frame,
@@ -407,17 +422,24 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
   };
   const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box = {
       .centre = World::origin,
-      .vertices = {Displacement<World>({1'000'000 * Kilo(Metre),
+      .vertices = {Displacement<World>({3 * Metre,
                                         0 * Metre,
                                         0 * Metre}),
                    Displacement<World>({0 * Metre,
-                                        1'000'000 * Kilo(Metre),
+                                        3 * Metre,
                                         0 * Metre})}};
 
   MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
       box, potential, acceleration);
+  constexpr Length characteristic_length = 1 * Nano(Metre);
   Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_, &reference_frame);
+      {EmbeddedExplicitRungeKuttaIntegrator<
+           DormandPrince1986RK547FC,
+           Equipotential<Barycentric, World>::ODE>(),
+       /*max_steps=*/1000,
+       /*length_integration_tolerance=*/characteristic_length},
+      &reference_frame,
+      characteristic_length);
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
@@ -437,16 +459,16 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     auto const arg_maximorum = optimizer.FindGlobalMaxima(
         /*points_per_round=*/1000,
         /*number_of_rounds=*/std::nullopt,
-        /*local_search_tolerance=*/10'000 * Kilo(Metre));
+        /*local_search_tolerance=*/1e-3 * Metre);
     logger.Append("argMaximorum", arg_maximorum, mathematica::ExpressIn(Metre));
     std::vector<SpecificEnergy> maxima;
     SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
 
     Position<World> const earth_position =
-        reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
+        reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
             ephemeris_->trajectory(earth)->EvaluatePosition(t));
     Position<World> const moon_position =
-        reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
+        reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
             ephemeris_->trajectory(moon)->EvaluatePosition(t));
     for (auto const& arg_maximum : arg_maximorum) {
       maxima.push_back(potential(arg_maximum));
@@ -455,9 +477,19 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
 
     double const arg_approx_l1 = numerics::Brent(
-        [&](double x) {
+        [&](double const x) {
           return potential(Barycentre(std::pair(moon_position, earth_position),
                                       std::pair(x, 1 - x)));
+        },
+        0.0,
+        1.0,
+        std::greater<>{});
+    double const arg_approx_l2 = numerics::Brent(
+        [&](double x) {
+          return potential(Barycentre(
+              std::pair(moon_position,
+                        World::origin + 2 * (moon_position - World::origin)),
+              std::pair(x, 1 - x)));
         },
         0.0,
         1.0,
@@ -465,12 +497,22 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
     SpecificEnergy const approx_l1_energy =
         potential(Barycentre(std::pair(moon_position, earth_position),
                              std::pair(arg_approx_l1, 1 - arg_approx_l1)));
-
+    SpecificEnergy const approx_l2_energy = potential(Barycentre(
+        std::pair(moon_position,
+                  World::origin + 2 * (moon_position - World::origin)),
+        std::pair(arg_approx_l2, 1 - arg_approx_l2)));
     for (int i = 0; i < trajectories.size(); ++i) {
-      DegreesOfFreedom<World> const dof = reference_frame.ToThisFrameAtTime(t)(
-          trajectories[i]->EvaluateDegreesOfFreedom(t));
+      DegreesOfFreedom<World> const dof =
+          reference_frame.ToThisFrameAtTimeSimilarly(t)(
+              trajectories[i]->EvaluateDegreesOfFreedom(t));
       trajectory_positions[i].push_back(dof.position());
     }
+    // TODO(egg): Somehow extract that from the reference frame.
+    auto const r = [&](Instant const& t) -> quantities::Length {
+      return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
+              ephemeris_->trajectory(moon)->EvaluatePosition(t))
+          .Norm();
+    };
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
       all_positions.back().emplace_back();
@@ -480,11 +522,10 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
           plane,
           t,
           arg_maximorum,
-          {{moon_position, moon->min_radius()},
-           {earth_position, earth->min_radius()}},
+          {{moon_position, moon->min_radius() / r(t) * (1 * Metre)},
+           {earth_position, earth->min_radius() / r(t) * (1 * Metre)}},
           [](Position<World> q) {
-            return World::origin +
-                   Normalize(q - World::origin) * 2'000'000 * Kilo(Metre);
+            return World::origin + Normalize(q - World::origin) * 3 * Metre;
           },
           energy);
       for (auto const& line : lines) {
@@ -497,31 +538,36 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_GlobalOptimization) {
         }
       }
     }
+    auto const& lines = equipotential.ComputeLines(
+        plane,
+        t,
+        arg_maximorum,
+        {{moon_position, moon->min_radius() / r(t) * (1 * Metre)},
+         {earth_position, earth->min_radius() / r(t) * (1 * Metre)}},
+        [](Position<World> q) {
+          return World::origin + Normalize(q - World::origin) * 3 * Metre;
+        },
+        approx_l2_energy);
+    for (auto const& line : lines) {
+      all_positions.back().back().emplace_back();
+      all_βs.back().back().emplace_back();
+      for (auto const& state : line) {
+        auto const& [position, β] = state;
+        all_positions.back().back().back().push_back(position);
+        all_βs.back().back().back().push_back(β);
+      }
+    }
   }
   std::vector<std::vector<Position<World>>> world_trajectories;
   for (auto const& trajectory : trajectories) {
     world_trajectories.emplace_back();
     for (auto const& [t, dof] : *trajectory) {
       world_trajectories.back().push_back(
-          reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
+          reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
               dof.position()));
     }
   }
-  std::vector<std::vector<Vector<double, World>>> pulsating_trajectories;
-  for (auto const& trajectory : trajectories) {
-    pulsating_trajectories.emplace_back();
-    for (auto const& [t, dof] : *trajectory) {
-      pulsating_trajectories.back().push_back(
-          (reference_frame.ToThisFrameAtTime(t).rigid_transformation()(
-               dof.position()) -
-           World::origin) /
-          (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
-           ephemeris_->trajectory(moon)->EvaluatePosition(t))
-              .Norm());
-    }
-  }
   logger.Set("trajectories", world_trajectories, mathematica::ExpressIn(Metre));
-  logger.Set("pulsatingTrajectories", pulsating_trajectories);
   logger.Set("trajectoryPositions",
              trajectory_positions,
              mathematica::ExpressIn(Metre));

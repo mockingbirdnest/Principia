@@ -42,9 +42,11 @@ constexpr double energy_tolerance = 0x1p-24;
 template<typename InertialFrame, typename Frame>
 Equipotential<InertialFrame, Frame>::Equipotential(
     AdaptiveParameters const& adaptive_parameters,
-    not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame)
+    not_null<ReferenceFrame<InertialFrame, Frame> const*> const reference_frame,
+    Length const& characteristic_length)
     : adaptive_parameters_(adaptive_parameters),
-      reference_frame_(reference_frame) {}
+      reference_frame_(reference_frame),
+      characteristic_length_(characteristic_length) {}
 
 template<typename InertialFrame, typename Frame>
 auto Equipotential<InertialFrame, Frame>::ComputeLine(
@@ -221,20 +223,18 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
+
     // Ignore |peak| if it is below |energy|.
     if (reference_frame_->GeometricPotential(t, peak) < energy) {
-      LOG(ERROR) << "Ignoring peak " << i << " which is below energy";
       continue;
     }
-    LOG(ERROR) << "Delineating peak " << i;
+
     while (!delineation.indistinct_wells.empty() ||
            !delineation.delineated_from_infinity) {
       std::optional<WellIterator> expected_delineated_well;
       bool expect_delineation_from_infinity = false;
       if (!delineation.indistinct_wells.empty()) {
         // Try to delineate |peak| from the first of its |indistinct_wells|.
-        LOG(ERROR) << delineation.indistinct_wells.size()
-                   << " wells to delineate";
         expected_delineated_well = *delineation.indistinct_wells.begin();
         Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
@@ -243,14 +243,19 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
                 Barycentre(std::pair(peak, well.position),
                            std::pair(well.radius, r - well.radius))) >=
             energy) {
+          // The point at the edge of the well in the direction of the peak is
+          // above the energy; this should not happen (the edge of the well
+          // should be close enough to the singularity to be below any
+          // interesting energy).
+          // Give up on separating the peak from the well.
           // TODO(phl): This happens when we find the peak at the centre of the
           // Earth.
-          LOG(ERROR) << "well " << *expected_delineated_well - wells.begin()
-                     << " is weird";
           peak_delineations[i].indistinct_wells.erase(
               *expected_delineated_well);
           continue;
         }
+        // Look for a point on the equipotential along the line between the peak
+        // and the edge of the well.
         Length const x = numerics::Brent(
             [&](Length const& x) {
               return reference_frame_->GeometricPotential(
@@ -265,14 +270,16 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             Barycentre(std::pair(peak, well.position), std::pair(x, r - x));
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
-        // Try to delineate |peak| from the well at infinity.
-        LOG(ERROR) << "Not delineated from infinity";
+        // Try to delineate |peak| from the well at infinity; this works as for
+        // an actual well, but instead of picking the point on the edge of the
+        // well in the direction of the peak we generate a far away point based
+        // on the peak (corresponding to a point on the edge of the well at
+        // infinity).
         expect_delineation_from_infinity = true;
         Position<Frame> const far_away = towards_infinity(peak);
         if (reference_frame_->GeometricPotential(t, far_away) >= energy) {
-          // TODO(phl): This happens when we find the peak at the centre of the
-          // Earth.
-          LOG(ERROR) << "far away point is weird";
+          // The far away point is too high in the potential, presumably not far
+          // enough.  Give up on separating this peak from infinity.
           peak_delineations[i].delineated_from_infinity = true;
           continue;
         }
@@ -308,15 +315,10 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       for (int j = 0; j < peaks.size(); ++j) {
         bool const peak_j_enclosed =
             WindingNumber(plane, peaks[j], positions) > 0;
-        if (peak_j_enclosed && !peak_delineations[j].delineated_from_infinity) {
-          LOG(ERROR) << "line delineates peak " << j << " from infinity";
-        }
         peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
         for (auto it = peak_delineations[j].indistinct_wells.begin();
              it != peak_delineations[j].indistinct_wells.end();) {
           if (enclosed_wells.contains(*it) != peak_j_enclosed) {
-            LOG(ERROR) << "line delineates peak " << j << " from well "
-                       << *it - wells.begin();
             it = peak_delineations[j].indistinct_wells.erase(it);
           } else {
             ++it;
@@ -326,14 +328,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
           if (expected_delineated_well.has_value() &&
               peak_delineations[i].indistinct_wells.contains(
                   *expected_delineated_well)) {
-            LOG(ERROR) << "Failed to delineate peak " << i << " from well "
-                       << *expected_delineated_well - wells.begin();
             peak_delineations[i].indistinct_wells.erase(
                 *expected_delineated_well);
           }
           if (expect_delineation_from_infinity &&
               !peak_delineations[i].delineated_from_infinity) {
-            LOG(ERROR) << "Failed to delineate peak " << i << " from infinity";
             peak_delineations[i].delineated_from_infinity = true;
           }
         }
