@@ -237,7 +237,7 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   }
   CompleteAnomalies(elements);
   Angle const& ν = *elements.true_anomaly;
-  using OrbitPlane = geometry::Frame<struct OrbitPlaneTag>;
+  using OrbitPlane = geometry::_frame::Frame<struct OrbitPlaneTag>;
   Rotation<OrbitPlane, Frame> const from_orbit_plane(
       Ω, i, ω,
       EulerAngles::ZXZ,

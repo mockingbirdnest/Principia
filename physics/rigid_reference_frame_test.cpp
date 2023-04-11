@@ -45,7 +45,7 @@ using namespace principia::testing_utilities::_vanishes_before;
 
 class ReferenceFrameTest : public testing::Test {
  protected:
-  using Inertial = Frame<struct InertialFrameTag, geometry::Inertial>;
+  using Inertial = Frame<struct InertialFrameTag, Inertial>;
   using Rotating = Frame<struct RotatingFrameTag, Arbitrary>;
   using Translating = Rotating;  // A better name for linear acceleration.
 
@@ -525,9 +525,9 @@ TEST_F(ReferenceFrameTest, EulerAcceleration) {
 // normal (directed along -z) but different tangents: for the fixed jaw, the
 // tangent is directed along the lead angle of the screw.
 TEST_F(ReferenceFrameTest, FrenetFrame) {
-  using Handle = Frame<struct HangleTag, geometry::Inertial>;
-  using FixedJaw = Frame<struct FixedJawTag, geometry::Inertial>;
-  using MovingJaw = Frame<struct MovingJawTag, geometry::Inertial>;
+  using Handle = Frame<struct HangleTag, geometry::_frame::Inertial>;
+  using FixedJaw = Frame<struct FixedJawTag, geometry::_frame::Inertial>;
+  using MovingJaw = Frame<struct MovingJawTag, geometry::_frame::Inertial>;
 
   StrictMock<MockRigidReferenceFrame<FixedJaw, MovingJaw>> jaw_to_jaw_frame;
   StrictMock<MockRigidReferenceFrame<MovingJaw, Handle>> jaw_to_handle_frame;

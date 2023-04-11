@@ -20,8 +20,10 @@ namespace _perspective {
 namespace internal {
 
 using namespace principia::base::_array;
+using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_sphere;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

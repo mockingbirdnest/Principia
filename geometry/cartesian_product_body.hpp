@@ -17,6 +17,7 @@ namespace geometry {
 namespace _cartesian_product {
 namespace internal {
 
+using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_tuples;
 
 template<typename LTuple, typename RTuple,

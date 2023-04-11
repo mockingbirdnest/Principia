@@ -949,7 +949,7 @@ TEST_F(PluginTest, Frenet) {
   Vector<double, World> n = alice_sun_to_world(
                                 Normalize(-satellite_initial_displacement_));
   // World is left-handed, but the Frenet trihedron is right-handed.
-  Vector<double, World> b(-geometry::Cross(t.coordinates(), n.coordinates()));
+  Vector<double, World> b(-Cross(t.coordinates(), n.coordinates()));
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);

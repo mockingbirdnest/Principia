@@ -40,6 +40,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
@@ -152,11 +153,11 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 // Ownership of the status and its message is transferred to the caller.
 Status* ToNewStatus(absl::Status const& status);
 
-WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
+WXYZ ToWXYZ(Quaternion const& quaternion);
 
-XY ToXY(geometry::RP2Point<Length, Camera> const& rp2_point);
+XY ToXY(RP2Point<Length, Camera> const& rp2_point);
 
-XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
+XYZ ToXYZ(R3Element<double> const& r3_element);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);

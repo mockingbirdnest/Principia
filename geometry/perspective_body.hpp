@@ -16,7 +16,9 @@ namespace geometry {
 namespace _perspective {
 namespace internal {
 
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

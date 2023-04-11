@@ -153,8 +153,8 @@ Renderer::RenderPlottingTrajectoryInWorld(
     DegreesOfFreedom<World> const world_degrees_of_freedom = {
         from_plotting_frame_to_world_at_current_time(
             navigation_degrees_of_freedom.position()),
-        geometry::Permutation<Navigation, World>(
-            geometry::Permutation<Navigation,
+        Permutation<Navigation, World>(
+            Permutation<Navigation,
                                   World>::CoordinatePermutation::YXZ)(
             navigation_degrees_of_freedom.velocity())};
     trajectory.Append(time, world_degrees_of_freedom).IgnoreError();
