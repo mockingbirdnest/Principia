@@ -22,6 +22,10 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

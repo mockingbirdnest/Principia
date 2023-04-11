@@ -11,6 +11,8 @@ namespace geometry {
 namespace _pair {
 namespace internal {
 
+using namespace principia::geometry::_serialization;
+
 template<typename T1, typename T2>
 Pair<T1, T2>::Pair(T1 const& t1, T2 const& t2)
     : t1_(t1),

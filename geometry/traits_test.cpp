@@ -10,6 +10,7 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_traits;

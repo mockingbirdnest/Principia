@@ -19,6 +19,8 @@ namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_conformal_map;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_homothecy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

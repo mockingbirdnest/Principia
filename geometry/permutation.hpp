@@ -17,6 +17,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 
 // Declare shorter names for the protocol buffer enums.
@@ -145,9 +146,5 @@ using internal::Permutation;
 }  // namespace _permutation
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_permutation;
-}  // namespace principia::geometry
 
 #include "geometry/permutation_body.hpp"

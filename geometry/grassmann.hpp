@@ -18,6 +18,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_traits;
@@ -378,9 +379,5 @@ using internal::Wedge;
 }  // namespace _grassmann
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_grassmann;
-}  // namespace principia::geometry
 
 #include "geometry/grassmann_body.hpp"

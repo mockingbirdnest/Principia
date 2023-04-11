@@ -178,8 +178,4 @@ class BarycentreCalculator<Point<Vector>, Weight> final {
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_point;
-}  // namespace principia::geometry
-
 #include "geometry/point_body.hpp"

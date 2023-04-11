@@ -14,6 +14,7 @@ namespace geometry {
 namespace _quaternion {
 namespace internal {
 
+using namespace principia::geometry::_sign;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 

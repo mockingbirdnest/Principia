@@ -18,7 +18,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_sign;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
 struct DeduceSignPreservingOrientation final {};
@@ -132,9 +134,5 @@ using internal::Signature;
 }  // namespace _signature
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_signature;
-}  // namespace principia::geometry
 
 #include "geometry/signature_body.hpp"

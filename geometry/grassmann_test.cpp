@@ -23,7 +23,9 @@ namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::base::_cpuid;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;

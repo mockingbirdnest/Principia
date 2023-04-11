@@ -99,8 +99,4 @@ using internal::ReadFrameFromMessage;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_frame;
-}  // namespace principia::geometry
-
 #include "geometry/frame_body.hpp"

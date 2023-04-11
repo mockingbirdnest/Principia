@@ -14,6 +14,8 @@ namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

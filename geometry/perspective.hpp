@@ -108,8 +108,4 @@ using internal::Segments;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_perspective;
-}  // namespace principia::geometry
-
 #include "geometry/perspective_body.hpp"

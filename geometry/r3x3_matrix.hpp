@@ -20,6 +20,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_traits;
 
@@ -196,9 +197,5 @@ using internal::R3x3Matrix;
 }  // namespace _r3x3_matrix
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_r3x3_matrix;
-}  // namespace principia::geometry
 
 #include "geometry/r3x3_matrix_body.hpp"

@@ -21,6 +21,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_named_quantities;
 
@@ -142,9 +144,9 @@ class SymmetricBilinearForm {
            template<typename, typename> typename M,
            int rank,
            typename>
-  friend geometry::Multivector<Product<L, R>, F, rank> operator*(
+  friend _grassmann::Multivector<Product<L, R>, F, rank> operator*(
       SymmetricBilinearForm<L, F, M> const& left,
-      geometry::Multivector<R, F, rank> const& right);
+      _grassmann::Multivector<R, F, rank> const& right);
 
   template<typename L,
            typename R,
@@ -152,8 +154,8 @@ class SymmetricBilinearForm {
            template<typename, typename> typename M,
            int rank,
            typename>
-  friend geometry::Multivector<Product<L, R>, F, rank> operator*(
-      geometry::Multivector<L, F, rank> const& left,
+  friend _grassmann::Multivector<Product<L, R>, F, rank> operator*(
+      _grassmann::Multivector<L, F, rank> const& left,
       SymmetricBilinearForm<R, F, M> const& right);
 
   template<typename L,
@@ -162,8 +164,8 @@ class SymmetricBilinearForm {
            template<typename, typename> typename M,
            int rank,
            typename>
-  friend geometry::Multivector<Quotient<L, R>, F, rank> operator/(
-      geometry::Multivector<L, F, rank> const& left,
+  friend _grassmann::Multivector<Quotient<L, R>, F, rank> operator/(
+      _grassmann::Multivector<L, F, rank> const& left,
       SymmetricBilinearForm<R, F, M> const& right);
 
   template<typename L, typename R, typename F>
@@ -340,9 +342,5 @@ using internal::SymmetricSquare;
 }  // namespace _symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_symmetric_bilinear_form;
-}  // namespace principia::geometry
 
 #include "geometry/symmetric_bilinear_form_body.hpp"

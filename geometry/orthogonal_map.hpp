@@ -50,7 +50,9 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
@@ -175,9 +177,5 @@ using internal::OrthogonalMap;
 }  // namespace _orthogonal_map
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_orthogonal_map;
-}  // namespace principia::geometry
 
 #include "geometry/orthogonal_map_body.hpp"

@@ -25,8 +25,4 @@ using internal::DoubleDiscreteCosineTransform;
 }  // namespace benchmarks
 }  // namespace principia
 
-namespace principia::benchmarks {
-using namespace principia::benchmarks::_quantities;
-}  // namespace principia::benchmarks
-
 #include "benchmarks/quantities_body.hpp"

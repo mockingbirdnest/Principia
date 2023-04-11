@@ -47,34 +47,34 @@ Quantity<Dimensions> AbsoluteError(
 }
 
 template<typename Scalar>
-Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
-                     geometry::R3Element<Scalar> const& actual) {
-  return AbsoluteError(expected, actual, &geometry::R3Element<Scalar>::Norm);
+Scalar AbsoluteError(R3Element<Scalar> const& expected,
+                     R3Element<Scalar> const& actual) {
+  return AbsoluteError(expected, actual, &R3Element<Scalar>::Norm);
 }
 
 template<typename Scalar, typename Frame, int rank>
 Scalar AbsoluteError(
-    geometry::Multivector<Scalar, Frame, rank> const& expected,
-    geometry::Multivector<Scalar, Frame, rank> const& actual) {
+    Multivector<Scalar, Frame, rank> const& expected,
+    Multivector<Scalar, Frame, rank> const& actual) {
   return AbsoluteError<
-      geometry::Multivector<Scalar, Frame, rank>, Scalar>(
+      Multivector<Scalar, Frame, rank>, Scalar>(
           expected,
           actual,
-          &geometry::Multivector<Scalar, Frame, rank>::Norm);
+          &Multivector<Scalar, Frame, rank>::Norm);
 }
 
 template<typename Scalar, typename Frame>
 Scalar AbsoluteError(
-    geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& expected,
-    geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const& actual) {
-  geometry::Point<geometry::Multivector<Scalar, Frame, 1>> const origin;
+    Point<Multivector<Scalar, Frame, 1>> const& expected,
+    Point<Multivector<Scalar, Frame, 1>> const& actual) {
+  Point<Multivector<Scalar, Frame, 1>> const origin;
   return AbsoluteError(expected - origin, actual - origin);
 }
 
 template<typename Scalar>
-Scalar AbsoluteError(geometry::Point<Scalar> const& expected,
-                     geometry::Point<Scalar> const& actual) {
-  geometry::Point<Scalar> const origin;
+Scalar AbsoluteError(Point<Scalar> const& expected,
+                     Point<Scalar> const& actual) {
+  Point<Scalar> const origin;
   return AbsoluteError(expected - origin, actual - origin);
 }
 
@@ -110,16 +110,16 @@ double RelativeError(Quantity<Dimensions> const& expected,
 }
 
 template<typename Scalar>
-double RelativeError(geometry::R3Element<Scalar> const& expected,
-                     geometry::R3Element<Scalar> const& actual) {
-  return RelativeError(expected, actual, &geometry::R3Element<Scalar>::Norm);
+double RelativeError(R3Element<Scalar> const& expected,
+                     R3Element<Scalar> const& actual) {
+  return RelativeError(expected, actual, &R3Element<Scalar>::Norm);
 }
 
 template<typename Scalar, typename Frame, int rank>
-double RelativeError(geometry::Multivector<Scalar, Frame, rank> const& expected,
-                     geometry::Multivector<Scalar, Frame, rank> const& actual) {
+double RelativeError(Multivector<Scalar, Frame, rank> const& expected,
+                     Multivector<Scalar, Frame, rank> const& actual) {
   return RelativeError(expected, actual,
-                       &geometry::Multivector<Scalar, Frame, rank>::Norm);
+                       &Multivector<Scalar, Frame, rank>::Norm);
 }
 
 }  // namespace internal

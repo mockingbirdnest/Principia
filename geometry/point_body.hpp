@@ -17,6 +17,7 @@ namespace _point {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::geometry::_grassmann;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

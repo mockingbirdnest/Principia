@@ -36,8 +36,4 @@ using internal::Interval;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_interval;
-}  // namespace principia::geometry
-
 #include "geometry/interval_body.hpp"

@@ -11,6 +11,9 @@ namespace _signature {
 namespace internal {
 
 using namespace principia::base::_traits;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
 
 template<typename FromFrame, typename ToFrame>

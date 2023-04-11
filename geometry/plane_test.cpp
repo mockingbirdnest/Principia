@@ -13,6 +13,8 @@ namespace geometry {
 
 using ::testing::Eq;
 using ::testing::UnorderedElementsAre;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_plane;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;

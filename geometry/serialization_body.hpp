@@ -14,6 +14,8 @@ namespace _serialization {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_serialization;
 

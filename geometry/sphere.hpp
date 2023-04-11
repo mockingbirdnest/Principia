@@ -37,8 +37,4 @@ using internal::Sphere;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_sphere;
-}  // namespace principia::geometry
-
 #include "geometry/sphere_body.hpp"

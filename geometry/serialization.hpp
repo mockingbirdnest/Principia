@@ -71,8 +71,4 @@ using internal::QuantityOrMultivectorSerializer;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_serialization;
-}  // namespace principia::geometry
-
 #include "geometry/serialization_body.hpp"
