@@ -22,6 +22,7 @@ namespace principia {
 namespace astronomy {
 
 using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;

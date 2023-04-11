@@ -21,6 +21,7 @@ namespace astronomy {
 namespace _standard_product_3 {
 namespace internal {
 
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;

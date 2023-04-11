@@ -31,6 +31,7 @@ namespace mathematica {
 namespace _mathematica {
 namespace internal {
 
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
@@ -278,9 +279,8 @@ std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(
-    astronomy::OrbitalElements::EquinoctialElements const& elements,
-    OptionalExpressIn express_in = std::nullopt);
+std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
+                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::optional<T> const& opt,

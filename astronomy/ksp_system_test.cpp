@@ -30,6 +30,7 @@ namespace astronomy {
 using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::_;
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;

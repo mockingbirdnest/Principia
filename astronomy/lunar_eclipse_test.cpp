@@ -21,6 +21,7 @@ namespace principia {
 namespace astronomy {
 
 using ::testing::Eq;
+using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;

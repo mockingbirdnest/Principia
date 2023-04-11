@@ -118,8 +118,4 @@ using internal::OrbitRecurrence;
 }  // namespace astronomy
 }  // namespace principia
 
-namespace principia::astronomy {
-using namespace principia::astronomy::_orbit_recurrence;
-}  // namespace principia::astronomy
-
 #include "astronomy/orbit_recurrence_body.hpp"

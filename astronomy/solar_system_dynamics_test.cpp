@@ -37,6 +37,7 @@ namespace astronomy {
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;

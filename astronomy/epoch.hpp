@@ -30,7 +30,3 @@ using internal::J2000;
 }  // namespace _epoch
 }  // namespace astronomy
 }  // namespace principia
-
-namespace principia::astronomy {
-using namespace principia::astronomy::_epoch;
-}  // namespace principia::astronomy

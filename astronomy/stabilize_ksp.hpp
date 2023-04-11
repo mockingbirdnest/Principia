@@ -22,8 +22,4 @@ using internal::StabilizeKSP;
 }  // namespace astronomy
 }  // namespace principia
 
-namespace principia::astronomy {
-using namespace principia::astronomy::_stabilize_ksp;
-}  // namespace principia::astronomy
-
 #include "astronomy/stabilize_ksp_body.hpp"

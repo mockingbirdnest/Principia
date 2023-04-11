@@ -16,6 +16,7 @@ namespace astronomy {
 namespace _orbit_ground_track {
 namespace internal {
 
+using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::physics::_discrete_trajectory;
@@ -111,9 +112,5 @@ using internal::OrbitGroundTrack;
 }  // namespace _orbit_ground_track
 }  // namespace astronomy
 }  // namespace principia
-
-namespace principia::astronomy {
-using namespace principia::astronomy::_orbit_ground_track;
-}  // namespace principia::astronomy
 
 #include "astronomy/orbit_ground_track_body.hpp"
