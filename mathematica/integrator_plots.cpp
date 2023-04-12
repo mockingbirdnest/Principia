@@ -16,8 +16,8 @@
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
@@ -28,28 +28,28 @@
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 
-#define SLMS_INTEGRATOR(name)                         \
-  {                                                   \
-    (integrators::SymmetricLinearMultistepIntegrator< \
-        integrators::methods::name,                   \
-        ODE>()),                                      \
-        u8###name, 1                                  \
+#define SLMS_INTEGRATOR(name)            \
+  {                                      \
+    (SymmetricLinearMultistepIntegrator< \
+        methods::name,                   \
+        ODE>()),                         \
+        u8###name, 1                     \
   }
-#define SRKN_INTEGRATOR(name)                                 \
-  {                                                           \
-    (integrators::SymplecticRungeKuttaNyströmIntegrator<      \
-        integrators::methods::name,                           \
-        ODE>()),                                              \
-        u8###name, (integrators::methods::name::evaluations)  \
+#define SRKN_INTEGRATOR(name)                   \
+  {                                             \
+    (SymplecticRungeKuttaNyströmIntegrator<     \
+        methods::name,                          \
+        ODE>()),                                \
+        u8###name, (methods::name::evaluations) \
   }
 #define SPRK_INTEGRATOR(name, composition)                   \
   {                                                          \
-    (integrators::SymplecticRungeKuttaNyströmIntegrator<     \
-        integrators::methods::name,                          \
+    (SymplecticRungeKuttaNyströmIntegrator<                  \
+        methods::name,                                       \
         serialization::FixedStepSizeIntegrator::composition, \
         ODE>()),                                             \
         u8###name " " u8###composition,                      \
-        (integrators::methods::name::evaluations)            \
+        (methods::name::evaluations)                         \
   }
 
 namespace principia {
@@ -69,7 +69,11 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::integrators::_symplectic_partitioned_runge_kutta_integrator;  // NOLINT
+using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::numerics::_double_precision;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;

@@ -44,6 +44,7 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
@@ -243,7 +244,7 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/singularity + 1 * Milli(Second),
                           /*Δv=*/1 * Metre / Second),
           0),
-      StatusIs(integrators::termination_condition::VanishingStepSize));
+      StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(1, flight_plan_->number_of_anomalous_manœuvres());
 
   // Add another manœuvre and check the status.
@@ -254,14 +255,14 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/singularity + 10 * Second,
                           /*Δv=*/1 * Metre / Second),
           1),
-      StatusIs(integrators::termination_condition::VanishingStepSize));
+      StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
 
   // Check that Remove returns the proper statuses.
   EXPECT_THAT(flight_plan_->Remove(1),
-              StatusIs(integrators::termination_condition::VanishingStepSize));
+              StatusIs(termination_condition::VanishingStepSize));
   EXPECT_THAT(flight_plan_->Remove(0),
-              StatusIs(integrators::termination_condition::VanishingStepSize));
+              StatusIs(termination_condition::VanishingStepSize));
 
   // The singularity occurs during the burn: we're boosting towards the
   // singularity, so we reach the singularity in less than π / 2√2 s, before the
@@ -275,7 +276,7 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/1 * Metre / Second),
           0),
-      StatusIs(integrators::termination_condition::VanishingStepSize));
+      StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
   auto segment1 = flight_plan_->GetSegment(1);
@@ -301,7 +302,7 @@ TEST_F(FlightPlanTest, Singular) {
                           /*initial_time=*/t0_ + 0.5 * Second,
                           /*Δv=*/-1 * Metre / Second),
           /*index=*/0),
-      StatusIs(integrators::termination_condition::VanishingStepSize));
+      StatusIs(termination_condition::VanishingStepSize));
   EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
 
   segment1 = flight_plan_->GetSegment(1);
@@ -413,7 +414,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
             /*max_steps=*/1,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)),
-      StatusIs(integrators::termination_condition::ReachedMaximalStepCount));
+      StatusIs(termination_condition::ReachedMaximalStepCount));
   EXPECT_EQ(2, flight_plan_->number_of_anomalous_manœuvres());
 
   EXPECT_OK(flight_plan_->SetAdaptiveStepParameters(
