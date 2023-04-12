@@ -11,6 +11,8 @@ namespace journal {
 namespace _method {
 namespace internal {
 
+using namespace principia::journal::_recorder;
+
 template<typename Profile>
 Method<Profile>::Method() {
   if (Recorder::active_recorder_ != nullptr) {

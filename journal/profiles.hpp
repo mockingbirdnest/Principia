@@ -15,6 +15,7 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
+using namespace principia::journal::_player;
 using interface::AdaptiveStepParameters;
 using interface::BodyGeopotentialElement;
 using interface::BodyParameters;
