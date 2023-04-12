@@ -24,6 +24,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_quantities;
 
@@ -138,18 +140,14 @@ template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename ODE_>
 internal::SymplecticRungeKuttaNyströmIntegrator<
-    typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                    composition>::Method,
+    typename _methods::AsSymplecticRungeKuttaNyström<Method,
+                                                     composition>::Method,
     ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 }  // namespace _symplectic_runge_kutta_nyström_integrator
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
-}  // namespace principia::integrators
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator_body.hpp"
 

@@ -20,7 +20,6 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
-using namespace principia::integrators::_methods;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -374,7 +373,7 @@ internal::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
                                                                  ODE_> const&
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
+      std::is_base_of<_methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
                       Method>::value,
       "Method must be derived from "
       "EmbeddedExplicitGeneralizedRungeKuttaNyström");

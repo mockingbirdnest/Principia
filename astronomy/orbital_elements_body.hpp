@@ -416,7 +416,7 @@ OrbitalElements::MeanEquinoctialElements(
 
   auto const instance =
       EmbeddedExplicitRungeKuttaIntegrator<
-          integrators::methods::DormandPrince1986RK547FC,
+          methods::DormandPrince1986RK547FC,
           ODE>()
           .NewInstance(problem,
                        append_state,

@@ -240,8 +240,4 @@ namespace termination_condition = internal::termination_condition;
 }  // namespace integrators
 }  // namespace principia
 
-namespace principia::integrators {
-using namespace principia::integrators::_ordinary_differential_equations;
-}  // namespace principia::integrators
-
 #include "integrators/ordinary_differential_equations_body.hpp"

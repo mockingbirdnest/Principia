@@ -18,6 +18,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_quantities;
 
 // A symplectic partitioned Runge-Kutta integrator.  Does not subclass
@@ -113,9 +115,5 @@ SymplecticPartitionedRungeKuttaIntegrator();
 }  // namespace _symplectic_partitioned_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_symplectic_partitioned_runge_kutta_integrator;  // NOLINT
-}  // namespace principia::integrators
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator_body.hpp"

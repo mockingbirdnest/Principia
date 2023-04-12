@@ -20,6 +20,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
 
@@ -249,10 +250,6 @@ using internal::ParseFixedStepSizeIntegrator;
 }  // namespace _integrators
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_integrators;
-}  // namespace principia::integrators
 
 #include "integrators/integrators_body.hpp"
 

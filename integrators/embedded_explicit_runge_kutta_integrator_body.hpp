@@ -367,7 +367,7 @@ template<typename Method, typename ODE_>
 internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitRungeKutta, Method>::value,
+      std::is_base_of<_methods::EmbeddedExplicitRungeKutta, Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKutta");
   static internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const
       integrator;

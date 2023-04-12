@@ -363,7 +363,7 @@ template<typename Method, typename ODE_>
 internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitRungeKuttaNyström,
+      std::is_base_of<_methods::EmbeddedExplicitRungeKuttaNyström,
                       Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKuttaNyström");
   static internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method,

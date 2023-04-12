@@ -1336,7 +1336,3 @@ namespace methods = _methods;
 }  // namespace _methods
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_methods;
-}  // namespace principia::integrators

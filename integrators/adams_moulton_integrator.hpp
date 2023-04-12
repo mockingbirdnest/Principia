@@ -29,8 +29,4 @@ AdamsMoulton<order> const& AdamsMoultonOrder();
 }  // namespace integrators
 }  // namespace principia
 
-namespace principia::integrators {
-using namespace principia::integrators::_adams_moulton_integrator;
-}  // namespace principia::integrators
-
 #include "integrators/adams_moulton_integrator_body.hpp"
