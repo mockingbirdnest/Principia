@@ -6,7 +6,6 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -32,6 +31,9 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_sign;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_quantities;
 
@@ -316,9 +318,5 @@ using internal::Rotation;
 }  // namespace _rotation
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_rotation;
-}  // namespace principia::geometry
 
 #include "geometry/rotation_body.hpp"

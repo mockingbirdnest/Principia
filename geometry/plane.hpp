@@ -10,6 +10,9 @@ namespace geometry {
 namespace _plane {
 namespace internal {
 
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+
 // A subspace of codimension 1 which happens to be a subspace of dimension 2.
 // No notion of orientation, neither "clockwise" nor "side of the the plane".
 template<typename Frame>
@@ -55,9 +58,5 @@ using internal::Projection;
 }  // namespace _plane
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_plane;
-}  // namespace principia::geometry
 
 #include "geometry/plane_body.hpp"

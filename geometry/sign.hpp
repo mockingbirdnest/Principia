@@ -78,8 +78,4 @@ using internal::Sign;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_sign;
-}  // namespace principia::geometry
-
 #include "geometry/sign_body.hpp"

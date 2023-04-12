@@ -22,6 +22,13 @@ namespace testing_utilities {
 namespace _almost_equals {
 namespace internal {
 
+using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
+using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_quantities;
 
 template<typename T>
@@ -56,30 +63,30 @@ class AlmostEqualsMatcher final {
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(double actual,
                        testing::MatchResultListener* listener) const;
-  bool MatchAndExplain(geometry::Complexification<double> actual,
+  bool MatchAndExplain(Complexification<double> actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
-  bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
+  bool MatchAndExplain(R3Element<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
-  bool MatchAndExplain(geometry::R3x3Matrix<Scalar> const& actual,
+  bool MatchAndExplain(R3x3Matrix<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
-  bool MatchAndExplain(geometry::Quaternion const& actual,
+  bool MatchAndExplain(Quaternion const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename FromFrame, typename ToFrame>
-  bool MatchAndExplain(geometry::Rotation<FromFrame, ToFrame> const& actual,
+  bool MatchAndExplain(Rotation<FromFrame, ToFrame> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, typename Frame>
-  bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
+  bool MatchAndExplain(Vector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, typename Frame>
-  bool MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
+  bool MatchAndExplain(Bivector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, typename Frame>
-  bool MatchAndExplain(geometry::Trivector<Scalar, Frame> const& actual,
+  bool MatchAndExplain(Trivector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Vector>
-  bool MatchAndExplain(geometry::Point<Vector> const& actual,
+  bool MatchAndExplain(Point<Vector> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, int size>
   bool MatchAndExplain(numerics::FixedVector<Scalar, size> const& actual,

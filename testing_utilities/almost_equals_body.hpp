@@ -94,7 +94,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 
 template<typename T>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Complexification<double> const actual,
+    Complexification<double> const actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -124,7 +124,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::R3Element<Scalar> const& actual,
+    R3Element<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -156,7 +156,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::R3x3Matrix<Scalar> const& actual,
+    R3x3Matrix<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -187,7 +187,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 
 template<typename T>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Quaternion const& actual,
+    Quaternion const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -224,7 +224,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename FromFrame, typename ToFrame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Rotation<FromFrame, ToFrame> const& actual,
+    Rotation<FromFrame, ToFrame> const& actual,
     testing::MatchResultListener* listener) const {
   return testing::ExplainMatchResult(
       testing::AnyOf(
@@ -237,13 +237,13 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Vector<Scalar, Frame> const& actual,
+    Vector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
+  return AlmostEqualsMatcher<R3Element<Scalar>>(
       expected_.coordinates(),
       min_ulps_,
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
@@ -252,13 +252,13 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Bivector<Scalar, Frame> const& actual,
+    Bivector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  return AlmostEqualsMatcher<geometry::R3Element<Scalar>>(
+  return AlmostEqualsMatcher<R3Element<Scalar>>(
       expected_.coordinates(),
       min_ulps_,
       max_ulps_).MatchAndExplain(actual.coordinates(), listener);
@@ -267,7 +267,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Trivector<Scalar, Frame> const& actual,
+    Trivector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -283,13 +283,13 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Vector>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::Point<Vector> const& actual,
+    Point<Vector> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  geometry::Point<Vector> const origin;
+  Point<Vector> const origin;
   return AlmostEqualsMatcher<Vector>(expected_ - origin,
                                      min_ulps_,
                                      max_ulps_).MatchAndExplain(

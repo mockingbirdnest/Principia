@@ -34,7 +34,3 @@ using internal::is_vector_v;
 }  // namespace _traits
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_traits;
-}  // namespace principia::geometry

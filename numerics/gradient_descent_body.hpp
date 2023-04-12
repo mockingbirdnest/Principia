@@ -30,7 +30,8 @@ struct ArgumentHelper;
 template<typename Scalar, typename Frame>
 struct ArgumentHelper<Vector<Scalar, Frame>> {
   static SymmetricBilinearForm<double, Frame, Vector> InnerProductForm() {
-    return geometry::InnerProductForm<Frame, Vector>();
+    return geometry::_symmetric_bilinear_form::InnerProductForm<Frame,
+                                                                Vector>();
   }
 };
 

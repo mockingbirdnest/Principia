@@ -13,6 +13,7 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

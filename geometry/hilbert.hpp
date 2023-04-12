@@ -129,8 +129,4 @@ using internal::Hilbert;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_hilbert;
-}  // namespace principia::geometry
-
 #include "geometry/hilbert_body.hpp"

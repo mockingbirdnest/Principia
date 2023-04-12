@@ -20,11 +20,15 @@ namespace geometry {
 
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_space_transformations;
+using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;

@@ -11,6 +11,7 @@ namespace geometry {
 namespace _complexification {
 namespace internal {
 
+using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Vector>
@@ -125,9 +126,5 @@ using internal::Complexification;
 }  // namespace _complexification
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_complexification;
-}  // namespace principia::geometry
 
 #include "geometry/complexification_body.hpp"

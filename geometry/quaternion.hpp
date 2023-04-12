@@ -9,6 +9,7 @@ namespace _quaternion {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_r3_element;
 
 // An element of the skew field of quaternions ℍ (where ℝ is modeled by
 // |double|).
@@ -70,9 +71,5 @@ using internal::Quaternion;
 }  // namespace _quaternion
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_quaternion;
-}  // namespace principia::geometry
 
 #include "geometry/quaternion_body.hpp"

@@ -62,8 +62,4 @@ using internal::LinearMap;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_linear_map;
-}  // namespace principia::geometry
-
 #include "geometry/linear_map_body.hpp"

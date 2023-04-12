@@ -18,6 +18,10 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

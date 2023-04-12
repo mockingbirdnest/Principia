@@ -76,8 +76,4 @@ using internal::RP2Point;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_rp2_point;
-}  // namespace principia::geometry
-
 #include "geometry/rp2_point_body.hpp"

@@ -64,15 +64,15 @@ operator Matcher<TripleType>() const {
 
 template<typename T1, typename T2>
 template<typename T1Matcher, typename T2Matcher>
-ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::
+ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::
 ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
                           T2Matcher const& t2_matcher)
     : t1_matcher_(SafeMatcherCast<T1>(t1_matcher)),
       t2_matcher_(SafeMatcherCast<T2>(t2_matcher)) {}
 
 template<typename T1, typename T2>
-bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::MatchAndExplain(
-    geometry::Pair<T1, T2> const& actual,
+bool ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::MatchAndExplain(
+    Pair<T1, T2> const& actual,
     MatchResultListener* listener) const {
   bool const t1_matches = t1_matcher_.MatchAndExplain(actual.t1_, listener);
   if (!t1_matches) {
@@ -86,7 +86,7 @@ bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::MatchAndExplain(
 }
 
 template<typename T1, typename T2>
-void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::DescribeTo(
+void ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::DescribeTo(
     std::ostream* out) const {
   *out << "first element ";
   t1_matcher_.DescribeTo(out);
@@ -95,7 +95,7 @@ void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::DescribeTo(
 }
 
 template<typename T1, typename T2>
-void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::
+void ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "first element ";
   t1_matcher_.DescribeNegationTo(out);
@@ -194,15 +194,15 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Scalar, typename Frame>
 template<typename XMatcher, typename YMatcher>
-ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
+ComponentwiseMatcher2Impl<RP2Point<Scalar, Frame> const&>::
 ComponentwiseMatcher2Impl(XMatcher const& x_matcher,
                           YMatcher const& y_matcher)
     : x_matcher_(SafeMatcherCast<Scalar>(x_matcher)),
       y_matcher_(SafeMatcherCast<Scalar>(y_matcher)) {}
 
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
-MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
+bool ComponentwiseMatcher2Impl<RP2Point<Scalar, Frame> const&>::
+MatchAndExplain(RP2Point<Scalar, Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x(), listener);
   if (!x_matches) {
@@ -216,7 +216,7 @@ MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
+void ComponentwiseMatcher2Impl<RP2Point<Scalar, Frame> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
@@ -225,7 +225,7 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
+void ComponentwiseMatcher2Impl<RP2Point<Scalar, Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);
@@ -235,7 +235,7 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Scalar>
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
+ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
                           YMatcher const& y_matcher,
                           ZMatcher const& z_matcher)
@@ -244,8 +244,8 @@ ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
       z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
 
 template<typename Scalar>
-bool ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
-MatchAndExplain(geometry::R3Element<Scalar> const& actual,
+bool ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
+MatchAndExplain(R3Element<Scalar> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x, listener);
   if (!x_matches) {
@@ -263,7 +263,7 @@ MatchAndExplain(geometry::R3Element<Scalar> const& actual,
 }
 
 template<typename Scalar>
-void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
+void ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
@@ -274,7 +274,7 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Scalar>
-void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
+void ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);
@@ -286,7 +286,7 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Scalar, typename Frame>
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+ComponentwiseMatcher3Impl<Vector<Scalar, Frame> const&>::
 ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
                           YMatcher const& y_matcher,
                           ZMatcher const& z_matcher)
@@ -295,8 +295,8 @@ ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
       z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
 
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
-MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
+bool ComponentwiseMatcher3Impl<Vector<Scalar, Frame> const&>::
+MatchAndExplain(Vector<Scalar, Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
@@ -317,7 +317,7 @@ MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+void ComponentwiseMatcher3Impl<Vector<Scalar, Frame> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
@@ -328,7 +328,7 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+void ComponentwiseMatcher3Impl<Vector<Scalar, Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);
@@ -340,7 +340,7 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Scalar, typename Frame>
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
+ComponentwiseMatcher3Impl<Bivector<Scalar, Frame> const&>::
 ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
                           YMatcher const& y_matcher,
                           ZMatcher const& z_matcher)
@@ -349,8 +349,8 @@ ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
       z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
 
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
-MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
+bool ComponentwiseMatcher3Impl<Bivector<Scalar, Frame> const&>::
+MatchAndExplain(Bivector<Scalar, Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
@@ -371,7 +371,7 @@ MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
+void ComponentwiseMatcher3Impl<Bivector<Scalar, Frame> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
@@ -382,7 +382,7 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
+void ComponentwiseMatcher3Impl<Bivector<Scalar, Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);

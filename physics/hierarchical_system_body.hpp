@@ -103,7 +103,7 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
 
   // A reference frame wherein the barycentre of |system| is motionless at the
   // origin.
-  using SystemBarycentre = geometry::Frame<struct SystemBarycentreTag>;
+  using SystemBarycentre = geometry::_frame::Frame<struct SystemBarycentreTag>;
   static DegreesOfFreedom<SystemBarycentre> const system_barycentre = {
       SystemBarycentre::origin, SystemBarycentre::unmoving};
   static Identity<SystemBarycentre, Frame> const id_bf;

@@ -12,6 +12,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap_>
@@ -82,9 +84,5 @@ using internal::AffineMap;
 }  // namespace _affine_map
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_affine_map;
-}  // namespace principia::geometry
 
 #include "geometry/affine_map_body.hpp"

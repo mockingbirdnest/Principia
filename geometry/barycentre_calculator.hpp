@@ -46,8 +46,4 @@ using internal::BarycentreCalculator;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_barycentre_calculator;
-}  // namespace principia::geometry
-
 #include "geometry/barycentre_calculator_body.hpp"

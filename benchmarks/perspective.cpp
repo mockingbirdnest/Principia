@@ -17,8 +17,12 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_sphere;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

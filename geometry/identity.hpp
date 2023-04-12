@@ -25,6 +25,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_symmetric_bilinear_form;
 
@@ -102,9 +103,5 @@ using internal::Identity;
 }  // namespace _identity
 }  // namespace geometry
 }  // namespace principia
-
-namespace principia::geometry {
-using namespace principia::geometry::_identity;
-}  // namespace principia::geometry
 
 #include "geometry/identity_body.hpp"

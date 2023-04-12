@@ -228,8 +228,4 @@ using internal::SphericalCoordinates;
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::geometry {
-using namespace principia::geometry::_r3_element;
-}  // namespace principia::geometry
-
 #include "geometry/r3_element_body.hpp"

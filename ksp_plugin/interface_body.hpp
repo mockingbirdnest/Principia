@@ -20,6 +20,7 @@ namespace interface {
 using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_sign;
 using namespace principia::integrators::_integrators;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
@@ -473,18 +474,18 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
-inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
+inline WXYZ ToWXYZ(Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
 }
 
-inline XY ToXY(geometry::RP2Point<Length, Camera> const& rp2_point) {
+inline XY ToXY(RP2Point<Length, Camera> const& rp2_point) {
   return {rp2_point.x() / Metre, rp2_point.y() / Metre};
 }
 
-inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
+inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
@@ -510,7 +511,7 @@ inline XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum) {
 }
 
 template<typename T>
-Interval ToInterval(geometry::Interval<T> const& interval) {
+Interval ToInterval(geometry::_interval::Interval<T> const& interval) {
   return {interval.min / si::Unit<T>,
           interval.max / si::Unit<T>};
 }
@@ -565,7 +566,7 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
     int const Cᴛₒ =
-        geometry::Sign(vessel_analysis->primary()->angular_frequency()) *
+        Sign(vessel_analysis->primary()->angular_frequency()) *
         std::abs(*days_per_cycle);
     int const νₒ =
         std::nearbyint(static_cast<double>(*revolutions_per_cycle) / Cᴛₒ);

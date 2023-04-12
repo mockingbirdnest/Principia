@@ -21,6 +21,8 @@ using ::testing::Eq;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_cpuid;
+using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_space;

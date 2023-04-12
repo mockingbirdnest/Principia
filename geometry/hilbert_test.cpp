@@ -13,6 +13,8 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

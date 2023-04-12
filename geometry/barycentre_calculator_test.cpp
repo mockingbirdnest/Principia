@@ -14,6 +14,8 @@ namespace principia {
 namespace geometry {
 
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

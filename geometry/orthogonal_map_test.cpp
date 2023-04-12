@@ -16,6 +16,13 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
+using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_signature;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

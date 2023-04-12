@@ -26,6 +26,8 @@ namespace internal {
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_identity;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;

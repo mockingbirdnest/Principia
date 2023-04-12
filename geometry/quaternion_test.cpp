@@ -9,6 +9,7 @@ namespace geometry {
 
 using ::testing::Eq;
 using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3_element;
 using namespace principia::testing_utilities::_algebra;
 
 class QuaternionTest : public testing::Test {
