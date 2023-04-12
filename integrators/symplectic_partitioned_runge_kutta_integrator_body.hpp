@@ -79,7 +79,7 @@ template<typename Method, typename ODE_>
 internal::SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
 SymplecticPartitionedRungeKuttaIntegrator() {
   static_assert(
-      std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
+      std::is_base_of<_methods::SymplecticPartitionedRungeKutta, Method>::value,
       "Method must be derived from SymplecticPartitionedRungeKutta");
   static internal::SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const
       integrator;

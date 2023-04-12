@@ -358,15 +358,16 @@ template<typename Method, typename ODE_>
 internal::SymmetricLinearMultistepIntegrator<Method, ODE_> const&
 SymmetricLinearMultistepIntegrator() {
   static_assert(
-      std::is_base_of<methods::SymmetricLinearMultistep, Method>::value,
+      std::is_base_of<_methods::SymmetricLinearMultistep, Method>::value,
       "Method must be derived from SymmetricLinearMultistep");
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
   // this Blanes-Moan integrator as a gift.
   static internal::SymmetricLinearMultistepIntegrator<Method, ODE_> const
-      integrator(
-          SymplecticRungeKuttaNyströmIntegrator<methods::BlanesMoan2002SRKN14A,
-                                                ODE_>());
+      integrator(_symplectic_runge_kutta_nyström_integrator::
+                     SymplecticRungeKuttaNyströmIntegrator<
+                         _methods::BlanesMoan2002SRKN14A,
+                         ODE_>());
   return integrator;
 }
 

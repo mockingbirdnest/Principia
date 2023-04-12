@@ -27,6 +27,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 
@@ -138,10 +140,6 @@ EmbeddedExplicitRungeKuttaIntegrator();
 }  // namespace _embedded_explicit_runge_kutta_integrator
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
-}  // namespace principia::integrators
 
 #include "integrators/embedded_explicit_runge_kutta_integrator_body.hpp"
 

@@ -264,7 +264,7 @@ template<typename Method, typename ODE_>
 internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<methods::SymplecticRungeKuttaNyström, Method>::value,
+      std::is_base_of<_methods::SymplecticRungeKuttaNyström, Method>::value,
       "Method must be derived from SymplecticRungeKuttaNyström");
   static internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const
       integrator;
@@ -275,16 +275,16 @@ template<typename Method,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename ODE_>
 internal::SymplecticRungeKuttaNyströmIntegrator<
-    typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                    composition>::Method,
+    typename _methods::AsSymplecticRungeKuttaNyström<Method,
+                                                     composition>::Method,
     ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
+      std::is_base_of<_methods::SymplecticPartitionedRungeKutta, Method>::value,
       "Method must be derived from SymplecticPartitionedRungeKutta");
   static internal::SymplecticRungeKuttaNyströmIntegrator<
-      typename methods::AsSymplecticRungeKuttaNyström<Method,
-                                                      composition>::Method,
+      typename _methods::AsSymplecticRungeKuttaNyström<Method,
+                                                       composition>::Method,
       ODE_> const integrator;
   return integrator;
 }

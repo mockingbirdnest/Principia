@@ -30,6 +30,9 @@ using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_legendre;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;

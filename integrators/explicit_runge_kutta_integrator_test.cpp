@@ -24,6 +24,9 @@ namespace integrators {
 
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_explicit_runge_kutta_integrator;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

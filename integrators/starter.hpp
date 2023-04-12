@@ -11,6 +11,7 @@ namespace _starter {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::integrators::_integrators;
 
 // A helper object for starting a linear multistep integrator.  |ODE| is the
 // equation being integrated.  |Step| is an object holding the data produced by
@@ -81,9 +82,5 @@ using internal::Starter;
 }  // namespace _starter
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_starter;
-}  // namespace principia::integrators
 
 #include "integrators/starter_body.hpp"

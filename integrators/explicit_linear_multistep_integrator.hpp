@@ -26,6 +26,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_starter;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 
@@ -65,9 +68,9 @@ class ExplicitLinearMultistepIntegrator
       DependentVariableDerivatives yʹ;
     };
 
-    class Starter : public integrators::Starter<ODE, Step, steps> {
+    class Starter : public _starter::Starter<ODE, Step, steps> {
      protected:
-      using integrators::Starter<ODE, Step, steps>::Starter;
+      using _starter::Starter<ODE, Step, steps>::Starter;
 
       void FillStepFromState(ODE const& equation,
                              typename ODE::State const& state,
@@ -114,10 +117,6 @@ ExplicitLinearMultistepIntegrator();
 }  // namespace _explicit_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_explicit_linear_multistep_integrator;
-}  // namespace principia::integrators
 
 #include "explicit_linear_multistep_integrator_body.hpp"
 

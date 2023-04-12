@@ -38,8 +38,4 @@ using internal::CohenHubbardOesterwinterOrder;
 }  // namespace integrators
 }  // namespace principia
 
-namespace principia::integrators {
-using namespace principia::integrators::_cohen_hubbard_oesterwinter;
-}  // namespace principia::integrators
-
 #include "integrators/cohen_hubbard_oesterwinter_body.hpp"

@@ -29,6 +29,9 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
+using namespace principia::integrators::_cohen_hubbard_oesterwinter;
+using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_quantities;
@@ -83,9 +86,9 @@ class SymmetricLinearMultistepIntegrator
               message);
     };
 
-    class Starter : public integrators::Starter<ODE, Step, /*steps=*/order> {
+    class Starter : public _starter::Starter<ODE, Step, /*steps=*/order> {
      protected:
-      using integrators::Starter<ODE, Step, order>::Starter;
+      using _starter::Starter<ODE, Step, order>::Starter;
 
       void FillStepFromState(ODE const& equation,
                              typename ODE::State const& state,
@@ -137,10 +140,6 @@ SymmetricLinearMultistepIntegrator();
 }  // namespace _symmetric_linear_multistep_integrator
 }  // namespace integrators
 }  // namespace principia
-
-namespace principia::integrators {
-using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-}  // namespace principia::integrators
 
 #include "symmetric_linear_multistep_integrator_body.hpp"
 

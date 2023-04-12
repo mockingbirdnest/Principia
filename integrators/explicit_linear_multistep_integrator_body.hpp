@@ -214,13 +214,15 @@ template<typename Method, typename ODE_>
 internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const&
 ExplicitLinearMultistepIntegrator() {
   static_assert(
-      std::is_base_of<methods::ExplicitLinearMultistep, Method>::value,
+      std::is_base_of<_methods::ExplicitLinearMultistep, Method>::value,
       "Method must be derived from ExplicitLinearMultistep");
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
   // this Runge-Kutta integrator as a gift.
   static internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const
-      integrator(ExplicitRungeKuttaIntegrator<methods::Kutta1901Vσ1, ODE_>());
+      integrator(
+          _explicit_runge_kutta_integrator::
+              ExplicitRungeKuttaIntegrator<_methods::Kutta1901Vσ1, ODE_>());
   return integrator;
 }
 
