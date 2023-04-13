@@ -3,6 +3,7 @@
 #include "physics/reference_frame.hpp"
 
 #include "physics/rigid_reference_frame.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
