@@ -64,6 +64,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_manœuvre;
@@ -112,12 +113,12 @@ class InterfaceTest : public testing::Test {
   static void SetUpTestCase() {
     std::string const test_case_name =
         testing::UnitTest::GetInstance()->current_test_case()->name();
-    recorder_ = new journal::Recorder(test_case_name + ".journal.hex");
-    journal::Recorder::Activate(recorder_);
+    recorder_ = new Recorder(test_case_name + ".journal.hex");
+    Recorder::Activate(recorder_);
   }
 
   static void TearDownTestCase() {
-    journal::Recorder::Deactivate();
+    Recorder::Deactivate();
   }
 
   InterfaceTest()
@@ -132,10 +133,10 @@ class InterfaceTest : public testing::Test {
   std::string const hexadecimal_simple_plugin_;
   std::vector<std::uint8_t> const serialized_simple_plugin_;
   Instant const t0_;
-  static journal::Recorder* recorder_;
+  static Recorder* recorder_;
 };
 
-journal::Recorder* InterfaceTest::recorder_ = nullptr;
+Recorder* InterfaceTest::recorder_ = nullptr;
 
 using InterfaceDeathTest = InterfaceTest;
 
@@ -196,7 +197,7 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
 
 TEST_F(InterfaceDeathTest, ActivateRecorder) {
   EXPECT_DEATH({
-    journal::Recorder::Deactivate();
+    Recorder::Deactivate();
     // Fails because the glog directory doesn't exist.
     principia__ActivateRecorder(true);
   }, "glog.*Principia.*JOURNAL");
