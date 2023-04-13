@@ -43,6 +43,8 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -264,7 +266,3 @@ using internal::PileUpPrincipalAxes;
 }  // namespace _pile_up
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_pile_up;
-}  // namespace principia::ksp_plugin

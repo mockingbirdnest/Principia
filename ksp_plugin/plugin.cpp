@@ -58,7 +58,10 @@ namespace ksp_plugin {
 namespace _plugin {
 namespace internal {
 
+using ::operator<<;
+using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_file;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_hexadecimal;
@@ -74,6 +77,9 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::ksp_plugin::_equator_relevance_threshold;
+using namespace principia::ksp_plugin::_integrators;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
@@ -90,10 +96,6 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using ::operator<<;
-using namespace principia::astronomy::_solar_system_fingerprints;
-using namespace principia::astronomy::_stabilize_ksp;
-using namespace principia::astronomy::_time_scales;
 
 // Keep this consistent with |prediction_steps_| in |main_window.cs|.
 constexpr std::int64_t max_steps_in_prediction = 1 << 24;

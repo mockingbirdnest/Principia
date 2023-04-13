@@ -46,6 +46,8 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;

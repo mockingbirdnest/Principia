@@ -12,6 +12,8 @@ namespace _iterators {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_plugin;
 using namespace principia::physics::_discrete_trajectory;
 
 // A wrapper for a container and an iterator into that container.
@@ -84,9 +86,5 @@ using internal::TypedIterator;
 }  // namespace _iterators
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_iterators;
-}  // namespace principia::ksp_plugin
 
 #include "ksp_plugin/iterators_body.hpp"

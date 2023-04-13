@@ -11,6 +11,7 @@ namespace ksp_plugin {
 namespace _integrators {
 namespace internal {
 
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_quantities;
@@ -51,7 +52,3 @@ using internal::OrbitAnalyserDownsamplingParameters;
 }  // namespace _integrators
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_integrators;
-}  // namespace principia::ksp_plugin

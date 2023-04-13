@@ -15,6 +15,7 @@ namespace internal {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_permutation;
+using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
 
@@ -189,7 +190,3 @@ using internal::sun_looking_glass;
 }  // namespace _frames
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_frames;
-}  // namespace principia::ksp_plugin

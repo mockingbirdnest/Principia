@@ -12,6 +12,10 @@ namespace _fake_plugin {
 namespace internal {
 
 using namespace principia::astronomy::_frames;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_solar_system;
 

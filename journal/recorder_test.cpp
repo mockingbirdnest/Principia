@@ -20,6 +20,7 @@ namespace journal {
 
 using namespace principia::base::_version;
 using namespace principia::journal::_recorder;
+using namespace principia::ksp_plugin::_plugin;
 
 class RecorderTest : public testing::Test {
  protected:
@@ -49,7 +50,7 @@ class RecorderTest : public testing::Test {
 
 
   std::string const test_name_;
-  std::unique_ptr<ksp_plugin::Plugin> plugin_;
+  std::unique_ptr<Plugin> plugin_;
   Recorder* recorder_;
 };
 
@@ -63,7 +64,7 @@ TEST_F(JournalDeathTest, Return) {
   },
   "!returned_");
   EXPECT_DEATH({
-    const ksp_plugin::Plugin* plugin = plugin_.get();
+    const Plugin* plugin = plugin_.get();
     Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
     m.Return();
@@ -77,7 +78,7 @@ TEST_F(JournalDeathTest, Return) {
 
 TEST_F(RecorderTest, Recording) {
   {
-    const ksp_plugin::Plugin* plugin = plugin_.get();
+    const Plugin* plugin = plugin_.get();
     Method<DeletePlugin> m({&plugin}, {&plugin});
     m.Return();
   }

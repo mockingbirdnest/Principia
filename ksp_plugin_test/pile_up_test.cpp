@@ -54,6 +54,10 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_integrators;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;

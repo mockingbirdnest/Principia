@@ -11,11 +11,6 @@ namespace journal {
 
 // This file is not included from other headers, only translation units, so we
 // allow pollution of the |journal| namespace.
-using namespace principia::base::_not_constructible;
-using namespace principia::base::_not_null;
-using namespace principia::base::_pull_serializer;
-using namespace principia::base::_push_deserializer;
-using namespace principia::journal::_player;
 using interface::AdaptiveStepParameters;
 using interface::BodyGeopotentialElement;
 using interface::BodyParameters;
@@ -43,12 +38,16 @@ using interface::Status;
 using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;
-using ksp_plugin::NavigationFrame;
-using ksp_plugin::PileUpFuture;
-using ksp_plugin::Planetarium;
-using ksp_plugin::Plugin;
-using ksp_plugin::Vessel;
-using ksp_plugin::ScaledSpacePoint;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_not_null;
+using namespace principia::base::_pull_serializer;
+using namespace principia::base::_push_deserializer;
+using namespace principia::journal::_player;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_vessel;
 
 #include "journal/profiles.generated.h"
 

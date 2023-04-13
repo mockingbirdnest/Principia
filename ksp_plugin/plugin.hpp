@@ -67,6 +67,12 @@ using namespace principia::geometry::_point;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_celestial;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_body;
 using namespace principia::physics::_degrees_of_freedom;
@@ -576,7 +582,3 @@ using internal::Plugin;
 }  // namespace _plugin
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_plugin;
-}  // namespace principia::ksp_plugin
