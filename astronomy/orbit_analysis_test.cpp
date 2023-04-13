@@ -41,6 +41,8 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
@@ -172,15 +174,15 @@ class OrbitAnalysisTest : public ::testing::Test {
 
     {
       auto const identifier = (std::stringstream() << orbit.satellite).str();
-      mathematica::Logger logger(SOLUTION_DIR / "mathematica" /
-                                     (identifier + "_elements.generated.wl"),
-                                 /*make_unique=*/false);
+      Logger logger(SOLUTION_DIR / "mathematica" /
+                        (identifier + "_elements.generated.wl"),
+                    /*make_unique=*/false);
       logger.Set(identifier + "osculatingEquinoctialElements",
                  elements.osculating_equinoctial_elements(),
-                 mathematica::ExpressIn(Metre, Second, Radian));
+                 ExpressIn(Metre, Second, Radian));
       logger.Set(identifier + "meanEquinoctialElements",
                  elements.mean_equinoctial_elements(),
-                 mathematica::ExpressIn(Metre, Second, Radian));
+                 ExpressIn(Metre, Second, Radian));
     }
 
     auto const recurrence =

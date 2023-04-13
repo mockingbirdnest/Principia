@@ -42,6 +42,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -139,7 +140,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
                     Time const& duration,
                     Matcher<Length> const& matcher,
                     std::string const& name,
-                    mathematica::Logger& logger) {
+                    Logger& logger) {
     for (Instant t = initial_time;
          t < initial_time + duration;
          t += 45 * Minute) {
@@ -159,7 +160,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
             position(body) - jool_system_barycentre.Get());
         EXPECT_THAT(barycentric_positions.back().Norm(), matcher);
       }
-      logger.Append(name, barycentric_positions, mathematica::ExpressIn(Metre));
+      logger.Append(name, barycentric_positions, ExpressIn(Metre));
     }
   }
 
@@ -191,8 +192,8 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 #if !defined(_DEBUG)
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
-  mathematica::Logger logger(TEMP_DIR / "ksp_system.generated.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "ksp_system.generated.wl",
+                /*make_unique=*/false);
 
 #if 0
   auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
@@ -232,10 +233,10 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       if (separation_change != last_separation_changes.at(moon)) {
         logger.Append(moon_name + "Separations",
                       last_separations[moon],
-                      mathematica::ExpressIn(Metre));
+                      ExpressIn(Metre));
         logger.Append(moon_name + "Times",
                       t - 1 * Hour - solar_system_.epoch(),
-                      mathematica::ExpressIn(Second));
+                      ExpressIn(Second));
       }
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
@@ -243,10 +244,10 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 
     logger.Append("tyloBop",
                   (position(tylo_) - position(bop_)).Norm(),
-                  mathematica::ExpressIn(Metre));
+                  ExpressIn(Metre));
     logger.Append("polBop",
                   (position(pol_) - position(bop_)).Norm(),
-                  mathematica::ExpressIn(Metre));
+                  ExpressIn(Metre));
 
     {
       // KSP's osculating elements.
@@ -258,13 +259,13 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       logger.Append("bopEccentricities", *bop_elements.eccentricity);
       logger.Append("bopInclinations",
                     bop_elements.inclination,
-                    mathematica::ExpressIn(Degree));
+                    ExpressIn(Degree));
       logger.Append("bopNodes",
                     bop_elements.longitude_of_ascending_node,
-                    mathematica::ExpressIn(Degree));
+                    ExpressIn(Degree));
       logger.Append("bopArguments",
                     *bop_elements.argument_of_periapsis,
-                    mathematica::ExpressIn(Degree));
+                    ExpressIn(Degree));
     }
 
     {
@@ -285,13 +286,13 @@ TEST_F(KSPSystemTest, KerbalSystem) {
                     *bop_jacobi_elements.eccentricity);
       logger.Append("bopJacobiInclinations",
                     bop_jacobi_elements.inclination,
-                    mathematica::ExpressIn(Degree));
+                    ExpressIn(Degree));
       logger.Append("bopJacobiNodes",
                     bop_jacobi_elements.longitude_of_ascending_node,
-                    mathematica::ExpressIn(Degree));
+                    ExpressIn(Degree));
       logger.Append("bopJacobiArguments",
                     *bop_jacobi_elements.argument_of_periapsis,
-                    mathematica::ExpressIn(Degree));
+                    ExpressIn(Degree));
     }
   }
 
@@ -322,7 +323,7 @@ class KSPSystemConvergenceTest
       protected KSPSystem {
  public:
   static void SetUpTestCase() {
-    logger_ = new mathematica::Logger(
+    logger_ = new Logger(
         SOLUTION_DIR / "mathematica" / "ksp_system_convergence.generated.wl",
         /*make_unique=*/false);
   }
@@ -346,10 +347,10 @@ class KSPSystemConvergenceTest
     return GetParam().first_step_in_seconds;
   }
 
-  static mathematica::Logger* logger_;
+  static Logger* logger_;
 };
 
-mathematica::Logger* KSPSystemConvergenceTest::logger_ = nullptr;
+Logger* KSPSystemConvergenceTest::logger_ = nullptr;
 
 // This takes 2 minutes to run.
 TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {

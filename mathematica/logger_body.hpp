@@ -12,6 +12,8 @@ namespace mathematica {
 namespace _logger {
 namespace internal {
 
+using namespace principia::mathematica::_mathematica;
+
 inline Logger::Logger(std::filesystem::path const& path, bool const make_unique)
     : file_([this, make_unique, &path]() {
         if (make_unique || PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST != 0) {

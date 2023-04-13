@@ -315,8 +315,4 @@ using internal::ToMathematicaBody;
 }  // namespace mathematica
 }  // namespace principia
 
-namespace principia::mathematica {
-using namespace principia::mathematica::_mathematica;
-}  // namespace principia::mathematica
-
 #include "mathematica/mathematica_body.hpp"
