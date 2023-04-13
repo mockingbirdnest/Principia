@@ -7,6 +7,8 @@ namespace numerics {
 namespace _legendre {
 namespace internal {
 
+using namespace principia::numerics::_polynomial;
+
 template<int degree_, template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<double, double, degree_, Evaluator>
 LegendrePolynomial();

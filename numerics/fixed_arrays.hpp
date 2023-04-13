@@ -13,6 +13,7 @@ namespace _fixed_arrays {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, int rows, int columns>

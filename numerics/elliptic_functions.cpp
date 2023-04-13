@@ -16,6 +16,9 @@ namespace numerics {
 namespace _elliptic_functions {
 namespace internal {
 
+using namespace principia::numerics::_elliptic_integrals;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

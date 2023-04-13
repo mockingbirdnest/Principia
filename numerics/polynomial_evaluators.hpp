@@ -9,6 +9,7 @@ namespace numerics {
 namespace _polynomial_evaluators {
 namespace internal {
 
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument, int degree, bool allow_fma>

@@ -15,6 +15,7 @@ namespace _unbounded_arrays {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 
 // An allocator that does not initialize the allocated objects.

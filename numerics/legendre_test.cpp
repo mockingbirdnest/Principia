@@ -7,6 +7,7 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::numerics::_legendre;
+using namespace principia::numerics::_polynomial_evaluators;
 
 class LegendreTest : public ::testing::Test {};
 

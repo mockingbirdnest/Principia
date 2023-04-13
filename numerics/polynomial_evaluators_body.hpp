@@ -14,6 +14,7 @@ namespace _polynomial_evaluators {
 namespace internal {
 
 using namespace principia::base::_bits;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 
 // Generator for repeated squaring:
@@ -71,7 +72,7 @@ struct InternalEstrinEvaluator {
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, numerics::EstrinEvaluator>::Coefficients;
+          Value, Argument, degree, EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -90,7 +91,7 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1> {
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, numerics::EstrinEvaluator>::Coefficients;
+          Value, Argument, degree, EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -109,7 +110,7 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, numerics::EstrinEvaluator>::Coefficients;
+          Value, Argument, degree, EstrinEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -303,7 +304,7 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalHornerEvaluator {
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, numerics::HornerEvaluator>::Coefficients;
+          Value, Argument, degree, HornerEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low>
   Evaluate(Coefficients const& coefficients,
@@ -317,7 +318,7 @@ template<typename Value, typename Argument, int degree, bool fma>
 struct InternalHornerEvaluator<Value, Argument, degree, fma, degree> {
   using Coefficients =
       typename PolynomialInMonomialBasis<
-          Value, Argument, degree, numerics::HornerEvaluator>::Coefficients;
+          Value, Argument, degree, HornerEvaluator>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, degree>
   Evaluate(Coefficients const& coefficients,

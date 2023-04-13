@@ -12,6 +12,7 @@ namespace _apodization {
 namespace internal {
 
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_poisson_series;
 
 // ISO 18431-2:2004, section 5.4.
 template<template<typename, typename, int> class Evaluator>

@@ -17,6 +17,8 @@ namespace numerics {
 namespace _cbrt {
 namespace internal {
 
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
 
 // The computations in this file are described in documentation/cbrt.pdf; the

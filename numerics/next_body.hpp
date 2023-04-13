@@ -13,6 +13,9 @@ namespace numerics {
 namespace _next {
 namespace internal {
 
+using namespace principia::numerics::_log_b;
+using namespace principia::numerics::_scale_b;
+
 template<typename SourceFormat, typename>
 constexpr SourceFormat NextUp(SourceFormat const x) {
   // Handle the edge cases in the order in which they are listed in

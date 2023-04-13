@@ -29,6 +29,8 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
 
 template<typename T>
@@ -89,34 +91,34 @@ class AlmostEqualsMatcher final {
   bool MatchAndExplain(Point<Vector> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, int size>
-  bool MatchAndExplain(numerics::FixedVector<Scalar, size> const& actual,
+  bool MatchAndExplain(FixedVector<Scalar, size> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, int rows, int columns>
   bool MatchAndExplain(
-      numerics::FixedMatrix<Scalar, rows, columns> const& actual,
+      FixedMatrix<Scalar, rows, columns> const& actual,
       testing::MatchResultListener* listener) const;
   template<typename Scalar, int rows>
   bool MatchAndExplain(
-      numerics::FixedLowerTriangularMatrix<Scalar, rows> const& actual,
+      FixedLowerTriangularMatrix<Scalar, rows> const& actual,
       testing::MatchResultListener* listener) const;
   template<typename Scalar, int columns>
   bool MatchAndExplain(
-      numerics::FixedUpperTriangularMatrix<Scalar, columns> const& actual,
+      FixedUpperTriangularMatrix<Scalar, columns> const& actual,
       testing::MatchResultListener* listener) const;
   template<typename Scalar>
-  bool MatchAndExplain(numerics::UnboundedVector<Scalar> const& actual,
+  bool MatchAndExplain(UnboundedVector<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(
-      numerics::UnboundedMatrix<Scalar> const& actual,
+      UnboundedMatrix<Scalar> const& actual,
       testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(
-      numerics::UnboundedLowerTriangularMatrix<Scalar> const& actual,
+      UnboundedLowerTriangularMatrix<Scalar> const& actual,
       testing::MatchResultListener* listener) const;
   template<typename Scalar>
   bool MatchAndExplain(
-      numerics::UnboundedUpperTriangularMatrix<Scalar> const& actual,
+      UnboundedUpperTriangularMatrix<Scalar> const& actual,
       testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
