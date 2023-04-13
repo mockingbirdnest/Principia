@@ -27,8 +27,4 @@ using internal::FallingFactorial;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_combinatorics;
-}  // namespace principia::numerics
-
 #include "numerics/combinatorics_body.hpp"

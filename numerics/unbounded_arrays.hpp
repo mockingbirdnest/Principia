@@ -242,8 +242,4 @@ using internal::UnboundedVector;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_unbounded_arrays;
-}  // namespace principia::numerics
-
 #include "numerics/unbounded_arrays_body.hpp"

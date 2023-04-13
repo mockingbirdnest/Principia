@@ -35,8 +35,4 @@ using internal::FiniteDifference;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_finite_difference;
-}  // namespace principia::numerics
-
 #include "numerics/finite_difference_body.hpp"

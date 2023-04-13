@@ -44,8 +44,4 @@ using internal::FitHermiteSpline;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_fit_hermite_spline;
-}  // namespace principia::numerics
-
 #include "numerics/fit_hermite_spline_body.hpp"

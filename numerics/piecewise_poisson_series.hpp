@@ -470,8 +470,4 @@ using internal::PiecewisePoissonSeries;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_piecewise_poisson_series;
-}  // namespace principia::numerics
-
 #include "numerics/piecewise_poisson_series_body.hpp"

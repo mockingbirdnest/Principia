@@ -53,8 +53,4 @@ using internal::UseHardwareFMA;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_fma;
-}  // namespace principia::numerics
-
 #include "numerics/fma_body.hpp"

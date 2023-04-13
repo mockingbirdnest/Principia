@@ -249,8 +249,4 @@ using internal::FixedVector;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_fixed_arrays;
-}  // namespace principia::numerics
-
 #include "numerics/fixed_arrays_body.hpp"

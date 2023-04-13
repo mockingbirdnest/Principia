@@ -97,8 +97,4 @@ using internal::Projection;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_frequency_analysis;
-}  // namespace principia::numerics
-
 #include "numerics/frequency_analysis_body.hpp"

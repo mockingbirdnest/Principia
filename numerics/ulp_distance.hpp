@@ -15,8 +15,4 @@ using internal::ULPDistance;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_ulp_distance;
-}  // namespace principia::numerics
-
 #include "numerics/ulp_distance_body.hpp"

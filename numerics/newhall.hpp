@@ -66,8 +66,4 @@ using internal::NewhallApproximationInMonomialBasis;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_newhall;
-}  // namespace principia::numerics
-
 #include "numerics/newhall_body.hpp"

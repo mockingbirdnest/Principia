@@ -19,8 +19,4 @@ using internal::LegendrePolynomial;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_legendre;
-}  // namespace principia::numerics
-
 #include "numerics/legendre_body.hpp"

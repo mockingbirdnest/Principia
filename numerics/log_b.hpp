@@ -22,8 +22,4 @@ using internal::LogB;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_log_b;
-}  // namespace principia::numerics
-
 #include "numerics/log_b_body.hpp"

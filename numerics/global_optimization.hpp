@@ -131,8 +131,4 @@ using internal::MultiLevelSingleLinkage;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_global_optimization;
-}  // namespace principia::numerics
-
 #include "numerics/global_optimization_body.hpp"

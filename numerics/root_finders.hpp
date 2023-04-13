@@ -84,8 +84,4 @@ using internal::SolveQuadraticEquation;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_root_finders;
-}  // namespace principia::numerics
-
 #include "numerics/root_finders_body.hpp"

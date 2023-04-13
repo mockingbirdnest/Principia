@@ -23,7 +23,3 @@ using internal::JacobiSNCNDN;
 }  // namespace _elliptic_functions
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_elliptic_functions;
-}  // namespace principia::numerics

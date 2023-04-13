@@ -189,8 +189,4 @@ using internal::PrincipalComponentPartitioningTree;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_nearest_neighbour;
-}  // namespace principia::numerics
-
 #include "numerics/nearest_neighbour_body.hpp"

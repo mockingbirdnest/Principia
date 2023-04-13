@@ -75,8 +75,4 @@ struct HornerEvaluator {
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_polynomial_evaluators;
-}  // namespace principia::numerics
-
 #include "numerics/polynomial_evaluators_body.hpp"
