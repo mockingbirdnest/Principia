@@ -182,8 +182,4 @@ using internal::Manœuvre;
 }  // namespace ksp_plugin
 }  // namespace principia
 
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_manœuvre;
-}  // namespace principia::ksp_plugin
-
 #include "ksp_plugin/manœuvre_body.hpp"

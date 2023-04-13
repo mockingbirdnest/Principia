@@ -66,7 +66,3 @@ using internal::VesselSet;
 }  // namespace _identification
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_identification;
-}  // namespace principia::ksp_plugin

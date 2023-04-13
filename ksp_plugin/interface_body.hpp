@@ -22,6 +22,8 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_orbit_analyser;
+using namespace principia::ksp_plugin::_plugin;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
@@ -520,8 +522,8 @@ Interval ToInterval(geometry::_interval::Interval<T> const& interval) {
 // objects via C pointers; it must be not be deleted from C++, and must instead
 // be passed to the generated C# marshaller, which will properly delete it.
 inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
-    ksp_plugin::OrbitAnalyser::Analysis* const vessel_analysis,
-    ksp_plugin::Plugin const& plugin,
+    OrbitAnalyser::Analysis* const vessel_analysis,
+    Plugin const& plugin,
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
     int const ground_track_revolution) {

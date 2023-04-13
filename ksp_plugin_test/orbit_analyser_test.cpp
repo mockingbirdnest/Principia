@@ -27,6 +27,8 @@ using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_ephemeris;

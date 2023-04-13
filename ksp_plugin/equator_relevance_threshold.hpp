@@ -9,6 +9,7 @@ namespace ksp_plugin {
 namespace _equator_relevance_threshold {
 namespace internal {
 
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
 
@@ -27,7 +28,3 @@ using internal::EquatorRelevanceThreshold;
 }  // namespace _equator_relevance_threshold
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_equator_relevance_threshold;
-}  // namespace principia::ksp_plugin

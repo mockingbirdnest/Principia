@@ -25,6 +25,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
@@ -231,7 +233,3 @@ using internal::FlightPlan;
 }  // namespace _flight_plan
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_flight_plan;
-}  // namespace principia::ksp_plugin

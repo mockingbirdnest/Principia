@@ -33,6 +33,9 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
@@ -245,7 +248,3 @@ inline not_null<Subset<Part>::Node*> Subset<Part>::Node::Get(Part& element) {
 }  // namespace _disjoint_sets
 }  // namespace base
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_part;
-}  // namespace principia::ksp_plugin

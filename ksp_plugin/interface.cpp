@@ -1198,7 +1198,7 @@ void __cdecl principia__UpdatePrediction(
     char const* const* const vessel_guids) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guids});
   CHECK_NOTNULL(plugin);
-  std::vector<ksp_plugin::GUID> guids;
+  std::vector<GUID> guids;
   for (char const* const* c = vessel_guids;
        *c != nullptr;
        ++c) {
