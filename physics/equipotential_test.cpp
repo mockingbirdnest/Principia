@@ -51,6 +51,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
@@ -478,7 +479,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
     }
     logger.Append("maxima", maxima, ExpressIn(Metre, Second));
 
-    double const arg_approx_l1 = numerics::Brent(
+    double const arg_approx_l1 = Brent(
         [&](double const x) {
           return potential(Barycentre(std::pair(moon_position, earth_position),
                                       std::pair(x, 1 - x)));
@@ -486,7 +487,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
         0.0,
         1.0,
         std::greater<>{});
-    double const arg_approx_l2 = numerics::Brent(
+    double const arg_approx_l2 = Brent(
         [&](double x) {
           return potential(Barycentre(
               std::pair(moon_position,
