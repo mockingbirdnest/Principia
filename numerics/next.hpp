@@ -25,8 +25,4 @@ using internal::NextUp;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_next;
-}  // namespace principia::numerics
-
 #include "numerics/next_body.hpp"

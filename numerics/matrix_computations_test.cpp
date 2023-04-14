@@ -12,7 +12,9 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
 

@@ -13,6 +13,7 @@ namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -60,7 +61,7 @@ class HarmonicDamping final {
   // custom evaluation that ignores the constant term instead.  See #1922.
   PolynomialInMonomialBasis<
       double, Length, 3,
-      numerics::EstrinEvaluator>::Coefficients sigmoid_coefficients_;
+      EstrinEvaluator>::Coefficients sigmoid_coefficients_;
 };
 }  // namespace internal
 

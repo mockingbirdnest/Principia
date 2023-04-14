@@ -67,8 +67,4 @@ using internal::Midpoint;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_quadrature;
-}  // namespace principia::numerics
-
 #include "numerics/quadrature_body.hpp"

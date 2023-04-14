@@ -14,6 +14,7 @@ namespace numerics {
 
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_apodization;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

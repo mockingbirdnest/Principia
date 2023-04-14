@@ -20,6 +20,7 @@ namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 

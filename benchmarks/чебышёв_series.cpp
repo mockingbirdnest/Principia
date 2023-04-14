@@ -37,6 +37,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

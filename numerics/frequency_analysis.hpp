@@ -15,6 +15,7 @@ namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::numerics::_poisson_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -96,9 +97,5 @@ using internal::Projection;
 }  // namespace _frequency_analysis
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_frequency_analysis;
-}  // namespace principia::numerics
 
 #include "numerics/frequency_analysis_body.hpp"

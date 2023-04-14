@@ -8,6 +8,8 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_fixed_arrays;
+
 constexpr FixedMatrix<double, 3 + 1, 2 * 8 + 2>
     newhall_c_matrix_чебышёв_degree_3_divisions_8_w04(
         std::array<double, (3 + 1) * (2 * 8 + 2)>{

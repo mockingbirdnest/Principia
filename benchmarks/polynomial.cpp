@@ -18,6 +18,8 @@ using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

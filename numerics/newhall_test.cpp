@@ -21,7 +21,11 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_newhall;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

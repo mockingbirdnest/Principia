@@ -13,6 +13,7 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

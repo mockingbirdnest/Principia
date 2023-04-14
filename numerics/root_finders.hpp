@@ -15,6 +15,7 @@ namespace _root_finders {
 namespace internal {
 
 using namespace principia::base::_array;
+using namespace principia::numerics::_scale_b;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
@@ -83,9 +84,5 @@ using internal::SolveQuadraticEquation;
 }  // namespace _root_finders
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_root_finders;
-}  // namespace principia::numerics
 
 #include "numerics/root_finders_body.hpp"

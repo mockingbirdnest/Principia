@@ -17,6 +17,7 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
@@ -24,7 +25,7 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
   return si::Unit<Product<Q1, Q2>> *
-         numerics::FusedMultiplyAdd(
+         numerics::_fma::FusedMultiplyAdd(
              x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
 }
 
@@ -33,7 +34,7 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
   return si::Unit<Product<Q1, Q2>> *
-         numerics::FusedMultiplySubtract(
+         numerics::_fma::FusedMultiplySubtract(
              x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
 }
 
@@ -42,7 +43,7 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
   return si::Unit<Product<Q1, Q2>> *
-         numerics::FusedNegatedMultiplyAdd(
+         numerics::_fma::FusedNegatedMultiplyAdd(
              x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
 }
 
@@ -51,7 +52,7 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
   return si::Unit<Product<Q1, Q2>> *
-         numerics::FusedNegatedMultiplySubtract(
+         numerics::_fma::FusedNegatedMultiplySubtract(
              x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
 }
 
@@ -83,17 +84,17 @@ SquareRoot<Q> Sqrt(Q const& x) {
 
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x) {
-  return si::Unit<CubeRoot<Q>> * numerics::Cbrt(x / si::Unit<Q>);
+  return si::Unit<CubeRoot<Q>> * numerics::_cbrt::Cbrt(x / si::Unit<Q>);
 }
 
 template<typename Q>
 constexpr Q NextUp(Q const& x) {
-  return si::Unit<Q> * numerics::NextUp(x / si::Unit<Q>);
+  return si::Unit<Q> * numerics::_next::NextUp(x / si::Unit<Q>);
 }
 
 template<typename Q>
 constexpr Q NextDown(Q const& x) {
-  return si::Unit<Q> * numerics::NextDown(x / si::Unit<Q>);
+  return si::Unit<Q> * numerics::_next::NextDown(x / si::Unit<Q>);
 }
 
 template<int exponent>

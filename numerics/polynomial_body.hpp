@@ -28,6 +28,7 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_serialization;
+using namespace principia::numerics::_combinatorics;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

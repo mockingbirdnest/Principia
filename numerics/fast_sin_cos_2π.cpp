@@ -11,6 +11,9 @@ namespace numerics {
 namespace _fast_sin_cos_2π {
 namespace internal {
 
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+
 namespace {
 
 using P3 = PolynomialInMonomialBasis</*Value=*/double,

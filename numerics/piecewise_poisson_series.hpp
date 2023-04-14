@@ -51,6 +51,7 @@ using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::numerics::_poisson_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -469,9 +470,5 @@ using internal::PiecewisePoissonSeries;
 }  // namespace _piecewise_poisson_series
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_piecewise_poisson_series;
-}  // namespace principia::numerics
 
 #include "numerics/piecewise_poisson_series_body.hpp"

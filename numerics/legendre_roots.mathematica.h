@@ -8,6 +8,8 @@ namespace numerics {
 namespace _legendre_roots {
 namespace internal {
 
+using namespace principia::numerics::_fixed_arrays;
+
 // Roots of the Legendre polynomials of degree up to 50.
 constexpr FixedStrictlyLowerTriangularMatrix<double, 51>
 LegendreRoots{{{

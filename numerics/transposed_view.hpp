@@ -18,7 +18,3 @@ using internal::TransposedView;
 }  // namespace _transposed_view
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_transposed_view;
-}  // namespace principia::numerics

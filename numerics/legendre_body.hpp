@@ -13,6 +13,7 @@ namespace numerics {
 namespace _legendre {
 namespace internal {
 
+using namespace principia::numerics::_combinatorics;
 using namespace principia::quantities::_elementary_functions;
 
 template<int degree, typename>

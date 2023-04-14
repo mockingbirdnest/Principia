@@ -16,6 +16,7 @@ namespace numerics {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_nearest_neighbour;
 
 using World = Frame<struct WorldTag>;
 using V = Vector<double, World>;

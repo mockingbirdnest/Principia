@@ -20,6 +20,7 @@ namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
+using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

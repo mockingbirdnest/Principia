@@ -87,8 +87,4 @@ using internal::ЧебышёвSeries;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_чебышёв_series;
-}  // namespace principia::numerics
-
 #include "numerics/чебышёв_series_body.hpp"

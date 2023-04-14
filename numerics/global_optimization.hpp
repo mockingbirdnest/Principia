@@ -18,6 +18,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_nearest_neighbour;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -130,9 +131,5 @@ using internal::MultiLevelSingleLinkage;
 }  // namespace _global_optimization
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_global_optimization;
-}  // namespace principia::numerics
 
 #include "numerics/global_optimization_body.hpp"

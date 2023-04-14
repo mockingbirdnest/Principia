@@ -8,6 +8,8 @@ namespace numerics {
 namespace _max_abs_normalized_associated_legendre_function {
 namespace internal {
 
+using namespace principia::numerics::_fixed_arrays;
+
 // Global maxima over [-1, 1] of the absolute value of the normalized associated
 // Legendre functions.
 constexpr FixedLowerTriangularMatrix<double, 51>

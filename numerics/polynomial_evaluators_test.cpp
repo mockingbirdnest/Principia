@@ -9,6 +9,7 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_polynomial_evaluators;
 
 class PolynomialEvaluatorTest : public ::testing::Test {

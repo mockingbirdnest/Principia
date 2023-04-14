@@ -49,7 +49,3 @@ using internal::Cbrt;
 }  // namespace _cbrt
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_cbrt;
-}  // namespace principia::numerics
