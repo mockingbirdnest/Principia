@@ -31,6 +31,10 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_matrix_computations;
+using namespace principia::numerics::_poisson_series_basis;
+using namespace principia::numerics::_root_finders;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

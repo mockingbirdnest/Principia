@@ -17,6 +17,8 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.

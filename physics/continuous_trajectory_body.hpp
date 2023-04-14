@@ -24,6 +24,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
+using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
@@ -655,7 +656,7 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
-  return numerics::NewhallApproximationInMonomialBasis<
+  return numerics::_newhall::NewhallApproximationInMonomialBasis<
              Position<Frame>, EstrinEvaluator>(degree,
                                                q, v,
                                                t_min, t_max,

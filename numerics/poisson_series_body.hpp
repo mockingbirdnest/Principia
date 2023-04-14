@@ -21,6 +21,7 @@ namespace numerics {
 namespace _poisson_series {
 namespace internal {
 
+using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
