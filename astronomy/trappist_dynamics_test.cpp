@@ -58,6 +58,7 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
@@ -1138,8 +1139,8 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
 
-  mathematica::Logger logger(TEMP_DIR / "trappist_periods.generated.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "trappist_periods.generated.wl",
+                /*make_unique=*/false);
   auto const bodies = ephemeris_->bodies();
   for (auto const& planet : bodies) {
     if (planet != star) {
@@ -1164,7 +1165,7 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
 TEST_F(TrappistDynamicsTest, DISABLED_MathematicaTransits) {
   // Run this test with different ephemerides to make sure that the system is
   // converged.
-  mathematica::Logger logger(TEMP_DIR / "trappist_transits.generated.wl",
+  Logger logger(TEMP_DIR / "trappist_transits.generated.wl",
                              /*make_unique=*/false);
   int index = 0;
   for (auto const& ephemeris :
@@ -1213,8 +1214,8 @@ TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   EXPECT_OK(ephemeris_->Prolong(a_century_later));
 
-  mathematica::Logger logger(TEMP_DIR / "trappist_alignments.generated.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "trappist_alignments.generated.wl",
+                /*make_unique=*/false);
 
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
@@ -1236,7 +1237,7 @@ TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
                                  home->angular_velocity());
         logger.Append("alignment" + SanitizedName(*planet),
                       view,
-                      mathematica::ExpressIn(Degree));
+                      ExpressIn(Degree));
       }
     }
   }

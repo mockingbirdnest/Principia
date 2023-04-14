@@ -30,6 +30,7 @@ using namespace principia::integrators::_explicit_linear_multistep_integrator;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::mathematica::_logger;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -190,9 +191,8 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
 
   FixedStepSizeIntegrator<ODE> const& integrator = GetParam().integrator;
 
-  mathematica::Logger logger(
-      TEMP_DIR / ("convergence." + GetParam().name + ".generated.wl"),
-      /*make_unique=*/false);
+  Logger logger(TEMP_DIR / ("convergence." + GetParam().name + ".generated.wl"),
+                /*make_unique=*/false);
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
     auto const instance =
         integrator.NewInstance(problem, append_state, step);
