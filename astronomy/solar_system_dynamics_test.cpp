@@ -51,6 +51,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
@@ -529,8 +530,8 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
 TEST(MarsTest, Phobos) {
-  mathematica::Logger logger(TEMP_DIR / "phobos.generated.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "phobos.generated.wl",
+                /*make_unique=*/false);
 
   SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -587,7 +588,7 @@ class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
  public:
   static void SetUpTestCase() {
-    logger_ = new mathematica::Logger(
+    logger_ = new Logger(
         SOLUTION_DIR / "mathematica" / "solar_system_convergence.generated.wl",
         /*make_unique=*/false);
   }
@@ -610,10 +611,10 @@ class SolarSystemDynamicsConvergenceTest
     return GetParam().first_step_in_seconds;
   }
 
-  static mathematica::Logger* logger_;
+  static Logger* logger_;
 };
 
-mathematica::Logger* SolarSystemDynamicsConvergenceTest::logger_ = nullptr;
+Logger* SolarSystemDynamicsConvergenceTest::logger_ = nullptr;
 
 // This takes 7-8 minutes to run.
 TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {

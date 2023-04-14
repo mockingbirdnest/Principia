@@ -37,6 +37,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::mathematica::_logger;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -264,7 +265,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
     final_state = state;
   };
 
-  mathematica::Logger logger(
+  Logger logger(
       TEMP_DIR / ("convergence." + GetParam().name + ".generated.wl"),
       /*make_unique=*/false);
   for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {

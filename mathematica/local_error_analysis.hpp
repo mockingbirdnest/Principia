@@ -67,8 +67,4 @@ using internal::LocalErrorAnalyser;
 }  // namespace mathematica
 }  // namespace principia
 
-namespace principia::mathematica {
-using namespace principia::mathematica::_local_error_analysis;
-}  // namespace principia::mathematica
-
 #include "mathematica/local_error_analysis_body.hpp"

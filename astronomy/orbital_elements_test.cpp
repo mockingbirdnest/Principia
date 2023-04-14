@@ -33,6 +33,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -199,15 +201,15 @@ TEST_F(OrbitalElementsTest, KeplerOrbit) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               Lt(2.4 * ArcMinute));
 
-  mathematica::Logger logger(
+  Logger logger(
       SOLUTION_DIR / "mathematica" / "unperturbed_elements.generated.wl",
       /*make_unique=*/false);
   logger.Set("unperturbedOsculating",
              elements.osculating_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+             ExpressIn(Metre, Second, Radian));
   logger.Set("unperturbedMean",
              elements.mean_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+             ExpressIn(Metre, Second, Radian));
 }
 
 TEST_F(OrbitalElementsTest, J2Perturbation) {
@@ -316,15 +318,15 @@ TEST_F(OrbitalElementsTest, J2Perturbation) {
                     elements.mean_argument_of_periapsis_interval().measure()),
       IsNear(0.0029_(1)));
 
-  mathematica::Logger logger(
+  Logger logger(
       SOLUTION_DIR / "mathematica" / "j2_perturbed_elements.generated.wl",
       /*make_unique=*/false);
   logger.Set("j2PerturbedOsculating",
              elements.osculating_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+             ExpressIn(Metre, Second, Radian));
   logger.Set("j2PerturbedMean",
              elements.mean_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+             ExpressIn(Metre, Second, Radian));
 }
 #endif
 
@@ -403,15 +405,15 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
               IsNear(154_(1) * Degree));
 
-  mathematica::Logger logger(
+  Logger logger(
       SOLUTION_DIR / "mathematica" / "fully_perturbed_elements.generated.wl",
       /*make_unique=*/false);
   logger.Set("fullyPerturbedOsculating",
              elements.osculating_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+             ExpressIn(Metre, Second, Radian));
   logger.Set("fullyPerturbedMean",
              elements.mean_equinoctial_elements(),
-             mathematica::ExpressIn(Metre, Second, Radian));
+             ExpressIn(Metre, Second, Radian));
 }
 
 TEST_F(OrbitalElementsTest, Escape) {

@@ -69,6 +69,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_ephemeris;
 using namespace principia::quantities::_astronomy;
@@ -1160,9 +1161,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   }
   EXPECT_THAT(error, IsNear(3.3_(1) * Metre));
 
-  mathematica::Logger logger(
-      TEMP_DIR / "discrete_trajectory_compression.generated.wl",
-      /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "discrete_trajectory_compression.generated.wl",
+                /*make_unique=*/false);
   logger.Set("trajectory1",
              trajectory1.begin(), trajectory1.end(), PreserveUnits);
   logger.Set("trajectory2",
