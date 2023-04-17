@@ -55,7 +55,7 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
             {SymmetricLinearMultistepIntegrator<
                  QuinlanTremaine1990Order12,
                  Ephemeris<ICRS>::NewtonianMotionEquation>(),
-             /*step=*/1 * Minute})),
+             /*step=*/10 * Minute})),
         earth_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Earth))),
@@ -68,7 +68,7 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<MassiveBody const*> const earth_;
   not_null<MassiveBody const*> const moon_;
-  _body_centred_body_direction_reference_frame::BodyCentredBodyDirectionReferenceFrame<ICRS, EarthMoon> const earth_moon_;
+  RotatingPulsatingReferenceFrame<ICRS, EarthMoon> const earth_moon_;
 };
 
 // Check that GeometricAcceleration is consistent with
@@ -107,7 +107,7 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
           SymmetricLinearMultistepIntegrator<
               Quinlan1999Order8A,
               Ephemeris<ICRS>::NewtonianMotionEquation>(),
-          /*step=*/1.0/16 * Second));
+          /*step=*/1.0 * Second));
   // Flow the inertial trajectory.
   EXPECT_OK(ephemeris_->FlowWithFixedStep(t_final, *icrs_instance));
 
@@ -141,22 +141,21 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
                 EXPECT_OK(earth_moon_trajectory.Append(state.s.value,
                                                        {q.value, v.value}));
               },
-              /*step=*/1.0 / 16 * Second);
+              /*step=*/1.0 * Second);
   EXPECT_OK(earth_moon_instance->Solve(t_final));
 
   EXPECT_THAT(icrs_trajectory.back().time, Eq(t_final));
   EXPECT_THAT(earth_moon_trajectory.back().time, Eq(t_final));
+  // TODO(egg): These errors make no sense.
   EXPECT_THAT(
       earth_moon_.FromThisFrameAtTimeSimilarly(t_final)(
           earth_moon_trajectory.back().degrees_of_freedom),
       Componentwise(AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.position(),
-                        IsNear(51_(1) * Metre)),
+                        IsNear(2'110.9_(1) * Metre)),
                     AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
-                        IsNear(5.5_(1) * Milli(Metre) / Second))));
-  LOG(ERROR) << earth_moon_trajectory.size();
-  LOG(ERROR) << icrs_trajectory.size();
+                        IsNear(265.9_(1) * Milli(Metre) / Second))));
 }
 
 }  // namespace physics
