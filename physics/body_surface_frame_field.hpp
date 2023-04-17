@@ -47,8 +47,4 @@ using internal::BodySurfaceFrameField;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_body_surface_frame_field;
-}  // namespace principia::physics
-
 #include "physics/body_surface_frame_field_body.hpp"

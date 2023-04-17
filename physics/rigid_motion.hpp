@@ -163,8 +163,4 @@ using internal::RigidTransformation;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_rigid_motion;
-}  // namespace principia::physics
-
 #include "physics/rigid_motion_body.hpp"

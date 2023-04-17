@@ -71,8 +71,4 @@ using internal::Timeline;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_discrete_trajectory_types;
-}  // namespace principia::physics
-
 #include "physics/discrete_trajectory_types_body.hpp"

@@ -117,8 +117,4 @@ using internal::Geopotential;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_geopotential;
-}  // namespace principia::physics
-
 #include "physics/geopotential_body.hpp"

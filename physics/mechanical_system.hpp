@@ -105,8 +105,4 @@ using internal::MechanicalSystem;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_mechanical_system;
-}  // namespace principia::physics
-
 #include "physics/mechanical_system_body.hpp"

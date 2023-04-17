@@ -232,8 +232,4 @@ using internal::DiscreteTrajectory;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_discrete_trajectory;
-}  // namespace principia::physics
-
 #include "physics/discrete_trajectory_body.hpp"

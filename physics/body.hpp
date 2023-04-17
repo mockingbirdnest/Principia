@@ -58,10 +58,6 @@ using internal::Body;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_body;
-}  // namespace principia::physics
-
 #include "physics/body_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_HPP_

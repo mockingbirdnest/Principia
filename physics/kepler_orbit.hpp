@@ -138,8 +138,4 @@ using internal::KeplerOrbit;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_kepler_orbit;
-}  // namespace principia::physics
-
 #include "physics/kepler_orbit_body.hpp"

@@ -100,10 +100,6 @@ using internal::BodyCentredNonRotatingReferenceFrame;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_body_centred_non_rotating_reference_frame;
-}  // namespace principia::physics
-
 #include "physics/body_centred_non_rotating_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_CENTRED_NON_ROTATING_REFERENCE_FRAME_HPP_

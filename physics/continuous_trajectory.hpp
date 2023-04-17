@@ -261,8 +261,4 @@ using internal::ContinuousTrajectory;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_continuous_trajectory;
-}  // namespace principia::physics
-
 #include "physics/continuous_trajectory_body.hpp"

@@ -85,10 +85,6 @@ using internal::BodySurfaceReferenceFrame;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_body_surface_reference_frame;
-}  // namespace principia::physics
-
 #include "physics/body_surface_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_

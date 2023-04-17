@@ -111,10 +111,6 @@ using internal::OblateBody;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_oblate_body;
-}  // namespace principia::physics
-
 #include "physics/oblate_body_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_

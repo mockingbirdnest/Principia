@@ -40,7 +40,3 @@ using internal::Trajectory;
 }  // namespace _trajectory
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_trajectory;
-}  // namespace principia::physics

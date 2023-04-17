@@ -102,8 +102,4 @@ using internal::DiscreteTrajectorySegmentIterator;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_discrete_trajectory_segment_iterator;
-}  // namespace principia::physics
-
 #include "physics/discrete_trajectory_segment_iterator_body.hpp"

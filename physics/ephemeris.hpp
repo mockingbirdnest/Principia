@@ -447,8 +447,4 @@ using internal::Ephemeris;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_ephemeris;
-}  // namespace principia::physics
-
 #include "physics/ephemeris_body.hpp"

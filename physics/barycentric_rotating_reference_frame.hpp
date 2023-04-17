@@ -102,10 +102,6 @@ using internal::BarycentricRotatingReferenceFrame;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_barycentric_rotating_reference_frame;
-}  // namespace principia::physics
-
 #include "physics/barycentric_rotating_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_REFERENCE_FRAME_HPP_

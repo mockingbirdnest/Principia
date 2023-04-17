@@ -74,8 +74,4 @@ using internal::JacobiCoordinates;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_jacobi_coordinates;
-}  // namespace principia::physics
-
 #include "physics/jacobi_coordinates_body.hpp"

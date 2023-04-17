@@ -63,8 +63,4 @@ using internal::ComputeNodes;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_apsides;
-}  // namespace principia::physics
-
 #include "physics/apsides_body.hpp"

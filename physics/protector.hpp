@@ -50,7 +50,3 @@ using internal::Protector;
 }  // namespace _protector
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_protector;
-}  // namespace principia::physics

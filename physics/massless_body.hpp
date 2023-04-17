@@ -48,10 +48,6 @@ using internal::MasslessBody;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_massless_body;
-}  // namespace principia::physics
-
 #include "physics/massless_body_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_MASSLESS_BODY_HPP_

@@ -246,8 +246,4 @@ using internal::DiscreteTrajectorySegment;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_discrete_trajectory_segment;
-}  // namespace principia::physics
-
 #include "physics/discrete_trajectory_segment_body.hpp"

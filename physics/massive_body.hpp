@@ -92,10 +92,6 @@ using internal::MassiveBody;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_massive_body;
-}  // namespace principia::physics
-
 #include "physics/massive_body_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_

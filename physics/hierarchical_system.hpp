@@ -103,8 +103,4 @@ using internal::HierarchicalSystem;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_hierarchical_system;
-}  // namespace principia::physics
-
 #include "physics/hierarchical_system_body.hpp"

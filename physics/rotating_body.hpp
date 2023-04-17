@@ -192,10 +192,6 @@ using internal::RotatingBody;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_rotating_body;
-}  // namespace principia::physics
-
 #include "physics/rotating_body_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_

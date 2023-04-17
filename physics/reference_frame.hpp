@@ -106,10 +106,6 @@ class ReferenceFrame {
 using internal::ReferenceFrame;
 using internal::Frenet;
 
-}  // namespace _reference_frame
-}  // namespace physics
-}  // namespace principia
-
 #include "physics/reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_

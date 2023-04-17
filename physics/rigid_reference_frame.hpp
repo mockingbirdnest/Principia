@@ -118,10 +118,6 @@ using internal::RigidReferenceFrame;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_rigid_reference_frame;
-}  // namespace principia::physics
-
 #include "physics/rigid_reference_frame_body.hpp"
 
 #endif  // PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_

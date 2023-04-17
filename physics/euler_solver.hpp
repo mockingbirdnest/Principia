@@ -163,8 +163,4 @@ using internal::EulerSolver;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_euler_solver;
-}  // namespace principia::physics
-
 #include "physics/euler_solver_body.hpp"

@@ -187,8 +187,4 @@ using internal::SolarSystem;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_solar_system;
-}  // namespace principia::physics
-
 #include "physics/solar_system_body.hpp"

@@ -157,8 +157,4 @@ using internal::Equipotential;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_equipotential;
-}  // namespace principia::physics
-
 #include "physics/equipotential_body.hpp"
