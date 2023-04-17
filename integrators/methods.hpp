@@ -424,8 +424,8 @@ struct Fine1987RKNG45 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
       serialization::AdaptiveStepSizeIntegrator::FINE_1987_RKNG_45;
   static constexpr FixedVector<double, stages> c{
       {{0, 8 / 39.0, 4 / 13.0, 5 / 6.0, 43 / 47.0, 1, 1}}};
-  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{
-      {{          32 /         1'521.0,
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{{
+                  32 /         1'521.0,
 
                    4 /           169.0,
                    4 /           169.0,
@@ -451,8 +451,8 @@ struct Fine1987RKNG45 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
                3'276 /        23'575.0,
           -1'142'053 /    22'015'140.0,
                    0 /             1.0}}};
-  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ{
-      {{           8 /            39.0,
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ{{{
+                   8 /            39.0,
 
                    1 /            13.0,
                    3 /            13.0,
