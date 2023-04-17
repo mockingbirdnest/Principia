@@ -24,6 +24,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
@@ -291,7 +292,7 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
          NaNIndependentEq(left.z, right.z);
 }
 
-inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
+inline physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
   serialization::AdaptiveStepSizeIntegrator message;
@@ -308,8 +309,8 @@ FromAdaptiveStepParameters(
 }
 
 inline std::pair<
-    physics::Ephemeris<Barycentric>::AdaptiveStepParameters,
-    physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
+    physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters,
+    physics::_ephemeris::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
 FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
                                          flight_plan_adaptive_step_parameters) {
   serialization::AdaptiveStepSizeIntegrator message1;
@@ -408,7 +409,7 @@ inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
-    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
   serialization::AdaptiveStepSizeIntegrator message;
   adaptive_step_parameters.integrator().WriteToMessage(&message);
@@ -420,9 +421,10 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
 }
 
 inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
-    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters,
-    physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+    physics::_ephemeris::Ephemeris<
+        Barycentric>::GeneralizedAdaptiveStepParameters const&
         generalized_adaptive_step_parameters) {
   serialization::AdaptiveStepSizeIntegrator message1;
   adaptive_step_parameters.integrator().WriteToMessage(&message1);
@@ -438,7 +440,8 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
 }
 
 inline KeplerianElements ToKeplerianElements(
-    physics::KeplerianElements<Barycentric> const& keplerian_elements) {
+    physics::_kepler_orbit::KeplerianElements<Barycentric> const&
+        keplerian_elements) {
   return {*keplerian_elements.eccentricity,
           keplerian_elements.semimajor_axis
               ? *keplerian_elements.semimajor_axis / Metre

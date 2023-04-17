@@ -49,6 +49,8 @@ using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
@@ -99,11 +101,12 @@ bool operator==(XYZ const& left, XYZ const& right);
 
 // Conversions between interchange data and typed data.
 
-physics::Ephemeris<Barycentric>::AdaptiveStepParameters
+physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
-std::pair<physics::Ephemeris<Barycentric>::AdaptiveStepParameters,
-          physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
+std::pair<physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters,
+          physics::_ephemeris::Ephemeris<
+              Barycentric>::GeneralizedAdaptiveStepParameters>
 FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
                                          flight_plan_adaptive_step_parameters);
 
@@ -136,16 +139,18 @@ template<>
 R3Element<MomentOfInertia> FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
-    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters);
 FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
-    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+    physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters,
-    physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+    physics::_ephemeris::Ephemeris<
+        Barycentric>::GeneralizedAdaptiveStepParameters const&
         generalized_adaptive_step_parameters);
 
 KeplerianElements ToKeplerianElements(
-    physics::KeplerianElements<Barycentric> const& keplerian_elements);
+    physics::_kepler_orbit::KeplerianElements<Barycentric> const&
+        keplerian_elements);
 
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);

@@ -55,6 +55,7 @@ using namespace principia::physics::_hierarchical_system;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -136,7 +137,7 @@ constexpr std::array<Celestial, 5> jool_moons = {Laythe, Vall, Tylo, Bop, Pol};
 
 HierarchicalSystem<Barycentric>::BarycentricSystem MakeStabilizedKSPSystem() {
   static auto const& system = *[]() {
-    auto* const system = new physics::SolarSystem<Barycentric>(
+    auto* const system = new SolarSystem<Barycentric>(
         SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
     StabilizeKSP(*system);

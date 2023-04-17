@@ -25,7 +25,7 @@ constexpr Instant MercuryOrbiterInitialTime =
     "1966-09-01T00:16:55"_TT + 0.2571494579315186 * Second;
 
 template<typename Barycentric>
-physics::DegreesOfFreedom<Barycentric> const
+DegreesOfFreedom<Barycentric> const
     MercuryOrbiterInitialDegreesOfFreedom = {
         Barycentric::origin +
             Displacement<Barycentric>({-2.40627773705000000e+10 * Metre,

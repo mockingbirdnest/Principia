@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin_test/fake_plugin.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -54,7 +55,7 @@ class InterfaceExternalTest : public ::testing::Test {
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt")) {
-    physics::KeplerianElements<Barycentric> low_earth_orbit;
+    physics::_kepler_orbit::KeplerianElements<Barycentric> low_earth_orbit;
     low_earth_orbit.eccentricity = 0;
     low_earth_orbit.semimajor_axis = 6783 * Kilo(Metre);
     low_earth_orbit.inclination = 0 * Degree;
