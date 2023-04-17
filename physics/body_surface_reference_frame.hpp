@@ -29,6 +29,11 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the centre of mass of the body.  The X axis is at

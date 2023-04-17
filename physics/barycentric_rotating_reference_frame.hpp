@@ -31,9 +31,12 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the barycentre of the two bodies.  The X axis

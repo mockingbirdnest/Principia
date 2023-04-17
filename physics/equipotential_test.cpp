@@ -53,9 +53,11 @@ using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

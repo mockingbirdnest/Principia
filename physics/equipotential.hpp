@@ -29,6 +29,7 @@ using namespace principia::geometry::_plane;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -49,7 +50,8 @@ class Equipotential {
                                                      Position<Frame>,
                                                      double>;
   using DependentVariables = typename ODE::DependentVariables;
-  using AdaptiveParameters = physics::AdaptiveStepParameters<ODE>;
+  using AdaptiveParameters =
+      _integration_parameters::AdaptiveStepParameters<ODE>;
   using Line = std::vector<DependentVariables>;
   using Lines = std::vector<Line>;
 

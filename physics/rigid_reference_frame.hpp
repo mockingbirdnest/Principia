@@ -8,6 +8,7 @@
 #ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
