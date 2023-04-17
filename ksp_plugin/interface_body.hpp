@@ -310,7 +310,8 @@ FromAdaptiveStepParameters(
 
 inline std::pair<
     physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters,
-    physics::_ephemeris::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
+    physics::_ephemeris::Ephemeris<
+        Barycentric>::GeneralizedAdaptiveStepParameters>
 FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
                                          flight_plan_adaptive_step_parameters) {
   serialization::AdaptiveStepSizeIntegrator message1;
