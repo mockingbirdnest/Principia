@@ -61,13 +61,13 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
         moon_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Moon))),
-        earth_moon_(ephemeris_.get(), earth_, moon_) {}
+        earth_moon_(ephemeris_.get(), dynamic_cast_not_null<const RotatingBody<ICRS>*>(moon_)) {}
 
   not_null<std::unique_ptr<SolarSystem<ICRS>>> const solar_system_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<MassiveBody const*> const earth_;
   not_null<MassiveBody const*> const moon_;
-  _body_centred_body_direction_reference_frame::BodyCentredBodyDirectionReferenceFrame<ICRS, EarthMoon> const earth_moon_;
+  _body_surface_reference_frame::BodySurfaceReferenceFrame<ICRS, EarthMoon> const earth_moon_;
 };
 
 // Check that GeometricAcceleration is consistent with
@@ -101,8 +101,8 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
       earth_moon_.ToThisFrameAtTimeSimilarly(icrs_trajectory.front().time)(
           icrs_trajectory.front().degrees_of_freedom)));
 
-  Length const length_tolerance = 1e-9 * Metre;
-  Speed const speed_tolerance = 1e-9 * Metre / Second;
+  Length const length_tolerance = 1e-12 * Metre;
+  Speed const speed_tolerance = 1e-12 * Metre / Second;
 
   // Flow the inertial trajectory.
   EXPECT_OK(ephemeris_->FlowWithAdaptiveStep(
@@ -195,6 +195,8 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
                     AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
                         IsNear(0_(1) * Milli(Metre) / Second))));
+  LOG(ERROR) << earth_moon_trajectory.size();
+  LOG(ERROR) << icrs_trajectory.size();
 }
 
 }  // namespace physics
