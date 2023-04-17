@@ -107,7 +107,7 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
           SymmetricLinearMultistepIntegrator<
               Quinlan1999Order8A,
               Ephemeris<ICRS>::NewtonianMotionEquation>(),
-          /*step=*/1 * Second));
+          /*step=*/1.0/16 * Second));
   // Flow the inertial trajectory.
   EXPECT_OK(ephemeris_->FlowWithFixedStep(t_final, *icrs_instance));
 
@@ -141,7 +141,7 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
                 EXPECT_OK(earth_moon_trajectory.Append(state.s.value,
                                                        {q.value, v.value}));
               },
-              /*step=*/0.25 * Second);
+              /*step=*/1.0 / 16 * Second);
   EXPECT_OK(earth_moon_instance->Solve(t_final));
 
   EXPECT_THAT(icrs_trajectory.back().time, Eq(t_final));
