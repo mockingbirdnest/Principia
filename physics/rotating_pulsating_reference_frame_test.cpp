@@ -25,7 +25,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
-using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_explicit_runge_kutta_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
@@ -62,13 +62,13 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
         moon_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Moon))),
-        earth_moon_(ephemeris_.get(), dynamic_cast_not_null<const RotatingBody<ICRS>*>(moon_)) {}
+        earth_moon_(ephemeris_.get(), earth_, moon_) {}
 
   not_null<std::unique_ptr<SolarSystem<ICRS>>> const solar_system_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<MassiveBody const*> const earth_;
   not_null<MassiveBody const*> const moon_;
-  _body_surface_reference_frame::BodySurfaceReferenceFrame<ICRS, EarthMoon> const earth_moon_;
+  _body_centred_body_direction_reference_frame::BodyCentredBodyDirectionReferenceFrame<ICRS, EarthMoon> const earth_moon_;
 };
 
 // Check that GeometricAcceleration is consistent with
@@ -100,67 +100,49 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
       earth_moon_.ToThisFrameAtTimeSimilarly(icrs_trajectory.front().time)(
           icrs_trajectory.front().degrees_of_freedom)));
 
-  Length const length_tolerance = 1e-10 * Metre;
-  Speed const speed_tolerance = 1e-10 * Metre / Second;
-
+  auto const icrs_instance = ephemeris_->NewInstance(
+      {&icrs_trajectory},
+      Ephemeris<ICRS>::NoIntrinsicAccelerations,
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<
+              Quinlan1999Order8A,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
+          /*step=*/1 * Second));
   // Flow the inertial trajectory.
-  EXPECT_OK(ephemeris_->FlowWithAdaptiveStep(
-      &icrs_trajectory,
-      Ephemeris<ICRS>::NoIntrinsicAcceleration,
-      t_final,
-      Ephemeris<ICRS>::GeneralizedAdaptiveStepParameters(
-          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-              Fine1987RKNG45,
-              Ephemeris<ICRS>::GeneralizedNewtonianMotionEquation>(),
-          std::numeric_limits<std::int64_t>::max(),
-          length_tolerance,
-          speed_tolerance),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps));
+  EXPECT_OK(ephemeris_->FlowWithFixedStep(t_final, *icrs_instance));
 
   // Flow the rotating-pulsating trajectory, using the geometric acceleration.
   using ODE =
-      ExplicitSecondOrderOrdinaryDifferentialEquation<Position<EarthMoon>>;
+      ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
+                                                     Position<EarthMoon>,
+                                                     Velocity<EarthMoon>>;
   InitialValueProblem<ODE> problem{
-      .equation{
-          .compute_acceleration =
-              [this](
-                  Instant const& t,
-                  std::vector<Position<EarthMoon>> const& positions,
-                  std::vector<Velocity<EarthMoon>> const& velocities,
-                  std::vector<Vector<Acceleration, EarthMoon>>& accelerations) {
-                accelerations.front() = earth_moon_.GeometricAcceleration(
-                    t, {positions.front(), velocities.front()});
-                return absl::OkStatus();
-              }},
+      .equation{.compute_derivative =
+                    [this](Instant const& t,
+                           ODE::DependentVariables const& y,
+                           ODE::DependentVariableDerivatives& yʹ) {
+                      auto const& [q, v] = y;
+                      auto& [qʹ, vʹ] = yʹ;
+                      qʹ = v;
+                      vʹ = earth_moon_.GeometricAcceleration(t, {q, v});
+                      return absl::OkStatus();
+                    }},
       .initial_state{
           earth_moon_trajectory.front().time,
-          {earth_moon_trajectory.front().degrees_of_freedom.position()},
-          {earth_moon_trajectory.front().degrees_of_freedom.velocity()}}};
-  auto const instance =
-      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Fine1987RKNG34,
-                                                             ODE>()
+          {earth_moon_trajectory.front().degrees_of_freedom.position(),
+           earth_moon_trajectory.front().degrees_of_freedom.velocity()}}};
+  auto const earth_moon_instance =
+      ExplicitRungeKuttaIntegrator<Kutta1901Vσ1, ODE>()
           .NewInstance(
               problem,
               /*append_state=*/
               [&earth_moon_trajectory](ODE::State const& state) {
-                EXPECT_OK(earth_moon_trajectory.Append(
-                    state.time.value,
-                    {state.positions.front().value,
-                     state.velocities.front().value}));
+                auto const& [q, v] = state.y;
+                EXPECT_OK(earth_moon_trajectory.Append(state.s.value,
+                                                       {q.value, v.value}));
               },
-              [length_tolerance, speed_tolerance](
-                  Time const& current_step_size,
-                  ODE::State const& /*state*/,
-                  ODE::State::Error const& error) {
-                return std::min(
-                    length_tolerance / error.position_error.front().Norm(),
-                    speed_tolerance / error.velocity_error.front().Norm());
-              },
-              {/*first_time_step=*/t_final - J2000,
-               /*safety_factor=*/0.9,
-               /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-               /*last_step_is_exact=*/true});
-  EXPECT_OK(instance->Solve(t_final));
+              /*step=*/0.25 * Second);
+  EXPECT_OK(earth_moon_instance->Solve(t_final));
 
   EXPECT_THAT(icrs_trajectory.back().time, Eq(t_final));
   EXPECT_THAT(earth_moon_trajectory.back().time, Eq(t_final));
