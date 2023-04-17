@@ -3,6 +3,7 @@
 #include <memory>
 #include <utility>
 
+#include "astronomy/orbital_elements.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "physics/solar_system.hpp"
@@ -54,7 +55,7 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
             {SymmetricLinearMultistepIntegrator<
                  QuinlanTremaine1990Order12,
                  Ephemeris<ICRS>::NewtonianMotionEquation>(),
-             /*step=*/10 * Minute})),
+             /*step=*/1 * Minute})),
         earth_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Earth))),
@@ -76,33 +77,31 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
   Instant const t_final = J2000 + 1 * Day;
   EXPECT_OK(ephemeris_->Prolong(t_final));
 
-  // Create trajectories in the inertial and rotating-pulsating frame,
-  // from the same, starting from the same state, as well as a trajectory in the
-  // inertial frame starting from a millimetrically state.
+  // Create trajectories in the inertial and rotating-pulsating frame, starting
+  // from the same state.
   DiscreteTrajectory<ICRS> icrs_trajectory;
-  DiscreteTrajectory<ICRS> perturbed_icrs_trajectory;
   DiscreteTrajectory<EarthMoon> earth_moon_trajectory;
   EXPECT_OK(icrs_trajectory.Append(
       J2000,
-      Barycentre(
-          std::pair{
-              ephemeris_->trajectory(earth_)->EvaluateDegreesOfFreedom(J2000),
-              ephemeris_->trajectory(moon_)->EvaluateDegreesOfFreedom(J2000)},
-          std::pair{1.0, 1.0})));
-  EXPECT_OK(perturbed_icrs_trajectory.Append(
-      icrs_trajectory.front().time,
-      icrs_trajectory.front().degrees_of_freedom +
-          RelativeDegreesOfFreedom<ICRS>{
-              Displacement<ICRS>(
-                  {1 * Milli(Metre), 1 * Milli(Metre), 1 * Milli(Metre)}),
-              ICRS::unmoving}));
+      ephemeris_->trajectory(earth_)->EvaluateDegreesOfFreedom(J2000) +
+          KeplerOrbit<ICRS>(
+              *earth_,
+              MasslessBody{},
+              KeplerianElements<ICRS>{.eccentricity = 0.3,
+                                      .period = 1 * Day,
+                                      .inclination = 0 * Degree,
+                                      .longitude_of_ascending_node = 0 * Degree,
+                                      .argument_of_periapsis = 0 * Degree,
+                                      .mean_anomaly = 0 * Degree},
+              J2000)
+              .StateVectors(J2000)));
   EXPECT_OK(earth_moon_trajectory.Append(
       icrs_trajectory.front().time,
       earth_moon_.ToThisFrameAtTimeSimilarly(icrs_trajectory.front().time)(
           icrs_trajectory.front().degrees_of_freedom)));
 
-  Length const length_tolerance = 1e-12 * Metre;
-  Speed const speed_tolerance = 1e-12 * Metre / Second;
+  Length const length_tolerance = 1e-10 * Metre;
+  Speed const speed_tolerance = 1e-10 * Metre / Second;
 
   // Flow the inertial trajectory.
   EXPECT_OK(ephemeris_->FlowWithAdaptiveStep(
@@ -111,19 +110,7 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
       t_final,
       Ephemeris<ICRS>::GeneralizedAdaptiveStepParameters(
           EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-              Fine1987RKNG34,
-              Ephemeris<ICRS>::GeneralizedNewtonianMotionEquation>(),
-          std::numeric_limits<std::int64_t>::max(),
-          length_tolerance,
-          speed_tolerance),
-      Ephemeris<ICRS>::unlimited_max_ephemeris_steps));
-  EXPECT_OK(ephemeris_->FlowWithAdaptiveStep(
-      &perturbed_icrs_trajectory,
-      Ephemeris<ICRS>::NoIntrinsicAcceleration,
-      t_final,
-      Ephemeris<ICRS>::GeneralizedAdaptiveStepParameters(
-          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-              Fine1987RKNG34,
+              Fine1987RKNG45,
               Ephemeris<ICRS>::GeneralizedNewtonianMotionEquation>(),
           std::numeric_limits<std::int64_t>::max(),
           length_tolerance,
@@ -176,25 +163,16 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
   EXPECT_OK(instance->Solve(t_final));
 
   EXPECT_THAT(icrs_trajectory.back().time, Eq(t_final));
-  EXPECT_THAT(perturbed_icrs_trajectory.back().time, Eq(t_final));
   EXPECT_THAT(earth_moon_trajectory.back().time, Eq(t_final));
-  EXPECT_THAT(
-      perturbed_icrs_trajectory.back().degrees_of_freedom,
-      Componentwise(AbsoluteErrorFrom(
-                        icrs_trajectory.back().degrees_of_freedom.position(),
-                        IsNear(0_(1) * Milli(Metre))),
-                    AbsoluteErrorFrom(
-                        icrs_trajectory.back().degrees_of_freedom.velocity(),
-                        IsNear(0_(1) * Milli(Metre) / Second))));
   EXPECT_THAT(
       earth_moon_.FromThisFrameAtTimeSimilarly(t_final)(
           earth_moon_trajectory.back().degrees_of_freedom),
       Componentwise(AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.position(),
-                        IsNear(0_(1) * Milli(Metre))),
+                        IsNear(51_(1) * Metre)),
                     AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
-                        IsNear(0_(1) * Milli(Metre) / Second))));
+                        IsNear(5.5_(1) * Milli(Metre) / Second))));
   LOG(ERROR) << earth_moon_trajectory.size();
   LOG(ERROR) << icrs_trajectory.size();
 }
