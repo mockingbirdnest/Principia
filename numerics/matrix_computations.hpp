@@ -120,8 +120,4 @@ using internal::ᵗRDRDecomposition;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_matrix_computations;
-}  // namespace principia::numerics
-
 #include "numerics/matrix_computations_body.hpp"

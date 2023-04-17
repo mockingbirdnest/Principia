@@ -9,6 +9,7 @@ namespace numerics {
 namespace _polynomial_evaluators {
 namespace internal {
 
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
@@ -74,9 +75,5 @@ struct HornerEvaluator {
 }  // namespace _polynomial_evaluators
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_polynomial_evaluators;
-}  // namespace principia::numerics
 
 #include "numerics/polynomial_evaluators_body.hpp"

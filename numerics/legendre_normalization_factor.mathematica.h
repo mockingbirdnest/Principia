@@ -8,6 +8,8 @@ namespace numerics {
 namespace _legendre_normalization_factor {
 namespace internal {
 
+using namespace principia::numerics::_fixed_arrays;
+
 // Multiplying a normalized Cnm or Snm coefficient by this factor yields an
 // unnormalized coefficient.  Dividing an unnormalized Cnm or Snm coefficient by
 // this factor yields a normalized coefficient.

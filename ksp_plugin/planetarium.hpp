@@ -29,6 +29,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_sphere;
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -177,7 +178,3 @@ using internal::ScaledSpacePoint;
 }  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_planetarium;
-}  // namespace principia::ksp_plugin

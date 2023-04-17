@@ -119,6 +119,8 @@ namespace numerics {
 namespace _finite_difference {
 namespace internal {
 
+using namespace principia::numerics::_fixed_arrays;
+
 constexpr auto Numerators = std::make_tuple(\n    "<>
 StringRiffle[
  Table[

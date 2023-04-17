@@ -16,7 +16,3 @@ using internal::GenerateSimpleHarmonicMotionWorkErrorGraphs;
 }  // namespace _integrator_plots
 }  // namespace mathematica
 }  // namespace principia
-
-namespace principia::mathematica {
-using namespace principia::mathematica::_integrator_plots;
-}  // namespace principia::mathematica

@@ -12,6 +12,7 @@ namespace _apodization {
 namespace internal {
 
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_poisson_series;
 
 // ISO 18431-2:2004, section 5.4.
 template<template<typename, typename, int> class Evaluator>
@@ -74,9 +75,5 @@ using internal::Sine;
 }  // namespace _apodization
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_apodization;
-}  // namespace principia::numerics
 
 #include "numerics/apodization_body.hpp"

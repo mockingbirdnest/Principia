@@ -48,7 +48,10 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
@@ -121,7 +124,7 @@ class EquipotentialTest : public ::testing::Test {
   // Logs to Mathematica the equipotential line for the given |body| in the
   // specified |reference_frame|.
   void LogEquipotentialLine(
-      mathematica::Logger& logger,
+      Logger& logger,
       Plane<World> const& plane,
       Instant const& t,
       ReferenceFrame<Barycentric, World> const& reference_frame,
@@ -146,7 +149,7 @@ class EquipotentialTest : public ::testing::Test {
     }
     logger.Set(absl::StrCat("equipotential", name, suffix),
                positions,
-               mathematica::ExpressIn(Metre));
+               ExpressIn(Metre));
     logger.Set(absl::StrCat("beta", name, suffix), βs);
   }
 
@@ -155,7 +158,7 @@ class EquipotentialTest : public ::testing::Test {
   // |LineParameter| as its third argument.
   template<typename LineParameter>
   void LogFamilyOfEquipotentialLines(
-      mathematica::Logger& logger,
+      Logger& logger,
       ReferenceFrame<Barycentric, World> const& reference_frame,
       int const number_of_days,
       std::string_view const suffix,
@@ -197,7 +200,7 @@ class EquipotentialTest : public ::testing::Test {
     }
     logger.Set(absl::StrCat("equipotentialsEarthMoon", suffix),
                all_positions,
-               mathematica::ExpressIn(Metre));
+               ExpressIn(Metre));
     logger.Set(absl::StrCat("betasEarthMoon", suffix), all_βs);
   }
 
@@ -211,8 +214,8 @@ class EquipotentialTest : public ::testing::Test {
 
 #if !_DEBUG
 TEST_F(EquipotentialTest, BodyCentredNonRotating) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "equipotential_bcnr.wl",
+                /*make_unique=*/false);
   auto const reference_frame(
       BodyCentredNonRotatingReferenceFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -249,8 +252,8 @@ TEST_F(EquipotentialTest, BodyCentredNonRotating) {
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_distances.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "equipotential_bcbd_distances.wl",
+                /*make_unique=*/false);
   auto const reference_frame(
       BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -277,8 +280,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
 }
 
 TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_bcbd_energies.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "equipotential_bcbd_energies.wl",
+                /*make_unique=*/false);
   auto const reference_frame(
       BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
           ephemeris_.get(),
@@ -316,8 +319,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
 }
 
 TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
-  mathematica::Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
-                             /*make_unique=*/false);
+  Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
+                /*make_unique=*/false);
   std::int64_t const number_of_days = 502;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
@@ -460,7 +463,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
         /*points_per_round=*/1000,
         /*number_of_rounds=*/std::nullopt,
         /*local_search_tolerance=*/1e-3 * Metre);
-    logger.Append("argMaximorum", arg_maximorum, mathematica::ExpressIn(Metre));
+    logger.Append("argMaximorum", arg_maximorum, ExpressIn(Metre));
     std::vector<SpecificEnergy> maxima;
     SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
 
@@ -474,9 +477,9 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
       maxima.push_back(potential(arg_maximum));
       maximum_maximorum = std::max(maximum_maximorum, maxima.back());
     }
-    logger.Append("maxima", maxima, mathematica::ExpressIn(Metre, Second));
+    logger.Append("maxima", maxima, ExpressIn(Metre, Second));
 
-    double const arg_approx_l1 = numerics::Brent(
+    double const arg_approx_l1 = Brent(
         [&](double const x) {
           return potential(Barycentre(std::pair(moon_position, earth_position),
                                       std::pair(x, 1 - x)));
@@ -484,7 +487,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
         0.0,
         1.0,
         std::greater<>{});
-    double const arg_approx_l2 = numerics::Brent(
+    double const arg_approx_l2 = Brent(
         [&](double x) {
           return potential(Barycentre(
               std::pair(moon_position,
@@ -567,16 +570,16 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
               dof.position()));
     }
   }
-  logger.Set("trajectories", world_trajectories, mathematica::ExpressIn(Metre));
+  logger.Set("trajectories", world_trajectories, ExpressIn(Metre));
   logger.Set("trajectoryPositions",
              trajectory_positions,
-             mathematica::ExpressIn(Metre));
+             ExpressIn(Metre));
   logger.Set("energies",
              energies,
-             mathematica::ExpressIn(Metre, Second));
+             ExpressIn(Metre, Second));
   logger.Set("equipotentialsEarthMoonGlobalOptimization",
              all_positions,
-             mathematica::ExpressIn(Metre));
+             ExpressIn(Metre));
   logger.Set("betasEarthMoonGlobalOptimization", all_βs);
 }
 

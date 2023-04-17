@@ -415,8 +415,4 @@ using internal::PolynomialInMonomialBasis;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_polynomial;
-}  // namespace principia::numerics
-
 #include "numerics/polynomial_body.hpp"

@@ -141,8 +141,4 @@ using internal::VeltkampDekkerProduct;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_double_precision;
-}  // namespace principia::numerics
-
 #include "numerics/double_precision_body.hpp"

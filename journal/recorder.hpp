@@ -50,7 +50,3 @@ using internal::Recorder;
 }  // namespace _recorder
 }  // namespace journal
 }  // namespace principia
-
-namespace principia::journal {
-using namespace principia::journal::_recorder;
-}  // namespace principia::journal

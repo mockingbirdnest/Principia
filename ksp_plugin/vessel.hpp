@@ -41,7 +41,14 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::ksp_plugin::_celestial;
+using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_checkpointer;
 using namespace principia::physics::_clientele;
 using namespace principia::physics::_degrees_of_freedom;
@@ -420,7 +427,3 @@ using internal::Vessel;
 }  // namespace _vessel
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_vessel;
-}  // namespace principia::ksp_plugin

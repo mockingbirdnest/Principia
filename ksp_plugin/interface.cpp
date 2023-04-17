@@ -86,6 +86,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_integrators;
+using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
@@ -306,19 +307,19 @@ void __cdecl principia__ActivatePlayer() {
 void __cdecl principia__ActivateRecorder(bool const activate) {
   // NOTE: Do not journal!  You'd end up with half a message in the journal and
   // that would cause trouble.
-  if (activate && !journal::Recorder::IsActivated()) {
+  if (activate && !Recorder::IsActivated()) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
     std::time_t const time = std::chrono::system_clock::to_time_t(now);
     std::tm* const localtime = std::localtime(&time);
     std::stringstream name;
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    journal::Recorder* const recorder = new journal::Recorder(
+    Recorder* const recorder = new Recorder(
         std::filesystem::path("glog") / "Principia" / name.str());
     Vessel::MakeSynchronous();
-    journal::Recorder::Activate(recorder);
-  } else if (!activate && journal::Recorder::IsActivated()) {
-    journal::Recorder::Deactivate();
+    Recorder::Activate(recorder);
+  } else if (!activate && Recorder::IsActivated()) {
+    Recorder::Deactivate();
     Vessel::MakeAsynchronous();
   }
 }
@@ -1197,7 +1198,7 @@ void __cdecl principia__UpdatePrediction(
     char const* const* const vessel_guids) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guids});
   CHECK_NOTNULL(plugin);
-  std::vector<ksp_plugin::GUID> guids;
+  std::vector<GUID> guids;
   for (char const* const* c = vessel_guids;
        *c != nullptr;
        ++c) {

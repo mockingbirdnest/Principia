@@ -22,8 +22,4 @@ using internal::ScaleB;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_scale_b;
-}  // namespace principia::numerics
-
 #include "numerics/scale_b_body.hpp"

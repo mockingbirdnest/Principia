@@ -21,6 +21,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_body;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
@@ -67,7 +68,3 @@ using internal::Celestial;
 }  // namespace _celestial
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_celestial;
-}  // namespace principia::ksp_plugin

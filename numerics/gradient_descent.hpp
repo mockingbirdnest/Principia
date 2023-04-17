@@ -48,8 +48,4 @@ using internal::BroydenFletcherGoldfarbShanno;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_gradient_descent;
-}  // namespace principia::numerics
-
 #include "numerics/gradient_descent_body.hpp"

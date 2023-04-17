@@ -19,6 +19,8 @@ namespace internal {
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_quantities;
 
 template<typename FromFrame, typename ToFrame, typename Weight>

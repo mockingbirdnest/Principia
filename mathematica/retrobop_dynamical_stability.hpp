@@ -41,7 +41,3 @@ using internal::StatisticallyAnalyseStability;
 }  // namespace _retrobop_dynamical_stability
 }  // namespace mathematica
 }  // namespace principia
-
-namespace principia::mathematica {
-using namespace principia::mathematica::_retrobop_dynamical_stability;
-}  // namespace principia::mathematica

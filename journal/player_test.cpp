@@ -19,6 +19,8 @@ namespace principia {
 namespace journal {
 
 using namespace principia::journal::_player;
+using namespace principia::journal::_recorder;
+using namespace principia::ksp_plugin::_plugin;
 using namespace std::chrono_literals;
 
 void BM_PlayForReal(benchmark::State& state) {
@@ -54,7 +56,7 @@ class PlayerTest : public ::testing::Test {
   ::testing::TestInfo const* const test_info_;
   std::string const test_case_name_;
   std::string const test_name_;
-  std::unique_ptr<ksp_plugin::Plugin> plugin_;
+  std::unique_ptr<Plugin> plugin_;
 };
 
 TEST_F(PlayerTest, PlayTiny) {
@@ -67,7 +69,7 @@ TEST_F(PlayerTest, PlayTiny) {
       m.Return(plugin_.get());
     }
     {
-      const ksp_plugin::Plugin* plugin = plugin_.get();
+      const Plugin* plugin = plugin_.get();
       Method<DeletePlugin> m({&plugin}, {&plugin});
       m.Return();
     }

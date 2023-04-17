@@ -17,6 +17,8 @@ namespace _matrix_computations {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

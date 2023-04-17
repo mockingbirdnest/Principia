@@ -98,15 +98,13 @@ class Method final {
 };
 
 }  // namespace internal
-
-using internal::Method;
-
 }  // namespace _method
+
+// To preserve a reasonable style in the interface, we export this class
+// directly in |journal|.
+using _method::internal::Method;
+
 }  // namespace journal
 }  // namespace principia
-
-namespace principia::journal {
-using namespace principia::journal::_method;
-}  // namespace principia::journal
 
 #include "journal/method_body.hpp"

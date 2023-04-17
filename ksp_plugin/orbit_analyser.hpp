@@ -34,6 +34,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -202,7 +203,3 @@ using internal::OrbitAnalyser;
 }  // namespace _orbit_analyser
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_orbit_analyser;
-}  // namespace principia::ksp_plugin

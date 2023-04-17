@@ -35,6 +35,8 @@ using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -111,8 +113,8 @@ class KSPResonanceTest : public ::testing::Test {
                     Instant const& t_min,
                     Instant const& t_max,
                     std::string const& name) {
-    mathematica::Logger logger(TEMP_DIR / (name + ".generated.wl"),
-                               /*make_unique=*/false);
+    Logger logger(TEMP_DIR / (name + ".generated.wl"),
+                  /*make_unique=*/false);
 
     for (Instant t = t_min; t <= t_max; t += Δt) {
       auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {
@@ -139,10 +141,10 @@ class KSPResonanceTest : public ::testing::Test {
 
       logger.Append(name + "t",
                     t - solar_system_.epoch(),
-                    mathematica::ExpressIn(Second));
+                    ExpressIn(Second));
       logger.Append(name + "q",
                     barycentric_positions,
-                    mathematica::ExpressIn(Metre));
+                    ExpressIn(Metre));
     }
   }
 

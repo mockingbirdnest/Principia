@@ -92,8 +92,4 @@ using internal::PoissonSeriesSubspace;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_poisson_series_basis;
-}  // namespace principia::numerics
-
 #include "numerics/poisson_series_basis_body.hpp"

@@ -18,6 +18,7 @@ namespace internal {
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::ksp_plugin::_integrators;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_kepler_orbit;

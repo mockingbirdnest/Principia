@@ -21,7 +21,9 @@ namespace testing_utilities {
 namespace _almost_equals {
 namespace internal {
 
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_ulp_distance;
+using namespace principia::numerics::_unbounded_arrays;
 
 // Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.
 inline double NormalizeNaN(double const x) {
@@ -300,7 +302,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, int size>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::FixedVector<Scalar, size> const& actual,
+    FixedVector<Scalar, size> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -328,7 +330,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, int rows, int columns>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::FixedMatrix<Scalar, rows, columns> const& actual,
+    FixedMatrix<Scalar, rows, columns> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -360,7 +362,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, int rows>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::FixedLowerTriangularMatrix<Scalar, rows> const& actual,
+    FixedLowerTriangularMatrix<Scalar, rows> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -392,7 +394,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar, int columns>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::FixedUpperTriangularMatrix<Scalar, columns> const& actual,
+    FixedUpperTriangularMatrix<Scalar, columns> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -424,7 +426,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::UnboundedVector<Scalar> const& actual,
+    UnboundedVector<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -456,7 +458,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::UnboundedMatrix<Scalar> const& actual,
+    UnboundedMatrix<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -492,7 +494,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::UnboundedLowerTriangularMatrix<Scalar> const& actual,
+    UnboundedLowerTriangularMatrix<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {
@@ -528,7 +530,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 template<typename T>
 template<typename Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    numerics::UnboundedUpperTriangularMatrix<Scalar> const& actual,
+    UnboundedUpperTriangularMatrix<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {

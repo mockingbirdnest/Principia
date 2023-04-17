@@ -11,6 +11,9 @@
 
 namespace principia {
 namespace numerics {
+
+using namespace principia::numerics::_fast_sin_cos_2π;
+
 namespace {
 
 // Returns a value which has a data dependency on both cos_2πx and sin_2πx.

@@ -96,8 +96,4 @@ using internal::FastFourierTransform;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_fast_fourier_transform;
-}  // namespace principia::numerics
-
 #include "numerics/fast_fourier_transform_body.hpp"

@@ -13,6 +13,7 @@ using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_celestial;
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rotating_body;

@@ -69,6 +69,8 @@ namespace numerics {
 namespace _legendre_roots {
 namespace internal {
 
+using namespace principia::numerics::_fixed_arrays;
+
 // Roots of the Legendre polynomials of degree up to 50.
 constexpr FixedStrictlyLowerTriangularMatrix<double, "<>ToString[51]<>">
 LegendreRoots{{{
@@ -100,6 +102,8 @@ namespace principia {
 namespace numerics {
 namespace _gauss_legendre_weights {
 namespace internal {
+
+using namespace principia::numerics::_fixed_arrays;
 
 // Weights for Gauss-Legendre quadrature with up to 50 points.
 constexpr FixedStrictlyLowerTriangularMatrix<double, "<>ToString[51]<>">

@@ -26,6 +26,9 @@ using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::Truly;
 using namespace principia::base::_cpuid;
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fma;
+using namespace principia::numerics::_next;
 
 #define EXPECT_SIGNALS(expression, exceptions)                             \
   do {                                                                     \

@@ -396,8 +396,4 @@ using internal::PoissonSeries;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_poisson_series;
-}  // namespace principia::numerics
-
 #include "numerics/poisson_series_body.hpp"

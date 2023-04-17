@@ -19,6 +19,7 @@ namespace numerics {
 using ::testing::Le;
 using ::testing::Lt;
 using namespace principia::numerics::_elliptic_functions;
+using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

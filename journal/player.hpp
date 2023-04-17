@@ -63,8 +63,4 @@ using internal::Player;
 }  // namespace journal
 }  // namespace principia
 
-namespace principia::journal {
-using namespace principia::journal::_player;
-}  // namespace principia::journal
-
 #include "journal/player_body.hpp"

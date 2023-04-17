@@ -12,6 +12,7 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_elliptic_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

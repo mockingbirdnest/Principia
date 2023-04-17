@@ -51,6 +51,8 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
@@ -250,7 +252,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   Time const integration_step = 10 * Second;
   LOG(INFO) << "Using a " << GetParam() << " selenopotential field";
 
-  mathematica::Logger logger(
+  Logger logger(
       SOLUTION_DIR / "mathematica" /
           absl::StrCat(
               "lunar_orbit_", GetParam().DegreeAndOrder(), ".generated.wl"),
@@ -284,8 +286,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   EXPECT_THAT(RelativeError(TU, TU_rl), IsNear(1.4e-3_(1)));
   EXPECT_THAT(RelativeError(LU, LU_rl), IsNear(9.0e-4_(1)));
 
-  logger.Set("tu", TU, mathematica::ExpressIn(Second));
-  logger.Set("lu", LU, mathematica::ExpressIn(Metre));
+  logger.Set("tu", TU, ExpressIn(Second));
+  logger.Set("lu", LU, ExpressIn(Metre));
 
   Time const period = 2 * π * TU;
   int const orbits_per_period = 328;
@@ -368,24 +370,24 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
     logger.Append("times",
                   t - J2000,
-                  mathematica::ExpressIn(Second));
+                  ExpressIn(Second));
     logger.Append("semimajorAxes",
                   *elements.semimajor_axis,
-                  mathematica::ExpressIn(Metre));
+                  ExpressIn(Metre));
     logger.Append("inclinations",
                   elements.inclination,
-                  mathematica::ExpressIn(Radian));
+                  ExpressIn(Radian));
     logger.Append("eccentricities",
                   *elements.eccentricity);
     logger.Append("arguments",
                   *elements.argument_of_periapsis,
-                  mathematica::ExpressIn(Radian));
+                  ExpressIn(Radian));
     logger.Append("longitudesOfAscendingNodes",
                   elements.longitude_of_ascending_node,
-                  mathematica::ExpressIn(Radian));
+                  ExpressIn(Radian));
     logger.Append("displacements",
                   surface_trajectory.EvaluatePosition(t) - LunarSurface::origin,
-                  mathematica::ExpressIn(Metre));
+                  ExpressIn(Metre));
   }
 
   DiscreteTrajectory<LunarSurface> ascending_nodes;
@@ -433,13 +435,13 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
       logger.Append(absl::StrCat(nodes.name, "NodeTimes"),
                     time - J2000,
-                    mathematica::ExpressIn(Second));
+                    ExpressIn(Second));
       logger.Append(absl::StrCat(nodes.name, "NodeDisplacements"),
                     degrees_of_freedom.position() - LunarSurface::origin,
-                    mathematica::ExpressIn(Metre));
+                    ExpressIn(Metre));
       logger.Append(absl::StrCat(nodes.name, "NodeArguments"),
                     *elements.argument_of_periapsis,
-                    mathematica::ExpressIn(Radian));
+                    ExpressIn(Radian));
       logger.Append(absl::StrCat(nodes.name, "NodeEccentricities"),
                     *elements.eccentricity);
 
@@ -455,12 +457,12 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     for (auto const& [time, degrees_of_freedom] : apsides.trajectory) {
       logger.Append(absl::StrCat(apsides.name, "Times"),
                     time - J2000,
-                    mathematica::ExpressIn(Second));
+                    ExpressIn(Second));
       logger.Append(absl::StrCat(apsides.name, "Displacements"),
                     lunar_frame_.ToThisFrameAtTime(time).rigid_transformation()(
                         degrees_of_freedom.position()) -
                         LunarSurface::origin,
-                    mathematica::ExpressIn(Metre));
+                    ExpressIn(Metre));
     }
   }
 

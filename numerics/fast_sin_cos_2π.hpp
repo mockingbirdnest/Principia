@@ -17,7 +17,3 @@ using internal::FastSinCos2π;
 }  // namespace _fast_sin_cos_2π
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_fast_sin_cos_2π;
-}  // namespace principia::numerics

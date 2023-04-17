@@ -27,8 +27,4 @@ using internal::DavenportQMethod;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_davenport_q_method;
-}  // namespace principia::numerics
-
 #include "numerics/davenport_q_method_body.hpp"

@@ -84,8 +84,4 @@ using internal::Hermite3;
 }  // namespace numerics
 }  // namespace principia
 
-namespace principia::numerics {
-using namespace principia::numerics::_hermite3;
-}  // namespace principia::numerics
-
 #include "numerics/hermite3_body.hpp"

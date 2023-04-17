@@ -92,10 +92,6 @@ using internal::Logger;
 }  // namespace mathematica
 }  // namespace principia
 
-namespace principia::mathematica {
-using namespace principia::mathematica::_logger;
-}  // namespace principia::mathematica
-
 // It is not strictly necessary to have the body inline, but it avoids having to
 // add the .cpp file to a project when using the logger.
 #include "mathematica/logger_body.hpp"

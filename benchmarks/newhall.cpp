@@ -22,6 +22,10 @@ using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_newhall;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 

@@ -30,6 +30,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_gradient_descent;
+using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -256,7 +257,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
         // Look for a point on the equipotential along the line between the peak
         // and the edge of the well.
-        Length const x = numerics::Brent(
+        Length const x = Brent(
             [&](Length const& x) {
               return reference_frame_->GeometricPotential(
                          t,
@@ -283,7 +284,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
           peak_delineations[i].delineated_from_infinity = true;
           continue;
         }
-        double const x = numerics::Brent(
+        double const x = Brent(
             [&](double const& x) {
               return reference_frame_->GeometricPotential(
                          t,

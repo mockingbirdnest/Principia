@@ -38,6 +38,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_integrators;
 using namespace principia::numerics::_davenport_q_method;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;

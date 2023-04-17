@@ -34,6 +34,9 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
+using namespace principia::ksp_plugin::_celestial;
+using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
@@ -203,7 +206,3 @@ using internal::Renderer;
 }  // namespace _renderer
 }  // namespace ksp_plugin
 }  // namespace principia
-
-namespace principia::ksp_plugin {
-using namespace principia::ksp_plugin::_renderer;
-}  // namespace principia::ksp_plugin

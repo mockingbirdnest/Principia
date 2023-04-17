@@ -75,6 +75,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_partitioned_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::numerics::_double_precision;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;

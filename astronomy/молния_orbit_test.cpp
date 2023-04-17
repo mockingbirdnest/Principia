@@ -36,6 +36,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -123,7 +125,7 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
     EXPECT_OK(ephemeris_->FlowWithFixedStep(t, *instance));
   }
 
-  mathematica::Logger logger(
+  Logger logger(
       SOLUTION_DIR / "mathematica" /
           PRINCIPIA_UNICODE_PATH("молния_orbit.generated.wl"),
       /*make_unique=*/false);
@@ -161,13 +163,13 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
 
     logger.Append("ppaDisplacements",
                   relative_dof.displacement(),
-                  mathematica::ExpressIn(Metre));
+                  ExpressIn(Metre));
     logger.Append("ppaArguments",
                   *actual_elements.argument_of_periapsis,
-                  mathematica::ExpressIn(Radian));
+                  ExpressIn(Radian));
     logger.Append("ppaLongitudes",
                   actual_elements.longitude_of_ascending_node,
-                  mathematica::ExpressIn(Radian));
+                  ExpressIn(Radian));
   }
 
   // Check that we have a regular precession of the longitude.

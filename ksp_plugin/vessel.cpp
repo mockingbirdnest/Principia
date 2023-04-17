@@ -27,6 +27,7 @@ using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::ksp_plugin::_integrators;
 using namespace principia::physics::_clientele;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

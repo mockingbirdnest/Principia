@@ -71,7 +71,3 @@ using internal::FukushimaEllipticBDJ;
 }  // namespace _elliptic_integrals
 }  // namespace numerics
 }  // namespace principia
-
-namespace principia::numerics {
-using namespace principia::numerics::_elliptic_integrals;
-}  // namespace principia::numerics

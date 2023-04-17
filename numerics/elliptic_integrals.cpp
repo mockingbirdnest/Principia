@@ -23,6 +23,9 @@ namespace _elliptic_integrals {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_combinatorics;
+using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

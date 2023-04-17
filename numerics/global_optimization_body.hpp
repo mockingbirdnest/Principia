@@ -22,6 +22,7 @@ using base::noreturn;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_gradient_descent;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 

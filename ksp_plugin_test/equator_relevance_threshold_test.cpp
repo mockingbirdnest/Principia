@@ -16,6 +16,7 @@ namespace ksp_plugin {
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
