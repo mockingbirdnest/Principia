@@ -17,6 +17,9 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_identity;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_named_quantities;
 
 // An utility for converting a linearly ordered system of massive bodies given

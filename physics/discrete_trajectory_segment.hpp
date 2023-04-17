@@ -46,7 +46,10 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_iterator;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
+using namespace principia::physics::_trajectory;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {

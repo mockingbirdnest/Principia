@@ -51,6 +51,7 @@ using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -1325,7 +1326,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
     typename ODE::RightHandSideComputation compute_acceleration,
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     Instant const& t,
-    physics::AdaptiveStepParameters<ODE> const& parameters,
+    _integration_parameters::AdaptiveStepParameters<ODE> const& parameters,
     std::int64_t max_ephemeris_steps) {
   auto const& [trajectory_last_time,
                trajectory_last_degrees_of_freedom] = trajectory->back();

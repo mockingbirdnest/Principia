@@ -17,6 +17,7 @@ namespace _massive_body {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::physics::_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

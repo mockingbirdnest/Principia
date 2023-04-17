@@ -19,6 +19,7 @@ namespace internal {
 
 using namespace principia::astronomy::_epoch;
 using namespace principia::numerics::_legendre_normalization_factor;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

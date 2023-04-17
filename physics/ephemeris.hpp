@@ -44,6 +44,14 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::physics::_checkpointer;
+using namespace principia::physics::_clientele;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_geopotential;
+using namespace principia::physics::_integration_parameters;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -75,11 +83,12 @@ class Ephemeris {
       ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
 
   using AdaptiveStepParameters =
-      physics::AdaptiveStepParameters<NewtonianMotionEquation>;
+      _integration_parameters::AdaptiveStepParameters<NewtonianMotionEquation>;
   using FixedStepParameters =
-      physics::FixedStepParameters<NewtonianMotionEquation>;
+      _integration_parameters::FixedStepParameters<NewtonianMotionEquation>;
   using GeneralizedAdaptiveStepParameters =
-      physics::AdaptiveStepParameters<GeneralizedNewtonianMotionEquation>;
+      _integration_parameters::AdaptiveStepParameters<
+          GeneralizedNewtonianMotionEquation>;
 
   class AccuracyParameters final {
    public:
@@ -374,7 +383,7 @@ class Ephemeris {
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      physics::AdaptiveStepParameters<ODE> const& parameters,
+      _integration_parameters::AdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
 
   // Computes an estimate of the ratio |tolerance / error|.

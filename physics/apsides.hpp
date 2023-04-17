@@ -14,6 +14,8 @@ namespace internal {
 
 using namespace principia::base::_constant_function;
 using namespace principia::geometry::_grassmann;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_trajectory;
 
 // Computes the apsides with respect to |reference| for the section given by
 // |begin| and |end| of |trajectory|.  Appends to the given output trajectories

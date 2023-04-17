@@ -35,6 +35,9 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::physics::_checkpointer;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_quantities;
 
 // This class is thread-safe, but the client must be aware that if, for

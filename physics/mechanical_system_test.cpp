@@ -16,6 +16,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_mechanical_system;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;

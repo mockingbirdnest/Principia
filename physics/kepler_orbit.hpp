@@ -15,6 +15,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::physics::_body;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

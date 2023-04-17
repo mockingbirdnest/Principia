@@ -28,6 +28,8 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
