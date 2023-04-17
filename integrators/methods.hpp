@@ -419,11 +419,11 @@ struct Fine1987RKNG45 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
   static constexpr int higher_order = 5;
   static constexpr int lower_order = 4;
   static constexpr int stages = 7;
-  static constexpr bool first_same_as_last = false;
+  static constexpr bool first_same_as_last = true;
   static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
       serialization::AdaptiveStepSizeIntegrator::FINE_1987_RKNG_34;
   static constexpr FixedVector<double, stages> c{
-      {{0, 2 / 9.0, 1 / 3.0, 3 / 4.0, 1.0}}};
+      {{0, 8 / 39.0, 4 / 13.0, 5 / 6.0, 43 / 47.0, 1, 1}}};
   static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{
       {{          32 /         1'521.0,
 
@@ -450,29 +450,68 @@ struct Fine1987RKNG45 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
              388'869 /     1'216'880.0,
                3'276 /        23'575.0,
           -1'142'053 /    22'015'140.0,
-                   0 /             1.0,
-        }}};
+                   0 /             1.0}}};
   static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ{
-      {{2 / 9.0,
-        1 / 12.0,
-        1 / 4.0,
-        69 / 128.0,
-        -234 / 128.0,
-        135 / 64.0,
-        -17 / 12.0,
-        27 / 4.0,
-        -27 / 5.0,
-        16 / 15.0}}};
+      {{           8 /            39.0,
+
+                   1 /            13.0,
+                   3 /            13.0,
+
+               7'385 /         6'912.0,
+              -9'425 /         2'304.0,
+              13'325 /         3'456.0,
+
+         223'324'757 /    91'364'240.0,
+        -174'255'393 /    18'272'848.0,
+         382'840'094 /    46'824'173.0,
+         -39'627'252 /   234'120'865.0,
+
+             108'475 /        36'464.0,
+              -9'633 /           848.0,
+           7'624'604 /       806'183.0,
+               8'100 /        49'979.0,
+          -4'568'212 /    19'446'707.0,
+
+               4'817 /        51'600.0,
+                   0 /             1.0,
+           1'685'099 /     3'650'640.0,
+              19'656 /        23'575.0,
+         -53'676'491 /    88'060'560.0,
+                  53 /           240.0}}};
   static constexpr FixedVector<double, stages> b̂{
-      {{19 / 180.0, 0, 63 / 200.0, 16 / 225.0, 1 / 120.0}}};
+      {{      4'817 /         51'600.0,
+                  0 /              1.0,
+            388'869 /      1'216'880.0,
+              3'276 /         23'575.0,
+         -1'142'053 /     22'015'140.0,
+                  0 /              1.0,
+                  0 /              1.0}}};
   static constexpr FixedVector<double, stages> b̂ʹ{
-      {{1 / 9.0, 0, 9 / 20.0, 16 / 45.0, 1 / 12.0}}};
+      {{      4'817 /        51'600.0,
+                  0 /             1.0,
+          1'685'099 /     3'650'640.0,
+             19'656 /        23'575.0,
+        -53'676'491 /    88'060'560.0,
+                 53 /           240.0,
+                  0 /             1.0}}};
   static constexpr auto b =
       b̂ - FixedVector<double, stages>{
-              {{25 / 1'116.0, 0, -63 / 1'240.0, 64 / 1'395.0, -13 / 744.0}}};
+      {{      8'151 /     2'633'750.0,
+                  0 /             1.0,
+         -1'377'519 /   186'334'750.0,
+            586'872 /    28'879'375.0,
+        -36'011'118 / 2'247'378'875.0,
+                  0 /             1.0,
+                  0 /             1.0}}};
   static constexpr auto bʹ =
       b̂ʹ - FixedVector<double, stages>{
-               {{2 / 125.0, 0, -27 / 625.0, 32 / 625.0, -3 / 125.0}}};
+      {{      8'151 /     2'633'750.0,
+                  0 /             1.0,
+         -5'969'249 /   559'004'250.0,
+          3'521'232 /    28'879'375.0,
+       -846'261'273 / 4'494'757'750.0,
+              4'187 /        36'750.0,
+                 -1 /            25.0}}};
 };
 
 // Coefficients from [Fin87].
@@ -1354,6 +1393,7 @@ using internal::EmbeddedExplicitRungeKuttaNyström;
 using internal::ExplicitLinearMultistep;
 using internal::ExplicitRungeKutta;
 using internal::Fine1987RKNG34;
+using internal::Fine1987RKNG45;
 using internal::FixedStrictlyLowerTriangularMatrix;
 using internal::FixedVector;
 using internal::Kutta1901Vσ1;
