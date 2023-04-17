@@ -20,6 +20,7 @@ message AdaptiveStepSizeIntegrator {
     DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM = 1;
     DORMAND_PRINCE_1986_RK_547FC = 3;
     FINE_1987_RKNG_34 = 2;
+    FINE_1987_RKNG_45 = 4;
   }
   required Kind kind = 1;
 }

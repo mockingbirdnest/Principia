@@ -421,7 +421,7 @@ struct Fine1987RKNG45 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
   static constexpr int stages = 7;
   static constexpr bool first_same_as_last = true;
   static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
-      serialization::AdaptiveStepSizeIntegrator::FINE_1987_RKNG_34;
+      serialization::AdaptiveStepSizeIntegrator::FINE_1987_RKNG_45;
   static constexpr FixedVector<double, stages> c{
       {{0, 8 / 39.0, 4 / 13.0, 5 / 6.0, 43 / 47.0, 1, 1}}};
   static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{
