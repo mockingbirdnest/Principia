@@ -23,25 +23,25 @@ using namespace principia::quantities::_constants;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_algebra;
 
 class QuantitiesTest : public testing::Test {};
 
 using QuantitiesDeathTest = QuantitiesTest;
 
 TEST_F(QuantitiesTest, DimensionfulComparisons) {
-  testing_utilities::TestOrder(TerrestrialGravitationalParameter,
-                               JovianGravitationalParameter);
-  testing_utilities::TestOrder(LightYear, Parsec);
-  testing_utilities::TestOrder(-SpeedOfLight, SpeedOfLight);
-  testing_utilities::TestOrder(SpeedOfLight * Day, LightYear);
+  TestOrder(TerrestrialGravitationalParameter, JovianGravitationalParameter);
+  TestOrder(LightYear, Parsec);
+  TestOrder(-SpeedOfLight, SpeedOfLight);
+  TestOrder(SpeedOfLight * Day, LightYear);
 }
 
 TEST_F(QuantitiesTest, DimensionlfulOperations) {
-  testing_utilities::TestVectorSpace(
+  TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);
   // Dimensionful multiplication is a tensor product, see [Tao12].
-  testing_utilities::TestBilinearMap(
+  TestBilinearMap(
       std::multiplies<>(), ProtonMass, ElectronMass, SpeedOfLight,
       1 * Furlong / JulianYear, -e, 0, 2);
 }
