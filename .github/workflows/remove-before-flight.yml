@@ -11,16 +11,12 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Check source tree for “remove before flight” tags
+    - name: Check source tree
       shell: pwsh
       run: |
         ls -Recurse
         | sls ([System.Text.ASCIIEncoding]::new().GetString(
                    [System.Text.Encoding]::GetEncoding(20866).GetBytes(
                        "реможе бефоре флигхт").foreach({$_ -band 0x7F})))
+          -CaseSensitive
         | Should -Be @()
-
-
-
-
-
