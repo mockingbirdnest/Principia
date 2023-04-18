@@ -1,4 +1,4 @@
-name: Check for “remove before flight” tags
+name: “Remove before flight” tags
 
 on:
   push:
@@ -21,10 +21,15 @@ jobs:
                       "реможе бефоре флигхт").ForEach({$_ -band 0x7F})))
         | Should -Be @()
 
-  check-pull-request-description:
+  check-pull-request:
     runs-on: windows-latest
     steps:
     - name: Check pull request
       shell: pwsh
       run: |
-        cat $env:GITHUB_EVENT_PATH
+        $event = (Get-Content -Raw $env:GITHUB_EVENT_PATH | ConvertTo-Json)
+        $event.pull_request.body + $event.pull_request.title
+        | Should -Not -MatchExactly (
+              [System.Text.ASCIIEncoding]::new().GetString(
+                  [System.Text.Encoding]::GetEncoding(20866).GetBytes(
+                      "реможе бефоре флигхт").ForEach({$_ -band 0x7F})))
