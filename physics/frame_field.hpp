@@ -47,8 +47,4 @@ using internal::CoordinateFrameField;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_frame_field;
-}  // namespace principia::physics
-
 #include "physics/frame_field_body.hpp"

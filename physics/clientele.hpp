@@ -56,8 +56,4 @@ using internal::Clientele;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_clientele;
-}  // namespace principia::physics
-
 #include "physics/clientele_body.hpp"

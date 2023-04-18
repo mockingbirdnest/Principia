@@ -147,8 +147,4 @@ using internal::Checkpointer;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_checkpointer;
-}  // namespace principia::physics
-
 #include "physics/checkpointer_body.hpp"

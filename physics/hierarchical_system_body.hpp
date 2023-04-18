@@ -15,6 +15,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_identity;
+using namespace principia::physics::_jacobi_coordinates;
 
 template<typename Frame>
 HierarchicalSystem<Frame>::HierarchicalSystem(

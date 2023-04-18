@@ -163,8 +163,4 @@ class BarycentreCalculator<RelativeDegreesOfFreedom<Frame>, Weight>
 }  // namespace geometry
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_degrees_of_freedom;
-}  // namespace principia::physics
-
 #include "physics/degrees_of_freedom_body.hpp"

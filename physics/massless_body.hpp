@@ -16,6 +16,7 @@ namespace _massless_body {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::physics::_body;
 
 class MasslessBody : public Body {
  public:
@@ -47,10 +48,6 @@ using internal::MasslessBody;
 }  // namespace _massless_body
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_massless_body;
-}  // namespace principia::physics
 
 #include "physics/massless_body_body.hpp"
 

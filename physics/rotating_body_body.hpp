@@ -21,6 +21,7 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_si;
 
 template<typename Frame>

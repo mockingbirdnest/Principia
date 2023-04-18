@@ -1,6 +1,7 @@
 #ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
@@ -21,6 +22,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 

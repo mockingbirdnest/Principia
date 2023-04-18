@@ -13,6 +13,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
 
 template<typename Frame>
 class Trajectory {
@@ -40,7 +41,3 @@ using internal::Trajectory;
 }  // namespace _trajectory
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_trajectory;
-}  // namespace principia::physics

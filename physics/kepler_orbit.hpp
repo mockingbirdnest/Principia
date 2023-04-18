@@ -15,6 +15,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::physics::_body;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_massive_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -137,9 +140,5 @@ using internal::KeplerOrbit;
 }  // namespace _kepler_orbit
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_kepler_orbit;
-}  // namespace principia::physics
 
 #include "physics/kepler_orbit_body.hpp"

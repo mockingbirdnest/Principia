@@ -23,7 +23,9 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -104,9 +106,5 @@ using internal::MechanicalSystem;
 }  // namespace _mechanical_system
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_mechanical_system;
-}  // namespace principia::physics
 
 #include "physics/mechanical_system_body.hpp"

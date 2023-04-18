@@ -28,6 +28,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::physics::_ephemeris;
 
 // Within an union-find on |Part|s, we maintain lists of the elements in the
 // disjoint sets.  Moreover, we keep track of the inclusion relations of those
@@ -68,11 +69,11 @@ class Subset<Part>::Properties final {
   void Collect(
       PileUps& pile_ups,
       Instant const& t,
-      physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
-      physics::Ephemeris<Barycentric>::FixedStepParameters const&
+      Ephemeris<Barycentric>::FixedStepParameters const&
           fixed_step_parameters,
-      not_null<physics::Ephemeris<Barycentric>*> ephemeris);
+      not_null<Ephemeris<Barycentric>*> ephemeris);
 
  private:
   // Whether |left| and |right| are both subsets of the same existing |PileUp|.

@@ -27,6 +27,7 @@ using namespace principia::geometry::_pair;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
@@ -98,14 +99,14 @@ class ComponentwiseMatcher2Impl<Pair<T1, T2> const&> final
 };
 
 template<typename Frame>
-class ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&> final
-    : public MatcherInterface<physics::DegreesOfFreedom<Frame> const&> {
+class ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&> final
+    : public MatcherInterface<DegreesOfFreedom<Frame> const&> {
  public:
   template<typename QMatcher, typename PMatcher>
   ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
                             PMatcher const& p_matcher);
 
-  bool MatchAndExplain(physics::DegreesOfFreedom<Frame> const& actual,
+  bool MatchAndExplain(DegreesOfFreedom<Frame> const& actual,
                        MatchResultListener* listener) const override;
 
   void DescribeTo(std::ostream* out) const override;
@@ -117,15 +118,15 @@ class ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&> final
 };
 
 template<typename Frame>
-class ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>
+class ComponentwiseMatcher2Impl<RelativeDegreesOfFreedom<Frame> const&>
     final
-    : public MatcherInterface<physics::RelativeDegreesOfFreedom<Frame> const&> {
+    : public MatcherInterface<RelativeDegreesOfFreedom<Frame> const&> {
  public:
   template<typename QMatcher, typename PMatcher>
   ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
                             PMatcher const& p_matcher);
 
-  bool MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
+  bool MatchAndExplain(RelativeDegreesOfFreedom<Frame> const& actual,
                        MatchResultListener* listener) const override;
 
   void DescribeTo(std::ostream* out) const override;

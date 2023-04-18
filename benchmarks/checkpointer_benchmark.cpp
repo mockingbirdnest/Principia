@@ -25,6 +25,7 @@ using serialization::R3Element;
 using serialization::State;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::physics::_checkpointer;
 using namespace principia::quantities::_si;
 
 // Stub writer for checkpointer. Adds some data to the checkpoint.

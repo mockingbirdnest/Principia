@@ -43,6 +43,16 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_barycentric_rotating_reference_frame;
+using namespace principia::physics::_body;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

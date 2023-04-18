@@ -105,15 +105,15 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Frame>
 template<typename QMatcher, typename PMatcher>
-ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&>::
 ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
                           PMatcher const& p_matcher)
     : q_matcher_(SafeMatcherCast<Position<Frame>>(q_matcher)),
       p_matcher_(SafeMatcherCast<Velocity<Frame>>(p_matcher)) {}
 
 template<typename Frame>
-bool ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
-MatchAndExplain(physics::DegreesOfFreedom<Frame> const& actual,
+bool ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&>::
+MatchAndExplain(DegreesOfFreedom<Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const q_matches =
       q_matcher_.MatchAndExplain(actual.position(), listener);
@@ -129,7 +129,7 @@ MatchAndExplain(physics::DegreesOfFreedom<Frame> const& actual,
 }
 
 template<typename Frame>
-void ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+void ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "position ";
   q_matcher_.DescribeTo(out);
@@ -138,7 +138,7 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Frame>
-void ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+void ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "position ";
   q_matcher_.DescribeNegationTo(out);
@@ -148,7 +148,7 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Frame>
 template<typename QMatcher, typename PMatcher>
-ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+ComponentwiseMatcher2Impl<RelativeDegreesOfFreedom<Frame> const&>::
 ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
                           PMatcher const& p_matcher)
     : q_matcher_(SafeMatcherCast<Displacement<Frame>>(q_matcher)),
@@ -156,8 +156,8 @@ ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
 
 template<typename Frame>
 bool
-ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
-MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
+ComponentwiseMatcher2Impl<RelativeDegreesOfFreedom<Frame> const&>::
+MatchAndExplain(RelativeDegreesOfFreedom<Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const q_matches =
       q_matcher_.MatchAndExplain(actual.displacement(), listener);
@@ -173,9 +173,8 @@ MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
 }
 
 template<typename Frame>
-void ComponentwiseMatcher2Impl<
-    physics::RelativeDegreesOfFreedom<Frame> const&>::
-DescribeTo(std::ostream* out) const {
+void ComponentwiseMatcher2Impl<RelativeDegreesOfFreedom<Frame> const&>::
+    DescribeTo(std::ostream* out) const {
   *out << "displacement ";
   q_matcher_.DescribeTo(out);
   *out << " and velocity ";
@@ -183,9 +182,8 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Frame>
-void ComponentwiseMatcher2Impl<
-    physics::RelativeDegreesOfFreedom<Frame> const&>::
-DescribeNegationTo(std::ostream* out) const {
+void ComponentwiseMatcher2Impl<RelativeDegreesOfFreedom<Frame> const&>::
+    DescribeNegationTo(std::ostream* out) const {
   *out << "displacement ";
   q_matcher_.DescribeNegationTo(out);
   *out << " or velocity ";

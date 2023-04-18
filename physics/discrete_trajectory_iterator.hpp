@@ -21,6 +21,7 @@ namespace internal {
 
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
@@ -110,9 +111,5 @@ using internal::DiscreteTrajectoryIterator;
 }  // namespace _discrete_trajectory_iterator
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_discrete_trajectory_iterator;
-}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_iterator_body.hpp"

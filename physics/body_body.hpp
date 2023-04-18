@@ -14,6 +14,9 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
 
 template<typename Frame>
 bool Body::is_compatible_with() const {

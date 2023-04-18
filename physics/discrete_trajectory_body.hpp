@@ -18,6 +18,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_quantities;
 
 template<typename Frame>

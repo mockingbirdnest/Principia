@@ -71,7 +71,15 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_massless_body;
+using namespace principia::physics::_oblate_body;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

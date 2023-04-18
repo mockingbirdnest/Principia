@@ -24,6 +24,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
