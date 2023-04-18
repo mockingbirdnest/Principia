@@ -15,10 +15,10 @@ jobs:
       shell: pwsh
       run: |
         ls -Recurse
-        | sls ([System.Text.ASCIIEncoding]::new().GetString(
-                   [System.Text.Encoding]::GetEncoding(20866).GetBytes(
-                       "реможе бефоре флигхт").foreach({$_ -band 0x7F})))
-          -CaseSensitive
+        | sls -CaseSensitive (
+              [System.Text.ASCIIEncoding]:: ew().GetString(
+                  [System.Text.Encoding]::GetEncoding(20866).GetBytes(
+                      "реможе бефоре флигхт").ForEach({$_ -band 0x7F})))
         | Should -Be @()
 
   check-pull-request-description:
@@ -27,4 +27,4 @@ jobs:
     - name: Check pull request
       shell: pwsh
       run: |
-        echo $github.event
+        cat $GITHUB_EVENT_PATH
