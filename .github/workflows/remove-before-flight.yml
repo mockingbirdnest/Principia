@@ -20,3 +20,11 @@ jobs:
                        "реможе бефоре флигхт").foreach({$_ -band 0x7F})))
           -CaseSensitive
         | Should -Be @()
+
+  check-pull-request-description:
+    runs-on: windows-latest
+    steps:
+    - name: Check pull request
+      shell: pwsh
+      run: |
+        echo $github.event
