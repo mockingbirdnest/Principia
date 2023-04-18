@@ -1,0 +1,26 @@
+name: Check for “remove before flight” tags
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  check-source:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check source tree for “remove before flight” tags
+      shell: pwsh
+      run: |
+        ls -Recurse
+        | sls ([System.Text.ASCIIEncoding]::new().GetString(
+                   [System.Text.Encoding]::GetEncoding(20866).GetBytes(
+                       "реможе бефоре флигхт").foreach({$_ -band 0x7F})))
+        | Should -Be @()
+
+
+
+
+
