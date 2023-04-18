@@ -31,7 +31,3 @@ using internal::Hartmann3;
 }  // namespace _optimization_test_functions
 }  // namespace testing_utilities
 }  // namespace principia
-
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_optimization_test_functions;
-}  // namespace principia::testing_utilities

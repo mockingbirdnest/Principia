@@ -117,8 +117,4 @@ using internal::TestVectorSpace;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_algebra;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/algebra_body.hpp"

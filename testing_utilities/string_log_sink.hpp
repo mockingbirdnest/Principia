@@ -42,8 +42,4 @@ using internal::StringLogSink;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_string_log_sink;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/string_log_sink_body.hpp"

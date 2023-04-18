@@ -48,8 +48,4 @@ using internal::IsNear;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_is_near;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/is_near_body.hpp"

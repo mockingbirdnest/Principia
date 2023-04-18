@@ -94,8 +94,4 @@ using internal::RelativeError;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_numerics;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/numerics_body.hpp"

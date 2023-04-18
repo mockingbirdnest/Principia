@@ -81,7 +81,3 @@ inline void PrintTo(Part const& message, std::ostream* const os) {
 }  // namespace serialization
 
 }  // namespace principia
-
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_matchers;
-}  // namespace principia::testing_utilities
