@@ -19,7 +19,7 @@ namespace internal {
 // This is not defined in base/status_utilities.hpp to avoid pulling gmock in
 // non-test code.
 #define EXPECT_OK(value) \
-  EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
+  EXPECT_THAT((value), ::principia::testing_utilities::_matchers::IsOk());
 
 MATCHER_P(EqualsProto,
           expected,

@@ -24,6 +24,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_make_not_null;
 
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,
@@ -303,7 +304,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
 
 FlightPlan::FlightPlan()
     : initial_degrees_of_freedom_(Barycentric::origin, Barycentric::unmoving),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      ephemeris_(make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
