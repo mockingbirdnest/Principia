@@ -8,6 +8,10 @@
 #include "tools/generate_kopernicus.hpp"
 #include "tools/generate_profiles.hpp"
 
+using namespace principia::tools::_generate_configuration;
+using namespace principia::tools::_generate_kopernicus;
+using namespace principia::tools::_generate_profiles;
+
 int __cdecl main(int argc, char const* argv[]) {
   google::SetLogFilenameExtension(".log");
   google::InitGoogleLogging(argv[0]);
@@ -44,11 +48,11 @@ int __cdecl main(int argc, char const* argv[]) {
     std::string const initial_state_stem = argv[4];
     std::string const numerics_blueprint_stem = argv[5];
     std::string const needs = argv[6];
-    principia::tools::GenerateConfiguration(game_epoch,
-                                            gravity_model_stem,
-                                            initial_state_stem,
-                                            numerics_blueprint_stem,
-                                            needs);
+    GenerateConfiguration(game_epoch,
+                          gravity_model_stem,
+                          initial_state_stem,
+                          numerics_blueprint_stem,
+                          needs);
     return 0;
   } else if (command == "generate_kopernicus") {
     if (argc != 4) {
@@ -62,8 +66,8 @@ int __cdecl main(int argc, char const* argv[]) {
     }
     std::string const gravity_model_stem = argv[2];
     std::string const initial_state_stem = argv[3];
-    principia::tools::GenerateKopernicusForSlippist1(gravity_model_stem,
-                                                     initial_state_stem);
+    GenerateKopernicusForSlippist1(gravity_model_stem,
+                                   initial_state_stem);
     return 0;
 
   } else if (command == "generate_profiles") {
@@ -72,7 +76,7 @@ int __cdecl main(int argc, char const* argv[]) {
       std::cerr << "Usage: " << argv[0] << " " << argv[1] << "\n";
       return 3;
     }
-    principia::tools::GenerateProfiles();
+    GenerateProfiles();
     return 0;
   } else {
     std::cerr << "Usage: " << argv[0]
