@@ -27,4 +27,4 @@ jobs:
     - name: Check pull request
       shell: pwsh
       run: |
-        cat $GITHUB_EVENT_PATH
+        cat $env:GITHUB_EVENT_PATH
