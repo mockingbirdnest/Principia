@@ -24,6 +24,7 @@ namespace internal {
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_ulp_distance;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::testing_utilities::_numerics;
 
 // Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.
 inline double NormalizeNaN(double const x) {
