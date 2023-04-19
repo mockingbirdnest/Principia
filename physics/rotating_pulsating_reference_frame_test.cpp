@@ -76,6 +76,8 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
   RotatingPulsatingReferenceFrame<ICRS, EarthMoon> const earth_moon_;
 };
 
+#if !defined(_DEBUG)
+
 // Check that GeometricAcceleration is consistent with
 // From/ToThisFrameAtTimeSimilarly.
 TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
@@ -162,6 +164,8 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
                         IsNear(265.9_(1) * Milli(Metre) / Second))));
 }
+
+#endif
 
 }  // namespace physics
 }  // namespace principia
