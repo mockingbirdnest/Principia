@@ -18,7 +18,3 @@ using internal::GenerateKopernicusForSlippist1;
 }  // namespace _generate_kopernicus
 }  // namespace tools
 }  // namespace principia
-
-namespace principia::tools {
-using namespace principia::tools::_generate_kopernicus;
-}  // namespace principia::tools

@@ -14,7 +14,3 @@ using internal::GenerateProfiles;
 }  // namespace _generate_profiles
 }  // namespace tools
 }  // namespace principia
-
-namespace principia::tools {
-using namespace principia::tools::_generate_profiles;
-}  // namespace principia::tools

@@ -20,7 +20,3 @@ using internal::GenerateConfiguration;
 }  // namespace _generate_configuration
 }  // namespace tools
 }  // namespace principia
-
-namespace principia::tools {
-using namespace principia::tools::_generate_configuration;
-}  // namespace principia::tools

@@ -369,7 +369,3 @@ using internal::JournalProtoProcessor;
 }  // namespace _journal_proto_processor
 }  // namespace tools
 }  // namespace principia
-
-namespace principia::tools {
-using namespace principia::tools::_journal_proto_processor;
-}  // namespace principia::tools
