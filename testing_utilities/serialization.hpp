@@ -67,8 +67,4 @@ using internal::WriteToHexadecimalFile;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_serialization;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/serialization_body.hpp"

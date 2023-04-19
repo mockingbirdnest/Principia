@@ -13,6 +13,7 @@ using namespace principia::quantities::_bipm;
 
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
 class IsNearTest : public testing::Test {};

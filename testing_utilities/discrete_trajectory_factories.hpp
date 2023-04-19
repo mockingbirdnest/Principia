@@ -127,8 +127,4 @@ using internal::NewMotionlessTrajectoryTimeline;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_discrete_trajectory_factories;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/discrete_trajectory_factories_body.hpp"

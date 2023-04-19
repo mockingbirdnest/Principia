@@ -6,6 +6,8 @@
 
 namespace principia {
 namespace testing_utilities {
+namespace _string_log_sink {
+namespace internal {
 
 StringLogSink::StringLogSink(google::LogSeverity const minimal_severity)
     : minimal_severity_(minimal_severity) {
@@ -36,5 +38,7 @@ std::string& StringLogSink::string() {
   return string_;
 }
 
+}  // namespace internal
+}  // namespace _string_log_sink
 }  // namespace testing_utilities
 }  // namespace principia

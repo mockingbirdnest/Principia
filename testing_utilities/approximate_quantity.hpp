@@ -152,8 +152,4 @@ using internal::operator""_;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_approximate_quantity;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/approximate_quantity_body.hpp"

@@ -13,6 +13,7 @@ namespace _is_near {
 namespace internal {
 
 using namespace principia::quantities::_quantities;
+using namespace principia::testing_utilities::_approximate_quantity;
 
 template<typename T>
 class IsNearMatcher;
@@ -47,9 +48,5 @@ using internal::IsNear;
 }  // namespace _is_near
 }  // namespace testing_utilities
 }  // namespace principia
-
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_is_near;
-}  // namespace principia::testing_utilities
 
 #include "testing_utilities/is_near_body.hpp"

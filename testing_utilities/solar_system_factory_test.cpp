@@ -31,6 +31,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_solar_system_factory;
 
 class SolarSystemFactoryTest : public testing::Test {

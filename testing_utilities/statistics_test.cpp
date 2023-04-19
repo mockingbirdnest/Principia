@@ -15,6 +15,7 @@ using ::testing::Eq;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_statistics;
 
 class StatisticsTest : public testing::Test {

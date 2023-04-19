@@ -119,8 +119,4 @@ using internal::SolarSystemFactory;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_solar_system_factory;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/solar_system_factory_body.hpp"

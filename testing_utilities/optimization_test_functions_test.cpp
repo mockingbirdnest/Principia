@@ -9,6 +9,8 @@ namespace testing_utilities {
 
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_optimization_test_functions;
 
 TEST(OptimizationTestFunctionsTest, Branin) {

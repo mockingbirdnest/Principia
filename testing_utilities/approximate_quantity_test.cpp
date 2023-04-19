@@ -13,6 +13,7 @@ using namespace principia::quantities::_named_quantities;
 
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 
 TEST(ApproximateQuantityTest, Literals_1) {

@@ -35,6 +35,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
 using namespace principia::quantities::_uk::admiralty;
+using namespace principia::testing_utilities::_algebra;
 using namespace principia::testing_utilities::_almost_equals;
 
 struct TransparentInnerProduct final {
@@ -135,122 +136,105 @@ TEST_F(GrassmannTest, TrivectorFMA) {
 }
 
 TEST_F(GrassmannTest, Operators) {
-  testing_utilities::TestEquality(Bivector<Length, World>(u_),
+  TestEquality(Bivector<Length, World>(u_),
                                   Bivector<Length, World>(v_));
-  testing_utilities::TestEquality(Vector<Length, World>(u_),
+  TestEquality(Vector<Length, World>(u_),
                                   Vector<Length, World>(v_));
-  testing_utilities::TestEquality(Trivector<Length, World>(u_.x),
+  TestEquality(Trivector<Length, World>(u_.x),
                                   Trivector<Length, World>(v_.x));
 }
 
 TEST_F(GrassmannTest, SpecialOrthogonalLieAlgebra) {
-  testing_utilities::TestLieBracket(
-      Commutator<double, double, World>,
-      Bivector<double, World>(u_ / Foot),
-      Bivector<double, World>(v_ / Metre),
-      Bivector<double, World>(w_ / Rod),
-      Bivector<double, World>(a_ / Furlong),
-      0.42, 0, 1);
+  TestLieBracket(Commutator<double, double, World>,
+                 Bivector<double, World>(u_ / Foot),
+                 Bivector<double, World>(v_ / Metre),
+                 Bivector<double, World>(w_ / Rod),
+                 Bivector<double, World>(a_ / Furlong),
+                 0.42, 0, 1);
 }
 
 TEST_F(GrassmannTest, MixedScalarMultiplication) {
-  testing_utilities::TestBilinearMap(
-      std::multiplies<>(),
-      1 / Second,
-      1 / JulianYear,
-      Vector<Length, World>(u_),
-      Vector<Length, World>(v_),
-      42,
-      0, 1);
-  testing_utilities::TestBilinearMap(
-      std::multiplies<>(),
-      Vector<Length, World>(w_),
-      Vector<Length, World>(a_),
-      -1 / Day,
-      SpeedOfLight / Parsec,
-      -π,
-       0, 1);
+  TestBilinearMap(std::multiplies<>(),
+                  1 / Second,
+                  1 / JulianYear,
+                  Vector<Length, World>(u_),
+                  Vector<Length, World>(v_),
+                  42, 0, 1);
+  TestBilinearMap(std::multiplies<>(),
+                  Vector<Length, World>(w_),
+                  Vector<Length, World>(a_),
+                  -1 / Day,
+                  SpeedOfLight / Parsec,
+                  -π, 0, 1);
   Inverse<Time> t = -3 / Second;
   EXPECT_EQ((t * Vector<Length, World>(u_)), (Vector<Length, World>(u_) * t));
   EXPECT_EQ((Vector<Length, World>(v_) * t) / t, (Vector<Length, World>(v_)));
 }
 
 TEST_F(GrassmannTest, VectorSpaces) {
-  testing_utilities::TestInnerProductSpace(
-      TransparentInnerProduct(),
-      Vector<Length, World>(null_displacement_),
-      Vector<Length, World>(u_),
-      Vector<Length, World>(v_),
-      Vector<Length, World>(w_),
-      Vector<Length, World>(a_),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
-  testing_utilities::TestInnerProductSpace(
-      TransparentInnerProduct(),
-      Bivector<Length, World>(null_displacement_),
-      Bivector<Length, World>(u_),
-      Bivector<Length, World>(v_),
-      Bivector<Length, World>(w_),
-      Bivector<Length, World>(a_),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
-  testing_utilities::TestInnerProductSpace(
-      TransparentInnerProduct(),
-      Trivector<Length, World>(null_displacement_.x),
-      Trivector<Length, World>(u_.y),
-      Trivector<Length, World>(v_.z),
-      Trivector<Length, World>(w_.x),
-      Trivector<Length, World>(a_.y),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
-  testing_utilities::TestInnerProductSpace(
-      TransparentInnerProduct(),
-      Vector<double, World>(null_displacement_ / Metre),
-      Vector<double, World>(u_ / Metre),
-      Vector<double, World>(v_ / Metre),
-      Vector<double, World>(w_ / Metre),
-      Vector<double, World>(a_ / Metre),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
-  testing_utilities::TestInnerProductSpace(
-      TransparentInnerProduct(),
-      Bivector<double, World>(null_displacement_ / Metre),
-      Bivector<double, World>(u_ / Metre),
-      Bivector<double, World>(v_ / Metre),
-      Bivector<double, World>(w_ / Metre),
-      Bivector<double, World>(a_ / Metre),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
-  testing_utilities::TestInnerProductSpace(
-      TransparentInnerProduct(),
-      Trivector<double, World>(null_displacement_.x / Metre),
-      Trivector<double, World>(u_.y / Metre),
-      Trivector<double, World>(v_.z / Metre),
-      Trivector<double, World>(w_.x / Metre),
-      Trivector<double, World>(a_.y / Metre),
-      0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
+  TestInnerProductSpace(TransparentInnerProduct(),
+                        Vector<Length, World>(null_displacement_),
+                        Vector<Length, World>(u_),
+                        Vector<Length, World>(v_),
+                        Vector<Length, World>(w_),
+                        Vector<Length, World>(a_),
+                        0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
+  TestInnerProductSpace(TransparentInnerProduct(),
+                        Bivector<Length, World>(null_displacement_),
+                        Bivector<Length, World>(u_),
+                        Bivector<Length, World>(v_),
+                        Bivector<Length, World>(w_),
+                        Bivector<Length, World>(a_),
+                        0.0, 1.0, Sqrt(163), -Sqrt(2), 0,  18);
+  TestInnerProductSpace(TransparentInnerProduct(),
+                        Trivector<Length, World>(null_displacement_.x),
+                        Trivector<Length, World>(u_.y),
+                        Trivector<Length, World>(v_.z),
+                        Trivector<Length, World>(w_.x),
+                        Trivector<Length, World>(a_.y),
+                        0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
+  TestInnerProductSpace(TransparentInnerProduct(),
+                        Vector<double, World>(null_displacement_ / Metre),
+                        Vector<double, World>(u_ / Metre),
+                        Vector<double, World>(v_ / Metre),
+                        Vector<double, World>(w_ / Metre),
+                        Vector<double, World>(a_ / Metre),
+                        0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
+  TestInnerProductSpace(TransparentInnerProduct(),
+                        Bivector<double, World>(null_displacement_ / Metre),
+                        Bivector<double, World>(u_ / Metre),
+                        Bivector<double, World>(v_ / Metre),
+                        Bivector<double, World>(w_ / Metre),
+                        Bivector<double, World>(a_ / Metre),
+                        0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 18);
+  TestInnerProductSpace(TransparentInnerProduct(),
+                        Trivector<double, World>(null_displacement_.x / Metre),
+                        Trivector<double, World>(u_.y / Metre),
+                        Trivector<double, World>(v_.z / Metre),
+                        Trivector<double, World>(w_.x / Metre),
+                        Trivector<double, World>(a_.y / Metre),
+                        0.0, 1.0, Sqrt(163), -Sqrt(2), 0, 1);
 }
 
 TEST_F(GrassmannTest, GrassmannAlgebra) {
-  testing_utilities::TestAlternatingBilinearMap(
-      TransparentWedge(),
-      Vector<double, World>(u_ / Metre),
-      Vector<double, World>(v_ / Metre),
-      Vector<double, World>(w_ / Metre),
-      Vector<double, World>(a_ / Metre),
-      6.0 * 9.0,
-      0, 1);
-  testing_utilities::TestBilinearMap(
-      TransparentWedge(),
-      Vector<Length, World>(u_),
-      Vector<Length, World>(v_),
-      Bivector<Speed, World>(w_ / Second),
-      Bivector<Speed, World>(a_ / Second),
-      6.0 * 9.0,
-      0, 1);
-  testing_utilities::TestBilinearMap(
-      TransparentWedge(),
-      Bivector<Length, World>(u_),
-      Bivector<Length, World>(v_),
-      Vector<Speed, World>(w_ / Second),
-      Vector<Speed, World>(a_ / Second),
-      6.0 * 9.0,
-      0, 1);
+  TestAlternatingBilinearMap(TransparentWedge(),
+                             Vector<double, World>(u_ / Metre),
+                             Vector<double, World>(v_ / Metre),
+                             Vector<double, World>(w_ / Metre),
+                             Vector<double, World>(a_ / Metre),
+                             6.0 * 9.0, 0, 1);
+  TestBilinearMap(TransparentWedge(),
+                  Vector<Length, World>(u_),
+                  Vector<Length, World>(v_),
+                  Bivector<Speed, World>(w_ / Second),
+                  Bivector<Speed, World>(a_ / Second),
+                  6.0 * 9.0, 0, 1);
+  TestBilinearMap(TransparentWedge(),
+                  Bivector<Length, World>(u_),
+                  Bivector<Length, World>(v_),
+                  Vector<Speed, World>(w_ / Second),
+                  Vector<Speed, World>(a_ / Second),
+                  6.0 * 9.0, 0, 1);
   EXPECT_EQ(
       Wedge(Vector<Speed, World>(v_ / Second), Bivector<Length, World>(u_)),
       Wedge(Bivector<Length, World>(u_), Vector<Speed, World>(v_ / Second)));

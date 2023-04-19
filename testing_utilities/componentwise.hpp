@@ -230,8 +230,4 @@ using internal::Componentwise;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_componentwise;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/componentwise_body.hpp"
