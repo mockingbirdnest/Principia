@@ -79,8 +79,4 @@ using internal::Variance;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_statistics;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/statistics_body.hpp"

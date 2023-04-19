@@ -23,6 +23,9 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
@@ -72,7 +75,6 @@ class RotatingPulsatingReferenceFrame
   template<int degree>
   Derivatives<Length, Instant, degree + 1> r_derivatives(
       Instant const& t) const;
-
 
   SimilarMotion<ThisFrame, RotatingFrame> ToRotatingFrame(
       Derivatives<Length, Instant, 2> const& r_derivatives_1) const;

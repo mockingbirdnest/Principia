@@ -31,6 +31,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
+using namespace principia::testing_utilities::_algebra;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_vanishes_before;
@@ -92,22 +93,22 @@ TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_THAT(303.49234547957647 * Metre / Second, AlmostEquals(a_.Norm(), 0));
   EXPECT_THAT(92107.603764694598 * Metre * Metre / Second / Second,
               AlmostEquals(a_.Norm²(), 0));
-  testing_utilities::TestEquality(42 * v_, 43 * v_);
-  testing_utilities::TestVectorSpace<R3Element<Speed>, double>(
+  TestEquality(42 * v_, 43 * v_);
+  TestVectorSpace<R3Element<Speed>, double>(
       null_velocity_, u_, v_, w_, 0.0, 1.0, e, 42.0, 0, 1);
-  testing_utilities::TestAlternatingBilinearMap(
+  TestAlternatingBilinearMap(
       Cross<Speed, Speed>, u_, v_, w_, a_, 42.0, 0, 1);
   EXPECT_EQ(Cross(R3Element<double>(1, 0, 0),
                   R3Element<double>(0, 1, 0)),
             R3Element<double>(0, 0, 1));
-  testing_utilities::TestSymmetricPositiveDefiniteBilinearMap(
+  TestSymmetricPositiveDefiniteBilinearMap(
       Dot<Speed, Speed>, u_, v_, w_, a_, 42.0, 0, 1);
 }
 
 TEST_F(R3ElementTest, MixedProduct) {
-  testing_utilities::TestBilinearMap(
+  TestBilinearMap(
       std::multiplies<>(), 1 * Second, 1 * JulianYear, u_, v_, 42.0, 0, 1);
-  testing_utilities::TestBilinearMap(
+  TestBilinearMap(
       std::multiplies<>(), w_, a_,
       -1 * Day, 1 * Parsec / SpeedOfLight, -π, 0, 1);
   Time const t = -3 * Second;

@@ -94,6 +94,7 @@ using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_massive_body;

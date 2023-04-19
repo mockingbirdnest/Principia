@@ -21,6 +21,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::physics::_massive_body;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -110,10 +112,6 @@ using internal::OblateBody;
 }  // namespace _oblate_body
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_oblate_body;
-}  // namespace principia::physics
 
 #include "physics/oblate_body_body.hpp"
 

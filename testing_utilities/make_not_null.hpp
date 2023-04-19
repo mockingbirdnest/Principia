@@ -21,8 +21,4 @@ using internal::make_not_null;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_make_not_null;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/make_not_null_body.hpp"

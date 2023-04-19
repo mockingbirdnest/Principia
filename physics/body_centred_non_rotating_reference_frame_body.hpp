@@ -15,6 +15,8 @@ namespace internal {
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_rotating_body;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::

@@ -27,6 +27,8 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

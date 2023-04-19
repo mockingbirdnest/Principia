@@ -97,8 +97,4 @@ using internal::FixedStepParameters;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_integration_parameters;
-}  // namespace principia::physics
-
 #include "physics/integration_parameters_body.hpp"

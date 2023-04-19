@@ -18,6 +18,9 @@ namespace _hierarchical_system {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
 
 template<typename Frame>
 class HierarchicalSystem final {
@@ -102,9 +105,5 @@ using internal::HierarchicalSystem;
 }  // namespace _hierarchical_system
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_hierarchical_system;
-}  // namespace principia::physics
 
 #include "physics/hierarchical_system_body.hpp"

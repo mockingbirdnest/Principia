@@ -21,6 +21,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

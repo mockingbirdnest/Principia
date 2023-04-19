@@ -71,8 +71,4 @@ using internal::HarmonicDamping;
 }  // namespace physics
 }  // namespace principia
 
-namespace principia::physics {
-using namespace principia::physics::_harmonic_damping;
-}  // namespace principia::physics
-
 #include "physics/harmonic_damping_body.hpp"

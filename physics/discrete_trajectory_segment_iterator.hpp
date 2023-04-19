@@ -39,6 +39,7 @@ using namespace principia::base::_not_null;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_segment_range;
 
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {
@@ -101,9 +102,5 @@ using internal::DiscreteTrajectorySegmentIterator;
 }  // namespace _discrete_trajectory_segment_iterator
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_discrete_trajectory_segment_iterator;
-}  // namespace principia::physics
 
 #include "physics/discrete_trajectory_segment_iterator_body.hpp"

@@ -18,6 +18,9 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_frame_field;
+using namespace principia::physics::_rotating_body;
 
 // The z-axis goes from the point |q| to the centre of |body| at |t|  The
 // x-axis is orthogonal to the z-axis and in the plane defined by the z-axis and
@@ -46,9 +49,5 @@ using internal::BodySurfaceFrameField;
 }  // namespace _body_surface_frame_field
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_body_surface_frame_field;
-}  // namespace principia::physics
 
 #include "physics/body_surface_frame_field_body.hpp"

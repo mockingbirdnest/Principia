@@ -39,6 +39,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;

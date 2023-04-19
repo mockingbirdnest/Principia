@@ -19,7 +19,7 @@ namespace internal {
 // This is not defined in base/status_utilities.hpp to avoid pulling gmock in
 // non-test code.
 #define EXPECT_OK(value) \
-  EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
+  EXPECT_THAT((value), ::principia::testing_utilities::_matchers::IsOk());
 
 MATCHER_P(EqualsProto,
           expected,
@@ -81,7 +81,3 @@ inline void PrintTo(Part const& message, std::ostream* const os) {
 }  // namespace serialization
 
 }  // namespace principia
-
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_matchers;
-}  // namespace principia::testing_utilities

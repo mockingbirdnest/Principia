@@ -32,6 +32,7 @@ using namespace principia::physics::_clientele;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_make_not_null;
 
 using namespace std::chrono_literals;
 
@@ -895,8 +896,8 @@ void Vessel::MakeSynchronous() {
 Vessel::Vessel()
     : body_(),
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
-      parent_(testing_utilities::make_not_null<Celestial const*>()),
-      ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      parent_(make_not_null<Celestial const*>()),
+      ephemeris_(make_not_null<Ephemeris<Barycentric>*>()),
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),

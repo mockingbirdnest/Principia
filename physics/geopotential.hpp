@@ -24,6 +24,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
+using namespace principia::physics::_harmonic_damping;
+using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -116,9 +118,5 @@ using internal::Geopotential;
 }  // namespace _geopotential
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_geopotential;
-}  // namespace principia::physics
 
 #include "physics/geopotential_body.hpp"

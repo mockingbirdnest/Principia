@@ -72,8 +72,4 @@ using internal::VanishesBefore;
 }  // namespace testing_utilities
 }  // namespace principia
 
-namespace principia::testing_utilities {
-using namespace principia::testing_utilities::_vanishes_before;
-}  // namespace principia::testing_utilities
-
 #include "testing_utilities/vanishes_before_body.hpp"

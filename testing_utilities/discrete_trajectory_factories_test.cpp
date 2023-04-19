@@ -23,7 +23,9 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class DiscreteTrajectoryFactoriesTest : public ::testing::Test {
  protected:

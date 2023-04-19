@@ -8,6 +8,7 @@
 #ifndef PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_RIGID_REFERENCE_FRAME_HPP_
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
@@ -29,7 +30,10 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 
@@ -117,10 +121,6 @@ using internal::RigidReferenceFrame;
 }  // namespace _rigid_reference_frame
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_rigid_reference_frame;
-}  // namespace principia::physics
 
 #include "physics/rigid_reference_frame_body.hpp"
 

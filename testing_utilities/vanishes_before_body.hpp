@@ -18,6 +18,7 @@ namespace testing_utilities {
 namespace _vanishes_before {
 namespace internal {
 
+using namespace principia::testing_utilities::_numerics;
 using namespace principia::numerics::_ulp_distance;
 
 template<typename T>

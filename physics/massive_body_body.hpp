@@ -19,6 +19,7 @@ namespace _massive_body {
 namespace internal {
 
 using namespace principia::geometry::_frame;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_constants;
 
 inline MassiveBody::Parameters::Parameters(

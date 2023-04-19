@@ -10,6 +10,8 @@ namespace testing_utilities {
 namespace _algebra {
 namespace internal {
 
+using namespace principia::testing_utilities::_almost_equals;
+
 template<typename T>
 void TestEquality(T const& low, T const& high) {
   EXPECT_TRUE(low == low) << "low = " << low;

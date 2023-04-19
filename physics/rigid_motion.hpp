@@ -25,6 +25,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -162,9 +163,5 @@ using internal::RigidTransformation;
 }  // namespace _rigid_motion
 }  // namespace physics
 }  // namespace principia
-
-namespace principia::physics {
-using namespace principia::physics::_rigid_motion;
-}  // namespace principia::physics
 
 #include "physics/rigid_motion_body.hpp"

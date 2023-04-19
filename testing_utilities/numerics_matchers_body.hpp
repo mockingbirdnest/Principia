@@ -15,6 +15,7 @@ namespace internal {
 using ::testing::MakeMatcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
+using namespace principia::testing_utilities::_numerics;
 
 template<typename Value>
 class DifferenceFromMatcher : public MatcherInterface<Value> {

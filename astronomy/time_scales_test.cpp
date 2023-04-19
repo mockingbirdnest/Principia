@@ -128,7 +128,7 @@ TEST_F(TimeScalesTest, ReferenceDates) {
   constexpr Instant B1900 = "1899-12-31T00:00:00"_TT + 0.8135 * Day;
   Instant const JD2415020_3135 = "JD2415020.3135"_TT;
   EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 1));
-  EXPECT_THAT(testing_utilities::AbsoluteError(JD2415020_3135, B1900),
+  EXPECT_THAT(AbsoluteError(JD2415020_3135, B1900),
               IsNear(0.5_(1) * Micro(Second)));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00"_TT + 0.9235 * Day;
