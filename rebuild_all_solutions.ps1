@@ -11,6 +11,9 @@ $dependencies = @(".\Google\glog\msvc\glog.sln",
                   ".\Google\abseil-cpp\msvc\abseil-cpp.sln",
                   ".\Third Party\zfp\msvc\zfp.sln")
 
+New-Item -ItemType Directory -Force -Path "Google"
+New-Item -ItemType Directory -Force -Path "Third Party"
+
 push-location -path "Google"
 foreach ($repository in @("glog", "googletest", "protobuf", "benchmark",
                           "gipfeli", "abseil-cpp", "chromium")) {
