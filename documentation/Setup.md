@@ -45,6 +45,10 @@ This project depends upon:
 
 In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
+### Root Preparation
+
+In `<root>` create the folders `Google` and `Third Party`
+
 ### KSP and Unity assemblies
 
 In order to build for KSP 1.12.2, copy the corresponding KSP 1.12.2 assemblies to `<root>\KSP Assemblies\1.12.2`
