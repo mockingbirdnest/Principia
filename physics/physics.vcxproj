@@ -136,6 +136,7 @@
     <ClCompile Include="rigid_motion_test.cpp" />
     <ClCompile Include="ephemeris_test.cpp" />
     <ClCompile Include="rigid_reference_frame_test.cpp" />
+    <ClCompile Include="rotating_pulsating_reference_frame_test.cpp" />
     <ClCompile Include="similar_motion_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
   </ItemGroup>

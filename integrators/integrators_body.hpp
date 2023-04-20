@@ -47,6 +47,10 @@
   PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
                             FINE_1987_RKNG_34,                       \
                             Fine1987RKNG34,                          \
+                            eegrkn_action)                           \
+  PRINCIPIA_INTEGRATOR_CASE(AdaptiveStepSizeIntegrator,              \
+                            FINE_1987_RKNG_45,                       \
+                            Fine1987RKNG45,                          \
                             eegrkn_action)
 
 // All the case branches in a switch on the serialized fixed-step size
