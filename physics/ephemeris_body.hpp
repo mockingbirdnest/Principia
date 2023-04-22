@@ -570,6 +570,16 @@ SpecificEnergy Ephemeris<Frame>::ComputeGravitationalPotential(
 }
 
 template<typename Frame>
+R3x3Matrix<Inverse<Square<Time>>>
+Ephemeris<Frame>::ComputeJacobianOfAcceleration(Position<Frame> const& position,
+                                                Instant const& t) const {
+  std::vector<R3x3Matrix<Inverse<Square<Time>>>> jacobians(1);
+  ComputeJacobiansOfAccelerationsOfAllMassiveBodies(t, {position}, jacobians);
+
+  return jacobians[0];
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                       not_null<MassiveBody const*> const body2,
                                       DiscreteTrajectory<Frame>& apoapsides1,
@@ -1200,6 +1210,44 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
 }
 
 template<typename Frame>
+void Ephemeris<Frame>::ComputeJacobiansOfAccelerationsOfMassiveBody(
+    Instant const& t,
+    MassiveBody const& body1,
+    std::size_t b1,
+    std::vector<Position<Frame>> const& positions,
+    std::vector<R3x3Matrix<Inverse<Square<Time>>>>& jacobians) const {
+  lock_.AssertReaderHeld();
+  GravitationalParameter const& μ1 = body1.gravitational_parameter();
+  auto const& trajectory1 = *trajectories_[b1];
+  Position<Frame> const position1 = trajectory1.EvaluatePositionLocked(t);
+
+  for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
+    // A vector from the center of |b2| to the center of |b1|.
+    Displacement<Frame> const Δq = position1 - positions[b2];
+
+    Length const Δq_norm = Δq.Norm();
+    auto const Δq_norm⁵ = Pow<5>(Δq_norm);
+    R3x3Matrix<Square<Length>> m(
+        {+ 2 * Pow<2>(Δq.coordinates().x)
+         - Pow<2>(Δq.coordinates().y)
+         - Pow<2>(Δq.coordinates().z),
+         3 * Δq.coordinates().x * Δq.coordinates().y,
+         3 * Δq.coordinates().x * Δq.coordinates().z},
+        {3 * Δq.coordinates().y * Δq.coordinates().x,
+         - Pow<2>(Δq.coordinates().x)
+         + 2 * Pow<2>(Δq.coordinates().y)
+         - Pow<2>(Δq.coordinates().z),
+         3 * Δq.coordinates().y * Δq.coordinates().z},
+        {3 * Δq.coordinates().z * Δq.coordinates().x,
+         3 * Δq.coordinates().z * Δq.coordinates().y,
+         - Pow<2>(Δq.coordinates().x)
+         - Pow<2>(Δq.coordinates().y)
+         + 2 * Pow<2>(Δq.coordinates().z)});
+    jacobians[b2] += μ1 * m / Δq_norm⁵;
+  }
+}
+
+template<typename Frame>
 absl::Status
 Ephemeris<Frame>::ComputeGravitationalAccelerationBetweenAllMassiveBodies(
     Instant const& t,
@@ -1319,6 +1367,36 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfAllMassiveBodies(
   }
 }
 
+template<typename Frame>
+void Ephemeris<Frame>::ComputeJacobiansOfAccelerationsOfAllMassiveBodies(
+    Instant const& t,
+    std::vector<Position<Frame>> const& positions,
+    std::vector<R3x3Matrix<Inverse<Square<Time>>>>& jacobians) const {
+  CHECK_EQ(positions.size(), jacobians.size());
+  jacobians.assign(jacobians.size(), R3x3Matrix<Inverse<Square<Time>>>());
+
+  // Locking ensures that we see a consistent state of all the trajectories.
+  absl::ReaderMutexLock l(&lock_);
+  for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
+    MassiveBody const& body1 = *bodies_[b1];
+    ComputeJacobiansOfAccelerationsOfMassiveBody(
+        t,
+        body1, b1,
+        positions,
+        jacobians);
+  }
+  for (std::size_t b1 = number_of_oblate_bodies_;
+       b1 < number_of_oblate_bodies_ +
+            number_of_spherical_bodies_;
+       ++b1) {
+    MassiveBody const& body1 = *bodies_[b1];
+    ComputeJacobiansOfAccelerationsOfMassiveBody(
+        t,
+        body1, b1,
+        positions,
+        jacobians);
+  }
+}
 
 template<typename Frame>
 template<typename ODE>

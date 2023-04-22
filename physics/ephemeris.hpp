@@ -41,6 +41,7 @@ using namespace principia::base::_recurring_thread;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
@@ -223,6 +224,10 @@ class Ephemeris {
       Position<Frame> const& position,
       Instant const& t) const EXCLUDES(lock_);
 
+  R3x3Matrix<Inverse<Square<Time>>> ComputeJacobianOfAcceleration(
+      Position<Frame> const& position,
+      Instant const& t) const EXCLUDES(lock_);
+
   // Computes the apsides of the relative trajectory of |body1| and |body2}.
   // Appends to the given trajectories two points for each apsis, one for
   // |body1| and one for |body2|.  The times of |apoapsides1| and |apoapsideds2|
@@ -352,6 +357,14 @@ class Ephemeris {
       std::vector<SpecificEnergy>& potentials) const
       REQUIRES_SHARED(lock_);
 
+  void ComputeJacobiansOfAccelerationsOfMassiveBody(
+      Instant const& t,
+      MassiveBody const& body1,
+      std::size_t b1,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<R3x3Matrix<Inverse<Square<Time>>>>& jacobians) const
+      REQUIRES_SHARED(lock_);
+
   // Computes the accelerations between all the massive bodies in |bodies_|.
   absl::Status ComputeGravitationalAccelerationBetweenAllMassiveBodies(
       Instant const& t,
@@ -375,6 +388,12 @@ class Ephemeris {
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<SpecificEnergy>& potentials) const
+      EXCLUDES(lock_);
+
+  void ComputeJacobiansOfAccelerationsOfAllMassiveBodies(
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<R3x3Matrix<Inverse<Square<Time>>>>& jacobians) const
       EXCLUDES(lock_);
 
   // Flows the given ODE with an adaptive step integrator.
