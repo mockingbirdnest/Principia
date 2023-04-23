@@ -61,7 +61,7 @@ class BurnEditor : ScalingRenderer {
         field_width      : 7){
         value            = initial_time_ - time_base
     };
-    reference_frame_selector_ = new ReferenceFrameSelector(
+    reference_frame_selector_ = new ReferenceFrameSelector<NavigationFrameParameters>(
         adapter_,
         ReferenceFrameChanged,
         L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
@@ -453,7 +453,8 @@ class BurnEditor : ScalingRenderer {
   private readonly DifferentialSlider Δv_normal_;
   private readonly DifferentialSlider Δv_binormal_;
   private readonly DifferentialSlider previous_coast_duration_;
-  private readonly ReferenceFrameSelector reference_frame_selector_;
+  private readonly ReferenceFrameSelector<NavigationFrameParameters>
+      reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;

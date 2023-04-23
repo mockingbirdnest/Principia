@@ -4,7 +4,8 @@ using System.IO;
 using System.Linq;
 using KSP.Localization;
 
-using static principia.ksp_plugin_adapter.ReferenceFrameSelector.FrameType;
+using static principia.ksp_plugin_adapter.ReferenceFrameSelector<
+    principia.ksp_plugin_adapter.PlottingFrameParameters>.FrameType;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -269,7 +270,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   [KSPField(isPersistant = true)]
   private readonly OrbitAnalyser orbit_analyser_;
   [KSPField(isPersistant = true)]
-  internal readonly ReferenceFrameSelector plotting_frame_selector_;
+  internal readonly ReferenceFrameSelector<PlottingFrameParameters>
+      plotting_frame_selector_;
   [KSPField(isPersistant = true)]
   private MainWindow main_window_;
 
@@ -342,9 +344,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         show_only_pinned: () => main_window_.show_only_pinned_markers);
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
-    plotting_frame_selector_ = new ReferenceFrameSelector(this,
-      UpdatePlottingFrame,
-      L10N.CacheFormat("#Principia_PlottingFrame"));
+    plotting_frame_selector_ =
+        new ReferenceFrameSelector<PlottingFrameParameters>(
+            this,
+            UpdatePlottingFrame,
+            L10N.CacheFormat("#Principia_PlottingFrame"));
     plotter_ = new Plotter(this);
     main_window_ = new MainWindow(this,
                                   flight_planner_,
@@ -1973,16 +1977,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           }
         }
         switch (plotting_frame_selector_.frame_type) {
-          case ReferenceFrameSelector.FrameType.BODY_SURFACE:
+          case BODY_SURFACE:
             set_navball_texture(surface_navball_texture_);
             break;
-          case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
+          case BODY_CENTRED_NON_ROTATING:
             set_navball_texture(inertial_navball_texture_);
             break;
-          case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
+          case BARYCENTRIC_ROTATING:
             set_navball_texture(barycentric_navball_texture_);
             break;
-          case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+          case BODY_CENTRED_PARENT_DIRECTION:
             set_navball_texture(body_direction_navball_texture_);
             break;
         }
@@ -2398,7 +2402,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void UpdatePlottingFrame(
-      NavigationFrameParameters? frame_parameters,
+      PlottingFrameParameters? frame_parameters,
       Vessel target_vessel) {
     if (target_vessel != null) {
       // TODO(egg): We should use the analyser to pick the reference body.

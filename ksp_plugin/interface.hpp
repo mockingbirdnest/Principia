@@ -173,6 +173,11 @@ XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum);
 Instant FromGameTime(Plugin const& plugin, double t);
 double ToGameTime(Plugin const& plugin, Instant const& t);
 
+// A factory for PlottingFrame objects.
+not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
+    Plugin const& plugin,
+    PlottingFrameParameters const& parameters);
+
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     Plugin const& plugin,

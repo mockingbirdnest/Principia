@@ -408,6 +408,10 @@ class Plugin {
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodySurfaceNavigationFrame(Index reference_body_index) const;
 
+  virtual not_null<std::unique_ptr<PlottingFrame>>
+  NewRotatingPulsatingPlottingFrame(Index primary_index,
+                                    Index secondary_index) const;
+
   virtual void SetTargetVessel(GUID const& vessel_guid,
                                Index reference_body_index);
 

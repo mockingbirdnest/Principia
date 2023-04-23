@@ -59,6 +59,51 @@ internal partial struct WXYZ {
   }
 }
 
+internal interface ReferenceFrameParameters {
+  int extension  { get; set; }
+  int centre_index  { get; set; }
+  int primary_index  { get; set; }
+  int secondary_index  { get; set; }
+}
+
+internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
+  int ReferenceFrameParameters.extension {
+    get => extension;
+    set => extension = value;
+  }
+  int ReferenceFrameParameters.centre_index {
+    get => centre_index;
+    set => centre_index = value;
+  }
+  int ReferenceFrameParameters.primary_index {
+    get => primary_index;
+    set => primary_index = value;
+  }
+  int ReferenceFrameParameters.secondary_index {
+    get => secondary_index;
+    set => secondary_index = value;
+  }
+}
+
+internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
+  int ReferenceFrameParameters.extension {
+    get => extension;
+    set => extension = value;
+  }
+  int ReferenceFrameParameters.centre_index {
+    get => centre_index;
+    set => centre_index = value;
+  }
+  int ReferenceFrameParameters.primary_index {
+    get => primary_index;
+    set => primary_index = value;
+  }
+  int ReferenceFrameParameters.secondary_index {
+    get => secondary_index;
+    set => secondary_index = value;
+  }
+}
+
 internal static partial class Interface {
   internal const string dll_path = "principia";
 

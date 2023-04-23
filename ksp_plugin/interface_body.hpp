@@ -631,6 +631,23 @@ inline double ToGameTime(Plugin const& plugin,
   return (t - plugin.GameEpoch()) / Second;
 }
 
+inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
+    Plugin const& plugin,
+    PlottingFrameParameters const& parameters) {
+  switch (parameters.extension) {
+    case serialization::RotatingPulsatingReferenceFrame::kExtensionFieldNumber:
+      return plugin.NewRotatingPulsatingPlottingFrame(
+          parameters.primary_index, parameters.secondary_index);
+    default:
+      return NewNavigationFrame(
+          plugin,
+          {.extension = parameters.extension,
+           .centre_index = parameters.centre_index,
+           .primary_index = parameters.primary_index,
+           .secondary_index = parameters.secondary_index});
+  }
+}
+
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     Plugin const& plugin,
     NavigationFrameParameters const& parameters) {

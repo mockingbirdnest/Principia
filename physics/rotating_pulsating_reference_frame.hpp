@@ -68,6 +68,11 @@ class RotatingPulsatingReferenceFrame
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;
 
+  static not_null<std::unique_ptr<RotatingPulsatingReferenceFrame>>
+  ReadFromMessage(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      serialization::RotatingPulsatingReferenceFrame const& message);
+
  private:
   using RotatingFrame =
       Frame<struct RotatingTag, Arbitrary, ThisFrame::handedness>;

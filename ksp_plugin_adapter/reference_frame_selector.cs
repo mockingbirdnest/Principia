@@ -20,15 +20,16 @@ internal static class CelestialExtensions {
   }
 }
 
-internal class ReferenceFrameSelector : SupervisedWindowRenderer {
+internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer where Parameters : struct, ReferenceFrameParameters {
   public enum FrameType {
     BARYCENTRIC_ROTATING = 6001,
     BODY_CENTRED_NON_ROTATING = 6000,
     BODY_CENTRED_PARENT_DIRECTION = 6002,
     BODY_SURFACE = 6003,
+    ROTATING_PULSATING = 6004,
   }
 
-  public delegate void Callback(NavigationFrameParameters? frame_parameters,
+  public delegate void Callback(Parameters? frame_parameters,
                                 Vessel target_vessel);
 
   public ReferenceFrameSelector(ISupervisor supervisor,
@@ -61,7 +62,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
     });
   }
 
-  public void SetFrameParameters(NavigationFrameParameters parameters) {
+  public void SetFrameParameters(Parameters parameters) {
     EffectChange(() => {
       frame_type = (FrameType)parameters.extension;
       switch (frame_type) {
@@ -394,7 +395,10 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   public bool FixesBody(CelestialBody celestial) {
     // TODO(egg): When we have the rotating-pulsating frame, this should return
     // true for both bodies.
-    return celestial == Centre();
+    return celestial == Centre() ||
+        (frame_type == FrameType.ROTATING_PULSATING &&
+            (celestial == selected_celestial ||
+             celestial == selected_celestial.referenceBody));
   }
 
   public CelestialBody Centre() {
@@ -407,22 +411,23 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
       case FrameType.BODY_SURFACE:
         return selected_celestial;
       case FrameType.BARYCENTRIC_ROTATING:
+      case FrameType.ROTATING_PULSATING:
         return null;
       default:
         throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
     }
   }
 
-  public NavigationFrameParameters FrameParameters() {
+  public Parameters FrameParameters() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_SURFACE:
-        return new NavigationFrameParameters{
+        return new Parameters{
             extension = (int)frame_type,
             centre_index = selected_celestial.flightGlobalsIndex
         };
       case FrameType.BARYCENTRIC_ROTATING:
-        return new NavigationFrameParameters{
+        return new Parameters{
             extension = (int)frame_type,
             primary_index = selected_celestial.referenceBody.flightGlobalsIndex,
             secondary_index = selected_celestial.flightGlobalsIndex
@@ -431,7 +436,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
         // terminology of |BodyCentredBodyDirection|).
-        return new NavigationFrameParameters{
+        return new Parameters{
             extension = (int)frame_type,
             primary_index = selected_celestial.flightGlobalsIndex,
             secondary_index =
@@ -650,7 +655,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
         target_frame_selected != target_frame_was_selected) {
       on_change_(
           target_frame_selected ? null
-                                : (NavigationFrameParameters?)FrameParameters(),
+                                : (Parameters?)FrameParameters(),
           target_frame_selected ? target : null);
       is_freshly_constructed_ = false;
     }
@@ -676,8 +681,7 @@ internal class ReferenceFrameSelector : SupervisedWindowRenderer {
   private readonly Dictionary<CelestialBody, bool> expanded_;
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
-  private ReferenceFrameSelector.FrameType last_orbital_type_ =
-      ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
+  private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
 }
 
 }  // namespace ksp_plugin_adapter
