@@ -151,6 +151,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Name_BodySurface",
             new[]{selected});
+      case FrameType.ROTATING_PULSATING:
+        return "NYL";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -201,6 +203,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         return L10N.CelestialStringOrNull(
             "#Principia_ReferenceFrameSelector_Abbreviation_BodySurface",
             new[]{selected});
+      case FrameType.ROTATING_PULSATING:
+        return "NYL";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -236,6 +240,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             "#Principia_ReferenceFrameSelector_NavballName_BodySurface",
             new[]{selected});
         break;
+      case FrameType.ROTATING_PULSATING:
+        return "NYL";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -263,6 +269,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
       case FrameType.BODY_SURFACE:
         return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_SelectorText_BodySurface");
+      case FrameType.ROTATING_PULSATING:
+        return "NYL";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -289,6 +297,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             "#Principia_ReferenceFrameSelector_Tooltip_BodySurface",
             name,
             selected.Name());
+      case FrameType.ROTATING_PULSATING:
+        return "NYL";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -324,6 +334,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Description_BodySurface",
             new[]{selected});
+      case FrameType.ROTATING_PULSATING:
+        return "NYL";
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -375,6 +387,7 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
     switch (frame_type) {
       case FrameType.BARYCENTRIC_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+      case FrameType.ROTATING_PULSATING:
         return selected_celestial.referenceBody;
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_SURFACE:
@@ -419,15 +432,15 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             centre_index = selected_celestial.flightGlobalsIndex
         };
       case FrameType.BARYCENTRIC_ROTATING:
-        return new Parameters{
-            extension = frame_type,
-            primary_index = selected_celestial.referenceBody.flightGlobalsIndex,
-            secondary_index = selected_celestial.flightGlobalsIndex
-        };
+        // Deprecated, might as well do the same as its other two-body friends.
+        // Used to have the primary and secondary swapped.
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+      case FrameType.ROTATING_PULSATING:
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
         // terminology of |BodyCentredBodyDirection|).
+        // We do the same for the rotating-pulsating frame to facilitate
+        // conversion to the rigid frame when picking a default manœuvre frame.
         return new Parameters{
             extension = frame_type,
             primary_index = selected_celestial.flightGlobalsIndex,
@@ -594,6 +607,21 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
           target_frame_selected = false;
           selected_celestial = celestial;
           frame_type = FrameType.BODY_CENTRED_PARENT_DIRECTION;
+        });
+      }
+      if (typeof(Parameters) == typeof(PlottingFrameParameters) &&
+          !celestial.is_root() &&
+          ToggleButton(
+              SelectedFrameIs(celestial,
+                              FrameType.ROTATING_PULSATING),
+              new UnityEngine.GUIContent(
+                  SelectorText(FrameType.ROTATING_PULSATING, celestial),
+                  SelectorTooltip(FrameType.ROTATING_PULSATING, celestial)),
+              GUILayoutWidth(column_width))) {
+        EffectChange(() => {
+          target_frame_selected = false;
+          selected_celestial = celestial;
+          frame_type = FrameType.ROTATING_PULSATING;
         });
       }
     }
