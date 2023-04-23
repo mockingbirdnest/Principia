@@ -99,12 +99,12 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
  protected:
   // The component names are somewhat notional.  This is not a Frenet frame and
   // anyway, the derivative trihedra are not even orthogonal.
-  template<typename ScalarT, typename ScalarN, int order = 0>
+  template<typename ScalarT, typename ScalarB, int order = 0>
   struct Trihedron {
     Vector<Derivative<ScalarT, Time, order>, InertialFrame> tangent;
-    Vector<Derivative<ScalarN, Time, order>, InertialFrame> normal;
-    Bivector<Derivative<Product<ScalarN, ScalarT>, Time, order>,
-             InertialFrame> binormal;
+    Vector<Derivative<Product<ScalarT, ScalarB>, Time, order>,
+           InertialFrame> normal;
+    Bivector<Derivative<ScalarB, Time, order>, InertialFrame> binormal;
   };
 
   // A helper function for computing the rotational movement of a frame defined
@@ -122,7 +122,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   static void ComputeTrihedra(
       Displacement<InertialFrame> const& r,
       Velocity<InertialFrame> const& ṙ,
-      Trihedron<Length, Speed>& orthogonal,
+      Trihedron<Length, ArealSpeed>& orthogonal,
       Trihedron<double, double>& orthonormal);
 
   // Computes the first derivative of the preceding trihedra.
@@ -130,20 +130,20 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Displacement<InertialFrame> const& r,
       Velocity<InertialFrame> const& ṙ,
       Vector<Acceleration, InertialFrame> const& r̈,
-      Trihedron<Length, Speed>& orthogonal,
+      Trihedron<Length, ArealSpeed>& orthogonal,
       Trihedron<double, double>& orthonormal,
-      Trihedron<Length, Speed, 1>& 𝛛orthogonal,
+      Trihedron<Length, ArealSpeed, 1>& 𝛛orthogonal,
       Trihedron<double, double, 1>& 𝛛orthonormal);
 
   static void ComputeTrihedraDerivatives2(
       Displacement<InertialFrame> const& r,
       Velocity<InertialFrame> const& ṙ,
       Vector<Acceleration, InertialFrame> const& r̈,
-      Trihedron<Length, Speed>& orthogonal,
+      Trihedron<Length, ArealSpeed>& orthogonal,
       Trihedron<double, double>& orthonormal,
-      Trihedron<Length, Speed, 1> const& 𝛛orthogonal,
+      Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
       Trihedron<double, double, 1> const& 𝛛orthonormal,
-      Trihedron<Length, Speed, 2>& 𝛛²orthogonal,
+      Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
       Trihedron<double, double, 2>& 𝛛²orthonormal);
 
   // Computes the rotation that maps |InertialFrame| to |ThisFrame|.

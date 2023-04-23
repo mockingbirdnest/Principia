@@ -202,9 +202,9 @@ ComputeAngularDegreesOfFreedom(
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
 
-  Trihedron<Length, Speed> orthogonal;
+  Trihedron<Length, ArealSpeed> orthogonal;
   Trihedron<double, double> orthonormal;
-  Trihedron<Length, Speed, 1> 𝛛orthogonal;
+  Trihedron<Length, ArealSpeed, 1> 𝛛orthogonal;
   Trihedron<double, double, 1> 𝛛orthonormal;
 
   ComputeTrihedra(r, ṙ, orthogonal, orthonormal);
@@ -218,12 +218,12 @@ template<typename InertialFrame, typename ThisFrame>
 void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedra(
     Displacement<InertialFrame> const& r,
     Velocity<InertialFrame> const& ṙ,
-    Trihedron<Length, Speed>& orthogonal,
+    Trihedron<Length, ArealSpeed>& orthogonal,
     Trihedron<double, double>& orthonormal) {
   // Our orthogonal (but not orthonormal) trihedron for |ThisFrame|.
   Displacement<InertialFrame> const& T = r;
-  Velocity<InertialFrame> const N = ṙ.OrthogonalizationAgainst(r);
-  Bivector<Product<Length, Speed>, InertialFrame> const B = Wedge(T, N);
+  Bivector<ArealSpeed, InertialFrame> const B = Wedge(r, ṙ);
+  Vector<Product<Length, ArealSpeed>, InertialFrame> const N = B * T;
 
   // Our orthonormal trihedron.
   Vector<double, InertialFrame> const t = Normalize(T);
@@ -239,9 +239,9 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
     Displacement<InertialFrame> const& r,
     Velocity<InertialFrame> const& ṙ,
     Vector<Acceleration, InertialFrame> const& r̈,
-    Trihedron<Length, Speed>& orthogonal,
+    Trihedron<Length, ArealSpeed>& orthogonal,
     Trihedron<double, double>& orthonormal,
-    Trihedron<Length, Speed, 1>& 𝛛orthogonal,
+    Trihedron<Length, ArealSpeed, 1>& 𝛛orthogonal,
     Trihedron<double, double, 1>& 𝛛orthonormal) {
   auto const& T = orthogonal.tangent;
   auto const& N = orthogonal.normal;
@@ -252,14 +252,11 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
 
   // The derivatives of the |orthogonal| trihedron.
   Velocity<InertialFrame> const& Ṫ = ṙ;
-  Vector<Acceleration, InertialFrame> const Ṅ =
-      r̈ + 2 * Pow<2>(InnerProduct(r, ṙ) / r.Norm²()) * r -
-      (r * (ṙ.Norm²() + InnerProduct(r, r̈)) + ṙ * InnerProduct(r, ṙ)) /
-          r.Norm²();
-  Bivector<Variation<Product<Length, Speed>>, InertialFrame> const Ḃ =
-      Wedge(r, r̈);
+  Bivector<Variation<ArealSpeed>, InertialFrame> const Ḃ = Wedge(r, r̈);
+  Vector<Variation<Product<Length, ArealSpeed>>, InertialFrame> const Ṅ =
+      Ḃ * T + B * Ṫ;
 
-  // For any multivector v this returns the derivative of the normalized v.
+  // For any multivector v this returns the derivative of v / ‖v‖.
   auto 𝛛normalized = []<typename V>(V const& v, Variation<V> const& v̇) {
     return (v.Norm²() * v̇ - InnerProduct(v, v̇) * v) / Pow<3>(v.Norm());
   };
@@ -278,20 +275,21 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
     Displacement<InertialFrame> const& r,
     Velocity<InertialFrame> const& ṙ,
     Vector<Acceleration, InertialFrame> const& r̈,
-    Trihedron<Length, Speed>& orthogonal,
+    Trihedron<Length, ArealSpeed>& orthogonal,
     Trihedron<double, double>& orthonormal,
-    Trihedron<Length, Speed, 1> const& 𝛛orthogonal,
+    Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
     Trihedron<double, double, 1> const& 𝛛orthonormal,
-    Trihedron<Length, Speed, 2>& 𝛛²orthogonal,
+    Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
     Trihedron<double, double, 2>& 𝛛²orthonormal) {
 
-  auto 𝛛²normalized =
-      [](V const& v, Variation<V> const& v̇, Variation<Variation<V>> const& v̈) {
+  auto 𝛛²normalized = []<typename V>(V const& v,
+                                     Variation<V> const& v̇,
+                                     Variation<Variation<V>> const& v̈) {
     return v̈ / v.Norm() -
            (2 * InnerProduct(v, v̇) * v̇ + (v̇.Norm²() - InnerProduct(v, v̈)) * v) /
                Pow<3>(v.Norm()) +
-           3 * v * Pow<2>(InnerProduct(v, v̇)) / Pow<5>(v.Norm())
-  }
+           3 * v * Pow<2>(InnerProduct(v, v̇)) / Pow<5>(v.Norm());
+  };
 }
 
 template<typename InertialFrame, typename ThisFrame>

@@ -63,6 +63,8 @@ using Variation = Derivative<T, Time>;
 using SolidAngle   = Square<Angle>;
 
 // General mechanics
+using Area         = Square<Length>;
+using Volume       = Cube<Length>;
 using Speed        = Variation<Length>;
 using Acceleration = Variation<Speed>;
 using Jerk         = Variation<Acceleration>;
@@ -70,6 +72,7 @@ using Snap         = Variation<Jerk>;
 using Momentum     = Product<Mass, Speed>;
 using Force        = Variation<Momentum>;
 using Stiffness    = Quotient<Force, Length>;
+using ArealSpeed   = Quotient<Area, Time>;
 
 using Energy = Product<Force, Length>;
 using Power  = Variation<Energy>;
@@ -102,8 +105,6 @@ using SpecificEnergy          = Quotient<Energy, Mass>;
 using SpecificAngularMomentum = Quotient<AngularMomentum, Mass>;
 
 // Thermodynamics
-using Area           = Square<Length>;
-using Volume         = Cube<Length>;
 using Pressure       = Quotient<Force, Area>;
 using Entropy        = Quotient<Energy, Temperature>;
 using Density        = Quotient<Mass, Volume>;
@@ -170,6 +171,7 @@ using internal::AngularAcceleration;
 using internal::AngularFrequency;
 using internal::AngularMomentum;
 using internal::Area;
+using internal::ArealSpeed;
 using internal::Capacitance;
 using internal::CatalyticActivity;
 using internal::Charge;
