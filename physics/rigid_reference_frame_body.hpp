@@ -339,6 +339,27 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularVelocity(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+AngularVelocity<InertialFrame>
+RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularAcceleration(
+    Trihedron<double, double> const& orthonormal,
+    Trihedron<double, double, 1> const& 𝛛orthonormal,
+    Trihedron<double, double, 2> const& 𝛛²orthonormal) {
+  auto const& t = orthonormal.tangent;
+  auto const& n = orthonormal.normal;
+  auto const& b = orthonormal.binormal;
+  auto const& ṫ = 𝛛orthonormal.tangent;
+  auto const& ṅ = 𝛛orthonormal.normal;
+  auto const& ḃ = 𝛛orthonormal.binormal;
+  auto const& ẗ = 𝛛²orthonormal.tangent;
+  auto const& n̈ = 𝛛²orthonormal.normal;
+  auto const& b̈ = 𝛛²orthonormal.binormal;
+
+  return (Wedge(n̈, b) + Wedge(ṅ, ḃ)) * t + Wedge(ṅ, b) * ṫ +
+         (Wedge(b̈, t) + Wedge(ḃ, ṫ)) * n + Wedge(ḃ, t) * ṅ +
+         (Wedge(ẗ, n) + Wedge(ṫ, ṅ)) * b + Wedge(ṫ, n) * ḃ;
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void RigidReferenceFrame<InertialFrame, ThisFrame>::
 ComputeGeometricAccelerations(
     Instant const& t,
