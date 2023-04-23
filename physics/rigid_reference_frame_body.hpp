@@ -260,17 +260,38 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
       Wedge(r, r̈);
 
   // For any multivector v this returns the derivative of the normalized v.
-  auto derive_normalized = []<typename V>(V const& v, Variation<V> const& v̇) {
+  auto 𝛛normalized = []<typename V>(V const& v, Variation<V> const& v̇) {
     return (v.Norm²() * v̇ - InnerProduct(v, v̇) * v) / Pow<3>(v.Norm());
   };
 
   // The derivatives of the |orthonormal| trihedron.
-  Vector<Variation<double>, InertialFrame> const ṫ = derive_normalized(T, Ṫ);
-  Vector<Variation<double>, InertialFrame> const ṅ = derive_normalized(N, Ṅ);
-  Bivector<Variation<double>, InertialFrame> const ḃ = derive_normalized(B, Ḃ);
+  Vector<Variation<double>, InertialFrame> const ṫ = 𝛛normalized(T, Ṫ);
+  Vector<Variation<double>, InertialFrame> const ṅ = 𝛛normalized(N, Ṅ);
+  Bivector<Variation<double>, InertialFrame> const ḃ = 𝛛normalized(B, Ḃ);
 
   𝛛orthogonal = {.tangent = Ṫ, .normal = Ṅ, .binormal = Ḃ};
   𝛛orthonormal = {.tangent = ṫ, .normal = ṅ, .binormal = ḃ};
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
+    Displacement<InertialFrame> const& r,
+    Velocity<InertialFrame> const& ṙ,
+    Vector<Acceleration, InertialFrame> const& r̈,
+    Trihedron<Length, Speed>& orthogonal,
+    Trihedron<double, double>& orthonormal,
+    Trihedron<Length, Speed, 1> const& 𝛛orthogonal,
+    Trihedron<double, double, 1> const& 𝛛orthonormal,
+    Trihedron<Length, Speed, 2>& 𝛛²orthogonal,
+    Trihedron<double, double, 2>& 𝛛²orthonormal) {
+
+  auto 𝛛²normalized =
+      [](V const& v, Variation<V> const& v̇, Variation<Variation<V>> const& v̈) {
+    return v̈ / v.Norm() -
+           (2 * InnerProduct(v, v̇) * v̇ + (v̇.Norm²() - InnerProduct(v, v̈)) * v) /
+               Pow<3>(v.Norm()) +
+           3 * v * Pow<2>(InnerProduct(v, v̇)) / Pow<5>(v.Norm())
+  }
 }
 
 template<typename InertialFrame, typename ThisFrame>

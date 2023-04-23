@@ -135,6 +135,17 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Trihedron<Length, Speed, 1>& 𝛛orthogonal,
       Trihedron<double, double, 1>& 𝛛orthonormal);
 
+  static void ComputeTrihedraDerivatives2(
+      Displacement<InertialFrame> const& r,
+      Velocity<InertialFrame> const& ṙ,
+      Vector<Acceleration, InertialFrame> const& r̈,
+      Trihedron<Length, Speed>& orthogonal,
+      Trihedron<double, double>& orthonormal,
+      Trihedron<Length, Speed, 1> const& 𝛛orthogonal,
+      Trihedron<double, double, 1> const& 𝛛orthonormal,
+      Trihedron<Length, Speed, 2>& 𝛛²orthogonal,
+      Trihedron<double, double, 2>& 𝛛²orthonormal);
+
   // Computes the rotation that maps |InertialFrame| to |ThisFrame|.
   static Rotation<InertialFrame, ThisFrame> ComputeRotation(
       Trihedron<double, double> const& orthonormal);
