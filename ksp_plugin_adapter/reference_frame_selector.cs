@@ -152,7 +152,14 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             "#Principia_ReferenceFrameSelector_Name_BodySurface",
             new[]{selected});
       case FrameType.ROTATING_PULSATING:
-        return "NYL";
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Naming rotating-pulsating rotating frame of root body");
+        } else {
+          return L10N.ZWSPToHyphenBetweenNonCJK(L10N.CelestialString(
+              "#Principia_ReferenceFrameSelector_Name_RotatingPulsating",
+              new[]{selected, selected.referenceBody}));
+        }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -204,7 +211,14 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             "#Principia_ReferenceFrameSelector_Abbreviation_BodySurface",
             new[]{selected});
       case FrameType.ROTATING_PULSATING:
-        return "NYL";
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Naming rotating-pulsating frame of root body");
+        } else {
+          return L10N.CelestialStringOrNull(
+              "#Principia_ReferenceFrameSelector_Abbreviation_RotatingPulsating",
+              new[]{selected, selected.referenceBody});
+        }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -241,7 +255,15 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             new[]{selected});
         break;
       case FrameType.ROTATING_PULSATING:
-        return "NYL";
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Naming rotating-pulsating frame of root body");
+        } else {
+          result = L10N.CelestialStringOrNull(
+              "#Principia_ReferenceFrameSelector_NavballName_RotatingPulsating",
+              new[]{selected, selected.referenceBody});
+        }
+        break;
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -270,7 +292,8 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         return L10N.CacheFormat(
             "#Principia_ReferenceFrameSelector_SelectorText_BodySurface");
       case FrameType.ROTATING_PULSATING:
-        return "NYL";
+        return L10N.CacheFormat(
+            "#Principia_ReferenceFrameSelector_SelectorText_RotatingPulsating");
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -298,7 +321,11 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             name,
             selected.Name());
       case FrameType.ROTATING_PULSATING:
-        return "NYL";
+        return L10N.CacheFormat(
+            "#Principia_ReferenceFrameSelector_Tooltip_RotatingPulsating",
+            name,
+            selected.Name(),
+            selected.referenceBody.Name());
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -335,7 +362,14 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
             "#Principia_ReferenceFrameSelector_Description_BodySurface",
             new[]{selected});
       case FrameType.ROTATING_PULSATING:
-        return "NYL";
+        if (selected.is_root()) {
+          throw Log.Fatal(
+              "Describing rotating-pulsating frame of root body");
+        } else {
+          return L10N.CelestialString(
+              "#Principia_ReferenceFrameSelector_Description_RotatingPulsating",
+              new[]{selected, selected.referenceBody});
+        }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
