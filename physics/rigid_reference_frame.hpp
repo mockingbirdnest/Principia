@@ -16,6 +16,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 
@@ -36,6 +37,7 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
@@ -94,6 +96,54 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
+ protected:
+  // The component names are somewhat notional.  This is not a Frenet frame and
+  // anyway, the derivative trihedra are not even orthogonal.
+  template<typename ScalarT, typename ScalarN, int order = 0>
+  struct Trihedron {
+    Vector<Derivative<ScalarT, Time, order>, InertialFrame> tangent;
+    Vector<Derivative<ScalarN, Time, order>, InertialFrame> normal;
+    Bivector<Derivative<Product<ScalarN, ScalarT>, Time, order>,
+             InertialFrame> binormal;
+  };
+
+  // A helper function for computing the rotational movement of a frame defined
+  // by two bodies.
+  static void ComputeAngularDegreesOfFreedom(
+      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Vector<Acceleration, InertialFrame> const& secondary_acceleration,
+      Rotation<InertialFrame, ThisFrame>& rotation,
+      AngularVelocity<InertialFrame>& angular_velocity);
+
+  // Computes the orthogonal and orthonormal trihedra associated with
+  // |ThisFrame|.
+  static void ComputeTrihedra(
+      Displacement<InertialFrame> const& r,
+      Velocity<InertialFrame> const& ṙ,
+      Trihedron<Length, Speed>& orthogonal,
+      Trihedron<double, double>& orthonormal);
+
+  // Computes the first derivative of the preceding trihedra.
+  static void ComputeTrihedraDerivatives(
+      Displacement<InertialFrame> const& r,
+      Velocity<InertialFrame> const& ṙ,
+      Vector<Acceleration, InertialFrame> const& r̈,
+      Trihedron<Length, Speed>& orthogonal,
+      Trihedron<double, double>& orthonormal,
+      Trihedron<Length, Speed, 1>& 𝛛orthogonal,
+      Trihedron<double, double, 1>& 𝛛orthonormal);
+
+  // Computes the rotation that maps |InertialFrame| to |ThisFrame|.
+  static Rotation<InertialFrame, ThisFrame> ComputeRotation(
+      Trihedron<double, double> const& orthonormal);
+
+  // Computes the angular velocity of |ThisFrame| in |InertialFrame|.
+  static AngularVelocity<InertialFrame> ComputeAngularVelocity(
+      Trihedron<double, double> const& orthonormal,
+      Trihedron<double, double, 1>& 𝛛orthonormal);
+
  private:
   void ComputeGeometricAccelerations(
       Instant const& t,
@@ -112,18 +162,6 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Position<InertialFrame> const& q) const = 0;
   virtual AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const = 0;
-
-  // A helper function for computing the rotational movement of a frame defined
-  // by two bodies.  Fills |rotation| with the rotation that maps the basis of
-  // |InertialFrame| to the basis of |ThisFrame|.  Fills |angular_velocity| with
-  // the corresponding angular velocity.
-  static void ComputeAngularDegreesOfFreedom(
-      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-      Vector<Acceleration, InertialFrame> const& primary_acceleration,
-      Vector<Acceleration, InertialFrame> const& secondary_acceleration,
-      Rotation<InertialFrame, ThisFrame>& rotation,
-      AngularVelocity<InertialFrame>& angular_velocity);
 };
 
 }  // namespace internal

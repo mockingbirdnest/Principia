@@ -77,10 +77,13 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   Rotation<InertialFrame, ThisFrame> rotation =
           Rotation<InertialFrame, ThisFrame>::Identity();
   AngularVelocity<InertialFrame> angular_velocity;
-  ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
-                                 secondary_degrees_of_freedom,
-                                 rotation,
-                                 angular_velocity);
+  RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularDegreesOfFreedom(
+      primary_degrees_of_freedom,
+      secondary_degrees_of_freedom,
+      primary_acceleration,
+      secondary_acceleration,
+      rotation,
+      angular_velocity);
 
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
       Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(

@@ -22,6 +22,7 @@ using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>
@@ -186,6 +187,118 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 
 template<typename InertialFrame, typename ThisFrame>
 void RigidReferenceFrame<InertialFrame, ThisFrame>::
+ComputeAngularDegreesOfFreedom(
+    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+    DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+    Vector<Acceleration, InertialFrame> const& primary_acceleration,
+    Vector<Acceleration, InertialFrame> const& secondary_acceleration,
+    Rotation<InertialFrame, ThisFrame>& rotation,
+    AngularVelocity<InertialFrame>& angular_velocity) {
+  RelativeDegreesOfFreedom<InertialFrame> const reference =
+       secondary_degrees_of_freedom - primary_degrees_of_freedom;
+
+  Displacement<InertialFrame> const& r = reference.displacement();
+  Velocity<InertialFrame> const ṙ = reference.velocity();
+  Vector<Acceleration, InertialFrame> const r̈ =
+      secondary_acceleration - primary_acceleration;
+
+  Trihedron<Length, Speed> orthogonal;
+  Trihedron<double, double> orthonormal;
+  Trihedron<Length, Speed, 1> 𝛛orthogonal;
+  Trihedron<double, double, 1> 𝛛orthonormal;
+
+  ComputeTrihedra(r, ṙ, orthogonal, orthonormal);
+  ComputeTrihedraDerivatives(
+      r, ṙ, r̈, orthogonal, orthonormal, 𝛛orthogonal, 𝛛orthonormal);
+  rotation = ComputeRotation(orthonormal);
+  angular_velocity = ComputeAngularVelocity(orthonormal, 𝛛orthonormal);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedra(
+    Displacement<InertialFrame> const& r,
+    Velocity<InertialFrame> const& ṙ,
+    Trihedron<Length, Speed>& orthogonal,
+    Trihedron<double, double>& orthonormal) {
+  // Our orthogonal (but not orthonormal) trihedron for |ThisFrame|.
+  Displacement<InertialFrame> const& T = r;
+  Velocity<InertialFrame> const N = ṙ.OrthogonalizationAgainst(r);
+  Bivector<Product<Length, Speed>, InertialFrame> const B = Wedge(T, N);
+
+  // Our orthonormal trihedron.
+  Vector<double, InertialFrame> const t = Normalize(T);
+  Vector<double, InertialFrame> const n = Normalize(N);
+  Bivector<double, InertialFrame> const b = Normalize(B);
+
+  orthogonal = {.tangent = T, .normal = N, .binormal = B};
+  orthonormal = {.tangent = t, .normal = n, .binormal = b};
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
+    Displacement<InertialFrame> const& r,
+    Velocity<InertialFrame> const& ṙ,
+    Vector<Acceleration, InertialFrame> const& r̈,
+    Trihedron<Length, Speed>& orthogonal,
+    Trihedron<double, double>& orthonormal,
+    Trihedron<Length, Speed, 1>& 𝛛orthogonal,
+    Trihedron<double, double, 1>& 𝛛orthonormal) {
+  auto const& T = orthogonal.tangent;
+  auto const& N = orthogonal.normal;
+  auto const& B = orthogonal.binormal;
+  auto const& t = orthonormal.tangent;
+  auto const& n = orthonormal.normal;
+  auto const& b = orthonormal.binormal;
+
+  // The derivatives of the |orthogonal| trihedron.
+  Velocity<InertialFrame> const& Ṫ = ṙ;
+  Vector<Acceleration, InertialFrame> const Ṅ =
+      r̈ + 2 * Pow<2>(InnerProduct(r, ṙ) / r.Norm²()) * r -
+      (r * (ṙ.Norm²() + InnerProduct(r, r̈)) + ṙ * InnerProduct(r, ṙ)) /
+          r.Norm²();
+  Bivector<Variation<Product<Length, Speed>>, InertialFrame> const Ḃ =
+      Wedge(r, r̈);
+
+  // For any multivector v this returns the derivative of the normalized v.
+  auto derive_normalized = []<typename V>(V const& v, Variation<V> const& v̇) {
+    return (v.Norm²() * v̇ - InnerProduct(v, v̇) * v) / Pow<3>(v.Norm());
+  };
+
+  // The derivatives of the |orthonormal| trihedron.
+  Vector<Variation<double>, InertialFrame> const ṫ = derive_normalized(T, Ṫ);
+  Vector<Variation<double>, InertialFrame> const ṅ = derive_normalized(N, Ṅ);
+  Bivector<Variation<double>, InertialFrame> const ḃ = derive_normalized(B, Ḃ);
+
+  𝛛orthogonal = {.tangent = Ṫ, .normal = Ṅ, .binormal = Ḃ};
+  𝛛orthonormal = {.tangent = ṫ, .normal = ṅ, .binormal = ḃ};
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Rotation<InertialFrame, ThisFrame>
+RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeRotation(
+    Trihedron<double, double> const& orthonormal) {
+  return Rotation<InertialFrame, ThisFrame>(orthonormal.tangent,
+                                            orthonormal.normal,
+                                            orthonormal.binormal);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+AngularVelocity<InertialFrame>
+RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularVelocity(
+    Trihedron<double, double> const& orthonormal,
+    Trihedron<double, double, 1>& 𝛛orthonormal) {
+  auto const& t = orthonormal.tangent;
+  auto const& n = orthonormal.normal;
+  auto const& b = orthonormal.binormal;
+  auto const& ṫ = 𝛛orthonormal.tangent;
+  auto const& ṅ = 𝛛orthonormal.normal;
+  auto const& ḃ = 𝛛orthonormal.binormal;
+
+  return Radian * (Wedge(ṅ, b) * t + Wedge(ḃ, t) * n + InnerProduct(ṫ, n) * b);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void RigidReferenceFrame<InertialFrame, ThisFrame>::
 ComputeGeometricAccelerations(
     Instant const& t,
     DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,
@@ -220,56 +333,6 @@ ComputeGeometricAccelerations(
   coriolis_acceleration = -2 * Ω * degrees_of_freedom.velocity() / Radian;
   centrifugal_acceleration = -Ω * (Ω * r) / Pow<2>(Radian);
   euler_acceleration = -dΩ_over_dt * r / Radian;
-}
-
-template<typename InertialFrame, typename ThisFrame>
-void RigidReferenceFrame<InertialFrame, ThisFrame>::
-ComputeAngularDegreesOfFreedom(
-    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-    DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-    Vector<Acceleration, InertialFrame> const& primary_acceleration,
-    Vector<Acceleration, InertialFrame> const& secondary_acceleration,
-    Rotation<InertialFrame, ThisFrame>& rotation,
-    AngularVelocity<InertialFrame>& angular_velocity) {
-  RelativeDegreesOfFreedom<InertialFrame> const reference =
-       secondary_degrees_of_freedom - primary_degrees_of_freedom;
-
-  Displacement<InertialFrame> const& r = reference.displacement();
-  Velocity<InertialFrame> const ṙ = reference.velocity();
-  Vector<Acceleration, InertialFrame> const r̈ =
-      secondary_acceleration - primary_acceleration;
-
-  // Our orthogonal (but not orthonormal) trihedron for |ThisFrame|.
-  Displacement<InertialFrame> const& T = r;
-  Velocity<InertialFrame> const N = ṙ.OrthogonalizationAgainst(r);
-  Bivector<Product<Length, Speed>, InertialFrame> const B = Wedge(T, N);
-
-  // The derivatives of the above trihedron.
-  Velocity<InertialFrame> const& Ṫ = ṙ;
-  Vector<Acceleration, InertialFrame> const Ṅ =
-      r̈ + 2 * Pow<2>(InnerProduct(r, ṙ) / r.Norm²()) * r -
-      (r * (ṙ.Norm²() + InnerProduct(r, r̈)) + ṙ * InnerProduct(r, ṙ)) /
-          r.Norm²();
-  Bivector<Variation<Product<Length, Speed>>, InertialFrame> const Ḃ =
-      Wedge(r, r̈);
-
-  // Our orthonormal trihedron.
-  Vector<double, InertialFrame> const t = Normalize(T);
-  Vector<double, InertialFrame> const n = Normalize(N);
-  Bivector<double, InertialFrame> const b = Normalize(B);
-
-  // For any multivector v this returns the derivative of the normalized v.
-  auto derive_normalized = []<typename V>(V const& v, Variation<V> const& v̇) {
-    return (v.Norm²() * v̇ - InnerProduct(v, v̇) * v) / Pow<3>(v.Norm());
-  };
-
-  Vector<Variation<double>, InertialFrame> const ṫ = derive_normalized(T, Ṫ);
-  Vector<Variation<double>, InertialFrame> const ṅ = derive_normalized(N, Ṅ);
-  Bivector<Variation<double>, InertialFrame> const ḃ = derive_normalized(B, Ḃ);
-
-  rotation = Rotation<InertialFrame, ThisFrame>(t, n, b);
-  angular_velocity =
-      Radian * (Wedge(ṅ, b) * t + Wedge(ḃ, t) * n + InnerProduct(ṫ, n) * b);
 }
 
 }  // namespace internal
