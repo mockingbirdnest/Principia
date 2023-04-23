@@ -139,6 +139,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Displacement<InertialFrame> const& r,
       Velocity<InertialFrame> const& ṙ,
       Vector<Acceleration, InertialFrame> const& r̈,
+      Vector<Jerk, InertialFrame> const& r⁽³⁾,
       Trihedron<Length, ArealSpeed>& orthogonal,
       Trihedron<double, double>& orthonormal,
       Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,

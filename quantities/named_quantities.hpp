@@ -53,8 +53,8 @@ template<typename Value, typename Argument>
 using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
-template<typename T>
-using Variation = Derivative<T, Time>;
+template<typename T, int order = 1>
+using Variation = Derivative<T, Time, order>;
 
 // The solid angle is really the square of the angle: for instance, the surface
 // element on the sphere is cos(θ) dθ dφ, and the cylinder with radius r and

@@ -275,21 +275,43 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
     Displacement<InertialFrame> const& r,
     Velocity<InertialFrame> const& ṙ,
     Vector<Acceleration, InertialFrame> const& r̈,
+    Vector<Jerk, InertialFrame> const& r⁽³⁾,
     Trihedron<Length, ArealSpeed>& orthogonal,
     Trihedron<double, double>& orthonormal,
     Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
     Trihedron<double, double, 1> const& 𝛛orthonormal,
     Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
     Trihedron<double, double, 2>& 𝛛²orthonormal) {
+  auto const& T = orthogonal.tangent;
+  auto const& N = orthogonal.normal;
+  auto const& B = orthogonal.binormal;
+  auto const& Ṫ = 𝛛orthogonal.tangent;
+  auto const& Ṅ = 𝛛orthogonal.normal;
+  auto const& Ḃ = 𝛛orthogonal.binormal;
+
+  // The second derivatives of the |orthogonal| trihedron.
+  Vector<Acceleration, InertialFrame> const& T̈ = r̈;
+  Bivector<Variation<ArealSpeed, 2>, InertialFrame> const B̈ =
+      Wedge(ṙ, r̈) + Wedge(r, r⁽³⁾);
+  Vector<Variation<Product<Length, ArealSpeed>, 2>, InertialFrame> const N̈ =
+      B̈ * T + 2 * Ḃ * Ṫ + B * T̈;
 
   auto 𝛛²normalized = []<typename V>(V const& v,
                                      Variation<V> const& v̇,
-                                     Variation<Variation<V>> const& v̈) {
+                                     Variation<V, 2> const& v̈) {
     return v̈ / v.Norm() -
            (2 * InnerProduct(v, v̇) * v̇ + (v̇.Norm²() - InnerProduct(v, v̈)) * v) /
                Pow<3>(v.Norm()) +
            3 * v * Pow<2>(InnerProduct(v, v̇)) / Pow<5>(v.Norm());
   };
+
+  // The second derivatives of the |orthonormal| trihedron.
+  Vector<Variation<double, 2>, InertialFrame> const ẗ = 𝛛²normalized(T, Ṫ, T̈);
+  Vector<Variation<double, 2>, InertialFrame> const n̈ = 𝛛²normalized(N, Ṅ, N̈);
+  Bivector<Variation<double, 2>, InertialFrame> const b̈ = 𝛛²normalized(B, Ḃ, B̈);
+
+  𝛛²orthogonal = {.tangent = T̈, .normal = N̈, .binormal = B̈};
+  𝛛²orthonormal = {.tangent = ẗ, .normal = n̈, .binormal = b̈};
 }
 
 template<typename InertialFrame, typename ThisFrame>
