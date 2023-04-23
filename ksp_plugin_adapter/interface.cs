@@ -59,17 +59,55 @@ internal partial struct WXYZ {
   }
 }
 
+public enum FrameType {
+  BARYCENTRIC_ROTATING = 6001,
+  BODY_CENTRED_NON_ROTATING = 6000,
+  BODY_CENTRED_PARENT_DIRECTION = 6002,
+  BODY_SURFACE = 6003,
+  ROTATING_PULSATING = 6004,
+}
+
 internal interface ReferenceFrameParameters {
-  int extension  { get; set; }
+  FrameType extension  { get; set; }
   int centre_index  { get; set; }
   int primary_index  { get; set; }
   int secondary_index  { get; set; }
 }
 
 internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
-  int ReferenceFrameParameters.extension {
-    get => extension;
-    set => extension = value;
+  public static explicit operator NavigationFrameParameters?(PlottingFrameParameters p) {
+    if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
+      return null;
+    } else {
+      return new NavigationFrameParameters{
+          extension = p.extension,
+          centre_index = p.centre_index,
+          primary_index = p.primary_index,
+          secondary_index = p.secondary_index
+      };
+    }
+  }
+
+  public override bool Equals(object obj) {
+    return obj is ReferenceFrameParameters other && this == other;
+  }
+
+  public override int GetHashCode() =>
+    (extension, centre_index, primary_index, secondary_index).GetHashCode();
+
+  public static bool operator ==(PlottingFrameParameters left, ReferenceFrameParameters right) {
+    return (left as ReferenceFrameParameters).extension == right.extension &&
+           left.centre_index == right.centre_index &&
+           left.primary_index == right.secondary_index;
+  }
+
+  public static bool operator !=(PlottingFrameParameters left, ReferenceFrameParameters right) {
+    return !(left == right);
+  }
+
+  FrameType ReferenceFrameParameters.extension {
+    get => (FrameType)extension;
+    set => extension = (int)value;
   }
   int ReferenceFrameParameters.centre_index {
     get => centre_index;
@@ -86,9 +124,35 @@ internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
 }
 
 internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
-  int ReferenceFrameParameters.extension {
-    get => extension;
-    set => extension = value;
+  public static implicit operator PlottingFrameParameters(NavigationFrameParameters p) {
+    return new PlottingFrameParameters{
+        extension = p.extension,
+        centre_index = p.centre_index,
+        primary_index = p.primary_index,
+        secondary_index = p.secondary_index
+    };
+  }
+
+  public override bool Equals(object obj) {
+    return obj is ReferenceFrameParameters other && this == other;
+  }
+
+  public override int GetHashCode() =>
+    (extension, centre_index, primary_index, secondary_index).GetHashCode();
+
+  public static bool operator ==(NavigationFrameParameters left, ReferenceFrameParameters right) {
+    return (left as ReferenceFrameParameters).extension == right.extension &&
+           left.centre_index == right.centre_index &&
+           left.primary_index == right.secondary_index;
+  }
+
+  public static bool operator !=(NavigationFrameParameters left, ReferenceFrameParameters right) {
+    return !(left == right);
+  }
+
+  FrameType ReferenceFrameParameters.extension {
+    get => (FrameType)extension;
+    set => extension = (int)value;
   }
   int ReferenceFrameParameters.centre_index {
     get => centre_index;

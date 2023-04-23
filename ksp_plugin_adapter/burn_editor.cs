@@ -65,8 +65,19 @@ class BurnEditor : ScalingRenderer {
         adapter_,
         ReferenceFrameChanged,
         L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
-    reference_frame_selector_.SetFrameParameters(
-        adapter_.plotting_frame_selector_.FrameParameters());
+    PlottingFrameParameters plotting_frame_parameters =
+        adapter_.plotting_frame_selector_.FrameParameters();
+    if ((NavigationFrameParameters?)plotting_frame_parameters is
+            NavigationFrameParameters parameters) {
+      reference_frame_selector_.SetFrameParameters(parameters);
+    } else {
+      reference_frame_selector_.SetFrameParameters(
+          new NavigationFrameParameters {
+            extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
+            primary_index = plotting_frame_parameters.primary_index,
+            secondary_index = plotting_frame_parameters.secondary_index,
+          });
+    }
     ComputeEngineCharacteristics();
   }
 
@@ -100,8 +111,8 @@ class BurnEditor : ScalingRenderer {
                     : header);
       string info = "";
       if (!minimized &&
-          !reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.FrameParameters())) {
+          reference_frame_selector_.FrameParameters() !=
+              adapter_.plotting_frame_selector_.FrameParameters()) {
         info = L10N.CacheFormat(
             "#Principia_BurnEditor_Info_InconsistentFrames");
       }

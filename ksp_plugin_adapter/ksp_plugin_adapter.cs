@@ -4,8 +4,7 @@ using System.IO;
 using System.Linq;
 using KSP.Localization;
 
-using static principia.ksp_plugin_adapter.ReferenceFrameSelector<
-    principia.ksp_plugin_adapter.PlottingFrameParameters>.FrameType;
+using static principia.ksp_plugin_adapter.FrameType;
 
 namespace principia {
 namespace ksp_plugin_adapter {

@@ -21,14 +21,6 @@ internal static class CelestialExtensions {
 }
 
 internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer where Parameters : struct, ReferenceFrameParameters {
-  public enum FrameType {
-    BARYCENTRIC_ROTATING = 6001,
-    BODY_CENTRED_NON_ROTATING = 6000,
-    BODY_CENTRED_PARENT_DIRECTION = 6002,
-    BODY_SURFACE = 6003,
-    ROTATING_PULSATING = 6004,
-  }
-
   public delegate void Callback(Parameters? frame_parameters,
                                 Vessel target_vessel);
 
@@ -423,12 +415,12 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_SURFACE:
         return new Parameters{
-            extension = (int)frame_type,
+            extension = frame_type,
             centre_index = selected_celestial.flightGlobalsIndex
         };
       case FrameType.BARYCENTRIC_ROTATING:
         return new Parameters{
-            extension = (int)frame_type,
+            extension = frame_type,
             primary_index = selected_celestial.referenceBody.flightGlobalsIndex,
             secondary_index = selected_celestial.flightGlobalsIndex
         };
@@ -437,7 +429,7 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         // is the secondary body (which means it has to be the primary in the
         // terminology of |BodyCentredBodyDirection|).
         return new Parameters{
-            extension = (int)frame_type,
+            extension = frame_type,
             primary_index = selected_celestial.flightGlobalsIndex,
             secondary_index =
                 selected_celestial.referenceBody.flightGlobalsIndex
