@@ -94,6 +94,8 @@ class BodyCentredBodyDirectionReferenceFrame
   static void ComputeAngularDegreesOfFreedom(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
       DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Vector<Acceleration, InertialFrame> const& secondary_acceleration,
       Rotation<InertialFrame, ThisFrame>& rotation,
       AngularVelocity<InertialFrame>& angular_velocity);
 
