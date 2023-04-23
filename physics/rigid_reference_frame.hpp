@@ -112,6 +112,18 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Position<InertialFrame> const& q) const = 0;
   virtual AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const = 0;
+
+  // A helper function for computing the rotational movement of a frame defined
+  // by two bodies.  Fills |rotation| with the rotation that maps the basis of
+  // |InertialFrame| to the basis of |ThisFrame|.  Fills |angular_velocity| with
+  // the corresponding angular velocity.
+  static void ComputeAngularDegreesOfFreedom(
+      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Vector<Acceleration, InertialFrame> const& secondary_acceleration,
+      Rotation<InertialFrame, ThisFrame>& rotation,
+      AngularVelocity<InertialFrame>& angular_velocity);
 };
 
 }  // namespace internal

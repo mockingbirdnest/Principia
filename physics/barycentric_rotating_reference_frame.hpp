@@ -82,15 +82,6 @@ class BarycentricRotatingReferenceFrame
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
-  // Fills |rotation| with the rotation that maps the basis of |InertialFrame|
-  // to the basis of |ThisFrame|.  Fills |angular_velocity| with the
-  // corresponding angular velocity.
-  static void ComputeAngularDegreesOfFreedom(
-      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-      Rotation<InertialFrame, ThisFrame>& rotation,
-      AngularVelocity<InertialFrame>& angular_velocity);
-
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
   not_null<MassiveBody const*> const secondary_;

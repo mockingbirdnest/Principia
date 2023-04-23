@@ -222,6 +222,56 @@ ComputeGeometricAccelerations(
   euler_acceleration = -dΩ_over_dt * r / Radian;
 }
 
+template<typename InertialFrame, typename ThisFrame>
+void RigidReferenceFrame<InertialFrame, ThisFrame>::
+ComputeAngularDegreesOfFreedom(
+    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+    DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+    Vector<Acceleration, InertialFrame> const& primary_acceleration,
+    Vector<Acceleration, InertialFrame> const& secondary_acceleration,
+    Rotation<InertialFrame, ThisFrame>& rotation,
+    AngularVelocity<InertialFrame>& angular_velocity) {
+  RelativeDegreesOfFreedom<InertialFrame> const reference =
+       secondary_degrees_of_freedom - primary_degrees_of_freedom;
+
+  Displacement<InertialFrame> const& r = reference.displacement();
+  Velocity<InertialFrame> const ṙ = reference.velocity();
+  Vector<Acceleration, InertialFrame> const r̈ =
+      secondary_acceleration - primary_acceleration;
+
+  // Our orthogonal (but not orthonormal) trihedron for |ThisFrame|.
+  Displacement<InertialFrame> const& T = r;
+  Velocity<InertialFrame> const N = ṙ.OrthogonalizationAgainst(r);
+  Bivector<Product<Length, Speed>, InertialFrame> const B = Wedge(T, N);
+
+  // The derivatives of the above trihedron.
+  Velocity<InertialFrame> const& Ṫ = ṙ;
+  Vector<Acceleration, InertialFrame> const Ṅ =
+      r̈ + 2 * Pow<2>(InnerProduct(r, ṙ) / r.Norm²()) * r -
+      (r * (ṙ.Norm²() + InnerProduct(r, r̈)) + ṙ * InnerProduct(r, ṙ)) /
+          r.Norm²();
+  Bivector<Variation<Product<Length, Speed>>, InertialFrame> const Ḃ =
+      Wedge(r, r̈);
+
+  // Our orthonormal trihedron.
+  Vector<double, InertialFrame> const t = Normalize(T);
+  Vector<double, InertialFrame> const n = Normalize(N);
+  Bivector<double, InertialFrame> const b = Normalize(B);
+
+  // For any multivector v this returns the derivative of the normalized v.
+  auto derive_normalized = []<typename V>(V const& v, Variation<V> const& v̇) {
+    return (v.Norm²() * v̇ - InnerProduct(v, v̇) * v) / Pow<3>(v.Norm());
+  };
+
+  Vector<Variation<double>, InertialFrame> const ṫ = derive_normalized(T, Ṫ);
+  Vector<Variation<double>, InertialFrame> const ṅ = derive_normalized(N, Ṅ);
+  Bivector<Variation<double>, InertialFrame> const ḃ = derive_normalized(B, Ḃ);
+
+  rotation = Rotation<InertialFrame, ThisFrame>(t, n, b);
+  angular_velocity =
+      Radian * (Wedge(ṅ, b) * t + Wedge(ḃ, t) * n + InnerProduct(ṫ, n) * b);
+}
+
 }  // namespace internal
 }  // namespace _rigid_reference_frame
 }  // namespace physics

@@ -68,12 +68,11 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
       primary_trajectory_->EvaluateDegreesOfFreedom(t);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t);
-  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
-          {primary_degrees_of_freedom,
-           secondary_degrees_of_freedom},
-          {primary_->gravitational_parameter(),
-           secondary_->gravitational_parameter()});
+
+  Vector<Acceleration, InertialFrame> const primary_acceleration =
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_, t);
+  Vector<Acceleration, InertialFrame> const secondary_acceleration =
+      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
   Rotation<InertialFrame, ThisFrame> rotation =
           Rotation<InertialFrame, ThisFrame>::Identity();
@@ -83,6 +82,12 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
                                  rotation,
                                  angular_velocity);
 
+  DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
+      Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
+          {primary_degrees_of_freedom,
+           secondary_degrees_of_freedom},
+          {primary_->gravitational_parameter(),
+           secondary_->gravitational_parameter()});
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(barycentre_degrees_of_freedom.position(),
                            ThisFrame::origin,
@@ -168,27 +173,6 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
              to_this_frame,
              angular_acceleration_of_to_frame,
              acceleration_of_to_frame_origin);
-}
-
-template<typename InertialFrame, typename ThisFrame>
-void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-ComputeAngularDegreesOfFreedom(
-    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-    DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-    Rotation<InertialFrame, ThisFrame>& rotation,
-    AngularVelocity<InertialFrame>& angular_velocity) {
-  RelativeDegreesOfFreedom<InertialFrame> const reference =
-      secondary_degrees_of_freedom - primary_degrees_of_freedom;
-  Displacement<InertialFrame> const& reference_direction =
-      reference.displacement();
-  Velocity<InertialFrame> const reference_normal =
-      reference.velocity().OrthogonalizationAgainst(reference_direction);
-  Bivector<Product<Length, Speed>, InertialFrame> const reference_binormal =
-      Wedge(reference_direction, reference_normal);
-  rotation = Rotation<InertialFrame, ThisFrame>(Normalize(reference_direction),
-                                                Normalize(reference_normal),
-                                                Normalize(reference_binormal));
-  angular_velocity = reference_binormal * Radian / reference_direction.Norm²();
 }
 
 }  // namespace internal
