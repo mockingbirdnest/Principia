@@ -67,6 +67,9 @@ public enum FrameType {
   ROTATING_PULSATING = 6004,
 }
 
+// We imbue PlottingFrameParameters and NavigationFrameParameters with a common
+// interface and make the latter behave like a subtype of the former.
+
 internal interface ReferenceFrameParameters {
   FrameType extension  { get; set; }
   int centre_index  { get; set; }
