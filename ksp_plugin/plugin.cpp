@@ -1635,6 +1635,9 @@ Velocity<World> Plugin::VesselVelocity(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const {
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
       renderer_->BarycentricToPlotting(time)(degrees_of_freedom);
+  // Note that in the rotating-pulsating reference frame, this value is given in
+  // current metres per second (that is, in metres at |time| per second, for a
+  // velocity at |time|).
   return renderer_->PlottingToWorld(time, PlanetariumRotation())(
       plotting_frame_degrees_of_freedom.velocity());
 }

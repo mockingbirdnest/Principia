@@ -129,11 +129,14 @@ Renderer::RenderPlottingTrajectoryInWorld(
   // that we are considering an observer fixed in the plotting frame.
   // - Instead of applying the full rigid motion and consistently transforming
   // the velocities, or even just applying the orthogonal map, it simply
-  // identifies the coordinates of |World| with those of the plotting frame.
-  // This is because we are interested in the magnitude of the velocity (the
-  // speed) in the plotting frame, as well as the coordinates (in frames with a
-  // physically significant plane, the z coordinate becomes the out-of-plane
-  // velocity).
+  // identifies the axes of |World| with those of the plotting frame. This is
+  // because we are interested in the magnitude of the velocity (the speed) in
+  // the plotting frame, as well as the coordinates (in frames with a physically
+  // significant plane, the z coordinate becomes the out-of-plane velocity).
+  // We apply the scaling at the time of the velocity, instead of the scaling at
+  // |time| or no scaling, because we want speeds in current metres per second,
+  // not in constant metres (at |time|) per second, nor in constant lunar
+  // distances (masquerading as metres) per second.
   // The resulting |DegreesOfFreedom| should be seen as no more than a
   // convenient hack to send a plottable position together with a velocity in
   // the coordinates we want.  In fact, it needs an articial permutation to
@@ -147,17 +150,20 @@ Renderer::RenderPlottingTrajectoryInWorld(
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
   for (auto it = begin; it != end; ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
+    auto const& [t, degrees_of_freedom] = *it;
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
         degrees_of_freedom;
+    ConformalMap<double, Navigation, World> const
+        from_plotting_frame_to_world_at_t =
+            PlottingToWorld(t, planetarium_rotation);
     DegreesOfFreedom<World> const world_degrees_of_freedom = {
         from_plotting_frame_to_world_at_current_time(
             navigation_degrees_of_freedom.position()),
         Permutation<Navigation, World>(
-            Permutation<Navigation,
-                                  World>::CoordinatePermutation::YXZ)(
+            Permutation<Navigation, World>::CoordinatePermutation::YXZ)(
+            from_plotting_frame_to_world_at_t.scale() *
             navigation_degrees_of_freedom.velocity())};
-    trajectory.Append(time, world_degrees_of_freedom).IgnoreError();
+    trajectory.Append(t, world_degrees_of_freedom).IgnoreError();
   }
   return trajectory;
 }

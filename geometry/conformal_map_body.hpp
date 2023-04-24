@@ -13,6 +13,11 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
+Scalar ConformalMap<Scalar, FromFrame, ToFrame>::scale() const {
+  return scale_;
+}
+
+template<typename Scalar, typename FromFrame, typename ToFrame>
 Cube<Scalar> ConformalMap<Scalar, FromFrame, ToFrame>::Determinant() const {
   return Pow<3>(scale_);
 }
