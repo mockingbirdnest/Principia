@@ -152,6 +152,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
+  // TODO(phl): Avoid repeated computations.
+  auto const to_this_frame = ToThisFrameAtTime(t);
+
   Displacement<InertialFrame> const r =
       secondary_degrees_of_freedom.position() -
       primary_degrees_of_freedom.position();
@@ -179,10 +182,19 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
                                     𝛛orthogonal, 𝛛orthonormal,
                                     𝛛²orthogonal, 𝛛²orthonormal);
 
-  return Base::ComputeAcceleratedRigidMotion(
-      primary_degrees_of_freedom, primary_acceleration,
-      orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
-}
+  auto const angular_acceleration_of_to_frame =
+      Base::ComputeAngularAcceleration(
+          orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
+
+  Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
+      Barycentre<Vector<Acceleration, InertialFrame>, GravitationalParameter>(
+          {primary_acceleration, secondary_acceleration},
+          {primary_->gravitational_parameter(),
+           secondary_->gravitational_parameter()});
+  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
+             to_this_frame,
+             angular_acceleration_of_to_frame,
+             acceleration_of_to_frame_origin);}
 
 }  // namespace internal
 }  // namespace _barycentric_rotating_reference_frame
