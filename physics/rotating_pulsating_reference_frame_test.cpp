@@ -6,7 +6,6 @@
 #include "astronomy/orbital_elements.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -30,7 +29,6 @@ using namespace principia::integrators::_explicit_runge_kutta_integrator;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
@@ -75,8 +73,7 @@ class RotatingPulsatingReferenceFrameTest : public ::testing::Test {
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<MassiveBody const*> const earth_;
   not_null<MassiveBody const*> const moon_;
-  // REMOVE BEFORE FLIGHT
-  BodyCentredBodyDirectionReferenceFrame<ICRS, EarthMoon> const earth_moon_;
+  RotatingPulsatingReferenceFrame<ICRS, EarthMoon> const earth_moon_;
 };
 
 #if !defined(_DEBUG)
@@ -162,10 +159,10 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
           earth_moon_trajectory.back().degrees_of_freedom),
       Componentwise(AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.position(),
-                        IsNear(878.29_(1) * Metre)),
+                        IsNear(376.09_(1) * Metre)),
                     AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
-                        IsNear(96.08_(1) * Milli(Metre) / Second))));
+                        IsNear(41.22_(1) * Milli(Metre) / Second))));
 }
 
 #endif
