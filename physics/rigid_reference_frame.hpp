@@ -131,8 +131,8 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Displacement<InertialFrame> const& r,
       Velocity<InertialFrame> const& ṙ,
       Vector<Acceleration, InertialFrame> const& r̈,
-      Trihedron<Length, ArealSpeed>& orthogonal,
-      Trihedron<double, double>& orthonormal,
+      Trihedron<Length, ArealSpeed> const& orthogonal,
+      Trihedron<double, double> const& orthonormal,
       Trihedron<Length, ArealSpeed, 1>& 𝛛orthogonal,
       Trihedron<double, double, 1>& 𝛛orthonormal);
 
@@ -142,8 +142,8 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Velocity<InertialFrame> const& ṙ,
       Vector<Acceleration, InertialFrame> const& r̈,
       Vector<Jerk, InertialFrame> const& r⁽³⁾,
-      Trihedron<Length, ArealSpeed>& orthogonal,
-      Trihedron<double, double>& orthonormal,
+      Trihedron<Length, ArealSpeed> const& orthogonal,
+      Trihedron<double, double> const& orthonormal,
       Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
       Trihedron<double, double, 1> const& 𝛛orthonormal,
       Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
@@ -156,14 +156,15 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   // Computes the angular velocity of |ThisFrame| in |InertialFrame|.
   static AngularVelocity<InertialFrame> ComputeAngularVelocity(
       Trihedron<double, double> const& orthonormal,
-      Trihedron<double, double, 1>& 𝛛orthonormal);
+      Trihedron<double, double, 1> const& 𝛛orthonormal);
 
   // Computes the angular acceleration of |ThisFrame| in |InertialFrame|.
-  static AngularVelocity<InertialFrame> ComputeAngularAcceleration(
-      Trihedron<double, double> const& orthonormal,
-      Trihedron<double, double, 1> const& 𝛛orthonormal,
-      Trihedron<double, double, 2> const& 𝛛²orthonormal);
+  static Bivector<AngularAcceleration, InertialFrame>
+  ComputeAngularAcceleration(Trihedron<double, double> const& orthonormal,
+                             Trihedron<double, double, 1> const& 𝛛orthonormal,
+                             Trihedron<double, double, 2> const& 𝛛²orthonormal);
 
+ private:
   void ComputeGeometricAccelerations(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom,

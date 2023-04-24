@@ -215,6 +215,22 @@ ComputeAngularDegreesOfFreedom(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+AcceleratedRigidMotion<InertialFrame, ThisFrame>
+RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAcceleratedRigidMotion(
+    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+    Vector<Acceleration, InertialFrame> const& primary_acceleration,
+    Trihedron<double, double> const& orthonormal,
+    Trihedron<double, double, 1> const& 𝛛orthonormal,
+    Trihedron<double, double, 2> const& 𝛛²orthonormal) {
+  auto const rigid_motion = ComputeRigidMotion(
+      primary_degrees_of_freedom, orthonormal, 𝛛orthonormal);
+  auto const angular_acceleration =
+      ComputeAngularAcceleration(orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
+  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
+      rigid_motion, angular_acceleration, primary_acceleration);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedra(
     Displacement<InertialFrame> const& r,
     Velocity<InertialFrame> const& ṙ,
@@ -262,12 +278,12 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
   };
 
   // The derivatives of the |orthonormal| trihedron.
-  Vector<Variation<double>, InertialFrame> const ṫ = 𝛛normalized(F, Ḟ);
+  Vector<Variation<double>, InertialFrame> const ḟ = 𝛛normalized(F, Ḟ);
   Vector<Variation<double>, InertialFrame> const ṅ = 𝛛normalized(N, Ṅ);
   Bivector<Variation<double>, InertialFrame> const ḃ = 𝛛normalized(B, Ḃ);
 
   𝛛orthogonal = {.fore = Ḟ, .normal = Ṅ, .binormal = Ḃ};
-  𝛛orthonormal = {.fore = ṫ, .normal = ṅ, .binormal = ḃ};
+  𝛛orthonormal = {.fore = ḟ, .normal = ṅ, .binormal = ḃ};
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -296,6 +312,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
   Vector<Variation<Product<Length, ArealSpeed>, 2>, InertialFrame> const N̈ =
       B̈ * F + 2 * Ḃ * Ḟ + B * F̈;
 
+  // For any multivector v this returns the second derivative of v / ‖v‖.
   auto 𝛛²normalized = []<typename V>(V const& v,
                                      Variation<V> const& v̇,
                                      Variation<V, 2> const& v̈) {
@@ -306,12 +323,12 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
   };
 
   // The second derivatives of the |orthonormal| trihedron.
-  Vector<Variation<double, 2>, InertialFrame> const ẗ = 𝛛²normalized(F, Ḟ, F̈);
+  Vector<Variation<double, 2>, InertialFrame> const f̈ = 𝛛²normalized(F, Ḟ, F̈);
   Vector<Variation<double, 2>, InertialFrame> const n̈ = 𝛛²normalized(N, Ṅ, N̈);
   Bivector<Variation<double, 2>, InertialFrame> const b̈ = 𝛛²normalized(B, Ḃ, B̈);
 
   𝛛²orthogonal = {.fore = F̈, .normal = N̈, .binormal = B̈};
-  𝛛²orthonormal = {.fore = ẗ, .normal = n̈, .binormal = b̈};
+  𝛛²orthonormal = {.fore = f̈, .normal = n̈, .binormal = b̈};
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -331,15 +348,15 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularVelocity(
   auto const& f = orthonormal.fore;
   auto const& n = orthonormal.normal;
   auto const& b = orthonormal.binormal;
-  auto const& ṫ = 𝛛orthonormal.fore;
+  auto const& ḟ = 𝛛orthonormal.fore;
   auto const& ṅ = 𝛛orthonormal.normal;
   auto const& ḃ = 𝛛orthonormal.binormal;
 
-  return Radian * (Wedge(ṅ, b) * f + Wedge(ḃ, f) * n + InnerProduct(ṫ, n) * b);
+  return Radian * (Wedge(ṅ, b) * f + Wedge(ḃ, f) * n + InnerProduct(ḟ, n) * b);
 }
 
 template<typename InertialFrame, typename ThisFrame>
-AngularVelocity<InertialFrame>
+Bivector<AngularAcceleration, InertialFrame>
 RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularAcceleration(
     Trihedron<double, double> const& orthonormal,
     Trihedron<double, double, 1> const& 𝛛orthonormal,
@@ -347,16 +364,17 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularAcceleration(
   auto const& f = orthonormal.fore;
   auto const& n = orthonormal.normal;
   auto const& b = orthonormal.binormal;
-  auto const& ṫ = 𝛛orthonormal.fore;
+  auto const& ḟ = 𝛛orthonormal.fore;
   auto const& ṅ = 𝛛orthonormal.normal;
   auto const& ḃ = 𝛛orthonormal.binormal;
-  auto const& ẗ = 𝛛²orthonormal.fore;
+  auto const& f̈ = 𝛛²orthonormal.fore;
   auto const& n̈ = 𝛛²orthonormal.normal;
   auto const& b̈ = 𝛛²orthonormal.binormal;
 
-  return (Wedge(n̈, b) + Wedge(ṅ, ḃ)) * f + Wedge(ṅ, b) * ṫ +
-         (Wedge(b̈, f) + Wedge(ḃ, ṫ)) * n + Wedge(ḃ, f) * ṅ +
-         (Wedge(ẗ, n) + Wedge(ṫ, ṅ)) * b + Wedge(ṫ, n) * ḃ;
+  return Radian * (
+      (Wedge(n̈, b) + Wedge(ṅ, ḃ)) * f + Wedge(ṅ, b) * ḟ +
+      (Wedge(b̈, f) + Wedge(ḃ, ḟ)) * n + Wedge(ḃ, f) * ṅ +
+      (InnerProduct(f̈, n) + InnerProduct(ḟ, ṅ)) * b + InnerProduct(ḟ, n) * ḃ);
 }
 
 template<typename InertialFrame, typename ThisFrame>

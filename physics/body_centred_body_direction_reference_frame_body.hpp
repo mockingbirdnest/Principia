@@ -51,6 +51,8 @@ BodyCentredBodyDirectionReferenceFrame(
       secondary_(std::move(secondary)),
       compute_gravitational_acceleration_on_primary_(
           [this](Position<InertialFrame> const& position, Instant const& t) {
+            // TODO(egg): eventually we want to add the intrinsic acceleration
+            // here.
             return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
                 position, t);
           }),
@@ -170,35 +172,42 @@ MotionOfThisFrame(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t);
 
-  // TODO(egg): eventually we want to add the intrinsic acceleration here.
   Vector<Acceleration, InertialFrame> const primary_acceleration =
       compute_gravitational_acceleration_on_primary_(
           primary_degrees_of_freedom.position(), t);
-
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
-  auto const to_this_frame = ToThisFrameAtTime(t);
-
-  // TODO(egg): TeX and reference.
-  RelativeDegreesOfFreedom<InertialFrame> const secondary_primary =
-      secondary_degrees_of_freedom - primary_degrees_of_freedom;
-  Displacement<InertialFrame> const& r = secondary_primary.displacement();
-  Velocity<InertialFrame> const& ṙ = secondary_primary.velocity();
+  Displacement<InertialFrame> const r =
+      secondary_degrees_of_freedom.position() -
+      primary_degrees_of_freedom.position();
+  Velocity<InertialFrame> const ṙ =
+      secondary_degrees_of_freedom.velocity() -
+      primary_degrees_of_freedom.velocity();
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
-  AngularVelocity<InertialFrame> const& ω =
-      to_this_frame.template angular_velocity_of<ThisFrame>();
-  Variation<AngularVelocity<InertialFrame>> const
-      angular_acceleration_of_to_frame =
-          (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) / r.Norm²();
+  // TODO(phl): Compute using the Jacobian.
+  Vector<Jerk, InertialFrame> const r⁽³⁾;
 
-  Vector<Acceleration, InertialFrame> const& acceleration_of_to_frame_origin =
-      primary_acceleration;
-  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
-             to_this_frame,
-             angular_acceleration_of_to_frame,
-             acceleration_of_to_frame_origin);
+  Trihedron<Length, ArealSpeed> orthogonal;
+  Trihedron<double, double> orthonormal;
+  Trihedron<Length, ArealSpeed, 1> 𝛛orthogonal;
+  Trihedron<double, double, 1> 𝛛orthonormal;
+  Trihedron<Length, ArealSpeed, 2> 𝛛²orthogonal;
+  Trihedron<double, double, 2> 𝛛²orthonormal;
+
+  Base::ComputeTrihedra(r, ṙ, orthogonal, orthonormal);
+  Base::ComputeTrihedraDerivatives(r, ṙ, r̈,
+                                   orthogonal, orthonormal,
+                                   𝛛orthogonal, 𝛛orthonormal);
+  Base::ComputeTrihedraDerivatives2(r, ṙ, r̈, r⁽³⁾,
+                                    orthogonal, orthonormal,
+                                    𝛛orthogonal, 𝛛orthonormal,
+                                    𝛛²orthogonal, 𝛛²orthonormal);
+
+  return Base::ComputeAcceleratedRigidMotion(
+      primary_degrees_of_freedom, primary_acceleration,
+      orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
 }
 
 }  // namespace internal
