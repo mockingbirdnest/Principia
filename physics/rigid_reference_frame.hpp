@@ -112,7 +112,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   // anyway, the derivative trihedra are not even orthogonal.
   template<typename ScalarT, typename ScalarB, int order = 0>
   struct Trihedron {
-    Vector<Derivative<ScalarT, Time, order>, InertialFrame> tangent;
+    Vector<Derivative<ScalarT, Time, order>, InertialFrame> fore;
     Vector<Derivative<Product<ScalarT, ScalarB>, Time, order>,
            InertialFrame> normal;
     Bivector<Derivative<ScalarB, Time, order>, InertialFrame> binormal;
