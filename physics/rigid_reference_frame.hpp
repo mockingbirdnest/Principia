@@ -107,16 +107,35 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Rotation<InertialFrame, ThisFrame>& rotation,
       AngularVelocity<InertialFrame>& angular_velocity);
 
- private:
   // The component names are somewhat notional.  This is not a Frenet frame and
   // anyway, the derivative trihedra are not even orthogonal.
-  template<typename ScalarT, typename ScalarB, int order = 0>
+  template<typename ScalarF, typename ScalarB, int order = 0>
   struct Trihedron {
-    Vector<Derivative<ScalarT, Time, order>, InertialFrame> fore;
-    Vector<Derivative<Product<ScalarT, ScalarB>, Time, order>,
+    Vector<Derivative<ScalarF, Time, order>, InertialFrame> fore;
+    Vector<Derivative<Product<ScalarF, ScalarB>, Time, order>,
            InertialFrame> normal;
     Bivector<Derivative<ScalarB, Time, order>, InertialFrame> binormal;
   };
+
+#if 0
+  // A helper function for computing the motion that maps the inertial frame to
+  // this frame, using trihedra that have computed by the caller.
+  static RigidMotion<InertialFrame, ThisFrame> ComputeRigidMotion(
+      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      Trihedron<double, double> const& orthonormal,
+      Trihedron<double, double, 1> const& 𝛛orthonormal);
+
+  // Same as above, but computes the acceleration rigid motion.
+  static AcceleratedRigidMotion<InertialFrame, ThisFrame>
+  ComputeAcceleratedRigidMotion(
+      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Trihedron<double, double> const& orthonormal,
+      Trihedron<double, double, 1> const& 𝛛orthonormal,
+      Trihedron<double, double, 2> const& 𝛛²orthonormal);
+#endif
+
+  // TODO(phl): TeX and reference.
 
   // Computes the orthogonal and orthonormal trihedra associated with
   // |ThisFrame|.

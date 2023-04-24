@@ -79,6 +79,11 @@ class BodyCentredBodyDirectionReferenceFrame
           serialization::BodyCentredBodyDirectionReferenceFrame const& message);
 
  private:
+  using Base = RigidReferenceFrame<InertialFrame, ThisFrame>;
+
+  template<typename SF, typename SB, int o = 0>
+  using Trihedron = typename Base::template Trihedron<SF, SB, o>;
+
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;

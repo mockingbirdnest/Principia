@@ -105,13 +105,12 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
   Rotation<InertialFrame, ThisFrame> rotation =
       Rotation<InertialFrame, ThisFrame>::Identity();
   AngularVelocity<InertialFrame> angular_velocity;
-  RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularDegreesOfFreedom(
-      primary_degrees_of_freedom,
-      secondary_degrees_of_freedom,
-      primary_acceleration,
-      secondary_acceleration,
-      rotation,
-      angular_velocity);
+  Base::ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
+                                       secondary_degrees_of_freedom,
+                                       primary_acceleration,
+                                       secondary_acceleration,
+                                       rotation,
+                                       angular_velocity);
 
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(primary_degrees_of_freedom.position(),

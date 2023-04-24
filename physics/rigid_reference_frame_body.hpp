@@ -214,6 +214,7 @@ ComputeAngularDegreesOfFreedom(
   angular_velocity = ComputeAngularVelocity(orthonormal, 𝛛orthonormal);
 }
 
+#if 0
 template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAcceleratedRigidMotion(
@@ -229,6 +230,7 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAcceleratedRigidMotion(
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
       rigid_motion, angular_acceleration, primary_acceleration);
 }
+#endif
 
 template<typename InertialFrame, typename ThisFrame>
 void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedra(
@@ -255,8 +257,8 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
     Displacement<InertialFrame> const& r,
     Velocity<InertialFrame> const& ṙ,
     Vector<Acceleration, InertialFrame> const& r̈,
-    Trihedron<Length, ArealSpeed>& orthogonal,
-    Trihedron<double, double>& orthonormal,
+    Trihedron<Length, ArealSpeed> const& orthogonal,
+    Trihedron<double, double> const& orthonormal,
     Trihedron<Length, ArealSpeed, 1>& 𝛛orthogonal,
     Trihedron<double, double, 1>& 𝛛orthonormal) {
   auto const& F = orthogonal.fore;
@@ -292,8 +294,8 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
     Velocity<InertialFrame> const& ṙ,
     Vector<Acceleration, InertialFrame> const& r̈,
     Vector<Jerk, InertialFrame> const& r⁽³⁾,
-    Trihedron<Length, ArealSpeed>& orthogonal,
-    Trihedron<double, double>& orthonormal,
+    Trihedron<Length, ArealSpeed> const& orthogonal,
+    Trihedron<double, double> const& orthonormal,
     Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
     Trihedron<double, double, 1> const& 𝛛orthonormal,
     Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
@@ -344,7 +346,7 @@ template<typename InertialFrame, typename ThisFrame>
 AngularVelocity<InertialFrame>
 RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularVelocity(
     Trihedron<double, double> const& orthonormal,
-    Trihedron<double, double, 1>& 𝛛orthonormal) {
+    Trihedron<double, double, 1> const& 𝛛orthonormal) {
   auto const& f = orthonormal.fore;
   auto const& n = orthonormal.normal;
   auto const& b = orthonormal.binormal;
