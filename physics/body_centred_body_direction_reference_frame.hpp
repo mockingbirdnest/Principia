@@ -93,6 +93,14 @@ class BodyCentredBodyDirectionReferenceFrame
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
+  // Implementation helper that avoids evaluating the degrees of freedom and the
+  // accelerations multiple times.
+  static RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
+      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Vector<Acceleration, InertialFrame> const& secondary_acceleration);
+
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   MassiveBody const* const primary_;
   not_null<MassiveBody const*> const secondary_;

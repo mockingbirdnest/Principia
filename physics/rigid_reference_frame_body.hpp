@@ -214,24 +214,6 @@ ComputeAngularDegreesOfFreedom(
   angular_velocity = ComputeAngularVelocity(orthonormal, 𝛛orthonormal);
 }
 
-#if 0
-template<typename InertialFrame, typename ThisFrame>
-AcceleratedRigidMotion<InertialFrame, ThisFrame>
-RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAcceleratedRigidMotion(
-    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-    Vector<Acceleration, InertialFrame> const& primary_acceleration,
-    Trihedron<double, double> const& orthonormal,
-    Trihedron<double, double, 1> const& 𝛛orthonormal,
-    Trihedron<double, double, 2> const& 𝛛²orthonormal) {
-  auto const rigid_motion = ComputeRigidMotion(
-      primary_degrees_of_freedom, orthonormal, 𝛛orthonormal);
-  auto const angular_acceleration =
-      ComputeAngularAcceleration(orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
-  return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
-      rigid_motion, angular_acceleration, primary_acceleration);
-}
-#endif
-
 template<typename InertialFrame, typename ThisFrame>
 void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedra(
     Displacement<InertialFrame> const& r,

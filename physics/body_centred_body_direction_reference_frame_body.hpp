@@ -90,7 +90,7 @@ Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame,
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
-    ToThisFrameAtTime(Instant const& t) const {
+ToThisFrameAtTime(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
       primary_trajectory_().EvaluateDegreesOfFreedom(t);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
@@ -102,24 +102,10 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
-  Rotation<InertialFrame, ThisFrame> rotation =
-      Rotation<InertialFrame, ThisFrame>::Identity();
-  AngularVelocity<InertialFrame> angular_velocity;
-  Base::ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
-                                       secondary_degrees_of_freedom,
-                                       primary_acceleration,
-                                       secondary_acceleration,
-                                       rotation,
-                                       angular_velocity);
-
-  RigidTransformation<InertialFrame, ThisFrame> const
-      rigid_transformation(primary_degrees_of_freedom.position(),
-                           ThisFrame::origin,
-                           rotation.template Forget<OrthogonalMap>());
-  return RigidMotion<InertialFrame, ThisFrame>(
-             rigid_transformation,
-             angular_velocity,
-             primary_degrees_of_freedom.velocity());
+  return ToThisFrame(primary_degrees_of_freedom,
+                     secondary_degrees_of_freedom,
+                     primary_acceleration,
+                     secondary_acceleration);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -177,8 +163,10 @@ MotionOfThisFrame(Instant const& t) const {
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
-  // TODO(phl): Avoid repeated computations.
-  auto const to_this_frame = ToThisFrameAtTime(t);
+  auto const to_this_frame = ToThisFrame(primary_degrees_of_freedom,
+                                         secondary_degrees_of_freedom,
+                                         primary_acceleration,
+                                         secondary_acceleration);
 
   Displacement<InertialFrame> const r =
       secondary_degrees_of_freedom.position() -
@@ -217,6 +205,33 @@ MotionOfThisFrame(Instant const& t) const {
              to_this_frame,
              angular_acceleration_of_to_frame,
              acceleration_of_to_frame_origin);}
+
+template<typename InertialFrame, typename ThisFrame>
+RigidMotion<InertialFrame, ThisFrame>
+BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
+    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+    DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+    Vector<Acceleration, InertialFrame> const& primary_acceleration,
+    Vector<Acceleration, InertialFrame> const& secondary_acceleration) {
+  Rotation<InertialFrame, ThisFrame> rotation =
+      Rotation<InertialFrame, ThisFrame>::Identity();
+  AngularVelocity<InertialFrame> angular_velocity;
+  Base::ComputeAngularDegreesOfFreedom(primary_degrees_of_freedom,
+                                       secondary_degrees_of_freedom,
+                                       primary_acceleration,
+                                       secondary_acceleration,
+                                       rotation,
+                                       angular_velocity);
+
+  RigidTransformation<InertialFrame, ThisFrame> const
+      rigid_transformation(primary_degrees_of_freedom.position(),
+                           ThisFrame::origin,
+                           rotation.template Forget<OrthogonalMap>());
+  return RigidMotion<InertialFrame, ThisFrame>(
+             rigid_transformation,
+             angular_velocity,
+             primary_degrees_of_freedom.velocity());
+}
 
 }  // namespace internal
 }  // namespace _body_centred_body_direction_reference_frame
