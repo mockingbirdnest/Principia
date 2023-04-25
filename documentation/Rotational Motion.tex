@@ -49,6 +49,7 @@ where we have defined $\vr \DefineAs q_2 - q_1$.  Is trivial to check that these
 \end{dcases}
 \label{eqnfbn}
 \end{equation}
+These vectors are sufficient to define the rotation of the reference frame at any point in time.
 \section*{Derivatives of normalized vectors}
 In what follows, we will need to derive the elements of the trihedron $\pa{\vf, \vn, \vb}$.  To help with this we prove two formulæ that define the first and second derivative of $\vV/{\norm\vV}$ based on that of $\vV$.
 
@@ -57,6 +58,7 @@ The first derivative is:
 \deriv{t}{}\frac{\vV}{\norm\vV} &= \frac{\norm\vV \dot{\vV} - \deriv{t}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
 &=\frac{\norm\vV \dot{\vV} - \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
 &=\frac{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}{\norm\vV^3}
+\label{eqndv}
 \end{align}
 
 The second derivative is somewhat more complicated:
@@ -74,7 +76,7 @@ The second derivative is somewhat more complicated:
 &=\frac{\ddot{\vV}}{\norm\vV} - 2 \dot{\vV} \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV^3} 
   - \vV \frac{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}}{\norm\vV^3} + 3 \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}^2}{\norm\vV^5}
 \end{align}
-\section*{First derivative and rotation}
+\section*{Angular velocity}
 Deriving the definitions (\ref{eqnFBN}) we obtain:
 \[
 \begin{dcases}
@@ -82,5 +84,9 @@ Deriving the definitions (\ref{eqnFBN}) we obtain:
 \dot{\vB} &= \vr \wedge \ddot{\vr} \\
 \dot{\vN} &= \dot{\vB} \wedge \vF + \vB \wedge \dot{\vF}
 \end{dcases}
+\]
+Injecting these expressions in the derivative formula (\ref{eqndv}) makes it possible to compute the trihedron of the derivatives $\pa{\dot{\vf}, \dot{\vn}, \dot{\vb}}$ of $\pa{\vf, \vn, \vb}$.  The angular velocity is then written as:
+\[
+\VectorSymbol{\gw} = \pascal{\scal{\dot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vf}}{\vn}} \vb
 \]
 \end{document}
