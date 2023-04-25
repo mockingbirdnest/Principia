@@ -75,18 +75,36 @@ The second derivative is somewhat more complicated:
     {\norm\vV^6} \nonumber \\
 &=\frac{\ddot{\vV}}{\norm\vV} - 2 \dot{\vV} \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV^3} 
   - \vV \frac{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}}{\norm\vV^3} + 3 \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}^2}{\norm\vV^5}
+\label{eqnddv}
 \end{align}
 \section*{Angular velocity}
-Deriving the definitions (\ref{eqnFBN}) we obtain:
-\[
+To compute the angular velocity, we derive the equations (\ref{eqnFBN}) and obtain:
+\begin{equation}
 \begin{dcases}
 \dot{\vF} &= \dot{\vr} \\
 \dot{\vB} &= \vr \wedge \ddot{\vr} \\
 \dot{\vN} &= \dot{\vB} \wedge \vF + \vB \wedge \dot{\vF}
 \end{dcases}
-\]
-Injecting these expressions in the derivative formula (\ref{eqndv}) makes it possible to compute the trihedron of the derivatives $\pa{\dot{\vf}, \dot{\vn}, \dot{\vb}}$ of $\pa{\vf, \vn, \vb}$.  The angular velocity is then written as:
+\label{eqndFBN}
+\end{equation}
+Injecting these expressions in the derivative formula (\ref{eqndv}) makes it possible to compute the trihedron of the derivatives $\pa{\dot{\vf}, \dot{\vn}, \dot{\vb}}$ of (\ref{eqnfbn}).  The angular velocity is then written:
 \[
 \VectorSymbol{\gw} = \pascal{\scal{\dot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vf}}{\vn}} \vb
 \]
+\section*{Angular acceleration}
+To compute the angular acceleration, we derive the equations (\ref{eqndFBN}) and obtain:
+\begin{equation}
+\begin{dcases}
+\ddot{\vF} &= \ddot{\vr} \\
+\ddot{\vB} &= \dot{\vr} \wedge \ddot{\vr} + \vr \wedge \vr^{(3)} \\
+\ddot{\vN} &= \ddot{\vB} \wedge \vF + 2 \dot{\vB} \wedge \dot{\vF} + \vB \wedge \ddot{\vF} \\
+\end{dcases}
+\end{equation}
+Injecting these expressions in the second derivative formula (\ref{eqnddv}) makes it possible to compute the trihedron of the second derivatives $\pa{\ddot{\vf}, \ddot{\vn}, \ddot{\vb}}$ of (\ref{eqnfbn}).  The angular acceleration is then written:
+\begin{align*}
+\dot{\VectorSymbol{\gw}} &= \pascal{\scal{\ddot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vn}}{\dot{\vb}}} \vf + \pascal{\scal{\dot{\vn}}{\vb}} \dot{\vf} \\
+&+ \pascal{\scal{\ddot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vb}}{\dot{\vf}}} \vn + \pascal{\scal{\dot{\vb}}{\vf}} \dot{\vn} \\
+&+ \pascal{\scal{\ddot{\vf}}{\vn}} \vb + \pascal{\scal{\dot{\vf}}{\dot{\vn}}} \vb + \pascal{\scal{\dot{\vf}}{\vn}} \dot{\vb}
+\end{align*}
+
 \end{document}
