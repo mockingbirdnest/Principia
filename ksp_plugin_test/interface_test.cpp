@@ -512,7 +512,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
 
-  NavigationFrameParameters parameters = {
+  PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
