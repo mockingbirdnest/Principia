@@ -53,20 +53,27 @@ where we have defined $\vr \DefineAs q_2 - q_1$.  Is trivial to check that these
 In what follows, we will need to derive the elements of the trihedron $\pa{\vf, \vn, \vb}$.  To help with this we prove two formulæ that define the first and second derivative of $\vV/{\norm\vV}$ based on that of $\vV$.
 
 The first derivative is:
-\begin{align*}
-\deriv{t}{}\frac{\vV}{\norm\vV} &= \frac{\norm\vV \dot{\vV} - \deriv{t}{\norm\vV} \vV}{\norm\vV^2} \\
-&=\frac{\norm\vV \dot{\vV} - \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV} \vV}{\norm\vV^2} \\
+\begin{align}
+\deriv{t}{}\frac{\vV}{\norm\vV} &= \frac{\norm\vV \dot{\vV} - \deriv{t}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
+&=\frac{\norm\vV \dot{\vV} - \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
 &=\frac{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}{\norm\vV^3}
-\end{align*}
+\end{align}
 
 The second derivative is somewhat more complicated:
-\begin{align*}
-\deriv[2]{t}{}\frac{\vV}{\norm\vV} &=\deriv{t}{}\pa{\frac{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}{\norm\vV^3}} \\
+\begin{align}
+\deriv[2]{t}{}\frac{\vV}{\norm\vV} &=\deriv{t}{}\pa{\frac{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}{\norm\vV^3}} \nonumber \\
 &=\frac{\norm\vV^3 \deriv{t}{}\pa{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV} - 
-  3 \norm\vV \pascal{\scal{\vV}{\dot{\vV}}}\pa{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}}{\norm\vV^6} \\
-&=\frac{}{\norm\vV^6}
-  - 3\frac{\norm\vV^3 \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV} - \norm\vV \pascal{\scal{\vV}{\dot{\vV}}}^2 \vV}{\norm\vV^6}
-\end{align*}
+  3 \norm\vV \pascal{\scal{\vV}{\dot{\vV}}}\pa{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}}{\norm\vV^6} \nonumber \\
+&=\frac{2 \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV} +
+    \norm\vV^2 \ddot{\vV} -
+    \pa{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}} \vV -
+    \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV}}
+    {\norm\vV^3} -
+  3\frac{\norm\vV^3 \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV} - \norm\vV \pascal{\scal{\vV}{\dot{\vV}}}^2 \vV}
+    {\norm\vV^6} \nonumber \\
+&=\frac{\ddot{\vV}}{\norm\vV} - 2 \dot{\vV} \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV^3} 
+  - \vV \frac{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}}{\norm\vV^3} + 3 \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}^2}{\norm\vV^5}
+\end{align}
 \section*{First derivative and rotation}
 Deriving the definitions (\ref{eqnFBN}) we obtain:
 \[
