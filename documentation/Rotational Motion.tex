@@ -28,7 +28,7 @@ angular velocity, and angular accelation) of a rigid frame.
 We consider in this document a rigid reference frame that is defined by two bodies $B_1$ and $B_2$ at positions $\vq_1$ and $\vq_2$, respectively.  A basis of the reference frame is defined by three vectors:
 \begin{itemize}
 \item{the \emph{fore} vector $\vF$ which is along the axis $\vq_2 - \vq_1$;}
-\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity of the frame, $\dot{\vq_2} - \dot{\vq_1}$, is in the plane $\pa{\vF, \vN}$;}
+\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity of the frame, $\dot{\vq}_2 - \dot{\vq}_1$, is in the plane $\pa{\vF, \vN}$;}
 \item{the \emph{binormal} vector $\vB$ which is orthogonal to $\vF$ and $\vN$ such that $\pa{\vF, \vN, \vB}$ forms a direct trihedron.}
 \end{itemize}
 There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice, it is convenient to choose $\vB$ before $\vN$ so that the basis is defined exclusively using vector products:
@@ -40,7 +40,7 @@ There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice
 \end{dcases}
 \label{eqnFBN}
 \end{equation}
-where we have defined $\vr \DefineAs \vq_2 - \vq_1$.  Since we'll need to use $\ddot{\vr}$ later, it is important to note here that $\ddot{\vr} = \ddot{\vq_2} - \ddot{\vq_1}$ where $\ddot{\vq_1}$ is the acceleration exerted on $B_1$ by the rest of the system (and similarly, $\ddot{\vq_2}$ is the acceleration exerted on $B_2$ by the rest of the system).
+where we have defined $\vr \DefineAs \vq_2 - \vq_1$.  Since we'll need to use $\ddot{\vr}$ later, it is important to note here that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system (and similarly, $\ddot{\vq}_2$ is the acceleration exerted on $B_2$ by the rest of the system).
 
 It is trivial to check that these definitions satisfy the properties above, and in particular that they determine a direct orthogonal basis.  The corresponding orthonormal basis is:
 \begin{equation}
@@ -103,6 +103,7 @@ To compute the angular acceleration, we derive the vectors (\ref{eqndFBN}) and o
 \ddot{\vB} &= \dot{\vr} \wedge \ddot{\vr} + \vr \wedge \vr^{(3)} \\
 \ddot{\vN} &= \ddot{\vB} \wedge \vF + 2 \dot{\vB} \wedge \dot{\vF} + \vB \wedge \ddot{\vF} \\
 \end{dcases}
+\label{eqnddFBN}
 \end{equation}
 Injecting these expressions in the second derivative formula (\ref{eqnddv}) makes it possible to compute the trihedron of the second derivatives $\pa{\ddot{\vf}, \ddot{\vn}, \ddot{\vb}}$ of (\ref{eqnfbn}).  The angular acceleration is then written:
 \begin{align*}
@@ -110,6 +111,28 @@ Injecting these expressions in the second derivative formula (\ref{eqnddv}) make
 &+ \pascal{\scal{\ddot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vb}}{\dot{\vf}}} \vn + \pascal{\scal{\dot{\vb}}{\vf}} \dot{\vn} \\
 &+ \pascal{\scal{\ddot{\vf}}{\vn}} \vb + \pascal{\scal{\dot{\vf}}{\dot{\vn}}} \vb + \pascal{\scal{\dot{\vf}}{\vn}} \dot{\vb}
 \end{align*}
+
+\section*{Jerk}
+The alert reader will have noticed the presence of the jerk, $\vr^{(3)}$ in (\ref{eqnddFBN}).  This section explains how it is calculated.
+
+Recall that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system.  Define $\VectorSymbol{\gG_1}\of{\vq, t}$ to be the vector field representing the acceleration exerted by all the bodies in the system \textit{other than $B_1$} on the position $\vq$ at time $t$.  It follows from the definition that $\ddot{\vq}_1\of{t} == \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}$ where we have made the dependency on time explicit.  The jerk is the total derivative with respect to $t$:
+\[
+\vq_1^{(3)}\of{t} = \Evaluate{\deriv{\gt}{} \VectorSymbol{\gG_1}\of{\vq, \gt}}{\vq = \vq1\of{t}, \gt = t}
+\]
+Looking at the coordinate along the axis $\vx$ we can write the total derivative as follow:
+\[
+\deriv{t}{} \VectorSymbol{\gG_{1,x}} = \pderiv{x}{\VectorSymbol{\gG_{1,x}}} \deriv{t}{x} +
+  \pderiv{y}{\VectorSymbol{\gG_{1,x}}} \deriv{t}{y} +
+  \pderiv{z}{\VectorSymbol{\gG_{1,x}}} \deriv{t}{z}
+\]
+and similarly along the axes $\vy$ and $\vz$.  The partial derivatives are the first row of the Jacobian, so we obtain:
+\[
+\deriv{t}{\VectorSymbol{\gG_1}} = \scal{\nabla \VectorSymbol{\gG_1}}{\deriv{t}{\vq}}
+\]
+which gives us the jerk as:
+\[
+\vq_1^{(3)}\of{t} = \scal{\nabla \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}}{\dot{\vq}_1\of{t}}
+\]
 
 \section*{Application to the body surface reference frame}
 While the formulæ above were derived assuming a rigid reference frame defined by two bodies $B_1$ and $B_2$, they remain valid for a reference frame defined by a single body $B_1$ provided that we give a proper definition of the vector $\vr$.  We now consider how they apply to the \textit{body surface} reference frame.
