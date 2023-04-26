@@ -25,10 +25,10 @@ angular velocity, and angular accelation) of a rigid frame.
 \end{sloppypar}
 
 \section*{Definitions}
-We are considering in this section a rigid reference frame that is defined by two bodies $B_1$ and $B_2$ at positions $q_1$ and $q_2$, respectively.  A basis of the reference frame is defined by three vectors:
+We consider in this document a rigid reference frame that is defined by two bodies $B_1$ and $B_2$ at positions $\vq_1$ and $\vq_2$, respectively.  A basis of the reference frame is defined by three vectors:
 \begin{itemize}
-\item{the \emph{fore} vector $\vF$ which is along the axis $q_2 - q_1$;}
-\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity of the frame, $\dot{q_2} - \dot{q_1}$ is in the plane $\pa{\vF, \vN}$;}
+\item{the \emph{fore} vector $\vF$ which is along the axis $\vq_2 - \vq_1$;}
+\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity of the frame, $\dot{\vq_2} - \dot{\vq_1}$, is in the plane $\pa{\vF, \vN}$;}
 \item{the \emph{binormal} vector $\vB$ which is orthogonal to $\vF$ and $\vN$ such that $\pa{\vF, \vN, \vB}$ forms a direct trihedron.}
 \end{itemize}
 There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice, it is convenient to choose $\vB$ before $\vN$ so that the basis is defined exclusively using vector products:
@@ -40,7 +40,7 @@ There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice
 \end{dcases}
 \label{eqnFBN}
 \end{equation}
-where we have defined $\vr \DefineAs q_2 - q_1$.  Is trivial to check that these definitions satisfy the properties above, and in particular that they determine a direct orthogonal basis.  The corresponding orthonormal basis is:
+where we have defined $\vr \DefineAs \vq_2 - \vq_1$.  Is trivial to check that these definitions satisfy the properties above, and in particular that they determine a direct orthogonal basis.  The corresponding orthonormal basis is:
 \begin{equation}
 \begin{dcases}
 \vf &= \frac{\vF}{\norm\vF} \\
@@ -51,13 +51,13 @@ where we have defined $\vr \DefineAs q_2 - q_1$.  Is trivial to check that these
 \end{equation}
 These vectors are sufficient to define the rotation of the reference frame at any point in time.
 \section*{Derivatives of normalized vectors}
-In what follows, we will need to derive the elements of the trihedron $\pa{\vf, \vn, \vb}$.  To help with this we prove two formulæ that define the first and second derivative of $\vV/{\norm\vV}$ based on that of $\vV$.
+In what follows, we will need to compute the time derivatives of the elements of the trihedron $\pa{\vf, \vn, \vb}$.  To help with this we prove two formulæ that define the first and second derivatives of $\vV/{\norm\vV}$ based on that of $\vV$.
 
 The first derivative is:
 \begin{align}
 \deriv{t}{}\frac{\vV}{\norm\vV} &= \frac{\norm\vV \dot{\vV} - \deriv{t}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
 &=\frac{\norm\vV \dot{\vV} - \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
-&=\frac{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}{\norm\vV^3}
+&=\frac{\dot{\vV}}{\norm\vV} - \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV^3}
 \label{eqndv}
 \end{align}
 
@@ -77,8 +77,9 @@ The second derivative is somewhat more complicated:
   - \vV \frac{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}}{\norm\vV^3} + 3 \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}^2}{\norm\vV^5}
 \label{eqnddv}
 \end{align}
+
 \section*{Angular velocity}
-To compute the angular velocity, we derive the equations (\ref{eqnFBN}) and obtain:
+To compute the angular velocity, we derive the vectors (\ref{eqnFBN}) and obtain:
 \begin{equation}
 \begin{dcases}
 \dot{\vF} &= \dot{\vr} \\
@@ -91,8 +92,9 @@ Injecting these expressions in the derivative formula (\ref{eqndv}) makes it pos
 \[
 \VectorSymbol{\gw} = \pascal{\scal{\dot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vf}}{\vn}} \vb
 \]
+
 \section*{Angular acceleration}
-To compute the angular acceleration, we derive the equations (\ref{eqndFBN}) and obtain:
+To compute the angular acceleration, we derive the vectors (\ref{eqndFBN}) and obtain:
 \begin{equation}
 \begin{dcases}
 \ddot{\vF} &= \ddot{\vr} \\
@@ -106,5 +108,54 @@ Injecting these expressions in the second derivative formula (\ref{eqnddv}) make
 &+ \pascal{\scal{\ddot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vb}}{\dot{\vf}}} \vn + \pascal{\scal{\dot{\vb}}{\vf}} \dot{\vn} \\
 &+ \pascal{\scal{\ddot{\vf}}{\vn}} \vb + \pascal{\scal{\dot{\vf}}{\dot{\vn}}} \vb + \pascal{\scal{\dot{\vf}}{\vn}} \dot{\vb}
 \end{align*}
+
+\section*{Application to the body surface reference frame}
+While the formulæ above were derived assuming a rigid reference frame defined by two bodies $B_1$ and $B_2$, they remain valid for a reference frame defined by a single body $B_1$ provided that we give a proper definition of the vector $\vr$.  We now consider how they apply to the \textit{body surface} reference frame.
+
+It is convenient to choose $\vr$ to be a unit vector rotating with the surface of the body; without loss of generality, $\vr$ may be written:
+\[
+\vr = \vx \cos \pa{\gw t + \gj} + \vy \sin \pa{\gw t + \gj}
+\]
+where $\vx$ and $\vy$ form a direct orthonormal basis of the equatorial plane of the body.  The time derivatives of $\vr$ are:
+\[
+\begin{dcases}
+\dot{\vr} &= -\vx \gw \sin \pa{\gw t + \gj} + \vy \gw \cos \pa{\gw t + \gj} \\
+\ddot{\vr} &= -\vx \gw^2 \cos \pa{\gw t + \gj} - \vy \gw^2 \sin \pa{\gw t + \gj} = -\gw^2 \vr \\
+\vr^{(3)} &= \vx \gw^3 \sin \pa{\gw t + \gj} - \vy \gw^3 \cos \pa{\gw t + \gj} = -\gw^2 \dot{\vr}
+\end{dcases}
+\]
+Using (\ref{eqnFBN}) it's easy to see that:
+\[
+\begin{dcases}
+\vF &= \vr \\
+\vB &= \gw \vz \\
+\vN &= \dot{\vr}
+\end{dcases}
+\]
+where $\vz$ is along the rotation axis such that $\pa{\vx, \vy, \vz}$ form a direct trihedron.  The orthonormal vectors follow immediately, noting that $\norm\vr = 1$:
+\[
+\begin{dcases}
+\vf &= \vr \\
+\vb &= \vz \\
+\vn &= \frac{\dot{\vr}}{\gw}
+\end{dcases}
+\]
+The first derivatives of the orthonormal trihedron can be computed directly:
+\[
+\begin{dcases}
+\dot{\vf} &= \dot{\vr} \\
+\dot{\vb} &= 0 \\
+\dot{\vn} &= \frac{\ddot{\vr}}{\gw} = -\gw \vr
+\end{dcases}
+\]
+which yields, not surprisingly, $\VectorSymbol{\gw} = \gw \vz$.  The second derivatives are equally straightforward:
+\[
+\begin{dcases}
+\ddot{\vf} &= \ddot{\vr} = -\vr \\
+\dot{\vb} &= 0 \\
+\dot{\vn} &= -\gw \dot{\vr}
+\end{dcases}
+\]
+and yield, as expected, $\dot{\VectorSymbol{\gw}} = 0$.
 
 \end{document}
