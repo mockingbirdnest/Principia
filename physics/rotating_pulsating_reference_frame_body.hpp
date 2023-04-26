@@ -122,7 +122,8 @@ void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-not_null<std::unique_ptr<RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>>>
+not_null<
+    std::unique_ptr<RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>>>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     serialization::RotatingPulsatingReferenceFrame const& message) {
