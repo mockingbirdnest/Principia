@@ -14,7 +14,7 @@
 %%%% Title and authors.
 
 \title{Rotational Motion of a Rigid Reference Frame}
-\date{\printdate{2020-06-03}}
+\date{\printdate{2023-04-26}}
 \author{Pascal~Leroy (phl)}
 \begin{document}
 \maketitle
@@ -25,13 +25,13 @@ angular velocity, and angular accelation) of a rigid frame.
 \end{sloppypar}
 
 \section*{Definitions}
-We consider in this document a rigid reference frame that is defined by two bodies $B_1$ and $B_2$ at positions $\vq_1$ and $\vq_2$, respectively.  A basis of the reference frame is defined by three vectors:
+We consider in this document a rigid reference frame defined by two bodies $B_1$ and $B_2$ at positions $\vq_1$ and $\vq_2$, respectively.  We construct a basis of the reference frame using three vectors having the following properties:
 \begin{itemize}
 \item{the \emph{fore} vector $\vF$ which is along the axis $\vq_2 - \vq_1$;}
 \item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity of the frame, $\dot{\vq}_2 - \dot{\vq}_1$, is in the plane $\pa{\vF, \vN}$;}
 \item{the \emph{binormal} vector $\vB$ which is orthogonal to $\vF$ and $\vN$ such that $\pa{\vF, \vN, \vB}$ forms a direct trihedron.}
 \end{itemize}
-There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice, it is convenient to choose $\vB$ before $\vN$ so that the basis is defined exclusively using vector products:
+There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice, it is convenient to choose $\vB$ before $\vN$ so that the basis is computed exclusively using vector products:
 \begin{equation}
 \begin{dcases}
 \vF &= \vr \\
@@ -81,7 +81,7 @@ The second derivative is somewhat more complicated:
 \end{align}
 
 \section*{Angular velocity}
-To compute the angular velocity, we derive the vectors (\ref{eqnFBN}) and obtain:
+To compute the angular velocity, we start by deriving the vectors (\ref{eqnFBN}) and obtain:
 \begin{equation}
 \begin{dcases}
 \dot{\vF} &= \dot{\vr} \\
@@ -96,7 +96,7 @@ Injecting these expressions in the derivative formula (\ref{eqndv}) makes it pos
 \]
 
 \section*{Angular acceleration}
-To compute the angular acceleration, we derive the vectors (\ref{eqndFBN}) and obtain:
+To compute the angular acceleration, we start by deriving the vectors (\ref{eqndFBN}) and obtain:
 \begin{equation}
 \begin{dcases}
 \ddot{\vF} &= \ddot{\vr} \\
@@ -115,9 +115,9 @@ Injecting these expressions in the second derivative formula (\ref{eqnddv}) make
 \section*{Jerk}
 The alert reader will have noticed the presence of the jerk, $\vr^{(3)}$ in (\ref{eqnddFBN}).  This section explains how it is calculated.
 
-Recall that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system.  Define $\VectorSymbol{\gG_1}\of{\vq, t}$ to be the vector field representing the acceleration exerted by all the bodies in the system \textit{other than $B_1$} on the position $\vq$ at time $t$.  It follows from the definition that $\ddot{\vq}_1\of{t} == \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}$ where we have made the dependency on time explicit.  The jerk is the total derivative with respect to $t$:
+Recall that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system.  Define $\VectorSymbol{\gG_1}\of{\vq, t}$ to be the vector field representing the acceleration exerted by all the bodies in the system \textit{other than $B_1$} on the position $\vq$ at time $t$.  It follows from the definition that $\ddot{\vq}_1\of{t} = \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}$ where we have made the dependency on time explicit.  The jerk is the total derivative with respect to $t$:
 \[
-\vq_1^{(3)}\of{t} = \Evaluate{\deriv{\gt}{} \VectorSymbol{\gG_1}\of{\vq, \gt}}{\vq = \vq1\of{t}, \gt = t}
+\vq_1^{(3)}\of{\gt} = \Evaluate{\deriv{t}{} \VectorSymbol{\gG_1}\of{\vq, t}}{\vq = \vq1\of{\gt}, t = \gt}
 \]
 Looking at the coordinate along the axis $\vx$ we can write the total derivative as follow:
 \[
@@ -133,6 +133,7 @@ which gives us the jerk as:
 \[
 \vq_1^{(3)}\of{t} = \scal{\nabla \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}}{\dot{\vq}_1\of{t}}
 \]
+The actual computation of the Jacobian of the gravitational field is left as an exercise to the reader.
 
 \section*{Application to the body surface reference frame}
 While the formulæ above were derived assuming a rigid reference frame defined by two bodies $B_1$ and $B_2$, they remain valid for a reference frame defined by a single body $B_1$ provided that we give a proper definition of the vector $\vr$.  We now consider how they apply to the \textit{body surface} reference frame.
