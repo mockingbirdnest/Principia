@@ -224,10 +224,9 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       Navigation::unmoving);
   EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(rendering_time))
       .WillOnce(Return(rigid_motion));
-  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(t0_))
-      .WillOnce(Return(rigid_motion));
-  EXPECT_CALL(celestial_, current_position(rendering_time))
-      .WillOnce(Return(Barycentric::origin));
+  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(_))
+      .Times(trajectory_to_render.size())
+      .WillRepeatedly(Return(rigid_motion));
 
   auto const rendered_trajectory =
       renderer_.RenderPlottingTrajectoryInWorld(rendering_time,
