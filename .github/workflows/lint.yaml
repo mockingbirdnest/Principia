@@ -26,11 +26,23 @@ jobs:
             "-build/include_order",
             "-readability/braces",
             "-build/namespaces")
+        $errors = @()
+        $ErrorActionPreference = "Continue"
         foreach ($file in $(ls "*\*.[ch]pp")) {
-          python .\cpplint.py                           `
-              --extensions=hpp,cpp                      `
-              --output=vs7                              `
-              --filter=$([string]::join(",", $filters)) `
-              $file
+          $output = $(
+            python .\cpplint.py                           `
+                --extensions=hpp,cpp                      `
+                --output=vs7                              `
+                --filter=$([string]::join(",", $filters)) `
+                $file 2>&1 `
+          ).Exception.Message
+          if ($LastExitCode -ne 0) {
+            $errors += $output[0..($output.Length-3)]
+            $output | write-error
+          } else {
+            echo $output
+          }
         }
+        $errors | write-error
+        exit $errors.Length
 
