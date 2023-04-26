@@ -160,6 +160,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ksp_plugin_adapter_stub", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sourcerer", "sourcerer\sourcerer.csproj", "{28F20764-FBF8-40CF-A930-1562D1562B83}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{3B6E70E8-9FC3-4DC3-97B6-1A51B6DEB009}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\remove-before-flight.yml = .github\workflows\remove-before-flight.yml
+		.github\workflows\lint.yaml = .github\workflows\lint.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -463,22 +469,6 @@ Global
 		{34D500D6-4197-4665-BFDC-594957137CD6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{34D500D6-4197-4665-BFDC-594957137CD6}.Release|x64.ActiveCfg = Release|Any CPU
 		{34D500D6-4197-4665-BFDC-594957137CD6}.Release|x64.Build.0 = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Debug|x64.Build.0 = Debug|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release KSP 1.7.3|Any CPU.ActiveCfg = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release KSP 1.7.3|Any CPU.Build.0 = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release KSP 1.7.3|x64.ActiveCfg = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release KSP 1.7.3|x64.Build.0 = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release_LLVM|Any CPU.ActiveCfg = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release_LLVM|Any CPU.Build.0 = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release_LLVM|x64.ActiveCfg = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release_LLVM|x64.Build.0 = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|x64.ActiveCfg = Release|Any CPU
-		{3B974058-FF80-4341-9744-6A9E4F8CE9E5}.Release|x64.Build.0 = Release|Any CPU
 		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28F20764-FBF8-40CF-A930-1562D1562B83}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -505,6 +495,7 @@ Global
 		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{28F20764-FBF8-40CF-A930-1562D1562B83} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+		{3B6E70E8-9FC3-4DC3-97B6-1A51B6DEB009} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {332981CB-A6C7-4BD0-9EE0-8E8C6FB4E01A}
