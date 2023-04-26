@@ -223,9 +223,6 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       Navigation::nonrotating,
       Navigation::unmoving);
   EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(rendering_time))
-      .WillOnce(Return(rigid_motion));
-  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(_))
-      .Times(trajectory_to_render.size())
       .WillRepeatedly(Return(rigid_motion));
 
   auto const rendered_trajectory =
