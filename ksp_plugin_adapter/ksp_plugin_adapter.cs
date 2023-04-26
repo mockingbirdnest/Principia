@@ -2400,9 +2400,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void UpdatePlottingFrame(
-      PlottingFrameParameters? frame_parameters,
-      Vessel target_vessel) {
+  private void UpdatePlottingFrame(PlottingFrameParameters? frame_parameters,
+                                   Vessel target_vessel) {
     if (target_vessel != null) {
       // TODO(egg): We should use the analyser to pick the reference body.
       plugin_.SetTargetVessel(

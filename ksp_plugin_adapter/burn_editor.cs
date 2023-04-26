@@ -71,6 +71,9 @@ class BurnEditor : ScalingRenderer {
             NavigationFrameParameters parameters) {
       reference_frame_selector_.SetFrameParameters(parameters);
     } else {
+      // If the plotting frame is not a navigation frame, it is the rotating-
+      // pulsating frame; use the corresponding rotating frame as the default
+      // navigation frame.
       reference_frame_selector_.SetFrameParameters(
           new NavigationFrameParameters {
             extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
@@ -266,7 +269,7 @@ class BurnEditor : ScalingRenderer {
     }.magnitude;
   }
 
-  private void ReformatΔv() { 
+  private void ReformatΔv() {
     // Ensure that the number of digits used in formatting is consistent with
     // the current Δv values, initial mass, and engine characteristics,
     // otherwise the change in the number of significant figures will be
@@ -487,7 +490,7 @@ class BurnEditor : ScalingRenderer {
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";
-  
+
   private static UnityEngine.Texture decrement_revolution;
   private static UnityEngine.Texture increment_revolution;
   private const char figure_space = '\u2007';
