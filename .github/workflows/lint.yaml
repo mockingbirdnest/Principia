@@ -1,0 +1,36 @@
+name: Lint
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  check-cpp:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download cpplint
+      shell: pwsh
+      run: |
+        Invoke-WebRequest https://raw.githubusercontent.com/mockingbirdnest/styleguide/casanova-2023-04-25/cpplint/cpplint.py -OutFile cpplint.py
+    - name: Run cpplint
+      shell: pwsh
+      run: |
+        $filters = @(
+            "-legal/copyright",
+            "-build/c++11",
+            "-runtime/references",
+            "-runtime/arrays",
+            "-build/include_order",
+            "-readability/braces",
+            "-build/namespaces")
+        foreach ($file in $(ls "*\*.[ch]pp")) {
+          python .\cpplint.py                           `
+              --extensions=hpp,cpp                      `
+              --output=vs7                              `
+              --filter=$([string]::join(",", $filters)) `
+              $file
+        }
+
