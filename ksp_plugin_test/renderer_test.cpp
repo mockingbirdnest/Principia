@@ -222,7 +222,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       RigidTransformation<Navigation, Barycentric>::Identity(),
       Navigation::nonrotating,
       Navigation::unmoving);
-  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(rendering_time))
+  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(_))
       .WillRepeatedly(Return(rigid_motion));
 
   auto const rendered_trajectory =
