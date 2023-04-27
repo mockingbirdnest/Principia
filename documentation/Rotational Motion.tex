@@ -28,7 +28,7 @@ angular velocity, and angular accelation) of a rigid frame.
 We consider in this document a rigid reference frame defined by two bodies $B_1$ and $B_2$ at positions $\vq_1$ and $\vq_2$, respectively.  We construct a basis of the reference frame using three vectors having the following properties:
 \begin{itemize}
 \item{the \emph{fore} vector $\vF$ which is along the axis $\vq_2 - \vq_1$;}
-\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity of the frame, $\dot{\vq}_2 - \dot{\vq}_1$, is in the plane $\pa{\vF, \vN}$;}
+\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity $\dot{\vq}_2 - \dot{\vq}_1$ is in the plane $\pa{\vF, \vN}$;}
 \item{the \emph{binormal} vector $\vB$ which is orthogonal to $\vF$ and $\vN$ such that $\pa{\vF, \vN, \vB}$ forms a direct trihedron.}
 \end{itemize}
 There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice, it is convenient to choose $\vB$ before $\vN$ so that the basis is computed exclusively using vector products:
