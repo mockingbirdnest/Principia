@@ -373,14 +373,6 @@ class Ephemeris {
       std::vector<SpecificEnergy>& potentials) const
       REQUIRES_SHARED(lock_);
 
-  void ComputeJacobiansOfAccelerationsOfMassiveBody(
-      Instant const& t,
-      MassiveBody const& body1,
-      std::size_t b1,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<R3x3Matrix<Inverse<Square<Time>>>>& jacobians) const
-      REQUIRES_SHARED(lock_);
-
   // Computes the accelerations between all the massive bodies in |bodies_|.
   absl::Status ComputeGravitationalAccelerationBetweenAllMassiveBodies(
       Instant const& t,
@@ -404,12 +396,6 @@ class Ephemeris {
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<SpecificEnergy>& potentials) const
-      EXCLUDES(lock_);
-
-  void ComputeJacobiansOfAccelerationsOfAllMassiveBodies(
-      Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<R3x3Matrix<Inverse<Square<Time>>>>& jacobians) const
       EXCLUDES(lock_);
 
   // Flows the given ODE with an adaptive step integrator.

@@ -262,56 +262,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="degrees_of_freedom_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="continuous_trajectory_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="ephemeris_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="solar_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rigid_motion_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kepler_orbit_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="jacobi_coordinates_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hierarchical_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_surface_frame_field_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="apsides_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\numerics\cbrt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="geopotential_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="checkpointer_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="protector.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="protector_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="euler_solver_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\numerics\elliptic_functions.cpp">
       <Filter>Source Files</Filter>
@@ -319,68 +277,17 @@
     <ClCompile Include="..\numerics\elliptic_integrals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mechanical_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\base\zfp_compressor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\base\flags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="analytical_series_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="discrete_trajectory_segment_range_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="discrete_trajectory_iterator_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="discrete_trajectory_segment_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="discrete_trajectory_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="equipotential_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="harmonic_damping_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="clientele_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\geometry\instant.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="similar_motion_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="barycentric_rotating_reference_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_centred_body_direction_reference_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_centred_non_rotating_reference_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="body_surface_reference_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rigid_reference_frame_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rotating_pulsating_reference_frame_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
