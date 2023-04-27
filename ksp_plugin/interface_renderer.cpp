@@ -121,9 +121,9 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
 // sets it as the current plotting frame.
 void __cdecl principia__SetPlottingFrame(
     Plugin* const plugin,
-    NavigationFrameParameters const parameters) {
+    PlottingFrameParameters const parameters) {
   journal::Method<journal::SetPlottingFrame> m({plugin, parameters});
-  auto navigation_frame = NewNavigationFrame(*plugin, parameters);
+  auto navigation_frame = NewPlottingFrame(*plugin, parameters);
   GetRenderer(plugin).SetPlottingFrame(std::move(navigation_frame));
   return m.Return();
 }

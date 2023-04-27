@@ -49,6 +49,8 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   // The only way to construct conformal maps is as a product of conformal maps
   // obtained by forgetting other linear maps.
 
+  Scalar scale() const;
+
   Cube<Scalar> Determinant() const;
 
   ConformalMap<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;

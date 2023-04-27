@@ -250,7 +250,8 @@ TEST_F(PermutationTest, SerializationSuccess) {
 #if PRINCIPIA_COMPILER_MSVC && \
     (_MSC_FULL_VER == 193'431'937 || \
      _MSC_FULL_VER == 193'431'942 || \
-     _MSC_FULL_VER == 193'532'216)
+     _MSC_FULL_VER == 193'532'216 || \
+     _MSC_FULL_VER == 193'532'217)
       using Perm =
           std::conditional<std::is_same_v<decltype(cp), EvenPermutation const>,
                            PermutationR1R2,

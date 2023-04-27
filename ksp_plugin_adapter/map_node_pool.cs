@@ -92,9 +92,10 @@ internal class MapNodePool {
     }
   }
 
-  public void RenderMarkers(DisposableIterator apsis_iterator,
-                            Provenance provenance,
-                            ReferenceFrameSelector reference_frame) {
+  public void RenderMarkers(
+      DisposableIterator apsis_iterator,
+      Provenance provenance,
+      ReferenceFrameSelector<PlottingFrameParameters> reference_frame) {
     if (!nodes_.ContainsKey(provenance)) {
       nodes_.Add(provenance, new SingleProvenancePool());
     }
@@ -314,7 +315,7 @@ internal class MapNodePool {
     public Vector3d velocity;
     public UnityEngine.Color colour;
     public MapObject associated_map_object;
-    public ReferenceFrameSelector reference_frame;
+    public ReferenceFrameSelector<PlottingFrameParameters> reference_frame;
     public NodeSource source;
     public double time;
   }

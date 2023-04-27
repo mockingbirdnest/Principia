@@ -13,7 +13,8 @@ enum Encoding {
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
 message NavigationFrameParameters {
-  required int32 extension = 1;  // 6000 to 6999, see RigidReferenceFrame.
+  // Must correspond to a rigid reference frame.
+  required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
   required int32 centre_index = 2;
   required int32 primary_index = 3;
   required int32 secondary_index = 4;
@@ -132,6 +133,16 @@ message Origin {
   required bool reference_part_is_unmoving = 2;
   required fixed32 reference_part_id = 3;
   required XYZ main_body_centre_in_world = 4;
+}
+
+// Structurally identical to NavigationFrameParameters, but differs in
+// constraints, so we distinguish them to avoid violating preconditions by
+// mixing them up in the C#.
+message PlottingFrameParameters {
+  required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
+  required int32 centre_index = 2;
+  required int32 primary_index = 3;
+  required int32 secondary_index = 4;
 }
 
 message QP {
@@ -2176,7 +2187,7 @@ message SetPlottingFrame {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required NavigationFrameParameters parameters = 2;
+    required PlottingFrameParameters parameters = 2;
   }
   optional In in = 1;
 }

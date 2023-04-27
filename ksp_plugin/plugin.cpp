@@ -49,6 +49,7 @@
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_reference_frame.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -92,6 +93,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -1132,7 +1134,6 @@ Plugin::NewBarycentricRotatingNavigationFrame(
     Index const primary_index,
     Index const secondary_index) const {
   CHECK(!initializing_);
-  // TODO(egg): these should be const, use a custom comparator in the map.
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
   return make_not_null_unique<
@@ -1147,7 +1148,6 @@ Plugin::NewBodyCentredBodyDirectionNavigationFrame(
     Index const primary_index,
     Index const secondary_index) const {
   CHECK(!initializing_);
-  // TODO(egg): these should be const, use a custom comparator in the map.
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
   return make_not_null_unique<
@@ -1178,6 +1178,16 @@ Plugin::NewBodySurfaceNavigationFrame(
   return make_not_null_unique<
       BodySurfaceReferenceFrame<Barycentric, Navigation>>(
       ephemeris_.get(), reference_body.body());
+}
+
+not_null<std::unique_ptr<PlottingFrame>>
+Plugin::NewRotatingPulsatingPlottingFrame(Index const primary_index,
+                                          Index const secondary_index) const {
+  Celestial const& primary = *FindOrDie(celestials_, primary_index);
+  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
+  return make_not_null_unique<
+      RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
+      ephemeris_.get(), primary.body(), secondary.body());
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
@@ -1625,6 +1635,9 @@ Velocity<World> Plugin::VesselVelocity(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const {
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
       renderer_->BarycentricToPlotting(time)(degrees_of_freedom);
+  // Note that in the rotating-pulsating reference frame, this value is given in
+  // current metres per second (that is, in metres at |time| per second, for a
+  // velocity at |time|).
   return renderer_->PlottingToWorld(time, PlanetariumRotation())(
       plotting_frame_degrees_of_freedom.velocity());
 }

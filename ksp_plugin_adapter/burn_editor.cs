@@ -61,12 +61,26 @@ class BurnEditor : ScalingRenderer {
         field_width      : 7){
         value            = initial_time_ - time_base
     };
-    reference_frame_selector_ = new ReferenceFrameSelector(
+    reference_frame_selector_ = new ReferenceFrameSelector<NavigationFrameParameters>(
         adapter_,
         ReferenceFrameChanged,
         L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
-    reference_frame_selector_.SetFrameParameters(
-        adapter_.plotting_frame_selector_.FrameParameters());
+    PlottingFrameParameters plotting_frame_parameters =
+        adapter_.plotting_frame_selector_.FrameParameters();
+    if ((NavigationFrameParameters?)plotting_frame_parameters is
+            NavigationFrameParameters parameters) {
+      reference_frame_selector_.SetFrameParameters(parameters);
+    } else {
+      // If the plotting frame is not a navigation frame, it is the rotating-
+      // pulsating frame; use the corresponding rotating frame as the default
+      // navigation frame.
+      reference_frame_selector_.SetFrameParameters(
+          new NavigationFrameParameters {
+            extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
+            primary_index = plotting_frame_parameters.primary_index,
+            secondary_index = plotting_frame_parameters.secondary_index,
+          });
+    }
     ComputeEngineCharacteristics();
   }
 
@@ -100,8 +114,8 @@ class BurnEditor : ScalingRenderer {
                     : header);
       string info = "";
       if (!minimized &&
-          !reference_frame_selector_.FrameParameters().Equals(
-              adapter_.plotting_frame_selector_.FrameParameters())) {
+          reference_frame_selector_.FrameParameters() !=
+              adapter_.plotting_frame_selector_.FrameParameters()) {
         info = L10N.CacheFormat(
             "#Principia_BurnEditor_Info_InconsistentFrames");
       }
@@ -255,7 +269,7 @@ class BurnEditor : ScalingRenderer {
     }.magnitude;
   }
 
-  private void ReformatΔv() { 
+  private void ReformatΔv() {
     // Ensure that the number of digits used in formatting is consistent with
     // the current Δv values, initial mass, and engine characteristics,
     // otherwise the change in the number of significant figures will be
@@ -453,7 +467,8 @@ class BurnEditor : ScalingRenderer {
   private readonly DifferentialSlider Δv_normal_;
   private readonly DifferentialSlider Δv_binormal_;
   private readonly DifferentialSlider previous_coast_duration_;
-  private readonly ReferenceFrameSelector reference_frame_selector_;
+  private readonly ReferenceFrameSelector<NavigationFrameParameters>
+      reference_frame_selector_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
@@ -475,7 +490,7 @@ class BurnEditor : ScalingRenderer {
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";
-  
+
   private static UnityEngine.Texture decrement_revolution;
   private static UnityEngine.Texture increment_revolution;
   private const char figure_space = '\u2007';

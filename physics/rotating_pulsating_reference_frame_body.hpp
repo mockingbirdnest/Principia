@@ -114,7 +114,23 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
 template<typename InertialFrame, typename ThisFrame>
 void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::ReferenceFrame*> message) const {
-  LOG(FATAL) << "NOT IMPLEMENTED";
+  auto* const extension = message->MutableExtension(
+      serialization::RotatingPulsatingReferenceFrame::extension);
+  extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  extension->set_secondary(
+      ephemeris_->serialization_index_for_body(secondary_));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<
+    std::unique_ptr<RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>>>
+RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    serialization::RotatingPulsatingReferenceFrame const& message) {
+  return std::make_unique<RotatingPulsatingReferenceFrame>(
+      ephemeris,
+      ephemeris->body_for_serialization_index(message.primary()),
+      ephemeris->body_for_serialization_index(message.secondary()));
 }
 
 template<typename InertialFrame, typename ThisFrame>

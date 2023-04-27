@@ -178,6 +178,11 @@ not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     Plugin const& plugin,
     NavigationFrameParameters const& parameters);
 
+// A factory for PlottingFrame objects.
+not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
+    Plugin const& plugin,
+    PlottingFrameParameters const& parameters);
+
 }  // namespace interface
 }  // namespace principia
 
