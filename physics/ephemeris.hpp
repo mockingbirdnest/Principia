@@ -27,6 +27,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/protector.hpp"
+#include "physics/tensors.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "serialization/numerics.pb.h"
 #include "serialization/physics.pb.h"
@@ -53,6 +54,7 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_integration_parameters;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -197,6 +199,12 @@ class Ephemeris {
       typename Integrator<NewtonianMotionEquation>::Instance& instance)
       EXCLUDES(lock_);
 
+  // Return the Jacobian of the acceleration field exerted on the given |body|
+  // by the rest of the system.
+  Jacobian<Frame> ComputeJacobianOnMassiveBody(
+      not_null<MassiveBody const*> body,
+      Instant const& t) const EXCLUDES(lock_);
+
   // Returns the gravitational acceleration on a massless body located at the
   // given |position| at time |t|.
   virtual Vector<Acceleration, Frame>
@@ -221,10 +229,6 @@ class Ephemeris {
 
   // Returns the potential at the given |position| at time |t|.
   SpecificEnergy ComputeGravitationalPotential(
-      Position<Frame> const& position,
-      Instant const& t) const EXCLUDES(lock_);
-
-  R3x3Matrix<Inverse<Square<Time>>> ComputeJacobianOfAcceleration(
       Position<Frame> const& position,
       Instant const& t) const EXCLUDES(lock_);
 
@@ -307,6 +311,18 @@ class Ephemeris {
 
   virtual Instant t_min_locked() const REQUIRES_SHARED(lock_);
   virtual Instant t_max_locked() const REQUIRES_SHARED(lock_);
+
+  //TODO(phl)comment
+  template<typename MassiveBodyConstPtr>
+  static void ComputeJacobianByMassiveBodyOnMassiveBodies(
+      Instant const& t,
+      MassiveBody const& body1,
+      std::size_t b1,
+      std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
+      std::size_t b2_begin,
+      std::size_t b2_end,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Jacobian<Frame>>& jacobians);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with

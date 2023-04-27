@@ -18,6 +18,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/hermite3.hpp"
@@ -44,6 +45,7 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
@@ -449,6 +451,50 @@ absl::Status Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
+Jacobian<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
+    not_null<MassiveBody const*> body,
+    Instant const& t) const {
+  // NOTE(phl): This doesn't take high-order geopotential into account.
+  std::vector<Position<Frame>> positions;
+  std::vector<Jacobian<Frame>> jacobians(bodies_.size());
+  int b1 = -1;
+
+  // Evaluate the |positions|.  Locking is necessary to be able to call the
+  // "locked" method of each trajectory.
+  {
+    absl::ReaderMutexLock l(&lock_);
+    positions.reserve(bodies_.size());
+    for (int b = 0; b < bodies_.size(); ++b) {
+      auto const& current_body = bodies_[b];
+      auto const& current_body_trajectory = trajectories_[b];
+      if (current_body.get() == body) {
+        CHECK_EQ(-1, b1);
+        b1 = b;
+      }
+      positions.push_back(current_body_trajectory->EvaluatePositionLocked(t));
+    }
+    CHECK_LE(0, b1);
+  }
+
+  ComputeJacobianByMassiveBodyOnMassiveBodies(
+      t,
+      /*body1=*/*body, b1,
+      /*bodies2=*/bodies_,
+      /*b2_begin=*/0,
+      /*b2_end=*/b1,
+      positions, jacobians);
+  ComputeJacobianByMassiveBodyOnMassiveBodies(
+      t,
+      /*body1=*/*body, b1,
+      /*bodies2=*/bodies_,
+      /*b2_begin=*/b1 + 1,
+      /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+      positions, jacobians);
+
+  return jacobians[b1];
+}
+
+template<typename Frame>
 Vector<Acceleration, Frame>
 Ephemeris<Frame>::ComputeGravitationalAccelerationOnMasslessBody(
     Position<Frame> const& position,
@@ -567,16 +613,6 @@ SpecificEnergy Ephemeris<Frame>::ComputeGravitationalPotential(
   ComputeGravitationalPotentialsOfAllMassiveBodies(t, {position}, potentials);
 
   return potentials[0];
-}
-
-template<typename Frame>
-R3x3Matrix<Inverse<Square<Time>>>
-Ephemeris<Frame>::ComputeJacobianOfAcceleration(Position<Frame> const& position,
-                                                Instant const& t) const {
-  std::vector<R3x3Matrix<Inverse<Square<Time>>>> jacobians(1);
-  ComputeJacobiansOfAccelerationsOfAllMassiveBodies(t, {position}, jacobians);
-
-  return jacobians[0];
 }
 
 template<typename Frame>
@@ -1049,20 +1085,66 @@ Instant Ephemeris<Frame>::t_max_locked() const {
 }
 
 template<typename Frame>
+template<typename MassiveBodyConstPtr>
+void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
+    Instant const& t,
+    MassiveBody const& body1,
+    std::size_t b1,
+    std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
+    std::size_t b2_begin,
+    std::size_t b2_end,
+    std::vector<Position<Frame>> const& positions,
+    std::vector<Jacobian<Frame>>& jacobians) {
+  Position<Frame> const& position_of_b1 = positions[b1];
+  Jacobian<Frame>& jacobian_on_b1 = jacobians[b1];
+  GravitationalParameter const& μ1 = body1.gravitational_parameter();
+  for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
+    Vector<Acceleration, Frame>& jacobian_on_b2 = jacobians[b2];
+    MassiveBody const& body2 = *bodies2[b2];
+    GravitationalParameter const& μ2 = body2.gravitational_parameter();
+
+    // A vector from the center of |b2| to the center of |b1|.
+    Displacement<Frame> const Δq = position_of_b1 - positions[b2];
+
+    Length const Δq_norm = Δq.Norm();
+    Square<Length> const Δq_norm² = Δq.Norm²();
+    auto const one_over_Δq_norm⁵ = 1 / (Δq_norm * Δq_norm² * Δq_norm²);
+    SymmetricBilinearForm<Square<Length>, Frame, Vector> const denominator(
+        {{+ 2 * Pow<2>(Δq.coordinates().x)
+          - Pow<2>(Δq.coordinates().y)
+          - Pow<2>(Δq.coordinates().z),
+          3 * Δq.coordinates().x * Δq.coordinates().y,
+          3 * Δq.coordinates().x * Δq.coordinates().z},
+         {3 * Δq.coordinates().y * Δq.coordinates().x,
+          - Pow<2>(Δq.coordinates().x)
+          + 2 * Pow<2>(Δq.coordinates().y)
+          - Pow<2>(Δq.coordinates().z),
+          3 * Δq.coordinates().y * Δq.coordinates().z},
+         {3 * Δq.coordinates().z * Δq.coordinates().x,
+          3 * Δq.coordinates().z * Δq.coordinates().y,
+          - Pow<2>(Δq.coordinates().x)
+          - Pow<2>(Δq.coordinates().y)
+          + 2 * Pow<2>(Δq.coordinates().z)}});
+    jacobians[b2] += μ1 * denominator * one_over_Δq_norm⁵;
+    jacobians[b1] -= μ2 * denominator * one_over_Δq_norm⁵;
+  }
+}
+
+template<typename Frame>
 template<bool body1_is_oblate,
          bool body2_is_oblate,
          typename MassiveBodyConstPtr>
 void Ephemeris<Frame>::
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
-        Instant const& t,
-        MassiveBody const& body1,
-        std::size_t const b1,
-        std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
-        std::size_t const b2_begin,
-        std::size_t const b2_end,
-        std::vector<Position<Frame>> const& positions,
-        std::vector<Vector<Acceleration, Frame>>& accelerations,
-        std::vector<Geopotential<Frame>> const& geopotentials) {
+ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
+    Instant const& t,
+    MassiveBody const& body1,
+    std::size_t const b1,
+    std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
+    std::size_t const b2_begin,
+    std::size_t const b2_end,
+    std::vector<Position<Frame>> const& positions,
+    std::vector<Vector<Acceleration, Frame>>& accelerations,
+    std::vector<Geopotential<Frame>> const& geopotentials) {
   Position<Frame> const& position_of_b1 = positions[b1];
   Vector<Acceleration, Frame>& acceleration_on_b1 = accelerations[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
