@@ -3,7 +3,6 @@
 #include "physics/mechanical_system.hpp"
 
 #include "geometry/space.hpp"
-#include "physics/inertia_tensor.hpp"
 
 namespace principia {
 namespace physics {
@@ -14,7 +13,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_symmetric_bilinear_form;
-using namespace principia::physics::_inertia_tensor;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
@@ -23,12 +21,12 @@ template<typename BodyFrame>
 void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
     RigidMotion<BodyFrame, InertialFrame> const& motion,
     Mass const& mass,
-    _inertia_tensor::InertiaTensor<BodyFrame> const& inertia_tensor) {
+    _tensors::InertiaTensor<BodyFrame> const& tensors) {
   DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
   SymmetricBilinearForm<MomentOfInertia, InertialFrame, Vector> const
       inertia_tensor_in_inertial_axes =
-          motion.orthogonal_map()(inertia_tensor.AnticommutatorInverse());
+          motion.orthogonal_map()(tensors.AnticommutatorInverse());
   centre_of_mass_.Add(degrees_of_freedom, mass);
   body_linear_motions_.emplace_back(degrees_of_freedom, mass);
   sum_of_inertia_tensors_ += inertia_tensor_in_inertial_axes;
