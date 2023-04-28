@@ -10,8 +10,8 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "quantities/quantities.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 
 namespace principia {
 namespace physics {
@@ -24,8 +24,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -47,7 +47,7 @@ class MechanicalSystem {
   template<typename BodyFrame>
   void AddRigidBody(RigidMotion<BodyFrame, InertialFrame> const& motion,
                     Mass const& mass,
-                    InertiaTensor<BodyFrame> const& inertia_tensor);
+                    InertiaTensor<BodyFrame> const& tensors);
 
   // The motion of a non-rotating frame whose origin is the centre of mass of
   // the system, and whose axes are those of |InertialFrame|.

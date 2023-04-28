@@ -18,9 +18,9 @@
 #include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -62,9 +62,9 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
