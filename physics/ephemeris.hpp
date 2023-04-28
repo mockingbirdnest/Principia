@@ -42,7 +42,6 @@ using namespace principia::base::_recurring_thread;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
@@ -312,7 +311,11 @@ class Ephemeris {
   virtual Instant t_min_locked() const REQUIRES_SHARED(lock_);
   virtual Instant t_max_locked() const REQUIRES_SHARED(lock_);
 
-  //TODO(phl)comment
+  // Computes the Jacobian of the acceleration field between one body, |body1|
+  // (with index |b1| in the |positions| and |jacobians| arrays) and the bodies
+  // |bodies2| (with indices [b2_begin, b2_end[ in the |bodies2|, |positions|
+  // and |jacobians| arrays).  This assumes that the bodies are point masses
+  // (that is, it doesn't take the geopotential into account).
   template<typename MassiveBodyConstPtr>
   static void ComputeJacobianByMassiveBodyOnMassiveBodies(
       Instant const& t,
