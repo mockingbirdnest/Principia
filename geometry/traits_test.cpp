@@ -4,7 +4,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
-#include "physics/inertia_tensor.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -14,7 +14,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_traits;
-using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 
 TEST(Traits, IsVectorV) {

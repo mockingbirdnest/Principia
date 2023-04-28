@@ -22,7 +22,7 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/inertia_tensor.hpp"
+#include "physics/tensors.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
@@ -69,7 +69,7 @@ using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_inertia_tensor;
+using namespace principia::physics::_tensors;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
