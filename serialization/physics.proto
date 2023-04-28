@@ -307,9 +307,9 @@ message RotatingBody {
 }
 
 // Added in Ὑπατία.
-message TwoBodyRotatingPulsatingReferenceFrame {
+message RotatingPulsatingReferenceFrame {
   extend ReferenceFrame {
-    optional TwoBodyRotatingPulsatingReferenceFrame extension = 6004;
+    optional RotatingPulsatingReferenceFrame extension = 6004;
   }
   required int32 primary = 1;
   required int32 secondary = 2;

@@ -4,7 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
-#include "physics/inertia_tensor.hpp"
+#include "physics/tensors.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
@@ -24,8 +24,8 @@ using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

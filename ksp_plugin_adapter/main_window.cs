@@ -12,11 +12,12 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private readonly DateTimeOffset next_release_date_ =
       new DateTimeOffset(2023, 05, 19, 15, 55, 00, TimeSpan.Zero);
 
-  public MainWindow(PrincipiaPluginAdapter adapter,
-                    FlightPlanner flight_planner,
-                    OrbitAnalyser orbit_analyser,
-                    ReferenceFrameSelector plotting_frame_selector,
-                    PredictedVessel predicted_vessel) : base(
+  public MainWindow(
+      PrincipiaPluginAdapter adapter,
+      FlightPlanner flight_planner,
+      OrbitAnalyser orbit_analyser,
+      ReferenceFrameSelector<PlottingFrameParameters> plotting_frame_selector,
+      PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel) {
     adapter_ = adapter;
@@ -547,7 +548,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
   private readonly OrbitAnalyser orbit_analyser_;
-  private readonly ReferenceFrameSelector plotting_frame_selector_;
+  private readonly ReferenceFrameSelector<PlottingFrameParameters>
+      plotting_frame_selector_;
 
   private bool selecting_target_celestial_ = false;
 

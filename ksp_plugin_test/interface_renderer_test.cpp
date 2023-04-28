@@ -64,7 +64,7 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  NavigationFrameParameters parameters = {
+  PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
@@ -87,7 +87,7 @@ TEST_F(InterfaceRendererTest, Frenet) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  NavigationFrameParameters parameters = {
+  PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,

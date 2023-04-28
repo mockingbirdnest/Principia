@@ -655,6 +655,23 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
   }
 }
 
+inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
+    Plugin const& plugin,
+    PlottingFrameParameters const& parameters) {
+  switch (parameters.extension) {
+    case serialization::RotatingPulsatingReferenceFrame::kExtensionFieldNumber:
+      return plugin.NewRotatingPulsatingPlottingFrame(
+          parameters.primary_index, parameters.secondary_index);
+    default:
+      return NewNavigationFrame(
+          plugin,
+          {.extension = parameters.extension,
+           .centre_index = parameters.centre_index,
+           .primary_index = parameters.primary_index,
+           .secondary_index = parameters.secondary_index});
+  }
+}
+
 inline RigidMotion<EccentricPart, World> MakePartRigidMotion(
     QP const& part_world_degrees_of_freedom,
     WXYZ const& part_rotation,

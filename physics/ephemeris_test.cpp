@@ -14,6 +14,7 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
@@ -29,6 +30,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -61,6 +63,7 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
@@ -80,6 +83,7 @@ using namespace principia::physics::_massless_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -796,6 +800,107 @@ TEST_P(EphemerisTest, CollisionDetection) {
               StatusIs(absl::StatusCode::kOutOfRange));
 }
 #endif
+
+TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
+  SolarSystem<ICRS> const solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  Instant const j2000 = solar_system_2000.epoch();
+
+  // The most convenient way to compute the acceleration field near the centre
+  // of the earth is to remove the earth.
+  SolarSystem<ICRS> solar_system_2000_without_earth(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000_without_earth.RemoveMassiveBody("Earth");
+
+  Ephemeris<ICRS>::AccuracyParameters const accuracy_parameters {
+    /*fitting_tolerance-*/ 1 * Milli(Metre),
+    /*geopotential_tolerance=*/0x1p-24};
+  Ephemeris<ICRS>::FixedStepParameters const fixed_step_parameters(
+      SymplecticRungeKuttaNyströmIntegrator<
+          McLachlanAtela1992Order4Optimal,
+          Ephemeris<ICRS>::NewtonianMotionEquation>(),
+      /*step=*/10 * Minute);
+
+  auto ephemeris = solar_system_2000.MakeEphemeris(
+      accuracy_parameters,
+      fixed_step_parameters);
+  CHECK_OK(ephemeris->Prolong(j2000));
+
+  auto ephemeris_without_earth = solar_system_2000_without_earth.MakeEphemeris(
+      accuracy_parameters,
+      fixed_step_parameters);
+  CHECK_OK(ephemeris_without_earth->Prolong(j2000));
+
+  auto const earth = ephemeris->bodies()[solar_system_2000.index("Earth")];
+  auto const earth_trajectory = ephemeris->trajectory(earth);
+  Position<ICRS> const earth_position =
+      earth_trajectory->EvaluatePosition(j2000);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> shift_distribution(1, 2);
+  for (int i = 0; i < 1000; ++i) {
+    Displacement<ICRS> const shift_x(
+        {shift_distribution(random) * Metre,
+         0 * Metre,
+         0 * Metre});
+    Displacement<ICRS> const shift_y(
+        {0 * Metre,
+         shift_distribution(random) * Metre,
+         0 * Metre});
+    Displacement<ICRS> const shift_z(
+        {0 * Metre,
+         0 * Metre,
+         shift_distribution(random) * Metre});
+
+    auto const acceleration_base =
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position, j2000).coordinates();
+    auto const acceleration_shift_x =
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + shift_x, j2000).coordinates();
+    auto const acceleration_shift_y =
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + shift_y, j2000).coordinates();
+    auto const acceleration_shift_z =
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + shift_z, j2000).coordinates();
+    auto const finite_difference_jacobian_coordinates =
+        R3x3Matrix<Inverse<Square<Time>>>(
+            {(acceleration_shift_x.x - acceleration_base.x) /
+                 shift_x.coordinates().x,
+             (acceleration_shift_y.x - acceleration_base.x) /
+                 shift_y.coordinates().y,
+             (acceleration_shift_z.x - acceleration_base.x) /
+                 shift_z.coordinates().z},
+            {(acceleration_shift_x.y - acceleration_base.y) /
+                 shift_x.coordinates().x,
+             (acceleration_shift_y.y - acceleration_base.y) /
+                 shift_y.coordinates().y,
+             (acceleration_shift_z.y - acceleration_base.y) /
+                 shift_z.coordinates().z},
+            {(acceleration_shift_x.z - acceleration_base.z) /
+                 shift_x.coordinates().x,
+             (acceleration_shift_y.z - acceleration_base.z) /
+                 shift_y.coordinates().y,
+             (acceleration_shift_z.z - acceleration_base.z) /
+                 shift_z.coordinates().z});
+    auto const actual_jacobian =
+        ephemeris->ComputeJacobianOnMassiveBody(earth, j2000);
+
+    for (int r = 0; r < 3; ++r) {
+      for (int c = 0; c < 3; ++c) {
+        EXPECT_THAT(finite_difference_jacobian_coordinates(r, c),
+                    RelativeErrorFrom(actual_jacobian.coordinates()(r, c),
+                                      AllOf(Gt(2.3e-10), Lt(8.7e-5))))
+            << r << " " << c;
+      }
+    }
+  }
+}
 
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
   Time const duration = 1 * Second;

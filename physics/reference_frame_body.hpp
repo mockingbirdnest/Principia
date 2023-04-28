@@ -15,6 +15,7 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -57,8 +58,13 @@ ReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     serialization::ReferenceFrame const& message,
     not_null<Ephemeris<InertialFrame> const*> const ephemeris) {
   if (message.HasExtension(
-          serialization::TwoBodyRotatingPulsatingReferenceFrame::extension)) {
-    LOG(FATAL) << "Implement";
+          serialization::RotatingPulsatingReferenceFrame::extension)) {
+    return static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
+        RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
+            ReadFromMessage(ephemeris,
+                            message.GetExtension(
+                                serialization::RotatingPulsatingReferenceFrame::
+                                    extension)));
   } else {
     return static_cast<not_null<std::unique_ptr<ReferenceFrame>>>(
         RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(

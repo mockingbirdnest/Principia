@@ -512,7 +512,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
 
-  NavigationFrameParameters parameters = {
+  PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
@@ -561,7 +561,7 @@ TEST_F(InterfaceTest, NavballOrientation) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  NavigationFrameParameters parameters = {
+  PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
