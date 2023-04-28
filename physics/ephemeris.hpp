@@ -198,7 +198,7 @@ class Ephemeris {
       typename Integrator<NewtonianMotionEquation>::Instance& instance)
       EXCLUDES(lock_);
 
-  // Return the Jacobian of the acceleration field exerted on the given |body|
+  // Returns the Jacobian of the acceleration field exerted on the given |body|
   // by the rest of the system.
   Jacobian<Frame> ComputeJacobianOnMassiveBody(
       not_null<MassiveBody const*> body,
