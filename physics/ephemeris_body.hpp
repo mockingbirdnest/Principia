@@ -1126,8 +1126,8 @@ void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
          {3 * (Δq_z * Δq_x),
           3 * (Δq_z * Δq_y),
           -Pow<2>(Δq_x) - Pow<2>(Δq_y) + 2 * Pow<2>(Δq_z)}});
-    jacobians[b2] += μ1 * numerator * one_over_Δq_norm⁵;
-    jacobians[b1] -= μ2 * numerator * one_over_Δq_norm⁵;
+    jacobians[b2] -= μ1 * numerator * one_over_Δq_norm⁵;
+    jacobians[b1] += μ2 * numerator * one_over_Δq_norm⁵;
   }
 }
 

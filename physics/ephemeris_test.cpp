@@ -802,21 +802,38 @@ TEST_P(EphemerisTest, CollisionDetection) {
 #endif
 
 TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
-  SolarSystem<ICRS> solar_system_2000(
+  SolarSystem<ICRS> const solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
   Instant const j2000 = solar_system_2000.epoch();
 
+  // The most convenient way to compute the acceleration field near the centre
+  // of the earth is to remove the earth.
+  SolarSystem<ICRS> solar_system_2000_without_earth(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000_without_earth.RemoveMassiveBody("Earth");
+
+  Ephemeris<ICRS>::AccuracyParameters const accuracy_parameters {
+    /*fitting_tolerance-*/ 1 * Milli(Metre),
+    /*geopotential_tolerance=*/0x1p-24};
+  Ephemeris<ICRS>::FixedStepParameters const fixed_step_parameters(
+      SymplecticRungeKuttaNyströmIntegrator<
+          McLachlanAtela1992Order4Optimal,
+          Ephemeris<ICRS>::NewtonianMotionEquation>(),
+      /*step=*/10 * Minute);
+
   auto ephemeris = solar_system_2000.MakeEphemeris(
-      /*accuracy_parameters=*/{/*fitting_tolerance-*/1 * Milli(Metre),
-                               /*geopotential_tolerance=*/0x1p-24},
-      Ephemeris<ICRS>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<
-              McLachlanAtela1992Order4Optimal,
-              Ephemeris<ICRS>::NewtonianMotionEquation>(),
-          /*step=*/10 * Minute));
+      accuracy_parameters,
+      fixed_step_parameters);
   CHECK_OK(ephemeris->Prolong(j2000));
+
+  auto ephemeris_without_earth = solar_system_2000_without_earth.MakeEphemeris(
+      accuracy_parameters,
+      fixed_step_parameters);
+  CHECK_OK(ephemeris_without_earth->Prolong(j2000));
 
   auto const earth = ephemeris->bodies()[solar_system_2000.index("Earth")];
   auto const earth_trajectory = ephemeris->trajectory(earth);
@@ -824,13 +841,8 @@ TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
       earth_trajectory->EvaluatePosition(j2000);
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<double> length_distribution(-1e7, 1e7);
   std::uniform_real_distribution<double> shift_distribution(1, 2);
   for (int i = 0; i < 1000; ++i) {
-    Displacement<ICRS> const displacement(
-        {length_distribution(random) * Metre,
-         length_distribution(random) * Metre,
-         length_distribution(random) * Metre});
     Displacement<ICRS> const shift_x(
         {shift_distribution(random) * Metre,
          0 * Metre,
@@ -845,17 +857,17 @@ TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
          shift_distribution(random) * Metre});
 
     auto const acceleration_base =
-        ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
-            earth_position + displacement, j2000).coordinates();
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position, j2000).coordinates();
     auto const acceleration_shift_x =
-        ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
-            earth_position + displacement + shift_x, j2000).coordinates();
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + shift_x, j2000).coordinates();
     auto const acceleration_shift_y =
-        ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
-            earth_position + displacement + shift_y, j2000).coordinates();
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + shift_y, j2000).coordinates();
     auto const acceleration_shift_z =
-        ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
-            earth_position + displacement + shift_z, j2000).coordinates();
+        ephemeris_without_earth->ComputeGravitationalAccelerationOnMasslessBody(
+            earth_position + shift_z, j2000).coordinates();
     auto const finite_difference_jacobian_coordinates =
         R3x3Matrix<Inverse<Square<Time>>>(
             {(acceleration_shift_x.x - acceleration_base.x) /
@@ -883,7 +895,7 @@ TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
       for (int c = 0; c < 3; ++c) {
         EXPECT_THAT(finite_difference_jacobian_coordinates(r, c),
                     RelativeErrorFrom(actual_jacobian.coordinates()(r, c),
-                                      AllOf(Gt(1.1e-17), Lt(9.0e-16))))
+                                      AllOf(Gt(2.3e-10), Lt(8.7e-5))))
             << r << " " << c;
       }
     }
