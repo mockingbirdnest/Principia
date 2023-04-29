@@ -200,7 +200,7 @@ class Ephemeris {
 
   // Returns the Jacobian of the acceleration field exerted on the given |body|
   // by the rest of the system.
-  Jacobian<Frame> ComputeJacobianOnMassiveBody(
+  JacobianOfAcceleration<Frame> ComputeJacobianOnMassiveBody(
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
@@ -325,7 +325,7 @@ class Ephemeris {
       std::size_t b2_begin,
       std::size_t b2_end,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Jacobian<Frame>>& jacobians);
+      std::vector<JacobianOfAcceleration<Frame>>& jacobians);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
