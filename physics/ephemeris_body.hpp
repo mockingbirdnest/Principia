@@ -451,12 +451,12 @@ absl::Status Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
-Jacobian<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
+JacobianOfAcceleration<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
     not_null<MassiveBody const*> body,
     Instant const& t) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.
   std::vector<Position<Frame>> positions;
-  std::vector<Jacobian<Frame>> jacobians(bodies_.size());
+  std::vector<JacobianOfAcceleration<Frame>> jacobians(bodies_.size());
   int b1 = -1;
 
   // Evaluate the |positions|.  Locking is necessary to be able to call the
@@ -477,14 +477,12 @@ Jacobian<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
   }
 
   ComputeJacobianByMassiveBodyOnMassiveBodies(
-      t,
       /*body1=*/*body, b1,
       /*bodies2=*/bodies_,
       /*b2_begin=*/0,
       /*b2_end=*/b1,
       positions, jacobians);
   ComputeJacobianByMassiveBodyOnMassiveBodies(
-      t,
       /*body1=*/*body, b1,
       /*bodies2=*/bodies_,
       /*b2_begin=*/b1 + 1,
@@ -492,6 +490,49 @@ Jacobian<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
       positions, jacobians);
 
   return jacobians[b1];
+}
+
+template<typename Frame>
+Vector<Jerk, Frame> Ephemeris<Frame>::
+ComputeGravitationalJerkOnMassiveBody(not_null<MassiveBody const*> body,
+                                      Instant const& t) const {
+  // NOTE(phl): This doesn't take high-order geopotential into account.
+  std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
+  std::vector<Vector<Jerk, Frame>> jerks(bodies_.size());
+  int b1 = -1;
+
+  // Evaluate the |degrees_of_freedom|.  Locking is necessary to be able to call
+  // the "locked" method of each trajectory.
+  {
+    absl::ReaderMutexLock l(&lock_);
+    degrees_of_freedom.reserve(bodies_.size());
+    for (int b = 0; b < bodies_.size(); ++b) {
+      auto const& current_body = bodies_[b];
+      auto const& current_body_trajectory = trajectories_[b];
+      if (current_body.get() == body) {
+        CHECK_EQ(-1, b1);
+        b1 = b;
+      }
+      degrees_of_freedom.push_back(
+          current_body_trajectory->EvaluateDegreesOfFreedomLocked(t));
+    }
+    CHECK_LE(0, b1);
+  }
+
+  ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
+      /*body1=*/*body, b1,
+      /*bodies2=*/bodies_,
+      /*b2_begin=*/0,
+      /*b2_end=*/b1,
+      degrees_of_freedom, jerks);
+  ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
+      /*body1=*/*body, b1,
+      /*bodies2=*/bodies_,
+      /*b2_begin=*/b1 + 1,
+      /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+      degrees_of_freedom, jerks);
+
+  return jerks[b1];
 }
 
 template<typename Frame>
@@ -1087,47 +1128,75 @@ Instant Ephemeris<Frame>::t_max_locked() const {
 template<typename Frame>
 template<typename MassiveBodyConstPtr>
 void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
-    Instant const& t,
     MassiveBody const& body1,
     std::size_t b1,
     std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
     std::size_t b2_begin,
     std::size_t b2_end,
     std::vector<Position<Frame>> const& positions,
-    std::vector<Jacobian<Frame>>& jacobians) {
+    std::vector<JacobianOfAcceleration<Frame>>& jacobians) {
   Position<Frame> const& position_of_b1 = positions[b1];
-  Jacobian<Frame>& jacobian_on_b1 = jacobians[b1];
+  JacobianOfAcceleration<Frame>& jacobian_on_b1 = jacobians[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
-    Jacobian<Frame>& jacobian_on_b2 = jacobians[b2];
+    JacobianOfAcceleration<Frame>& jacobian_on_b2 = jacobians[b2];
     MassiveBody const& body2 = *bodies2[b2];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
-    R3Element<Length> const& Δq_coordinates = Δq.coordinates();
-    Length const& Δq_x = Δq_coordinates.x;
-    Length const& Δq_y = Δq_coordinates.y;
-    Length const& Δq_z = Δq_coordinates.z;
 
-    Length const Δq_norm = Δq.Norm();
-    Square<Length> const Δq_norm² = Δq.Norm²();
-    auto const one_over_Δq_norm⁵ = 1 / (Δq_norm * Δq_norm² * Δq_norm²);
+    Square<Length> const Δq² = Δq.Norm²();
+    Length const Δq_norm = Sqrt(Δq²);
+    Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
+    auto const Δq_norm⁵ = Δq_norm³ * Δq²;
 
-    // Note that the matrix below is symmetric by construction (and that the
-    // parentheses matters for that purpose).
-    SymmetricBilinearForm<Square<Length>, Frame, Vector> const numerator(
-        {{+2 * Pow<2>(Δq_x) - Pow<2>(Δq_y) - Pow<2>(Δq_z),
-          3 * (Δq_x * Δq_y),
-          3 * (Δq_x * Δq_z)},
-         {3 * (Δq_y * Δq_x),
-          -Pow<2>(Δq_x) + 2 * Pow<2>(Δq_y) - Pow<2>(Δq_z),
-          3 * (Δq_y * Δq_z)},
-         {3 * (Δq_z * Δq_x),
-          3 * (Δq_z * Δq_y),
-          -Pow<2>(Δq_x) - Pow<2>(Δq_y) + 2 * Pow<2>(Δq_z)}});
-    jacobians[b2] -= μ1 * numerator * one_over_Δq_norm⁵;
-    jacobians[b1] += μ2 * numerator * one_over_Δq_norm⁵;
+    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
+                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+
+    // Note that the Jacobian is independent from the sign of Δq, hence the +
+    // signs.
+    jacobian_on_b2 += μ1 * form;
+    jacobian_on_b1 += μ2 * form;
+  }
+}
+
+template<typename Frame>
+template<typename MassiveBodyConstPtr>
+void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
+    MassiveBody const& body1,
+    std::size_t b1,
+    std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
+    std::size_t b2_begin,
+    std::size_t b2_end,
+    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
+    std::vector<Vector<Jerk, Frame>>& jerks) {
+  DegreesOfFreedom<Frame> const& degrees_of_freedom_of_b1 =
+      degrees_of_freedom[b1];
+  Vector<Jerk, Frame>& jerk_on_b1 = jerks[b1];
+  GravitationalParameter const& μ1 = body1.gravitational_parameter();
+  for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
+    Vector<Jerk, Frame>& jerk_on_b2 = jerks[b2];
+    MassiveBody const& body2 = *bodies2[b2];
+    GravitationalParameter const& μ2 = body2.gravitational_parameter();
+
+    // A vector from the center of |b2| to the center of |b1|.
+    RelativeDegreesOfFreedom<Frame> const Δqv =
+        degrees_of_freedom_of_b1 - degrees_of_freedom[b2];
+    Displacement<Frame> const Δq = Δqv.displacement();
+    Velocity<Frame> const Δv = Δqv.velocity();
+
+    Square<Length> const Δq² = Δq.Norm²();
+    Length const Δq_norm = Sqrt(Δq²);
+    Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
+    auto const Δq_norm⁵ = Δq_norm³ * Δq²;
+
+    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
+                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+    auto const vector = form * Δv;
+
+    jerk_on_b2 -= μ1 * vector;
+    jerk_on_b1 += μ2 * vector;
   }
 }
 
