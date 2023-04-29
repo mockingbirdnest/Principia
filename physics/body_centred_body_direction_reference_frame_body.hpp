@@ -36,6 +36,12 @@ BodyCentredBodyDirectionReferenceFrame(
             return ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
                 primary_, t);
           }),
+      compute_gravitational_jerk_on_primary_(
+          [this](DegreesOfFreedom<InertialFrame> const& degrees_of_freedom,
+                 Instant const& t) {
+            return ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary_,
+                                                                     t);
+          }),
       primary_trajectory_(
           [&t = *ephemeris_->trajectory(primary_)]() -> auto& { return t; }),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
@@ -55,6 +61,12 @@ BodyCentredBodyDirectionReferenceFrame(
             // here.
             return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
                 position, t);
+          }),
+      compute_gravitational_jerk_on_primary_(
+          [this](DegreesOfFreedom<InertialFrame> const& degrees_of_freedom,
+                 Instant const& t) {
+            return ephemeris_->ComputeGravitationalJerkOnMasslessBody(
+                degrees_of_freedom, t);
           }),
       primary_trajectory_(std::move(primary_trajectory)),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
@@ -163,6 +175,11 @@ MotionOfThisFrame(Instant const& t) const {
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
+  Vector<Jerk, InertialFrame> const primary_jerk =
+      compute_gravitational_jerk_on_primary_(primary_degrees_of_freedom, t);
+  Vector<Jerk, InertialFrame> const secondary_jerk =
+      ephemeris_->ComputeGravitationalJerkOnMassiveBody(secondary_, t);
+
   auto const to_this_frame = ToThisFrame(primary_degrees_of_freedom,
                                          secondary_degrees_of_freedom,
                                          primary_acceleration,
@@ -176,8 +193,7 @@ MotionOfThisFrame(Instant const& t) const {
       primary_degrees_of_freedom.velocity();
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
-  // TODO(phl): Compute using the Jacobian.
-  Vector<Jerk, InertialFrame> const r⁽³⁾;
+  Vector<Jerk, InertialFrame> const r⁽³⁾ = secondary_jerk - primary_jerk;
 
   Trihedron<Length, ArealSpeed> orthogonal;
   Trihedron<double, double> orthonormal;
