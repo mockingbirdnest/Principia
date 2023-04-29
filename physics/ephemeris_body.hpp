@@ -451,12 +451,12 @@ absl::Status Ephemeris<Frame>::FlowWithFixedStep(
 }
 
 template<typename Frame>
-Jacobian<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
+JacobianOfAcceleration<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
     not_null<MassiveBody const*> body,
     Instant const& t) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.
   std::vector<Position<Frame>> positions;
-  std::vector<Jacobian<Frame>> jacobians(bodies_.size());
+  std::vector<JacobianOfAcceleration<Frame>> jacobians(bodies_.size());
   int b1 = -1;
 
   // Evaluate the |positions|.  Locking is necessary to be able to call the
@@ -1094,12 +1094,12 @@ void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
     std::size_t b2_begin,
     std::size_t b2_end,
     std::vector<Position<Frame>> const& positions,
-    std::vector<Jacobian<Frame>>& jacobians) {
+    std::vector<JacobianOfAcceleration<Frame>>& jacobians) {
   Position<Frame> const& position_of_b1 = positions[b1];
-  Jacobian<Frame>& jacobian_on_b1 = jacobians[b1];
+  JacobianOfAcceleration<Frame>& jacobian_on_b1 = jacobians[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
-    Jacobian<Frame>& jacobian_on_b2 = jacobians[b2];
+    JacobianOfAcceleration<Frame>& jacobian_on_b2 = jacobians[b2];
     MassiveBody const& body2 = *bodies2[b2];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
@@ -1116,8 +1116,8 @@ void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
 
     // Note that the Jacobian is independent from the sign of Δq, hence the +
     // signs.
-    jacobians[b2] += μ1 * form;
-    jacobians[b1] += μ2 * form;
+    jacobian_on_b2 += μ1 * form;
+    jacobian_on_b1 += μ2 * form;
   }
 }
 
