@@ -477,14 +477,12 @@ JacobianOfAcceleration<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
   }
 
   ComputeJacobianByMassiveBodyOnMassiveBodies(
-      t,
       /*body1=*/*body, b1,
       /*bodies2=*/bodies_,
       /*b2_begin=*/0,
       /*b2_end=*/b1,
       positions, jacobians);
   ComputeJacobianByMassiveBodyOnMassiveBodies(
-      t,
       /*body1=*/*body, b1,
       /*bodies2=*/bodies_,
       /*b2_begin=*/b1 + 1,
@@ -522,14 +520,12 @@ ComputeGravitationalJerkOnMassiveBody(not_null<MassiveBody const*> body,
   }
 
   ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
-      t,
       /*body1=*/*body, b1,
       /*bodies2=*/bodies_,
       /*b2_begin=*/0,
       /*b2_end=*/b1,
       degrees_of_freedom, jerks);
   ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
-      t,
       /*body1=*/*body, b1,
       /*bodies2=*/bodies_,
       /*b2_begin=*/b1 + 1,
@@ -1176,7 +1172,7 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
     std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
     std::vector<Vector<Jerk, Frame>>& jerks) {
   DegreesOfFreedom<Frame> const& degrees_of_freedom_of_b1 =
-      degrees_of_freedoms[b1];
+      degrees_of_freedom[b1];
   Vector<Jerk, Frame>& jerk_on_b1 = jerks[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
   for (std::size_t b2 = b2_begin; b2 < b2_end; ++b2) {
@@ -1186,7 +1182,7 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
 
     // A vector from the center of |b2| to the center of |b1|.
     RelativeDegreesOfFreedom<Frame> const Δqv =
-        degrees_of_freedom_of_b1 - degrees_of_freedoms[b2];
+        degrees_of_freedom_of_b1 - degrees_of_freedom[b2];
     Displacement<Frame> const Δq = Δqv.displacement();
     Velocity<Frame> const Δv = Δqv.velocity();
 
@@ -1199,8 +1195,8 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
                       3 * SymmetricSquare(Δq) / Δq_norm⁵;
     auto const vector = form * Δv;
 
-    jerk_on_b2 -= μ1 * form;
-    jerk_on_b1 += μ2 * form;
+    jerk_on_b2 -= μ1 * vector;
+    jerk_on_b1 += μ2 * vector;
   }
 }
 
