@@ -1105,29 +1105,19 @@ void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
 
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
-    R3Element<Length> const& Δq_coordinates = Δq.coordinates();
-    Length const& Δq_x = Δq_coordinates.x;
-    Length const& Δq_y = Δq_coordinates.y;
-    Length const& Δq_z = Δq_coordinates.z;
 
-    Length const Δq_norm = Δq.Norm();
-    Square<Length> const Δq_norm² = Δq.Norm²();
-    auto const one_over_Δq_norm⁵ = 1 / (Δq_norm * Δq_norm² * Δq_norm²);
+    Square<Length> const Δq² = Δq.Norm²();
+    Length const Δq_norm = Sqrt(Δq²);
+    Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
+    auto const Δq_norm⁵ = Δq_norm³ * Δq²;
 
-    // Note that the matrix below is symmetric by construction (and that the
-    // parentheses matters for that purpose).
-    SymmetricBilinearForm<Square<Length>, Frame, Vector> const numerator(
-        {{+2 * Pow<2>(Δq_x) - Pow<2>(Δq_y) - Pow<2>(Δq_z),
-          3 * (Δq_x * Δq_y),
-          3 * (Δq_x * Δq_z)},
-         {3 * (Δq_y * Δq_x),
-          -Pow<2>(Δq_x) + 2 * Pow<2>(Δq_y) - Pow<2>(Δq_z),
-          3 * (Δq_y * Δq_z)},
-         {3 * (Δq_z * Δq_x),
-          3 * (Δq_z * Δq_y),
-          -Pow<2>(Δq_x) - Pow<2>(Δq_y) + 2 * Pow<2>(Δq_z)}});
-    jacobians[b2] -= μ1 * numerator * one_over_Δq_norm⁵;
-    jacobians[b1] += μ2 * numerator * one_over_Δq_norm⁵;
+    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
+                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+
+    // Note that the Jacobian is independent from the sign of Δq, hence the +
+    // signs.
+    jacobians[b2] += μ1 * form;
+    jacobians[b1] += μ2 * form;
   }
 }
 
