@@ -333,7 +333,11 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       std::vector<JacobianOfAcceleration<Frame>>& jacobians);
 
-  //TODO(phl)comment
+  // Computes the jerk between one body, |body1| (with index |b1| in the
+  // |degrees_of_freedom| and |jerks| arrays) and the bodies |bodies2| (with
+  // indices [b2_begin, b2_end[ in the |bodies2|, |degrees_of_freedom| and
+  // |jerks| arrays).  This assumes that the bodies are point masses
+  // (that is, it doesn't take the geopotential into account).
   template<typename MassiveBodyConstPtr>
   static void ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
       MassiveBody const& body1,
