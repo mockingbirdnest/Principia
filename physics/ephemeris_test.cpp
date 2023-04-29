@@ -902,6 +902,54 @@ TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
   }
 }
 
+TEST_P(EphemerisTest, ComputeGravitationalJerkOnMassiveBody) {
+  SolarSystem<ICRS> const solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  Instant const j2000 = solar_system_2000.epoch();
+
+  auto ephemeris = solar_system_2000.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance-*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order4Optimal,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
+          /*step=*/10 * Minute));
+  CHECK_OK(ephemeris->Prolong(j2000));
+
+  auto const earth = ephemeris->bodies()[solar_system_2000.index("Earth")];
+  auto const earth_trajectory = ephemeris->trajectory(earth);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> delay_distribution(1, 5);
+  Instant previous_t = j2000;
+  auto previous_acceleration =
+      ephemeris->ComputeGravitationalAccelerationOnMassiveBody(earth,
+                                                               previous_t);
+  for (Instant t = j2000 + 1 * Minute;
+       t < j2000 + 1000 * Minute;
+       t += delay_distribution(random) * Minute) {
+    CHECK_OK(ephemeris->Prolong(t));
+    auto const acceleration =
+        ephemeris->ComputeGravitationalAccelerationOnMassiveBody(earth, t);
+    auto const finite_difference_jerk =
+        (acceleration - previous_acceleration) / (t - previous_t);
+    auto const actual_jerk =
+        ephemeris->ComputeGravitationalJerkOnMassiveBody(earth, t);
+
+    EXPECT_THAT(
+        finite_difference_jerk,
+        Componentwise(RelativeErrorFrom(actual_jerk.coordinates().x, 0),
+                      RelativeErrorFrom(actual_jerk.coordinates().y, 0),
+                      RelativeErrorFrom(actual_jerk.coordinates()., 0)));
+
+    previous_t = t;
+    previous_acceleration = acceleration;
+  }
+}
+
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
   Time const duration = 1 * Second;
   double const j2 = 1e6;
