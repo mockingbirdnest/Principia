@@ -20,12 +20,13 @@ using InertiaTensor = SymmetricBilinearForm<MomentOfInertia, Frame, Bivector>;
 
 // The type of the Jacobian of the gravitational acceleration field.
 template<typename Frame>
-using Jacobian = SymmetricBilinearForm<Inverse<Square<Time>>, Frame, Vector>;
+using JacobianOfAcceleration =
+    SymmetricBilinearForm<Inverse<Square<Time>>, Frame, Vector>;
 
 }  // namespace internal
 
 using internal::InertiaTensor;
-using internal::Jacobian;
+using internal::JacobianOfAcceleration;
 
 }  // namespace _tensors
 }  // namespace physics
