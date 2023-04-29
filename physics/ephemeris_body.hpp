@@ -493,6 +493,45 @@ JacobianOfAcceleration<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
 }
 
 template<typename Frame>
+Vector<Jerk, Frame> Ephemeris<Frame>::ComputeGravitationalJerkOnMasslessBody(
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    Instant const& t) const EXCLUDES(lock_) {
+  auto const& degrees_of_freedom_of_b1 = degrees_of_freedom;
+  Vector<Jerk, Frame> jerk_on_b1;
+
+  // Locking ensures that we see a consistent state of all the trajectories.
+  absl::ReaderMutexLock l(&lock_);
+  for (std::size_t b2 = 0;
+       b2 < number_of_oblate_bodies_ + number_of_spherical_bodies_;
+       ++b2) {
+    MassiveBody const& body2 = *bodies_[b2];
+    auto const& b2_trajectory = trajectories_[b2];
+    auto const degrees_of_freedom_of_b2
+        b2_trajectory->EvaluateDegreesOfFreedomLocked(t);
+    GravitationalParameter const& μ2 = body2.gravitational_parameter();
+
+    // A vector from the center of |b2| to the center of |b1|.
+    RelativeDegreesOfFreedom<Frame> const Δqv =
+        degrees_of_freedom_of_b1 - degrees_of_freedom_of_b2;
+    Displacement<Frame> const Δq = Δqv.displacement();
+    Velocity<Frame> const Δv = Δqv.velocity();
+
+    Square<Length> const Δq² = Δq.Norm²();
+    Length const Δq_norm = Sqrt(Δq²);
+    Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
+    auto const Δq_norm⁵ = Δq_norm³ * Δq²;
+
+    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
+                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+    auto const vector = form * Δv;
+
+    jerk_on_b1 += μ2 * vector;
+  }
+
+  return jerk_on_b1;
+}
+
+template<typename Frame>
 Vector<Jerk, Frame> Ephemeris<Frame>::
 ComputeGravitationalJerkOnMassiveBody(not_null<MassiveBody const*> body,
                                       Instant const& t) const {
