@@ -939,13 +939,14 @@ TEST_P(EphemerisTest, ComputeGravitationalJerkOnMassiveBody) {
     auto const actual_jerk =
         ephemeris->ComputeGravitationalJerkOnMassiveBody(earth, t);
 
-    EXPECT_THAT(finite_difference_jerk,
-                Componentwise(RelativeErrorFrom(actual_jerk.coordinates().x,
-                                                AllOf(Gt(6.6e-7), Lt(4.7e-6))),
-                              RelativeErrorFrom(actual_jerk.coordinates().y,
-                                                AllOf(Gt(6.3e-5), Lt(3.4e-4))),
-                              RelativeErrorFrom(actual_jerk.coordinates().z,
-                                                AllOf(Gt(5.9e-5), Lt(3.1e-4)))));
+    EXPECT_THAT(
+        finite_difference_jerk,
+        Componentwise(RelativeErrorFrom(actual_jerk.coordinates().x,
+                                        AllOf(Gt(6.6e-7), Lt(4.7e-6))),
+                      RelativeErrorFrom(actual_jerk.coordinates().y,
+                                        AllOf(Gt(6.3e-5), Lt(3.4e-4))),
+                      RelativeErrorFrom(actual_jerk.coordinates().z,
+                                        AllOf(Gt(5.9e-5), Lt(3.1e-4)))));
 
     previous_t = t;
     previous_acceleration = acceleration;
