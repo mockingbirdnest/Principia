@@ -506,7 +506,7 @@ Vector<Jerk, Frame> Ephemeris<Frame>::ComputeGravitationalJerkOnMasslessBody(
        ++b2) {
     MassiveBody const& body2 = *bodies_[b2];
     auto const& b2_trajectory = trajectories_[b2];
-    auto const degrees_of_freedom_of_b2
+    auto const degrees_of_freedom_of_b2 =
         b2_trajectory->EvaluateDegreesOfFreedomLocked(t);
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
