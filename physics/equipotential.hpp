@@ -51,7 +51,8 @@ class Equipotential {
                                                      Position<Frame>,
                                                      double>;
   using DependentVariables = typename ODE::DependentVariables;
-  using DependentVariableDerivatives = typename ODE::DependentVariableDerivatives;
+  using DependentVariableDerivatives =
+      typename ODE::DependentVariableDerivatives;
   using AdaptiveParameters =
       _integration_parameters::AdaptiveStepParameters<ODE>;
   // TODO(phl): Consider a version of DiscreteTrajectory parameterized on

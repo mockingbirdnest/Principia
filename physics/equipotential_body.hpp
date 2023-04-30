@@ -83,7 +83,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
         RightHandSide(
             binormal, position, t, state.s.value, values, derivatives);
         auto const& [qʹ, βʹ] = derivatives;
-        equipotential.Append(Instant{} + state.s.value * (1 * Second),
+        equipotential.Append(Instant() + state.s.value * (1 * Second),
                              {q, qʹ / (1 * Second)});
       };
 
