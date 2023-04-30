@@ -83,8 +83,10 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
         RightHandSide(
             binormal, position, t, state.s.value, values, derivatives);
         auto const& [qʹ, βʹ] = derivatives;
-        equipotential.Append(Instant() + state.s.value * (1 * Second),
-                             {q, qʹ / (1 * Second)});
+        equipotential.Append(
+            Instant() +
+                state.s.value * reinterpret_independent_variable_as_time,
+            {q, qʹ / reinterpret_independent_variable_as_time});
       };
 
   auto const tolerance_to_error_ratio =

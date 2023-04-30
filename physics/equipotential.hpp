@@ -107,6 +107,9 @@ class Equipotential {
   static constexpr double β_max_ = 1e6;
   static constexpr double β_tolerance_ = 1;
 
+  static constexpr Quotient<Time, IndependentVariable>
+      reinterpret_independent_variable_as_time = 1 * Second;
+
   // The |binormal| determines in what direction we go around the curve.  It may
   // be anything, but must be consistent across calls to the right-hand side.
   absl::Status RightHandSide(Bivector<double, Frame> const& binormal,

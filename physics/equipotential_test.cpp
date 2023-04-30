@@ -413,7 +413,8 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
     CHECK_OK(ephemeris_->Prolong(t));
-    all_positions.emplace_back();
+    std::vector<std::vector<std::vector<Position<World>>>>&
+        equipotentials_at_t = all_positions.emplace_back();
 
     auto const arg_maximorum = optimizer.FindGlobalMaxima(
         /*points_per_round=*/1000,
@@ -474,8 +475,9 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
     };
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
-      all_positions.back().emplace_back();
       SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
+      std::vector<std::vector<Position<World>>>& equipotentials_at_energy =
+          equipotentials_at_t.emplace_back();
       auto const& lines = equipotential.ComputeLines(
           plane,
           t,
@@ -487,9 +489,10 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
           },
           energy);
       for (auto const& line : lines) {
-        all_positions.back().back().emplace_back();
+        std::vector<Position<World>>& equipotential =
+            equipotentials_at_energy.emplace_back();
         for (auto const& [s, dof] : line) {
-          all_positions.back().back().back().push_back(dof.position());
+          equipotential.push_back(dof.position());
         }
       }
     }
@@ -503,10 +506,13 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
           return World::origin + Normalize(q - World::origin) * 3 * Metre;
         },
         approx_l2_energy);
+    std::vector<std::vector<Position<World>>>& equipotentials_at_l2_energy =
+        equipotentials_at_t.emplace_back();
     for (auto const& line : lines) {
-      all_positions.back().back().emplace_back();
+      std::vector<Position<World>>& equipotential =
+          equipotentials_at_l2_energy.emplace_back();
       for (auto const& [s, dof] : line) {
-        all_positions.back().back().back().push_back(dof.position());
+        equipotential.push_back(dof.position());
       }
     }
   }
