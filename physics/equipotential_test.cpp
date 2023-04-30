@@ -148,16 +148,12 @@ class EquipotentialTest : public ::testing::Test {
         equipotential.ComputeLine(
             plane, t, ComputePositionInWorld(t0_, reference_frame, body));
     std::vector<Position<World>> positions;
-    std::vector<double> βs;
-    for (auto const& state : line) {
-      auto const& [position, β] = state;
-      positions.push_back(position);
-      βs.push_back(β);
+    for (auto const& [s, dof] : line) {
+      positions.push_back(dof.position());
     }
     logger.Set(absl::StrCat("equipotential", name, suffix),
                positions,
                ExpressIn(Metre));
-    logger.Set(absl::StrCat("beta", name, suffix), βs);
   }
 
   // Logs to Mathematica a family of equipotential lines determined by a
@@ -180,12 +176,10 @@ class EquipotentialTest : public ::testing::Test {
         Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
     std::vector<std::vector<std::vector<Position<World>>>> all_positions;
-    std::vector<std::vector<std::vector<double>>> all_βs;
     for (int j = 0; j < number_of_days; ++j) {
       Instant const t = t0_ + j * Day;
       CHECK_OK(ephemeris_->Prolong(t));
       all_positions.emplace_back();
-      all_βs.emplace_back();
 
       auto const& [l4, l5] = ComputeLagrangePoints(SolarSystemFactory::Earth,
                                                     SolarSystemFactory::Moon,
@@ -197,18 +191,14 @@ class EquipotentialTest : public ::testing::Test {
         auto const line =
             equipotential.ComputeLine(plane, t, line_parameter);
         all_positions.back().emplace_back();
-        all_βs.back().emplace_back();
-        for (auto const& state : line) {
-          auto const& [position, β] = state;
-          all_positions.back().back().push_back(position);
-          all_βs.back().back().push_back(β);
+        for (auto const& [s, dof] : line) {
+          all_positions.back().back().push_back(dof.position());
         }
       }
     }
     logger.Set(absl::StrCat("equipotentialsEarthMoon", suffix),
                all_positions,
                ExpressIn(Metre));
-    logger.Set(absl::StrCat("betasEarthMoon", suffix), all_βs);
   }
 
   Instant const t0_;
@@ -283,45 +273,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
               std::pair{l4, l5}, std::pair{i / 10.0, (10.0 - i) / 10.0}));
         }
         return positions;
-      });
-}
-
-TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantEnergies) {
-  Logger logger(TEMP_DIR / "equipotential_bcbd_energies.wl",
-                /*make_unique=*/false);
-  auto const reference_frame(
-      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
-          ephemeris_.get(),
-          solar_system_->massive_body(
-              *ephemeris_,
-              SolarSystemFactory::name(SolarSystemFactory::Earth)),
-          solar_system_->massive_body(
-              *ephemeris_,
-              SolarSystemFactory::name(SolarSystemFactory::Moon))));
-
-  LogFamilyOfEquipotentialLines<DegreesOfFreedom<World>>(
-      logger,
-      reference_frame,
-      /*number_of_days=*/30,
-      /*suffix=*/"Energies",
-      [](Position<World> const& l4, Position<World> const& l5) {
-        auto const midpoint = Barycentre(std::pair{l4, l5}, std::pair{1, 1});
-        std::vector<DegreesOfFreedom<World>> degrees_of_freedom;
-        for (int i = 0; i <= 10; ++i) {
-          degrees_of_freedom.push_back(
-              DegreesOfFreedom<World>(midpoint,
-                                      Velocity<World>({i * 100 * Metre / Second,
-                                                       0 * Metre / Second,
-                                                       0 * Metre / Second})));
-        }
-        for (int i = 0; i < 4; ++i) {
-          degrees_of_freedom.push_back(DegreesOfFreedom<World>(
-              midpoint,
-              Velocity<World>({(1100 + i * 10) * Metre / Second,
-                               0 * Metre / Second,
-                               0 * Metre / Second})));
-        }
-        return degrees_of_freedom;
       });
 }
 
@@ -455,7 +406,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
 
   std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
       all_positions;
-  std::vector<std::vector<std::vector<std::vector<double>>>> all_βs;
   std::vector<std::vector<Position<World>>> trajectory_positions(
       trajectories.size());
   std::vector<SpecificEnergy> energies;
@@ -464,7 +414,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
     t = t0_ + j * Day;
     CHECK_OK(ephemeris_->Prolong(t));
     all_positions.emplace_back();
-    all_βs.emplace_back();
 
     auto const arg_maximorum = optimizer.FindGlobalMaxima(
         /*points_per_round=*/1000,
@@ -526,7 +475,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
     for (int i = 1; i <= 8; ++i) {
       all_positions.back().emplace_back();
-      all_βs.back().emplace_back();
       SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
       auto const& lines = equipotential.ComputeLines(
           plane,
@@ -540,11 +488,8 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
           energy);
       for (auto const& line : lines) {
         all_positions.back().back().emplace_back();
-        all_βs.back().back().emplace_back();
-        for (auto const& state : line) {
-          auto const& [position, β] = state;
-          all_positions.back().back().back().push_back(position);
-          all_βs.back().back().back().push_back(β);
+        for (auto const& [s, dof] : line) {
+          all_positions.back().back().back().push_back(dof.position());
         }
       }
     }
@@ -560,11 +505,8 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
         approx_l2_energy);
     for (auto const& line : lines) {
       all_positions.back().back().emplace_back();
-      all_βs.back().back().emplace_back();
-      for (auto const& state : line) {
-        auto const& [position, β] = state;
-        all_positions.back().back().back().push_back(position);
-        all_βs.back().back().back().push_back(β);
+      for (auto const& [s, dof] : line) {
+        all_positions.back().back().back().push_back(dof.position());
       }
     }
   }
@@ -587,7 +529,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
   logger.Set("equipotentialsEarthMoonGlobalOptimization",
              all_positions,
              ExpressIn(Metre));
-  logger.Set("betasEarthMoonGlobalOptimization", all_βs);
 }
 
 #endif
