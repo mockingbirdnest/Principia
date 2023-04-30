@@ -127,6 +127,11 @@ Let's write the total derivative of this field with respect to time:
    \pderiv{\vq}{\VectorSymbol{\gG}} \dot{\vq} +
    \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \dot{\vq_k}
 \]
+To compute it, let's first focus on the partial derivatives with respect to $\vq_k$:
+\begin{align*}
+\pderiv{\vq_k}{\VectorSymbol{\gG}} &= \pderiv{\vq_k}{} \frac{\gm_k \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} \\
+&= \gm_k \pa{\frac{\pderiv{\vq_k}{}\pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \pderiv{\vq_k}{}\norm{\vq_k - \vq}}{\norm{\vq_k - \vq}^4}}
+\end{align*}
 
 Recall that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system.  Define $\VectorSymbol{\gG_1}\of{\vq, t}$ to be the vector field representing the acceleration exerted by all the bodies in the system \textit{other than $B_1$} on the position $\vq$ at time $t$.  It follows from the definition that $\ddot{\vq}_1\of{t} = \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}$ where we have made the dependency on time explicit.  The jerk is the total derivative with respect to $t$:
 \[
