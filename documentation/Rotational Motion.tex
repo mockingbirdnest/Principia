@@ -115,6 +115,19 @@ Injecting these expressions in the second derivative formula (\ref{eqnddv}) make
 \section*{Jerk}
 The alert reader will have noticed the presence of the jerk, $\vr^{(3)}$ in (\ref{eqnddFBN}).  This section explains how it is calculated.
 
+Consider a system of $n$ massive bodies $B_k, k\in\intclos{1}{n}$ located at positions $\vq_k\of{t}$ at time $t$.   The acceleration field at point $\vq$ is:
+\[
+\VectorSymbol{\gG}\of{\vq, \vq_k\of{t}} = \sum{k = 1}[n] \frac{\gm_k \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3}
+\]
+Let's write the total derivative of this field with respect to time:
+\[
+\deriv{t}{\VectorSymbol{\gG}} =
+   \pderiv{\vq}{\VectorSymbol{\gG}} \deriv{t}{\vq} +
+   \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \deriv{t}{\vq_k} =
+   \pderiv{\vq}{\VectorSymbol{\gG}} \dot{\vq} +
+   \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \dot{\vq_k}
+\]
+
 Recall that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system.  Define $\VectorSymbol{\gG_1}\of{\vq, t}$ to be the vector field representing the acceleration exerted by all the bodies in the system \textit{other than $B_1$} on the position $\vq$ at time $t$.  It follows from the definition that $\ddot{\vq}_1\of{t} = \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}$ where we have made the dependency on time explicit.  The jerk is the total derivative with respect to $t$:
 \[
 \vq_1^{(3)}\of{\gt} = \Evaluate{\deriv{t}{} \VectorSymbol{\gG_1}\of{\vq, t}}{\vq = \vq1\of{\gt}, t = \gt}
