@@ -90,7 +90,31 @@ To compute the angular velocity, we start by deriving the vectors (\ref{eqnFBN})
 \end{dcases}
 \label{eqndFBN}
 \end{equation}
-Injecting these expressions in the derivative formula (\ref{eqndv}) makes it possible to compute the trihedron of the derivatives $\pa{\dot{\vf}, \dot{\vn}, \dot{\vb}}$ of (\ref{eqnfbn}).  The angular velocity is then written:
+Injecting these expressions in the derivative formula (\ref{eqndv}) makes it possible to compute the trihedron of the derivatives $\pa{\dot{\vf}, \dot{\vn}, \dot{\vb}}$ of (\ref{eqnfbn}).  The angular velocity $\VectorSymbol{\gw}$ is, by definition, such that:
+\[
+\begin{dcases}
+\VectorSymbol{\gw} \wedge \vf &= \dot{\vf} \\
+\VectorSymbol{\gw} \wedge \vn &= \dot{\vn} \\
+\VectorSymbol{\gw} \wedge \vb &= \dot{\vb}
+\end{dcases}
+\]
+In the orthonormal basis $\pa{\vf, \vn, \vb}$ let's write $\VectorSymbol{\gw} = \ga \vf + \gb \vn + \gg \vb$.  Substituting in the equations above we obtain:
+\[
+\begin{dcases}
+\dot{\vf} &= \gb \vn \wedge \vf + \gg \vb \wedge \vf \\
+\dot{\vn} &= \ga \vf \wedge \vn + \gg \vb \wedge \vn \\
+\dot{\vb} &= \ga \vf \wedge \vb + \gb \vn \wedge \vb
+\end{dcases}
+\]
+Now multiply (using the scalar product) the first equation by $\vn$, the second by $\vb$ and the third by $\vf$, and use the properties of the triple product to simplify the result using $\scal{(\vn \wedge \vf)}{\vn} = 0$ and $\scal{(\vn \wedge \vf)}{\vb} = 1$ (and similar expressions obtained by circular permutation).  We find:
+\[
+\begin{dcases}
+\scal{\dot{\vf}}{\vn} &= \gg \\
+\scal{\dot{\vn}}{\vb} &= \ga \\
+\scal{\dot{\vb}}{\vf} &= \gb
+\end{dcases}
+\]
+which finally yields the following expression for the angular velocity:
 \[
 \VectorSymbol{\gw} = \pascal{\scal{\dot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vf}}{\vn}} \vb
 \]
