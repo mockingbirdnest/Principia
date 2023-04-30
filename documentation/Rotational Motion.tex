@@ -119,7 +119,7 @@ Consider a system of $n$ massive bodies $B_k, k\in\intclos{1}{n}$ located at pos
 \[
 \VectorSymbol{\gG}\of{\vq, \vq_k\of{t}} = \sum{k = 1}[n] \frac{\gm_k \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3}
 \]
-Let's write the total derivative of this field with respect to time:
+The jerk vector field is the total derivative of this field with respect to time:
 \[
 \deriv{t}{\VectorSymbol{\gG}} =
    \pderiv{\vq}{\VectorSymbol{\gG}} \deriv{t}{\vq} +
@@ -130,28 +130,27 @@ Let's write the total derivative of this field with respect to time:
 To compute it, let's first focus on the partial derivatives with respect to $\vq_k$:
 \begin{align*}
 \pderiv{\vq_k}{\VectorSymbol{\gG}} &= \pderiv{\vq_k}{} \frac{\gm_k \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} \\
-&= \gm_k \pa{\frac{\pderiv{\vq_k}{}\pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \pderiv{\vq_k}{}\norm{\vq_k - \vq}}{\norm{\vq_k - \vq}^4}}
+&= \gm_k \pa{\frac{\pderiv{\vq_k}{}\pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \pderiv{\vq_k}{}\norm{\vq_k - \vq}}{\norm{\vq_k - \vq}^4}} \\
+&= \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \frac{\scal{\Identity}{\pa{\vq_k - \vq}}}{\norm{\vq_k - \vq}}}{\norm{\vq_k - \vq}^4}} \\
+&= \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
 \end{align*}
+Note that this expression is a symmetric bilinear form, as expected since the gravitational acceleration derives from a potential, and therefore its Jacobian (the Hessian of the potential) is symmetric.
 
-Recall that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system.  Define $\VectorSymbol{\gG_1}\of{\vq, t}$ to be the vector field representing the acceleration exerted by all the bodies in the system \textit{other than $B_1$} on the position $\vq$ at time $t$.  It follows from the definition that $\ddot{\vq}_1\of{t} = \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}$ where we have made the dependency on time explicit.  The jerk is the total derivative with respect to $t$:
+The partial derivative with respect to $\vq$ is then easy to compute by noting that each term in $\pderiv{\vq}{\VectorSymbol{\gG}}$ has the same form as the partial derivative above, with a sign change due to deriving with respect to $\vq$ instead of $\vq_k$:
 \[
-\vq_1^{(3)}\of{\gt} = \Evaluate{\deriv{t}{} \VectorSymbol{\gG_1}\of{\vq, t}}{\vq = \vq1\of{\gt}, t = \gt}
+\pderiv{\vq}{\VectorSymbol{\gG}} =
+  \sum{k = 1}[n] \gm_k \pa{- \frac{\Identity}{\norm{\vq_k - \vq}^3} +
+  3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
 \]
-Looking at the coordinate along the axis $\vx$ we can write the total derivative as follow:
-\[
-\deriv{t}{} \VectorSymbol{\gG_{1,x}} = \pderiv{x}{\VectorSymbol{\gG_{1,x}}} \deriv{t}{x} +
-  \pderiv{y}{\VectorSymbol{\gG_{1,x}}} \deriv{t}{y} +
-  \pderiv{z}{\VectorSymbol{\gG_{1,x}}} \deriv{t}{z}
-\]
-and similarly along the axes $\vy$ and $\vz$.  The partial derivatives are the first row of the Jacobian, so we obtain:
-\[
-\deriv{t}{\VectorSymbol{\gG_1}} = \scal{\nabla \VectorSymbol{\gG_1}}{\deriv{t}{\vq}}
-\]
-which gives us the jerk as:
-\[
-\vq_1^{(3)}\of{t} = \scal{\nabla \VectorSymbol{\gG_1}\of{\vq_1\of{t}, t}}{\dot{\vq}_1\of{t}}
-\]
-The actual computation of the Jacobian of the gravitational field is left as an exercise to the reader.
+Putting all these calculations together we obtain the jerk exercised by the bodies $B_k$ on point $\vq$ at time $t$:
+\begin{equation}
+\deriv{t}{\VectorSymbol{\gG}} =
+  \sum{k = 1}[n] \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} -
+  3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
+  \pa{\dot{\vq_k} - \dot{\vq}}
+\label{eqnjerk}
+\end{equation}
+The computation of $\dddot{\vr} = \dddot{\vq}_2 - \dddot{\vq}_1$ is then straightforward.  $\dddot{\vq}_1$ is obtained by evaluating (\ref{eqnjerk}) at $\vq = \vq_1$ using a system from which $B_1$ is excluded.  Similarly, $\dddot{\vq}_2$ is obtained by evaluation (\ref{eqnjerk}) at $\vq = \vq_2$ using a system from which $B_2$ is excluded.
 
 \section*{Application to the body surface reference frame}
 While the formulæ above were derived assuming a rigid reference frame defined by two bodies $B_1$ and $B_2$, they remain valid for a reference frame defined by a single body $B_1$ provided that we give a proper definition of the vector $\vr$.  We now consider how they apply to the \textit{body surface} reference frame.
