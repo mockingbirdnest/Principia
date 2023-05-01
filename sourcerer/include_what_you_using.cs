@@ -39,6 +39,7 @@ class IncludeWhatYouUsing {
 
     // Parse all the files in our projects.
     var file_info_to_file = new Dictionary<FileInfo, Parser.File>();
+    var corresponding_header = new Dictionary<FileInfo, FileInfo>();
     foreach (DirectoryInfo project in projects) {
       FileInfo[] hpp_files = project.GetFiles("*.hpp");
       FileInfo[] cpp_files = project.GetFiles("*.cpp");
@@ -52,6 +53,9 @@ class IncludeWhatYouUsing {
         Parser.File parser_file =
             Parser.ParseFile(input_file, IsBody(input_file, extra_headers));
         file_info_to_file.Add(input_file, parser_file);
+      }
+      foreach (FileInfo input_file in all_body_files) {
+        
       }
     }
   }
