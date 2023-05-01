@@ -21,8 +21,46 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
+GeometricPotentialPlotter::GeometricPotentialPlotter(
+    not_null<Ephemeris<Barycentric>*> ephemeris)
+    : ephemeris_(ephemeris) {}
+
+void GeometricPotentialPlotter::Interrupt() {
+  plotter_ = jthread();
+  // We are single-threaded here, no need to lock.
+  plotter_idle_ = true;
+}
+
 void GeometricPotentialPlotter::RequestEquipotentials(
-    Parameters const& parameters) {}
+    Parameters const& parameters) {
+  last_parameters_ = parameters;
+  absl::MutexLock l(&lock_);
+  // Only process this request if there is no analysis in progress.
+  if (plotter_idle_) {
+    plotter_idle_ = false;
+    plotter_ = MakeStoppableThread(
+        [this, parameters]() { PlotEquipotentials(parameters).IgnoreError(); });
+  }
+}
+
+std::optional<GeometricPotentialPlotter::Parameters> const&
+GeometricPotentialPlotter::last_parameters()
+    const {
+  return last_parameters_;
+}
+
+void GeometricPotentialPlotter::RefreshEquipotentials() {
+  absl::MutexLock l(&lock_);
+  if (next_equipotentials_.has_value()) {
+    equipotentials_ = std::move(next_equipotentials_);
+    next_equipotentials_.reset();
+  }
+}
+
+GeometricPotentialPlotter::Equipotentials const*
+GeometricPotentialPlotter::equipotentials() {
+  return equipotentials_.has_value() ? &*equipotentials_ : nullptr;
+}
 
 absl::Status GeometricPotentialPlotter::PlotEquipotentials(
     Parameters const& parameters) {
@@ -62,8 +100,6 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
                  Displacement<Navigation>({3 * Metre, 0 * Metre, 0 * Metre}),
                  Displacement<Navigation>({0 * Metre, 3 * Metre, 0 * Metre})}};
 
-  MultiLevelSingleLinkage<SpecificEnergy, Position<Navigation>, 2> optimizer(
-      box, potential, acceleration);
   constexpr Length characteristic_length = 1 * Nano(Metre);
   Equipotential<Barycentric, Navigation> const equipotential(
       {EmbeddedExplicitRungeKuttaIntegrator<
@@ -74,10 +110,14 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
       &reference_frame,
       characteristic_length);
 
-  auto const arg_maximorum = optimizer.FindGlobalMaxima(
-      /*points_per_round=*/1000,
-      /*number_of_rounds=*/std::nullopt,
-      /*local_search_tolerance=*/1e-3 * Metre);
+  // TODO(phl): Make this interruptible.
+  auto const arg_maximorum =
+      MultiLevelSingleLinkage<SpecificEnergy, Position<Navigation>, 2>(
+          box, potential, acceleration)
+          .FindGlobalMaxima(
+              /*points_per_round=*/1000,
+              /*number_of_rounds=*/std::nullopt,
+              /*local_search_tolerance=*/1e-3 * Metre);
   SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
   for (auto const& arg_maximum : arg_maximorum) {
     maximum_maximorum = std::max(maximum_maximorum, potential(arg_maximum));
@@ -123,9 +163,11 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
 
   auto const r = (secondary_position - primary_position).Norm();
   for (int i = 1; i <= parameters.levels; ++i) {
+    RETURN_IF_STOPPED;
     SpecificEnergy const energy =
         maximum_maximorum -
         i * (1.0 / parameters.l1_level * maximum_maximorum - approx_l1_energy);
+    // TODO(phl): Make this interruptible.
     auto lines = equipotential.ComputeLines(
         plane,
         t,

@@ -35,6 +35,12 @@ class GeometricPotentialPlotter {
     Parameters parameters;
   };
 
+  GeometricPotentialPlotter(not_null<Ephemeris<Barycentric>*> ephemeris);
+
+  // Cancel any computation in progress, causing the next call to
+  // |RequestEquipotentials| to be processed as fast as possible.
+  void Interrupt();
+
   // Sets the parameters that will be used for the computation of the next
   // equipotentials.
   void RequestEquipotentials(Parameters const& parameters);
