@@ -57,8 +57,6 @@ BodyCentredBodyDirectionReferenceFrame(
       secondary_(std::move(secondary)),
       compute_gravitational_acceleration_on_primary_(
           [this](Position<InertialFrame> const& position, Instant const& t) {
-            // TODO(egg): eventually we want to add the intrinsic acceleration
-            // here.
             return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
                 position, t);
           }),

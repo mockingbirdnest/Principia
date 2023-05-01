@@ -1,0 +1,228 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+
+\newcommand{\squarenorm}[1]{\scal{#1}{#1}}
+
+%%%% Title and authors.
+
+\title{Rotational Motion of a Rigid Reference Frame}
+\date{\printdate{2023-04-26}}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document describes the computations that are performed by the class \texttt{RigidReferenceFrame} and its subclasses to determine the rotational motion (rotation,
+angular velocity, and angular accelation) of a rigid frame.
+\end{sloppypar}
+
+\section*{Definitions}
+We consider in this document a rigid reference frame defined by two bodies $B_1$ and $B_2$ at positions $\vq_1$ and $\vq_2$, respectively.  We construct a basis of the reference frame using three vectors having the following properties:
+\begin{itemize}
+\item{the \emph{fore} vector $\vF$ which is along the axis $\vq_2 - \vq_1$;}
+\item{the \emph{normal} vector $\vN$ which is orthogonal to $\vF$ and is such that the velocity $\dot{\vq}_2 - \dot{\vq}_1$ is in the plane $\pa{\vF, \vN}$;}
+\item{the \emph{binormal} vector $\vB$ which is orthogonal to $\vF$ and $\vN$ such that $\pa{\vF, \vN, \vB}$ forms a direct trihedron.}
+\end{itemize}
+There are obviously many possible choices for $\pa{\vF, \vN, \vB}$.  In practice, it is convenient to choose $\vB$ before $\vN$ so that the basis is computed exclusively using vector products:
+\begin{equation}
+\begin{dcases}
+\vF &= \vr \\
+\vB &= \vr \wedge \dot{\vr} \\
+\vN &= \vB \wedge \vF
+\end{dcases}
+\label{eqnFBN}
+\end{equation}
+where we have defined $\vr \DefineAs \vq_2 - \vq_1$.  Since we'll need to use $\ddot{\vr}$ later, it is important to note here that $\ddot{\vr} = \ddot{\vq}_2 - \ddot{\vq}_1$ where $\ddot{\vq}_1$ is the acceleration exerted on $B_1$ by the rest of the system (and similarly, $\ddot{\vq}_2$ is the acceleration exerted on $B_2$ by the rest of the system).
+
+It is trivial to check that these definitions satisfy the properties above, and in particular that they determine a direct orthogonal basis.  The corresponding orthonormal basis is:
+\begin{equation}
+\begin{dcases}
+\vf &= \frac{\vF}{\norm\vF} \\
+\vb &= \frac{\vB}{\norm\vB} \\
+\vn &= \frac{\vN}{\norm\vN}
+\end{dcases}
+\label{eqnfbn}
+\end{equation}
+These vectors are sufficient to define the rotation of the reference frame at any point in time.
+\section*{Derivatives of normalized vectors}
+In what follows, we will need to compute the time derivatives of the elements of the trihedron $\pa{\vf, \vn, \vb}$.  To help with this we prove two formulæ that define the first and second derivatives of $\vV/{\norm\vV}$ based on that of $\vV$.
+
+The first derivative is:
+\begin{align}
+\deriv{t}{}\frac{\vV}{\norm\vV} &= \frac{\norm\vV \dot{\vV} - \deriv{t}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
+&=\frac{\norm\vV \dot{\vV} - \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV} \vV}{\norm\vV^2} \nonumber \\
+&=\frac{\dot{\vV}}{\norm\vV} - \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV^3}
+\label{eqndv}
+\end{align}
+
+The second derivative is somewhat more complicated:
+\begin{align}
+\deriv[2]{t}{}\frac{\vV}{\norm\vV} &=\deriv{t}{}\pa{\frac{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}{\norm\vV^3}} \nonumber \\
+&=\frac{\norm\vV^3 \deriv{t}{}\pa{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV} - 
+  3 \norm\vV \pascal{\scal{\vV}{\dot{\vV}}}\pa{\norm\vV^2 \dot{\vV} - \pascal{\scal{\vV}{\dot{\vV}}} \vV}}{\norm\vV^6} \nonumber \\
+&=\frac{2 \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV} +
+    \norm\vV^2 \ddot{\vV} -
+    \pa{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}} \vV -
+    \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV}}
+    {\norm\vV^3} -
+  3\frac{\norm\vV^3 \pascal{\scal{\vV}{\dot{\vV}}} \dot{\vV} - \norm\vV \pascal{\scal{\vV}{\dot{\vV}}}^2 \vV}
+    {\norm\vV^6} \nonumber \\
+&=\frac{\ddot{\vV}}{\norm\vV} - 2 \dot{\vV} \frac{\pascal{\scal{\vV}{\dot{\vV}}}}{\norm\vV^3} 
+  - \vV \frac{\norm{\dot{\vV}}^2 + \pascal{\scal{\vV}{\ddot{\vV}}}}{\norm\vV^3} + 3 \vV \frac{\pascal{\scal{\vV}{\dot{\vV}}}^2}{\norm\vV^5}
+\label{eqnddv}
+\end{align}
+
+\section*{Angular velocity}
+To compute the angular velocity, we start by deriving the vectors (\ref{eqnFBN}) and obtain:
+\begin{equation}
+\begin{dcases}
+\dot{\vF} &= \dot{\vr} \\
+\dot{\vB} &= \vr \wedge \ddot{\vr} \\
+\dot{\vN} &= \dot{\vB} \wedge \vF + \vB \wedge \dot{\vF}
+\end{dcases}
+\label{eqndFBN}
+\end{equation}
+Injecting these expressions in the derivative formula (\ref{eqndv}) makes it possible to compute the trihedron of the derivatives $\pa{\dot{\vf}, \dot{\vn}, \dot{\vb}}$ of (\ref{eqnfbn}).  The angular velocity $\VectorSymbol{\gw}$ is, by definition, such that:
+\[
+\begin{dcases}
+\VectorSymbol{\gw} \wedge \vf &= \dot{\vf} \\
+\VectorSymbol{\gw} \wedge \vn &= \dot{\vn} \\
+\VectorSymbol{\gw} \wedge \vb &= \dot{\vb}
+\end{dcases}
+\]
+In the orthonormal basis $\pa{\vf, \vn, \vb}$ let's write $\VectorSymbol{\gw} = \ga \vf + \gb \vn + \gg \vb$.  Substituting in the equations above we obtain:
+\[
+\begin{dcases}
+\dot{\vf} &= \gb \vn \wedge \vf + \gg \vb \wedge \vf \\
+\dot{\vn} &= \ga \vf \wedge \vn + \gg \vb \wedge \vn \\
+\dot{\vb} &= \ga \vf \wedge \vb + \gb \vn \wedge \vb
+\end{dcases}
+\]
+Now multiply (using the scalar product) the first equation by $\vn$, the second by $\vb$ and the third by $\vf$, and use the properties of the triple product to simplify the result using $\scal{(\vn \wedge \vf)}{\vn} = 0$ and $\scal{(\vb \wedge \vf)}{\vn} = 1$ (and similar expressions obtained by circular permutation).  We find:
+\[
+\begin{dcases}
+\scal{\dot{\vf}}{\vn} &= \gg \\
+\scal{\dot{\vn}}{\vb} &= \ga \\
+\scal{\dot{\vb}}{\vf} &= \gb
+\end{dcases}
+\]
+which finally yields the following expression for the angular velocity:
+\[
+\VectorSymbol{\gw} = \pascal{\scal{\dot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vf}}{\vn}} \vb
+\]
+
+\section*{Angular acceleration}
+To compute the angular acceleration, we start by deriving the vectors (\ref{eqndFBN}) and obtain:
+\begin{equation}
+\begin{dcases}
+\ddot{\vF} &= \ddot{\vr} \\
+\ddot{\vB} &= \dot{\vr} \wedge \ddot{\vr} + \vr \wedge \vr^{(3)} \\
+\ddot{\vN} &= \ddot{\vB} \wedge \vF + 2 \dot{\vB} \wedge \dot{\vF} + \vB \wedge \ddot{\vF} \\
+\end{dcases}
+\label{eqnddFBN}
+\end{equation}
+Injecting these expressions in the second derivative formula (\ref{eqnddv}) makes it possible to compute the trihedron of the second derivatives $\pa{\ddot{\vf}, \ddot{\vn}, \ddot{\vb}}$ of (\ref{eqnfbn}).  The angular acceleration is then written:
+\begin{align*}
+\dot{\VectorSymbol{\gw}} &= \pascal{\scal{\ddot{\vn}}{\vb}} \vf + \pascal{\scal{\dot{\vn}}{\dot{\vb}}} \vf + \pascal{\scal{\dot{\vn}}{\vb}} \dot{\vf} \\
+&+ \pascal{\scal{\ddot{\vb}}{\vf}} \vn + \pascal{\scal{\dot{\vb}}{\dot{\vf}}} \vn + \pascal{\scal{\dot{\vb}}{\vf}} \dot{\vn} \\
+&+ \pascal{\scal{\ddot{\vf}}{\vn}} \vb + \pascal{\scal{\dot{\vf}}{\dot{\vn}}} \vb + \pascal{\scal{\dot{\vf}}{\vn}} \dot{\vb}
+\end{align*}
+
+\section*{Jerk}
+The alert reader will have noticed the presence of the jerk, $\vr^{(3)}$ in (\ref{eqnddFBN}).  This section explains how it is calculated.
+
+Consider a system of $n$ massive bodies $B_k, k\in\intclos{1}{n}$ located at positions $\vq_k\of{t}$ at time $t$.   The acceleration field at point $\vq$ is:
+\[
+\VectorSymbol{\gG}\of{\vq, \vq_k\of{t}} = \sum{k = 1}[n] \frac{\gm_k \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3}
+\]
+The jerk vector field is the total derivative of this field with respect to time:
+\[
+\deriv{t}{\VectorSymbol{\gG}} =
+   \pderiv{\vq}{\VectorSymbol{\gG}} \deriv{t}{\vq} +
+   \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \deriv{t}{\vq_k} =
+   \pderiv{\vq}{\VectorSymbol{\gG}} \dot{\vq} +
+   \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \dot{\vq}_k
+\]
+To compute it, let's first focus on the partial derivatives with respect to $\vq_k$:
+\begin{align*}
+\pderiv{\vq_k}{\VectorSymbol{\gG}} &= \pderiv{\vq_k}{} \frac{\gm_k \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} \\
+&= \gm_k \pa{\frac{\pderiv{\vq_k}{}\pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \pderiv{\vq_k}{}\norm{\vq_k - \vq}}{\norm{\vq_k - \vq}^4}} \\
+&= \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \frac{\scal{\Identity}{\pa{\vq_k - \vq}}}{\norm{\vq_k - \vq}}}{\norm{\vq_k - \vq}^4}} \\
+&= \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} - 3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
+\end{align*}
+Note that this expression is a symmetric bilinear form, as expected since the gravitational acceleration derives from a potential, and therefore its Jacobian (the Hessian of the potential) is symmetric.
+
+The partial derivative with respect to $\vq$ is then easy to compute by noting that each term in $\pderiv{\vq}{\VectorSymbol{\gG}}$ has the same form as the partial derivative above, with a sign change due to deriving with respect to $\vq$ instead of $\vq_k$:
+\[
+\pderiv{\vq}{\VectorSymbol{\gG}} =
+  \sum{k = 1}[n] \gm_k \pa{- \frac{\Identity}{\norm{\vq_k - \vq}^3} +
+  3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
+\]
+Putting all these calculations together we obtain the jerk exercised by the bodies $B_k$ on point $\vq$ at time $t$:
+\begin{equation}
+\deriv{t}{\VectorSymbol{\gG}} =
+  \sum{k = 1}[n] \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} -
+  3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
+  \pa{\dot{\vq}_k - \dot{\vq}}
+\label{eqnjerk}
+\end{equation}
+The computation of $\dddot{\vr} = \dddot{\vq}_2 - \dddot{\vq}_1$ is then straightforward.  $\dddot{\vq}_1$ is obtained by evaluating (\ref{eqnjerk}) at $\vq = \vq_1$ using a system from which $B_1$ is excluded.  Similarly, $\dddot{\vq}_2$ is obtained by evaluation (\ref{eqnjerk}) at $\vq = \vq_2$ using a system from which $B_2$ is excluded.
+
+\section*{Application to the body surface reference frame}
+While the formulæ above were derived assuming a rigid reference frame defined by two bodies $B_1$ and $B_2$, they remain valid for a reference frame defined by a single body $B_1$ provided that we give a proper definition of the vector $\vr$.  We now consider how they apply to the \textit{body surface} reference frame.
+
+It is convenient to choose $\vr$ to be a unit vector rotating with the surface of the body; without loss of generality, $\vr$ may be written:
+\[
+\vr = \vx \cos \pa{\gw t + \gj} + \vy \sin \pa{\gw t + \gj}
+\]
+where $\vx$ and $\vy$ form a direct orthonormal basis of the equatorial plane of the body.  The time derivatives of $\vr$ are:
+\[
+\begin{dcases}
+\dot{\vr} &= -\vx \gw \sin \pa{\gw t + \gj} + \vy \gw \cos \pa{\gw t + \gj} \\
+\ddot{\vr} &= -\vx \gw^2 \cos \pa{\gw t + \gj} - \vy \gw^2 \sin \pa{\gw t + \gj} = -\gw^2 \vr \\
+\vr^{(3)} &= \vx \gw^3 \sin \pa{\gw t + \gj} - \vy \gw^3 \cos \pa{\gw t + \gj} = -\gw^2 \dot{\vr}
+\end{dcases}
+\]
+Using (\ref{eqnFBN}) it's easy to see that:
+\[
+\begin{dcases}
+\vF &= \vr \\
+\vB &= \gw \vz \\
+\vN &= \dot{\vr}
+\end{dcases}
+\]
+where $\vz$ is along the rotation axis such that $\pa{\vx, \vy, \vz}$ form a direct trihedron.  The orthonormal vectors follow immediately, noting that $\norm\vr = 1$:
+\[
+\begin{dcases}
+\vf &= \vr \\
+\vb &= \vz \\
+\vn &= \frac{\dot{\vr}}{\gw}
+\end{dcases}
+\]
+The first derivatives of the orthonormal trihedron can be computed directly:
+\[
+\begin{dcases}
+\dot{\vf} &= \dot{\vr} \\
+\dot{\vb} &= 0 \\
+\dot{\vn} &= \frac{\ddot{\vr}}{\gw} = -\gw \vr
+\end{dcases}
+\]
+which yields, not surprisingly, $\VectorSymbol{\gw} = \gw \vz$.  The second derivatives are equally straightforward:
+\[
+\begin{dcases}
+\ddot{\vf} &= \ddot{\vr} = -\vr \\
+\dot{\vb} &= 0 \\
+\dot{\vn} &= -\gw \dot{\vr}
+\end{dcases}
+\]
+and yield, as expected, $\dot{\VectorSymbol{\gw}} = 0$.
+
+\end{document}

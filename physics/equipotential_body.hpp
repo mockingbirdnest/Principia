@@ -73,11 +73,20 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
   Line equipotential;
   typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
-      [&equipotential](State const& state) {
-        DependentVariables dependent_variables;
-        std::get<0>(dependent_variables) = std::get<0>(state.y).value;
-        std::get<1>(dependent_variables) = std::get<1>(state.y).value;
-        equipotential.push_back(dependent_variables);
+      [this, &equipotential, binormal, position, t](State const& state) {
+        auto const& [double_q, double_β] = state.y;
+        DependentVariables values;
+        auto& [q, β] = values;
+        q = double_q.value;
+        β = double_β.value;
+        DependentVariableDerivatives derivatives;
+        RightHandSide(binormal, position, t, state.s.value, values, derivatives)
+            .IgnoreError();
+        auto const& [qʹ, βʹ] = derivatives;
+        CHECK_OK(equipotential.Append(
+            Instant() +
+                state.s.value * reinterpret_independent_variable_as_time,
+            {q, qʹ / reinterpret_independent_variable_as_time}));
       };
 
   auto const tolerance_to_error_ratio =
@@ -88,108 +97,6 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
   auto status = instance->Solve(s_final_);
 
   return equipotential;
-}
-
-template<typename InertialFrame, typename Frame>
-auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Plane<Frame> const& plane,
-    Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) const -> Line {
-  // Compute the total (specific) energy.
-  auto const potential_energy =
-      reference_frame_->GeometricPotential(t, degrees_of_freedom.position());
-  auto const kinetic_energy = 0.5 * degrees_of_freedom.velocity().Norm²();
-  auto const total_energy = potential_energy + kinetic_energy;
-
-  return ComputeLine(plane, t, degrees_of_freedom.position(), total_energy);
-}
-
-template<typename InertialFrame, typename Frame>
-auto Equipotential<InertialFrame, Frame>::ComputeLine(
-    Plane<Frame> const& plane,
-    Instant const& t,
-    Position<Frame> const& start_position,
-    SpecificEnergy const& total_energy) const -> Line {
-  auto const lines = ComputeLines(plane, t, {start_position}, total_energy);
-  CHECK_EQ(1, lines.size());
-  return lines[0];
-}
-
-template<typename InertialFrame, typename Frame>
-auto Equipotential<InertialFrame, Frame>::ComputeLines(
-    Plane<Frame> const& plane,
-    Instant const& t,
-    std::vector<Position<Frame>> const& start_positions,
-    SpecificEnergy const& total_energy) const -> Lines {
-  // The function on which we perform gradient descent is defined to have a
-  // minimum at a position where the potential is equal to the total energy.
-  auto const f = [this, t, total_energy](Position<Frame> const& position) {
-    return Pow<2>(reference_frame_->GeometricPotential(t, position) -
-                  total_energy);
-  };
-
-  auto const grad_f = [this, &plane, t, total_energy](
-      Position<Frame> const& position) {
-    // To keep the problem bidimensional we eliminate any off-plane component of
-    // the gradient.
-    return Projection(
-        -2 *
-            (reference_frame_->GeometricPotential(t, position) - total_energy) *
-            reference_frame_->RotationFreeGeometricAccelerationAtRest(t,
-                                                                      position),
-        plane);
-  };
-
-  Lines lines;
-  for (auto const& start_position : start_positions) {
-    // Compute the winding number of every line already found with respect to
-    // |start_position|.  If any line "turns around" that position, we don't
-    // need to compute a new equipotential, it would just duplicate one we
-    // already have.
-    bool must_compute_line = true;
-    for (auto const& line : lines) {
-      std::vector<Position<Frame>> positions;
-      for (auto const& dependent_variables : line) {
-        auto const& [position, _] = dependent_variables;
-        positions.push_back(position);
-      }
-      std::int64_t const winding_number =
-          WindingNumber(plane, start_position, positions);
-      if (winding_number > 0) {
-        must_compute_line = false;
-        break;
-      }
-    }
-    if (!must_compute_line) {
-      continue;
-    }
-
-    // Do the gradient descent to find a point on the equipotential having the
-    // total energy.
-    // NOTE(phl): Unclear if |length_integration_tolerance| is the right thing
-    // to use below.
-    auto const equipotential_position =
-        BroydenFletcherGoldfarbShanno<Square<SpecificEnergy>, Position<Frame>>(
-            start_position,
-            f,
-            grad_f,
-            adaptive_parameters_.length_integration_tolerance());
-    CHECK(equipotential_position.has_value());
-
-    // The BFGS algorithm will put us at the minimum of f, but that may be a
-    // point that has (significantly) less energy that our total energy.  No
-    // point in building a line in that case.
-    if (reference_frame_->GeometricPotential(t,
-                                             equipotential_position.value()) <
-        total_energy - Abs(total_energy) * energy_tolerance) {
-      lines.push_back(Line{});
-      continue;
-    }
-    // Compute that equipotential.
-    lines.push_back(ComputeLine(plane, t, equipotential_position.value()));
-  }
-
-  return lines;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -299,9 +206,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       }
       std::vector<Position<Frame>> positions;
-      for (auto const& dependent_variables : lines.back()) {
-        auto const& [position, _] = dependent_variables;
-        positions.push_back(position);
+      for (auto const& [s, dof] : lines.back()) {
+        positions.push_back(dof.position());
       }
 
       // Figure out whether the equipotential introduces new delineations.

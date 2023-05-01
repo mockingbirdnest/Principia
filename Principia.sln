@@ -152,6 +152,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		documentation\ODEs and Runge-Kutta integrators.tex = documentation\ODEs and Runge-Kutta integrators.tex
 		documentation\Perspective hiding.tex = documentation\Perspective hiding.tex
 		documentation\Releasing.md = documentation\Releasing.md
+		documentation\Rotational Motion.tex = documentation\Rotational Motion.tex
 		documentation\semtex.sty = documentation\semtex.sty
 		documentation\Setup.md = documentation\Setup.md
 	EndProjectSection
