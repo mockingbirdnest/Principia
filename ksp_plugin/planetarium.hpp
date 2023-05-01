@@ -143,6 +143,18 @@ class Planetarium {
       int max_points,
       Length* minimal_distance = nullptr) const;
 
+  // The same method, operating on a trajectory already plotted in the plotting
+  // frame.
+  void PlotMethod3(
+      Trajectory<Navigation> const& trajectory,
+      Instant const& first_time,
+      Instant const& last_time,
+      Instant const& now,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points,
+      Length* minimal_distance = nullptr) const;
+
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
   // bodies.  These coordinates are in the |plotting_frame_| at time |now|.

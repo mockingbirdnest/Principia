@@ -269,6 +269,8 @@ void Plugin::EndInitialization() {
               ephemeris_.get(),
               sun_->body()));
 
+  geometric_potential_plotter_.emplace(ephemeris_.get());
+
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
   ephemeris_->WriteToMessage(&ephemeris_message);
@@ -1360,6 +1362,16 @@ Renderer& Plugin::renderer() {
 
 Renderer const& Plugin::renderer() const {
   return *renderer_;
+}
+
+GeometricPotentialPlotter& Plugin::geometric_potential_plotter() {
+  CHECK(!initializing_);
+  return *geometric_potential_plotter_;
+}
+
+GeometricPotentialPlotter const& Plugin::geometric_potential_plotter() const {
+  CHECK(!initializing_);
+  return *geometric_potential_plotter_;
 }
 
 void Plugin::WriteToMessage(

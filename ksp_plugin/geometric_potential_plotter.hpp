@@ -18,6 +18,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::ksp_plugin::_frames;
 
 class GeometricPotentialPlotter {
+ public:
   struct Parameters {
     not_null<MassiveBody const*> primary;
     not_null<MassiveBody const*> secondary;
@@ -51,7 +52,7 @@ class GeometricPotentialPlotter {
   // Sets |equipotentials()| to the latest computed equipotentials.
   void RefreshEquipotentials();
 
-  Equipotentials const* equipotentials();
+  Equipotentials const* equipotentials() const;
 
  private:
 

@@ -58,7 +58,7 @@ void GeometricPotentialPlotter::RefreshEquipotentials() {
 }
 
 GeometricPotentialPlotter::Equipotentials const*
-GeometricPotentialPlotter::equipotentials() {
+GeometricPotentialPlotter::equipotentials() const {
   return equipotentials_.has_value() ? &*equipotentials_ : nullptr;
 }
 
