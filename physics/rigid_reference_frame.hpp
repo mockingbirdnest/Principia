@@ -117,8 +117,6 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
     Bivector<Derivative<ScalarB, Time, order>, InertialFrame> binormal;
   };
 
-  // TODO(phl): TeX and reference.
-
   // Computes the orthogonal and orthonormal trihedra associated with
   // |ThisFrame|.
   static void ComputeTrihedra(
