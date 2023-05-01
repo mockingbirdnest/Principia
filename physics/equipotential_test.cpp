@@ -468,7 +468,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
       trajectory_positions[i].push_back(dof.position());
     }
     // TODO(egg): Somehow extract that from the reference frame.
-    auto const r = [&](Instant const& t) -> quantities::Length {
+    auto const r = [&](Instant const& t) -> Length {
       return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
               ephemeris_->trajectory(moon)->EvaluatePosition(t))
           .Norm();

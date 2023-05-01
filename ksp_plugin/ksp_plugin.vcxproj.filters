@@ -77,6 +77,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="geometric_potential_plotter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -182,6 +185,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\geometry\instant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geometric_potential_plotter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
