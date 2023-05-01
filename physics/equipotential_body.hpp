@@ -80,8 +80,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
         q = double_q.value;
         β = double_β.value;
         DependentVariableDerivatives derivatives;
-        CHECK_OK(RightHandSide(
-            binormal, position, t, state.s.value, values, derivatives));
+        RightHandSide(binormal, position, t, state.s.value, values, derivatives)
+            .IgnoreError();
         auto const& [qʹ, βʹ] = derivatives;
         CHECK_OK(equipotential.Append(
             Instant() +
