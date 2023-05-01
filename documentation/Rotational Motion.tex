@@ -149,7 +149,7 @@ The jerk vector field is the total derivative of this field with respect to time
    \pderiv{\vq}{\VectorSymbol{\gG}} \deriv{t}{\vq} +
    \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \deriv{t}{\vq_k} =
    \pderiv{\vq}{\VectorSymbol{\gG}} \dot{\vq} +
-   \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \dot{\vq_k}
+   \sum{k = 1}[n] \pderiv{\vq_k}{\VectorSymbol{\gG}} \dot{\vq}_k
 \]
 To compute it, let's first focus on the partial derivatives with respect to $\vq_k$:
 \begin{align*}
@@ -171,7 +171,7 @@ Putting all these calculations together we obtain the jerk exercised by the bodi
 \deriv{t}{\VectorSymbol{\gG}} =
   \sum{k = 1}[n] \gm_k \pa{\frac{\Identity}{\norm{\vq_k - \vq}^3} -
   3 \frac{\pa{\vq_k - \vq} \Tensor \pa{\vq_k - \vq}}{\norm{\vq_k - \vq}^5}} 
-  \pa{\dot{\vq_k} - \dot{\vq}}
+  \pa{\dot{\vq}_k - \dot{\vq}}
 \label{eqnjerk}
 \end{equation}
 The computation of $\dddot{\vr} = \dddot{\vq}_2 - \dddot{\vq}_1$ is then straightforward.  $\dddot{\vq}_1$ is obtained by evaluating (\ref{eqnjerk}) at $\vq = \vq_1$ using a system from which $B_1$ is excluded.  Similarly, $\dddot{\vq}_2$ is obtained by evaluation (\ref{eqnjerk}) at $\vq = \vq_2$ using a system from which $B_2$ is excluded.
