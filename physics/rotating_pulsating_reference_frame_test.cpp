@@ -159,10 +159,10 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
           earth_moon_trajectory.back().degrees_of_freedom),
       Componentwise(AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.position(),
-                        IsNear(2'110.9_(1) * Metre)),
+                        IsNear(376.09_(1) * Metre)),
                     AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
-                        IsNear(265.9_(1) * Milli(Metre) / Second))));
+                        IsNear(41.22_(1) * Milli(Metre) / Second))));
 }
 
 #endif
