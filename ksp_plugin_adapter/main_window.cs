@@ -221,6 +221,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                   GUILayoutWidth(5))) {
             show_only_pinned_markers = true;
             show_only_pinned_celestials = true;
+            hide_equipotentials = true;
           }
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_MainWindow_Declutter_ShowOnly"));
