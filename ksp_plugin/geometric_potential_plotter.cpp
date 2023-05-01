@@ -165,8 +165,8 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   for (int i = 1; i <= parameters.levels; ++i) {
     RETURN_IF_STOPPED;
     SpecificEnergy const energy =
-        maximum_maximorum -
-        i * (1.0 / parameters.l1_level * maximum_maximorum - approx_l1_energy);
+        maximum_maximorum - i * (1.0 / parameters.l1_level *
+                                 (maximum_maximorum - approx_l1_energy));
     // TODO(phl): Make this interruptible.
     auto lines = equipotential.ComputeLines(
         plane,
