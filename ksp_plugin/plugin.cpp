@@ -1555,6 +1555,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                                   plugin->ephemeris_.get());
   }
 
+  plugin->geometric_potential_plotter_.emplace(plugin->ephemeris_.get());
+
   // Note that for proper deserialization of parts this list must be
   // reconstructed in its original order.
   auto const part_id_to_part =

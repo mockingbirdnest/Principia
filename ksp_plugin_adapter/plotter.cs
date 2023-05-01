@@ -10,6 +10,30 @@ class Plotter {
     adapter_ = adapter;
   }
 
+  public void PlotEquipotentials(DisposablePlanetarium planetarium) {
+    int number_of_equipotentials = Plugin.EquipotentialCount();
+    if (number_of_equipotentials == 0) {
+      return;
+    }
+    for (int i = equipotential_meshes_.Count;
+         i < number_of_equipotentials;
+         ++i) {
+      equipotential_meshes_.Add(MakeDynamicMesh());
+    }
+    var colour = adapter_.plotting_frame_selector_.OrientingBody()
+        .orbitDriver?.Renderer?.orbitColor ?? XKCDColors.SunshineYellow;
+    for (int i = 0; i < number_of_equipotentials; ++i) {
+      planetarium.PlanetariumPlotEquipotential(
+          Plugin,
+          i,
+          VertexBuffer.data,
+          VertexBuffer.size,
+          out int vertex_count);
+      DrawLineMesh(equipotential_meshes_[i], vertex_count, colour,
+                   GLLines.Style.Solid);
+    }
+  }
+
   public void PlotTrajectories(DisposablePlanetarium planetarium,
                                string main_vessel_guid,
                                double history_length) {
@@ -287,6 +311,8 @@ class Plotter {
   private UnityEngine.Mesh psychohistory_mesh_;
   private UnityEngine.Mesh prediction_mesh_;
   private readonly List<UnityEngine.Mesh> flight_plan_segment_meshes_ =
+      new List<UnityEngine.Mesh>();
+  private readonly List<UnityEngine.Mesh> equipotential_meshes_ =
       new List<UnityEngine.Mesh>();
   private UnityEngine.Mesh target_psychohistory_mesh_;
   private UnityEngine.Mesh target_prediction_mesh_;

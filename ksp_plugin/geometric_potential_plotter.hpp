@@ -36,7 +36,8 @@ class GeometricPotentialPlotter {
     Parameters parameters;
   };
 
-  GeometricPotentialPlotter(not_null<Ephemeris<Barycentric>*> ephemeris);
+  explicit GeometricPotentialPlotter(
+      not_null<Ephemeris<Barycentric>*> ephemeris);
 
   // Cancel any computation in progress, causing the next call to
   // |RequestEquipotentials| to be processed as fast as possible.
@@ -77,9 +78,6 @@ class GeometricPotentialPlotter {
   // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
   // by the main thread.
   std::optional<Equipotentials> next_equipotentials_ GUARDED_BY(lock_);
-  // |progress_of_next_analysis_| is set by the |analyser_| thread; it tracks
-  // progress in computing |next_analysis_|.
-  std::atomic<double> progress_of_next_analysis_ = 0;
 };
 
 }  // namespace internal
