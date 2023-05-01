@@ -123,12 +123,25 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
     maximum_maximorum = std::max(maximum_maximorum, potential(arg_maximum));
   }
 
+  Position<Barycentric> const primary_barycentric_position =
+          ephemeris_->trajectory(&primary)->EvaluatePosition(t);
+  Position<Barycentric> const secondary_barycentric_position =
+      ephemeris_->trajectory(&secondary)->EvaluatePosition(t);
+  Length const r =
+      (secondary_barycentric_position - primary_barycentric_position).Norm();
+
   Position<Navigation> const primary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-          ephemeris_->trajectory(&primary)->EvaluatePosition(t));
+          primary_barycentric_position);
   Position<Navigation> const secondary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-          ephemeris_->trajectory(&secondary)->EvaluatePosition(t));
+          secondary_barycentric_position);
+
+  // TODO(egg): Consider additional wells.
+  std::vector<Equipotential<Barycentric, Navigation>::Well> wells{
+      {secondary_position, secondary.min_radius() / r * (1 * Metre)},
+      {primary_position, primary.min_radius() / r * (1 * Metre)}};
+
   double const arg_approx_l1 = Brent(
       [&](double const x) {
         return potential(
@@ -161,7 +174,9 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   Equipotentials equipotentials{.lines = {},
                                 .parameters = parameters};
 
-  auto const r = (secondary_position - primary_position).Norm();
+  auto const towards_infinity = [](Position<Navigation> q) {
+    return Navigation::origin + Normalize(q - Navigation::origin) * 3 * Metre;
+  };
   for (int i = 1; i <= parameters.levels; ++i) {
     RETURN_IF_STOPPED;
     SpecificEnergy const energy =
@@ -169,32 +184,14 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
                                  (maximum_maximorum - approx_l1_energy));
     // TODO(phl): Make this interruptible.
     auto lines = equipotential.ComputeLines(
-        plane,
-        t,
-        arg_maximorum,
-        {{secondary_position, secondary.min_radius() / r * (1 * Metre)},
-         {primary_position, primary.min_radius() / r * (1 * Metre)}},
-        [](Position<Navigation> q) {
-          return Navigation::origin +
-                 Normalize(q - Navigation::origin) * 3 * Metre;
-        },
-        energy);
+        plane, t, arg_maximorum, wells, towards_infinity, energy);
     equipotentials.lines.insert(equipotentials.lines.end(),
                                 std::make_move_iterator(lines.begin()),
                                 std::make_move_iterator(lines.end()));
   }
   if (parameters.show_l2_level) {
     auto lines = equipotential.ComputeLines(
-        plane,
-        t,
-        arg_maximorum,
-        {{secondary_position, secondary.min_radius() / r * (1 * Metre)},
-         {primary_position, primary.min_radius() / r * (1 * Metre)}},
-        [](Position<Navigation> q) {
-          return Navigation::origin +
-                 Normalize(q - Navigation::origin) * 3 * Metre;
-        },
-        approx_l2_energy);
+        plane, t, arg_maximorum, wells, towards_infinity, approx_l2_energy);
     equipotentials.lines.insert(equipotentials.lines.end(),
                                 std::make_move_iterator(lines.begin()),
                                 std::make_move_iterator(lines.end()));
