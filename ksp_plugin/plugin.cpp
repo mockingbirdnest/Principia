@@ -1183,8 +1183,8 @@ Plugin::NewBodySurfaceNavigationFrame(
 }
 
 not_null<std::unique_ptr<PlottingFrame>>
-Plugin::NewRotatingPulsatingPlottingFrame(Index primary_index,
-                                          Index secondary_index) const {
+Plugin::NewRotatingPulsatingPlottingFrame(Index const primary_index,
+                                          Index const secondary_index) const {
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
   Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
   return make_not_null_unique<

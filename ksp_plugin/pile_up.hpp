@@ -19,10 +19,10 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/euler_solver.hpp"
-#include "physics/inertia_tensor.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/mechanical_system.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -51,10 +51,10 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_euler_solver;
-using namespace principia::physics::_inertia_tensor;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_mechanical_system;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

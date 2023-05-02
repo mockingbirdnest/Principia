@@ -20,8 +20,8 @@ internal static class CelestialExtensions {
   }
 }
 
-internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer where Parameters : struct, ReferenceFrameParameters {
-  public delegate void Callback(Parameters? frame_parameters,
+internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWindowRenderer where ReferenceFrameParameters : struct, ksp_plugin_adapter.ReferenceFrameParameters {
+  public delegate void Callback(ReferenceFrameParameters? frame_parameters,
                                 Vessel target_vessel);
 
   public ReferenceFrameSelector(ISupervisor supervisor,
@@ -54,7 +54,7 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
     });
   }
 
-  public void SetFrameParameters(Parameters parameters) {
+  public void SetFrameParameters(ReferenceFrameParameters parameters) {
     EffectChange(() => {
       frame_type = (FrameType)parameters.extension;
       switch (frame_type) {
@@ -431,8 +431,6 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
   }
 
   public bool FixesBody(CelestialBody celestial) {
-    // TODO(egg): When we have the rotating-pulsating frame, this should return
-    // true for both bodies.
     return celestial == Centre() ||
         (frame_type == FrameType.ROTATING_PULSATING &&
             (celestial == selected_celestial ||
@@ -456,11 +454,11 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
     }
   }
 
-  public Parameters FrameParameters() {
+  public ReferenceFrameParameters FrameParameters() {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_SURFACE:
-        return new Parameters{
+        return new ReferenceFrameParameters{
             extension = frame_type,
             centre_index = selected_celestial.flightGlobalsIndex
         };
@@ -474,7 +472,7 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         // terminology of |BodyCentredBodyDirection|).
         // We do the same for the rotating-pulsating frame to facilitate
         // conversion to the rigid frame when picking a default manœuvre frame.
-        return new Parameters{
+        return new ReferenceFrameParameters{
             extension = frame_type,
             primary_index = selected_celestial.flightGlobalsIndex,
             secondary_index =
@@ -642,7 +640,7 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
           frame_type = FrameType.BODY_CENTRED_PARENT_DIRECTION;
         });
       }
-      if (typeof(Parameters) == typeof(PlottingFrameParameters) &&
+      if (typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters) &&
           !celestial.is_root() &&
           ToggleButton(
               SelectedFrameIs(celestial,
@@ -708,7 +706,7 @@ internal class ReferenceFrameSelector<Parameters> : SupervisedWindowRenderer whe
         target_frame_selected != target_frame_was_selected) {
       on_change_(
           target_frame_selected ? null
-                                : (Parameters?)FrameParameters(),
+                                : (ReferenceFrameParameters?)FrameParameters(),
           target_frame_selected ? target : null);
       is_freshly_constructed_ = false;
     }

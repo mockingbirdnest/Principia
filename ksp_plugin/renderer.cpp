@@ -14,6 +14,7 @@ namespace _renderer {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_ranges;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_permutation;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
@@ -149,8 +150,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
   Similarity<Navigation, World> const
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
-  for (auto it = begin; it != end; ++it) {
-    auto const& [t, degrees_of_freedom] = *it;
+  for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
         degrees_of_freedom;
     ConformalMap<double, Navigation, World> const
