@@ -56,7 +56,6 @@ class GeometricPotentialPlotter {
   Equipotentials const* equipotentials() const;
 
  private:
-
   absl::Status PlotEquipotentials(Parameters const& parameters);
 
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
