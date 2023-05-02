@@ -131,6 +131,11 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
+  Vector<Jerk, InertialFrame> const primary_jerk =
+      ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary_, t);
+  Vector<Jerk, InertialFrame> const secondary_jerk =
+      ephemeris_->ComputeGravitationalJerkOnMassiveBody(secondary_, t);
+
   auto const to_this_frame = ToThisFrame(primary_degrees_of_freedom,
                                          secondary_degrees_of_freedom,
                                          primary_acceleration,
@@ -144,8 +149,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
       primary_degrees_of_freedom.velocity();
   Vector<Acceleration, InertialFrame> const r̈ =
       secondary_acceleration - primary_acceleration;
-  // TODO(phl): Compute using the Jacobian.
-  Vector<Jerk, InertialFrame> const r⁽³⁾;
+  Vector<Jerk, InertialFrame> const r⁽³⁾ = secondary_jerk - primary_jerk;
 
   Trihedron<Length, ArealSpeed> orthogonal;
   Trihedron<double, double> orthonormal;

@@ -153,16 +153,15 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
 
   EXPECT_THAT(icrs_trajectory.back().time, Eq(t_final));
   EXPECT_THAT(earth_moon_trajectory.back().time, Eq(t_final));
-  // TODO(egg): These errors make no sense.
   EXPECT_THAT(
       earth_moon_.FromThisFrameAtTimeSimilarly(t_final)(
           earth_moon_trajectory.back().degrees_of_freedom),
       Componentwise(AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.position(),
-                        IsNear(376.09_(1) * Metre)),
+                        IsNear(167.2_(1) * Milli(Metre))),
                     AbsoluteErrorFrom(
                         icrs_trajectory.back().degrees_of_freedom.velocity(),
-                        IsNear(41.22_(1) * Milli(Metre) / Second))));
+                        IsNear(18.34_(1) * Micro(Metre) / Second))));
 }
 
 #endif
