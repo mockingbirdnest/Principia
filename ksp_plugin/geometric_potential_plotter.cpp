@@ -17,6 +17,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -171,6 +172,10 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
           Navigation::origin + 2 * (secondary_position - Navigation::origin)),
       std::pair(arg_approx_l2, 1 - arg_approx_l2)));
 
+  SpecificEnergy const l45_separator =
+      maximum_maximorum - (maximum_maximorum - approx_l1_energy) /
+                              (4 * Sqrt(primary.mass() / secondary.mass()));
+
   Equipotentials equipotentials{.lines = {},
                                 .parameters = parameters};
 
@@ -190,11 +195,14 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
                                 std::make_move_iterator(lines.end()));
   }
   if (parameters.show_l2_level) {
-    auto lines = equipotential.ComputeLines(
-        plane, t, arg_maximorum, wells, towards_infinity, approx_l2_energy);
-    equipotentials.lines.insert(equipotentials.lines.end(),
-                                std::make_move_iterator(lines.begin()),
-                                std::make_move_iterator(lines.end()));
+    for (SpecificEnergy const energy :
+         {approx_l2_energy, l45_separator}) {
+      auto lines = equipotential.ComputeLines(
+          plane, t, arg_maximorum, wells, towards_infinity, energy);
+      equipotentials.lines.insert(equipotentials.lines.end(),
+                                  std::make_move_iterator(lines.begin()),
+                                  std::make_move_iterator(lines.end()));
+    }
   }
 
   absl::MutexLock l(&lock_);
