@@ -902,6 +902,82 @@ TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
   }
 }
 
+TEST_P(EphemerisTest, ComputeGravitationalJerkOnMasslessBody) {
+  SolarSystem<ICRS> const solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  Instant const j2000 = solar_system_2000.epoch();
+
+  auto ephemeris = solar_system_2000.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance-*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order4Optimal,
+              Ephemeris<ICRS>::NewtonianMotionEquation>(),
+          /*step=*/10 * Minute));
+  CHECK_OK(ephemeris->Prolong(j2000));
+
+  auto const earth = ephemeris->bodies()[solar_system_2000.index("Earth")];
+  auto const earth_trajectory = ephemeris->trajectory(earth);
+  auto const earth_degrees_of_freedom =
+      earth_trajectory->EvaluateDegreesOfFreedom(j2000);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> delay_distribution(1, 5);
+  std::uniform_real_distribution<double> length_distribution(-1e9, 1e9);
+  std::uniform_real_distribution<double> speed_distribution(-1e3, 1e3);
+  for (int i = 0; i < 10; ++i) {
+    Instant previous_t = j2000;
+    DiscreteTrajectory<ICRS> vessel_trajectory;
+    Displacement<ICRS> const displacement(
+        {length_distribution(random) * Metre,
+         length_distribution(random) * Metre,
+         length_distribution(random) * Metre});
+    Velocity<ICRS> const velocity(
+        {speed_distribution(random) * Metre / Second,
+         speed_distribution(random) * Metre / Second,
+         speed_distribution(random) * Metre / Second});
+    CHECK_OK(vessel_trajectory.Append(
+        previous_t,
+        earth_degrees_of_freedom +
+            RelativeDegreesOfFreedom<ICRS>(displacement, velocity)));
+    auto const instance = ephemeris->NewInstance(
+        {&vessel_trajectory},
+        Ephemeris<ICRS>::NoIntrinsicAccelerations,
+        Ephemeris<ICRS>::FixedStepParameters(
+            integrator(), 10 * Second));
+    for (Instant t = j2000 + 1 * Minute; t < j2000 + 100 * Minute;
+         t += delay_distribution(random) * Minute) {
+      CHECK_OK(ephemeris->Prolong(t));
+      CHECK_OK(ephemeris->FlowWithFixedStep(t + 10 * Minute, *instance));
+      auto const previous_acceleration =
+          ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
+              vessel_trajectory.EvaluatePosition(previous_t), previous_t);
+      auto const acceleration =
+          ephemeris->ComputeGravitationalAccelerationOnMasslessBody(
+              vessel_trajectory.EvaluatePosition(t), t);
+      auto const finite_difference_jerk =
+          (acceleration - previous_acceleration) / (t - previous_t);
+      auto const actual_jerk =
+          ephemeris->ComputeGravitationalJerkOnMasslessBody(
+              vessel_trajectory.EvaluateDegreesOfFreedom(t), t);
+
+      EXPECT_THAT(
+          finite_difference_jerk,
+          Componentwise(RelativeErrorFrom(actual_jerk.coordinates().x,
+                                          AllOf(Gt(9.6e-7), Lt(1.9e-3))),
+                        RelativeErrorFrom(actual_jerk.coordinates().y,
+                                          AllOf(Gt(6.0e-6), Lt(2.2e-3))),
+                        RelativeErrorFrom(actual_jerk.coordinates().z,
+                                          AllOf(Gt(1.8e-6), Lt(4.3e-3)))));
+
+      previous_t = t;
+    }
+  }
+}
+
 TEST_P(EphemerisTest, ComputeGravitationalJerkOnMassiveBody) {
   SolarSystem<ICRS> const solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",

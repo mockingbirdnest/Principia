@@ -107,6 +107,9 @@ class BodyCentredBodyDirectionReferenceFrame
   std::function<Vector<Acceleration, InertialFrame>(
       Position<InertialFrame> const& position,
       Instant const& t)> compute_gravitational_acceleration_on_primary_;
+  std::function<Vector<Jerk, InertialFrame>(
+      DegreesOfFreedom<InertialFrame> const& degrees_of_freedom,
+      Instant const& t)> compute_gravitational_jerk_on_primary_;
   std::function<Trajectory<InertialFrame> const&()> const primary_trajectory_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       secondary_trajectory_;
