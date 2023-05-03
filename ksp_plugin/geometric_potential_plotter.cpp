@@ -162,6 +162,17 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
       0.0,
       1.0,
       std::greater<>{});
+  double const arg_approx_l3 = Brent(
+      [&](double x) {
+        return potential(Barycentre(
+            std::pair(primary_position,
+                      Navigation::origin -
+                          2 * (secondary_position - Navigation::origin)),
+            std::pair(x, 1 - x)));
+      },
+      0.0,
+      1.0,
+      std::greater<>{});
   SpecificEnergy const approx_l1_energy =
       potential(Barycentre(std::pair(secondary_position, primary_position),
                            std::pair(arg_approx_l1, 1 - arg_approx_l1)));
@@ -170,6 +181,11 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
           secondary_position,
           Navigation::origin + 2 * (secondary_position - Navigation::origin)),
       std::pair(arg_approx_l2, 1 - arg_approx_l2)));
+  SpecificEnergy const approx_l3_energy = potential(Barycentre(
+      std::pair(
+          primary_position,
+          Navigation::origin - 2 * (secondary_position - Navigation::origin)),
+      std::pair(arg_approx_l3, 1 - arg_approx_l3)));
 
   Equipotentials equipotentials{.lines = {},
                                 .parameters = parameters};
@@ -177,11 +193,29 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   auto const towards_infinity = [](Position<Navigation> q) {
     return Navigation::origin + Normalize(q - Navigation::origin) * 3 * Metre;
   };
+  SpecificEnergy const coarse_interval =
+      1.0 / parameters.l1_level * (maximum_maximorum - approx_l1_energy);
+  if (maximum_maximorum - approx_l3_energy < 3 * coarse_interval) {
+    int const fine_levels =
+                 1 + static_cast<int>(3 * coarse_interval /
+                                      (maximum_maximorum - approx_l3_energy));
+    SpecificEnergy const fine_interval = coarse_interval / fine_levels;
+    for (int i = 1; i <= std::min(parameters.levels, fine_levels - 1); ++i) {
+      RETURN_IF_STOPPED;
+    SpecificEnergy const energy =
+        maximum_maximorum - i * fine_interval;
+    // TODO(phl): Make this interruptible.
+    auto lines = equipotential.ComputeLines(
+        plane, t, arg_maximorum, wells, towards_infinity, energy);
+    equipotentials.lines.insert(equipotentials.lines.end(),
+                                std::make_move_iterator(lines.begin()),
+                                std::make_move_iterator(lines.end()));
+    }
+  }
   for (int i = 1; i <= parameters.levels; ++i) {
     RETURN_IF_STOPPED;
     SpecificEnergy const energy =
-        maximum_maximorum - i * (1.0 / parameters.l1_level *
-                                 (maximum_maximorum - approx_l1_energy));
+        maximum_maximorum - i * coarse_interval;
     // TODO(phl): Make this interruptible.
     auto lines = equipotential.ComputeLines(
         plane, t, arg_maximorum, wells, towards_infinity, energy);
