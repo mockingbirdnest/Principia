@@ -1983,6 +1983,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             set_navball_texture(inertial_navball_texture_);
             break;
           case BARYCENTRIC_ROTATING:
+          case ROTATING_PULSATING:
             set_navball_texture(barycentric_navball_texture_);
             break;
           case BODY_CENTRED_PARENT_DIRECTION:

@@ -1,5 +1,9 @@
 #include "geometric_potential_plotter.hpp"
 
+#include <algorithm>
+#include <functional>
+#include <vector>
+
 #include "numerics/global_optimization.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
@@ -12,7 +16,7 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_plane;
 using namespace principia::geometry::_space;
-using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_root_finders;
