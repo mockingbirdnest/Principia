@@ -26,7 +26,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 GeometricPotentialPlotter::GeometricPotentialPlotter(
-    not_null<Ephemeris<Barycentric>*> ephemeris)
+    not_null<Ephemeris<Barycentric>*> const ephemeris)
     : ephemeris_(ephemeris) {}
 
 void GeometricPotentialPlotter::Interrupt() {
@@ -48,8 +48,7 @@ void GeometricPotentialPlotter::RequestEquipotentials(
 }
 
 std::optional<GeometricPotentialPlotter::Parameters> const&
-GeometricPotentialPlotter::last_parameters()
-    const {
+GeometricPotentialPlotter::last_parameters() const {
   return last_parameters_;
 }
 
@@ -88,22 +87,29 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
                           &t](Position<Navigation> const& position) {
     return reference_frame.GeometricPotential(t, position);
   };
-  auto const acceleration = [&reference_frame,
+  auto const gradient = [&reference_frame,
                              &t](Position<Navigation> const& position) {
     auto const acceleration = reference_frame.GeometricAcceleration(
         t, {position, Velocity<Navigation>{}});
-    // Note the sign.
+    // Note the sign: the acceleration goes down the potential, we need the
+    // gradient which goes up.
     return -Vector<Acceleration, Navigation>({acceleration.coordinates()[0],
                                               acceleration.coordinates()[1],
                                               Acceleration{}});
   };
 
+  // The distance between the bodies is 1 m in the rotating-pulsating frame, and
+  // the origin is at their barycentre.  A 3 m box is large enough to encompass
+  // the L₄ and L₅ Lagrange points, as well as the whole ridge they sit on,
+  // regardless of the mass ratio.
   const MultiLevelSingleLinkage<SpecificEnergy, Position<Navigation>, 2>::Box
       box = {.centre = Navigation::origin,
              .vertices = {
                  Displacement<Navigation>({3 * Metre, 0 * Metre, 0 * Metre}),
                  Displacement<Navigation>({0 * Metre, 3 * Metre, 0 * Metre})}};
 
+  // This is a length in the rotating-pulsating frame, so really one billionth
+  // of the distance between the bodies.
   constexpr Length characteristic_length = 1 * Nano(Metre);
   Equipotential<Barycentric, Navigation> const equipotential(
       {EmbeddedExplicitRungeKuttaIntegrator<
@@ -117,7 +123,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   // TODO(phl): Make this interruptible.
   auto const arg_maximorum =
       MultiLevelSingleLinkage<SpecificEnergy, Position<Navigation>, 2>(
-          box, potential, acceleration)
+          box, potential, gradient)
           .FindGlobalMaxima(
               /*points_per_round=*/1000,
               /*number_of_rounds=*/std::nullopt,
@@ -157,6 +163,10 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
       std::greater<>{});
   double const arg_approx_l2 = Brent(
       [&](double x) {
+        // L₂ lies a short distance away the smaller body in the direction
+        // opposite the barycentre.  We look for it between the smaller body and
+        // a point as far from the second body as the barycentre, but in the
+        // other direction.
         return potential(Barycentre(
             std::pair(secondary_position,
                       Navigation::origin +
