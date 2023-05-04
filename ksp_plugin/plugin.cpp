@@ -269,6 +269,8 @@ void Plugin::EndInitialization() {
               ephemeris_.get(),
               sun_->body()));
 
+  geometric_potential_plotter_.emplace(ephemeris_.get());
+
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
   ephemeris_->WriteToMessage(&ephemeris_message);
@@ -1362,6 +1364,16 @@ Renderer const& Plugin::renderer() const {
   return *renderer_;
 }
 
+GeometricPotentialPlotter& Plugin::geometric_potential_plotter() {
+  CHECK(!initializing_);
+  return *geometric_potential_plotter_;
+}
+
+GeometricPotentialPlotter const& Plugin::geometric_potential_plotter() const {
+  CHECK(!initializing_);
+  return *geometric_potential_plotter_;
+}
+
 void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
@@ -1542,6 +1554,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                                   plugin->sun_,
                                                   plugin->ephemeris_.get());
   }
+
+  plugin->geometric_potential_plotter_.emplace(plugin->ephemeris_.get());
 
   // Note that for proper deserialization of parts this list must be
   // reconstructed in its original order.

@@ -22,6 +22,7 @@
 #include "geometry/space.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/geometric_potential_plotter.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
@@ -69,6 +70,7 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_geometric_potential_plotter;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
@@ -455,6 +457,9 @@ class Plugin {
   virtual Renderer& renderer();
   virtual Renderer const& renderer() const;
 
+  virtual GeometricPotentialPlotter& geometric_potential_plotter();
+  virtual GeometricPotentialPlotter const& geometric_potential_plotter() const;
+
   // Must be called after initialization.
   virtual void WriteToMessage(not_null<serialization::Plugin*> message) const;
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
@@ -573,6 +578,8 @@ class Plugin {
   // vessels from it.  Hopefully it's small enough that we don't care.
   std::map<GUID, Ephemeris<Barycentric>::AdaptiveStepParameters>
   zombie_prediction_adaptive_step_parameters_;
+
+  std::optional<GeometricPotentialPlotter> geometric_potential_plotter_;
 
   friend class NavballFrameField;
   friend class ksp_plugin::TestablePlugin;

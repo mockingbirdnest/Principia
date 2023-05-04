@@ -361,5 +361,41 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
   }
 }
 
+// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// rendered prediction of the vessel with the given GUID.
+void __cdecl principia__PlanetariumPlotEquipotential(
+    Planetarium const* const planetarium,
+    Plugin const* const plugin,
+    int const index,
+    ScaledSpacePoint* const vertices,
+    int const vertices_size,
+    int* const vertex_count) {
+  journal::Method<journal::PlanetariumPlotEquipotential> m(
+      {planetarium, plugin, index, vertices, vertices_size},
+      {vertex_count});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(planetarium);
+  *vertex_count = 0;
+
+  auto const& equipotentials =
+      *CHECK_NOTNULL(plugin->geometric_potential_plotter().equipotentials());
+  CHECK_GE(index, 0);
+  CHECK_LT(index, equipotentials.lines.size());
+  DiscreteTrajectory<Navigation> const& equipotential =
+      equipotentials.lines[index];
+
+  planetarium->PlotMethod3(
+      equipotential,
+      equipotential.front().time,
+      equipotential.back().time,
+      plugin->CurrentTime(),
+      /*reverse=*/false,
+      [vertices, vertex_count](ScaledSpacePoint const& vertex) {
+        vertices[(*vertex_count)++] = vertex;
+      },
+      vertices_size);
+  return m.Return();
+}
+
 }  // namespace interface
 }  // namespace principia

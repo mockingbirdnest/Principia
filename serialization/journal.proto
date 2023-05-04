@@ -237,7 +237,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5182.
+  extensions 5000 to 5999;  // Last used: 5184.
 }
 
 message AdvanceTime {
@@ -529,6 +529,20 @@ message EndInitialization {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   optional In in = 1;
+}
+
+message EquipotentialCount {
+  extend Method {
+    optional EquipotentialCount extension = 5184;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Return {
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 // These functions form the external API of Principia; announce deprecation one
@@ -1919,6 +1933,27 @@ message PlanetariumPlotCelestialPastTrajectory {
   message Out {
     required double minimal_distance_from_camera = 1;
     required int32 vertex_count = 2;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotEquipotential {
+  extend Method {
+    optional PlanetariumPlotEquipotential extension = 5183;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 index = 3;
+    required fixed64 vertices = 4 [(pointer_to) = "ScaledSpacePoint",
+                                   (is_csharp_owned) = true];
+    required int32 vertices_size = 5 [(size_of) = "vertices"];
+  }
+  message Out {
+    required int32 vertex_count = 1;
   }
   optional In in = 1;
   optional Out out = 2;

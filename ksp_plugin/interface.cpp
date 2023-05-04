@@ -100,6 +100,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::physics::_tensors;
 using namespace principia::quantities::_astronomy;
@@ -574,6 +575,38 @@ void __cdecl principia__EndInitialization(Plugin* const plugin) {
   CHECK_NOTNULL(plugin);
   plugin->EndInitialization();
   return m.Return();
+}
+
+int __cdecl principia__EquipotentialCount(Plugin* const plugin) {
+  journal::Method<journal::EquipotentialCount> m({plugin});
+  CHECK_NOTNULL(plugin);
+  plugin->geometric_potential_plotter().RefreshEquipotentials();
+  auto const* equipotentials =
+      plugin->geometric_potential_plotter().equipotentials();
+  PlottingFrame const* plotting_frame = plugin->renderer().GetPlottingFrame();
+  auto const* plotting_frame_as_rotating_pulsating =
+      dynamic_cast<
+          RotatingPulsatingReferenceFrame<Barycentric,
+                                          Navigation> const*>(plotting_frame);
+  if (!plotting_frame_as_rotating_pulsating) {
+    // We do not draw equipotentials in the current plotting frame.
+    return m.Return(0);
+  } else {
+    // TODO(egg): We may not want to recompute all the time.
+    plugin->geometric_potential_plotter().RequestEquipotentials(
+        {plotting_frame_as_rotating_pulsating->primary(),
+         plotting_frame_as_rotating_pulsating->secondary(),
+         plugin->CurrentTime()});
+    if (equipotentials != nullptr &&
+        plotting_frame_as_rotating_pulsating->primary() ==
+            equipotentials->parameters.primary &&
+        plotting_frame_as_rotating_pulsating->secondary() ==
+            equipotentials->parameters.secondary) {
+      return m.Return(equipotentials->lines.size());
+    } else {
+      return m.Return(0);
+    }
+  }
 }
 
 void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(

@@ -1983,6 +1983,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             set_navball_texture(inertial_navball_texture_);
             break;
           case BARYCENTRIC_ROTATING:
+          case ROTATING_PULSATING:
             set_navball_texture(barycentric_navball_texture_);
             break;
           case BODY_CENTRED_PARENT_DIRECTION:
@@ -2152,7 +2153,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        plotter_.PlotTrajectories(planetarium, main_vessel_guid, main_window_.history_length);
+        plotter_.PlotTrajectories(planetarium, main_vessel_guid,
+                                  main_window_.history_length);
+        if (!main_window_.hide_equipotentials) {
+          plotter_.PlotEquipotentials(planetarium);
+        }
       }
     }
   }

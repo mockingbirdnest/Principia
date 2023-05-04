@@ -108,7 +108,6 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     std::function<Position<Frame>(Position<Frame>)> towards_infinity,
     SpecificEnergy const& energy) const -> Lines {
   using WellIterator = typename std::vector<Well>::const_iterator;
-  LOG(ERROR) << "V=" << energy;
 
   // A |PeakDelineation| represents:
   // 1. the set of wells that are not yet delineated from a peak by

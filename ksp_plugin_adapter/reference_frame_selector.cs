@@ -329,7 +329,6 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
-
   }
 
   private static string TargetFrameDescription(Vessel target) {
