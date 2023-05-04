@@ -176,6 +176,10 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
           Navigation::origin + 2 * (secondary_position - Navigation::origin)),
       std::pair(arg_approx_l2, 1 - arg_approx_l2)));
 
+  // This energy is about 42% of the way down from L₄/L₅ to L₃ with equal
+  // masses, and tends towards around 35% as the masses diverge.  Drawing this
+  // equipotential usually distinguishes a small region around L₄/L₅ from the
+  // rest of the ridge that contains them and L₃.
   SpecificEnergy const l45_separator =
       maximum_maximorum - (maximum_maximorum - approx_l1_energy) /
                               (4 * Sqrt(primary.mass() / secondary.mass()));
