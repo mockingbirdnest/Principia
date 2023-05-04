@@ -61,7 +61,6 @@ class GeometricPotentialPlotter {
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
   std::optional<Parameters> last_parameters_;
-
   std::optional<Equipotentials> equipotentials_;
 
   mutable absl::Mutex lock_;
