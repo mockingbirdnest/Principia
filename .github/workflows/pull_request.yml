@@ -1,0 +1,20 @@
+name: Pull request
+
+on:
+  pull_request:
+    branches: [ '*' ]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  check-remove-before-flight:
+    runs-on: windows-latest
+    steps:
+    - name: Check pull request
+      shell: pwsh
+      run: |
+        $event = (Get-Content -Raw $env:GITHUB_EVENT_PATH | ConvertFrom-Json)
+        $event.pull_request.title + $event.pull_request.body
+        | Should -Not -MatchExactly (
+              [System.Text.ASCIIEncoding]::new().GetString(
+                  [System.Text.Encoding]::GetEncoding(20866).GetBytes(
+                      "реможе бефоре флигхт").ForEach({$_ -band 0x7F})))

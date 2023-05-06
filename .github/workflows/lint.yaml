@@ -7,6 +7,19 @@ on:
     branches: [ '*' ]
 
 jobs:
+  check-remove-before-flight:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check source tree
+      shell: pwsh
+      run: |
+        ls -Recurse
+        | sls -CaseSensitive (
+              [System.Text.ASCIIEncoding]::new().GetString(
+                  [System.Text.Encoding]::GetEncoding(20866).GetBytes(
+                      "реможе бефоре флигхт").ForEach({$_ -band 0x7F})))
+        | Should -Be @()
   check-cpp:
     runs-on: windows-latest
     steps:
