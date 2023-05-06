@@ -12,7 +12,7 @@
 #include "journal/profiles.hpp"
 #include "glog/logging.h"
 
-#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
+#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 1
 
 namespace principia {
 namespace journal {
