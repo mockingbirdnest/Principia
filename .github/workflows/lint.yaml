@@ -48,7 +48,10 @@ jobs:
                             /repos/$owner_repo/pulls/$($pr.number)/files |
                     ConvertFrom-Json)
           foreach ($file in $files) {
-            $filenames += $file.filename
+            if ($file.filename.EndsWith(".cpp") -or
+                $file.filename.EndsWith(".hpp")) {
+              $filenames += $file.filename
+            }
           }
         }
 
