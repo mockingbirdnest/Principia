@@ -45,7 +45,7 @@ jobs:
               ($file_line, $message) = $e.Split(@('):'),
                                                 [StringSplitOptions]::None)
               ($file, $line) = $file_line.Split('(')
-              $file = $file.Split('Principia\')[-1]
+              $file = $file.Split('Principia\')[-1] -replace '\\','/'
               $title =  $message.Split('[')[-2]
               $title = $title.Substring(0, $title.Length - 2)
               # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
