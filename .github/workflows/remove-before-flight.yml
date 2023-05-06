@@ -10,7 +10,7 @@ on:
 jobs:
   check-source:
     runs-on: windows-latest
-    if: github.event_name == 'push' || contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.pull_request.action)
+    if: github.event_name == 'push' || contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.action)
     steps:
     - uses: actions/checkout@v3
     - name: Check source tree
