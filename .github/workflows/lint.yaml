@@ -33,7 +33,25 @@ jobs:
         Invoke-WebRequest https://raw.githubusercontent.com/mockingbirdnest/styleguide/casanova-2023-04-25/cpplint/cpplint.py -OutFile cpplint.py
     - name: Run cpplint
       shell: pwsh
+      env:
+        GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       run: |
+        $filenames = @()
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+          $event = (Get-Content -Raw $env:GITHUB_EVENT_PATH | ConvertFrom-Json)
+          $owner_repo = $event.repository.full_name
+          $pr_number = $event.number
+          # Get the list of files changed by the PR.
+          # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests-files
+          $files = (gh api -H "Accept: application/vnd.github+json"     `
+                            -H "X-GitHub-Api-Version: 2022-11-28"        `
+                            /repos/$owner_repo/pulls/$($pr.number)/files |
+                    ConvertFrom-Json)
+          foreach ($file in $files) {
+            $filenames += $file.filename
+          }
+        }
+
         $filters = @(
             "-legal/copyright",
             "-build/c++11",
@@ -44,7 +62,8 @@ jobs:
             "-build/namespaces")
         $errors = @()
         $ErrorActionPreference = "Continue"
-        foreach ($file in $(ls "*\*.[ch]pp")) {
+        $files = if ($filenames) { $filenames } else { ls "*\*.[ch]pp" }
+        foreach ($file in $files) {
           $output = $(
             python .\cpplint.py                           `
                 --extensions=hpp,cpp                      `
