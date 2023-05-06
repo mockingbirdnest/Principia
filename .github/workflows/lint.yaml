@@ -65,7 +65,11 @@ jobs:
             "-build/namespaces")
         $errors = @()
         $ErrorActionPreference = "Continue"
-        $files = if ($filenames) { $filenames } else { ls "*\*.[ch]pp" }
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+          $files = $filenames
+        } else {
+          $files = ls "*\*.[ch]pp"
+        }
         foreach ($file in $files) {
           $output = $(
             python .\cpplint.py                           `
