@@ -42,7 +42,7 @@ jobs:
             $file_errors = $output[0..($output.Length-3)]
             $errors += $file_errors
             foreach ($e in $file_errors) {
-              $e -match '^(.*)\((\d+)\):\s*(.*)\s*\[([^\]])\]\s*\[\d+\]$'
+              $e -match '^(.*)\((\d+)\):\s*(.*)\s*\[([^\]]+)\]\s*\[\d+\]$'
               ($_, $file, $line, $message, $title) = $Matches
               # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
               echo "::warning file=$file,line=$line,title=$title::$message"
