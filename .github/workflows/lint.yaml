@@ -39,24 +39,22 @@ jobs:
           if ($LastExitCode -ne 0) {
             # Drop the the line that says “Done processing” and the one that
             # gives the total number of errors.
-            $errors += $output[0..($output.Length-3)]
+            $file_errors = $output[0..($output.Length-3)]
+            $errors += $file_errors
+            foreach ($e in $file_errors) {
+              ($file_line, $message) = $e.Split(@('):'),
+                                                [StringSplitOptions]::None)
+              ($file, $line) = $file_line.Split('(')
+              $file = $file.Split('Principia\')[-1]
+              $title =  $message.Split('[')[-2]
+              $title = $title.Substring(0, $title.Length - 2)
+              # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
+              echo "::warning file=$file,line=$line,title=$title::$message"
+            }
             $output | write-error
           } else {
             echo $output
           }
         }
-        foreach ($e in $errors) {
-          ($file_line, $message) = $e.Split(@('):'), [StringSplitOptions]::None)
-          ($file, $line) = $file_line.Split('(')
-          $file = $file.Split('Principia\')[-1] -replace '\','/'
-          $title =  $message.Split('[')[-2]
-          $title = $title.Substring(0, $title.Length - 2)
-          # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
-          #REMOVE BEFORE FLIGHT
-          echo $file
-          echo $line
-          echo $title
-          # REMOVE BEFORE FLIGHT
-          echo "::warning file=$file,line=$line,title=$title::$message"
-        }
+        $errors | write-error
         exit $errors.Length
