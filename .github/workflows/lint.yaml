@@ -53,6 +53,11 @@ jobs:
           $title =  $message.Split('[')[-2]
           $title = $title.Substring(0, $title.Length - 2)
           # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
+          #REMOVE BEFORE FLIGHT
+          echo $file
+          echo $line
+          echo $title
+          # REMOVE BEFORE FLIGHT
           echo "::warning file=$file,line=$line,title=$title::$message"
         }
         exit $errors.Length
