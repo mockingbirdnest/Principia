@@ -43,7 +43,7 @@ jobs:
           $pr_number = $event.number
           # Get the list of files changed by the PR.
           # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests-files
-          $files = (gh api -H "Accept: application/vnd.github+json"     `
+          $files = (gh api -H "Accept: application/vnd.github+json"      `
                             -H "X-GitHub-Api-Version: 2022-11-28"        `
                             /repos/$owner_repo/pulls/$($pr.number)/files |
                     ConvertFrom-Json)
