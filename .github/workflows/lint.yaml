@@ -45,8 +45,8 @@ jobs:
             echo $output
           }
         }
-        foreach ($error in $errors) {
-          ($file_line, $message) = $error.Split(@('):'),
+        foreach ($e in $errors) {
+          ($file_line, $message) = $e.Split(@('):'),
                                                 [StringSplitOptions]::None)
           ($file, $line) = $file_line.Split('(')
           $file = $file.Split('Principia\')[-1]
