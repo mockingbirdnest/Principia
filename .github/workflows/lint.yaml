@@ -37,12 +37,22 @@ jobs:
                 $file 2>&1 `
           ).Exception.Message
           if ($LastExitCode -ne 0) {
+            # Drop the the line that says “Done processing” and the one that
+            # gives the total number of errors.
             $errors += $output[0..($output.Length-3)]
             $output | write-error
           } else {
             echo $output
           }
         }
-        $errors | write-error
+        foreach ($error in $errors) {
+          ($file_line, $message) = $error.Split(@('):'),
+                                                [StringSplitOptions]::None)
+          ($file, $line) = $file_line.Split('(')
+          $file = $file.Split('Principia\')[-1]
+          $title =  $message.Split('[')[-2]
+          $title = $title.Substring(0, $title.Length - 2)
+          # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
+          echo "::warning file=$file,line=$line,title=$title::$message"
+        }
         exit $errors.Length
-
