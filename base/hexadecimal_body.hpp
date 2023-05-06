@@ -28,7 +28,7 @@ constexpr char byte_to_hexadecimal_digits[] =
 #define SKIP_26 SKIP_7, SKIP_7, SKIP_7, 0, 0, 0, 0, 0
 #define SKIP_48 SKIP_26, SKIP_7, SKIP_7, SKIP_7, 0
 
-constexpr std::uint8_t hexadecimal_digits_to_nibble[256] = {
+constexpr std::uint8_t hexadecimal_digits_to_nibble [256] = {
     SKIP_48, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
     SKIP_7, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf',
     SKIP_26, '\xa', '\xb', '\xc', '\xd', '\xe', '\xf'};
@@ -50,7 +50,7 @@ void HexadecimalEncoder<null_terminated>::Encode(
   // after reading input[0].  Greater values of |output| would
   // overwrite input data before it is read, unless there is no overlap, i.e.,
   // |&output[input_size << 1] <= input|.
-  CHECK(input.data <= static_cast<void*>(&output.data[1]) ||
+  CHECK(input.data <= static_cast<void*>(&output.data [1]) ||
         static_cast<void*>(&output.data[input.size << 1]) <= input.data)
       << "bad overlap";
   CHECK_GE(output.size, EncodedLength(input)) << "output too small";
@@ -60,10 +60,10 @@ void HexadecimalEncoder<null_terminated>::Encode(
     output.data[2] = 0;
   }
   input.data += input.size - 1;
-  for (std::uint8_t const* const input_rend = input.data - input.size;
+  for (std::uint8_t const * const input_rend = input.data - input.size;
        input.data != input_rend;
        --input.data, output.data -= 2) {
-    std::memcpy(output.data, &byte_to_hexadecimal_digits[*input.data << 1], 2);
+    std::memcpy(output.data, &byte_to_hexadecimal_digits [*input.data << 1], 2);
   }
 }
 
@@ -106,7 +106,7 @@ void HexadecimalEncoder<null_terminated>::Decode(Array<char const> input,
        input.data != input_end;
        input.data += 2, ++output.data) {
     *output.data = (hexadecimal_digits_to_nibble[*input.data] << 4) |
-                   hexadecimal_digits_to_nibble[*(input.data + 1)];
+                   hexadecimal_digits_to_nibble[* (input.data + 1)];
   }
 }
 
