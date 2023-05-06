@@ -25,6 +25,7 @@ constexpr int BitReversedIncrement(int const n, int const bits) {
     CONSTEXPR_DCHECK(n == 0);
     return 0;
   }
+  // REMOVE BEFORE FLIGHT
   CONSTEXPR_DCHECK(n >= 0 && n < 1 << bits);
   CONSTEXPR_DCHECK(bits > 0 && bits < 32);
   // [War03], chapter 7.1 page 105.
