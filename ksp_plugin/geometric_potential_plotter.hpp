@@ -28,7 +28,7 @@ class GeometricPotentialPlotter {
     // The level of the equipotential going through the L₁ Lagrange point.
     int l1_level = 7;
     // Whether to draw an additional equipotential going through the L₂ point.
-    bool show_l2_level = true;
+    bool show_l245_level = true;
   };
 
   struct Equipotentials {

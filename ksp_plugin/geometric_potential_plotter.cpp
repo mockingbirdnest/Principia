@@ -212,7 +212,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
                                 std::make_move_iterator(lines.begin()),
                                 std::make_move_iterator(lines.end()));
   }
-  if (parameters.show_l2_level) {
+  if (parameters.show_l245_level) {
     for (SpecificEnergy const energy :
          {approx_l2_energy, l45_separator}) {
       auto lines = equipotential.ComputeLines(
