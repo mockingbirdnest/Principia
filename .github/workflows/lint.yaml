@@ -20,8 +20,9 @@ jobs:
         $results = (ls -Recurse | sls -CaseSensitive $tag)
         foreach ($result in $results) {
           # https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
-          echo "::error file=$($result.Path),line=$($result.LineNumber)::$tag"
+          echo "::error file=$($result.Path),line=$($result.LineNumber),title=$tag::"
         }
+        $results | Should -Be @()
   check-cpp:
     runs-on: windows-latest
     steps:
