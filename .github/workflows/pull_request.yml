@@ -3,7 +3,7 @@ name: Pull request
 on:
   pull_request:
     branches: [ '*' ]
-    types: [opened, reopened, edited]
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
   check-remove-before-flight:
