@@ -31,15 +31,7 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primary_(primary),
       secondaries_(std::move(secondaries)),
-      rotating_frame_(ephemeris_, primary_, secondaries_) {
-  if (secondaries_.size() > 1) {
-    GravitationalParameter μ;
-    for (not_null<MassiveBody const*> const secondary : secondaries) {
-      μ += secondary->gravitational_parameter();
-    }
-    equivalent_secondary_.emplace(MassiveBody::Parameters(μ));
-  }
-}
+      rotating_frame_(ephemeris_, primary_, secondaries_) {}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
@@ -48,11 +40,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
 }
 
 template<typename InertialFrame, typename ThisFrame>
-not_null<MassiveBody const*>
-RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::secondary() const {
-  return secondaries_.size() == 1
-             ? secondaries_.front()
-             : check_not_null(&equivalent_secondary_.value());
+std::vector<not_null<MassiveBody const*>> const&
+RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::secondaries() const {
+  return secondaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>

@@ -64,7 +64,7 @@ class BarycentricRotatingReferenceFrame
       std::vector<not_null<MassiveBody const*>> secondaries);
 
   not_null<MassiveBody const*> primary() const;
-  not_null<MassiveBody const*> secondary() const;
+  std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
   Instant t_min() const override;
   Instant t_max() const override;
@@ -107,10 +107,7 @@ class BarycentricRotatingReferenceFrame
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
-  // Has at least one element.
   std::vector<not_null<MassiveBody const*>> const secondaries_;
-  // Has a value if and only if |secondaries_.size() > 1|.
-  std::optional<MassiveBody> equivalent_secondary_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       primary_trajectory_;
 };

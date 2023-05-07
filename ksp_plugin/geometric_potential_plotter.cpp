@@ -70,17 +70,8 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
     Parameters const& parameters) {
   Instant const& t = parameters.time;
 
-  auto const& primary =
-      parameters.primary->mass() > parameters.secondary->mass()
-          ? *parameters.primary
-          : *parameters.secondary;
-  auto const& secondary =
-      parameters.primary->mass() > parameters.secondary->mass()
-          ? *parameters.secondary
-          : *parameters.primary;
-
   RotatingPulsatingReferenceFrame<Barycentric, Navigation> const
-      reference_frame(ephemeris_, parameters.primary, parameters.secondary);
+      reference_frame(ephemeris_, parameters.primary, parameters.secondaries);
   auto const plane =
       Plane<Navigation>::OrthogonalTo(Vector<double, Navigation>({0, 0, 1}));
 
@@ -135,23 +126,30 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   }
 
   Position<Barycentric> const primary_barycentric_position =
-          ephemeris_->trajectory(&primary)->EvaluatePosition(t);
-  Position<Barycentric> const secondary_barycentric_position =
-      ephemeris_->trajectory(&secondary)->EvaluatePosition(t);
+      ephemeris_->trajectory(parameters.primary)->EvaluatePosition(t);
+  BarycentreCalculator<Position<Barycentric>, GravitationalParameter>
+      secondary_barycentric_position;
+  for (not_null secondary : parameters.secondaries) {
+    secondary_barycentric_position.Add(
+        ephemeris_->trajectory(secondary)->EvaluatePosition(t),
+        secondary->gravitational_parameter());
+  }
   Length const r =
-      (secondary_barycentric_position - primary_barycentric_position).Norm();
+      (secondary_barycentric_position.Get() - primary_barycentric_position)
+          .Norm();
 
   Position<Navigation> const primary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
           primary_barycentric_position);
   Position<Navigation> const secondary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-          secondary_barycentric_position);
+          secondary_barycentric_position.Get());
 
   // TODO(egg): Consider additional wells.
   std::vector<Equipotential<Barycentric, Navigation>::Well> wells{
-      {secondary_position, secondary.min_radius() / r * (1 * Metre)},
-      {primary_position, primary.min_radius() / r * (1 * Metre)}};
+      {secondary_position,
+       parameters.secondaries.front()->min_radius() / r * (1 * Metre)},
+      {primary_position, parameters.primary->min_radius() / r * (1 * Metre)}};
 
   double const arg_approx_l1 = Brent(
       [&](double const x) {
@@ -191,8 +189,10 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   // equipotential usually distinguishes a small region around L₄/L₅ from the
   // rest of the ridge that contains them and L₃.
   SpecificEnergy const l45_separator =
-      maximum_maximorum - (maximum_maximorum - approx_l1_energy) /
-                              (4 * Sqrt(primary.mass() / secondary.mass()));
+      maximum_maximorum -
+      (maximum_maximorum - approx_l1_energy) /
+          (4 * Sqrt(parameters.primary->gravitational_parameter() /
+                    secondary_barycentric_position.weight()));
 
   Equipotentials equipotentials{.lines = {},
                                 .parameters = parameters};

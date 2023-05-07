@@ -84,7 +84,7 @@ Burn GetBurn(Plugin const& plugin,
       parameters.primary_index = plugin.CelestialIndexOfBody(
           *barycentric_rotating_reference_frame->primary());
       parameters.secondary_index = plugin.CelestialIndexOfBody(
-          *barycentric_rotating_reference_frame->secondary());
+          *barycentric_rotating_reference_frame->secondaries().front());
     }
   }
 

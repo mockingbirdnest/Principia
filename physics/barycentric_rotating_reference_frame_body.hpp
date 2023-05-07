@@ -42,15 +42,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(std::move(ephemeris)),
       primary_(std::move(primary)),
       secondaries_(std::move(secondaries)),
-      primary_trajectory_(ephemeris_->trajectory(primary_)) {
-  if (secondaries_.size() > 1) {
-    GravitationalParameter μ;
-    for (not_null<MassiveBody const*> const secondary : secondaries) {
-      μ += secondary->gravitational_parameter();
-    }
-    equivalent_secondary_.emplace(MassiveBody::Parameters(μ));
-  }
-}
+      primary_trajectory_(ephemeris_->trajectory(primary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
@@ -59,11 +51,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
 }
 
 template<typename InertialFrame, typename ThisFrame>
-not_null<MassiveBody const*>
-BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondary() const {
-  return secondaries_.size() == 1
-             ? secondaries_.front()
-             : check_not_null(&equivalent_secondary_.value());
+std::vector<not_null<MassiveBody const*>> const&
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondaries() const {
+  return secondaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
