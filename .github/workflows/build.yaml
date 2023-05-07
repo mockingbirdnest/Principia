@@ -17,7 +17,7 @@ jobs:
       uses: actions/checkout@v3
     - name: Find MSBuild version
       shell: pwsh
-      run: >
+      run: |
         write-host "msbuild=&.\find_msbuild.ps1"
         echo "msbuild=&.\find_msbuild.ps1" >> "$GITHUB_ENV"
     - name: Restore ${{ matrix.configuration }}
