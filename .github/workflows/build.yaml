@@ -14,6 +14,7 @@ jobs:
     - name: Rebuild Debug and Release in parallel
       shell: pwsh
       run: |
+        &.\find_msbuild.ps1
         $msbuild = &".\find_msbuild.ps1"
         &$msbuild /t:Restore Principia.sln
         &$msbuild /t:"Clean;Build" /m .\debug_and_release_in_parallel.xml
