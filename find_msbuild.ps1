@@ -59,6 +59,9 @@ if ($strict) {
   $i = 0
   foreach ($name in $names) {
   echo $name
+  echo $path
+  echo $earlier
+  echo $later
     if (((version-tuple $name) -lt (version-tuple $path)) -and
         (($earlier -eq $null) -or
          ((version-tuple $name) -gt (version-tuple $earlier)))) {
