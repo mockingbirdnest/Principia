@@ -38,6 +38,7 @@ foreach ($name in $names) {
 
 function version-tuple($name) {
   write-host $name
+  write-host $name.split(@("/", "+"))
   write-host $name.split(@("/", "+"))[1]
   write-host $name.split(@("/", "+"))[1].split(
       [string[]]@(".", "-pre."), [StringSplitOptions]::none)
