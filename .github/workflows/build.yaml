@@ -10,6 +10,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
+    - uses: actions/checkout@v3
     - name: Rebuild Debug and Release in parallel
       shell: pwsh
       run: |
