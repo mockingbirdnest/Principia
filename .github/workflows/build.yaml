@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+        matrix:
+          configuration: [Debug, Release]
     steps:
     - uses: actions/checkout@v3
     - name: Rebuild Debug and Release in parallel
@@ -16,4 +19,4 @@ jobs:
       run: |
         $msbuild = &".\find_msbuild.ps1"
         &$msbuild /t:Restore Principia.sln
-        &$msbuild /t:"Clean;Build" /m .\debug_and_release_in_parallel.xml
+        &$msbuild *.sln /t:"Clean;Build" /m /property:Configuration=${{ matrix.configuration }}
