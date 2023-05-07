@@ -28,7 +28,7 @@ jobs:
           /property:Configuration=${{ matrix.configuration }}
     - name: Rebuild ${{ matrix.configuration }}
       run: >
-        &"${{ env.msbuild }}""
+        &"${{ env.msbuild }}"
           /target:"Clean;Build"
           /maxCpuCount
           /property:Configuration=${{ matrix.configuration }}
