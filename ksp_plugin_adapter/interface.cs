@@ -79,6 +79,10 @@ internal interface ReferenceFrameParameters {
 }
 
 internal partial class PlottingFrameParameters : ReferenceFrameParameters {
+  public PlottingFrameParameters() {
+    secondary_index = "";
+  }
+
   public static explicit operator NavigationFrameParameters?(
       PlottingFrameParameters p) {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
