@@ -23,14 +23,14 @@ jobs:
     - name: Restore ${{ matrix.configuration }}
       run: >
         &"${{ env.msbuild }}"
-          /target:Restore
-          Principia.sln
-          /property:Configuration=${{ matrix.configuration }}
+        /target:Restore
+        /property:Configuration=${{ matrix.configuration }}
+        Principia.sln
     - name: Rebuild ${{ matrix.configuration }}
       run: >
         &"${{ env.msbuild }}"
-          /target:"Clean;Build"
-          /maxCpuCount
-          /property:Configuration=${{ matrix.configuration }}
-          /property:Platform=x64
-          Principia.sln
+        /target:"Clean;Build"
+        /maxCpuCount
+        /property:Configuration=${{ matrix.configuration }}
+        /property:Platform=x64
+        Principia.sln
