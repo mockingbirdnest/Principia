@@ -14,21 +14,19 @@ if ($preview.length -gt 0) {
 Set-PSDebug -Trace 1
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 echo $vswhere
-ls "${Env:ProgramFiles(x86)}"
-ls "${Env:ProgramFiles}"
-ls env:
-echo "meow"
 $names = &$vswhere                        `
     -prerelease                           `
     -all                                  `
     -requires Microsoft.Component.MSBuild `
     -property installationName
+echo $names
 
 $msbuildpaths = &$vswhere                 `
     -prerelease                           `
     -all                                  `
     -requires Microsoft.Component.MSBuild `
     -find MSBuild\**\Bin\MSBuild.exe
+echo $msbuildpaths
 
 $i = 0;
 foreach ($name in $names) {
