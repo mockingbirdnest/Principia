@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/strings/str_split.h"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
@@ -660,6 +661,12 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     PlottingFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::RotatingPulsatingReferenceFrame::kExtensionFieldNumber:
+      std::vector<int> secondary_indices;
+      for (std::string_view const i :
+           absl::StrSplit(parameters.secondary_index, ';')) {
+        CHECK(absl::SimpleAtoi(i, &secondary_indices.emplace_back()));
+      }
+
       return plugin.NewRotatingPulsatingPlottingFrame(
           parameters.primary_index, parameters.secondary_index);
     default:

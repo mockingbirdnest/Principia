@@ -44,6 +44,11 @@ class RotatingPulsatingReferenceFrame
       not_null<MassiveBody const*> primary,
       not_null<MassiveBody const*> secondary);
 
+  RotatingPulsatingReferenceFrame(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<MassiveBody const*> primary,
+      std::vector<not_null<MassiveBody const*>> secondaries);
+
   not_null<MassiveBody const*> primary() const;
   not_null<MassiveBody const*> secondary() const;
 
@@ -86,7 +91,7 @@ class RotatingPulsatingReferenceFrame
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
-  not_null<MassiveBody const*> const secondary_;
+  std::vector<not_null<MassiveBody const*>> const secondaries_;
   BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;
 };

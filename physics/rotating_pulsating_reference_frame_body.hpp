@@ -13,14 +13,25 @@ using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
-RotatingPulsatingReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> const secondary)
+    RotatingPulsatingReferenceFrame(
+        not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+        not_null<MassiveBody const*> const primary,
+        not_null<MassiveBody const*> const secondary)
     : ephemeris_(ephemeris),
       primary_(primary),
-      secondary_(secondary),
-      rotating_frame_(ephemeris_, primary_, secondary_) {}
+      secondaries_(secondary),
+      rotating_frame_(ephemeris_, primary_, secondaries_) {}
+
+template<typename InertialFrame, typename ThisFrame>
+RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
+    RotatingPulsatingReferenceFrame(
+        not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+        not_null<MassiveBody const*> const primary,
+        std::vector<not_null<MassiveBody const*>> secondaries)
+    : ephemeris_(ephemeris),
+      primary_(primary),
+      secondaries_(std::move(secondaries)),
+      rotating_frame_(ephemeris_, primary_, secondaries_) {}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
