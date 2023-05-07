@@ -38,11 +38,11 @@ foreach ($name in $names) {
 
 function version-tuple($name) {
   write-host $name
-  write-host $name.split(@("/", "+"))
-  write-host $name.split(@("/", "+"))[1]
-  write-host $name.split(@("/", "+"))[1].split(
+  write-host $name.split([char[]]"/+")
+  write-host $name.split([char[]]"/+")[1]
+  write-host $name.split([char[]]"/+")[1].split(
       [string[]]@(".", "-pre."), [StringSplitOptions]::none)
-  $tuple = [double[]]$name.split(@("/", "+"))[1].split(
+  $tuple = [double[]]$name.split([char[]]"/+")[1].split(
       [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   if ($tuple.length -lt 5) {
     # Count non-previews as preview ∞.0.
