@@ -25,13 +25,13 @@ using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-BarycentricRotatingReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
-    not_null<MassiveBody const*> primary,
-    not_null<MassiveBody const*> secondary)
+    BarycentricRotatingReferenceFrame(
+        not_null<Ephemeris<InertialFrame> const*> ephemeris,
+        not_null<MassiveBody const*> primary,
+        not_null<MassiveBody const*> secondary)
     : BarycentricRotatingReferenceFrame(ephemeris,
-                                        std::vector{primary},
-                                        secondary) {}
+                                        primary,
+                                        std::vector{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
@@ -61,8 +61,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondary() const {
-  return secondaries_.size() == 1 ? secondaries_.front()
-                                  : &equivalent_secondary_.value();
+  return secondaries_.size() == 1
+             ? secondaries_.front()
+             : check_not_null(&equivalent_secondary_.value());
 }
 
 template<typename InertialFrame, typename ThisFrame>

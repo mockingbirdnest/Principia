@@ -637,19 +637,13 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::BarycentricRotatingReferenceFrame::
-        kExtensionFieldNumber: {
-      int secondary_index;
-      CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
+        kExtensionFieldNumber:
       return plugin.NewBarycentricRotatingNavigationFrame(
-          parameters.primary_index, secondary_index);
-    }
+          parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredBodyDirectionReferenceFrame::
-        kExtensionFieldNumber: {
-      int secondary_index;
-      CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
+        kExtensionFieldNumber:
       return plugin.NewBodyCentredBodyDirectionNavigationFrame(
-          parameters.primary_index, secondary_index);
-    }
+          parameters.primary_index, parameters.secondary_index);
     case serialization::BodyCentredNonRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
@@ -677,12 +671,17 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
                                                       secondary_indices);
     }
     default:
-      return NewNavigationFrame(
-          plugin,
-          {.extension = parameters.extension,
-           .centre_index = parameters.centre_index,
-           .primary_index = parameters.primary_index,
-           .secondary_index = parameters.secondary_index});
+      int secondary_index;
+      if (std::string_view(parameters.secondary_index).empty()) {
+        secondary_index = -1;
+      } else {
+        CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
+      }
+      return NewNavigationFrame(plugin,
+                                {.extension = parameters.extension,
+                                 .centre_index = parameters.centre_index,
+                                 .primary_index = parameters.primary_index,
+                                 .secondary_index = secondary_index});
   }
 }
 

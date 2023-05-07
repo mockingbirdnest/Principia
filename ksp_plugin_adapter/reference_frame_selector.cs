@@ -21,8 +21,7 @@ internal static class CelestialExtensions {
 }
 
 internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWindowRenderer
-  where ReferenceFrameParameters : class,
-                                   ksp_plugin_adapter.ReferenceFrameParameters,
+  where ReferenceFrameParameters : ksp_plugin_adapter.ReferenceFrameParameters,
                                    new() {
   public delegate void Callback(ReferenceFrameParameters frame_parameters,
                                 Vessel target_vessel);
@@ -723,8 +722,11 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         frame_type != old_frame_type ||
         selected_celestial != old_selected_celestial ||
         target_frame_selected != target_frame_was_selected) {
+      // The cast here relies on ReferenceFrameParameters being a class (that
+      // is, being PlottingFrameParameters).
       on_change_(
-          target_frame_selected ? null : FrameParameters(),
+          target_frame_selected ? (ReferenceFrameParameters)(object)null
+                                : FrameParameters(),
           target_frame_selected ? target : null);
       is_freshly_constructed_ = false;
     }

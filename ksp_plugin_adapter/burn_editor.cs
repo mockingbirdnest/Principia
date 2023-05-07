@@ -79,7 +79,7 @@ class BurnEditor : ScalingRenderer {
           new NavigationFrameParameters {
             extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
             primary_index = plotting_frame_parameters.primary_index,
-            secondary_index = plotting_frame_parameters.secondary_index,
+            secondary_index = int.Parse(plotting_frame_parameters.secondary_index),
           });
     }
     ComputeEngineCharacteristics();

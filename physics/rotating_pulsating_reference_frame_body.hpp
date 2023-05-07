@@ -50,8 +50,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::secondary() const {
-  return secondaries_.size() == 1 ? secondaries_.front()
-                                  : &equivalent_secondary_.value();
+  return secondaries_.size() == 1
+             ? secondaries_.front()
+             : check_not_null(&equivalent_secondary_.value());
 }
 
 template<typename InertialFrame, typename ThisFrame>

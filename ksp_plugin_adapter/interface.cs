@@ -79,7 +79,7 @@ internal interface ReferenceFrameParameters {
 }
 
 internal partial class PlottingFrameParameters : ReferenceFrameParameters {
-  public static explicit operator NavigationFrameParameters(
+  public static explicit operator NavigationFrameParameters?(
       PlottingFrameParameters p) {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
       return null;
@@ -88,7 +88,7 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
           extension = p.extension,
           centre_index = p.centre_index,
           primary_index = p.primary_index,
-          secondary_index = p.secondary_index,
+          secondary_index = int.Parse(p.secondary_index),
       };
     }
   }
@@ -130,7 +130,7 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
   }
 }
 
-internal partial class NavigationFrameParameters : ReferenceFrameParameters {
+internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(NavigationFrameParameters p) {
     return new PlottingFrameParameters{
         extension = p.extension,
@@ -171,8 +171,8 @@ internal partial class NavigationFrameParameters : ReferenceFrameParameters {
     set => primary_index = value;
   }
   int[] ReferenceFrameParameters.secondary_index {
-    get => new[] {int.Parse(secondary_index)};
-    set => secondary_index = value.ToString();
+    get => new[] {secondary_index};
+    set => secondary_index = value.Single();
   }
 }
 
