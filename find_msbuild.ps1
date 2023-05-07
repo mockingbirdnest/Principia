@@ -16,6 +16,7 @@ $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.e
 echo $vswhere
 ls "${Env:ProgramFiles(x86)}"
 ls "${Env:ProgramFiles}"
+ls env:
 $names = &$vswhere                        `
     -prerelease                           `
     -all                                  `
