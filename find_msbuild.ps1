@@ -17,6 +17,7 @@ echo $vswhere
 ls "${Env:ProgramFiles(x86)}"
 ls "${Env:ProgramFiles}"
 ls env:
+echo "meow"
 $names = &$vswhere                        `
     -prerelease                           `
     -all                                  `
