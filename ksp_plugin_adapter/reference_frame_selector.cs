@@ -414,10 +414,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
                             primary);
   }
 
-  // If the reference frames is defined by two bodies, |OrientingBody()| is the
-  // one that is not fixed, but instead defines the orientation.  If the
-  // reference frame is defined from a single body, |OrientingBody()| is null.
-  public CelestialBody OrientingBody() {
+  // Null unless this is a primary-secondary or primary-secondaries frame.
+  public CelestialBody Primary() {
     if (target_frame_selected) {
       return target.orbit.referenceBody;
     }
@@ -437,7 +435,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
   public bool FixesBody(CelestialBody celestial) {
     return celestial == Centre() ||
         (frame_type == FrameType.ROTATING_PULSATING &&
-            (celestial == selected_celestial ||
+            ((selected_celestial.orbitingBodies.Count == 0 &&
+              celestial == selected_celestial) ||
              celestial == selected_celestial.referenceBody));
   }
 
