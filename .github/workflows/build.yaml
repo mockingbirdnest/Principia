@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest-8-cores
+    runs-on: windows-latest
     steps:
     - name: Rebuild Debug and Release in parallel
       shell: pwsh
