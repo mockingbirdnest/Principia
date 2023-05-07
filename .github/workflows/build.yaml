@@ -19,7 +19,10 @@ jobs:
       shell: pwsh
       run: |
         $msbuild=&.\find_msbuild.ps1
+        write-host "msbuild=$msbuild"
         echo "msbuild=$msbuild" >> "$GITHUB_ENV"
+    - name: Test
+      run: write-host ${{ env.msbuild }}
     - name: Restore ${{ matrix.configuration }}
       run: >
         &${{ env.msbuild }}
