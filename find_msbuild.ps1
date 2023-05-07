@@ -11,6 +11,7 @@ if ($preview.length -gt 0) {
   $path = "VisualStudio/$version+"
 }
 
+Set-PSDebug -Trace 1
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $names = &$vswhere                        `
     -prerelease                           `
