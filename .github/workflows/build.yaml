@@ -18,16 +18,16 @@ jobs:
     - name: Find MSBuild version
       shell: pwsh
       run: >
-        $env:msbuild = &".\find_msbuild.ps1"
+        echo "msbuild=&.\find_msbuild.ps1" >> "$GITHUB_ENV"
     - name: Restore ${{ matrix.configuration }}
       run: >
-        &$env:msbuild
+        &${{ env.msbuild }}
           /target:Restore
           Principia.sln
           /property:Configuration=${{ matrix.configuration }}
     - name: Rebuild ${{ matrix.configuration }}
       run: >
-        &$env:msbuild
+        &${{ env.msbuild }}
           /target:"Clean;Build"
           /maxCpuCount
           /property:Configuration=${{ matrix.configuration }}
