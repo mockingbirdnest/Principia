@@ -67,13 +67,14 @@ class BurnEditor : ScalingRenderer {
         L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
     PlottingFrameParameters plotting_frame_parameters =
         adapter_.plotting_frame_selector_.FrameParameters();
-    if ((NavigationFrameParameters?)plotting_frame_parameters is
+    if ((NavigationFrameParameters)plotting_frame_parameters is
             NavigationFrameParameters parameters) {
       reference_frame_selector_.SetFrameParameters(parameters);
     } else {
       // If the plotting frame is not a navigation frame, it is the rotating-
       // pulsating frame; use the corresponding rotating frame as the default
       // navigation frame.
+      // REMOVE BEFORE FLIGHT invert primary and secondary
       reference_frame_selector_.SetFrameParameters(
           new NavigationFrameParameters {
             extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
@@ -307,7 +308,7 @@ class BurnEditor : ScalingRenderer {
     };
   }
 
-  public void ReferenceFrameChanged(NavigationFrameParameters? parameters,
+  public void ReferenceFrameChanged(NavigationFrameParameters parameters,
                                     Vessel target_vessel) {
     changed_reference_frame_ = true;
   }

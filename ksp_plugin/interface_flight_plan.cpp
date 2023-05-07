@@ -69,7 +69,7 @@ Burn GetBurn(Plugin const& plugin,
   NavigationFrameParameters parameters;
   parameters.centre_index = -1;
   parameters.primary_index = -1;
-  parameters.secondary_index = -1;
+  parameters.secondary_index = "";
 
   int number_of_subclasses = 0;
 
@@ -83,8 +83,8 @@ Burn GetBurn(Plugin const& plugin,
           kExtensionFieldNumber;
       parameters.primary_index = plugin.CelestialIndexOfBody(
           *barycentric_rotating_reference_frame->primary());
-      parameters.secondary_index = plugin.CelestialIndexOfBody(
-          *barycentric_rotating_reference_frame->secondary());
+      parameters.secondary_index = absl::StrCat(plugin.CelestialIndexOfBody(
+          *barycentric_rotating_reference_frame->secondary()));
     }
   }
 

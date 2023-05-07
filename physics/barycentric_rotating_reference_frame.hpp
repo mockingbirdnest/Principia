@@ -27,6 +27,7 @@ namespace _barycentric_rotating_reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
@@ -39,11 +40,13 @@ using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
 
-// The origin of the frame is the barycentre of the two bodies.  The X axis
-// points to the secondary.  The Y axis is in the direction of the velocity of
-// the secondary with respect to the primary.  The Z axis is in the direction of
-// the angular velocity of the system.  The basis has the same orientation as
-// |InertialFrame|.
+// The origin of the frame is the barycentre of the system.  The X axis
+// points to the barycentre of the secondaries.  The Y axis is in the direction
+// of the velocity of the barycentre of the secondaries with respect to the
+// primary.  The Z axis is in the direction of the angular momentum of the
+// system.  The basis has the same orientation as |InertialFrame|.
+// Note that if the angular momentum of the system varies, the angular velocity
+// of the frame need not be along its Z axis.
 template<typename InertialFrame, typename ThisFrame>
 class BarycentricRotatingReferenceFrame
     : public RigidReferenceFrame<InertialFrame, ThisFrame> {
@@ -54,6 +57,11 @@ class BarycentricRotatingReferenceFrame
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
       not_null<MassiveBody const*> primary,
       not_null<MassiveBody const*> secondary);
+
+  BarycentricRotatingReferenceFrame(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<MassiveBody const*> primary,
+      std::vector<not_null<MassiveBody const*>> secondaries);
 
   not_null<MassiveBody const*> primary() const;
   not_null<MassiveBody const*> secondary() const;
@@ -91,17 +99,20 @@ class BarycentricRotatingReferenceFrame
   // accelerations multiple times.
   RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
-      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+      BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
+                           GravitationalParameter> const&
+          secondary_degrees_of_freedom,
       Vector<Acceleration, InertialFrame> const& primary_acceleration,
       Vector<Acceleration, InertialFrame> const& secondary_acceleration) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
-  not_null<MassiveBody const*> const secondary_;
+  // Has at least one element.
+  std::vector<not_null<MassiveBody const*>> const secondaries_;
+  // Has a value if and only if |secondaries_.size() > 1|.
+  std::optional<MassiveBody> equivalent_secondary_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       primary_trajectory_;
-  not_null<ContinuousTrajectory<InertialFrame> const*> const
-      secondary_trajectory_;
 };
 
 }  // namespace internal

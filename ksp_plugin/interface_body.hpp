@@ -637,13 +637,19 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     NavigationFrameParameters const& parameters) {
   switch (parameters.extension) {
     case serialization::BarycentricRotatingReferenceFrame::
-        kExtensionFieldNumber:
+        kExtensionFieldNumber: {
+      int secondary_index;
+      CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
       return plugin.NewBarycentricRotatingNavigationFrame(
-          parameters.primary_index, parameters.secondary_index);
+          parameters.primary_index, secondary_index);
+    }
     case serialization::BodyCentredBodyDirectionReferenceFrame::
-        kExtensionFieldNumber:
+        kExtensionFieldNumber: {
+      int secondary_index;
+      CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
       return plugin.NewBodyCentredBodyDirectionNavigationFrame(
-          parameters.primary_index, parameters.secondary_index);
+          parameters.primary_index, secondary_index);
+    }
     case serialization::BodyCentredNonRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
@@ -660,15 +666,16 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters) {
   switch (parameters.extension) {
-    case serialization::RotatingPulsatingReferenceFrame::kExtensionFieldNumber:
+    case serialization::RotatingPulsatingReferenceFrame::
+        kExtensionFieldNumber: {
       std::vector<int> secondary_indices;
       for (std::string_view const i :
            absl::StrSplit(parameters.secondary_index, ';')) {
         CHECK(absl::SimpleAtoi(i, &secondary_indices.emplace_back()));
       }
-
-      return plugin.NewRotatingPulsatingPlottingFrame(
-          parameters.primary_index, parameters.secondary_index);
+      return plugin.NewRotatingPulsatingPlottingFrame(parameters.primary_index,
+                                                      secondary_indices);
+    }
     default:
       return NewNavigationFrame(
           plugin,

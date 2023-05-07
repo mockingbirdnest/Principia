@@ -91,7 +91,10 @@ class RotatingPulsatingReferenceFrame
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
+  // Has at least one element.
   std::vector<not_null<MassiveBody const*>> const secondaries_;
+  // Has a value if and only if |secondaries_.size() > 1|.
+  std::optional<MassiveBody> equivalent_secondary_;
   BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;
 };

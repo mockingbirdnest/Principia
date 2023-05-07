@@ -7,6 +7,7 @@ namespace physics {
 namespace _rotating_pulsating_reference_frame {
 namespace internal {
 
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_homothecy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -17,10 +18,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<Ephemeris<InertialFrame> const*> const ephemeris,
         not_null<MassiveBody const*> const primary,
         not_null<MassiveBody const*> const secondary)
-    : ephemeris_(ephemeris),
-      primary_(primary),
-      secondaries_(secondary),
-      rotating_frame_(ephemeris_, primary_, secondaries_) {}
+    : RotatingPulsatingReferenceFrame(ephemeris,
+                                      primary,
+                                      std::vector{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
@@ -31,7 +31,15 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primary_(primary),
       secondaries_(std::move(secondaries)),
-      rotating_frame_(ephemeris_, primary_, secondaries_) {}
+      rotating_frame_(ephemeris_, primary_, secondaries_) {
+  if (secondaries_.size() > 1) {
+    GravitationalParameter μ;
+    for (not_null<MassiveBody const*> const secondary : secondaries) {
+      μ += secondary->gravitational_parameter();
+    }
+    equivalent_secondary_.emplace(MassiveBody::Parameters(μ));
+  }
+}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
@@ -42,7 +50,8 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::secondary() const {
-  return secondary_;
+  return secondaries_.size() == 1 ? secondaries_.front()
+                                  : &equivalent_secondary_.value();
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -128,8 +137,10 @@ void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::RotatingPulsatingReferenceFrame::extension);
   extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
-  extension->set_secondary(
-      ephemeris_->serialization_index_for_body(secondary_));
+  for (not_null const secondary : secondaries_) {
+    extension->add_secondary(
+        ephemeris_->serialization_index_for_body(secondary));
+  }
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -138,10 +149,15 @@ not_null<
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     serialization::RotatingPulsatingReferenceFrame const& message) {
+  std::vector<not_null<MassiveBody const*>> secondaries;
+  secondaries.reserve(message.secondary().size());
+  for (int const secondary : message.secondary()) {
+    secondaries.push_back(ephemeris->body_for_serialization_index(secondary));
+  }
   return std::make_unique<RotatingPulsatingReferenceFrame>(
       ephemeris,
       ephemeris->body_for_serialization_index(message.primary()),
-      ephemeris->body_for_serialization_index(message.secondary()));
+      std::move(secondaries));
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -149,26 +165,48 @@ template<int degree>
 Derivatives<Length, Instant, degree + 1>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_derivatives(
     Instant const& t) const {
+  BarycentreCalculator<Position<InertialFrame>, GravitationalParameter>
+      secondary_position;
+  for (not_null const secondary : secondaries_) {
+    secondary_position.Add(
+        ephemeris_->trajectory(secondary)->EvaluatePosition(t),
+        secondary->gravitational_parameter());
+  }
   Displacement<InertialFrame> const u =
       ephemeris_->trajectory(primary_)->EvaluatePosition(t) -
-      ephemeris_->trajectory(secondary_)->EvaluatePosition(t);
+      secondary_position.Get();
   Length const r = u.Norm();
   if constexpr (degree == 0) {
     return {r};
   } else {
+    BarycentreCalculator<Velocity<InertialFrame>, GravitationalParameter>
+        secondary_velocity;
+    for (not_null const secondary : secondaries_) {
+      secondary_velocity.Add(
+          ephemeris_->trajectory(secondary)->EvaluateVelocity(t),
+          secondary->gravitational_parameter());
+    }
     Velocity<InertialFrame> const v =
         ephemeris_->trajectory(primary_)->EvaluateVelocity(t) -
-        ephemeris_->trajectory(secondary_)->EvaluateVelocity(t);
+        secondary_velocity.Get();
     Speed const ṙ = InnerProduct(u, v) / r;
     if constexpr (degree == 1) {
       return {r, ṙ};
     } else {
       static_assert(degree == 2);
+      BarycentreCalculator<Vector<Acceleration, InertialFrame>,
+                           GravitationalParameter>
+          secondary_acceleration;
+      for (not_null const secondary : secondaries_) {
+        secondary_acceleration.Add(
+            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary,
+                                                                      t),
+            secondary->gravitational_parameter());
+      }
       Vector<Acceleration, InertialFrame> const γ =
           ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_,
                                                                     t) -
-          ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_,
-                                                                    t);
+          secondary_acceleration.Get();
       Acceleration const r̈ =
           v.Norm²() / r + InnerProduct(u, γ) / r - Pow<2>(ṙ) / r;
       return {r, ṙ, r̈};
