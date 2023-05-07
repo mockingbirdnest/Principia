@@ -37,6 +37,7 @@ foreach ($name in $names) {
 }
 
 function version-tuple($name) {
+  echo $name
   $tuple = [double[]]$name.split(@("/", "+"))[1].split(
       [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   if ($tuple.length -lt 5) {
@@ -57,6 +58,7 @@ if ($strict) {
   $later_index = $null
   $i = 0
   foreach ($name in $names) {
+  echo $name
     if (((version-tuple $name) -lt (version-tuple $path)) -and
         (($earlier -eq $null) -or
          ((version-tuple $name) -gt (version-tuple $earlier)))) {
