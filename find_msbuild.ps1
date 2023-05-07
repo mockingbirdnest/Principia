@@ -2,8 +2,6 @@
 
 $version = "17.4.5"
 $preview = ""
-$ErrorActionPreference = "Continue"
-
 
 if ($preview.length -gt 0) {
   $description = "version $version preview $preview"
@@ -40,6 +38,9 @@ foreach ($name in $names) {
 
 function version-tuple($name) {
   write-host $name
+  write-host $name.split(@("/", "+"))[1]
+  write-host $name.split(@("/", "+"))[1].split(
+      [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   $tuple = [double[]]$name.split(@("/", "+"))[1].split(
       [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   if ($tuple.length -lt 5) {
