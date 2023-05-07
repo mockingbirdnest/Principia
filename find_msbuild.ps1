@@ -11,22 +11,18 @@ if ($preview.length -gt 0) {
   $path = "VisualStudio/$version+"
 }
 
-Set-PSDebug -Trace 1
 $vswhere = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-echo $vswhere
 $names = &$vswhere                        `
     -prerelease                           `
     -all                                  `
     -requires Microsoft.Component.MSBuild `
     -property installationName
-echo $names
 
 $msbuildpaths = &$vswhere                 `
     -prerelease                           `
     -all                                  `
     -requires Microsoft.Component.MSBuild `
     -find MSBuild\**\Bin\MSBuild.exe
-echo $msbuildpaths
 
 $i = 0;
 foreach ($name in $names) {
@@ -37,11 +33,6 @@ foreach ($name in $names) {
 }
 
 function version-tuple($name) {
-  write-host $name
-  write-host $name.split([char[]]"/+")
-  write-host $name.split([char[]]"/+")[1]
-  write-host $name.split([char[]]"/+")[1].split(
-      [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   $tuple = [double[]]$name.split([char[]]"/+")[1].split(
       [string[]]@(".", "-pre."), [StringSplitOptions]::none)
   if ($tuple.length -lt 5) {
@@ -62,10 +53,6 @@ if ($strict) {
   $later_index = $null
   $i = 0
   foreach ($name in $names) {
-  echo $name
-  echo $path
-  echo $earlier
-  echo $later
     if (((version-tuple $name) -lt (version-tuple $path)) -and
         (($earlier -eq $null) -or
          ((version-tuple $name) -gt (version-tuple $earlier)))) {
