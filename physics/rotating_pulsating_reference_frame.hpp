@@ -8,6 +8,8 @@
 #ifndef PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 
+#include <vector>
+
 #include "physics/reference_frame.hpp"
 
 #include "physics/body_centred_body_direction_reference_frame.hpp"

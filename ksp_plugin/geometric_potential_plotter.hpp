@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "base/jthread.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/equipotential.hpp"

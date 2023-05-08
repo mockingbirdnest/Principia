@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <utility>
+#include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -52,7 +53,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
 
 template<typename InertialFrame, typename ThisFrame>
 std::vector<not_null<MassiveBody const*>> const&
-BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondaries() const {
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondaries()
+    const {
   return secondaries_;
 }
 
@@ -82,7 +84,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 
   BarycentreCalculator<DegreesOfFreedom<InertialFrame>, GravitationalParameter>
       secondary_degrees_of_freedom;
-  BarycentreCalculator<Vector<Acceleration, InertialFrame>, GravitationalParameter>
+  BarycentreCalculator<Vector<Acceleration, InertialFrame>,
+                       GravitationalParameter>
       secondary_acceleration;
   for (not_null const secondary : secondaries_) {
     secondary_degrees_of_freedom.Add(
@@ -236,7 +239,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
       rotation,
       angular_velocity);
 
-  BarycentreCalculator barycentre_degrees_of_freedom = secondary_degrees_of_freedom;
+  BarycentreCalculator barycentre_degrees_of_freedom =
+      secondary_degrees_of_freedom;
   barycentre_degrees_of_freedom.Add(primary_degrees_of_freedom,
                                     primary_->gravitational_parameter());
   RigidTransformation<InertialFrame, ThisFrame> const rigid_transformation(
