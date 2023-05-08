@@ -43,7 +43,12 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(std::move(ephemeris)),
       primary_(std::move(primary)),
       secondaries_(std::move(secondaries)),
-      primary_trajectory_(ephemeris_->trajectory(primary_)) {}
+      primary_trajectory_(ephemeris_->trajectory(primary_)) {
+  CHECK_GE(secondaries_.size(), 1);
+  CHECK_EQ(std::set(secondaries_.begin(), secondaries_.end()).size(),
+           secondaries_.size())
+      << secondaries_;
+}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
@@ -76,7 +81,6 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
-
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
       primary_trajectory_->EvaluateDegreesOfFreedom(t);
   Vector<Acceleration, InertialFrame> const primary_acceleration =
