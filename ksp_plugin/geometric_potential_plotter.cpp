@@ -47,7 +47,7 @@ void GeometricPotentialPlotter::RequestEquipotentials(
       auto const status = PlotEquipotentials(parameters);
       if (!status.ok() && !absl::IsCancelled(status)) {
         LOG(ERROR) << "Error while computing " << parameters.primary->name()
-                   << "-" << parameters.secondary->name()
+                   << "-" << parameters.secondaries.front()->name()
                    << " equipotentials at " << parameters.time << ": "
                    << status;
       }
