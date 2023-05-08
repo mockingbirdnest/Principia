@@ -33,7 +33,12 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primary_(primary),
       secondaries_(std::move(secondaries)),
-      rotating_frame_(ephemeris_, primary_, secondaries_) {}
+      rotating_frame_(ephemeris_, primary_, secondaries_) {
+  CHECK_GE(secondaries_.size(), 1);
+  CHECK_EQ(std::set(secondaries_.begin(), secondaries_.end()).size(),
+           secondaries_.size())
+      << secondaries_;
+}
 
 template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
