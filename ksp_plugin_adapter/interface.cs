@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -140,12 +141,14 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
 
 internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(NavigationFrameParameters p) {
-    return new PlottingFrameParameters{
+    PlottingFrameParameters result = new PlottingFrameParameters {
         extension = p.extension,
         centre_index = p.centre_index,
         primary_index = p.primary_index,
-        secondary_index = p.secondary_index.ToString(),
     };
+    (result as ReferenceFrameParameters).secondary_index =
+        (p as ReferenceFrameParameters).secondary_index;
+    return result;
   }
 
   public override bool Equals(object obj) {
@@ -158,6 +161,7 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   public static bool operator ==(NavigationFrameParameters left, ReferenceFrameParameters right) {
     return (left as ReferenceFrameParameters).extension == right.extension &&
            left.centre_index == right.centre_index &&
+           left.primary_index == right.primary_index &&
            (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
               right.secondary_index);
   }
@@ -179,8 +183,8 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
     set => primary_index = value;
   }
   int[] ReferenceFrameParameters.secondary_index {
-    get => new[] {secondary_index};
-    set => secondary_index = value.Single();
+    get => secondary_index == -1 ? new int[] {} : new[] {secondary_index};
+    set => secondary_index = value.DefaultIfEmpty(-1).Single();
   }
 }
 

@@ -163,8 +163,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sourcerer", "sourcerer\sour
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{3B6E70E8-9FC3-4DC3-97B6-1A51B6DEB009}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\remove-before-flight.yml = .github\workflows\remove-before-flight.yml
 		.github\workflows\lint.yaml = .github\workflows\lint.yaml
+		.github\workflows\pull_request.yaml = .github\workflows\pull_request.yaml
 	EndProjectSection
 EndProject
 Global
