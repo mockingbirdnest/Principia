@@ -79,7 +79,7 @@ std::uint64_t SerializePointer(T* t) {
 
 }  // namespace
 
-#define PRINCIPIA_PERFORM_RUN_CHECKS 0
+#define PRINCIPIA_PERFORM_RUN_CHECKS 1
 #define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #if PRINCIPIA_PERFORM_RUN_CHECKS
