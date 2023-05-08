@@ -43,8 +43,15 @@ void GeometricPotentialPlotter::RequestEquipotentials(
   // Only process this request if there is no analysis in progress.
   if (plotter_idle_) {
     plotter_idle_ = false;
-    plotter_ = MakeStoppableThread(
-        [this, parameters]() { PlotEquipotentials(parameters).IgnoreError(); });
+    plotter_ = MakeStoppableThread([this, parameters]() {
+      auto const status = PlotEquipotentials(parameters);
+      if (!status.ok() && !absl::IsCancelled(status)) {
+        LOG(ERROR) << "Error while computing " << parameters.primary->name()
+                   << "-" << parameters.secondary->name()
+                   << " equipotentials at " << parameters.time << ": "
+                   << status;
+      }
+    });
   }
 }
 
@@ -131,7 +138,18 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
               /*local_search_tolerance=*/1e-3 * Metre);
   SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
   for (auto const& arg_maximum : arg_maximorum) {
-    maximum_maximorum = std::max(maximum_maximorum, potential(arg_maximum));
+    auto const maximum = potential(arg_maximum);
+    if (!IsFinite(maximum)) {
+      absl::MutexLock l(&lock_);
+      // We don’t reset |next_equipotentials_|, so that if this is transient, we
+      // keep the old ones until the problem goes away.
+      plotter_idle_ = true;
+      return absl::OutOfRangeError(absl::StrCat("Improper maximum ",
+                                                DebugString(maximum),
+                                                " at ",
+                                                DebugString(arg_maximum)));
+    }
+    maximum_maximorum = std::max(maximum_maximorum, maximum);
   }
 
   Position<Barycentric> const primary_barycentric_position =
