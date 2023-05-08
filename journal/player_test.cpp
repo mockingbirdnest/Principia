@@ -113,7 +113,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // |method_out_return| protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20230506-192603)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20230508-015620)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -123,6 +123,10 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
     google::LogToStderr();
     LOG_IF(ERROR, (count % 100'000) == 0) << count
                                           << " journal entries replayed";
+    if (player.last_method_in().HasExtension(
+            serialization::SetPlottingFrame::extension)) {
+      LOG(ERROR) << player.last_method_in().DebugString();
+    }
   }
   LOG(ERROR) << count << " journal entries in total";
   LOG(ERROR) << "Last successful method in:\n"

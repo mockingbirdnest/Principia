@@ -59,21 +59,15 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondaries() const
 template<typename InertialFrame, typename ThisFrame>
 Instant BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::t_min()
     const {
-  Instant t_min = primary_trajectory_->t_min();
-  for (not_null const secondary : secondaries_) {
-    t_min = std::max(t_min, ephemeris_->trajectory(secondary)->t_min());
-  }
-  return t_min;
+  // We depend on all bodies via the gravitational acceleration.
+  return ephemeris_->t_max();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Instant BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::t_max()
     const {
-  Instant t_max = primary_trajectory_->t_max();
-  for (not_null const secondary : secondaries_) {
-    t_max = std::min(t_max, ephemeris_->trajectory(secondary)->t_max());
-  }
-  return t_max;
+  // We depend on all bodies via the gravitational acceleration.
+  return ephemeris_->t_min();
 }
 
 template<typename InertialFrame, typename ThisFrame>
