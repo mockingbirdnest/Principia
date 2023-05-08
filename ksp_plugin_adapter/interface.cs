@@ -92,7 +92,9 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
           extension = p.extension,
           centre_index = p.centre_index,
           primary_index = p.primary_index,
-          secondary_index = int.Parse(p.secondary_index),
+          secondary_index = p.secondary_index == ""
+                                ? -1
+                                : int.Parse(p.secondary_index),
       };
     }
   }
@@ -129,7 +131,9 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
     set => primary_index = value;
   }
   int[] ReferenceFrameParameters.secondary_index {
-    get => secondary_index.Split(';').Select(s => int.Parse(s)).ToArray();
+    get => secondary_index.Split(new[] {';'},
+                                 StringSplitOptions.RemoveEmptyEntries)
+                          .Select(s => int.Parse(s)).ToArray();
     set => secondary_index = string.Join(";", value.Select(i => i.ToString()));
   }
 }
