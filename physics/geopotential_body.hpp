@@ -916,6 +916,9 @@ HarmonicDamping const& Geopotential<Frame>::sectoral_damping() const {
 
 template<typename Frame>
 int Geopotential<Frame>::LimitingDegree(Length const& r_norm) const {
+  if (!IsFinite(r_norm)) {
+    return 2;
+  }
   return std::partition_point(
              degree_damping_.begin(),
              degree_damping_.end(),
