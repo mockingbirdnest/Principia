@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -74,11 +76,16 @@ internal interface ReferenceFrameParameters {
   FrameType extension  { get; set; }
   int centre_index  { get; set; }
   int primary_index  { get; set; }
-  int secondary_index  { get; set; }
+  int[] secondary_index  { get; set; }
 }
 
-internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
-  public static explicit operator NavigationFrameParameters?(PlottingFrameParameters p) {
+internal partial class PlottingFrameParameters : ReferenceFrameParameters {
+  public PlottingFrameParameters() {
+    secondary_index = "";
+  }
+
+  public static explicit operator NavigationFrameParameters?(
+      PlottingFrameParameters p) {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
       return null;
     } else {
@@ -86,7 +93,9 @@ internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
           extension = p.extension,
           centre_index = p.centre_index,
           primary_index = p.primary_index,
-          secondary_index = p.secondary_index
+          secondary_index = p.secondary_index == ""
+                                ? -1
+                                : int.Parse(p.secondary_index),
       };
     }
   }
@@ -101,7 +110,9 @@ internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
   public static bool operator ==(PlottingFrameParameters left, ReferenceFrameParameters right) {
     return (left as ReferenceFrameParameters).extension == right.extension &&
            left.centre_index == right.centre_index &&
-           left.primary_index == right.secondary_index;
+           left.primary_index == right.primary_index &&
+           (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
+              right.secondary_index);
   }
 
   public static bool operator !=(PlottingFrameParameters left, ReferenceFrameParameters right) {
@@ -120,20 +131,24 @@ internal partial struct PlottingFrameParameters : ReferenceFrameParameters {
     get => primary_index;
     set => primary_index = value;
   }
-  int ReferenceFrameParameters.secondary_index {
-    get => secondary_index;
-    set => secondary_index = value;
+  int[] ReferenceFrameParameters.secondary_index {
+    get => secondary_index.Split(new[] {';'},
+                                 StringSplitOptions.RemoveEmptyEntries)
+                          .Select(s => int.Parse(s)).ToArray();
+    set => secondary_index = string.Join(";", value.Select(i => i.ToString()));
   }
 }
 
 internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(NavigationFrameParameters p) {
-    return new PlottingFrameParameters{
+    var result = new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
         primary_index = p.primary_index,
-        secondary_index = p.secondary_index
     };
+    (result as ReferenceFrameParameters).secondary_index =
+        (p as ReferenceFrameParameters).secondary_index;
+    return result;
   }
 
   public override bool Equals(object obj) {
@@ -146,7 +161,9 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   public static bool operator ==(NavigationFrameParameters left, ReferenceFrameParameters right) {
     return (left as ReferenceFrameParameters).extension == right.extension &&
            left.centre_index == right.centre_index &&
-           left.primary_index == right.secondary_index;
+           left.primary_index == right.primary_index &&
+           (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
+              right.secondary_index);
   }
 
   public static bool operator !=(NavigationFrameParameters left, ReferenceFrameParameters right) {
@@ -165,9 +182,9 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
     get => primary_index;
     set => primary_index = value;
   }
-  int ReferenceFrameParameters.secondary_index {
-    get => secondary_index;
-    set => secondary_index = value;
+  int[] ReferenceFrameParameters.secondary_index {
+    get => secondary_index == -1 ? new int[] {} : new[] {secondary_index};
+    set => secondary_index = value.DefaultIfEmpty(-1).Single();
   }
 }
 

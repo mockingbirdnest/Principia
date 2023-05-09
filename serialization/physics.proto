@@ -21,7 +21,7 @@ message BarycentricRotatingReferenceFrame {
     optional BarycentricRotatingReferenceFrame extension = 6001;
   }
   required int32 primary = 1;
-  required int32 secondary = 2;
+  repeated int32 secondary = 2;
 }
 
 message Body {
@@ -312,5 +312,5 @@ message RotatingPulsatingReferenceFrame {
     optional RotatingPulsatingReferenceFrame extension = 6004;
   }
   required int32 primary = 1;
-  required int32 secondary = 2;
+  repeated int32 secondary = 2;
 }

@@ -20,8 +20,10 @@ internal static class CelestialExtensions {
   }
 }
 
-internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWindowRenderer where ReferenceFrameParameters : struct, ksp_plugin_adapter.ReferenceFrameParameters {
-  public delegate void Callback(ReferenceFrameParameters? frame_parameters,
+internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWindowRenderer
+  where ReferenceFrameParameters : ksp_plugin_adapter.ReferenceFrameParameters,
+                                   new() {
+  public delegate void Callback(ReferenceFrameParameters frame_parameters,
                                 Vessel target_vessel);
 
   public ReferenceFrameSelector(ISupervisor supervisor,
@@ -62,9 +64,11 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         case FrameType.BODY_SURFACE:
           selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
           break;
-        case FrameType.BARYCENTRIC_ROTATING:
-          selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
+        case FrameType.ROTATING_PULSATING:
+          selected_celestial = FlightGlobals.Bodies[
+              parameters.secondary_index[0]];
           break;
+        case FrameType.BARYCENTRIC_ROTATING:
         case FrameType.BODY_CENTRED_PARENT_DIRECTION:
           selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
           break;
@@ -410,10 +414,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
                             primary);
   }
 
-  // If the reference frames is defined by two bodies, |OrientingBody()| is the
-  // one that is not fixed, but instead defines the orientation.  If the
-  // reference frame is defined from a single body, |OrientingBody()| is null.
-  public CelestialBody OrientingBody() {
+  // Null unless this is a primary-secondary or primary-secondaries frame.
+  public CelestialBody Primary() {
     if (target_frame_selected) {
       return target.orbit.referenceBody;
     }
@@ -433,7 +435,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
   public bool FixesBody(CelestialBody celestial) {
     return celestial == Centre() ||
         (frame_type == FrameType.ROTATING_PULSATING &&
-            (celestial == selected_celestial ||
+            ((selected_celestial.orbitingBodies.Count == 0 &&
+              celestial == selected_celestial) ||
              celestial == selected_celestial.referenceBody));
   }
 
@@ -466,17 +469,22 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         // Deprecated, might as well do the same as its other two-body friends.
         // Used to have the primary and secondary swapped.
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-      case FrameType.ROTATING_PULSATING:
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
         // terminology of |BodyCentredBodyDirection|).
-        // We do the same for the rotating-pulsating frame to facilitate
-        // conversion to the rigid frame when picking a default manœuvre frame.
         return new ReferenceFrameParameters{
             extension = frame_type,
             primary_index = selected_celestial.flightGlobalsIndex,
             secondary_index =
-                selected_celestial.referenceBody.flightGlobalsIndex
+                new[] {selected_celestial.referenceBody.flightGlobalsIndex}};
+      case FrameType.ROTATING_PULSATING:
+        return new ReferenceFrameParameters{
+            extension = frame_type,
+            primary_index = selected_celestial.referenceBody.flightGlobalsIndex,
+            secondary_index = (
+              from body in System(selected_celestial)
+              select body.flightGlobalsIndex).ToArray()
+
         };
       default:
         throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
@@ -529,6 +537,15 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
       }
     }
     UnityEngine.GUI.DragWindow();
+  }
+
+  private static IEnumerable<CelestialBody> System(CelestialBody centre) {
+    yield return centre;
+    foreach (CelestialBody orbiting in centre.orbitingBodies) {
+      foreach (CelestialBody subsystem_body in System(orbiting)) {
+        yield return subsystem_body;
+      }
+    }
   }
 
   private bool AnyDescendantPinned(CelestialBody celestial) {
@@ -704,9 +721,11 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         frame_type != old_frame_type ||
         selected_celestial != old_selected_celestial ||
         target_frame_selected != target_frame_was_selected) {
+      // The cast here relies on ReferenceFrameParameters being a class (that
+      // is, being PlottingFrameParameters).
       on_change_(
-          target_frame_selected ? null
-                                : (ReferenceFrameParameters?)FrameParameters(),
+          target_frame_selected ? (ReferenceFrameParameters)(object)null
+                                : FrameParameters(),
           target_frame_selected ? target : null);
       is_freshly_constructed_ = false;
     }

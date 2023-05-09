@@ -20,7 +20,7 @@ class Plotter {
          ++i) {
       equipotential_meshes_.Add(MakeDynamicMesh());
     }
-    var colour = adapter_.plotting_frame_selector_.OrientingBody()
+    var colour = adapter_.plotting_frame_selector_.Primary()
         .orbitDriver?.Renderer?.orbitColor ?? XKCDColors.SunshineYellow;
     for (int i = 0; i < number_of_equipotentials; ++i) {
       planetarium.PlanetariumPlotEquipotential(

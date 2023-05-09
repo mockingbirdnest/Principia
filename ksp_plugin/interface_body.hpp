@@ -6,7 +6,9 @@
 #include <limits>
 #include <string>
 #include <utility>
+#include <vector>
 
+#include "absl/strings/str_split.h"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
@@ -659,16 +661,28 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters) {
   switch (parameters.extension) {
-    case serialization::RotatingPulsatingReferenceFrame::kExtensionFieldNumber:
-      return plugin.NewRotatingPulsatingPlottingFrame(
-          parameters.primary_index, parameters.secondary_index);
+    case serialization::RotatingPulsatingReferenceFrame::
+        kExtensionFieldNumber: {
+      std::vector<int> secondary_indices;
+      for (std::string_view const i :
+           absl::StrSplit(parameters.secondary_index, ';')) {
+        CHECK(absl::SimpleAtoi(i, &secondary_indices.emplace_back()));
+      }
+      return plugin.NewRotatingPulsatingPlottingFrame(parameters.primary_index,
+                                                      secondary_indices);
+    }
     default:
-      return NewNavigationFrame(
-          plugin,
-          {.extension = parameters.extension,
-           .centre_index = parameters.centre_index,
-           .primary_index = parameters.primary_index,
-           .secondary_index = parameters.secondary_index});
+      int secondary_index;
+      if (std::string_view(parameters.secondary_index).empty()) {
+        secondary_index = -1;
+      } else {
+        CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
+      }
+      return NewNavigationFrame(plugin,
+                                {.extension = parameters.extension,
+                                 .centre_index = parameters.centre_index,
+                                 .primary_index = parameters.primary_index,
+                                 .secondary_index = secondary_index});
   }
 }
 

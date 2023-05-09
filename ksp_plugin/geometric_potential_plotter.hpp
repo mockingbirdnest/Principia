@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "base/jthread.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/equipotential.hpp"
@@ -21,7 +23,7 @@ class GeometricPotentialPlotter {
  public:
   struct Parameters {
     not_null<MassiveBody const*> primary;
-    not_null<MassiveBody const*> secondary;
+    std::vector<not_null<MassiveBody const*>> secondaries;
     Instant time;
     // The number of energy levels at which to draw equipotentials.
     int levels = 8;
