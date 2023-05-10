@@ -141,7 +141,7 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
 
 internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(NavigationFrameParameters p) {
-    PlottingFrameParameters result = new PlottingFrameParameters {
+    var result = new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
         primary_index = p.primary_index,
