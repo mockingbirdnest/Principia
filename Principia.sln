@@ -166,6 +166,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 		.github\workflows\build.yaml = .github\workflows\build.yaml
 		.github\workflows\lint.yaml = .github\workflows\lint.yaml
 		.github\workflows\remove-before-flight.yml = .github\workflows\remove-before-flight.yml
+		.github\workflows\lint.yaml = .github\workflows\lint.yaml
+		.github\workflows\pull_request.yaml = .github\workflows\pull_request.yaml
 	EndProjectSection
 EndProject
 Global

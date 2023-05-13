@@ -1183,13 +1183,18 @@ Plugin::NewBodySurfaceNavigationFrame(
 }
 
 not_null<std::unique_ptr<PlottingFrame>>
-Plugin::NewRotatingPulsatingPlottingFrame(Index const primary_index,
-                                          Index const secondary_index) const {
+Plugin::NewRotatingPulsatingPlottingFrame(
+    Index const primary_index,
+    std::vector<Index> const secondary_indices) const {
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
-  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
+  std::vector<not_null<MassiveBody const*>> secondaries;
+  for (Index const& i : secondary_indices) {
+    Celestial const& secondary = *FindOrDie(celestials_, i);
+    secondaries.push_back(secondary.body());
+  }
   return make_not_null_unique<
       RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
-      ephemeris_.get(), primary.body(), secondary.body());
+      ephemeris_.get(), primary.body(), secondaries);
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,

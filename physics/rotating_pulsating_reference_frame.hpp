@@ -8,6 +8,8 @@
 #ifndef PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 
+#include <vector>
+
 #include "physics/reference_frame.hpp"
 
 #include "physics/body_centred_body_direction_reference_frame.hpp"
@@ -44,8 +46,13 @@ class RotatingPulsatingReferenceFrame
       not_null<MassiveBody const*> primary,
       not_null<MassiveBody const*> secondary);
 
+  RotatingPulsatingReferenceFrame(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<MassiveBody const*> primary,
+      std::vector<not_null<MassiveBody const*>> secondaries);
+
   not_null<MassiveBody const*> primary() const;
-  not_null<MassiveBody const*> secondary() const;
+  std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
   Instant t_min() const override;
   Instant t_max() const override;
@@ -86,7 +93,7 @@ class RotatingPulsatingReferenceFrame
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const primary_;
-  not_null<MassiveBody const*> const secondary_;
+  std::vector<not_null<MassiveBody const*>> const secondaries_;
   BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;
 };

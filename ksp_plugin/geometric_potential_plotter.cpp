@@ -43,8 +43,15 @@ void GeometricPotentialPlotter::RequestEquipotentials(
   // Only process this request if there is no analysis in progress.
   if (plotter_idle_) {
     plotter_idle_ = false;
-    plotter_ = MakeStoppableThread(
-        [this, parameters]() { PlotEquipotentials(parameters).IgnoreError(); });
+    plotter_ = MakeStoppableThread([this, parameters]() {
+      auto const status = PlotEquipotentials(parameters);
+      if (!status.ok() && !absl::IsCancelled(status)) {
+        LOG(ERROR) << "Error while computing " << parameters.primary->name()
+                   << "-" << parameters.secondaries.front()->name()
+                   << " equipotentials at " << parameters.time << ": "
+                   << status;
+      }
+    });
   }
 }
 
@@ -70,17 +77,8 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
     Parameters const& parameters) {
   Instant const& t = parameters.time;
 
-  auto const& primary =
-      parameters.primary->mass() > parameters.secondary->mass()
-          ? *parameters.primary
-          : *parameters.secondary;
-  auto const& secondary =
-      parameters.primary->mass() > parameters.secondary->mass()
-          ? *parameters.secondary
-          : *parameters.primary;
-
   RotatingPulsatingReferenceFrame<Barycentric, Navigation> const
-      reference_frame(ephemeris_, parameters.primary, parameters.secondary);
+      reference_frame(ephemeris_, parameters.primary, parameters.secondaries);
   auto const plane =
       Plane<Navigation>::OrthogonalTo(Vector<double, Navigation>({0, 0, 1}));
 
@@ -131,27 +129,45 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
               /*local_search_tolerance=*/1e-3 * Metre);
   SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
   for (auto const& arg_maximum : arg_maximorum) {
-    maximum_maximorum = std::max(maximum_maximorum, potential(arg_maximum));
+    auto const maximum = potential(arg_maximum);
+    if (!IsFinite(maximum)) {
+      absl::MutexLock l(&lock_);
+      // We don’t reset |next_equipotentials_|, so that if this is transient, we
+      // keep the old ones until the problem goes away.
+      plotter_idle_ = true;
+      return absl::OutOfRangeError(absl::StrCat("Improper maximum ",
+                                                DebugString(maximum),
+                                                " at ",
+                                                DebugString(arg_maximum)));
+    }
+    maximum_maximorum = std::max(maximum_maximorum, maximum);
   }
 
   Position<Barycentric> const primary_barycentric_position =
-          ephemeris_->trajectory(&primary)->EvaluatePosition(t);
-  Position<Barycentric> const secondary_barycentric_position =
-      ephemeris_->trajectory(&secondary)->EvaluatePosition(t);
+      ephemeris_->trajectory(parameters.primary)->EvaluatePosition(t);
+  BarycentreCalculator<Position<Barycentric>, GravitationalParameter>
+      secondary_barycentric_position;
+  for (not_null secondary : parameters.secondaries) {
+    secondary_barycentric_position.Add(
+        ephemeris_->trajectory(secondary)->EvaluatePosition(t),
+        secondary->gravitational_parameter());
+  }
   Length const r =
-      (secondary_barycentric_position - primary_barycentric_position).Norm();
+      (secondary_barycentric_position.Get() - primary_barycentric_position)
+          .Norm();
 
   Position<Navigation> const primary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
           primary_barycentric_position);
   Position<Navigation> const secondary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-          secondary_barycentric_position);
+          secondary_barycentric_position.Get());
 
   // TODO(egg): Consider additional wells.
   std::vector<Equipotential<Barycentric, Navigation>::Well> wells{
-      {secondary_position, secondary.min_radius() / r * (1 * Metre)},
-      {primary_position, primary.min_radius() / r * (1 * Metre)}};
+      {secondary_position,
+       parameters.secondaries.front()->min_radius() / r * (1 * Metre)},
+      {primary_position, parameters.primary->min_radius() / r * (1 * Metre)}};
 
   double const arg_approx_l1 = Brent(
       [&](double const x) {
@@ -191,8 +207,10 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   // equipotential usually distinguishes a small region around L₄/L₅ from the
   // rest of the ridge that contains them and L₃.
   SpecificEnergy const l45_separator =
-      maximum_maximorum - (maximum_maximorum - approx_l1_energy) /
-                              (4 * Sqrt(primary.mass() / secondary.mass()));
+      maximum_maximorum -
+      (maximum_maximorum - approx_l1_energy) /
+          (4 * Sqrt(parameters.primary->gravitational_parameter() /
+                    secondary_barycentric_position.weight()));
 
   Equipotentials equipotentials{.lines = {},
                                 .parameters = parameters};

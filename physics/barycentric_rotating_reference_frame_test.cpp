@@ -213,9 +213,9 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
   auto const extension = message.GetExtension(
       serialization::BarycentricRotatingReferenceFrame::extension);
   EXPECT_TRUE(extension.has_primary());
-  EXPECT_TRUE(extension.has_secondary());
+  EXPECT_EQ(1, extension.secondary().size());
   EXPECT_EQ(0, extension.primary());
-  EXPECT_EQ(1, extension.secondary());
+  EXPECT_EQ(1, extension.secondary()[0]);
 
   auto const read_big_small_frame =
       RigidReferenceFrame<ICRS, BigSmallFrame>::ReadFromMessage(

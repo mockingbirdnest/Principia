@@ -412,7 +412,7 @@ class Plugin {
 
   virtual not_null<std::unique_ptr<PlottingFrame>>
   NewRotatingPulsatingPlottingFrame(Index primary_index,
-                                    Index secondary_index) const;
+                                    std::vector<Index> secondary_indices) const;
 
   virtual void SetTargetVessel(GUID const& vessel_guid,
                                Index reference_body_index);

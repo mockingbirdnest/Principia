@@ -2405,7 +2405,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void UpdatePlottingFrame(PlottingFrameParameters? frame_parameters,
+  private void UpdatePlottingFrame(PlottingFrameParameters frame_parameters,
                                    Vessel target_vessel) {
     if (target_vessel != null) {
       // TODO(egg): We should use the analyser to pick the reference body.
@@ -2414,7 +2414,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           target_vessel.orbit.referenceBody.flightGlobalsIndex);
     } else {
       plugin_.ClearTargetVessel();
-      plugin_.SetPlottingFrame(frame_parameters.Value);
+      plugin_.SetPlottingFrame(frame_parameters);
     }
     navball_changed_ = true;
     reset_rsas_target_ = true;
