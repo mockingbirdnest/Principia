@@ -19,6 +19,15 @@ jobs:
     - name: Checkout source files
       uses: actions/checkout@v3
 
+    - name: Download gipfeli artifacts
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        workflow: build.yaml
+        workflow_conclusion: success
+        name: gipfeli
+        repo: mockingbirdnest/gipfeli
+
     - name: Find MSBuild
       uses: mockingbirdnest/actions/windows/find_msbuild@WF1
 
