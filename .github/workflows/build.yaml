@@ -26,11 +26,11 @@ jobs:
       uses: mockingbirdnest/actions/windows/restore@WF1
       with:
         configuration: ${{ matrix.configuration }}
-        solution_directory: ${{ env.PRINCIPIA_MSVC_GIPFELI }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
     - name: Rebuild ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/rebuild@WF1
       with:
         configuration: ${{ matrix.configuration }}
-        solution_directory: ${{ env.PRINCIPIA_MSVC_GIPFELI }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
