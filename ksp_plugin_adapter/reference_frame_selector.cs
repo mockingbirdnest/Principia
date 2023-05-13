@@ -325,11 +325,10 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
             name,
             selected.Name());
       case FrameType.ROTATING_PULSATING:
-        return L10N.CacheFormat(
+        return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Tooltip_RotatingPulsating",
-            name,
-            selected.Name(),
-            selected.referenceBody.Name());
+            new[]{selected, selected.referenceBody},
+            name);
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
