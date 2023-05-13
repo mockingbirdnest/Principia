@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ '*' ]
 
+env:
+  PRINCIPIA_MSVC: .
+
 jobs:
   build:
     runs-on: windows-latest
@@ -15,22 +18,19 @@ jobs:
     steps:
     - name: Checkout source files
       uses: actions/checkout@v3
-    - name: Find MSBuild version
-      shell: pwsh
-      run: |
-        $msbuild=&.\find_msbuild.ps1
-        echo "msbuild=$msbuild" >> $env:GITHUB_ENV
+
+    - name: Find MSBuild
+      uses: mockingbirdnest/actions/windows/find_msbuild@WF1
+
     - name: Restore ${{ matrix.configuration }}
-      run: >
-        &"${{ env.msbuild }}"
-        /target:Restore
-        /property:Configuration=${{ matrix.configuration }}
-        Principia.sln
+      uses: mockingbirdnest/actions/windows/restore@WF1
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC_GIPFELI }}
+
     - name: Rebuild ${{ matrix.configuration }}
-      run: >
-        &"${{ env.msbuild }}"
-        /target:"Clean;Build"
-        /maxCpuCount
-        /property:Configuration=${{ matrix.configuration }}
-        /property:Platform=x64
-        Principia.sln
+      uses: mockingbirdnest/actions/windows/rebuild@WF1
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC_GIPFELI }}
+
