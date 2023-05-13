@@ -67,14 +67,14 @@ template<typename InertialFrame, typename ThisFrame>
 Instant BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::t_min()
     const {
   // We depend on all bodies via the gravitational acceleration.
-  return ephemeris_->t_max();
+  return ephemeris_->t_min();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Instant BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::t_max()
     const {
   // We depend on all bodies via the gravitational acceleration.
-  return ephemeris_->t_min();
+  return ephemeris_->t_max();
 }
 
 template<typename InertialFrame, typename ThisFrame>
