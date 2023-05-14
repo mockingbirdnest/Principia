@@ -62,16 +62,10 @@ jobs:
         directory: 'Third Party'
 
     - name: Find MSBuild
-      uses: mockingbirdnest/actions/windows/find_msbuild@WF1
-
-    - name: Restore ${{ matrix.configuration }}
-      uses: mockingbirdnest/actions/windows/restore@WF1
-      with:
-        configuration: ${{ matrix.configuration }}
-        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+      uses: mockingbirdnest/actions/windows/find_msbuild@WF
 
     - name: Rebuild ${{ matrix.configuration }}
-      uses: mockingbirdnest/actions/windows/rebuild@WF1
+      uses: mockingbirdnest/actions/windows/rebuild@WF
       with:
         configuration: ${{ matrix.configuration }}
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
@@ -79,6 +73,6 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: principia_${{ matrix.configuration }}-${{ github.sha }}
+        name: principia_${{ matrix.configuration }}-${{ github.event.repository.pushed_at }}-${{ github.sha }}
         path: ${{ matrix.configuration }}/GameData
 
