@@ -23,36 +23,43 @@ jobs:
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: abseil-cpp
+        directory: Google
 
     - name: Download benchmark artifact
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: benchmark
+        directory: Google
 
     - name: Download gipfeli artifact
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: gipfeli
+        directory: Google
 
     - name: Download glog artifact
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: glog
+        directory: Google
 
     - name: Download googletest artifact
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: googletest
+        directory: Google
 
     - name: Download protobuf artifact
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: protobuf
+        directory: Google
 
     - name: Download zfp artifact
       uses: mockingbirdnest/actions/windows/download_artifact@WF
       with:
         name: zfp
+        directory: 'Third Party'
 
     - name: Find MSBuild
       uses: mockingbirdnest/actions/windows/find_msbuild@WF1
