@@ -31,9 +31,10 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<Ephemeris<InertialFrame> const*> ephemeris,
         not_null<MassiveBody const*> primary,
         not_null<MassiveBody const*> secondary)
-    : BarycentricRotatingReferenceFrame(ephemeris,
-                                        primary,
-                                        std::vector{secondary}) {}
+    : BarycentricRotatingReferenceFrame(
+          ephemeris,
+          primary,
+          std::vector<not_null<MassiveBody const*>>{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::

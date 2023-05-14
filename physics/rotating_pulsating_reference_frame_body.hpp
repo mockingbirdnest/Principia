@@ -21,9 +21,10 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<Ephemeris<InertialFrame> const*> const ephemeris,
         not_null<MassiveBody const*> const primary,
         not_null<MassiveBody const*> const secondary)
-    : RotatingPulsatingReferenceFrame(ephemeris,
-                                      primary,
-                                      std::vector{secondary}) {}
+    : RotatingPulsatingReferenceFrame(
+          ephemeris,
+          primary,
+          std::vector<not_null<MassiveBody const*>>{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
