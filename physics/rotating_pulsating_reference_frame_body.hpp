@@ -3,6 +3,7 @@
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
 #include <vector>
+#include <set>
 
 namespace principia {
 namespace physics {
