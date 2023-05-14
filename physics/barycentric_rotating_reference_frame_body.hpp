@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include <set>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -30,9 +31,10 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<Ephemeris<InertialFrame> const*> ephemeris,
         not_null<MassiveBody const*> primary,
         not_null<MassiveBody const*> secondary)
-    : BarycentricRotatingReferenceFrame(ephemeris,
-                                        primary,
-                                        std::vector{secondary}) {}
+    : BarycentricRotatingReferenceFrame(
+          ephemeris,
+          primary,
+          std::vector<not_null<MassiveBody const*>>{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
@@ -45,9 +47,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
       secondaries_(std::move(secondaries)),
       primary_trajectory_(ephemeris_->trajectory(primary_)) {
   CHECK_GE(secondaries_.size(), 1);
-  CHECK_EQ(std::set(secondaries_.begin(), secondaries_.end()).size(),
-           secondaries_.size())
-      << secondaries_;
+  CHECK_EQ(std::set<not_null<MassiveBody const*>>(secondaries_.begin(),
+                                                  secondaries_.end()).size(),
+           secondaries_.size()) << secondaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -67,14 +69,14 @@ template<typename InertialFrame, typename ThisFrame>
 Instant BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::t_min()
     const {
   // We depend on all bodies via the gravitational acceleration.
-  return ephemeris_->t_max();
+  return ephemeris_->t_min();
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Instant BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::t_max()
     const {
   // We depend on all bodies via the gravitational acceleration.
-  return ephemeris_->t_min();
+  return ephemeris_->t_max();
 }
 
 template<typename InertialFrame, typename ThisFrame>

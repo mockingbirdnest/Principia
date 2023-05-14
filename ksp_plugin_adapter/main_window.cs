@@ -47,9 +47,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
   }
 
-  public bool show_unpinned_markers { get; private set; } = false;
-  public bool show_unpinned_celestials { get; private set; } = false;
-  public bool show_equipotentials { get; private set; } = false;
+  public bool show_unpinned_markers { get; private set; } = true;
+  public bool show_unpinned_celestials { get; private set; } = true;
+  public bool show_equipotentials { get; private set; } = true;
 
   public bool selecting_active_vessel_target { get; private set; } = false;
 

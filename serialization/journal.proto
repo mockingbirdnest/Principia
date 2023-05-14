@@ -240,7 +240,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5184.
+  extensions 5000 to 5999;  // Last used: 5185.
 }
 
 message AdvanceTime {
@@ -281,6 +281,20 @@ message CameraReferenceRotation {
   }
   message Return {
     required WXYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CameraScale {
+  extend Method {
+    optional CameraScale extension = 5185;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
