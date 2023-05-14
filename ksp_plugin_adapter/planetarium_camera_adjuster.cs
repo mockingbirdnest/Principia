@@ -21,7 +21,10 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
     }
     var reference_rotation =
         (UnityEngine.QuaternionD)adapter.Plugin().CameraReferenceRotation();
+    double scale = adapter.Plugin().CameraScale();
     if (should_transfer_camera_coordinates) {
+      // Preserve the position when the plotting frame changes.
+      previous_scale_ = scale;
       UnityEngine.QuaternionD previous_referenced_pivot =
           previous_camera_reference_rotation_ *
           last_fresh_planetarium_camera_rotation_ *
@@ -66,24 +69,29 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
     // Both the scaled space and galaxy cameras are used in the flight scene as
     // well as map view; they should not be reoriented there.
     if (MapView.MapIsEnabled) {
+      float scale_correction = 1;
       // The pivot does not get updated when camera controls are locked, so we
       // would be taking our previously corrected orientation as an uncorrected
       // orientation in the next frame, leading to wild spin.  Don’t do that.
       if (InputLockManager.IsUnlocked(ControlTypes.CAMERACONTROLS)) {
           last_fresh_planetarium_camera_rotation_ =
               PlanetariumCamera.fetch.GetPivot().rotation;
+          scale_correction = (float)(previous_scale_ / scale);
       }
       PlanetariumCamera.fetch.GetPivot().rotation =
           reference_rotation *
           last_fresh_planetarium_camera_rotation_ *
           camera_roll;
-      PlanetariumCamera.fetch.transform.localPosition *= ???;
+      PlanetariumCamera.fetch.SetDistance(
+          PlanetariumCamera.fetch.Distance * scale_correction);
+      PlanetariumCamera.fetch.transform.localPosition *= scale_correction;
       ScaledCamera.Instance.galaxyCamera.transform.rotation =
           reference_rotation *
           (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.
               rotation *
           camera_roll;
     }
+    previous_scale_ = scale;
     if (camera_roll_ != 0) {
       // TODO(egg): Should we be doing this in LateUpdate?
       const double roll_change_per_frame = 0.1 /*radians*/;
@@ -107,6 +115,11 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   // The camera reference rotation applied during the previous frame; this is
   // used when transfering camera coordinates to preserve continuity.
   private UnityEngine.QuaternionD previous_camera_reference_rotation_;
+  // The scale of the plotting frame.  This is used when in a pulsating frame,
+  // to keep the camera at a constant in-frame distance from its target.
+  // It is not used when transferring camera coordinates, as the transfer leaves
+  // the camera position invariant.
+  private double previous_scale_;
   // The roll of the camera; this is set when transferring camera coordinates to
   // preserve continuity of orientation, and gradually brought down to 0 so that
   // the camera is horizontal in the new reference frame.
