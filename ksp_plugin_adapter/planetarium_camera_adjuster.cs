@@ -77,6 +77,7 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
           reference_rotation *
           last_fresh_planetarium_camera_rotation_ *
           camera_roll;
+      PlanetariumCamera.fetch.transform.localPosition *= ???;
       ScaledCamera.Instance.galaxyCamera.transform.rotation =
           reference_rotation *
           (UnityEngine.QuaternionD)ScaledCamera.Instance.galaxyCamera.transform.
