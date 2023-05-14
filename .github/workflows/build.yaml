@@ -8,6 +8,7 @@ on:
 
 env:
   PRINCIPIA_MSVC: .
+  PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
 
 jobs:
   build:
@@ -18,6 +19,13 @@ jobs:
     steps:
     - name: Checkout source files
       uses: actions/checkout@v3
+
+    - name: Download KSP assemblies
+      run: |
+        Invoke-WebRequest                   `
+          http://principia.mockingbirdnest.com/${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY}}/KSP%20Assemblies/${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip `
+          -OutFile 'KSP Assemblies\${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip'
+        Expand-Archive 'KSP Assemblies\${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip' 'KSP Assemblies
 
     - name: Download abseil artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
