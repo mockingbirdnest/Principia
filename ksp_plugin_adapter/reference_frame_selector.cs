@@ -325,11 +325,10 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
             name,
             selected.Name());
       case FrameType.ROTATING_PULSATING:
-        return L10N.CacheFormat(
+        return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Tooltip_RotatingPulsating",
-            name,
-            selected.Name(),
-            selected.referenceBody.Name());
+            new[]{selected, selected.referenceBody},
+            name);
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -369,9 +368,21 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
           throw Log.Fatal(
               "Describing rotating-pulsating frame of root body");
         } else {
-          return L10N.CelestialString(
-              "#Principia_ReferenceFrameSelector_Description_RotatingPulsating",
-              new[]{selected, selected.referenceBody});
+          switch (selected.orbitingBodies.Count) {
+            case 0:
+              return L10N.CelestialString(
+                  "#Principia_ReferenceFrameSelector_Description_RotatingPulsating",
+                  new[]{selected, selected.referenceBody});
+            case 1:
+              return L10N.CelestialString(
+                  "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingOneMoon",
+                  new[]{selected, selected.referenceBody,
+                        selected.orbitingBodies.First()});
+            default:
+              return L10N.CelestialString(
+                  "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingBigSystem",
+                  new[]{selected, selected.referenceBody});
+          }
         }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());

@@ -65,6 +65,7 @@ struct Hilbert<T1, T2,
   static InnerProductType InnerProduct(T1 const& t1, T2 const& t2)
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942 || \
+    _MSC_FULL_VER == 193'431'944 || \
     _MSC_FULL_VER == 193'532'216 || \
     _MSC_FULL_VER == 193'532'217
   {  // NOLINT
@@ -87,6 +88,7 @@ struct Hilbert<T, T,
   static InnerProductType InnerProduct(T const& t1, T const& t2)
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942 || \
+    _MSC_FULL_VER == 193'431'944 || \
     _MSC_FULL_VER == 193'532'216 || \
     _MSC_FULL_VER == 193'532'217
   {  // NOLINT
@@ -100,6 +102,7 @@ struct Hilbert<T, T,
   static Norm²Type Norm²(T const& t)
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942 || \
+    _MSC_FULL_VER == 193'431'944 || \
     _MSC_FULL_VER == 193'532'216 || \
     _MSC_FULL_VER == 193'532'217
   {  // NOLINT
@@ -113,6 +116,7 @@ struct Hilbert<T, T,
   static NormType Norm(T const& t)
 #if _MSC_FULL_VER == 193'431'937 || \
     _MSC_FULL_VER == 193'431'942 || \
+    _MSC_FULL_VER == 193'431'944 || \
     _MSC_FULL_VER == 193'532'216 || \
     _MSC_FULL_VER == 193'532'217
   {  // NOLINT
