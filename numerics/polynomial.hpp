@@ -29,6 +29,7 @@
                                 _MSC_FULL_VER == 192'930'147 || \
                                 _MSC_FULL_VER == 193'431'937 || \
                                 _MSC_FULL_VER == 193'431'942 || \
+                                _MSC_FULL_VER == 193'431'944 || \
                                 _MSC_FULL_VER == 193'532'216 || \
                                 _MSC_FULL_VER == 193'532'217)
 
