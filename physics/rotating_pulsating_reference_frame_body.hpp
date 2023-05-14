@@ -3,6 +3,7 @@
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
 #include <vector>
+#include <set>
 
 namespace principia {
 namespace physics {
@@ -35,9 +36,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
       secondaries_(std::move(secondaries)),
       rotating_frame_(ephemeris_, primary_, secondaries_) {
   CHECK_GE(secondaries_.size(), 1);
-  CHECK_EQ(std::set(secondaries_.begin(), secondaries_.end()).size(),
-           secondaries_.size())
-      << secondaries_;
+  CHECK_EQ(std::set<not_null<MassiveBody const*>>(secondaries_.begin(),
+                                                  secondaries_.end()).size(),
+           secondaries_.size()) << secondaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>

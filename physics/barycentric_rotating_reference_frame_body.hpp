@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include <set>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -45,9 +46,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
       secondaries_(std::move(secondaries)),
       primary_trajectory_(ephemeris_->trajectory(primary_)) {
   CHECK_GE(secondaries_.size(), 1);
-  CHECK_EQ(std::set(secondaries_.begin(), secondaries_.end()).size(),
-           secondaries_.size())
-      << secondaries_;
+  CHECK_EQ(std::set<not_null<MassiveBody const*>>(secondaries_.begin(),
+                                                  secondaries_.end()).size(),
+           secondaries_.size()) << secondaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
