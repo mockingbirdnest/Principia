@@ -25,7 +25,7 @@ jobs:
         Invoke-WebRequest                   `
           http://principia.mockingbirdnest.com/${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY}}/KSP%20Assemblies/${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip `
           -OutFile 'KSP Assemblies\${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip'
-        Expand-Archive 'KSP Assemblies\${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip' 'KSP Assemblies
+        Expand-Archive 'KSP Assemblies\${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip' 'KSP Assemblies'
 
     - name: Download abseil artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
