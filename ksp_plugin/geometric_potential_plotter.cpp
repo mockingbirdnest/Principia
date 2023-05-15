@@ -163,10 +163,23 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
           secondary_barycentric_position.Get());
 
+  Length secondary_radius;
+  if (parameters.secondaries.size() == 1) {
+    secondary_radius = parameters.secondaries.front()->min_radius();
+  } else {
+    for (not_null const secondary : parameters.secondaries) {
+      secondary_radius =
+          std::max(secondary_radius,
+                   (secondary_barycentric_position.Get() -
+                    ephemeris_->trajectory(secondary)->EvaluatePosition(t))
+                           .Norm() +
+                       secondary->min_radius());
+    }
+  }
+
   // TODO(egg): Consider additional wells.
   std::vector<Equipotential<Barycentric, Navigation>::Well> wells{
-      {secondary_position,
-       parameters.secondaries.front()->min_radius() / r * (1 * Metre)},
+      {secondary_position, secondary_radius / r * (1 * Metre)},
       {primary_position, parameters.primary->min_radius() / r * (1 * Metre)}};
 
   double const arg_approx_l1 = Brent(
