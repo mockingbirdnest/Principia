@@ -85,7 +85,7 @@ jobs:
 #        configuration: ${{ matrix.configuration }}
 #        solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
-    - name Test ${{ matrix.configuration }}
+    - name: Test ${{ matrix.configuration }}
       run: |
         Remove-Item -Recurse TestResults
         if ( ${{matrix.configuration}} -eq 'Debug') {
