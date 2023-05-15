@@ -77,11 +77,11 @@ jobs:
         configuration: ${{ matrix.configuration }}
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
-#    - name: Rebuild ${{ matrix.configuration }}
-#      uses: mockingbirdnest/actions/windows/rebuild@main
-#      with:
-#        configuration: ${{ matrix.configuration }}
-#        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+    - name: Rebuild ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/rebuild@main
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
     - name: Test ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/test@WF
