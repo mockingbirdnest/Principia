@@ -89,7 +89,7 @@ jobs:
       run: |
         New-Item -ItemType Directory -Force TestResults
         Remove-Item -Recurse -ErrorAction SilentlyContinue TestResults/*
-        if ( ${{matrix.configuration}} -eq 'Debug') {
+        if ( "${{ matrix.configuration }}" -eq 'Debug') {
           $granularity = 'Package'
         } else {
           $granularity = 'Test'
