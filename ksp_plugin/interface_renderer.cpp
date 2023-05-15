@@ -149,5 +149,14 @@ WXYZ __cdecl principia__CameraReferenceRotation(Plugin* const plugin) {
                  .quaternion()));
 }
 
+double __cdecl principia__CameraScale(Plugin* const plugin) {
+  journal::Method<journal::CameraScale> m({plugin});
+  CHECK_NOTNULL(plugin);
+  return m.Return(GetRenderer(plugin)
+                      .BarycentricToPlotting(plugin->CurrentTime())
+                      .conformal_map()
+                      .scale());
+}
+
 }  // namespace interface
 }  // namespace principia
