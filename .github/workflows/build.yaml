@@ -20,7 +20,7 @@ jobs:
     - name: Checkout source files
       uses: actions/checkout@v3
       with:
-        ref: '+refs/pull/*:refs/remotes/origin/pr/*'
+        fetch-depth: 0
 
     - name: Download KSP assemblies
       run: |
@@ -86,6 +86,7 @@ jobs:
 
     - name: Pick artifact name
       run: |
+        git tag
         git describe --tags --always --dirty --abbrev=40 --long
         echo "PRINCIPIA_ARTIFACT_NAME=${{ matrix.configuration}}-$(git describe --tags --always --dirty --abbrev=40 --long)"
         echo "PRINCIPIA_ARTIFACT_NAME=${{ matrix.configuration}}-$(git describe --tags --always --dirty --abbrev=40 --long)" >> $env:GITHUB_ENV
