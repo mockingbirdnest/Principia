@@ -96,14 +96,8 @@ jobs:
 #          --granularity:$granularity                                                    `
 #          .\${{ matrix.configuration }}\x64
 
-    - name: Pick artifact name
-      run: |
-        echo "PRINCIPIA_ARTIFACT_NAME=${{ matrix.configuration}}-$(git describe --tags --always --dirty --abbrev=40 --long)" >> $env:GITHUB_ENV
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
+    - name: Upload principia artifact
+      uses: mockingbirdnest/actions/windows/upload_principia_artifact@WF
       with:
-        name: principia_${{ env.PRINCIPIA_ARTIFACT_NAME }}
-        # The * after GameData is to preserve that directory in the artifact.
-        path: ${{ matrix.configuration }}/GameData*
+        configuration: ${{ matrix.configuration }}
 
