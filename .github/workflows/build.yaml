@@ -79,11 +79,11 @@ jobs:
         configuration: ${{ matrix.configuration }}
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
-#    - name: Rebuild ${{ matrix.configuration }}
-#      uses: mockingbirdnest/actions/windows/rebuild@main
-#      with:
-#        configuration: ${{ matrix.configuration }}
-#        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+    - name: Rebuild ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/rebuild@main
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
     - name: Test ${{ matrix.configuration }}
       run: |
@@ -95,7 +95,7 @@ jobs:
           $granularity = 'Test'
         }
         .\parallel_test_runner\bin\${{ matrix.configuration }}\parallel_test_runner.exe `
-          --granularity:$granularity                                `
+          --granularity:$granularity                                                    `
           .\${{ matrix.configuration }}\x64
 
     - name: Pick artifact name
