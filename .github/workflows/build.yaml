@@ -20,7 +20,7 @@ jobs:
     - name: Checkout source files
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0
+        ref: '+refs/pull/*:refs/remotes/origin/pr/*'
 
     - name: Download KSP assemblies
       run: |
