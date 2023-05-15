@@ -76,15 +76,20 @@ jobs:
         configuration: ${{ matrix.configuration }}
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
-    - name: Rebuild ${{ matrix.configuration }}
-      uses: mockingbirdnest/actions/windows/rebuild@main
-      with:
-        configuration: ${{ matrix.configuration }}
-        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+#    - name: Rebuild ${{ matrix.configuration }}
+#     uses: mockingbirdnest/actions/windows/rebuild@main
+#      with:
+#       configuration: ${{ matrix.configuration }}
+#       solution_directory: ${{ env.PRINCIPIA_MSVC }}
+
+    - name: Pick artifact name
+      run: |
+        echo "PRINCIPIA_ARTIFACT_NAME=${{ matrix.configuration}}-$(git describe --tags --always --dirty --abbrev=40 --long)" >> $env:GITHUB_ENV
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: principia_${{ matrix.configuration }}-${{ github.event.repository.pushed_at }}-${{ github.sha }}
-        path: ${{ matrix.configuration }}/GameData
+        name: principia_${{ env."PRINCIPIA_ARTIFACT_NAME }}
+        # The * after GameData is to preserve that directory in the artifact.
+        path: ${{ matrix.configuration }}/GameData*
 
