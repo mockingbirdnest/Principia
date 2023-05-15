@@ -89,7 +89,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: principia_${{ env."PRINCIPIA_ARTIFACT_NAME }}
+        name: principia_${{ env.PRINCIPIA_ARTIFACT_NAME }}
         # The * after GameData is to preserve that directory in the artifact.
         path: ${{ matrix.configuration }}/GameData*
 
