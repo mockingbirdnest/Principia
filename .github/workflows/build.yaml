@@ -94,7 +94,7 @@ jobs:
         } else {
           $granularity = 'Test'
         }
-        .\parallel_test_runner\bin\Release\parallel_test_runner.exe `
+        .\parallel_test_runner\bin\${{ matrix.configuration }}\parallel_test_runner.exe `
           --granularity:$granularity                                `
           .\${{ matrix.configuration }}\x64
 
