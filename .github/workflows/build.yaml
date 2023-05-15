@@ -25,7 +25,7 @@ jobs:
 
     - name: Download KSP assemblies
       run: |
-        mkdir -f '..\KSP Assemblies'
+        New-Item -ItemType Directory -Force '..\KSP Assemblies'
         Invoke-WebRequest                   `
           http://principia.mockingbirdnest.com/${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY}}/KSP%20Assemblies/${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip `
           -OutFile '..\KSP Assemblies\${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}.zip'
@@ -87,7 +87,8 @@ jobs:
 
     - name: Test ${{ matrix.configuration }}
       run: |
-        Remove-Item -Recurse TestResults
+        New-Item -ItemType Directory -Force TestResults
+        Remove-Item -Recurse -ErrorAction SilentlyContinue TestResults/*
         if ( ${{matrix.configuration}} -eq 'Debug') {
           $granularity = 'Package'
         } else {
