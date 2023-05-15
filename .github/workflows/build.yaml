@@ -84,6 +84,8 @@ jobs:
 
     - name: Pick artifact name
       run: |
+        git describe --tags --always --dirty --abbrev=40 --long
+        echo "PRINCIPIA_ARTIFACT_NAME=${{ matrix.configuration}}-$(git describe --tags --always --dirty --abbrev=40 --long)"
         echo "PRINCIPIA_ARTIFACT_NAME=${{ matrix.configuration}}-$(git describe --tags --always --dirty --abbrev=40 --long)" >> $env:GITHUB_ENV
 
     - name: Upload artifact
