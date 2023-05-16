@@ -26,7 +26,7 @@ jobs:
 
     - run: |
         echo ">>>${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}<<<"
-        printenv
+        ls env:
       shell: pwsh
 
     - name: Download KSP assemblies
