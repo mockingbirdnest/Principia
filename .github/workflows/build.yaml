@@ -10,7 +10,7 @@ on:
 env:
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
-  FOO: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
+  FOO: ${{ secrets.FOO }}
 
 jobs:
   build:
