@@ -24,7 +24,7 @@ jobs:
         fetch-depth: 0
         ref: |
           ${{ github.event_name == 'pull_request_target'
-              && "refs/pull/${{ github.event.number }}/merge"
+              && format('refs/pull/{0}/merge', github.event.number)
               || '' }}
 
     - name: Download KSP assemblies
