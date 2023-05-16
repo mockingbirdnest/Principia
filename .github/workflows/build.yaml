@@ -14,6 +14,7 @@ env:
 
 jobs:
   build:
+    environment: env1
     runs-on: ${{ matrix.configuration }}
     strategy:
         matrix:
@@ -26,6 +27,7 @@ jobs:
 
     - run: |
         echo ">>>${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}<<<"
+        echo ">>>${{ secrets.GOO }}<<<"
         ls env:
       shell: pwsh
 
