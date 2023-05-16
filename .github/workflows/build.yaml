@@ -24,7 +24,8 @@ jobs:
         fetch-depth: 0
 
     - run: |
-      echo ">>>${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}<<<"
+        echo ">>>${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}<<<"
+      shell: pwsh
 
     - name: Download KSP assemblies
       uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
