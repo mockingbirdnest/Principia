@@ -1,0 +1,95 @@
+name: Build
+
+on:
+  push:
+    branches: [ 'master' ]
+    tags: [ '*' ]
+  pull_request_target:
+    branches: [ '*' ]
+
+env:
+  PRINCIPIA_MSVC: .
+  PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
+
+jobs:
+  build:
+    runs-on: ${{ matrix.configuration }}
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+    - name: Checkout source files
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Download KSP assemblies
+      uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
+      with:
+        secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
+        ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
+
+    - name: Download abseil artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: abseil-cpp
+        directory: Google
+
+    - name: Download benchmark artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: benchmark
+        directory: Google
+
+    - name: Download gipfeli artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: gipfeli
+        directory: Google
+
+    - name: Download glog artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: glog
+        directory: Google
+
+    - name: Download googletest artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: googletest
+        directory: Google
+
+    - name: Download protobuf artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: protobuf
+        directory: Google
+
+    - name: Download zfp artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: zfp
+        directory: 'Third Party'
+
+    - name: Restore ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/restore@main
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+
+    - name: Rebuild ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/rebuild@main
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+
+    - name: Test ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/test@main
+      with:
+        configuration: ${{ matrix.configuration }}
+
+    - name: Upload principia artifact
+      uses: mockingbirdnest/actions/windows/upload_principia_artifact@main
+      with:
+        configuration: ${{ matrix.configuration }}
+
