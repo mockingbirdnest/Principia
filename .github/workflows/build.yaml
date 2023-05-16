@@ -2,34 +2,26 @@ name: Build
 
 on:
   push:
-    branches: [ '*' ]
+    branches: [ 'master' ]
     tags: [ '*' ]
-  pull_request:
+  pull_request_target:
     branches: [ '*' ]
 
 env:
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
-  FOO: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
     runs-on: ${{ matrix.configuration }}
     strategy:
-        matrix:
-          configuration: [Debug, Release]
+      matrix:
+        configuration: [Debug, Release]
     steps:
     - name: Checkout source files
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-
-    - run: |
-        echo ">>>${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}<<<"
-        echo ">>>${{ secrets.GOO }}<<<"
-        echo ">>>${{ vars.BOO }}<<<"
-        ls env:
-      shell: pwsh
 
     - name: Download KSP assemblies
       uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
