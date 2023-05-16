@@ -536,7 +536,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
 TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
   Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
                 /*make_unique=*/false);
-  std::int64_t const number_of_days = 502;
   auto const sun = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Sun));
   auto const mercury = solar_system_->massive_body(
@@ -559,47 +558,61 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Neptune));
   auto const triton = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Triton));
-  auto const reference_frame(
-      RotatingPulsatingReferenceFrame<Barycentric, World>(
-          ephemeris_.get(),
-      {sun, mercury, venus, earth, moon, mars, jupiter, saturn, uranus},
-          {neptune, triton}));
-  CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
+  std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
+      equipotentials;
+  for (auto const [primaries, secondaries] :
+       {std::pair{std::vector{sun}, std::vector{neptune}},
+        std::pair{std::vector{sun}, std::vector{neptune, triton}},
+        std::pair{std::vector{sun,
+                              mercury,
+                              venus,
+                              earth,
+                              moon,
+                              mars,
+                              jupiter,
+                              saturn,
+                              uranus},
+                  std::vector{neptune, triton}}}) {
+    auto const reference_frame(
+        RotatingPulsatingReferenceFrame<Barycentric, World>(
+            ephemeris_.get(), primaries, secondaries));
+    CHECK_OK(ephemeris_->Prolong(t0_ + 1 * Day));
 
-  auto const potential = [this,
-                          &reference_frame](Position<World> const& position) {
-    return reference_frame.GeometricPotential(t0_, position);
-  };
-  auto const acceleration =
-      [this, &reference_frame](Position<World> const& position) {
-        auto const acceleration = reference_frame.GeometricAcceleration(
-            t0_, {position, Velocity<World>{}});
-        // Note the sign.
-        return -Vector<Acceleration, World>({acceleration.coordinates()[0],
-                                             acceleration.coordinates()[1],
-                                             Acceleration{}});
-  };
-  const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box = {
-      .centre = World::origin,
-      .vertices = {Displacement<World>({3 * Metre, 0 * Metre, 0 * Metre}),
-                   Displacement<World>({0 * Metre, 3 * Metre, 0 * Metre})}};
+    auto const potential = [this,
+                            &reference_frame](Position<World> const& position) {
+      return reference_frame.GeometricPotential(t0_, position);
+    };
+    auto const acceleration =
+        [this, &reference_frame](Position<World> const& position) {
+          auto const acceleration = reference_frame.GeometricAcceleration(
+              t0_, {position, Velocity<World>{}});
+          // Note the sign.
+          return -Vector<Acceleration, World>({acceleration.coordinates()[0],
+                                               acceleration.coordinates()[1],
+                                               Acceleration{}});
+        };
+    const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box =
+        {.centre = World::origin,
+         .vertices = {Displacement<World>({3 * Metre, 0 * Metre, 0 * Metre}),
+                      Displacement<World>({0 * Metre, 3 * Metre, 0 * Metre})}};
 
-  MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
-      box, potential, acceleration);
-  constexpr Length characteristic_length = 1 * Nano(Metre);
-  Equipotential<Barycentric, World> const equipotential(
-      {EmbeddedExplicitRungeKuttaIntegrator<
-           DormandPrince1986RK547FC,
-           Equipotential<Barycentric, World>::ODE>(),
-       /*max_steps=*/1000,
-       /*length_integration_tolerance=*/characteristic_length},
-      &reference_frame,
-      characteristic_length);
-  auto const plane =
-      Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
+    MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
+        box, potential, acceleration);
+    constexpr Length characteristic_length = 1 * Nano(Metre);
+    Equipotential<Barycentric, World> const equipotential(
+        {EmbeddedExplicitRungeKuttaIntegrator<
+             DormandPrince1986RK547FC,
+             Equipotential<Barycentric, World>::ODE>(),
+         /*max_steps=*/1000,
+         /*length_integration_tolerance=*/characteristic_length},
+        &reference_frame,
+        characteristic_length);
+    auto const plane =
+        Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
-  CHECK_OK(ephemeris_->Prolong(t0_));
-  std::vector<std::vector<std::vector<Position<World>>>> equipotentials_at_t;
+    CHECK_OK(ephemeris_->Prolong(t0_));
+    std::vector<std::vector<std::vector<Position<World>>>>&
+        equipotentials_at_t = equipotentials.emplace_back();
 
     auto const arg_maximorum = optimizer.FindGlobalMaxima(
         /*points_per_round=*/1000,
@@ -668,11 +681,11 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
           },
           energy);
       for (auto const& line : lines) {
-      std::vector<Position<World>>& equipotential =
-          equipotentials_at_energy.emplace_back();
-      for (auto const& [s, dof] : line) {
-        equipotential.push_back(dof.position());
-      }
+        std::vector<Position<World>>& equipotential =
+            equipotentials_at_energy.emplace_back();
+        for (auto const& [s, dof] : line) {
+          equipotential.push_back(dof.position());
+        }
       }
     }
     auto const& lines = equipotential.ComputeLines(
@@ -691,11 +704,11 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
       std::vector<Position<World>>& equipotential =
           equipotentials_at_l2_energy.emplace_back();
       for (auto const& [s, dof] : line) {
-      equipotential.push_back(dof.position());
+        equipotential.push_back(dof.position());
       }
     }
-    logger.Set(
-        "equipotentialsSunNeptune", equipotentials_at_t, ExpressIn(Metre));
+  }
+  logger.Set("equipotentialsSunNeptune", equipotentials, ExpressIn(Metre));
 }
 
 #endif
