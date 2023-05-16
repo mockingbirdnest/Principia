@@ -14,7 +14,6 @@ env:
 
 jobs:
   build:
-    environment: env1
     runs-on: ${{ matrix.configuration }}
     strategy:
         matrix:
