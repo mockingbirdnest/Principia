@@ -13,7 +13,9 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, Debug]
+    runs-on:
+      group: self-hosted
+      labels: ${{ matrix.configuration }}
     strategy:
         matrix:
           configuration: [Debug, Release]
