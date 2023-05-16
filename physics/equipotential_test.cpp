@@ -560,6 +560,8 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Triton));
   std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
       equipotentials;
+  std::vector<AngularVelocity<Barycentric>> angular_velocities;
+  std::vector<AngularVelocity<World>> angular_velocities_in_world;
   for (auto const [primaries, secondaries] :
        {std::pair{std::vector{sun}, std::vector{neptune}},
         std::pair{std::vector{sun}, std::vector{neptune, triton}},
@@ -576,7 +578,12 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
     auto const reference_frame(
         RotatingPulsatingReferenceFrame<Barycentric, World>(
             ephemeris_.get(), primaries, secondaries));
-    CHECK_OK(ephemeris_->Prolong(t0_ + 1 * Day));
+    CHECK_OK(ephemeris_->Prolong(t0_));
+    angular_velocities.push_back(reference_frame.ToThisFrameAtTimeSimilarly(t0_)
+                                     .angular_velocity_of<World>());
+    angular_velocities_in_world.push_back(
+        reference_frame.ToThisFrameAtTimeSimilarly(t0_)
+            .angular_velocity_of<Barycentric>());
 
     auto const potential = [this,
                             &reference_frame](Position<World> const& position) {
@@ -666,7 +673,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
           .Norm();
     };
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
-    for (int i = 1; i <= 8; ++i) {
+    for (int i = 1; i <= 12; ++i) {
       SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
       std::vector<std::vector<Position<World>>>& equipotentials_at_energy =
           equipotentials_at_t.emplace_back();
@@ -708,6 +715,12 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
       }
     }
   }
+  logger.Set("angularVelocitiesSunNeptune",
+             angular_velocities,
+             ExpressIn(Radian, Second));
+  logger.Set("angularVelocitiesInWorldSunNeptune",
+             angular_velocities_in_world,
+             ExpressIn(Radian, Second));
   logger.Set("equipotentialsSunNeptune", equipotentials, ExpressIn(Metre));
 }
 
