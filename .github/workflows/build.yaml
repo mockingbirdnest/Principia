@@ -27,6 +27,7 @@ jobs:
     - run: |
         echo ">>>${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}<<<"
         echo ">>>${{ secrets.GOO }}<<<"
+        echo ">>>${{ vars.BOO }}<<<"
         ls env:
       shell: pwsh
 
