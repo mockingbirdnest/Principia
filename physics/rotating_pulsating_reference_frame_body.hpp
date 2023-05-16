@@ -23,19 +23,19 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<MassiveBody const*> const secondary)
     : RotatingPulsatingReferenceFrame(
           ephemeris,
-          primary,
+          std::vector{primary},
           std::vector<not_null<MassiveBody const*>>{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     RotatingPulsatingReferenceFrame(
         not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-        not_null<MassiveBody const*> const primary,
+        std::vector<not_null<MassiveBody const*>> primaries,
         std::vector<not_null<MassiveBody const*>> secondaries)
     : ephemeris_(ephemeris),
-      primary_(primary),
+      primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
-      rotating_frame_(ephemeris_, primary_, secondaries_) {
+      rotating_frame_(ephemeris_, primaries_, secondaries_) {
   CHECK_GE(secondaries_.size(), 1);
   CHECK_EQ(std::set<not_null<MassiveBody const*>>(secondaries_.begin(),
                                                   secondaries_.end()).size(),
@@ -43,9 +43,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
 }
 
 template<typename InertialFrame, typename ThisFrame>
-not_null<MassiveBody const*>
-RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
-  return primary_;
+std::vector<not_null<MassiveBody const*>> const&
+RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::primaries() const {
+  return primaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -136,7 +136,7 @@ void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::ReferenceFrame*> message) const {
   auto* const extension = message->MutableExtension(
       serialization::RotatingPulsatingReferenceFrame::extension);
-  extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  //extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
   for (not_null const secondary : secondaries_) {
     extension->add_secondary(
         ephemeris_->serialization_index_for_body(secondary));
@@ -172,9 +172,15 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_derivatives(
         ephemeris_->trajectory(secondary)->EvaluatePosition(t),
         secondary->gravitational_parameter());
   }
+  BarycentreCalculator<Position<InertialFrame>, GravitationalParameter>
+      primary_position;
+  for (not_null const primary : primaries_) {
+    primary_position.Add(
+        ephemeris_->trajectory(primary)->EvaluatePosition(t),
+        primary->gravitational_parameter());
+  }
   Displacement<InertialFrame> const u =
-      ephemeris_->trajectory(primary_)->EvaluatePosition(t) -
-      secondary_position.Get();
+      primary_position.Get() - secondary_position.Get();
   Length const r = u.Norm();
   if constexpr (degree == 0) {
     return {r};
@@ -186,8 +192,15 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_derivatives(
           ephemeris_->trajectory(secondary)->EvaluateVelocity(t),
           secondary->gravitational_parameter());
     }
+    BarycentreCalculator<Velocity<InertialFrame>, GravitationalParameter>
+        primary_velocity;
+    for (not_null const primary : primaries_) {
+      primary_velocity.Add(
+          ephemeris_->trajectory(primary)->EvaluateVelocity(t),
+          primary->gravitational_parameter());
+    }
     Velocity<InertialFrame> const v =
-        ephemeris_->trajectory(primary_)->EvaluateVelocity(t) -
+        primary_velocity.Get() -
         secondary_velocity.Get();
     Speed const ṙ = InnerProduct(u, v) / r;
     if constexpr (degree == 1) {
@@ -203,9 +216,17 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_derivatives(
                                                                       t),
             secondary->gravitational_parameter());
       }
+      BarycentreCalculator<Vector<Acceleration, InertialFrame>,
+                           GravitationalParameter>
+          primary_acceleration;
+      for (not_null const primary : primaries_) {
+        primary_acceleration.Add(
+            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary,
+                                                                      t),
+            primary->gravitational_parameter());
+      }
       Vector<Acceleration, InertialFrame> const γ =
-          ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_,
-                                                                    t) -
+          primary_acceleration.Get() -
           secondary_acceleration.Get();
       Acceleration const r̈ =
           v.Norm²() / r + InnerProduct(u, γ) / r - Pow<2>(ṙ) / r;

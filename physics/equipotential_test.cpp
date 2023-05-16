@@ -408,7 +408,6 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
       all_positions;
   std::vector<std::vector<Position<World>>> trajectory_positions(
       trajectories.size());
-  std::vector<SpecificEnergy> energies;
   for (int j = 0; j < number_of_days; ++j) {
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
@@ -529,12 +528,174 @@ TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
   logger.Set("trajectoryPositions",
              trajectory_positions,
              ExpressIn(Metre));
-  logger.Set("energies",
-             energies,
-             ExpressIn(Metre, Second));
   logger.Set("equipotentialsEarthMoonGlobalOptimization",
              all_positions,
              ExpressIn(Metre));
+}
+
+TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
+  Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
+                /*make_unique=*/false);
+  std::int64_t const number_of_days = 502;
+  auto const sun = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Sun));
+  auto const mercury = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Mercury));
+  auto const venus = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Venus));
+  auto const earth = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+  auto const moon = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+  auto const mars = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Mars));
+  auto const jupiter = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Jupiter));
+  auto const saturn = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Saturn));
+  auto const uranus = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Uranus));
+  auto const neptune = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Neptune));
+  auto const triton = solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Triton));
+  auto const reference_frame(
+      RotatingPulsatingReferenceFrame<Barycentric, World>(
+          ephemeris_.get(),
+      {sun, mercury, venus, earth, moon, mars, jupiter, saturn, uranus},
+          {neptune, triton}));
+  CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
+
+  auto const potential = [this,
+                          &reference_frame](Position<World> const& position) {
+    return reference_frame.GeometricPotential(t0_, position);
+  };
+  auto const acceleration =
+      [this, &reference_frame](Position<World> const& position) {
+        auto const acceleration = reference_frame.GeometricAcceleration(
+            t0_, {position, Velocity<World>{}});
+        // Note the sign.
+        return -Vector<Acceleration, World>({acceleration.coordinates()[0],
+                                             acceleration.coordinates()[1],
+                                             Acceleration{}});
+  };
+  const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box = {
+      .centre = World::origin,
+      .vertices = {Displacement<World>({3 * Metre, 0 * Metre, 0 * Metre}),
+                   Displacement<World>({0 * Metre, 3 * Metre, 0 * Metre})}};
+
+  MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
+      box, potential, acceleration);
+  constexpr Length characteristic_length = 1 * Nano(Metre);
+  Equipotential<Barycentric, World> const equipotential(
+      {EmbeddedExplicitRungeKuttaIntegrator<
+           DormandPrince1986RK547FC,
+           Equipotential<Barycentric, World>::ODE>(),
+       /*max_steps=*/1000,
+       /*length_integration_tolerance=*/characteristic_length},
+      &reference_frame,
+      characteristic_length);
+  auto const plane =
+      Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
+
+  CHECK_OK(ephemeris_->Prolong(t0_));
+  std::vector<std::vector<std::vector<Position<World>>>> equipotentials_at_t;
+
+    auto const arg_maximorum = optimizer.FindGlobalMaxima(
+        /*points_per_round=*/1000,
+        /*number_of_rounds=*/std::nullopt,
+        /*local_search_tolerance=*/1e-3 * Metre);
+    logger.Append("argMaximorum", arg_maximorum, ExpressIn(Metre));
+    std::vector<SpecificEnergy> maxima;
+    SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
+
+    Position<World> const earth_position =
+        reference_frame.ToThisFrameAtTimeSimilarly(t0_).similarity()(
+            ephemeris_->trajectory(sun)->EvaluatePosition(t0_));
+    Position<World> const moon_position =
+        reference_frame.ToThisFrameAtTimeSimilarly(t0_).similarity()(
+            ephemeris_->trajectory(neptune)->EvaluatePosition(t0_));
+    for (auto const& arg_maximum : arg_maximorum) {
+      maxima.push_back(potential(arg_maximum));
+      maximum_maximorum = std::max(maximum_maximorum, maxima.back());
+    }
+    logger.Append("maxima", maxima, ExpressIn(Metre, Second));
+
+    double const arg_approx_l1 = Brent(
+        [&](double const x) {
+          return potential(Barycentre(std::pair(moon_position, earth_position),
+                                      std::pair(x, 1 - x)));
+        },
+        0.0,
+        1.0,
+        std::greater<>{});
+    double const arg_approx_l2 = Brent(
+        [&](double x) {
+          return potential(Barycentre(
+              std::pair(moon_position,
+                        World::origin + 2 * (moon_position - World::origin)),
+              std::pair(x, 1 - x)));
+        },
+        0.0,
+        1.0,
+        std::greater<>{});
+    SpecificEnergy const approx_l1_energy =
+        potential(Barycentre(std::pair(moon_position, earth_position),
+                             std::pair(arg_approx_l1, 1 - arg_approx_l1)));
+    SpecificEnergy const approx_l2_energy = potential(Barycentre(
+        std::pair(moon_position,
+                  World::origin + 2 * (moon_position - World::origin)),
+        std::pair(arg_approx_l2, 1 - arg_approx_l2)));
+    // TODO(egg): Somehow extract that from the reference frame.
+    auto const r = [&](Instant const& t) -> Length {
+      return (ephemeris_->trajectory(sun)->EvaluatePosition(t) -
+              ephemeris_->trajectory(neptune)->EvaluatePosition(t))
+          .Norm();
+    };
+    SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
+    for (int i = 1; i <= 8; ++i) {
+      SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
+      std::vector<std::vector<Position<World>>>& equipotentials_at_energy =
+          equipotentials_at_t.emplace_back();
+      auto const& lines = equipotential.ComputeLines(
+          plane,
+          t0_,
+          arg_maximorum,
+          {{moon_position, neptune->min_radius() / r(t0_) * (1 * Metre)},
+           {earth_position, sun->min_radius() / r(t0_) * (1 * Metre)}},
+          [](Position<World> q) {
+            return World::origin + Normalize(q - World::origin) * 3 * Metre;
+          },
+          energy);
+      for (auto const& line : lines) {
+      std::vector<Position<World>>& equipotential =
+          equipotentials_at_energy.emplace_back();
+      for (auto const& [s, dof] : line) {
+        equipotential.push_back(dof.position());
+      }
+      }
+    }
+    auto const& lines = equipotential.ComputeLines(
+        plane,
+        t0_,
+        arg_maximorum,
+        {{moon_position, neptune->min_radius() / r(t0_) * (1 * Metre)},
+         {earth_position, sun->min_radius() / r(t0_) * (1 * Metre)}},
+        [](Position<World> q) {
+          return World::origin + Normalize(q - World::origin) * 3 * Metre;
+        },
+        approx_l2_energy);
+    std::vector<std::vector<Position<World>>>& equipotentials_at_l2_energy =
+        equipotentials_at_t.emplace_back();
+    for (auto const& line : lines) {
+      std::vector<Position<World>>& equipotential =
+          equipotentials_at_l2_energy.emplace_back();
+      for (auto const& [s, dof] : line) {
+      equipotential.push_back(dof.position());
+      }
+    }
+    logger.Set(
+        "equipotentialsSunNeptune", equipotentials_at_t, ExpressIn(Metre));
 }
 
 #endif

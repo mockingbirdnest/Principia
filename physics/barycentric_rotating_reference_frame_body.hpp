@@ -33,19 +33,19 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<MassiveBody const*> secondary)
     : BarycentricRotatingReferenceFrame(
           ephemeris,
-          primary,
+          std::vector{primary},
           std::vector<not_null<MassiveBody const*>>{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     BarycentricRotatingReferenceFrame(
         not_null<Ephemeris<InertialFrame> const*> ephemeris,
-        not_null<MassiveBody const*> primary,
+        std::vector<not_null<MassiveBody const*>> primaries,
         std::vector<not_null<MassiveBody const*>> secondaries)
     : ephemeris_(std::move(ephemeris)),
-      primary_(std::move(primary)),
+      primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
-      primary_trajectory_(ephemeris_->trajectory(primary_)) {
+      primary_trajectory_(ephemeris_->trajectory(primaries_.front())) {
   CHECK_GE(secondaries_.size(), 1);
   CHECK_EQ(std::set<not_null<MassiveBody const*>>(secondaries_.begin(),
                                                   secondaries_.end()).size(),
@@ -53,9 +53,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
 }
 
 template<typename InertialFrame, typename ThisFrame>
-not_null<MassiveBody const*>
-BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::primary() const {
-  return primary_;
+std::vector<not_null<MassiveBody const*>> const&
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::primaries() const {
+  return primaries_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -83,10 +83,19 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
-  DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t);
-  Vector<Acceleration, InertialFrame> const primary_acceleration =
-      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_, t);
+  BarycentreCalculator<DegreesOfFreedom<InertialFrame>, GravitationalParameter>
+      primary_degrees_of_freedom;
+  BarycentreCalculator<Vector<Acceleration, InertialFrame>,
+                       GravitationalParameter>
+      primary_acceleration;
+  for (not_null const primary : primaries_) {
+    primary_degrees_of_freedom.Add(
+        ephemeris_->trajectory(primary)->EvaluateDegreesOfFreedom(t),
+        primary->gravitational_parameter());
+    primary_acceleration.Add(
+        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary, t),
+        primary->gravitational_parameter());
+  }
 
   BarycentreCalculator<DegreesOfFreedom<InertialFrame>, GravitationalParameter>
       secondary_degrees_of_freedom;
@@ -104,7 +113,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 
   return ToThisFrame(primary_degrees_of_freedom,
                      secondary_degrees_of_freedom,
-                     primary_acceleration,
+                     primary_acceleration.Get(),
                      secondary_acceleration.Get());
 }
 
@@ -113,7 +122,7 @@ void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension = message->MutableExtension(
       serialization::BarycentricRotatingReferenceFrame::extension);
-  extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  //extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
   for (not_null const secondary : secondaries_) {
     extension->add_secondary(
         ephemeris_->serialization_index_for_body(secondary));
@@ -156,12 +165,24 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t);
-  Vector<Acceleration, InertialFrame> const primary_acceleration =
-      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_, t);
-  Vector<Jerk, InertialFrame> const primary_jerk =
-      ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary_, t);
+  BarycentreCalculator<DegreesOfFreedom<InertialFrame>, GravitationalParameter>
+      primary_degrees_of_freedom;
+  BarycentreCalculator<Vector<Acceleration, InertialFrame>,
+                       GravitationalParameter>
+      primary_acceleration;
+  BarycentreCalculator<Vector<Jerk, InertialFrame>, GravitationalParameter>
+      primary_jerk;
+  for (not_null const primary : primaries_) {
+    primary_degrees_of_freedom.Add(
+        ephemeris_->trajectory(primary)->EvaluateDegreesOfFreedom(t),
+        primary->gravitational_parameter());
+    primary_acceleration.Add(
+        ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary, t),
+        primary->gravitational_parameter());
+    primary_jerk.Add(
+        ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary, t),
+        primary->gravitational_parameter());
+  }
 
   BarycentreCalculator<DegreesOfFreedom<InertialFrame>, GravitationalParameter>
       secondary_degrees_of_freedom;
@@ -184,18 +205,19 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
 
   auto const to_this_frame = ToThisFrame(primary_degrees_of_freedom,
                                          secondary_degrees_of_freedom,
-                                         primary_acceleration,
+                                         primary_acceleration.Get(),
                                          secondary_acceleration.Get());
 
   Displacement<InertialFrame> const r =
       secondary_degrees_of_freedom.Get().position() -
-      primary_degrees_of_freedom.position();
+      primary_degrees_of_freedom.Get().position();
   Velocity<InertialFrame> const ṙ =
       secondary_degrees_of_freedom.Get().velocity() -
-      primary_degrees_of_freedom.velocity();
+      primary_degrees_of_freedom.Get().velocity();
   Vector<Acceleration, InertialFrame> const r̈ =
-      secondary_acceleration.Get() - primary_acceleration;
-  Vector<Jerk, InertialFrame> const r⁽³⁾ = secondary_jerk.Get() - primary_jerk;
+      secondary_acceleration.Get() - primary_acceleration.Get();
+  Vector<Jerk, InertialFrame> const r⁽³⁾ =
+      secondary_jerk.Get() - primary_jerk.Get();
 
   Trihedron<Length, ArealSpeed> orthogonal;
   Trihedron<double, double> orthonormal;
@@ -218,8 +240,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
           orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
 
   BarycentreCalculator acceleration_of_to_frame_origin = secondary_acceleration;
-  acceleration_of_to_frame_origin.Add(primary_acceleration,
-                                      primary_->gravitational_parameter());
+  acceleration_of_to_frame_origin.Add(primary_acceleration.Get(),
+                                      primary_acceleration.weight());
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              to_this_frame,
              angular_acceleration_of_to_frame,
@@ -228,7 +250,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
-    DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+    BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
+                         GravitationalParameter> const&
+        primary_degrees_of_freedom,
     BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
                          GravitationalParameter> const&
         secondary_degrees_of_freedom,
@@ -238,7 +262,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
           Rotation<InertialFrame, ThisFrame>::Identity();
   AngularVelocity<InertialFrame> angular_velocity;
   RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeAngularDegreesOfFreedom(
-      primary_degrees_of_freedom,
+      primary_degrees_of_freedom.Get(),
       secondary_degrees_of_freedom.Get(),
       primary_acceleration,
       secondary_acceleration,
@@ -247,8 +271,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
 
   BarycentreCalculator barycentre_degrees_of_freedom =
       secondary_degrees_of_freedom;
-  barycentre_degrees_of_freedom.Add(primary_degrees_of_freedom,
-                                    primary_->gravitational_parameter());
+  barycentre_degrees_of_freedom.Add(primary_degrees_of_freedom.Get(),
+                                    primary_degrees_of_freedom.weight());
   RigidTransformation<InertialFrame, ThisFrame> const rigid_transformation(
       barycentre_degrees_of_freedom.Get().position(),
       ThisFrame::origin,
