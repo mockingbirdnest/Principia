@@ -594,11 +594,11 @@ int __cdecl principia__EquipotentialCount(Plugin* const plugin) {
   } else {
     // TODO(egg): We may not want to recompute all the time.
     plugin->geometric_potential_plotter().RequestEquipotentials(
-        {plotting_frame_as_rotating_pulsating->primaries().front(),
+        {plotting_frame_as_rotating_pulsating->primary(),
          plotting_frame_as_rotating_pulsating->secondaries(),
          plugin->CurrentTime()});
     if (equipotentials != nullptr &&
-        plotting_frame_as_rotating_pulsating->primaries().front() ==
+        plotting_frame_as_rotating_pulsating->primary() ==
             equipotentials->parameters.primary &&
         plotting_frame_as_rotating_pulsating->secondaries() ==
             equipotentials->parameters.secondaries) {
