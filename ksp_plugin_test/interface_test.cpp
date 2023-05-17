@@ -509,6 +509,7 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 }
 
 TEST_F(InterfaceTest, NewNavigationFrame) {
+  EXPECT_THAT(1, Eq(0));
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
 
@@ -552,6 +553,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
+  LOG(FATAL) << "test";
   StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
          new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
