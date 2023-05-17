@@ -82,7 +82,7 @@ Burn GetBurn(Plugin const& plugin,
       parameters.extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber;
       parameters.primary_index = plugin.CelestialIndexOfBody(
-          *barycentric_rotating_reference_frame->primary());
+          *barycentric_rotating_reference_frame->primaries().front());
       // A barycentric rotating reference frame can have multiple secondaries
       // since ابن الهيثم, but it has not been possible to set a manœuvre frame
       // to barycentric since Haar, so this cannot happen in this compatibility
