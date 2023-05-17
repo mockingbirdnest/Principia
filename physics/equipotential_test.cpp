@@ -59,10 +59,12 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -558,6 +560,20 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Neptune));
   auto const triton = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Triton));
+  std::vector<not_null<MassiveBody const*>> all_inner;
+  for (int i = 0; i <= SolarSystemFactory::LastBody; ++i) {
+    switch (i) {
+      case SolarSystemFactory::Neptune:
+      case SolarSystemFactory::Triton:
+      case SolarSystemFactory::Pluto:
+      case SolarSystemFactory::Charon:
+      case SolarSystemFactory::Eris:
+        continue;
+      default:
+        all_inner.push_back(solar_system_->massive_body(
+            *ephemeris_, SolarSystemFactory::name(i)));
+    }
+  }
   std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
       equipotentials;
   std::vector<AngularVelocity<Barycentric>> angular_velocities;
@@ -574,7 +590,8 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
                               jupiter,
                               saturn,
                               uranus},
-                  std::vector{neptune, triton}}}) {
+                  std::vector{neptune, triton}},
+        std::pair{all_inner, std::vector{neptune, triton}}}) {
     auto const reference_frame(
         RotatingPulsatingReferenceFrame<Barycentric, World>(
             ephemeris_.get(), primaries, secondaries));
@@ -695,23 +712,32 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
         }
       }
     }
-    auto const& lines = equipotential.ComputeLines(
-        plane,
-        t0_,
-        arg_maximorum,
-        {{moon_position, neptune->min_radius() / r(t0_) * (1 * Metre)},
-         {earth_position, sun->min_radius() / r(t0_) * (1 * Metre)}},
-        [](Position<World> q) {
-          return World::origin + Normalize(q - World::origin) * 3 * Metre;
-        },
-        approx_l2_energy);
-    std::vector<std::vector<Position<World>>>& equipotentials_at_l2_energy =
-        equipotentials_at_t.emplace_back();
-    for (auto const& line : lines) {
-      std::vector<Position<World>>& equipotential =
-          equipotentials_at_l2_energy.emplace_back();
-      for (auto const& [s, dof] : line) {
-        equipotential.push_back(dof.position());
+    SpecificEnergy const l45_separator =
+        maximum_maximorum - (maximum_maximorum - approx_l1_energy) /
+                                (4 * Sqrt(reference_frame.primaries()
+                                              .front()
+                                              ->gravitational_parameter() /
+                                          reference_frame.secondaries()
+                                              .front()
+                                              ->gravitational_parameter()));
+    for (SpecificEnergy const energy : {approx_l2_energy, l45_separator}) {
+      auto& equipotentials_at_energy = equipotentials_at_t.emplace_back();
+      auto lines = equipotential.ComputeLines(
+          plane,
+          t0_,
+          arg_maximorum,
+          {{moon_position, neptune->min_radius() / r(t0_) * (1 * Metre)},
+           {earth_position, sun->min_radius() / r(t0_) * (1 * Metre)}},
+          [](Position<World> q) {
+            return World::origin + Normalize(q - World::origin) * 3 * Metre;
+          },
+          energy);
+      for (auto const& line : lines) {
+        std::vector<Position<World>>& equipotential =
+            equipotentials_at_energy.emplace_back();
+        for (auto const& [s, dof] : line) {
+          equipotential.push_back(dof.position());
+        }
       }
     }
   }
