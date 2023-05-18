@@ -570,42 +570,27 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Neptune));
   auto const triton = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Triton));
-  std::vector<not_null<MassiveBody const*>> all_inner;
+  std::vector<not_null<MassiveBody const*>> all_other;
   for (int i = 0; i <= SolarSystemFactory::LastBody; ++i) {
     switch (i) {
-      case SolarSystemFactory::Uranus:
-      case SolarSystemFactory::Miranda:
-      case SolarSystemFactory::Ariel:
-      case SolarSystemFactory::Umbriel:
-      case SolarSystemFactory::Titania:
-      case SolarSystemFactory::Oberon:
-      case SolarSystemFactory::Neptune:
-      case SolarSystemFactory::Triton:
-      case SolarSystemFactory::Pluto:
-      case SolarSystemFactory::Charon:
-      case SolarSystemFactory::Eris:
+      case SolarSystemFactory::Earth:
+      case SolarSystemFactory::Moon:
         continue;
       default:
-        all_inner.push_back(solar_system_->massive_body(
+        all_other.push_back(solar_system_->massive_body(
             *ephemeris_, SolarSystemFactory::name(i)));
     }
   }
+  std::vector earthmoo{earth, moon};
   std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
       equipotentials;
   std::vector<AngularVelocity<Barycentric>> angular_velocities;
   std::vector<AngularVelocity<World>> angular_velocities_in_world;
   for (auto const [primaries, secondaries] :
-       {std::pair{std::vector{sun}, std::vector{uranus}},
-        std::pair{
-            std::vector{sun},
-            std::vector{uranus, miranda, ariel, umbriel, titania, oberon}},
-        std::pair{
-            std::vector{
-                sun, mercury, venus, earth, moon, mars, jupiter, saturn},
-            std::vector{uranus, miranda, ariel, umbriel, titania, oberon}},
-        std::pair{
-            all_inner,
-            std::vector{uranus, miranda, ariel, umbriel, titania, oberon}}}) {
+       {std::pair{std::vector{sun}, std::vector{earth}},
+        std::pair{std::vector{sun}, earthmoo},
+        std::pair{std::vector{sun, mercury, venus}, earthmoo},
+        std::pair{all_other, earthmoo}}) {
     auto const reference_frame(
         RotatingPulsatingReferenceFrame<Barycentric, World>(
             ephemeris_.get(), primaries, secondaries));
@@ -665,7 +650,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
             ephemeris_->trajectory(sun)->EvaluatePosition(t0_));
     Position<World> const moon_position =
         reference_frame.ToThisFrameAtTimeSimilarly(t0_).similarity()(
-            ephemeris_->trajectory(uranus)->EvaluatePosition(t0_));
+            ephemeris_->trajectory(earth)->EvaluatePosition(t0_));
     for (auto const& arg_maximum : arg_maximorum) {
       maxima.push_back(potential(arg_maximum));
       maximum_maximorum = std::max(maximum_maximorum, maxima.back());
@@ -700,7 +685,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
     // TODO(egg): Somehow extract that from the reference frame.
     auto const r = [&](Instant const& t) -> Length {
       return (ephemeris_->trajectory(sun)->EvaluatePosition(t) -
-              ephemeris_->trajectory(uranus)->EvaluatePosition(t))
+              ephemeris_->trajectory(earth)->EvaluatePosition(t))
           .Norm();
     };
     SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
@@ -712,7 +697,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
           plane,
           t0_,
           arg_maximorum,
-          {{moon_position, uranus->min_radius() / r(t0_) * (1 * Metre)},
+          {{moon_position, earth->min_radius() / r(t0_) * (1 * Metre)},
            {earth_position, sun->min_radius() / r(t0_) * (1 * Metre)}},
           [](Position<World> q) {
             return World::origin + Normalize(q - World::origin) * 3 * Metre;
@@ -740,7 +725,7 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
           plane,
           t0_,
           arg_maximorum,
-          {{moon_position, uranus->min_radius() / r(t0_) * (1 * Metre)},
+          {{moon_position, earth->min_radius() / r(t0_) * (1 * Metre)},
            {earth_position, sun->min_radius() / r(t0_) * (1 * Metre)}},
           [](Position<World> q) {
             return World::origin + Normalize(q - World::origin) * 3 * Metre;
