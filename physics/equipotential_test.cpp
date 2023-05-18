@@ -726,15 +726,18 @@ TEST_F(EquipotentialTest, RotatingPulsating_SunNeptune) {
         }
       }
     }
-    SpecificEnergy const l45_separator =
-        maximum_maximorum - (maximum_maximorum - approx_l1_energy) /
-                                (4 * Sqrt(reference_frame.primaries()
-                                              .front()
-                                              ->gravitational_parameter() /
-                                          reference_frame.secondaries()
-                                              .front()
-                                              ->gravitational_parameter()));
-    for (SpecificEnergy const energy : {approx_l2_energy, l45_separator}) {
+    std::vector<SpecificEnergy> l245_separators{approx_l2_energy};
+    for (auto const maximum : maxima) {
+      l245_separators.push_back(
+          maximum - (maximum - approx_l1_energy) /
+                        (4 * Sqrt(reference_frame.primaries()
+                                      .front()
+                                      ->gravitational_parameter() /
+                                  reference_frame.secondaries()
+                                      .front()
+                                      ->gravitational_parameter())));
+    }
+    for (SpecificEnergy const energy : l245_separators) {
       auto& equipotentials_at_energy = equipotentials_at_t.emplace_back();
       auto lines = equipotential.ComputeLines(
           plane,
