@@ -104,7 +104,7 @@ jobs:
       with:
         configuration: ${{ matrix.configuration }}
 
-    - name: Clean stub artifacts
+    - name: Clean stub binaries
       run: |
         git reset --hard
       shell: pwsh
