@@ -104,7 +104,9 @@ jobs:
       with:
         configuration: ${{ matrix.configuration }}
 
-    - run: git reset --hard
+    - run: |
+        git reset --hard
+      shell: pwsh
 
     - name: Upload principia artifact
       uses: mockingbirdnest/actions/windows/upload_principia_artifact@main
