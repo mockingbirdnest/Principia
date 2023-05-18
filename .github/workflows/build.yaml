@@ -94,7 +94,7 @@ jobs:
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
     - name: Rebuild ${{ matrix.configuration }}
-      uses: mockingbirdnest/actions/windows/rebuild@main
+      uses: mockingbirdnest/actions/windows/rebuild@WF
       with:
         configuration: ${{ matrix.configuration }}
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
