@@ -94,7 +94,7 @@ jobs:
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
     - name: Rebuild ${{ matrix.configuration }}
-      uses: mockingbirdnest/actions/windows/rebuild@WF
+      uses: mockingbirdnest/actions/windows/rebuild@main
       with:
         configuration: ${{ matrix.configuration }}
         solution_directory: ${{ env.PRINCIPIA_MSVC }}
@@ -103,6 +103,8 @@ jobs:
       uses: mockingbirdnest/actions/windows/test@main
       with:
         configuration: ${{ matrix.configuration }}
+
+    - run: git reset --hard
 
     - name: Upload principia artifact
       uses: mockingbirdnest/actions/windows/upload_principia_artifact@main
