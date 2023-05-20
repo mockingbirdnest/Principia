@@ -194,42 +194,71 @@ std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
   return result;
 }
 
+void JournalProtoProcessor::ProcessRepeatedNonStringField(
+    FieldDescriptor const* descriptor,
+    std::string const& cs_boxed_type,
+    std::string const& cs_unboxed_type,
+    std::string const& cxx_type) {
+  if (Contains(interchange_, descriptor)) {
+    // This may be null as we may be called on a scalar field.
+    Descriptor const* message_type = descriptor->message_type();
+    if (Contains(cs_custom_marshaler_name_, message_type)) {
+      field_cs_custom_marshaler_[descriptor] =
+          "RepeatedMarshaler<" + cs_unboxed_type + ", " +
+          cs_custom_marshaler_name_[message_type] + ">";
+    } else {
+      // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
+      // structs, but we don't need it yet.
+      LOG(FATAL) << "Repeated messages with an element that does not have a "
+                    "custom marshaller are not yet implemented.";
+    }
+    field_cs_type_[descriptor] = cs_unboxed_type + "[]";
+    field_cxx_type_[descriptor] = cxx_type + " const* const*";
+
+    field_cxx_arguments_fn_[descriptor] =
+        [](std::string const& identifier) -> std::vector<std::string> {
+          return {"&" + identifier + "[0]"};
+        };
+    field_cxx_assignment_fn_[descriptor] =
+        [this, descriptor, cxx_type](
+            std::string const& prefix, std::string const& expr) {
+          std::string const& descriptor_name = descriptor->name();
+          return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
+                 " = " + expr + "; " +
+                 descriptor_name + " != nullptr && "
+                 "*" + descriptor_name + " != nullptr; "
+                 "++" + descriptor_name + ") {\n"
+                 "    *" + prefix + "add_" + descriptor_name + "() = " +
+                 field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
+                 ";\n"
+                 "  }\n";
+        };
+  } else {
+    LOG(FATAL) << "Repeated non-string types are only implemented for "
+                  "interchange messages";
+  }
+}
+
+void JournalProtoProcessor::ProcessRepeatedInt32Field(
+    FieldDescriptor const* descriptor) {
+  ProcessRepeatedNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedInt32",
+      /*cs_unboxed_type=*/"int",
+      /*cxx_type=*/"int");
+  //ProcessRepeatedScalarField(descriptor, "int");
+}
+
 void JournalProtoProcessor::ProcessRepeatedMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
   std::string const& message_type_name = message_type->name();
+  ProcessRepeatedNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"Boxed" + message_type_name,
+      /*cs_unboxed_type=*/message_type_name,
+      /*cxx_type=*/message_type_name);
 
-  field_cs_type_[descriptor] = message_type_name + "[]";
-  if (Contains(cs_custom_marshaler_name_, message_type)) {
-    field_cs_custom_marshaler_[descriptor] =
-        "RepeatedMarshaler<" + message_type_name + ", " +
-        cs_custom_marshaler_name_[message_type] + ">";
-  } else {
-    // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
-    // structs, but we don't need it yet.
-    LOG(FATAL) << "Repeated messages with an element that does not have a "
-                  "custom marshaller are not yet implemented.";
-  }
-  field_cxx_type_[descriptor] = message_type_name + " const* const*";
-
-  field_cxx_arguments_fn_[descriptor] =
-      [](std::string const& identifier) -> std::vector<std::string> {
-        return {"&" + identifier + "[0]"};
-      };
-  field_cxx_assignment_fn_[descriptor] =
-      [this, descriptor, message_type_name](
-          std::string const& prefix, std::string const& expr) {
-        std::string const& descriptor_name = descriptor->name();
-        return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
-               " = " + expr + "; " +
-               descriptor_name + " != nullptr && "
-               "*" + descriptor_name + " != nullptr; "
-               "++" + descriptor_name + ") {\n"
-               "    *" + prefix + "add_" + descriptor_name + "() = " +
-               field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
-               ";\n"
-               "  }\n";
-      };
   std::string const storage_name = descriptor->name() + "_storage";
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
@@ -837,6 +866,9 @@ void JournalProtoProcessor::ProcessOptionalField(
 void JournalProtoProcessor::ProcessRepeatedField(
     FieldDescriptor const* descriptor) {
   switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_INT32:
+      ProcessRepeatedInt32Field(descriptor);
+      break;
     case FieldDescriptor::TYPE_MESSAGE:
       ProcessRepeatedMessageField(descriptor);
       break;

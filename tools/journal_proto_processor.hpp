@@ -42,6 +42,11 @@ class JournalProtoProcessor final {
   std::vector<std::string> GetCxxPlayStatements() const;
 
  private:
+  void ProcessRepeatedNonStringField(FieldDescriptor const* descriptor,
+                                     std::string const& cs_boxed_type,
+                                     std::string const& cs_unboxed_type,
+                                     std::string const& cxx_type);
+  void ProcessRepeatedInt32Field(FieldDescriptor const* descriptor);
   void ProcessRepeatedMessageField(FieldDescriptor const* descriptor);
   void ProcessRepeatedStringField(FieldDescriptor const* descriptor);
 
