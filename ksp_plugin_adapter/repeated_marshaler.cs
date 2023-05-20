@@ -5,7 +5,7 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class RepeatedMarshaler<T, TMarshaler> : MonoMarshaler
-    where T : class where TMarshaler : ICustomMarshaler {
+    where TMarshaler : ICustomMarshaler {
   public static ICustomMarshaler GetInstance(string s) {
     return instance_;
   }

@@ -660,23 +660,25 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters) {
+  CHECK_NOTNULL(parameters.secondary_index);
   switch (parameters.extension) {
     case serialization::RotatingPulsatingReferenceFrame::
         kExtensionFieldNumber: {
       std::vector<int> secondary_indices;
-      for (std::string_view const i :
-           absl::StrSplit(parameters.secondary_index, ';')) {
-        CHECK(absl::SimpleAtoi(i, &secondary_indices.emplace_back()));
+      for (int const* const* index_ptr = parameters.secondary_index;
+           *index_ptr != nullptr;
+           ++index_ptr) {
+        secondary_indices.push_back(**index_ptr);
       }
       return plugin.NewRotatingPulsatingPlottingFrame(parameters.primary_index,
                                                       secondary_indices);
     }
     default:
       int secondary_index;
-      if (std::string_view(parameters.secondary_index).empty()) {
+      if (*parameters.secondary_index == nullptr) {
         secondary_index = -1;
       } else {
-        CHECK(absl::SimpleAtoi(parameters.secondary_index, &secondary_index));
+        secondary_index = **parameters.secondary_index;
       }
       return NewNavigationFrame(plugin,
                                 {.extension = parameters.extension,
