@@ -218,24 +218,29 @@ void JournalProtoProcessor::ProcessRepeatedNonStringField(
         [](std::string const& identifier) -> std::vector<std::string> {
           return {"&" + identifier + "[0]"};
         };
-    field_cxx_assignment_fn_[descriptor] =
-        [this, descriptor, cxx_type](
-            std::string const& prefix, std::string const& expr) {
-          std::string const& descriptor_name = descriptor->name();
-          return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
-                 " = " + expr + "; " +
-                 descriptor_name + " != nullptr && "
-                 "*" + descriptor_name + " != nullptr; "
-                 "++" + descriptor_name + ") {\n"
-                 "    *" + prefix + "add_" + descriptor_name + "() = " +
-                 field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
-                 ";\n"
-                 "  }\n";
-        };
   } else {
     LOG(FATAL) << "Repeated non-string types are only implemented for "
                   "interchange messages";
   }
+}
+
+  void JournalProtoProcessor::ProcessRepeatedScalarField(
+    FieldDescriptor const* descriptor,
+    std::string const& cxx_type) {
+  field_cxx_assignment_fn_[descriptor] =
+      [this, descriptor](
+          std::string const& prefix, std::string const& expr) {
+        std::string const& descriptor_name = descriptor->name();
+        return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
+                " = " + expr + "; " +
+                descriptor_name + " != nullptr && "
+                "*" + descriptor_name + " != nullptr; "
+                "++" + descriptor_name + ") {\n"
+                "    " + prefix + "add_" + descriptor_name + "(" +
+                field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
+                ");\n"
+                "  }\n";
+      };
 }
 
 void JournalProtoProcessor::ProcessRepeatedInt32Field(
@@ -245,7 +250,7 @@ void JournalProtoProcessor::ProcessRepeatedInt32Field(
       /*cs_boxed_type=*/"BoxedInt32",
       /*cs_unboxed_type=*/"int",
       /*cxx_type=*/"int");
-  //ProcessRepeatedScalarField(descriptor, "int");
+  ProcessRepeatedScalarField(descriptor, "int");
 }
 
 void JournalProtoProcessor::ProcessRepeatedMessageField(
@@ -257,6 +262,21 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       /*cs_boxed_type=*/"Boxed" + message_type_name,
       /*cs_unboxed_type=*/message_type_name,
       /*cxx_type=*/message_type_name);
+
+  field_cxx_assignment_fn_[descriptor] =
+      [this, descriptor](
+          std::string const& prefix, std::string const& expr) {
+        std::string const& descriptor_name = descriptor->name();
+        return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
+                " = " + expr + "; " +
+                descriptor_name + " != nullptr && "
+                "*" + descriptor_name + " != nullptr; "
+                "++" + descriptor_name + ") {\n"
+                "    *" + prefix + "add_" + descriptor_name + "() = " +
+                field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
+                ";\n"
+                "  }\n";
+      };
 
   std::string const storage_name = descriptor->name() + "_storage";
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
