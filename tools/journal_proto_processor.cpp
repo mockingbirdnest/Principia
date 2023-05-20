@@ -301,7 +301,7 @@ void JournalProtoProcessor::ProcessRepeatedUint32Field(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedUint32",
+      /*cs_boxed_type=*/"BoxedUInt32",
       /*cs_unboxed_type=*/"uint",
       /*cxx_type=*/"uint32_t");
   ProcessRepeatedScalarField(descriptor, "uint32_t");
@@ -537,7 +537,7 @@ void JournalProtoProcessor::ProcessOptionalUint32Field(
     FieldDescriptor const* descriptor) {
   ProcessOptionalNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedUint32",
+      /*cs_boxed_type=*/"BoxedUInt32",
       /*cs_unboxed_type=*/"uint",
       /*cxx_type=*/"uint32_t");
   ProcessOptionalScalarField(descriptor, "uint32_t");

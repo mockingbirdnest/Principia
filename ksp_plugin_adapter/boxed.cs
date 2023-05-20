@@ -38,12 +38,12 @@ internal class BoxedInt64 : Boxed<long> {
   protected BoxedInt64(long all) : base(all) {}
 }
 
-internal class BoxedUint32 : Boxed<uint> {
-  public static implicit operator BoxedUint32(uint all) {
-    return new BoxedUint32(all);
+internal class BoxedUInt32 : Boxed<uint> {
+  public static implicit operator BoxedUInt32(uint all) {
+    return new BoxedUInt32(all);
   }
 
-  protected BoxedUint32(uint all) : base(all) {}
+  protected BoxedUInt32(uint all) : base(all) {}
 }
 
 internal class BoxedKeplerianElements : Boxed<KeplerianElements> {
