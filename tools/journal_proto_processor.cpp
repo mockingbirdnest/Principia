@@ -207,10 +207,9 @@ void JournalProtoProcessor::ProcessRepeatedNonStringField(
           "RepeatedMarshaler<" + cs_unboxed_type + ", " +
           cs_custom_marshaler_name_[message_type] + ">";
     } else {
-      // This wouldn't be hard, we'd need another RepeatedMarshaller that copies
-      // structs, but we don't need it yet.
-      LOG(FATAL) << "Repeated messages with an element that does not have a "
-                    "custom marshaller are not yet implemented.";
+      field_cs_custom_marshaler_[descriptor] =
+          "RepeatedMarshaler<" + cs_unboxed_type + ", OptionalMarshaler<" +
+          cs_unboxed_type + ">>";
     }
     field_cs_type_[descriptor] = cs_unboxed_type + "[]";
     field_cxx_type_[descriptor] = cxx_type + " const* const*";
@@ -373,7 +372,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     // This may be null as we may be called on a scalar field.
     Descriptor const* message_type = descriptor->message_type();
     if (Contains(cs_custom_marshaler_name_, message_type)) {
-      // This wouldn't be hard, we'd need another OptionalMarshaller that calls
+      // This wouldn't be hard, we'd need another OptionalMarshaler that calls
       // the element's marshaler, but we don't need it yet.
       LOG(FATAL) << "Optional messages with an element that does have a custom "
                     "marshaller are not yet implemented.";
