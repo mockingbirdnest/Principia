@@ -322,14 +322,14 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
           std::string const& prefix, std::string const& expr) {
         std::string const& descriptor_name = descriptor->name();
         return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
-                " = " + expr + "; " +
-                descriptor_name + " != nullptr && "
-                "*" + descriptor_name + " != nullptr; "
-                "++" + descriptor_name + ") {\n"
-                "    *" + prefix + "add_" + descriptor_name + "() = " +
-                field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
-                ";\n"
-                "  }\n";
+               " = " + expr + "; " +
+               descriptor_name + " != nullptr && "
+               "*" + descriptor_name + " != nullptr; "
+               "++" + descriptor_name + ") {\n"
+               "    *" + prefix + "add_" + descriptor_name + "() = " +
+               field_cxx_serializer_fn_[descriptor]("**"+ descriptor_name) +
+               ";\n"
+               "  }\n";
       };
 
   std::string const storage_name = descriptor->name() + "_storage";
