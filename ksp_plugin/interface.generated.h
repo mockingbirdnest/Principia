@@ -231,7 +231,7 @@ struct PlottingFrameParameters {
   int extension;
   int centre_index;
   int primary_index;
-  char const* secondary_index;
+  int const* const* secondary_index;
 };
 
 static_assert(std::is_pod<PlottingFrameParameters>::value,

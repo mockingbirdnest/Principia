@@ -341,7 +341,7 @@ internal class PlottingFrameParametersMarshaler : MonoMarshaler {
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
     var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
-    NoOwnershipTransferUTF8Marshaler.GetInstance(null).CleanUpNativeData(representation.secondary_index);
+    RepeatedMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).CleanUpNativeData(representation.secondary_index);
     Marshal.FreeHGlobal(native_data);
   }
 
@@ -353,7 +353,7 @@ internal class PlottingFrameParametersMarshaler : MonoMarshaler {
         extension = value.extension,
         centre_index = value.centre_index,
         primary_index = value.primary_index,
-        secondary_index = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalManagedToNative(value.secondary_index),
+        secondary_index = RepeatedMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).MarshalManagedToNative(value.secondary_index),
     };
     IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
     Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
@@ -366,7 +366,7 @@ internal class PlottingFrameParametersMarshaler : MonoMarshaler {
         extension = representation.extension,
         centre_index = representation.centre_index,
         primary_index = representation.primary_index,
-        secondary_index = NoOwnershipTransferUTF8Marshaler.GetInstance(null).MarshalNativeToManaged(representation.secondary_index) as string,
+        secondary_index = RepeatedMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).MarshalNativeToManaged(representation.secondary_index) as int[],
     };
   }
 

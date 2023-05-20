@@ -126,11 +126,17 @@ Origin DeserializeOrigin(serialization::Origin const& origin, Player::PointerMap
           DeserializeXYZ(origin.main_body_centre_in_world(), pointer_map)};
 }
 
-PlottingFrameParameters DeserializePlottingFrameParameters(serialization::PlottingFrameParameters const& plotting_frame_parameters, Player::PointerMap& pointer_map) {
+PlottingFrameParameters DeserializePlottingFrameParameters(serialization::PlottingFrameParameters const& plotting_frame_parameters, Player::PointerMap& pointer_map, std::vector<int const*>& secondary_index_storage) {
   return {plotting_frame_parameters.extension(),
           plotting_frame_parameters.centre_index(),
           plotting_frame_parameters.primary_index(),
-          plotting_frame_parameters.secondary_index().c_str()};
+          [&secondary_index_storage](::google::protobuf::RepeatedField<int> const& values) {
+            for (auto const& v : values) {
+              secondary_index_storage.push_back(&v);
+            }
+            secondary_index_storage.push_back(nullptr);
+            return &secondary_index_storage[0];
+          }(plotting_frame_parameters.secondary_index())};
 }
 
 QP DeserializeQP(serialization::QP const& qp, Player::PointerMap& pointer_map) {
@@ -404,7 +410,9 @@ serialization::PlottingFrameParameters SerializePlottingFrameParameters(Plotting
   m.set_extension(plotting_frame_parameters.extension);
   m.set_centre_index(plotting_frame_parameters.centre_index);
   m.set_primary_index(plotting_frame_parameters.primary_index);
-  m.set_secondary_index(plotting_frame_parameters.secondary_index);
+  for (int const* const* secondary_index = plotting_frame_parameters.secondary_index; secondary_index != nullptr && *secondary_index != nullptr; ++secondary_index) {
+    m.add_secondary_index(**secondary_index);
+  }
   return m;
 }
 
@@ -2917,7 +2925,8 @@ void SetPlottingFrame::Fill(In const& in, not_null<Message*> const message) {
 void SetPlottingFrame::Run(Message const& message, Player::PointerMap& pointer_map) {
   [[maybe_unused]] auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin*>(in.plugin(), pointer_map);
-  auto parameters = DeserializePlottingFrameParameters(in.parameters(), pointer_map);
+  std::vector<int const*> secondary_index_storage;
+  auto parameters = DeserializePlottingFrameParameters(in.parameters(), pointer_map, secondary_index_storage);
   interface::principia__SetPlottingFrame(plugin, parameters);
 }
 

@@ -149,7 +149,7 @@ internal partial class PlottingFrameParameters {
   public int extension;
   public int centre_index;
   public int primary_index;
-  public string secondary_index;
+  public int[] secondary_index;
 }
 
 [StructLayout(LayoutKind.Sequential)]
