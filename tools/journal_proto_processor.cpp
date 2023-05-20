@@ -241,6 +241,30 @@ void JournalProtoProcessor::ProcessRepeatedNonStringField(
                 ");\n"
                 "  }\n";
       };
+
+  // While the proto API does expose pointers to individual scalar values of a
+  // repeated scalar field, that array is not null-terminated.  So we copy the
+  // pointers to auxiliary storage.
+  std::string const storage_name = descriptor->name() + "_storage";
+  field_cxx_deserialization_storage_name_[descriptor] = storage_name;
+  field_cxx_deserializer_fn_[descriptor] =
+      [cxx_type, storage_name](
+          std::string const& expr) {
+        // Yes, this lambda generates a lambda.
+        return "[&" + storage_name + "]("
+               "::google::protobuf::RepeatedField<" + cxx_type + "> "
+               "const& values) {\n"
+               "            for (auto const& v : values) {\n" +
+               "              " + storage_name +
+               ".push_back(&v);\n" +
+               "            }\n"
+               "            " + storage_name +
+               ".push_back(nullptr);\n"
+               "            return &" + storage_name + "[0];\n" +
+               "          }(" + expr + ")";
+      };
+  field_cxx_deserialization_storage_type_[descriptor] =
+      "std::vector<" + cxx_type + " const*>";
 }
 
 void JournalProtoProcessor::ProcessRepeatedInt32Field(
