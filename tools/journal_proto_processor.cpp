@@ -267,6 +267,16 @@ void JournalProtoProcessor::ProcessRepeatedNonStringField(
       "std::vector<" + cxx_type + " const*>";
 }
 
+void JournalProtoProcessor::ProcessRepeatedDoubleField(
+    FieldDescriptor const* descriptor) {
+  ProcessRepeatedNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedDouble",
+      /*cs_unboxed_type=*/"double",
+      /*cxx_type=*/"double");
+  ProcessRepeatedScalarField(descriptor, "double");
+}
+
 void JournalProtoProcessor::ProcessRepeatedInt32Field(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
@@ -275,6 +285,26 @@ void JournalProtoProcessor::ProcessRepeatedInt32Field(
       /*cs_unboxed_type=*/"int",
       /*cxx_type=*/"int");
   ProcessRepeatedScalarField(descriptor, "int");
+}
+
+void JournalProtoProcessor::ProcessRepeatedInt64Field(
+    FieldDescriptor const* descriptor) {
+  ProcessRepeatedNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedInt64",
+      /*cs_unboxed_type=*/"long",
+      /*cxx_type=*/"std::int64_t");
+  ProcessRepeatedScalarField(descriptor, "std::int64_t");
+}
+
+void JournalProtoProcessor::ProcessRepeatedUint32Field(
+    FieldDescriptor const* descriptor) {
+  ProcessRepeatedNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedUint32",
+      /*cs_unboxed_type=*/"uint",
+      /*cxx_type=*/"uint32_t");
+  ProcessRepeatedScalarField(descriptor, "uint32_t");
 }
 
 void JournalProtoProcessor::ProcessRepeatedMessageField(
@@ -491,6 +521,26 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
       /*cs_unboxed_type=*/"int",
       /*cxx_type=*/"int");
   ProcessOptionalScalarField(descriptor, "int");
+}
+
+void JournalProtoProcessor::ProcessOptionalInt64Field(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedInt64",
+      /*cs_unboxed_type=*/"long",
+      /*cxx_type=*/"std::int64_t");
+  ProcessOptionalScalarField(descriptor, "std::int64_t");
+}
+
+void JournalProtoProcessor::ProcessOptionalUint32Field(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedUint32",
+      /*cs_unboxed_type=*/"uint",
+      /*cxx_type=*/"uint32_t");
+  ProcessOptionalScalarField(descriptor, "uint32_t");
 }
 
 void JournalProtoProcessor::ProcessOptionalMessageField(
@@ -817,7 +867,7 @@ void JournalProtoProcessor::ProcessRequiredBytesField(
 void JournalProtoProcessor::ProcessRequiredDoubleField(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "double";
-  field_cxx_type_[descriptor] = descriptor->cpp_type_name();
+  field_cxx_type_[descriptor] = "double";
 }
 
 void JournalProtoProcessor::ProcessRequiredInt32Field(
@@ -894,6 +944,12 @@ void JournalProtoProcessor::ProcessOptionalField(
     case FieldDescriptor::TYPE_INT32:
       ProcessOptionalInt32Field(descriptor);
       break;
+    case FieldDescriptor::TYPE_INT64:
+      ProcessOptionalInt64Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_UINT32:
+      ProcessOptionalUint32Field(descriptor);
+      break;
     case FieldDescriptor::TYPE_MESSAGE:
       ProcessOptionalMessageField(descriptor);
       break;
@@ -909,8 +965,17 @@ void JournalProtoProcessor::ProcessOptionalField(
 void JournalProtoProcessor::ProcessRepeatedField(
     FieldDescriptor const* descriptor) {
   switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_DOUBLE:
+      ProcessRepeatedDoubleField(descriptor);
+      break;
     case FieldDescriptor::TYPE_INT32:
       ProcessRepeatedInt32Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_INT64:
+      ProcessRepeatedInt64Field(descriptor);
+      break;
+    case FieldDescriptor::TYPE_UINT32:
+      ProcessRepeatedUint32Field(descriptor);
       break;
     case FieldDescriptor::TYPE_MESSAGE:
       ProcessRepeatedMessageField(descriptor);
