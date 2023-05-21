@@ -1,0 +1,116 @@
+name: Build
+
+on:
+  push:
+    branches: [ 'master' ]
+    tags: [ '*' ]
+  pull_request_target:
+    branches: [ '*' ]
+
+env:
+  PRINCIPIA_MSVC: .
+  PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
+
+jobs:
+  build:
+    runs-on: ${{ matrix.configuration }}
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
+    - name: Checkout source files
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: |
+          ${{ github.event_name == 'pull_request_target'
+              && format('refs/pull/{0}/merge', github.event.number)
+              || '' }}
+
+    - name: Download KSP assemblies
+      uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
+      with:
+        secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
+        ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
+
+    - name: Initialize build environment
+      uses: mockingbirdnest/actions/windows/initialize_build@main
+      with:
+        configuration: ${{ matrix.configuration }}
+
+    - name: Download abseil artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: abseil-cpp
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
+    - name: Download benchmark artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: benchmark
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
+    - name: Download gipfeli artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: gipfeli
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
+    - name: Download glog artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: glog
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
+    - name: Download googletest artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: googletest
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
+    - name: Download protobuf artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: protobuf
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
+    - name: Download zfp artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: zfp
+        configuration: ${{ matrix.configuration }}
+        directory: 'Third Party'
+
+    - name: Restore ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/restore@main
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+
+    - name: Rebuild ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/rebuild@main
+      with:
+        configuration: ${{ matrix.configuration }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
+
+    - name: Test ${{ matrix.configuration }}
+      uses: mockingbirdnest/actions/windows/test@main
+      with:
+        configuration: ${{ matrix.configuration }}
+
+    - name: Clean stub binaries
+      run: |
+        git reset --hard
+      shell: pwsh
+
+    - name: Upload principia artifact
+      uses: mockingbirdnest/actions/windows/upload_principia_artifact@main
+      with:
+        configuration: ${{ matrix.configuration }}
+

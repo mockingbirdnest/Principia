@@ -86,15 +86,17 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::secondary()
 template<typename InertialFrame, typename ThisFrame>
 Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame,
                                                ThisFrame>::t_min() const {
-  // We depend on all bodies via the gravitational acceleration.
-  return ephemeris_->t_min();
+  // We depend on all bodies via the gravitational acceleration; in addition,
+  // the primary may not be a massive body from the ephemeris.
+  return std::max(primary_trajectory_().t_min(), ephemeris_->t_min());
 }
 
 template<typename InertialFrame, typename ThisFrame>
 Instant BodyCentredBodyDirectionReferenceFrame<InertialFrame,
                                                ThisFrame>::t_max() const {
-  // We depend on all bodies via the gravitational acceleration.
-  return ephemeris_->t_max();
+  // We depend on all bodies via the gravitational acceleration; in addition,
+  // the primary may not be a massive body from the ephemeris.
+  return std::min(primary_trajectory_().t_max(), ephemeris_->t_max());
 }
 
 template<typename InertialFrame, typename ThisFrame>

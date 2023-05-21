@@ -512,12 +512,12 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
 
-  auto const parent_index_string = std::to_string(parent_index);
+  int const* const parent_index_array[2] = {&parent_index, nullptr};
   PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
-      parent_index_string.c_str()};
+      &parent_index_array[0]};
   {
     StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
         mock_navigation_frame =
@@ -562,12 +562,12 @@ TEST_F(InterfaceTest, NavballOrientation) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  auto const parent_index_string = std::to_string(parent_index);
+  int const* const parent_index_array[2] = {&parent_index, nullptr};
   PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
       celestial_index,
-      parent_index_string.c_str()};
+      &parent_index_array[0]};
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));

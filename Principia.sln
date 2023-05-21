@@ -92,8 +92,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F4
 		rebuild_release.ps1 = rebuild_release.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "coverage_analyser", "coverage_analyser\coverage_analyser.csproj", "{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup Files", "Setup Files", "{E3536C51-3B98-4D50-8973-A72D03042FCF}"
 	ProjectSection(SolutionItems) = preProject
 		Makefile = Makefile
@@ -163,6 +161,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sourcerer", "sourcerer\sour
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{3B6E70E8-9FC3-4DC3-97B6-1A51B6DEB009}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yaml = .github\workflows\build.yaml
+		.github\workflows\lint.yaml = .github\workflows\lint.yaml
+		.github\workflows\remove-before-flight.yml = .github\workflows\remove-before-flight.yml
 		.github\workflows\lint.yaml = .github\workflows\lint.yaml
 		.github\workflows\pull_request.yaml = .github\workflows\pull_request.yaml
 	EndProjectSection
@@ -312,22 +313,6 @@ Global
 		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|Any CPU.ActiveCfg = Release|x64
 		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|x64.ActiveCfg = Release|x64
 		{7E7CC89A-FC65-409C-A975-9C3A6A50786B}.Release|x64.Build.0 = Release|x64
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Debug|x64.Build.0 = Debug|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release KSP 1.7.3|Any CPU.ActiveCfg = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release KSP 1.7.3|Any CPU.Build.0 = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release KSP 1.7.3|x64.ActiveCfg = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release KSP 1.7.3|x64.Build.0 = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release_LLVM|Any CPU.ActiveCfg = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release_LLVM|Any CPU.Build.0 = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release_LLVM|x64.ActiveCfg = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release_LLVM|x64.Build.0 = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release|x64.ActiveCfg = Release|Any CPU
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F}.Release|x64.Build.0 = Release|Any CPU
 		{5C482C18-BBAE-484D-A211-A25C86370061}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{5C482C18-BBAE-484D-A211-A25C86370061}.Debug|x64.ActiveCfg = Debug|x64
 		{5C482C18-BBAE-484D-A211-A25C86370061}.Debug|x64.Build.0 = Debug|x64
@@ -491,7 +476,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{06E78A3D-AAA0-4CD9-8F23-B5BBBBE6F14F} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
