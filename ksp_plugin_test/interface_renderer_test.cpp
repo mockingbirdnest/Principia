@@ -64,11 +64,12 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
+  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
   int const* const parent_index_array[2] = {&parent_index, nullptr};
   PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
-      celestial_index,
+      &celestial_index_array[0],
       &parent_index_array[0]};
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
@@ -88,11 +89,12 @@ TEST_F(InterfaceRendererTest, Frenet) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
+  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
   int const* const parent_index_array[2] = {&parent_index, nullptr};
   PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
-      celestial_index,
+      &celestial_index_array[0],
       &parent_index_array[0]};
 
   MockRenderer renderer;

@@ -136,7 +136,10 @@ void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::ReferenceFrame*> message) const {
   auto* const extension = message->MutableExtension(
       serialization::RotatingPulsatingReferenceFrame::extension);
-  //extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  for (not_null const primary : primaries_) {
+    extension->add_primary(
+        ephemeris_->serialization_index_for_body(primary));
+  }
   for (not_null const secondary : secondaries_) {
     extension->add_secondary(
         ephemeris_->serialization_index_for_body(secondary));
@@ -149,15 +152,18 @@ not_null<
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     serialization::RotatingPulsatingReferenceFrame const& message) {
+  std::vector<not_null<MassiveBody const*>> primaries;
+  primaries.reserve(message.primary().size());
+  for (int const primary : message.primary()) {
+    primaries.push_back(ephemeris->body_for_serialization_index(primary));
+  }
   std::vector<not_null<MassiveBody const*>> secondaries;
   secondaries.reserve(message.secondary().size());
   for (int const secondary : message.secondary()) {
     secondaries.push_back(ephemeris->body_for_serialization_index(secondary));
   }
   return std::make_unique<RotatingPulsatingReferenceFrame>(
-      ephemeris,
-      ephemeris->body_for_serialization_index(message.primary()),
-      std::move(secondaries));
+      ephemeris, std::move(primaries), std::move(secondaries));
 }
 
 template<typename InertialFrame, typename ThisFrame>

@@ -83,7 +83,8 @@ class BurnEditor : ScalingRenderer {
             extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
             primary_index = (plotting_frame_parameters
                              as ReferenceFrameParameters).secondary_index[0],
-            secondary_index = plotting_frame_parameters.primary_index,
+            secondary_index = (plotting_frame_parameters
+                               as ReferenceFrameParameters).primary_index[0],
           });
     }
     ComputeEngineCharacteristics();

@@ -670,10 +670,22 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
            ++index_ptr) {
         secondary_indices.push_back(**index_ptr);
       }
-      return plugin.NewRotatingPulsatingPlottingFrame(parameters.primary_index,
+      std::vector<int> primary_indices;
+      for (int const* const* index_ptr = parameters.primary_index;
+           *index_ptr != nullptr;
+           ++index_ptr) {
+        primary_indices.push_back(**index_ptr);
+      }
+      return plugin.NewRotatingPulsatingPlottingFrame(primary_indices,
                                                       secondary_indices);
     }
     default:
+      int primary_index;
+      if (*parameters.secondary_index == nullptr) {
+        primary_index = -1;
+      } else {
+        primary_index = **parameters.secondary_index;
+      }
       int secondary_index;
       if (*parameters.secondary_index == nullptr) {
         secondary_index = -1;
@@ -683,7 +695,7 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
       return NewNavigationFrame(plugin,
                                 {.extension = parameters.extension,
                                  .centre_index = parameters.centre_index,
-                                 .primary_index = parameters.primary_index,
+                                 .primary_index = primary_index,
                                  .secondary_index = secondary_index});
   }
 }

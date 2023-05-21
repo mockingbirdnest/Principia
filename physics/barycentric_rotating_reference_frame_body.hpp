@@ -135,15 +135,18 @@ not_null<std::unique_ptr<
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     serialization::BarycentricRotatingReferenceFrame const& message) {
+  std::vector<not_null<MassiveBody const*>> primaries;
+  primaries.reserve(message.primary().size());
+  for (int const primary : message.primary()) {
+    primaries.push_back(ephemeris->body_for_serialization_index(primary));
+  }
   std::vector<not_null<MassiveBody const*>> secondaries;
   secondaries.reserve(message.secondary().size());
   for (int const secondary : message.secondary()) {
     secondaries.push_back(ephemeris->body_for_serialization_index(secondary));
   }
   return std::make_unique<BarycentricRotatingReferenceFrame>(
-      ephemeris,
-      ephemeris->body_for_serialization_index(message.primary()),
-      std::move(secondaries));
+      ephemeris, std::move(primaries), std::move(secondaries));
 }
 
 template<typename InertialFrame, typename ThisFrame>
