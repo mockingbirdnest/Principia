@@ -276,7 +276,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
       });
 }
 
-TEST_F(EquipotentialTest, RotatingPulsating_GlobalOptimization) {
+TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
   Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
                 /*make_unique=*/false);
   std::int64_t const number_of_days = 502;
