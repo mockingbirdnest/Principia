@@ -13,6 +13,10 @@ internal partial class Status {
     return error == 10;
   }
 
+  public bool is_deadline_exceeded() {
+    return error == 4;
+  }
+
   public bool is_failed_precondition() {
     return error == 9;
   }
