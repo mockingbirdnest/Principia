@@ -671,6 +671,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                       "#Principia_FlightPlan_StatusMessage_OutRange7")
                   : "",
               first_error_manœuvre_.Value + 1);
+        } else if (status_.is_deadline_exceeded()) {
+          status_message =
+              L10N.CacheFormat(
+                  "#Principia_FlightPlan_StatusMessage_DeadlineExceeded");
+          remedy_message =
+              L10N.CacheFormat("#Principia_FlightPlan_StatusMessage_Tickle");
         } else {
           status_message =
               L10N.CacheFormat("#Principia_FlightPlan_StatusMessage_TooShort");
