@@ -46,10 +46,21 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
       primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
       primary_trajectory_(ephemeris_->trajectory(primaries_.front())) {
+  std::set<not_null<MassiveBody const*>> primary_set(primaries_.begin(),
+                                                     primaries_.end());
+  std::set<not_null<MassiveBody const*>> secondary_set(secondaries_.begin(),
+                                                       secondaries_.end());
+  std::set<not_null<MassiveBody const*>> intersection;
+  std::set_intersection(primary_set.begin(),
+                        primary_set.end(),
+                        secondary_set.begin(),
+                        secondary_set.end(),
+                        std::inserter(intersection, intersection.begin()));
+  CHECK_GE(primaries_.size(), 1);
+  CHECK_EQ(primary_set.size(), primaries_.size()) << primaries_;
   CHECK_GE(secondaries_.size(), 1);
-  CHECK_EQ(std::set<not_null<MassiveBody const*>>(secondaries_.begin(),
-                                                  secondaries_.end()).size(),
-           secondaries_.size()) << secondaries_;
+  CHECK_EQ(secondary_set.size(), secondaries_.size()) << secondaries_;
+  CHECK_EQ(intersection.size(), 0) << intersection;
 }
 
 template<typename InertialFrame, typename ThisFrame>

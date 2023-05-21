@@ -62,7 +62,7 @@ class BarycentricRotatingReferenceFrame
 
   BarycentricRotatingReferenceFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      std::vector<not_null<MassiveBody const*>> primary,
+      std::vector<not_null<MassiveBody const*>> primaries,
       std::vector<not_null<MassiveBody const*>> secondaries);
 
   std::vector<not_null<MassiveBody const*>> const& primaries() const;

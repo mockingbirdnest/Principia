@@ -494,7 +494,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         return new ReferenceFrameParameters{
             extension = frame_type,
             primary_index = (
-              from body in System(selected_celestial, end: selected_celestial)
+              from body in System(selected_celestial.referenceBody,
+                                  end: selected_celestial)
               select body.flightGlobalsIndex).ToArray(),
             secondary_index = (
               from body in System(selected_celestial)
@@ -558,6 +559,9 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
                                                    CelestialBody end) {
     yield return centre;
     foreach (CelestialBody orbiting in centre.orbitingBodies) {
+      if (orbiting == end) {
+        yield break;
+      }
       foreach (CelestialBody subsystem_body in System(orbiting)) {
         yield return subsystem_body;
       }

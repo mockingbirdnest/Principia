@@ -83,6 +83,7 @@ internal interface ReferenceFrameParameters {
 
 internal partial class PlottingFrameParameters : ReferenceFrameParameters {
   public PlottingFrameParameters() {
+    primary_index = new int[]{};
     secondary_index = new int[]{};
   }
 

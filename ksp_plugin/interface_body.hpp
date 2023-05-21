@@ -660,21 +660,22 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters) {
+  CHECK_NOTNULL(parameters.primary_index);
   CHECK_NOTNULL(parameters.secondary_index);
   switch (parameters.extension) {
     case serialization::RotatingPulsatingReferenceFrame::
         kExtensionFieldNumber: {
-      std::vector<int> secondary_indices;
-      for (int const* const* index_ptr = parameters.secondary_index;
-           *index_ptr != nullptr;
-           ++index_ptr) {
-        secondary_indices.push_back(**index_ptr);
-      }
       std::vector<int> primary_indices;
       for (int const* const* index_ptr = parameters.primary_index;
            *index_ptr != nullptr;
            ++index_ptr) {
         primary_indices.push_back(**index_ptr);
+      }
+      std::vector<int> secondary_indices;
+      for (int const* const* index_ptr = parameters.secondary_index;
+           *index_ptr != nullptr;
+           ++index_ptr) {
+        secondary_indices.push_back(**index_ptr);
       }
       return plugin.NewRotatingPulsatingPlottingFrame(primary_indices,
                                                       secondary_indices);
