@@ -44,7 +44,8 @@ auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::Norm(
       _MSC_FULL_VER == 193'431'942 || \
       _MSC_FULL_VER == 193'431'944 || \
       _MSC_FULL_VER == 193'532'216 || \
-      _MSC_FULL_VER == 193'532'217)
+      _MSC_FULL_VER == 193'532'217 || \
+      _MSC_FULL_VER == 193'632'532)
 template<typename T1, typename T2>
 auto Hilbert<T1, T2,
              std::void_t<decltype(InnerProduct(std::declval<T1>(),
