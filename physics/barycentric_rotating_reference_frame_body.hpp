@@ -133,7 +133,10 @@ void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension = message->MutableExtension(
       serialization::BarycentricRotatingReferenceFrame::extension);
-  //extension->set_primary(ephemeris_->serialization_index_for_body(primary_));
+  for (not_null const primary : primaries_) {
+    extension->add_primary(
+        ephemeris_->serialization_index_for_body(primary));
+  }
   for (not_null const secondary : secondaries_) {
     extension->add_secondary(
         ephemeris_->serialization_index_for_body(secondary));
