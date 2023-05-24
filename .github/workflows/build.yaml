@@ -32,10 +32,10 @@ jobs:
 
     - name: Azure command
       uses: azure/powershell@v1
-        with:
-          inlineScript: |
-            Get-AzResourceGroup
-          azPSVersion: 'latest'
+      with:
+        inlineScript: |
+          Get-AzResourceGroup
+        azPSVersion: 'latest'
 
     - name: Checkout source files
       uses: actions/checkout@v3
