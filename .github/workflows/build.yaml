@@ -34,7 +34,7 @@ jobs:
       uses: azure/powershell@v1
       with:
         inlineScript: |
-          Set-AzContext -SubscriptionId ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
+          Set-AzContext 'Zecca'
           Get-AzResourceGroup
         azPSVersion: 'latest'
 
