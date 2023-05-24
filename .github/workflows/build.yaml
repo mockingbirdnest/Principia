@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ 'master' ]
+    branches: [ '*' ]
     tags: [ '*' ]
   pull_request_target:
     branches: [ '*' ]
@@ -39,7 +39,8 @@ jobs:
         tenant-id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
 
     - name: Azure command
-      run: Get-AzureAccount
+      run: |
+        Get-AzureAccount
       shell: pwsh
 
     - name: Download KSP assemblies
