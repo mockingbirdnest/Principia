@@ -31,9 +31,11 @@ jobs:
         enable-AzPSSession: true
 
     - name: Azure command
-      run: |
-        Get-AzVM -ResourceGroupName 'venezia'
-      shell: pwsh
+      uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Get-AzResourceGroup
+          azPSVersion: 'latest'
 
     - name: Checkout source files
       uses: actions/checkout@v3
