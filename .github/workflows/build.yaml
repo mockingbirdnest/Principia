@@ -32,7 +32,7 @@ jobs:
 
     - name: Azure command
       run: |
-        Get-AzureAccount
+        Get-AzVM -ResourceGroupName 'venezia'
       shell: pwsh
 
     - name: Checkout source files
