@@ -17,7 +17,6 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrix.configuration }}
     strategy:
       matrix:
         configuration: [Debug, Release]
