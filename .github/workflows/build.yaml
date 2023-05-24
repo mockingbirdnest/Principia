@@ -11,6 +11,10 @@ env:
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ${{ matrix.configuration }}
@@ -26,6 +30,17 @@ jobs:
           ${{ github.event_name == 'pull_request_target'
               && format('refs/pull/{0}/merge', github.event.number)
               || '' }}
+
+    - name: Azure login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
+        subscription-id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
+        tenant-id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
+
+    - name: Azure command
+      run: Get-AzureAccount
+      shell: pwsh
 
     - name: Download KSP assemblies
       uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
