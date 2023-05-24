@@ -22,6 +22,19 @@ jobs:
       matrix:
         configuration: [Debug, Release]
     steps:
+    - name: Azure login
+      uses: azure/login@v1
+      with:
+        client-id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
+        tenant-id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
+        allow-no-subscriptions: true
+        enable-AzPSSession: true
+
+    - name: Azure command
+      run: |
+        Get-AzureAccount
+      shell: pwsh
+
     - name: Checkout source files
       uses: actions/checkout@v3
       with:
@@ -30,18 +43,6 @@ jobs:
           ${{ github.event_name == 'pull_request_target'
               && format('refs/pull/{0}/merge', github.event.number)
               || '' }}
-
-    - name: Azure login
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
-        tenant-id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
-        allow-no-subscriptions: true
-
-    - name: Azure command
-      run: |
-        Get-AzureAccount
-      shell: pwsh
 
     - name: Download KSP assemblies
       uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
