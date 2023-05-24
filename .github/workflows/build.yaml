@@ -35,8 +35,8 @@ jobs:
       uses: azure/login@v1
       with:
         client-id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
-        subscription-id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
         tenant-id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
+        allow-no-subscriptions: true
 
     - name: Azure command
       run: |
