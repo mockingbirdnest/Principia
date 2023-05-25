@@ -8,6 +8,9 @@ on:
     branches: [ '*' ]
 
 env:
+  PRINCIPIA_BUILD_DEBUG_VM: casanova
+  PRINCIPIA_BUILD_RELEASE_VM: casanova
+  PRINCIPIA_BUILD_RESOURCE_GROUP: venezia
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
 
@@ -31,8 +34,8 @@ jobs:
       uses: azure/powershell@v1
       with:
         inlineScript: |
-          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_DEBUG_VM }} -ResourceGroupName venezia
-          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_RELEASE_VM }} -ResourceGroupName venezia
+          Start-AzVM -Name ${{ env.PRINCIPIA_BUILD_DEBUG_VM }} -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
+          Start-AzVM -Name ${{ env.PRINCIPIA_BUILD_RELEASE_VM }} -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
         azPSVersion: 'latest'
 
   build:
