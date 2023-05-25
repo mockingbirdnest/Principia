@@ -16,11 +16,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  start:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
     steps:
     - name: Azure login
       uses: azure/login@v1
@@ -34,9 +31,16 @@ jobs:
       uses: azure/powershell@v1
       with:
         inlineScript: |
-          Get-AzResourceGroup
+          Start-AzVM ${{ vars.PRINCIPIA_BUILD_DEBUG_VM }}
+          Start-AzVM ${{ vars.PRINCIPIA_BUILD_RELEASE_VM }}
         azPSVersion: 'latest'
 
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    steps:
     - name: Checkout source files
       uses: actions/checkout@v3
       with:
