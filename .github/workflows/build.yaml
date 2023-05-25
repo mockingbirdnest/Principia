@@ -31,12 +31,12 @@ jobs:
       uses: azure/powershell@v1
       with:
         inlineScript: |
-          Start-AzVM ${{ vars.PRINCIPIA_BUILD_DEBUG_VM }}
-          Start-AzVM ${{ vars.PRINCIPIA_BUILD_RELEASE_VM }}
+          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_DEBUG_VM }}
+          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_RELEASE_VM }}
         azPSVersion: 'latest'
 
   build:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.configuration }}
     strategy:
       matrix:
         configuration: [Debug, Release]
