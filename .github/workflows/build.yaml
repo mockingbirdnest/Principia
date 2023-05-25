@@ -34,8 +34,12 @@ jobs:
       uses: azure/powershell@v1
       with:
         inlineScript: |
-          Start-AzVM -Name ${{ env.PRINCIPIA_BUILD_DEBUG_VM }} -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
-          Start-AzVM -Name ${{ env.PRINCIPIA_BUILD_RELEASE_VM }} -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
+          Start-AzVM                                `
+          -Name ${{ env.PRINCIPIA_BUILD_DEBUG_VM }} `
+          -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
+          Start-AzVM                                  `
+          -Name ${{ env.PRINCIPIA_BUILD_RELEASE_VM }} `
+          -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
         azPSVersion: 'latest'
 
   build:
