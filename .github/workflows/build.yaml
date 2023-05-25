@@ -31,8 +31,8 @@ jobs:
       uses: azure/powershell@v1
       with:
         inlineScript: |
-          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_DEBUG_VM }}
-          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_RELEASE_VM }}
+          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_DEBUG_VM }} -ResourceGroupName venezia
+          Start-AzVM -Name ${{ vars.PRINCIPIA_BUILD_RELEASE_VM }} -ResourceGroupName venezia
         azPSVersion: 'latest'
 
   build:
