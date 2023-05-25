@@ -30,7 +30,7 @@ jobs:
         subscription-id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
         enable-AzPSSession: true
 
-    - name: Azure command
+    - name: Start Azure VMs
       uses: azure/powershell@v1
       with:
         inlineScript: |
