@@ -204,10 +204,15 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
+  // Returns the gravitational jerk on a massless body with the given
+  // |degrees_of_freedom| at time |t|.
+  Vector<Jerk, Frame> ComputeGravitationalJerkOnMasslessBody(
+      DegreesOfFreedom<Frame> const& degrees_of_freedom,
+      Instant const& t) const EXCLUDES(lock_);
+
   // Returns the gravitational jerk on the massive |body| at time |t|.  |body|
   // must be one of the bodies of this object.
-  virtual Vector<Jerk, Frame>
-  ComputeGravitationalJerkOnMassiveBody(
+  Vector<Jerk, Frame> ComputeGravitationalJerkOnMassiveBody(
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 

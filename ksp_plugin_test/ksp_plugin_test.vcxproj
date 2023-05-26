@@ -26,6 +26,7 @@
     <ClCompile Include="..\ksp_plugin\celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp" />
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp" />
+    <ClCompile Include="..\ksp_plugin\geometric_potential_plotter.cpp" />
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />

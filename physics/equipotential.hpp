@@ -30,6 +30,7 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -50,9 +51,13 @@ class Equipotential {
                                                      Position<Frame>,
                                                      double>;
   using DependentVariables = typename ODE::DependentVariables;
+  using DependentVariableDerivatives =
+      typename ODE::DependentVariableDerivatives;
   using AdaptiveParameters =
       _integration_parameters::AdaptiveStepParameters<ODE>;
-  using Line = std::vector<DependentVariables>;
+  // TODO(phl): Consider a version of DiscreteTrajectory parameterized on
+  // something other than Instant.
+  using Line = DiscreteTrajectory<Frame>;
   using Lines = std::vector<Line>;
 
   // The |characteristic_length| is used in the stopping condition.
@@ -65,27 +70,6 @@ class Equipotential {
   Line ComputeLine(Plane<Frame> const& plane,
                    Instant const& t,
                    Position<Frame> const& position) const;
-
-  // Computes an equipotential line for the total energy determined by the
-  // |degrees_of_freedom|.
-  Line ComputeLine(Plane<Frame> const& plane,
-                   Instant const& t,
-                   DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
-
-  // Computes an equipotential line for the given |total_energy| starting from
-  // |start_position|.
-  Line ComputeLine(Plane<Frame> const& plane,
-                   Instant const& t,
-                   Position<Frame> const& start_position,
-                   SpecificEnergy const& total_energy) const;
-
-  // Computes equipotential lines for the given |total_energy|.  Each of the
-  // given |start_positions| ends up enclosed by exactly one line of the result.
-  // The |start_positions| must be coplanar in a plane parallel to |plane|.
-  Lines ComputeLines(Plane<Frame> const& plane,
-                     Instant const& t,
-                     std::vector<Position<Frame>> const& start_positions,
-                     SpecificEnergy const& total_energy) const;
 
   struct Well {
     Position<Frame> position;
@@ -112,8 +96,6 @@ class Equipotential {
  private:
   using IndependentVariableDifference =
       typename ODE::IndependentVariableDifference;
-  using DependentVariableDerivatives =
-      typename ODE::DependentVariableDerivatives;
   using State = typename ODE::State;
 
   static constexpr IndependentVariable const s_initial_ = 0;
@@ -124,6 +106,9 @@ class Equipotential {
   // TODO(phl): One or both of these values should probably be a parameter.
   static constexpr double β_max_ = 1e6;
   static constexpr double β_tolerance_ = 1;
+
+  static constexpr Quotient<Time, IndependentVariable>
+      reinterpret_independent_variable_as_time = 1 * Second;
 
   // The |binormal| determines in what direction we go around the curve.  It may
   // be anything, but must be consistent across calls to the right-hand side.

@@ -53,8 +53,8 @@ template<typename Value, typename Argument>
 using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
-template<typename T>
-using Variation = Derivative<T, Time>;
+template<typename T, int order = 1>
+using Variation = Derivative<T, Time, order>;
 
 // The solid angle is really the square of the angle: for instance, the surface
 // element on the sphere is cos(θ) dθ dφ, and the cylinder with radius r and
@@ -63,6 +63,8 @@ using Variation = Derivative<T, Time>;
 using SolidAngle   = Square<Angle>;
 
 // General mechanics
+using Area         = Square<Length>;
+using Volume       = Cube<Length>;
 using Speed        = Variation<Length>;
 using Acceleration = Variation<Speed>;
 using Jerk         = Variation<Acceleration>;
@@ -70,6 +72,7 @@ using Snap         = Variation<Jerk>;
 using Momentum     = Product<Mass, Speed>;
 using Force        = Variation<Momentum>;
 using Stiffness    = Quotient<Force, Length>;
+using ArealSpeed   = Quotient<Area, Time>;
 
 using Energy = Product<Force, Length>;
 using Power  = Variation<Energy>;
@@ -102,8 +105,6 @@ using SpecificEnergy          = Quotient<Energy, Mass>;
 using SpecificAngularMomentum = Quotient<AngularMomentum, Mass>;
 
 // Thermodynamics
-using Area           = Square<Length>;
-using Volume         = Cube<Length>;
 using Pressure       = Quotient<Force, Area>;
 using Entropy        = Quotient<Energy, Temperature>;
 using Density        = Quotient<Mass, Volume>;
@@ -170,6 +171,7 @@ using internal::AngularAcceleration;
 using internal::AngularFrequency;
 using internal::AngularMomentum;
 using internal::Area;
+using internal::ArealSpeed;
 using internal::Capacitance;
 using internal::CatalyticActivity;
 using internal::Charge;

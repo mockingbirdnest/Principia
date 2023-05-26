@@ -16,6 +16,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 
@@ -36,6 +37,7 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // The definition of a reference frame |ThisFrame| in arbitrary motion with
 // respect to the inertial reference frame |InertialFrame|.
@@ -93,6 +95,73 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   static not_null<std::unique_ptr<RigidReferenceFrame>>
       ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
+
+ protected:
+  // A helper function for computing the rotational movement of a frame defined
+  // by two bodies.
+  static void ComputeAngularDegreesOfFreedom(
+      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Vector<Acceleration, InertialFrame> const& secondary_acceleration,
+      Rotation<InertialFrame, ThisFrame>& rotation,
+      AngularVelocity<InertialFrame>& angular_velocity);
+
+  // The component names are somewhat notional.  This is not a Frenet frame and
+  // anyway, the derivative trihedra are not even orthogonal.
+  template<typename ScalarF, typename ScalarB, int order = 0>
+  struct Trihedron {
+    Vector<Derivative<ScalarF, Time, order>, InertialFrame> fore;
+    Vector<Derivative<Product<ScalarF, ScalarB>, Time, order>,
+           InertialFrame> normal;
+    Bivector<Derivative<ScalarB, Time, order>, InertialFrame> binormal;
+  };
+
+  // Computes the orthogonal and orthonormal trihedra associated with
+  // |ThisFrame|.
+  static void ComputeTrihedra(
+      Displacement<InertialFrame> const& r,
+      Velocity<InertialFrame> const& ṙ,
+      Trihedron<Length, ArealSpeed>& orthogonal,
+      Trihedron<double, double>& orthonormal);
+
+  // Computes the first derivative of the preceding trihedra.
+  static void ComputeTrihedraDerivatives(
+      Displacement<InertialFrame> const& r,
+      Velocity<InertialFrame> const& ṙ,
+      Vector<Acceleration, InertialFrame> const& r̈,
+      Trihedron<Length, ArealSpeed> const& orthogonal,
+      Trihedron<double, double> const& orthonormal,
+      Trihedron<Length, ArealSpeed, 1>& 𝛛orthogonal,
+      Trihedron<double, double, 1>& 𝛛orthonormal);
+
+  // Computes the second derivative of the preceding trihedra.
+  static void ComputeTrihedraDerivatives2(
+      Displacement<InertialFrame> const& r,
+      Velocity<InertialFrame> const& ṙ,
+      Vector<Acceleration, InertialFrame> const& r̈,
+      Vector<Jerk, InertialFrame> const& r⁽³⁾,
+      Trihedron<Length, ArealSpeed> const& orthogonal,
+      Trihedron<double, double> const& orthonormal,
+      Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
+      Trihedron<double, double, 1> const& 𝛛orthonormal,
+      Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
+      Trihedron<double, double, 2>& 𝛛²orthonormal);
+
+  // Computes the rotation that maps |InertialFrame| to |ThisFrame|.
+  static Rotation<InertialFrame, ThisFrame> ComputeRotation(
+      Trihedron<double, double> const& orthonormal);
+
+  // Computes the angular velocity of |ThisFrame| in |InertialFrame|.
+  static AngularVelocity<InertialFrame> ComputeAngularVelocity(
+      Trihedron<double, double> const& orthonormal,
+      Trihedron<double, double, 1> const& 𝛛orthonormal);
+
+  // Computes the angular acceleration of |ThisFrame| in |InertialFrame|.
+  static Bivector<AngularAcceleration, InertialFrame>
+  ComputeAngularAcceleration(Trihedron<double, double> const& orthonormal,
+                             Trihedron<double, double, 1> const& 𝛛orthonormal,
+                             Trihedron<double, double, 2> const& 𝛛²orthonormal);
 
  private:
   void ComputeGeometricAccelerations(

@@ -79,6 +79,11 @@ class BodyCentredBodyDirectionReferenceFrame
           serialization::BodyCentredBodyDirectionReferenceFrame const& message);
 
  private:
+  using Base = RigidReferenceFrame<InertialFrame, ThisFrame>;
+
+  template<typename SF, typename SB, int o = 0>
+  using Trihedron = typename Base::template Trihedron<SF, SB, o>;
+
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
@@ -88,14 +93,13 @@ class BodyCentredBodyDirectionReferenceFrame
   AcceleratedRigidMotion<InertialFrame, ThisFrame> MotionOfThisFrame(
       Instant const& t) const override;
 
-  // Fills |rotation| with the rotation that maps the basis of |InertialFrame|
-  // to the basis of |ThisFrame|.  Fills |angular_velocity| with the
-  // corresponding angular velocity.
-  static void ComputeAngularDegreesOfFreedom(
+  // Implementation helper that avoids evaluating the degrees of freedom and the
+  // accelerations multiple times.
+  static RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
       DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
       DegreesOfFreedom<InertialFrame> const& secondary_degrees_of_freedom,
-      Rotation<InertialFrame, ThisFrame>& rotation,
-      AngularVelocity<InertialFrame>& angular_velocity);
+      Vector<Acceleration, InertialFrame> const& primary_acceleration,
+      Vector<Acceleration, InertialFrame> const& secondary_acceleration);
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   MassiveBody const* const primary_;
@@ -103,6 +107,9 @@ class BodyCentredBodyDirectionReferenceFrame
   std::function<Vector<Acceleration, InertialFrame>(
       Position<InertialFrame> const& position,
       Instant const& t)> compute_gravitational_acceleration_on_primary_;
+  std::function<Vector<Jerk, InertialFrame>(
+      DegreesOfFreedom<InertialFrame> const& degrees_of_freedom,
+      Instant const& t)> compute_gravitational_jerk_on_primary_;
   std::function<Trajectory<InertialFrame> const&()> const primary_trajectory_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       secondary_trajectory_;

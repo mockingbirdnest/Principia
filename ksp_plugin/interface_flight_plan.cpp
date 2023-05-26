@@ -83,8 +83,13 @@ Burn GetBurn(Plugin const& plugin,
           kExtensionFieldNumber;
       parameters.primary_index = plugin.CelestialIndexOfBody(
           *barycentric_rotating_reference_frame->primary());
+      // A barycentric rotating reference frame can have multiple secondaries
+      // since ابن الهيثم, but it has not been possible to set a manœuvre frame
+      // to barycentric since Haar, so this cannot happen in this compatibility
+      // path.
+      CHECK_EQ(barycentric_rotating_reference_frame->secondaries().size(), 1);
       parameters.secondary_index = plugin.CelestialIndexOfBody(
-          *barycentric_rotating_reference_frame->secondary());
+          *barycentric_rotating_reference_frame->secondaries().front());
     }
   }
 

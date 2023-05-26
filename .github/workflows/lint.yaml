@@ -7,6 +7,22 @@ on:
     branches: [ '*' ]
 
 jobs:
+  check-remove-before-flight:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check source tree
+      shell: pwsh
+      run: |
+        $tag = [System.Text.ASCIIEncoding]::new().GetString(
+                   [System.Text.Encoding]::GetEncoding(20866).GetBytes(
+                       "реможе бефоре флигхт").ForEach({$_ -band 0x7F}))
+        $results = (ls -Recurse | sls -CaseSensitive $tag)
+        foreach ($result in $results) {
+          # https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
+          echo "::error file=$($result.Path),line=$($result.LineNumber)::$tag"
+        }
+        $results | Should -Be @()
   check-cpp:
     runs-on: windows-latest
     steps:
@@ -17,7 +33,28 @@ jobs:
         Invoke-WebRequest https://raw.githubusercontent.com/mockingbirdnest/styleguide/casanova-2023-04-25/cpplint/cpplint.py -OutFile cpplint.py
     - name: Run cpplint
       shell: pwsh
+      env:
+        GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       run: |
+        $filenames = @()
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+          $event = (Get-Content -Raw $env:GITHUB_EVENT_PATH | ConvertFrom-Json)
+          $owner_repo = $event.repository.full_name
+          $pr_number = $event.number
+          # Get the list of files changed by the PR.
+          # https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests-files
+          $files = (gh api -H "Accept: application/vnd.github+json"      `
+                            -H "X-GitHub-Api-Version: 2022-11-28"        `
+                            /repos/$owner_repo/pulls/$pr_number/files |
+                    ConvertFrom-Json)
+          foreach ($file in $files) {
+            if ($file.filename.EndsWith(".cpp") -or
+                $file.filename.EndsWith(".hpp")) {
+              $filenames += $file.filename
+            }
+          }
+        }
+
         $filters = @(
             "-legal/copyright",
             "-build/c++11",
@@ -28,7 +65,12 @@ jobs:
             "-build/namespaces")
         $errors = @()
         $ErrorActionPreference = "Continue"
-        foreach ($file in $(ls "*\*.[ch]pp")) {
+        if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+          $files = $filenames
+        } else {
+          $files = ls "*\*.[ch]pp"
+        }
+        foreach ($file in $files) {
           $output = $(
             python .\cpplint.py                           `
                 --extensions=hpp,cpp                      `
@@ -37,7 +79,19 @@ jobs:
                 $file 2>&1 `
           ).Exception.Message
           if ($LastExitCode -ne 0) {
-            $errors += $output[0..($output.Length-3)]
+            # Drop the the line that says “Done processing” and the one that
+            # gives the total number of errors.
+            $file_errors = $output[0..($output.Length-3)]
+            $errors += $file_errors
+            foreach ($e in $file_errors) {
+              $e -match '^(.*)\((\d+)\):\s*(.*)\s*\[([^\]]+)\]\s*\[\d+\]$'
+              $file = $Matches[1]
+              $line = $Matches[2]
+              $message = $Matches[3]
+              $title = $Matches[4]
+              # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
+              echo "::warning file=$file,line=$line,title=$title::$message"
+            }
             $output | write-error
           } else {
             echo $output
@@ -45,4 +99,3 @@ jobs:
         }
         $errors | write-error
         exit $errors.Length
-

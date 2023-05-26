@@ -269,6 +269,8 @@ void Plugin::EndInitialization() {
               ephemeris_.get(),
               sun_->body()));
 
+  geometric_potential_plotter_.emplace(ephemeris_.get());
+
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
   ephemeris_->WriteToMessage(&ephemeris_message);
@@ -1181,13 +1183,18 @@ Plugin::NewBodySurfaceNavigationFrame(
 }
 
 not_null<std::unique_ptr<PlottingFrame>>
-Plugin::NewRotatingPulsatingPlottingFrame(Index const primary_index,
-                                          Index const secondary_index) const {
+Plugin::NewRotatingPulsatingPlottingFrame(
+    Index const primary_index,
+    std::vector<Index> const secondary_indices) const {
   Celestial const& primary = *FindOrDie(celestials_, primary_index);
-  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
+  std::vector<not_null<MassiveBody const*>> secondaries;
+  for (Index const& i : secondary_indices) {
+    Celestial const& secondary = *FindOrDie(celestials_, i);
+    secondaries.push_back(secondary.body());
+  }
   return make_not_null_unique<
       RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
-      ephemeris_.get(), primary.body(), secondary.body());
+      ephemeris_.get(), primary.body(), secondaries);
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
@@ -1360,6 +1367,16 @@ Renderer& Plugin::renderer() {
 
 Renderer const& Plugin::renderer() const {
   return *renderer_;
+}
+
+GeometricPotentialPlotter& Plugin::geometric_potential_plotter() {
+  CHECK(!initializing_);
+  return *geometric_potential_plotter_;
+}
+
+GeometricPotentialPlotter const& Plugin::geometric_potential_plotter() const {
+  CHECK(!initializing_);
+  return *geometric_potential_plotter_;
 }
 
 void Plugin::WriteToMessage(
@@ -1542,6 +1559,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                                   plugin->sun_,
                                                   plugin->ephemeris_.get());
   }
+
+  plugin->geometric_potential_plotter_.emplace(plugin->ephemeris_.get());
 
   // Note that for proper deserialization of parts this list must be
   // reconstructed in its original order.

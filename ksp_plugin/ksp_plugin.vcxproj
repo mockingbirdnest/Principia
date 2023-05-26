@@ -33,6 +33,7 @@
   <ItemGroup>
     <ClInclude Include="celestial.hpp" />
     <ClInclude Include="equator_relevance_threshold.hpp" />
+    <ClInclude Include="geometric_potential_plotter.hpp" />
     <ClInclude Include="identification.hpp" />
     <ClInclude Include="integrators.hpp" />
     <ClInclude Include="iterators.hpp" />
@@ -75,6 +76,7 @@
     <ClCompile Include="celestial.cpp" />
     <ClCompile Include="equator_relevance_threshold.cpp" />
     <ClCompile Include="flight_plan.cpp" />
+    <ClCompile Include="geometric_potential_plotter.cpp" />
     <ClCompile Include="identification.cpp" />
     <ClCompile Include="integrators.cpp" />
     <ClCompile Include="interface.cpp" />

@@ -74,11 +74,16 @@ class BurnEditor : ScalingRenderer {
       // If the plotting frame is not a navigation frame, it is the rotating-
       // pulsating frame; use the corresponding rotating frame as the default
       // navigation frame.
+      // Note that the primary for the rotating frame (the body which is fixed)
+      // is the main body of the secondary system; for instance, we go from a
+      // frame which fixes the Sun and the barycentre of the Earth-Moon system
+      // to one which fixes the Earth and the direction of the Sun.
       reference_frame_selector_.SetFrameParameters(
           new NavigationFrameParameters {
             extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
-            primary_index = plotting_frame_parameters.primary_index,
-            secondary_index = plotting_frame_parameters.secondary_index,
+            primary_index = (plotting_frame_parameters
+                             as ReferenceFrameParameters).secondary_index[0],
+            secondary_index = plotting_frame_parameters.primary_index,
           });
     }
     ComputeEngineCharacteristics();
@@ -307,7 +312,7 @@ class BurnEditor : ScalingRenderer {
     };
   }
 
-  public void ReferenceFrameChanged(NavigationFrameParameters? parameters,
+  public void ReferenceFrameChanged(NavigationFrameParameters parameters,
                                     Vessel target_vessel) {
     changed_reference_frame_ = true;
   }

@@ -1,27 +1,12 @@
-name: “Remove before flight” tags
+name: Pull request
 
 on:
-  push:
-    branches: [ '*' ]
   pull_request:
     branches: [ '*' ]
+    types: [opened, synchronize, reopened, edited]
 
 jobs:
-  check-source:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Check source tree
-      shell: pwsh
-      run: |
-        ls -Recurse
-        | sls -CaseSensitive (
-              [System.Text.ASCIIEncoding]::new().GetString(
-                  [System.Text.Encoding]::GetEncoding(20866).GetBytes(
-                      "реможе бефоре флигхт").ForEach({$_ -band 0x7F})))
-        | Should -Be @()
-
-  check-pull-request:
+  check-remove-before-flight:
     runs-on: windows-latest
     steps:
     - name: Check pull request

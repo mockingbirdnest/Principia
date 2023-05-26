@@ -123,7 +123,7 @@ internal class MapNodePool {
           // a vessel).
           // The nodes are with respect to the orbit of the secondary around the
           // primary. We show the nodes with the colour of the primary.
-          CelestialBody primary = reference_frame.OrientingBody();
+          CelestialBody primary = reference_frame.Primary();
           associated_map_object = primary.MapObject;
           colour = primary.orbit == null
                         ? XKCDColors.SunshineYellow
@@ -264,7 +264,7 @@ internal class MapNodePool {
           break;
         }
         case MapObject.ObjectType.ApproachIntersect: {
-          double separation = 
+          double separation =
               (properties.reference_frame.target.GetWorldPos3D() -
                properties.world_position).magnitude;
           double speed = properties.velocity.magnitude;
