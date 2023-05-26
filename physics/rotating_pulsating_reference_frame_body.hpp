@@ -46,11 +46,17 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
                         secondary_set.begin(),
                         secondary_set.end(),
                         std::inserter(intersection, intersection.begin()));
-  CHECK_GE(primaries_.size(), 1);
-  CHECK_EQ(primary_set.size(), primaries_.size()) << primaries_;
-  CHECK_GE(secondaries_.size(), 1);
-  CHECK_EQ(secondary_set.size(), secondaries_.size()) << secondaries_;
-  CHECK_EQ(intersection.size(), 0) << intersection;
+  auto const names = [](auto const& bodies) {
+    std::stringstream s;
+    for (not_null<MassiveBody const*> body : bodies) {
+      s << body->name() << ",";
+    }
+  };
+  CHECK_GE(primaries_.size(), 1) << names(primaries_);
+  CHECK_EQ(primary_set.size(), primaries_.size()) << names(primaries_);
+  CHECK_GE(secondaries_.size(), 1) << names(secondaries_);
+  CHECK_EQ(secondary_set.size(), secondaries_.size()) << names(secondaries_);
+  CHECK_EQ(intersection.size(), 0) << names(intersection);
 }
 
 template<typename InertialFrame, typename ThisFrame>
