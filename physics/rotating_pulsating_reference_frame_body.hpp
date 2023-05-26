@@ -23,7 +23,7 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
         not_null<MassiveBody const*> const secondary)
     : RotatingPulsatingReferenceFrame(
           ephemeris,
-          std::vector{primary},
+          std::vector<not_null<MassiveBody const*>>{primary},
           std::vector<not_null<MassiveBody const*>>{secondary}) {}
 
 template<typename InertialFrame, typename ThisFrame>
@@ -36,11 +36,11 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
       primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
       rotating_frame_(ephemeris_, primaries_, secondaries_) {
-  std::set<not_null<MassiveBody const*>> primary_set(primaries_.begin(),
-                                                     primaries_.end());
-  std::set<not_null<MassiveBody const*>> secondary_set(secondaries_.begin(),
-                                                       secondaries_.end());
-  std::set<not_null<MassiveBody const*>> intersection;
+  absl::btree_set<not_null<MassiveBody const*>> primary_set(primaries_.begin(),
+                                                            primaries_.end());
+  absl::btree_set<not_null<MassiveBody const*>> secondary_set(
+      secondaries_.begin(), secondaries_.end());
+  absl::btree_set<not_null<MassiveBody const*>> intersection;
   std::set_intersection(primary_set.begin(),
                         primary_set.end(),
                         secondary_set.begin(),

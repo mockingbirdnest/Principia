@@ -1187,12 +1187,12 @@ Plugin::NewRotatingPulsatingPlottingFrame(
     std::vector<Index> const& primary_indices,
     std::vector<Index> const& secondary_indices) const {
   std::vector<not_null<MassiveBody const*>> primaries;
-  for (Index const& i : primary_indices) {
+  for (Index const i : primary_indices) {
     Celestial const& primary = *FindOrDie(celestials_, i);
     primaries.push_back(primary.body());
   }
   std::vector<not_null<MassiveBody const*>> secondaries;
-  for (Index const& i : secondary_indices) {
+  for (Index const i : secondary_indices) {
     Celestial const& secondary = *FindOrDie(celestials_, i);
     secondaries.push_back(secondary.body());
   }

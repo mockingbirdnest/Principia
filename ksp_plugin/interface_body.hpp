@@ -682,7 +682,7 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     }
     default:
       int primary_index;
-      if (*parameters.secondary_index == nullptr) {
+      if (*parameters.primary_index == nullptr) {
         primary_index = -1;
       } else {
         primary_index = **parameters.primary_index;
