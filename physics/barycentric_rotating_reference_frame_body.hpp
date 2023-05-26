@@ -57,11 +57,12 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
                         secondary_set.end(),
                         std::inserter(intersection, intersection.begin()));
   auto const names = [](auto const& bodies) {
-    std::stringstream s;
-    for (not_null<MassiveBody const*> body : bodies) {
-      s << body->name() << ",";
-    }
-    return s.str();
+    return absl::StrJoin(
+        bodies,
+        ",",
+        [](std::string* const out, not_null<MassiveBody const*> const body) {
+          out->append(body->name());
+        });
   };
   CHECK_GE(primaries_.size(), 1) << names(primaries_);
   CHECK_EQ(primary_set.size(), primaries_.size()) << names(primaries_);
