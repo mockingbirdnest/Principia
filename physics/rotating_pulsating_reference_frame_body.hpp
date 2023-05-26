@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <set>
+#include <string>
 
 namespace principia {
 namespace physics {

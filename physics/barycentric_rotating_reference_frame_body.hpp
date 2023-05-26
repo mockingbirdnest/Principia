@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <set>
+#include <string>
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3x3_matrix.hpp"
