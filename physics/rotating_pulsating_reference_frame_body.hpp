@@ -51,6 +51,7 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     for (not_null<MassiveBody const*> body : bodies) {
       s << body->name() << ",";
     }
+    return s.str();
   };
   CHECK_GE(primaries_.size(), 1) << names(primaries_);
   CHECK_EQ(primary_set.size(), primaries_.size()) << names(primaries_);
