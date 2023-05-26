@@ -46,7 +46,8 @@ void GeometricPotentialPlotter::RequestEquipotentials(
     plotter_ = MakeStoppableThread([this, parameters]() {
       auto const status = PlotEquipotentials(parameters);
       if (!status.ok() && !absl::IsCancelled(status)) {
-        LOG(ERROR) << "Error while computing " << parameters.primary->name()
+        LOG(ERROR) << "Error while computing "
+                   << parameters.primaries.front()->name()
                    << "-" << parameters.secondaries.front()->name()
                    << " equipotentials at " << parameters.time << ": "
                    << status;
@@ -78,7 +79,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   Instant const& t = parameters.time;
 
   RotatingPulsatingReferenceFrame<Barycentric, Navigation> const
-      reference_frame(ephemeris_, parameters.primary, parameters.secondaries);
+      reference_frame(ephemeris_, parameters.primaries, parameters.secondaries);
   auto const plane =
       Plane<Navigation>::OrthogonalTo(Vector<double, Navigation>({0, 0, 1}));
 
@@ -143,8 +144,13 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
     maximum_maximorum = std::max(maximum_maximorum, maximum);
   }
 
-  Position<Barycentric> const primary_barycentric_position =
-      ephemeris_->trajectory(parameters.primary)->EvaluatePosition(t);
+  BarycentreCalculator<Position<Barycentric>, GravitationalParameter>
+      primary_barycentric_position;
+  for (not_null primary : parameters.primaries) {
+    primary_barycentric_position.Add(
+        ephemeris_->trajectory(primary)->EvaluatePosition(t),
+        primary->gravitational_parameter());
+  }
   BarycentreCalculator<Position<Barycentric>, GravitationalParameter>
       secondary_barycentric_position;
   for (not_null secondary : parameters.secondaries) {
@@ -152,16 +158,29 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
         ephemeris_->trajectory(secondary)->EvaluatePosition(t),
         secondary->gravitational_parameter());
   }
-  Length const r =
-      (secondary_barycentric_position.Get() - primary_barycentric_position)
-          .Norm();
+  Length const r = (secondary_barycentric_position.Get() -
+                    primary_barycentric_position.Get()).Norm();
 
   Position<Navigation> const primary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-          primary_barycentric_position);
+          primary_barycentric_position.Get());
   Position<Navigation> const secondary_position =
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
           secondary_barycentric_position.Get());
+
+  Length primary_radius;
+  if (parameters.primaries.size() == 1) {
+    primary_radius = parameters.primaries.front()->min_radius();
+  } else {
+    for (not_null const primary : parameters.primaries) {
+      primary_radius =
+          std::max(primary_radius,
+                   (primary_barycentric_position.Get() -
+                    ephemeris_->trajectory(primary)->EvaluatePosition(t))
+                           .Norm() +
+                       primary->min_radius());
+    }
+  }
 
   Length secondary_radius;
   if (parameters.secondaries.size() == 1) {
@@ -180,7 +199,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   // TODO(egg): Consider additional wells.
   std::vector<Equipotential<Barycentric, Navigation>::Well> wells{
       {secondary_position, secondary_radius / r * (1 * Metre)},
-      {primary_position, parameters.primary->min_radius() / r * (1 * Metre)}};
+      {primary_position, primary_radius / r * (1 * Metre)}};
 
   double const arg_approx_l1 = Brent(
       [&](double const x) {
@@ -222,7 +241,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   SpecificEnergy const l45_separator =
       maximum_maximorum -
       (maximum_maximorum - approx_l1_energy) /
-          (4 * Sqrt(parameters.primary->gravitational_parameter() /
+          (4 * Sqrt(primary_barycentric_position.weight() /
                     secondary_barycentric_position.weight()));
 
   Equipotentials equipotentials{.lines = {},

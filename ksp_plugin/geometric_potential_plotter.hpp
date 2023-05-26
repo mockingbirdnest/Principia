@@ -22,7 +22,7 @@ using namespace principia::ksp_plugin::_frames;
 class GeometricPotentialPlotter {
  public:
   struct Parameters {
-    not_null<MassiveBody const*> primary;
+    std::vector<not_null<MassiveBody const*>> primaries;
     std::vector<not_null<MassiveBody const*>> secondaries;
     Instant time;
     // The number of energy levels at which to draw equipotentials.

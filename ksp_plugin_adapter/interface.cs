@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -79,12 +81,13 @@ public enum FrameType {
 internal interface ReferenceFrameParameters {
   FrameType extension  { get; set; }
   int centre_index  { get; set; }
-  int primary_index  { get; set; }
+  int[] primary_index  { get; set; }
   int[] secondary_index  { get; set; }
 }
 
 internal partial class PlottingFrameParameters : ReferenceFrameParameters {
   public PlottingFrameParameters() {
+    primary_index = new int[]{};
     secondary_index = new int[]{};
   }
 
@@ -93,13 +96,15 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
       return null;
     } else {
-      return new NavigationFrameParameters{
+      var result = new NavigationFrameParameters{
           extension = p.extension,
           centre_index = p.centre_index,
-          primary_index = p.primary_index,
-          secondary_index =
-              p.secondary_index.Length == 0 ? -1 : p.secondary_index[0],
       };
+      (result as ReferenceFrameParameters).primary_index =
+          (p as ReferenceFrameParameters).primary_index;
+      (result as ReferenceFrameParameters).secondary_index =
+          (p as ReferenceFrameParameters).secondary_index;
+      return result;
     }
   }
 
@@ -108,7 +113,9 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
   }
 
   public override int GetHashCode() =>
-      (extension, centre_index, primary_index, secondary_index).GetHashCode();
+      (extension, centre_index,
+       primary_index.DefaultIfEmpty(-1).First(),
+       secondary_index.DefaultIfEmpty(-1).First()).GetHashCode();
 
   public static bool operator ==(PlottingFrameParameters left,
                                  ReferenceFrameParameters right) {
@@ -134,7 +141,7 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
     set => centre_index = value;
   }
 
-  int ReferenceFrameParameters.primary_index {
+  int[] ReferenceFrameParameters.primary_index {
     get => primary_index;
     set => primary_index = value;
   }
@@ -151,8 +158,9 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
     var result = new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
-        primary_index = p.primary_index,
     };
+    (result as ReferenceFrameParameters).primary_index =
+        (p as ReferenceFrameParameters).primary_index;
     (result as ReferenceFrameParameters).secondary_index =
         (p as ReferenceFrameParameters).secondary_index;
     return result;
@@ -169,7 +177,8 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
                                  ReferenceFrameParameters right) {
     return (left as ReferenceFrameParameters).extension == right.extension &&
            left.centre_index == right.centre_index &&
-           left.primary_index == right.primary_index &&
+           (left as ReferenceFrameParameters).primary_index.SequenceEqual(
+            right.primary_index) &&
            (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
                right.secondary_index);
   }
@@ -189,9 +198,9 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
     set => centre_index = value;
   }
 
-  int ReferenceFrameParameters.primary_index {
-    get => primary_index;
-    set => primary_index = value;
+  int[] ReferenceFrameParameters.primary_index {
+    get => primary_index == -1 ? new int[] {} : new[] { primary_index };
+    set => primary_index = value.DefaultIfEmpty(-1).Single();
   }
 
   int[] ReferenceFrameParameters.secondary_index {

@@ -62,10 +62,10 @@ class BarycentricRotatingReferenceFrame
 
   BarycentricRotatingReferenceFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      not_null<MassiveBody const*> primary,
+      std::vector<not_null<MassiveBody const*>> primaries,
       std::vector<not_null<MassiveBody const*>> secondaries);
 
-  not_null<MassiveBody const*> primary() const;
+  std::vector<not_null<MassiveBody const*>> const& primaries() const;
   std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
   Instant t_min() const override;
@@ -100,7 +100,9 @@ class BarycentricRotatingReferenceFrame
   // Implementation helper that avoids evaluating the degrees of freedom and the
   // accelerations multiple times.
   RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
-      DegreesOfFreedom<InertialFrame> const& primary_degrees_of_freedom,
+      BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
+                           GravitationalParameter> const&
+          primary_degrees_of_freedom,
       BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
                            GravitationalParameter> const&
           secondary_degrees_of_freedom,
@@ -108,7 +110,7 @@ class BarycentricRotatingReferenceFrame
       Vector<Acceleration, InertialFrame> const& secondary_acceleration) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
-  not_null<MassiveBody const*> const primary_;
+  std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       primary_trajectory_;
