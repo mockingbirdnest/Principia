@@ -318,9 +318,11 @@ class ParallelTestRunner {
     var fatal_line = new Regex(
         @"F\d{4} \d\d:\d\d:\d\d\.\d{6}\s+\d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
     var other_line = new Regex(@"
-          (?!(?-x)\[  DEATH   \])  # Miscellaneous gtest output, excluding the
-                  \[..........\]   # “actual” side of death tests.
-        | (?:(?-x)[IWE]\d{4} \d\d:\d\d:\d\d\.\d{6})  # Non-fatal glog output.",
+        ^ (
+            (?!(?-x)\[  DEATH   \])  # Miscellaneous gtest output, excluding the
+                    \[..........\]   # “actual” side of death tests.
+          | (?:(?-x)[IWE]\d{4} \d\d:\d\d:\d\d\.\d{6})  # Non-fatal glog output.
+          )",
         RegexOptions.IgnorePatternWhitespace);
     Error error = null;
     while (!output.EndOfStream) {
@@ -346,6 +348,18 @@ class ParallelTestRunner {
               message = fatal_match.Groups["message"].Value};
         }
       } else if (error is Error e) {
+        if (!e.file.StartsWith(Directory.GetCurrentDirectory())) {
+          var stack_path = new Regex(
+              @".* \((?<file>{DIR}[^:]*{FILE}):{LINE}\)$");
+          stack_path = new Regex(stack_path.ToString()
+              .Replace("{DIR}", Regex.Escape(Directory.GetCurrentDirectory()))
+              .Replace("{FILE}", e.file)
+              .Replace("{LINE}", e.line));
+          var stack_match = stack_path.Match(line);
+          if (stack_match.Success) {
+            e.file = stack_match.Groups["file"].Value;
+          }
+        }
         e.message += "\n";
         e.message += line;
       }
