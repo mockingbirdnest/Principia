@@ -318,8 +318,9 @@ class ParallelTestRunner {
     var fatal_line = new Regex(
         @"F\d{4} \d\d:\d\d:\d\d\.\d{6}\s+\d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
     var other_line = new Regex(@"
-          \[..........\]                    # Miscellaneous gtest output.
-        | [IWE]\d{4}\s\d\d:\d\d:\d\d\.\d{6} # Non-fatal glog output."  ,
+          (?!(?-x)\[  DEATH   \])  # Miscellaneous gtest output, excluding the
+                  \[..........\]   # “actual” side of death tests.
+        | (?:(?-x)[IWE]\d{4} \d\d:\d\d:\d\d\.\d{6})  # Non-fatal glog output.",
         RegexOptions.IgnorePatternWhitespace);
     Error error = null;
     while (!output.EndOfStream) {
