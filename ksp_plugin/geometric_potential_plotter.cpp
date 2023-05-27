@@ -62,14 +62,19 @@ GeometricPotentialPlotter::equipotentials() const {
 
 absl::Status GeometricPotentialPlotter::PlotEquipotentials(
     Parameters const& parameters) {
-  auto result =
-      LagrangeEquipotentials<Barycentric, Navigation>::ComputeLines(parameters);
+  auto result = LagrangeEquipotentials<Barycentric, Navigation>(ephemeris_)
+                    .ComputeLines(parameters);
 
   absl::MutexLock l(&lock_);
   // We don’t reset |next_equipotentials_| unless |result.ok()|, so that if we
   // have a transient error, we keep the old ones until the problem goes away.
   if (result.ok()) {
-    next_equipotentials_ = {std::move(result).value(), parameters};
+    next_equipotentials_ = {{}, parameters};
+    for (auto& [energy, lines] : result->lines) {
+      next_equipotentials_->lines.insert(next_equipotentials_->lines.end(),
+                                         std::make_move_iterator(lines.begin()),
+                                         std::make_move_iterator(lines.end()));
+    }
   }
   plotter_idle_ = true;
   return result.status();
