@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "physics/equipotential.hpp"
@@ -11,9 +12,11 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_massive_body;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Inertial, typename RotatingPulsating>
 class LagrangeEquipotentials {
@@ -33,13 +36,14 @@ class LagrangeEquipotentials {
     bool show_l245_level = true;
   };
 
-  absl::StatusOr<typename Equipotential<Inertial, RotatingPulsating>::Lines>
-  ComputeLines(Parameters const& parameters);
-
   struct Equipotentials {
-    Equipotential<Inertial, RotatingPulsating>::Lines lines;
-    Parameters parameters;
+    std::map<SpecificEnergy,
+             typename Equipotential<Inertial, RotatingPulsating>::Lines>
+        lines;
+    std::map<SpecificEnergy, Position<RotatingPulsating>> maxima;
   };
+
+  absl::StatusOr<Equipotentials> ComputeLines(Parameters const& parameters);
 
  private:
   not_null<Ephemeris<Inertial> const*> const ephemeris_;

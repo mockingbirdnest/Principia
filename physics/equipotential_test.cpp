@@ -370,62 +370,52 @@ TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
   LOG(ERROR) << "Flowed";
 
   Instant t = t0_;
-  auto const potential = [&reference_frame,
-                          &t](Position<World> const& position) {
-    return reference_frame.GeometricPotential(t, position);
-  };
-  auto const acceleration = [&reference_frame,
-                              &t](Position<World> const& position) {
-    auto const acceleration =
-        reference_frame.GeometricAcceleration(t, {position, Velocity<World>{}});
-    // Note the sign.
-    return -Vector<Acceleration, World>({acceleration.coordinates()[0],
-                                         acceleration.coordinates()[1],
-                                         Acceleration{}});
-  };
-  const MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2>::Box box = {
-      .centre = World::origin,
-      .vertices = {Displacement<World>({3 * Metre,
-                                        0 * Metre,
-                                        0 * Metre}),
-                   Displacement<World>({0 * Metre,
-                                        3 * Metre,
-                                        0 * Metre})}};
 
-  MultiLevelSingleLinkage<SpecificEnergy, Position<World>, 2> optimizer(
-      box, potential, acceleration);
-  constexpr Length characteristic_length = 1 * Nano(Metre);
-  Equipotential<Barycentric, World> const equipotential(
-      {EmbeddedExplicitRungeKuttaIntegrator<
-           DormandPrince1986RK547FC,
-           Equipotential<Barycentric, World>::ODE>(),
-       /*max_steps=*/1000,
-       /*length_integration_tolerance=*/characteristic_length},
-      &reference_frame,
-      characteristic_length);
-  auto const plane =
-      Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
-
-  std::vector<std::vector<std::vector<Position<World>>>> all_positions;
-  std::vector<SpecificEnergy> energies;
+  std::vector<std::vector<Position<World>>> trajectory_positions(
+      trajectories.size());
   for (int j = 0; j < number_of_days; ++j) {
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
     CHECK_OK(ephemeris_->Prolong(t));
-    std::vector<std::vector<Position<World>>>& equipotentials_at_t =
-        all_positions.emplace_back();
-    auto const status_or_lines =
+    for (int i = 0; i < trajectories.size(); ++i) {
+      DegreesOfFreedom<World> const dof =
+          reference_frame.ToThisFrameAtTimeSimilarly(t)(
+              trajectories[i]->EvaluateDegreesOfFreedom(t));
+      trajectory_positions[i].push_back(dof.position());
+    }
+    auto const equipotentials =
         LagrangeEquipotentials<Barycentric, World>(ephemeris_.get())
             .ComputeLines(
                 {.primaries = {earth}, .secondaries = {moon}, .time = t});
-    CHECK_OK(status_or_lines.status());
-    for (auto const& line : status_or_lines.value()) {
-      std::vector<Position<World>>& equipotential =
+    CHECK_OK(equipotentials.status());
+
+    std::vector<SpecificEnergy> maxima;
+    std::vector<Position<World>> arg_maximorum;
+    for (auto const& [maximum, arg_maximi] : equipotentials->maxima) {
+      maxima.push_back(maximum);
+      arg_maximorum.push_back(arg_maximi);
+    }
+    logger.Append("maxima", maxima, ExpressIn(Metre, Second));
+    logger.Append("argMaximorum", arg_maximorum, ExpressIn(Metre));
+
+    std::vector<SpecificEnergy> energies;
+    std::vector<std::vector<std::vector<Position<World>>>> equipotentials_at_t;
+    for (auto const& [energy, lines] : equipotentials->lines) {
+      energies.push_back(energy);
+      std::vector<std::vector<Position<World>>>& equipotentials_at_energy =
           equipotentials_at_t.emplace_back();
-      for (auto const& [t, dof] : line) {
-        equipotential.push_back(dof.position());
+      for (auto const& line : lines) {
+        std::vector<Position<World>>& equipotential =
+            equipotentials_at_energy.emplace_back();
+        for (auto const& [t, dof] : line) {
+          equipotential.push_back(dof.position());
+        }
       }
     }
+    logger.Append("energies", energies, ExpressIn(Metre, Second));
+    logger.Append("equipotentialsEarthMoonGlobalOptimization",
+                  equipotentials_at_t,
+                  ExpressIn(Metre));
   }
   std::vector<std::vector<Position<World>>> world_trajectories;
   for (auto const& trajectory : trajectories) {
@@ -437,12 +427,7 @@ TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
     }
   }
   logger.Set("trajectories", world_trajectories, ExpressIn(Metre));
-  logger.Set("energies",
-             energies,
-             ExpressIn(Metre, Second));
-  logger.Set("equipotentialsEarthMoonGlobalOptimization",
-             all_positions,
-             ExpressIn(Metre));
+  logger.Set("trajectoryPositions", trajectory_positions, ExpressIn(Metre));
 }
 
 #endif

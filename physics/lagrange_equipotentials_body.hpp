@@ -11,7 +11,6 @@ namespace internal {
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_plane;
-using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::numerics::_global_optimization;
@@ -28,9 +27,11 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::LagrangeEquipotentials(
     : ephemeris_(ephemeris) {}
 
 template<typename Inertial, typename RotatingPulsating>
-absl::StatusOr<typename Equipotential<Inertial, RotatingPulsating>::Lines>
+absl::StatusOr<typename LagrangeEquipotentials<Inertial, RotatingPulsating>::
+                   Equipotentials>
 LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
     Parameters const& parameters) {
+  Equipotentials result;
   Instant const& t = parameters.time;
 
   RotatingPulsatingReferenceFrame<Inertial, RotatingPulsating> const
@@ -95,6 +96,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
                                                 " at ",
                                                 DebugString(arg_maximum)));
     }
+    result.maxima.emplace(maximum, arg_maximum);
     maximum_maximorum = std::max(maximum_maximorum, maximum);
   }
 
@@ -198,8 +200,6 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
                               (4 * Sqrt(primary_Inertial_position.weight() /
                                         secondary_Inertial_position.weight()));
 
-  typename Equipotential<Inertial, RotatingPulsating>::Lines result;
-
   auto const towards_infinity = [](Position<RotatingPulsating> q) {
     return RotatingPulsating::origin +
            Normalize(q - RotatingPulsating::origin) * 3 * Metre;
@@ -212,17 +212,13 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
     // TODO(phl): Make this interruptible.
     auto lines = equipotential.ComputeLines(
         plane, t, arg_maximorum, wells, towards_infinity, energy);
-    result.insert(result.end(),
-                  std::make_move_iterator(lines.begin()),
-                  std::make_move_iterator(lines.end()));
+    result.lines.emplace(energy, std::move(lines));
   }
   if (parameters.show_l245_level) {
     for (SpecificEnergy const energy : {approx_l2_energy, l45_separator}) {
       auto lines = equipotential.ComputeLines(
           plane, t, arg_maximorum, wells, towards_infinity, energy);
-      result.insert(result.end(),
-                    std::make_move_iterator(lines.begin()),
-                    std::make_move_iterator(lines.end()));
+      result.lines.emplace(energy, std::move(lines));
     }
   }
   return result;
