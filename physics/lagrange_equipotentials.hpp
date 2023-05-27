@@ -21,7 +21,7 @@ using namespace principia::quantities::_named_quantities;
 template<typename Inertial, typename RotatingPulsating>
 class LagrangeEquipotentials {
  public:
-  LagrangeEquipotentials(not_null<Ephemeris<Inertial> const*> ephemeris);
+  explicit LagrangeEquipotentials(not_null<Ephemeris<Inertial> const*> ephemeris);
 
   struct Parameters {
     std::vector<not_null<MassiveBody const*>> primaries;
@@ -47,7 +47,6 @@ class LagrangeEquipotentials {
 
  private:
   not_null<Ephemeris<Inertial> const*> const ephemeris_;
-
 };
 
 }  // namespace internal

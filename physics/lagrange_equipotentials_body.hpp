@@ -1,5 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <vector>
+#include <functional>
+
 #include "physics/lagrange_equipotentials.hpp"
 #include "numerics/global_optimization.hpp"
 
