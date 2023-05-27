@@ -134,7 +134,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
       MakeMockReferenceFrame(),
       /*is_inertially_fixed=*/true};
   Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
-  EXPECT_EQ(1 * Newton, manœuvre.thrust());
+  EXPECT_EQ(5 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
 // Fixed in 192'027'508.
