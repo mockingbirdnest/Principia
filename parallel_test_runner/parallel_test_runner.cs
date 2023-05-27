@@ -131,8 +131,8 @@ class ParallelTestRunner {
           process = new Process{
               StartInfo = {
                   UseShellExecute = false,
-                  RedirectStandardOutput = false,
-                  RedirectStandardError = false,
+                  RedirectStandardOutput = true,
+                  RedirectStandardError = true,
                   FileName = test_binary,
                   Arguments = "--gtest_filter=*DeathTest.*"
               }
@@ -229,10 +229,18 @@ class ParallelTestRunner {
     stopwatch.Restart();
 
     foreach (Process process in death_test_processes) {
-      process.StartInfo.RedirectStandardOutput = false;
-      process.StartInfo.RedirectStandardError = false;
+      process.StartInfo.RedirectStandardOutput = true;
+      process.StartInfo.RedirectStandardError = true;
+      Task standard_output_writer = Task.Run(async () => {
+        await HandleOutput("O", process.StandardOutput);
+      });
+      Task standard_error_writer = Task.Run(async () => {
+        await HandleOutput("E", process.StandardError);
+      });
       StubbornStart(process);
       process.WaitForExit();
+      Task.WaitAll(new Task[]
+                        { standard_output_writer, standard_error_writer });
       if (process.ExitCode != 0) {
         Console.WriteLine("Exit code " + process.ExitCode +
                           " from a death test");
