@@ -407,7 +407,7 @@ TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
       for (auto const& line : lines) {
         std::vector<Position<World>>& equipotential =
             equipotentials_at_energy.emplace_back();
-        for (auto const& [t, dof] : line) {
+        for (auto const& [_, dof] : line) {
           equipotential.push_back(dof.position());
         }
       }

@@ -25,6 +25,18 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
+// The distance between the bodies is 1 m in the rotating-pulsating frame, and
+// the origin is at their barycentre.  A 3 m box is large enough to encompass
+// the L₄ and L₅ Lagrange points, as well as the whole ridge they sit on,
+// regardless of the mass ratio.
+constexpr Length box_side = 3 * Metre;
+// This is a length in the rotating-pulsating frame, so really one billionth of
+// the distance between the bodies.
+constexpr Length characteristic_length = 1 * Nano(Metre);
+constexpr std::int64_t max_steps = 1000;
+constexpr std::int64_t points_per_round = 1000;
+constexpr Length local_search_tolerance = 1e-3 * Metre;
+
 template<typename Inertial, typename RotatingPulsating>
 LagrangeEquipotentials<Inertial, RotatingPulsating>::LagrangeEquipotentials(
     not_null<Ephemeris<Inertial> const*> const ephemeris)
@@ -59,26 +71,19 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
          Acceleration{}});
   };
 
-  // The distance between the bodies is 1 m in the rotating-pulsating frame, and
-  // the origin is at their barycentre.  A 3 m box is large enough to encompass
-  // the L₄ and L₅ Lagrange points, as well as the whole ridge they sit on,
-  // regardless of the mass ratio.
   const MultiLevelSingleLinkage<SpecificEnergy,
                                 Position<RotatingPulsating>,
                                 2>::Box box = {
       .centre = RotatingPulsating::origin,
       .vertices = {
-          Displacement<RotatingPulsating>({3 * Metre, 0 * Metre, 0 * Metre}),
-          Displacement<RotatingPulsating>({0 * Metre, 3 * Metre, 0 * Metre})}};
+          Displacement<RotatingPulsating>({box_side, 0 * Metre, 0 * Metre}),
+          Displacement<RotatingPulsating>({0 * Metre, box_side, 0 * Metre})}};
 
-  // This is a length in the rotating-pulsating frame, so really one billionth
-  // of the distance between the bodies.
-  constexpr Length characteristic_length = 1 * Nano(Metre);
   Equipotential<Inertial, RotatingPulsating> const equipotential(
       {EmbeddedExplicitRungeKuttaIntegrator<
            DormandPrince1986RK547FC,
            Equipotential<Inertial, RotatingPulsating>::ODE>(),
-       /*max_steps=*/1000,
+       max_steps,
        /*length_integration_tolerance=*/characteristic_length},
       &reference_frame,
       characteristic_length);
@@ -88,14 +93,14 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
       MultiLevelSingleLinkage<SpecificEnergy, Position<RotatingPulsating>, 2>(
           box, potential, gradient)
           .FindGlobalMaxima(
-              /*points_per_round=*/1000,
+              points_per_round,
               /*number_of_rounds=*/std::nullopt,
-              /*local_search_tolerance=*/1e-3 * Metre);
+              local_search_tolerance);
   SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
   for (auto const& arg_maximum : arg_maximorum) {
     auto const maximum = potential(arg_maximum);
     if (!IsFinite(maximum)) {
-      return absl::OutOfRangeError(absl::StrCat("Improper maximum ",
+      return absl::OutOfRangeError(absl::StrCat("Singular maximum ",
                                                 DebugString(maximum),
                                                 " at ",
                                                 DebugString(arg_maximum)));
@@ -129,6 +134,8 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
       reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
           secondary_Inertial_position.Get());
 
+  // For a system, the radius is the maximum distance from the barycentre over
+  // the balls of radius min_radius centred at each body.
   Length primary_radius;
   if (parameters.primaries.size() == 1) {
     primary_radius = parameters.primaries.front()->min_radius();
@@ -162,38 +169,37 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
       {secondary_position, secondary_radius / r * (1 * Metre)},
       {primary_position, primary_radius / r * (1 * Metre)}};
 
+  // L₁ lies between the primary and the secondary, and on  that segment it is a
+  // maximum of the potential.
+  auto const potential_on_primary_secondary_segment = [&](double const x) {
+    return potential(
+        Barycentre(std::pair(secondary_position, primary_position),
+                    std::pair(x, 1 - x)));
+  };
   double const arg_approx_l1 = Brent(
-      [&](double const x) {
-        return potential(
-            Barycentre(std::pair(secondary_position, primary_position),
-                       std::pair(x, 1 - x)));
-      },
+      potential_on_primary_secondary_segment,
       0.0,
       1.0,
       std::greater<>{});
+  // L₂ lies a short distance away the smaller body in the direction opposite
+  // the barycentre.  We look for it between the smaller body and a point as far
+  // from the second body as the barycentre, but in the other direction.
+  auto const potential_on_secondary_outward_segment = [&](double x) {
+    return potential(Barycentre(
+        std::pair(secondary_position,
+                  RotatingPulsating::origin +
+                      2 * (secondary_position - RotatingPulsating::origin)),
+        std::pair(x, 1 - x)));
+  };
   double const arg_approx_l2 = Brent(
-      [&](double x) {
-        // L₂ lies a short distance away the smaller body in the direction
-        // opposite the barycentre.  We look for it between the smaller body and
-        // a point as far from the second body as the barycentre, but in the
-        // other direction.
-        return potential(Barycentre(
-            std::pair(secondary_position,
-                      RotatingPulsating::origin +
-                          2 * (secondary_position - RotatingPulsating::origin)),
-            std::pair(x, 1 - x)));
-      },
+      potential_on_secondary_outward_segment,
       0.0,
       1.0,
       std::greater<>{});
   SpecificEnergy const approx_l1_energy =
-      potential(Barycentre(std::pair(secondary_position, primary_position),
-                           std::pair(arg_approx_l1, 1 - arg_approx_l1)));
-  SpecificEnergy const approx_l2_energy = potential(Barycentre(
-      std::pair(secondary_position,
-                RotatingPulsating::origin +
-                    2 * (secondary_position - RotatingPulsating::origin)),
-      std::pair(arg_approx_l2, 1 - arg_approx_l2)));
+      potential_on_primary_secondary_segment(arg_approx_l1);
+  SpecificEnergy const approx_l2_energy =
+      potential_on_secondary_outward_segment(arg_approx_l2);
 
   // This energy is about 42% of the way down from L₄/L₅ to L₃ with equal
   // masses, and tends towards around 35% as the masses diverge.  Drawing this
@@ -206,7 +212,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
 
   auto const towards_infinity = [](Position<RotatingPulsating> q) {
     return RotatingPulsating::origin +
-           Normalize(q - RotatingPulsating::origin) * 3 * Metre;
+           Normalize(q - RotatingPulsating::origin) * box_side;
   };
   for (int i = 1; i <= parameters.levels; ++i) {
     RETURN_IF_STOPPED;
