@@ -303,7 +303,7 @@ class ParallelTestRunner {
 
   static async Task HandleOutput(string prefix, StreamReader output) {
     var error_line = new Regex(
-        @"[/\\](?<file>[^:])*\((?<line>\d+)\): error: (?<message>.*)");
+        @"[/\\](?<file>[^:]*)\((?<line>\d+)\): error: (?<message>.*)");
     error_line = new Regex(Regex.Escape(Directory.GetCurrentDirectory()) +
                            error_line.ToString());
     var fatal_line = new Regex(
@@ -339,7 +339,7 @@ class ParallelTestRunner {
         e.message += "\n";
         e.message += line;
       }
-      Console.WriteLine(prefix + line);
+      Console.WriteLine($"{prefix} {line}");
     }
     error?.WriteToGitHub();
   }
