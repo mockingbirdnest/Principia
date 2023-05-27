@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -254,20 +255,12 @@ class ParallelTestRunner {
       StubbornStart(process);
       tasks[i] = Task.Run(() => {
         Task standard_output_writer = Task.Run(async () => {
-          while (!process.StandardOutput.EndOfStream) {
-            Console.WriteLine("O" +
-                              index.ToString().PadLeft(4) +
-                              " " +
-                              await process.StandardOutput.ReadLineAsync());
-          }
+          await HandleOutput("O" + index.ToString().PadLeft(4),
+                             process.StandardOutput);
         });
         Task standard_error_writer = Task.Run(async () => {
-          while (!process.StandardError.EndOfStream) {
-            Console.WriteLine("E" +
-                              index.ToString().PadLeft(4) +
-                              " " +
-                              await process.StandardError.ReadLineAsync());
-          }
+          await HandleOutput("E" + index.ToString().PadLeft(4),
+                             process.StandardError);
         });
         process.WaitForExit();
         if (process.ExitCode != 0) {
@@ -293,6 +286,62 @@ class ParallelTestRunner {
     }
     Console.WriteLine("Done (" + stopwatch.ElapsedMilliseconds + " ms)");
     Environment.Exit(errors.Count);
+  }
+
+  struct Error {
+    public string file;
+    public string line;
+    public string title;
+    public string message;
+
+    public void WriteToGitHub() {
+      Console.WriteLine(
+          $@"::error file={file},line={line},title={title}::{
+              message.Replace("\n", "%0A")}");
+    }
+  };
+
+  static async Task HandleOutput(string prefix, StreamReader output) {
+    var error_line = new Regex(
+        @"[/\\](?<file>[^:])*\((?<line>\d+)\): error: (?<message>.*)");
+    error_line = new Regex(Regex.Escape(Directory.GetCurrentDirectory()) +
+                           error_line.ToString());
+    var fatal_line = new Regex(
+        @"F\d{4} \d\d:\d\d:\d\d\.\d{6} \d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
+    var other_line = new Regex(@"
+          \[..........\]                    # Miscellaneous gtest output.
+        | [IWE]\d{4}\s\d\d:\d\d:\d\d\.\d{6} # Non-fatal glog output."  ,
+        RegexOptions.IgnorePatternWhitespace);
+    Error? error = null;
+    while (!output.EndOfStream) {
+      string line = await output.ReadLineAsync();
+      var error_match = error_line.Match(line);
+      var fatal_match = fatal_line.Match(line);
+      if (other_line.IsMatch(line) ||
+          error_match.Success ||
+          fatal_match.Success) {
+        error?.WriteToGitHub();
+        error = null;
+        if (error_match.Success) {
+          error = new Error{
+              file = error_match.Groups["file"].Value,
+              line = error_match.Groups["line"].Value,
+              title = "Test failure",
+              message = error_match.Groups["message"].Value};
+        } else if (fatal_match.Success) {
+          error = new Error{
+              file = error_match.Groups["file"].Value,
+              line = error_match.Groups["line"].Value,
+              title = "Check failure",
+              message = error_match.Groups["message"].Value};
+        }
+      } else if (error is Error e) {
+        e.message += "\n";
+        e.message += line;
+      }
+      Console.WriteLine(prefix + line);
+    }
+    error?.WriteToGitHub();
   }
 
   // Maximum number of processes to execute in parallel.
