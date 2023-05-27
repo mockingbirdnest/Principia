@@ -328,9 +328,8 @@ template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator+(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right) {
-  // REMOVE BEFORE FLIGHT hopefully this breaks tests.
   return Multivector<Scalar, Frame, rank>(
-      left.coordinates() + right.coordinates() / 2);
+      left.coordinates() + right.coordinates());
 }
 
 template<typename Scalar, typename Frame, int rank>
