@@ -242,7 +242,7 @@ class ParallelTestRunner {
       Task.WaitAll(new Task[]
                         { standard_output_writer, standard_error_writer });
       if (process.ExitCode != 0) {
-        errors.Add("Exit code " + process.ExitCode + " from a death test:" +
+        errors.Add("Exit code " + process.ExitCode + " from a death test: " +
                    process.StartInfo.FileName +
                    " " +
                    process.StartInfo.Arguments);
