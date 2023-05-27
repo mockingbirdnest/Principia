@@ -296,16 +296,22 @@ class ParallelTestRunner {
     Environment.Exit(errors.Count);
   }
 
-  class Error {
+  struct Location {
     public string file;
     public string line;
+  }
+
+  class Error {
+    public List<Location> locations = new List<Location>();
     public string title;
     public string message;
 
     public void WriteToGitHub() {
-      Console.WriteLine(
-          $@"::error file={file},line={line},title={title}::{
-              message.Replace("\n", "%0A")}");
+      foreach (var location in locations) {
+        Console.WriteLine(
+            $@"::error file={location.file},line={location.line},title={
+                title}::{message.Replace("\n", "%0A")}");
+      }
     }
   };
 
@@ -336,29 +342,26 @@ class ParallelTestRunner {
         error = null;
         if (error_match.Success) {
           error = new Error{
-              file = error_match.Groups["file"].Value,
-              line = error_match.Groups["line"].Value,
               title = "Test failure",
               message = error_match.Groups["message"].Value};
+          error.locations.Add(new Location{
+              file = error_match.Groups["file"].Value,
+              line = error_match.Groups["line"].Value});
         } else if (fatal_match.Success) {
           error = new Error{
-              file = fatal_match.Groups["file"].Value,
-              line = fatal_match.Groups["line"].Value,
               title = "Check failure",
               message = fatal_match.Groups["message"].Value};
         }
       } else if (error is Error e) {
-        if (!e.file.StartsWith(Directory.GetCurrentDirectory())) {
-          var stack_path = new Regex(
-              @".* \((?<file>{DIR}[^:]*{FILE}):{LINE}\)$");
-          stack_path = new Regex(stack_path.ToString()
-              .Replace("{DIR}", Regex.Escape(Directory.GetCurrentDirectory()))
-              .Replace("{FILE}", e.file)
-              .Replace("{LINE}", e.line));
-          var stack_match = stack_path.Match(line);
-          if (stack_match.Success) {
-            e.file = stack_match.Groups["file"].Value;
-          }
+        var stack_path = new Regex(
+            @".* \((?<file>{DIR}[^:]*):(?<line>\d+)\)$");
+        stack_path = new Regex(stack_path.ToString()
+            .Replace("{DIR}", Regex.Escape(Directory.GetCurrentDirectory())));
+        var stack_match = stack_path.Match(line);
+        if (stack_match.Success) {
+          e.locations.Add(new Location{
+              file = stack_match.Groups["file"].Value,
+              line = stack_match.Groups["line"].Value});
         }
         e.message += "\n";
         e.message += line;
