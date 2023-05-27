@@ -11,12 +11,15 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_massive_body;
 
 template<typename Inertial, typename RotatingPulsating>
 class LagrangeEquipotentials {
  public:
+  LagrangeEquipotentials(not_null<Ephemeris<Inertial> const*> ephemeris);
+
   struct Parameters {
     std::vector<not_null<MassiveBody const*>> primaries;
     std::vector<not_null<MassiveBody const*>> secondaries;
@@ -30,14 +33,17 @@ class LagrangeEquipotentials {
     bool show_l245_level = true;
   };
 
-  static absl::StatusOr<
-      typename Equipotential<Inertial, RotatingPulsating>::Lines>
+  absl::StatusOr<typename Equipotential<Inertial, RotatingPulsating>::Lines>
   ComputeLines(Parameters const& parameters);
 
   struct Equipotentials {
     Equipotential<Inertial, RotatingPulsating>::Lines lines;
     Parameters parameters;
   };
+
+ private:
+  not_null<Ephemeris<Inertial> const*> const ephemeris_;
+
 };
 
 }  // namespace internal
@@ -47,3 +53,5 @@ using internal::LagrangeEquipotentials;
 }  // namespace _lagrange_equipotentials
 }  // namespace physics
 }  // namespace principia
+
+#include "physics/lagrange_equipotentials_body.hpp"

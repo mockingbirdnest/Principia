@@ -281,7 +281,7 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
 TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
   Logger logger(TEMP_DIR / "equipotential_rp_global.wl",
                 /*make_unique=*/false);
-  std::int64_t const number_of_days = 502;
+  std::int64_t const number_of_days = 5/*02*/;
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
@@ -415,8 +415,9 @@ TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
     std::vector<std::vector<Position<World>>>& equipotentials_at_t =
         all_positions.emplace_back();
     auto const status_or_lines =
-        LagrangeEquipotentials<Barycentric, World>::ComputeLines(
-            {.primaries = {earth}, .secondaries = {moon}, .time = t});
+        LagrangeEquipotentials<Barycentric, World>(ephemeris_.get())
+            .ComputeLines(
+                {.primaries = {earth}, .secondaries = {moon}, .time = t});
     CHECK_OK(status_or_lines.status());
     for (auto const& line : status_or_lines.value()) {
       std::vector<Position<World>>& equipotential =
