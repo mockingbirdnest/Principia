@@ -314,7 +314,7 @@ class ParallelTestRunner {
         @"(?<file>{DIR}[^:]*)\((?<line>\d+)\): error: (?<message>.*)");
     error_line = new Regex(error_line.ToString().Replace(
         "{DIR}",
-        Regex.Escape(Directory.GetCurrentDirectory()));
+        Regex.Escape(Directory.GetCurrentDirectory())));
     var fatal_line = new Regex(
         @"F\d{4} \d\d:\d\d:\d\d\.\d{6} \d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
     var other_line = new Regex(@"
