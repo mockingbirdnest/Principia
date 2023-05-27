@@ -338,10 +338,10 @@ class ParallelTestRunner {
               message = error_match.Groups["message"].Value};
         } else if (fatal_match.Success) {
           error = new Error{
-              file = error_match.Groups["file"].Value,
-              line = error_match.Groups["line"].Value,
+              file = fatal_match.Groups["file"].Value,
+              line = fatal_match.Groups["line"].Value,
               title = "Check failure",
-              message = error_match.Groups["message"].Value};
+              message = fatal_match.Groups["message"].Value};
         }
       } else if (error is Error e) {
         e.message += "\n";
