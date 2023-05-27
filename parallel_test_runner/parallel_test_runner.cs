@@ -296,7 +296,7 @@ class ParallelTestRunner {
     Environment.Exit(errors.Count);
   }
 
-  struct Error {
+  class Error {
     public string file;
     public string line;
     public string title;
@@ -321,7 +321,7 @@ class ParallelTestRunner {
           \[..........\]                    # Miscellaneous gtest output.
         | [IWE]\d{4}\s\d\d:\d\d:\d\d\.\d{6} # Non-fatal glog output."  ,
         RegexOptions.IgnorePatternWhitespace);
-    Error? error = null;
+    Error error = null;
     while (!output.EndOfStream) {
       string line = await output.ReadLineAsync();
       var error_match = error_line.Match(line);
