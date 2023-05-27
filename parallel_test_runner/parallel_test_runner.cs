@@ -316,7 +316,7 @@ class ParallelTestRunner {
         "{DIR}",
         Regex.Escape(Directory.GetCurrentDirectory())));
     var fatal_line = new Regex(
-        @"F\d{4} \d\d:\d\d:\d\d\.\d{6} \d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
+        @"F\d{4} \d\d:\d\d:\d\d\.\d{6}\s+\d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
     var other_line = new Regex(@"
           \[..........\]                    # Miscellaneous gtest output.
         | [IWE]\d{4}\s\d\d:\d\d:\d\d\.\d{6} # Non-fatal glog output."  ,
