@@ -27,6 +27,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/lagrange_equipotentials.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
@@ -59,6 +60,7 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_kepler_orbit;
+using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
@@ -404,114 +406,22 @@ TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
   auto const plane =
       Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
 
-  std::vector<std::vector<std::vector<std::vector<Position<World>>>>>
-      all_positions;
-  std::vector<std::vector<Position<World>>> trajectory_positions(
-      trajectories.size());
+  std::vector<std::vector<std::vector<Position<World>>>> all_positions;
   std::vector<SpecificEnergy> energies;
   for (int j = 0; j < number_of_days; ++j) {
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
     CHECK_OK(ephemeris_->Prolong(t));
-    std::vector<std::vector<std::vector<Position<World>>>>&
-        equipotentials_at_t = all_positions.emplace_back();
-
-    auto const arg_maximorum = optimizer.FindGlobalMaxima(
-        /*points_per_round=*/1000,
-        /*number_of_rounds=*/std::nullopt,
-        /*local_search_tolerance=*/1e-3 * Metre);
-    logger.Append("argMaximorum", arg_maximorum, ExpressIn(Metre));
-    std::vector<SpecificEnergy> maxima;
-    SpecificEnergy maximum_maximorum = -Infinity<SpecificEnergy>;
-
-    Position<World> const earth_position =
-        reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-            ephemeris_->trajectory(earth)->EvaluatePosition(t));
-    Position<World> const moon_position =
-        reference_frame.ToThisFrameAtTimeSimilarly(t).similarity()(
-            ephemeris_->trajectory(moon)->EvaluatePosition(t));
-    for (auto const& arg_maximum : arg_maximorum) {
-      maxima.push_back(potential(arg_maximum));
-      maximum_maximorum = std::max(maximum_maximorum, maxima.back());
-    }
-    logger.Append("maxima", maxima, ExpressIn(Metre, Second));
-
-    double const arg_approx_l1 = Brent(
-        [&](double const x) {
-          return potential(Barycentre(std::pair(moon_position, earth_position),
-                                      std::pair(x, 1 - x)));
-        },
-        0.0,
-        1.0,
-        std::greater<>{});
-    double const arg_approx_l2 = Brent(
-        [&](double x) {
-          return potential(Barycentre(
-              std::pair(moon_position,
-                        World::origin + 2 * (moon_position - World::origin)),
-              std::pair(x, 1 - x)));
-        },
-        0.0,
-        1.0,
-        std::greater<>{});
-    SpecificEnergy const approx_l1_energy =
-        potential(Barycentre(std::pair(moon_position, earth_position),
-                             std::pair(arg_approx_l1, 1 - arg_approx_l1)));
-    SpecificEnergy const approx_l2_energy = potential(Barycentre(
-        std::pair(moon_position,
-                  World::origin + 2 * (moon_position - World::origin)),
-        std::pair(arg_approx_l2, 1 - arg_approx_l2)));
-    for (int i = 0; i < trajectories.size(); ++i) {
-      DegreesOfFreedom<World> const dof =
-          reference_frame.ToThisFrameAtTimeSimilarly(t)(
-              trajectories[i]->EvaluateDegreesOfFreedom(t));
-      trajectory_positions[i].push_back(dof.position());
-    }
-    // TODO(egg): Somehow extract that from the reference frame.
-    auto const r = [&](Instant const& t) -> Length {
-      return (ephemeris_->trajectory(earth)->EvaluatePosition(t) -
-              ephemeris_->trajectory(moon)->EvaluatePosition(t))
-          .Norm();
-    };
-    SpecificEnergy const ΔV = maximum_maximorum - approx_l1_energy;
-    for (int i = 1; i <= 8; ++i) {
-      SpecificEnergy const energy = maximum_maximorum - i * (1.0 / 7.0 * ΔV);
-      std::vector<std::vector<Position<World>>>& equipotentials_at_energy =
-          equipotentials_at_t.emplace_back();
-      auto const& lines = equipotential.ComputeLines(
-          plane,
-          t,
-          arg_maximorum,
-          {{moon_position, moon->min_radius() / r(t) * (1 * Metre)},
-           {earth_position, earth->min_radius() / r(t) * (1 * Metre)}},
-          [](Position<World> q) {
-            return World::origin + Normalize(q - World::origin) * 3 * Metre;
-          },
-          energy);
-      for (auto const& line : lines) {
-        std::vector<Position<World>>& equipotential =
-            equipotentials_at_energy.emplace_back();
-        for (auto const& [s, dof] : line) {
-          equipotential.push_back(dof.position());
-        }
-      }
-    }
-    auto const& lines = equipotential.ComputeLines(
-        plane,
-        t,
-        arg_maximorum,
-        {{moon_position, moon->min_radius() / r(t) * (1 * Metre)},
-         {earth_position, earth->min_radius() / r(t) * (1 * Metre)}},
-        [](Position<World> q) {
-          return World::origin + Normalize(q - World::origin) * 3 * Metre;
-        },
-        approx_l2_energy);
-    std::vector<std::vector<Position<World>>>& equipotentials_at_l2_energy =
-        equipotentials_at_t.emplace_back();
-    for (auto const& line : lines) {
+    std::vector<std::vector<Position<World>>>& equipotentials_at_t =
+        all_positions.emplace_back();
+    auto const status_or_lines =
+        LagrangeEquipotentials<Barycentric, World>::ComputeLines(
+            {.primaries = {earth}, .secondaries = {moon}, .time = t});
+    CHECK_OK(status_or_lines.status());
+    for (auto const& line : status_or_lines.value()) {
       std::vector<Position<World>>& equipotential =
-          equipotentials_at_l2_energy.emplace_back();
-      for (auto const& [s, dof] : line) {
+          equipotentials_at_t.emplace_back();
+      for (auto const& [t, dof] : line) {
         equipotential.push_back(dof.position());
       }
     }
@@ -526,9 +436,6 @@ TEST_F(EquipotentialTest, DISABLED_RotatingPulsating_GlobalOptimization) {
     }
   }
   logger.Set("trajectories", world_trajectories, ExpressIn(Metre));
-  logger.Set("trajectoryPositions",
-             trajectory_positions,
-             ExpressIn(Metre));
   logger.Set("energies",
              energies,
              ExpressIn(Metre, Second));
