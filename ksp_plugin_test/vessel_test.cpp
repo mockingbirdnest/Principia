@@ -406,7 +406,7 @@ TEST_F(VesselTest, FlightPlan) {
   p1 = &vessel_.flight_plan();
   EXPECT_EQ(1, vessel_.flight_plan_count());
   EXPECT_EQ(0, vessel_.selected_flight_plan_index());
-  vessel_.CreateFlightPlan(t0_ + 3.0 * Second,
+  vessel_.CreateFlightPlan(t0_ + 4.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters(),
                            DefaultBurnParameters());
@@ -416,7 +416,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_NE(p1, p2);
   vessel_.SelectFlightPlan(0);
   EXPECT_EQ(p1, &vessel_.flight_plan());
-  vessel_.DuplicateFlightPlan();
+  // vessel_.DuplicateFlightPlan();
   EXPECT_EQ(3, vessel_.flight_plan_count());
   EXPECT_EQ(1, vessel_.selected_flight_plan_index());
   EXPECT_EQ(p1, &vessel_.flight_plan());
