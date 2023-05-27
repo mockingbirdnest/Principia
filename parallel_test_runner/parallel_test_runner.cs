@@ -227,7 +227,7 @@ class ParallelTestRunner {
     Console.WriteLine("Running " + death_test_processes.Count +
                       " death test processes...");
     stopwatch.Restart();
-
+    var errors = new ConcurrentBag<string>();
     foreach (Process process in death_test_processes) {
       process.StartInfo.RedirectStandardOutput = true;
       process.StartInfo.RedirectStandardError = true;
@@ -242,9 +242,10 @@ class ParallelTestRunner {
       Task.WaitAll(new Task[]
                         { standard_output_writer, standard_error_writer });
       if (process.ExitCode != 0) {
-        Console.WriteLine("Exit code " + process.ExitCode +
-                          " from a death test");
-        Environment.Exit(process.ExitCode);
+        errors.Add("Exit code " + process.ExitCode + " from a death test:" +
+                   process.StartInfo.FileName +
+                   " " +
+                   process.StartInfo.Arguments);
       }
       process.Close();
     }
@@ -254,7 +255,6 @@ class ParallelTestRunner {
                                           maximumCount: max_parallelism);
 
     Task[] tasks = new Task[processes.Count];
-    var   errors = new ConcurrentBag<string>();
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
       // We cannot use i in the lambdas, it would be captured by reference.
