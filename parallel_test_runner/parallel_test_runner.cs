@@ -231,13 +231,13 @@ class ParallelTestRunner {
     foreach (Process process in death_test_processes) {
       process.StartInfo.RedirectStandardOutput = true;
       process.StartInfo.RedirectStandardError = true;
+      StubbornStart(process);
       Task standard_output_writer = Task.Run(async () => {
         await HandleOutput("O", process.StandardOutput);
       });
       Task standard_error_writer = Task.Run(async () => {
         await HandleOutput("E", process.StandardError);
       });
-      StubbornStart(process);
       process.WaitForExit();
       Task.WaitAll(new Task[]
                         { standard_output_writer, standard_error_writer });
