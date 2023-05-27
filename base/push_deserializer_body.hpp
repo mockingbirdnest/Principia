@@ -35,7 +35,7 @@ inline bool DelegatingArrayInputStream::Next(void const** const data,
       return false;
     }
   }
-  CHECK_GE(position_, bytes_.size);  // REMOVE BEFORE FLIGHT: Invert.
+  CHECK_LT(position_, bytes_.size);
   last_returned_size_ = bytes_.size - position_;
   *data = &bytes_.data[position_];
   *size = static_cast<int>(last_returned_size_);
