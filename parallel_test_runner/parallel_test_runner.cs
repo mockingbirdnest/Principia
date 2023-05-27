@@ -305,7 +305,7 @@ class ParallelTestRunner {
     public void WriteToGitHub() {
       Console.WriteLine(
           $@"::error file={file},line={line},title={title}::{
-              Uri.EscapeDataString(message)}");
+              message.Replace("\n", "%0A")}");
     }
   };
 
