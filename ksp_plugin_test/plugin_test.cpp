@@ -396,7 +396,6 @@ TEST_F(PluginTest, Serialization) {
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction({satellite});
 
-  plugin->GetVessel(satellite)->DeleteFlightPlan();
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
       plugin->NewBodyCentredNonRotatingNavigationFrame(
