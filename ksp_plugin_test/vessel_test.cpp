@@ -422,7 +422,6 @@ TEST_F(VesselTest, FlightPlan) {
   vessel_.DeleteFlightPlan();
   EXPECT_EQ(p2, &vessel_.flight_plan());
   vessel_.DeleteFlightPlan();
-  vessel_.SelectFlightPlan(0);
   EXPECT_EQ(1, vessel_.flight_plan_count());
   EXPECT_EQ(0, vessel_.selected_flight_plan_index());
   vessel_.DeleteFlightPlan();
