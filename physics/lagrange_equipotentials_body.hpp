@@ -71,9 +71,9 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
          Acceleration{}});
   };
 
-  const MultiLevelSingleLinkage<SpecificEnergy,
-                                Position<RotatingPulsating>,
-                                2>::Box box = {
+  typename MultiLevelSingleLinkage<SpecificEnergy,
+                                   Position<RotatingPulsating>,
+                                   2>::Box const box = {
       .centre = RotatingPulsating::origin,
       .vertices = {
           Displacement<RotatingPulsating>({box_side, 0 * Metre, 0 * Metre}),
@@ -165,7 +165,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
   }
 
   // TODO(egg): Consider additional wells.
-  std::vector<Equipotential<Inertial, RotatingPulsating>::Well> wells{
+  std::vector<typename Equipotential<Inertial, RotatingPulsating>::Well> wells{
       {secondary_position, secondary_radius / r * (1 * Metre)},
       {primary_position, primary_radius / r * (1 * Metre)}};
 
