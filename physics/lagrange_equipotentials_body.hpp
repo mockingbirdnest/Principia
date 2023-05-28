@@ -82,7 +82,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
   Equipotential<Inertial, RotatingPulsating> const equipotential(
       {EmbeddedExplicitRungeKuttaIntegrator<
            DormandPrince1986RK547FC,
-           typename Equipotential<Inertial, RotatingPulsating>::ODE>(),
+           Equipotential<Inertial, RotatingPulsating>::ODE>(),
        max_steps,
        /*length_integration_tolerance=*/characteristic_length},
       &reference_frame,
