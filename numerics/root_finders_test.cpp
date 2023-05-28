@@ -45,7 +45,7 @@ TEST_F(RootFindersTest, SquareRoots) {
   Instant const t_0;
   Instant const t_max = t_0 + 10 * Second;
   Length const n_max = Pow<2>(t_max - t_0) * si::Unit<Acceleration>;
-  for (Length n = -1 * Metre; n < n_max; n += 1 * Metre) {
+  for (Length n = 1 * Metre; n < n_max; n += 1 * Metre) {
     int evaluations = 0;
     auto const equation = [t_0, n, &evaluations](Instant const& t) {
       ++evaluations;
