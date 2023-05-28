@@ -317,12 +317,12 @@ class ParallelTestRunner {
 
   static async Task HandleOutput(string prefix, StreamReader output) {
     var error_line = new Regex(
-        @"(?<file>{DIR}[^:]*)\((?<line>\d+)\): error: (?<message>.*)");
+        @"^(?<file>{DIR}[^:]*)\((?<line>\d+)\): error: (?<message>.*)");
     error_line = new Regex(error_line.ToString().Replace(
         "{DIR}",
         Regex.Escape(Directory.GetCurrentDirectory())));
     var fatal_line = new Regex(
-        @"F\d{4} \d\d:\d\d:\d\d\.\d{6}\s+\d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
+        @"^F\d{4} \d\d:\d\d:\d\d\.\d{6}\s+\d+ (?<file>[^:]*):(?<line>\d+)\] (?<message>.*)");
     var other_line = new Regex(@"
         ^ (
             (?!(?-x)\[  DEATH   \])  # Miscellaneous gtest output, excluding the
@@ -354,7 +354,7 @@ class ParallelTestRunner {
         }
       } else if (error is Error e) {
         var stack_path = new Regex(
-            @".* \((?<file>{DIR}[^:]*):(?<line>\d+)\)$");
+            @"\((?<file>{DIR}[^:]*):(?<line>\d+)\)$");
         stack_path = new Regex(stack_path.ToString()
             .Replace("{DIR}", Regex.Escape(Directory.GetCurrentDirectory())));
         var stack_match = stack_path.Match(line);
