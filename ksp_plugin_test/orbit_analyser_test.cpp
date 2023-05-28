@@ -63,9 +63,7 @@ class OrbitAnalyserTest : public testing::Test {
         itrs_(ephemeris_.get(), &earth_),
         topex_poséidon_(SOLUTION_DIR / "astronomy" / "standard_product_3" /
                             "grgtop03.b97344.e97348.D_S.sp3",
-                        StandardProduct3::Dialect::GRGS) {
-    std::unique_ptr<Ephemeris<Barycentric>> ephemeral = std::move(ephemeris_);
-  }
+                        StandardProduct3::Dialect::GRGS) {}
 
   SolarSystem<Barycentric> earth_1957_;
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> ephemeris_;
