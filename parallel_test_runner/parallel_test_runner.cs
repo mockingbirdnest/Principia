@@ -354,7 +354,7 @@ class ParallelTestRunner {
         }
       } else if (error is Error e) {
         var stack_path = new Regex(
-            @"\((?<file>{DIR}[^:]*):(?<line>\d+)\)$");
+            @"^(?!\[  DEATH   \]).*\((?<file>{DIR}[^:]*):(?<line>\d+)\)$");
         stack_path = new Regex(stack_path.ToString()
             .Replace("{DIR}", Regex.Escape(Directory.GetCurrentDirectory())));
         var stack_match = stack_path.Match(line);
