@@ -317,7 +317,7 @@ class ParallelTestRunner {
 
   static async Task HandleOutput(string prefix, StreamReader output) {
     var error_line = new Regex(
-        @"^(?<file>{DIR}[^:]*)\((?<line>\d+)\): error: (?<message>.*)");
+        @"^(?:(?<file>{DIR}[^:]*)|unknown file)(?:\((?<line>\d+)\))?: error: (?<message>.*)");
     error_line = new Regex(error_line.ToString().Replace(
         "{DIR}",
         Regex.Escape(Directory.GetCurrentDirectory())));
@@ -344,9 +344,12 @@ class ParallelTestRunner {
           error = new Error{
               title = "Test failure",
               message = error_match.Groups["message"].Value};
-          error.locations.Add(new Location{
+          var location = new Location{
               file = error_match.Groups["file"].Value,
-              line = error_match.Groups["line"].Value});
+              line = error_match.Groups["line"].Value};
+          if (location.file != null && location.line != null) {
+            error.locations.Add(location);
+          }
         } else if (fatal_match.Success) {
           error = new Error{
               title = "Check failure",
