@@ -613,7 +613,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
       /*length_integration_tolerance*/ 1 * Micro(Metre),
       /*speed_integration_tolerance=*/1 * Micro(Metre) / Second};
 
-  EXPECT_CALL(deletion_callback_, Call()).Times(1);
+  EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_}, J2000,
                          DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
