@@ -135,6 +135,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
   EXPECT_THAT(TTSecond(test->psychohistory()->back().time),
               Eq("1970-08-14T08:47:05"_DateTime));
   EXPECT_FALSE(test->has_flight_plan());
+  test->DeleteFlightPlan();
 
   auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
   EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));

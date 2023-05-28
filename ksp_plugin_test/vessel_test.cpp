@@ -384,8 +384,7 @@ TEST_F(VesselTest, FlightPlan) {
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
-              FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
-      .Times(2);
+              FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _));
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
   vessel_.CreateTrajectoryIfNeeded(t0_);
