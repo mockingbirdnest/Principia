@@ -21,7 +21,7 @@ void Flags::Set(std::string_view const name, std::string_view const value) {
 }
 
 bool Flags::IsPresent(std::string_view const name) {
-  return flags().find(std::string(name)) != flags().end();
+  return flags().find(name) != flags().end();
 }
 
 bool Flags::IsPresent(std::string_view const name,

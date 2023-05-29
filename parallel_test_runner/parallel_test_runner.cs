@@ -316,6 +316,7 @@ class ParallelTestRunner {
   };
 
   static async Task HandleOutput(string prefix, StreamReader output) {
+    int unused;
     var error_line = new Regex(
         @"^(?:(?<file>{DIR}[^:]*)\((?<line>\d+)\)|unknown file): error: (?<message>.*)");
     error_line = new Regex(error_line.ToString().Replace(

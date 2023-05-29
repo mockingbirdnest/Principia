@@ -11,6 +11,9 @@ using ::testing::IsEmpty;
 using namespace principia::base::_flags;
 
 TEST(FlagsTest, Basics) {
+  constexpr char16_t egg = U'🥚';
+
+  static_assert(egg == U'🥚');
   Flags::Set("zfp", "yes");
   Flags::Set("hex", "");
   Flags::Set("gipfeli", "on");

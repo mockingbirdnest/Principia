@@ -226,7 +226,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
   }
   if (parameters.show_l245_level) {
     for (SpecificEnergy const energy : {approx_l2_energy, l45_separator}) {
-      auto lines = equipotential.ComputeLines(
+      auto const lines = equipotential.ComputeLines(
           plane, t, arg_maximorum, wells, towards_infinity, energy);
       result.lines.emplace(energy, std::move(lines));
     }
