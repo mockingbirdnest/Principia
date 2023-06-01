@@ -45,11 +45,11 @@ internal class MapNodePool {
         new List<KSP.UI.Screens.Mapview.MapNode>(MaxNodesPerProvenance);
   }
 
-  public MapNodePool(Func<bool> show_only_pinned) {
+  public MapNodePool(Func<bool> show_unpinned) {
     nodes_ = new Dictionary<Provenance, SingleProvenancePool>();
     properties_ =
         new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
-    show_only_pinned_ = show_only_pinned;
+    show_unpinned_ = show_unpinned;
   }
 
   public void Clear() {
@@ -196,7 +196,7 @@ internal class MapNodePool {
                                  KSP.UI.Screens.Mapview.MapNode.IconData
                                      icon) => {
       icon.visible = properties_[node].visible &&
-                     (!show_only_pinned_() || node.Pinned);
+                     (show_unpinned_() || node.Pinned);
       icon.color = properties_[node].colour;
     };
     new_node.OnUpdateType += (KSP.UI.Screens.Mapview.MapNode node,
@@ -323,7 +323,7 @@ internal class MapNodePool {
   private Dictionary<Provenance, SingleProvenancePool> nodes_;
   private Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>
       properties_;
-  private Func<bool> show_only_pinned_;
+  private Func<bool> show_unpinned_;
 }
 
 }  // namespace ksp_plugin_adapter

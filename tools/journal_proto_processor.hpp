@@ -42,6 +42,16 @@ class JournalProtoProcessor final {
   std::vector<std::string> GetCxxPlayStatements() const;
 
  private:
+  void ProcessRepeatedNonStringField(FieldDescriptor const* descriptor,
+                                     std::string const& cs_boxed_type,
+                                     std::string const& cs_unboxed_type,
+                                     std::string const& cxx_type);
+  void ProcessRepeatedScalarField(FieldDescriptor const* descriptor,
+                                  std::string const& cxx_type);
+  void ProcessRepeatedDoubleField(FieldDescriptor const* descriptor);
+  void ProcessRepeatedInt32Field(FieldDescriptor const* descriptor);
+  void ProcessRepeatedInt64Field(FieldDescriptor const* descriptor);
+  void ProcessRepeatedUint32Field(FieldDescriptor const* descriptor);
   void ProcessRepeatedMessageField(FieldDescriptor const* descriptor);
   void ProcessRepeatedStringField(FieldDescriptor const* descriptor);
 
@@ -53,6 +63,8 @@ class JournalProtoProcessor final {
                                   std::string const& cxx_type);
   void ProcessOptionalDoubleField(FieldDescriptor const* descriptor);
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
+  void ProcessOptionalInt64Field(FieldDescriptor const* descriptor);
+  void ProcessOptionalUint32Field(FieldDescriptor const* descriptor);
   void ProcessOptionalMessageField(FieldDescriptor const* descriptor);
 
   void ProcessRequiredFixed32Field(FieldDescriptor const* descriptor);

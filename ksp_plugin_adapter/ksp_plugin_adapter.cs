@@ -275,7 +275,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private MainWindow main_window_;
 
   public bool show_celestial_trajectory(CelestialBody celestial) {
-    return !main_window_.show_only_pinned_celestials ||
+    return main_window_.show_unpinned_celestials ||
            plotting_frame_selector_.pinned[celestial];
   }
 
@@ -340,7 +340,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     map_node_pool_ = new MapNodePool(
-        show_only_pinned: () => main_window_.show_only_pinned_markers);
+        show_unpinned: () => main_window_.show_unpinned_markers);
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ =
@@ -2155,7 +2155,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         plotter_.PlotTrajectories(planetarium, main_vessel_guid,
                                   main_window_.history_length);
-        if (!main_window_.hide_equipotentials) {
+        if (main_window_.show_equipotentials) {
           plotter_.PlotEquipotentials(planetarium);
         }
       }

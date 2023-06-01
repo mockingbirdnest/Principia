@@ -70,7 +70,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
           break;
         case FrameType.BARYCENTRIC_ROTATING:
         case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-          selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
+          selected_celestial =
+              FlightGlobals.Bodies[parameters.primary_index[0]];
           break;
       }
     });
@@ -325,11 +326,10 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
             name,
             selected.Name());
       case FrameType.ROTATING_PULSATING:
-        return L10N.CacheFormat(
+        return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Tooltip_RotatingPulsating",
-            name,
-            selected.Name(),
-            selected.referenceBody.Name());
+            new[]{selected, selected.referenceBody},
+            name);
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -369,9 +369,21 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
           throw Log.Fatal(
               "Describing rotating-pulsating frame of root body");
         } else {
-          return L10N.CelestialString(
-              "#Principia_ReferenceFrameSelector_Description_RotatingPulsating",
-              new[]{selected, selected.referenceBody});
+          switch (selected.orbitingBodies.Count) {
+            case 0:
+              return L10N.CelestialString(
+                  "#Principia_ReferenceFrameSelector_Description_RotatingPulsating",
+                  new[]{selected, selected.referenceBody});
+            case 1:
+              return L10N.CelestialString(
+                  "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingOneMoon",
+                  new[]{selected, selected.referenceBody,
+                        selected.orbitingBodies.First()});
+            default:
+              return L10N.CelestialString(
+                  "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingBigSystem",
+                  new[]{selected, selected.referenceBody});
+          }
         }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
@@ -474,13 +486,17 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         // terminology of |BodyCentredBodyDirection|).
         return new ReferenceFrameParameters{
             extension = frame_type,
-            primary_index = selected_celestial.flightGlobalsIndex,
+            primary_index =
+                new[] {selected_celestial.flightGlobalsIndex},
             secondary_index =
                 new[] {selected_celestial.referenceBody.flightGlobalsIndex}};
       case FrameType.ROTATING_PULSATING:
         return new ReferenceFrameParameters{
             extension = frame_type,
-            primary_index = selected_celestial.referenceBody.flightGlobalsIndex,
+            primary_index = (
+              from body in System(selected_celestial.referenceBody,
+                                  end: selected_celestial)
+              select body.flightGlobalsIndex).ToArray(),
             secondary_index = (
               from body in System(selected_celestial)
               select body.flightGlobalsIndex).ToArray()
@@ -537,6 +553,19 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
       }
     }
     UnityEngine.GUI.DragWindow();
+  }
+
+  private static IEnumerable<CelestialBody> System(CelestialBody centre,
+                                                   CelestialBody end) {
+    yield return centre;
+    foreach (CelestialBody orbiting in centre.orbitingBodies) {
+      if (orbiting == end) {
+        yield break;
+      }
+      foreach (CelestialBody subsystem_body in System(orbiting)) {
+        yield return subsystem_body;
+      }
+    }
   }
 
   private static IEnumerable<CelestialBody> System(CelestialBody centre) {

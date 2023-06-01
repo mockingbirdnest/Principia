@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -7,10 +9,14 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal partial class Status {
-  public static Status OK = new Status{error = 0};
+  public static Status OK = new Status{ error = 0 };
 
   public bool is_aborted() {
     return error == 10;
+  }
+
+  public bool is_deadline_exceeded() {
+    return error == 4;
   }
 
   public bool is_failed_precondition() {
@@ -43,21 +49,21 @@ internal partial class Status {
 
 public partial struct XYZ {
   public static explicit operator XYZ(Vector3d v) {
-    return new XYZ{x = v.x, y = v.y, z = v.z};
+    return new XYZ{ x = v.x, y = v.y, z = v.z };
   }
 
   public static explicit operator Vector3d(XYZ v) {
-    return new Vector3d{x = v.x, y = v.y, z = v.z};
+    return new Vector3d{ x = v.x, y = v.y, z = v.z };
   }
 }
 
 internal partial struct WXYZ {
   public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
-    return new WXYZ{w = q.w, x = q.x, y = q.y, z = q.z};
+    return new WXYZ{ w = q.w, x = q.x, y = q.y, z = q.z };
   }
 
   public static explicit operator UnityEngine.QuaternionD(WXYZ q) {
-    return new UnityEngine.QuaternionD{w = q.w, x = q.x, y = q.y, z = q.z};
+    return new UnityEngine.QuaternionD{ w = q.w, x = q.x, y = q.y, z = q.z };
   }
 }
 
@@ -75,13 +81,14 @@ public enum FrameType {
 internal interface ReferenceFrameParameters {
   FrameType extension  { get; set; }
   int centre_index  { get; set; }
-  int primary_index  { get; set; }
+  int[] primary_index  { get; set; }
   int[] secondary_index  { get; set; }
 }
 
 internal partial class PlottingFrameParameters : ReferenceFrameParameters {
   public PlottingFrameParameters() {
-    secondary_index = "";
+    primary_index = new int[]{};
+    secondary_index = new int[]{};
   }
 
   public static explicit operator NavigationFrameParameters?(
@@ -89,14 +96,15 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
       return null;
     } else {
-      return new NavigationFrameParameters{
+      var result = new NavigationFrameParameters{
           extension = p.extension,
           centre_index = p.centre_index,
-          primary_index = p.primary_index,
-          secondary_index = p.secondary_index == ""
-                                ? -1
-                                : int.Parse(p.secondary_index),
       };
+      (result as ReferenceFrameParameters).primary_index =
+          (p as ReferenceFrameParameters).primary_index;
+      (result as ReferenceFrameParameters).secondary_index =
+          (p as ReferenceFrameParameters).secondary_index;
+      return result;
     }
   }
 
@@ -105,17 +113,21 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
   }
 
   public override int GetHashCode() =>
-    (extension, centre_index, primary_index, secondary_index).GetHashCode();
+      (extension, centre_index,
+       primary_index.DefaultIfEmpty(-1).First(),
+       secondary_index.DefaultIfEmpty(-1).First()).GetHashCode();
 
-  public static bool operator ==(PlottingFrameParameters left, ReferenceFrameParameters right) {
+  public static bool operator ==(PlottingFrameParameters left,
+                                 ReferenceFrameParameters right) {
     return (left as ReferenceFrameParameters).extension == right.extension &&
            left.centre_index == right.centre_index &&
            left.primary_index == right.primary_index &&
            (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
-              right.secondary_index);
+               right.secondary_index);
   }
 
-  public static bool operator !=(PlottingFrameParameters left, ReferenceFrameParameters right) {
+  public static bool operator !=(PlottingFrameParameters left,
+                                 ReferenceFrameParameters right) {
     return !(left == right);
   }
 
@@ -123,29 +135,32 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
     get => (FrameType)extension;
     set => extension = (int)value;
   }
+
   int ReferenceFrameParameters.centre_index {
     get => centre_index;
     set => centre_index = value;
   }
-  int ReferenceFrameParameters.primary_index {
+
+  int[] ReferenceFrameParameters.primary_index {
     get => primary_index;
     set => primary_index = value;
   }
+
   int[] ReferenceFrameParameters.secondary_index {
-    get => secondary_index.Split(new[] {';'},
-                                 StringSplitOptions.RemoveEmptyEntries)
-                          .Select(s => int.Parse(s)).ToArray();
-    set => secondary_index = string.Join(";", value.Select(i => i.ToString()));
+    get => secondary_index;
+    set => secondary_index = value;
   }
 }
 
 internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
-  public static implicit operator PlottingFrameParameters(NavigationFrameParameters p) {
+  public static implicit operator PlottingFrameParameters(
+      NavigationFrameParameters p) {
     var result = new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
-        primary_index = p.primary_index,
     };
+    (result as ReferenceFrameParameters).primary_index =
+        (p as ReferenceFrameParameters).primary_index;
     (result as ReferenceFrameParameters).secondary_index =
         (p as ReferenceFrameParameters).secondary_index;
     return result;
@@ -156,17 +171,20 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
   }
 
   public override int GetHashCode() =>
-    (extension, centre_index, primary_index, secondary_index).GetHashCode();
+      (extension, centre_index, primary_index, secondary_index).GetHashCode();
 
-  public static bool operator ==(NavigationFrameParameters left, ReferenceFrameParameters right) {
+  public static bool operator ==(NavigationFrameParameters left,
+                                 ReferenceFrameParameters right) {
     return (left as ReferenceFrameParameters).extension == right.extension &&
            left.centre_index == right.centre_index &&
-           left.primary_index == right.primary_index &&
+           (left as ReferenceFrameParameters).primary_index.SequenceEqual(
+            right.primary_index) &&
            (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
-              right.secondary_index);
+               right.secondary_index);
   }
 
-  public static bool operator !=(NavigationFrameParameters left, ReferenceFrameParameters right) {
+  public static bool operator !=(NavigationFrameParameters left,
+                                 ReferenceFrameParameters right) {
     return !(left == right);
   }
 
@@ -174,16 +192,19 @@ internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
     get => (FrameType)extension;
     set => extension = (int)value;
   }
+
   int ReferenceFrameParameters.centre_index {
     get => centre_index;
     set => centre_index = value;
   }
-  int ReferenceFrameParameters.primary_index {
-    get => primary_index;
-    set => primary_index = value;
+
+  int[] ReferenceFrameParameters.primary_index {
+    get => primary_index == -1 ? new int[] {} : new[] { primary_index };
+    set => primary_index = value.DefaultIfEmpty(-1).Single();
   }
+
   int[] ReferenceFrameParameters.secondary_index {
-    get => secondary_index == -1 ? new int[] {} : new[] {secondary_index};
+    get => secondary_index == -1 ? new int[] {} : new[] { secondary_index };
     set => secondary_index = value.DefaultIfEmpty(-1).Single();
   }
 }
@@ -216,5 +237,5 @@ internal static partial class Interface {
   internal static extern void InitGoogleLogging();
 }
 
-}  // namespace ksp_plugin_adapter
-}  // namespace principia
+} // namespace ksp_plugin_adapter
+} // namespace principia

@@ -5,6 +5,7 @@
 #include "base/jthread.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/equipotential.hpp"
+#include "physics/lagrange_equipotentials.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -16,22 +17,14 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
+using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massive_body;
 using namespace principia::ksp_plugin::_frames;
 
 class GeometricPotentialPlotter {
  public:
-  struct Parameters {
-    not_null<MassiveBody const*> primary;
-    std::vector<not_null<MassiveBody const*>> secondaries;
-    Instant time;
-    // The number of energy levels at which to draw equipotentials.
-    int levels = 8;
-    // The level of the equipotential going through the L₁ Lagrange point.
-    int l1_level = 7;
-    // Whether to draw an additional equipotential going through the L₂ point.
-    bool show_l245_level = true;
-  };
+  using Parameters =
+      LagrangeEquipotentials<Barycentric, Navigation>::Parameters;
 
   struct Equipotentials {
     Equipotential<Barycentric, Navigation>::Lines lines;

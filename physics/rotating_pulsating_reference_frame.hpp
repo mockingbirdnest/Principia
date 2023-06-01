@@ -48,10 +48,10 @@ class RotatingPulsatingReferenceFrame
 
   RotatingPulsatingReferenceFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      not_null<MassiveBody const*> primary,
+      std::vector<not_null<MassiveBody const*>> primaries,
       std::vector<not_null<MassiveBody const*>> secondaries);
 
-  not_null<MassiveBody const*> primary() const;
+  std::vector<not_null<MassiveBody const*>> const& primaries() const;
   std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
   Instant t_min() const override;
@@ -92,7 +92,7 @@ class RotatingPulsatingReferenceFrame
       Derivatives<Length, Instant, 2> const& r_derivatives_1) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
-  not_null<MassiveBody const*> const primary_;
+  std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
   BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;

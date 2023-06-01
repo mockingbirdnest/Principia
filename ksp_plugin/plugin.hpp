@@ -411,8 +411,9 @@ class Plugin {
   NewBodySurfaceNavigationFrame(Index reference_body_index) const;
 
   virtual not_null<std::unique_ptr<PlottingFrame>>
-  NewRotatingPulsatingPlottingFrame(Index primary_index,
-                                    std::vector<Index> secondary_indices) const;
+  NewRotatingPulsatingPlottingFrame(
+      std::vector<Index> const& primary_indices,
+      std::vector<Index> const& secondary_indices) const;
 
   virtual void SetTargetVessel(GUID const& vessel_guid,
                                Index reference_body_index);

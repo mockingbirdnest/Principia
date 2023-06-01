@@ -7,10 +7,10 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name = "ابن الهيثم";
-  private const int next_release_lunation_number = 289;
+  private const string next_release_name = "伊藤";
+  private const int next_release_lunation_number = 290;
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2023, 05, 19, 15, 55, 00, TimeSpan.Zero);
+      new DateTimeOffset(2023, 06, 18, 04, 38, 00, TimeSpan.Zero);
 
   public MainWindow(
       PrincipiaPluginAdapter adapter,
@@ -47,9 +47,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
   }
 
-  public bool show_only_pinned_markers { get; private set; } = false;
-  public bool show_only_pinned_celestials { get; private set; } = false;
-  public bool hide_equipotentials { get; private set; } = false;
+  public bool show_unpinned_markers { get; private set; } = true;
+  public bool show_unpinned_celestials { get; private set; } = true;
+  public bool show_equipotentials { get; private set; } = true;
 
   public bool selecting_active_vessel_target { get; private set; } = false;
 
@@ -219,23 +219,23 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           if (UnityEngine.GUILayout.Button(
                   L10N.CacheFormat("#Principia_MainWindow_Declutter"),
                   GUILayoutWidth(5))) {
-            show_only_pinned_markers = true;
-            show_only_pinned_celestials = true;
-            hide_equipotentials = true;
+            show_unpinned_markers = false;
+            show_unpinned_celestials = false;
+            show_equipotentials = false;
           }
           UnityEngine.GUILayout.Label(
-              L10N.CacheFormat("#Principia_MainWindow_Declutter_ShowOnly"));
-          show_only_pinned_markers = UnityEngine.GUILayout.Toggle(
-              show_only_pinned_markers,
-              L10N.CacheFormat("#Principia_MainWindow_Declutter_PinnedMarkers"));
-          show_only_pinned_celestials = UnityEngine.GUILayout.Toggle(
-              show_only_pinned_celestials,
+              L10N.CacheFormat("#Principia_MainWindow_Declutter_Show"));
+          show_unpinned_markers = UnityEngine.GUILayout.Toggle(
+              show_unpinned_markers,
+              L10N.CacheFormat("#Principia_MainWindow_Declutter_UnpinnedMarkers"));
+          show_unpinned_celestials = UnityEngine.GUILayout.Toggle(
+              show_unpinned_celestials,
               L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_PinnedCelestials"));
-          hide_equipotentials = UnityEngine.GUILayout.Toggle(
-              hide_equipotentials,
+                  "#Principia_MainWindow_Declutter_UnpinnedCelestials"));
+          show_equipotentials = UnityEngine.GUILayout.Toggle(
+              show_equipotentials,
               L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_HideEquipotentials"));
+                  "#Principia_MainWindow_Declutter_Equipotentials"));
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           flight_planner_.RenderButton();
