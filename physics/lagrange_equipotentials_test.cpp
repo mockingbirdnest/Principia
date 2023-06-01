@@ -1,5 +1,7 @@
 #include "physics/lagrange_equipotentials.hpp"
 
+#include <vector>
+
 #include "base/not_null.hpp"
 #include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -25,6 +27,12 @@
 namespace principia {
 namespace physics {
 
+using ::testing::AllOf;
+using ::testing::Ge;
+using ::testing::Gt;
+using ::testing::Le;
+using ::testing::Lt;
+using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -190,9 +198,12 @@ TEST_F(LagrangeEquipotentialsTest,
     std::vector<SpecificEnergy> maxima;
     std::vector<Position<World>> arg_maximorum;
     for (auto const& [maximum, arg_maximi] : equipotentials->maxima) {
+      EXPECT_THAT((arg_maximi - World::origin).Norm(),
+                  AllOf(Gt(0.981 * Metre), Lt(1.016 * Metre)));
       maxima.push_back(maximum);
       arg_maximorum.push_back(arg_maximi);
     }
+    EXPECT_THAT(maxima, SizeIs(AllOf(Ge(3), Le(6))));
     logger.Append("maxima", maxima, ExpressIn(Metre, Second));
     logger.Append("argMaximorum", arg_maximorum, ExpressIn(Metre));
 
@@ -206,6 +217,8 @@ TEST_F(LagrangeEquipotentialsTest,
         std::vector<Position<World>>& equipotential =
             equipotentials_at_energy.emplace_back();
         for (auto const& [_, dof] : line) {
+          EXPECT_THAT((dof.position() - World::origin).Norm(),
+                      AllOf(Gt(0.736 * Metre), Lt(1.322 * Metre)));
           equipotential.push_back(dof.position());
         }
       }
