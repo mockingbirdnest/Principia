@@ -28,6 +28,7 @@
     <ClCompile Include="apsides.cpp" />
     <ClCompile Include="checkpointer_benchmark.cpp" />
     <ClCompile Include="discrete_trajectory.cpp" />
+    <ClCompile Include="lagrange_equipotentials.cpp" />
     <ClCompile Include="rigid_reference_frame.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />
