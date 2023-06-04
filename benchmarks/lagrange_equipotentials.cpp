@@ -81,7 +81,6 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark,
 
   for (auto _ : state) {
     for (int j = 0; j < number_of_days; ++j) {
-      LOG(ERROR) << "Day #" << j;
       auto const equipotentials =
           LagrangeEquipotentials<Barycentric, World>(ephemeris_)
               .ComputeLines({.primaries = {earth},
