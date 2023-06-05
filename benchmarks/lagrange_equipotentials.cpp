@@ -73,9 +73,8 @@ class LagrangeEquipotentialsBenchmark : public benchmark::Fixture {
 SolarSystem<Barycentric>* LagrangeEquipotentialsBenchmark::solar_system_;
 Ephemeris<Barycentric>* LagrangeEquipotentialsBenchmark::ephemeris_;
 
-BENCHMARK_F(LagrangeEquipotentialsBenchmark,
-            EarthMoon)
-(benchmark::State& state) {
+BENCHMARK_F(LagrangeEquipotentialsBenchmark, EarthMoon)(
+    benchmark::State& state) {
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
@@ -93,8 +92,8 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark,
   }
 }
 
-BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)
-(benchmark::State& state) {
+BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)(
+    benchmark::State& state) {
   LagrangeEquipotentials<Barycentric, World>::Parameters parameters;
   for (int i = SolarSystemFactory::Sun; i <= SolarSystemFactory::LastBody;
        ++i) {
