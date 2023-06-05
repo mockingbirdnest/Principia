@@ -28,8 +28,6 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
 
-constexpr std::int64_t number_of_days = 30;
-
 using Barycentric = Frame<struct BarycentricTag, Inertial>;
 using World = Frame<struct WorldTag, Arbitrary>;
 
@@ -81,14 +79,12 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark, EarthMoon)(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
 
   for (auto _ : state) {
-    for (int j = 0; j < number_of_days; ++j) {
-      auto const equipotentials =
-          LagrangeEquipotentials<Barycentric, World>(ephemeris_)
-              .ComputeLines({.primaries = {earth},
-                             .secondaries = {moon},
-                             .time = t0_ + j * Day});
-      CHECK_OK(equipotentials.status());
-    }
+    auto const equipotentials =
+        LagrangeEquipotentials<Barycentric, World>(ephemeris_)
+            .ComputeLines({.primaries = {earth},
+                           .secondaries = {moon},
+                           .time = t0_});
+    CHECK_OK(equipotentials.status());
   }
 }
 
@@ -115,13 +111,11 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)(
   std::vector<not_null<MassiveBody const*>> primaries;
 
   for (auto _ : state) {
-    for (int j = 0; j < number_of_days; ++j) {
-      parameters.time = t0_ + j * Day;
-      auto const equipotentials =
-          LagrangeEquipotentials<Barycentric, World>(ephemeris_)
-              .ComputeLines(parameters);
-      CHECK_OK(equipotentials.status());
-    }
+    parameters.time = t0_;
+    auto const equipotentials =
+        LagrangeEquipotentials<Barycentric, World>(ephemeris_)
+            .ComputeLines(parameters);
+    CHECK_OK(equipotentials.status());
   }
 }
 
