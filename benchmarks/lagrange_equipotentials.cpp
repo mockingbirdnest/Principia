@@ -53,7 +53,7 @@ class LagrangeEquipotentialsBenchmark : public benchmark::Fixture {
                                          /*geopotential_tolerance=*/0x1p-24},
                 ephemeris_parameters)
             .release();
-    CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
+    CHECK_OK(ephemeris_->Prolong(t0_));
   }
 
   void SetUp(benchmark::State&) override {
