@@ -23,6 +23,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_lagrange_equipotentials;
+using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
@@ -73,7 +74,8 @@ SolarSystem<Barycentric>* LagrangeEquipotentialsBenchmark::solar_system_;
 Ephemeris<Barycentric>* LagrangeEquipotentialsBenchmark::ephemeris_;
 
 BENCHMARK_F(LagrangeEquipotentialsBenchmark,
-            RotatingPulsating_GlobalOptimization)(benchmark::State& state) {
+            EarthMoon)
+(benchmark::State& state) {
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
@@ -86,6 +88,39 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark,
               .ComputeLines({.primaries = {earth},
                              .secondaries = {moon},
                              .time = t0_ + j * Day});
+      CHECK_OK(equipotentials.status());
+    }
+  }
+}
+
+BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)
+(benchmark::State& state) {
+  LagrangeEquipotentials<Barycentric, World>::Parameters parameters;
+  for (int i = SolarSystemFactory::Sun; i <= SolarSystemFactory::LastBody;
+       ++i) {
+    switch (i) {
+      case SolarSystemFactory::Pluto:
+      case SolarSystemFactory::Charon:
+      case SolarSystemFactory::Eris:
+        continue;
+      case SolarSystemFactory::Neptune:
+      case SolarSystemFactory::Triton:
+        parameters.secondaries.push_back(solar_system_->massive_body(
+          *ephemeris_, SolarSystemFactory::name(i)));
+        break;
+      default:
+        parameters.primaries.push_back(solar_system_->massive_body(
+          *ephemeris_, SolarSystemFactory::name(i)));
+    }
+  }
+  std::vector<not_null<MassiveBody const*>> primaries;
+
+  for (auto _ : state) {
+    for (int j = 0; j < number_of_days; ++j) {
+      parameters.time = t0_ + j * Day;
+      auto const equipotentials =
+          LagrangeEquipotentials<Barycentric, World>(ephemeris_)
+              .ComputeLines(parameters);
       CHECK_OK(equipotentials.status());
     }
   }
