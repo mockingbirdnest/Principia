@@ -23,11 +23,10 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_lagrange_equipotentials;
+using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-constexpr std::int64_t number_of_days = 30;
 
 using Barycentric = Frame<struct BarycentricTag, Inertial>;
 using World = Frame<struct WorldTag, Arbitrary>;
@@ -54,7 +53,7 @@ class LagrangeEquipotentialsBenchmark : public benchmark::Fixture {
                                          /*geopotential_tolerance=*/0x1p-24},
                 ephemeris_parameters)
             .release();
-    CHECK_OK(ephemeris_->Prolong(t0_ + number_of_days * Day));
+    CHECK_OK(ephemeris_->Prolong(t0_));
   }
 
   void SetUp(benchmark::State&) override {
@@ -72,22 +71,51 @@ class LagrangeEquipotentialsBenchmark : public benchmark::Fixture {
 SolarSystem<Barycentric>* LagrangeEquipotentialsBenchmark::solar_system_;
 Ephemeris<Barycentric>* LagrangeEquipotentialsBenchmark::ephemeris_;
 
-BENCHMARK_F(LagrangeEquipotentialsBenchmark,
-            RotatingPulsating_GlobalOptimization)(benchmark::State& state) {
+BENCHMARK_F(LagrangeEquipotentialsBenchmark, EarthMoon)(
+    benchmark::State& state) {
   auto const earth = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
   auto const moon = solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
 
   for (auto _ : state) {
-    for (int j = 0; j < number_of_days; ++j) {
-      auto const equipotentials =
-          LagrangeEquipotentials<Barycentric, World>(ephemeris_)
-              .ComputeLines({.primaries = {earth},
-                             .secondaries = {moon},
-                             .time = t0_ + j * Day});
-      CHECK_OK(equipotentials.status());
+    auto const equipotentials =
+        LagrangeEquipotentials<Barycentric, World>(ephemeris_)
+            .ComputeLines({.primaries = {earth},
+                           .secondaries = {moon},
+                           .time = t0_});
+    CHECK_OK(equipotentials.status());
+  }
+}
+
+BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)(
+    benchmark::State& state) {
+  LagrangeEquipotentials<Barycentric, World>::Parameters parameters;
+  for (int i = SolarSystemFactory::Sun; i <= SolarSystemFactory::LastBody;
+       ++i) {
+    switch (i) {
+      case SolarSystemFactory::Pluto:
+      case SolarSystemFactory::Charon:
+      case SolarSystemFactory::Eris:
+        continue;
+      case SolarSystemFactory::Neptune:
+      case SolarSystemFactory::Triton:
+        parameters.secondaries.push_back(solar_system_->massive_body(
+          *ephemeris_, SolarSystemFactory::name(i)));
+        break;
+      default:
+        parameters.primaries.push_back(solar_system_->massive_body(
+          *ephemeris_, SolarSystemFactory::name(i)));
     }
+  }
+  std::vector<not_null<MassiveBody const*>> primaries;
+
+  for (auto _ : state) {
+    parameters.time = t0_;
+    auto const equipotentials =
+        LagrangeEquipotentials<Barycentric, World>(ephemeris_)
+            .ComputeLines(parameters);
+    CHECK_OK(equipotentials.status());
   }
 }
 
