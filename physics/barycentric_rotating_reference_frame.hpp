@@ -41,6 +41,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_tuples;
 
 // The origin of the frame is the barycentre of the system.  The X axis
 // points to the barycentre of the secondaries.  The Y axis is in the direction
@@ -67,6 +68,13 @@ class BarycentricRotatingReferenceFrame
 
   std::vector<not_null<MassiveBody const*>> const& primaries() const;
   std::vector<not_null<MassiveBody const*>> const& secondaries() const;
+
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> primary_derivatives(
+      Instant const& t) const;
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> secondary_derivatives(
+      Instant const& t) const;
 
   Instant t_min() const override;
   Instant t_max() const override;
