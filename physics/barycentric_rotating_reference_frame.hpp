@@ -108,20 +108,16 @@ class BarycentricRotatingReferenceFrame
   // Implementation helper that avoids evaluating the degrees of freedom and the
   // accelerations multiple times.
   RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
-      BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
-                           GravitationalParameter> const&
-          primary_degrees_of_freedom,
-      BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
-                           GravitationalParameter> const&
-          secondary_degrees_of_freedom,
-      Vector<Acceleration, InertialFrame> const& primary_acceleration,
-      Vector<Acceleration, InertialFrame> const& secondary_acceleration) const;
+      Derivatives<Position<InertialFrame>, Instant, 3> const&
+          primary_derivatives,
+      Derivatives<Position<InertialFrame>, Instant, 3> const&
+          secondary_derivatives) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
-  not_null<ContinuousTrajectory<InertialFrame> const*> const
-      primary_trajectory_;
+  GravitationalParameter const primary_gravitational_parameter_;
+  GravitationalParameter const secondary_gravitational_parameter_;
 };
 
 }  // namespace internal
