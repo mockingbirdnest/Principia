@@ -104,7 +104,7 @@ template<typename InertialFrame, typename ThisFrame>
 template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    primary_derivatives(Instant const& t) const {
+    primary_derivative(Instant const& t) const {
   BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                        GravitationalParameter>
       result;
@@ -132,7 +132,7 @@ template<typename InertialFrame, typename ThisFrame>
 template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    secondary_derivatives(Instant const& t) const {
+    secondary_derivative(Instant const& t) const {
   BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                        GravitationalParameter>
       result;
@@ -175,12 +175,12 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
-  auto const r₁ = primary_derivatives<0>(t);
-  auto const ṙ₁ = primary_derivatives<1>(t);
-  auto const r̈₁ = primary_derivatives<2>(t);
-  auto const r₂ = secondary_derivatives<0>(t);
-  auto const ṙ₂ = secondary_derivatives<1>(t);
-  auto const r̈₂ = secondary_derivatives<2>(t);
+  auto const r₁ = primary_derivative<0>(t);
+  auto const ṙ₁ = primary_derivative<1>(t);
+  auto const r̈₁ = primary_derivative<2>(t);
+  auto const r₂ = secondary_derivative<0>(t);
+  auto const ṙ₂ = secondary_derivative<1>(t);
+  auto const r̈₂ = secondary_derivative<2>(t);
   return ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 }
 
@@ -238,14 +238,14 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  auto const r₁ = primary_derivatives<0>(t);
-  auto const ṙ₁ = primary_derivatives<1>(t);
-  auto const r̈₁ = primary_derivatives<2>(t);
-  auto const r₁⁽³⁾ = primary_derivatives<3>(t);
-  auto const r₂ = secondary_derivatives<0>(t);
-  auto const ṙ₂ = secondary_derivatives<1>(t);
-  auto const r̈₂ = secondary_derivatives<2>(t);
-  auto const r₂⁽³⁾ = secondary_derivatives<3>(t);
+  auto const r₁ = primary_derivative<0>(t);
+  auto const ṙ₁ = primary_derivative<1>(t);
+  auto const r̈₁ = primary_derivative<2>(t);
+  auto const r₁⁽³⁾ = primary_derivative<3>(t);
+  auto const r₂ = secondary_derivative<0>(t);
+  auto const ṙ₂ = secondary_derivative<1>(t);
+  auto const r̈₂ = secondary_derivative<2>(t);
+  auto const r₂⁽³⁾ = secondary_derivative<3>(t);
 
   auto const to_this_frame = ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 
@@ -287,11 +287,11 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
 template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
-    Derivatives<Position<InertialFrame>, Instant, 3> const& primary_derivatives,
+    Derivatives<Position<InertialFrame>, Instant, 3> const& primary_derivative,
     Derivatives<Position<InertialFrame>, Instant, 3> const&
-        secondary_derivatives) const {
-  auto [r₁, ṙ₁, r̈₁] = primary_derivatives;
-  auto [r₂, ṙ₂, r̈₂] = secondary_derivatives;
+        secondary_derivative) const {
+  auto [r₁, ṙ₁, r̈₁] = primary_derivative;
+  auto [r₂, ṙ₂, r̈₂] = secondary_derivative;
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom = {r₁, ṙ₁};
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom = {r₂, ṙ₂};
   Rotation<InertialFrame, ThisFrame> rotation =

@@ -191,23 +191,23 @@ Derivatives<Length, Instant, degree + 1>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_derivatives(
     Instant const& t) const {
   Displacement<InertialFrame> const u =
-      rotating_frame_.primary_derivatives<0>(t) -
-      rotating_frame_.secondary_derivatives<0>(t);
+      rotating_frame_.primary_derivative<0>(t) -
+      rotating_frame_.secondary_derivative<0>(t);
   Length const r = u.Norm();
   if constexpr (degree == 0) {
     return {r};
   } else {
     Velocity<InertialFrame> const v =
-        rotating_frame_.primary_derivatives<1>(t) -
-        rotating_frame_.secondary_derivatives<1>(t);
+        rotating_frame_.primary_derivative<1>(t) -
+        rotating_frame_.secondary_derivative<1>(t);
     Speed const ṙ = InnerProduct(u, v) / r;
     if constexpr (degree == 1) {
       return {r, ṙ};
     } else {
       static_assert(degree == 2);
       Vector<Acceleration, InertialFrame> const γ =
-          rotating_frame_.primary_derivatives<2>(t) -
-          rotating_frame_.secondary_derivatives<2>(t);
+          rotating_frame_.primary_derivative<2>(t) -
+          rotating_frame_.secondary_derivative<2>(t);
       Acceleration const r̈ =
           v.Norm²() / r + InnerProduct(u, γ) / r - Pow<2>(ṙ) / r;
       return {r, ṙ, r̈};

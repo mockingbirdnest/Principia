@@ -70,10 +70,10 @@ class BarycentricRotatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
   template<int degree>
-  Derivative<Position<InertialFrame>, Instant, degree> primary_derivatives(
+  Derivative<Position<InertialFrame>, Instant, degree> primary_derivative(
       Instant const& t) const;
   template<int degree>
-  Derivative<Position<InertialFrame>, Instant, degree> secondary_derivatives(
+  Derivative<Position<InertialFrame>, Instant, degree> secondary_derivative(
       Instant const& t) const;
 
   Instant t_min() const override;
@@ -109,9 +109,9 @@ class BarycentricRotatingReferenceFrame
   // accelerations multiple times.
   RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
       Derivatives<Position<InertialFrame>, Instant, 3> const&
-          primary_derivatives,
+          primary_derivative,
       Derivatives<Position<InertialFrame>, Instant, 3> const&
-          secondary_derivatives) const;
+          secondary_derivative) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   std::vector<not_null<MassiveBody const*>> const primaries_;
