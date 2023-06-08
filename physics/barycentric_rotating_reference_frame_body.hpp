@@ -105,9 +105,10 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
     Instant const& t) const {
+  absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::primaries_>(
-      t);
+      t, last_evaluated_primary_derivatives_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -115,9 +116,10 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     SecondaryDerivative(Instant const& t) const {
-  return BarycentreDerivative<
-      degree,
-      &BarycentricRotatingReferenceFrame::secondaries_>(t);
+  absl::MutexLock l(&lock_);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::secondaries_>(
+      t, last_evaluated_secondary_derivatives_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -189,28 +191,34 @@ template<
         BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    BarycentreDerivative(Instant const& t) const {
-  BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
-                       GravitationalParameter>
-      result;
-  for (not_null const body : this->*bodies) {
-    if constexpr (degree == 0) {
-      result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
-                 body->gravitational_parameter());
-    } else if constexpr (degree == 1) {
-      result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
-                 body->gravitational_parameter());
-    } else if constexpr (degree == 2) {
-      result.Add(
-          ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(body, t),
-          body->gravitational_parameter());
-    } else {
-      static_assert(degree == 3);
-      result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
-                 body->gravitational_parameter());
+    BarycentreDerivative(Instant const& t, CachedDerivatives& cache) const {
+  Instant& cache_key = cache.times[degree];
+  auto& cached = std::get<degree>(cache.derivatives);
+  if (cache_key != t) {
+    BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
+                         GravitationalParameter>
+        result;
+    for (not_null const body : this->*bodies) {
+      if constexpr (degree == 0) {
+        result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
+                   body->gravitational_parameter());
+      } else if constexpr (degree == 1) {
+        result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
+                   body->gravitational_parameter());
+      } else if constexpr (degree == 2) {
+        result.Add(
+            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(body, t),
+            body->gravitational_parameter());
+      } else {
+        static_assert(degree == 3);
+        result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
+                   body->gravitational_parameter());
+      }
     }
+    cache_key = t;
+    cached = result.Get();
   }
-  return result.Get();
+  return cached;
 }
 
 template<typename InertialFrame, typename ThisFrame>

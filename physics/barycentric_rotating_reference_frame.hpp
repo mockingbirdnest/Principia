@@ -41,6 +41,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_tuples;
 
 // The origin of the frame is the barycentre of the system.  The X axis
@@ -96,12 +97,21 @@ class BarycentricRotatingReferenceFrame
   template<typename SF, typename SB, int o = 0>
   using Trihedron = typename Base::template Trihedron<SF, SB, o>;
 
+  struct CachedDerivatives {
+    Derivatives<Position<InertialFrame>, Instant, 4> derivatives;
+    std::array<Instant, 4> times = {Instant() + NaN<Time>,
+                                    Instant() + NaN<Time>,
+                                    Instant() + NaN<Time>,
+                                    Instant() + NaN<Time>};
+  };
+
   template<
       int degree,
       std::vector<not_null<MassiveBody const*>> const
           BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
   Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
-      Instant const& t) const;
+      Instant const& t,
+      CachedDerivatives& cache) const;
 
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
@@ -125,6 +135,14 @@ class BarycentricRotatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const secondaries_;
   GravitationalParameter const primary_gravitational_parameter_;
   GravitationalParameter const secondary_gravitational_parameter_;
+  mutable absl::Mutex lock_;
+  // These members optimize costly computations from |BarycentreDerivative| in
+  // the frequent case where properties of the frame are repeatedly requested
+  // for the same time.
+  mutable CachedDerivatives last_evaluated_primary_derivatives_
+      GUARDED_BY(lock_);
+  mutable CachedDerivatives last_evaluated_secondary_derivatives_
+      GUARDED_BY(lock_);
 };
 
 }  // namespace internal
