@@ -11,7 +11,6 @@ namespace physics {
 namespace _rotating_pulsating_reference_frame {
 namespace internal {
 
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_homothecy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -191,69 +190,24 @@ template<int degree>
 Derivatives<Length, Instant, degree + 1>
 RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::r_derivatives(
     Instant const& t) const {
-  BarycentreCalculator<Position<InertialFrame>, GravitationalParameter>
-      secondary_position;
-  for (not_null const secondary : secondaries_) {
-    secondary_position.Add(
-        ephemeris_->trajectory(secondary)->EvaluatePosition(t),
-        secondary->gravitational_parameter());
-  }
-  BarycentreCalculator<Position<InertialFrame>, GravitationalParameter>
-      primary_position;
-  for (not_null const primary : primaries_) {
-    primary_position.Add(
-        ephemeris_->trajectory(primary)->EvaluatePosition(t),
-        primary->gravitational_parameter());
-  }
   Displacement<InertialFrame> const u =
-      primary_position.Get() - secondary_position.Get();
+      rotating_frame_.PrimaryDerivative<0>(t) -
+      rotating_frame_.SecondaryDerivative<0>(t);
   Length const r = u.Norm();
   if constexpr (degree == 0) {
     return {r};
   } else {
-    BarycentreCalculator<Velocity<InertialFrame>, GravitationalParameter>
-        secondary_velocity;
-    for (not_null const secondary : secondaries_) {
-      secondary_velocity.Add(
-          ephemeris_->trajectory(secondary)->EvaluateVelocity(t),
-          secondary->gravitational_parameter());
-    }
-    BarycentreCalculator<Velocity<InertialFrame>, GravitationalParameter>
-        primary_velocity;
-    for (not_null const primary : primaries_) {
-      primary_velocity.Add(
-          ephemeris_->trajectory(primary)->EvaluateVelocity(t),
-          primary->gravitational_parameter());
-    }
     Velocity<InertialFrame> const v =
-        primary_velocity.Get() -
-        secondary_velocity.Get();
+        rotating_frame_.PrimaryDerivative<1>(t) -
+        rotating_frame_.SecondaryDerivative<1>(t);
     Speed const ṙ = InnerProduct(u, v) / r;
     if constexpr (degree == 1) {
       return {r, ṙ};
     } else {
       static_assert(degree == 2);
-      BarycentreCalculator<Vector<Acceleration, InertialFrame>,
-                           GravitationalParameter>
-          secondary_acceleration;
-      for (not_null const secondary : secondaries_) {
-        secondary_acceleration.Add(
-            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary,
-                                                                      t),
-            secondary->gravitational_parameter());
-      }
-      BarycentreCalculator<Vector<Acceleration, InertialFrame>,
-                           GravitationalParameter>
-          primary_acceleration;
-      for (not_null const primary : primaries_) {
-        primary_acceleration.Add(
-            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary,
-                                                                      t),
-            primary->gravitational_parameter());
-      }
       Vector<Acceleration, InertialFrame> const γ =
-          primary_acceleration.Get() -
-          secondary_acceleration.Get();
+          rotating_frame_.PrimaryDerivative<2>(t) -
+          rotating_frame_.SecondaryDerivative<2>(t);
       Acceleration const r̈ =
           v.Norm²() / r + InnerProduct(u, γ) / r - Pow<2>(ṙ) / r;
       return {r, ṙ, r̈};

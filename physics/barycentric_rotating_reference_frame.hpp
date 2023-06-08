@@ -41,6 +41,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_tuples;
 
 // The origin of the frame is the barycentre of the system.  The X axis
 // points to the barycentre of the secondaries.  The Y axis is in the direction
@@ -68,6 +69,13 @@ class BarycentricRotatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const& primaries() const;
   std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> PrimaryDerivative(
+      Instant const& t) const;
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> SecondaryDerivative(
+      Instant const& t) const;
+
   Instant t_min() const override;
   Instant t_max() const override;
 
@@ -88,6 +96,13 @@ class BarycentricRotatingReferenceFrame
   template<typename SF, typename SB, int o = 0>
   using Trihedron = typename Base::template Trihedron<SF, SB, o>;
 
+  template<
+      int degree,
+      std::vector<not_null<MassiveBody const*>> const
+          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
+  Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
+      Instant const& t) const;
+
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
@@ -100,20 +115,16 @@ class BarycentricRotatingReferenceFrame
   // Implementation helper that avoids evaluating the degrees of freedom and the
   // accelerations multiple times.
   RigidMotion<InertialFrame, ThisFrame> ToThisFrame(
-      BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
-                           GravitationalParameter> const&
-          primary_degrees_of_freedom,
-      BarycentreCalculator<DegreesOfFreedom<InertialFrame>,
-                           GravitationalParameter> const&
-          secondary_degrees_of_freedom,
-      Vector<Acceleration, InertialFrame> const& primary_acceleration,
-      Vector<Acceleration, InertialFrame> const& secondary_acceleration) const;
+      Derivatives<Position<InertialFrame>, Instant, 3> const&
+          primary_derivative,
+      Derivatives<Position<InertialFrame>, Instant, 3> const&
+          secondary_derivative) const;
 
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
-  not_null<ContinuousTrajectory<InertialFrame> const*> const
-      primary_trajectory_;
+  GravitationalParameter const primary_gravitational_parameter_;
+  GravitationalParameter const secondary_gravitational_parameter_;
 };
 
 }  // namespace internal
