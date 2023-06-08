@@ -70,10 +70,10 @@ class BarycentricRotatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const& secondaries() const;
 
   template<int degree>
-  Derivative<Position<InertialFrame>, Instant, degree> primary_derivative(
+  Derivative<Position<InertialFrame>, Instant, degree> PrimaryDerivative(
       Instant const& t) const;
   template<int degree>
-  Derivative<Position<InertialFrame>, Instant, degree> secondary_derivative(
+  Derivative<Position<InertialFrame>, Instant, degree> SecondaryDerivative(
       Instant const& t) const;
 
   Instant t_min() const override;
@@ -95,6 +95,13 @@ class BarycentricRotatingReferenceFrame
 
   template<typename SF, typename SB, int o = 0>
   using Trihedron = typename Base::template Trihedron<SF, SB, o>;
+
+  template<
+      int degree,
+      std::vector<not_null<MassiveBody const*>> const
+          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
+  Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
+      Instant const& t) const;
 
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,

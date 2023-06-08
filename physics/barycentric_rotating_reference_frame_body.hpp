@@ -26,6 +26,12 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
+GravitationalParameter add_gravitational_parameter(
+    GravitationalParameter const& sum,
+    not_null<MassiveBody const*> const body) {
+  return sum + body->gravitational_parameter();
+}
+
 template<typename InertialFrame, typename ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     BarycentricRotatingReferenceFrame(
@@ -50,18 +56,12 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
           std::accumulate(primaries_.begin(),
                           primaries_.end(),
                           GravitationalParameter{},
-                          [](GravitationalParameter const sum,
-                             not_null<MassiveBody const*> const body) {
-                            return sum + body->gravitational_parameter();
-                          })),
+                          &add_gravitational_parameter)),
       secondary_gravitational_parameter_(
           std::accumulate(secondaries_.begin(),
                           secondaries_.end(),
                           GravitationalParameter{},
-                          [](GravitationalParameter const sum,
-                             not_null<MassiveBody const*> const body) {
-                            return sum + body->gravitational_parameter();
-                          })) {
+                          &add_gravitational_parameter)) {
   absl::btree_set<not_null<MassiveBody const*>> primary_set(primaries_.begin(),
                                                             primaries_.end());
   absl::btree_set<not_null<MassiveBody const*>> secondary_set(
@@ -103,58 +103,21 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::secondaries()
 template<typename InertialFrame, typename ThisFrame>
 template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
-BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    primary_derivative(Instant const& t) const {
-  BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
-                       GravitationalParameter>
-      result;
-  for (not_null const primary : primaries_) {
-    if constexpr (degree == 0) {
-      result.Add(ephemeris_->trajectory(primary)->EvaluatePosition(t),
-                 primary->gravitational_parameter());
-    } else if constexpr (degree == 1) {
-      result.Add(ephemeris_->trajectory(primary)->EvaluateVelocity(t),
-                 primary->gravitational_parameter());
-    } else if constexpr (degree == 2) {
-      result.Add(
-          ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary, t),
-          primary->gravitational_parameter());
-    } else {
-      static_assert(degree == 3);
-      result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary, t),
-                 primary->gravitational_parameter());
-    }
-  }
-  return result.Get();
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
+    Instant const& t) const {
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::primaries_>(
+      t);
 }
 
 template<typename InertialFrame, typename ThisFrame>
 template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    secondary_derivative(Instant const& t) const {
-  BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
-                       GravitationalParameter>
-      result;
-  for (not_null const secondary : secondaries_) {
-    if constexpr (degree == 0) {
-      result.Add(ephemeris_->trajectory(secondary)->EvaluatePosition(t),
-                 secondary->gravitational_parameter());
-    } else if constexpr (degree == 1) {
-      result.Add(ephemeris_->trajectory(secondary)->EvaluateVelocity(t),
-                 secondary->gravitational_parameter());
-    } else if constexpr (degree == 2) {
-      result.Add(ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
-                     secondary, t),
-                 secondary->gravitational_parameter());
-    } else {
-      static_assert(degree == 3);
-      result.Add(
-          ephemeris_->ComputeGravitationalJerkOnMassiveBody(secondary, t),
-          secondary->gravitational_parameter());
-    }
-  }
-  return result.Get();
+    SecondaryDerivative(Instant const& t) const {
+  return BarycentreDerivative<
+      degree,
+      &BarycentricRotatingReferenceFrame::secondaries_>(t);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -175,12 +138,12 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
-  auto const r₁ = primary_derivative<0>(t);
-  auto const ṙ₁ = primary_derivative<1>(t);
-  auto const r̈₁ = primary_derivative<2>(t);
-  auto const r₂ = secondary_derivative<0>(t);
-  auto const ṙ₂ = secondary_derivative<1>(t);
-  auto const r̈₂ = secondary_derivative<2>(t);
+  auto const r₁ = PrimaryDerivative<0>(t);
+  auto const ṙ₁ = PrimaryDerivative<1>(t);
+  auto const r̈₁ = PrimaryDerivative<2>(t);
+  auto const r₂ = SecondaryDerivative<0>(t);
+  auto const ṙ₂ = SecondaryDerivative<1>(t);
+  auto const r̈₂ = SecondaryDerivative<2>(t);
   return ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 }
 
@@ -220,6 +183,37 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+template<
+    int degree,
+    std::vector<not_null<MassiveBody const*>> const
+        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
+inline Derivative<Position<InertialFrame>, Instant, degree>
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
+    BarycentreDerivative(Instant const& t) const {
+  BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
+                       GravitationalParameter>
+      result;
+  for (not_null const body : this->*bodies) {
+    if constexpr (degree == 0) {
+      result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
+                 body->gravitational_parameter());
+    } else if constexpr (degree == 1) {
+      result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
+                 body->gravitational_parameter());
+    } else if constexpr (degree == 2) {
+      result.Add(
+          ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(body, t),
+          body->gravitational_parameter());
+    } else {
+      static_assert(degree == 3);
+      result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
+                 body->gravitational_parameter());
+    }
+  }
+  return result.Get();
+}
+
+template<typename InertialFrame, typename ThisFrame>
 Vector<Acceleration, InertialFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
 GravitationalAcceleration(Instant const& t,
@@ -238,14 +232,14 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  auto const r₁ = primary_derivative<0>(t);
-  auto const ṙ₁ = primary_derivative<1>(t);
-  auto const r̈₁ = primary_derivative<2>(t);
-  auto const r₁⁽³⁾ = primary_derivative<3>(t);
-  auto const r₂ = secondary_derivative<0>(t);
-  auto const ṙ₂ = secondary_derivative<1>(t);
-  auto const r̈₂ = secondary_derivative<2>(t);
-  auto const r₂⁽³⁾ = secondary_derivative<3>(t);
+  auto const r₁ = PrimaryDerivative<0>(t);
+  auto const ṙ₁ = PrimaryDerivative<1>(t);
+  auto const r̈₁ = PrimaryDerivative<2>(t);
+  auto const r₁⁽³⁾ = PrimaryDerivative<3>(t);
+  auto const r₂ = SecondaryDerivative<0>(t);
+  auto const ṙ₂ = SecondaryDerivative<1>(t);
+  auto const r̈₂ = SecondaryDerivative<2>(t);
+  auto const r₂⁽³⁾ = SecondaryDerivative<3>(t);
 
   auto const to_this_frame = ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 
@@ -290,8 +284,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
     Derivatives<Position<InertialFrame>, Instant, 3> const& primary_derivative,
     Derivatives<Position<InertialFrame>, Instant, 3> const&
         secondary_derivative) const {
-  auto [r₁, ṙ₁, r̈₁] = primary_derivative;
-  auto [r₂, ṙ₂, r̈₂] = secondary_derivative;
+  auto const [r₁, ṙ₁, r̈₁] = primary_derivative;
+  auto const [r₂, ṙ₂, r̈₂] = secondary_derivative;
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom = {r₁, ṙ₁};
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom = {r₂, ṙ₂};
   Rotation<InertialFrame, ThisFrame> rotation =
@@ -306,10 +300,10 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
       angular_velocity);
 
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre(std::pair{DegreesOfFreedom<InertialFrame>{r₁, ṙ₁},
-                           DegreesOfFreedom<InertialFrame>{r₂, ṙ₂}},
-                 std::pair{primary_gravitational_parameter_,
-                           secondary_gravitational_parameter_});
+      Barycentre(
+          std::pair{primary_degrees_of_freedom, secondary_degrees_of_freedom},
+          std::pair{primary_gravitational_parameter_,
+                    secondary_gravitational_parameter_});
   RigidTransformation<InertialFrame, ThisFrame> const rigid_transformation(
       barycentre_degrees_of_freedom.position(),
       ThisFrame::origin,
