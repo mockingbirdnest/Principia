@@ -99,10 +99,10 @@ class BarycentricRotatingReferenceFrame
 
   struct CachedDerivatives {
     Derivatives<Position<InertialFrame>, Instant, 4> derivatives;
-    std::array<Instant, 4> times = {Instant{} + NaN<Time>,
-                                    Instant{} + NaN<Time>,
-                                    Instant{} + NaN<Time>,
-                                    Instant{} + NaN<Time>};
+    std::array<Instant, 4> times = {Instant() + NaN<Time>,
+                                    Instant() + NaN<Time>,
+                                    Instant() + NaN<Time>,
+                                    Instant() + NaN<Time>};
   };
 
   template<
