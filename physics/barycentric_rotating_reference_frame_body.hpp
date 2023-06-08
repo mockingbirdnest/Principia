@@ -187,7 +187,7 @@ template<
     int degree,
     std::vector<not_null<MassiveBody const*>> const
         BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
-inline Derivative<Position<InertialFrame>, Instant, degree>
+Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     BarycentreDerivative(Instant const& t) const {
   BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
