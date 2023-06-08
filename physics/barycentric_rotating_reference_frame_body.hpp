@@ -105,6 +105,7 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
     Instant const& t) const {
+  absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::primaries_>(
       t, last_evaluated_primary_derivatives_);
@@ -115,6 +116,7 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     SecondaryDerivative(Instant const& t) const {
+  absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::secondaries_>(
       t, last_evaluated_secondary_derivatives_);
