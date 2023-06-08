@@ -108,6 +108,11 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
   BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                        GravitationalParameter>
       result;
+  auto& cache_key = cached_primary_derivatives_.times[degree];
+  auto& cached = std::get<degree>(cached_primary_derivatives_.derivatives);
+  if (cache_key == t) {
+    return cached;
+  }
   for (not_null const primary : primaries_) {
     if constexpr (degree == 0) {
       result.Add(ephemeris_->trajectory(primary)->EvaluatePosition(t),
@@ -125,7 +130,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
                  primary->gravitational_parameter());
     }
   }
-  return result.Get();
+  cache_key = t;
+  return cached = result.Get();
 }
 
 template<typename InertialFrame, typename ThisFrame>

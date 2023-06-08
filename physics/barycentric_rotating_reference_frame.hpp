@@ -41,6 +41,7 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_tuples;
 
 // The origin of the frame is the barycentre of the system.  The X axis
@@ -96,6 +97,14 @@ class BarycentricRotatingReferenceFrame
   template<typename SF, typename SB, int o = 0>
   using Trihedron = typename Base::template Trihedron<SF, SB, o>;
 
+  struct CachedDerivatives {
+    Derivatives<Position<InertialFrame>, Instant, 4> derivatives;
+    std::array<Instant, 4> times = {Instant{} + NaN<Time>,
+                                    Instant{} + NaN<Time>,
+                                    Instant{} + NaN<Time>,
+                                    Instant{} + NaN<Time>};
+  };
+
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
       Position<InertialFrame> const& q) const override;
@@ -118,6 +127,9 @@ class BarycentricRotatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const secondaries_;
   GravitationalParameter const primary_gravitational_parameter_;
   GravitationalParameter const secondary_gravitational_parameter_;
+  // TODO(egg): This is thread-hostile.  Do we care?
+  mutable CachedDerivatives cached_primary_derivatives_;
+  mutable CachedDerivatives cached_secondary_derivatives_;
 };
 
 }  // namespace internal
