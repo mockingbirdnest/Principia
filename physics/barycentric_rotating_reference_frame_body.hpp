@@ -105,11 +105,9 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
     Instant const& t) const {
-  return BarycentreDerivative<
-      degree,
-      &BarycentricRotatingReferenceFrame::primaries_,
-      &BarycentricRotatingReferenceFrame::last_evaluated_primary_derivatives_>(
-      t);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::primaries_>(
+      t, last_evaluated_primary_derivatives_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -118,9 +116,8 @@ Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     SecondaryDerivative(Instant const& t) const {
   return BarycentreDerivative<degree,
-                              &BarycentricRotatingReferenceFrame::secondaries_,
-                              &BarycentricRotatingReferenceFrame::
-                                  last_evaluated_secondary_derivatives_>(t);
+                              &BarycentricRotatingReferenceFrame::secondaries_>(
+      t, last_evaluated_secondary_derivatives_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -189,15 +186,12 @@ template<typename InertialFrame, typename ThisFrame>
 template<
     int degree,
     std::vector<not_null<MassiveBody const*>> const
-        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies,
-    typename BarycentricRotatingReferenceFrame<InertialFrame,
-                                               ThisFrame>::CachedDerivatives
-        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*cache>
+        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    BarycentreDerivative(Instant const& t) const {
-  auto& cache_key = this->*cache.times[degree];
-  auto& cached = std::get<degree>(this->*cache.derivatives);
+    BarycentreDerivative(Instant const& t, CachedDerivatives& cache) const {
+  Instant& cache_key = cache.times[degree];
+  auto& cached = std::get<degree>(cache.derivatives);
   if (cache_key == t) {
     return cached;
   }

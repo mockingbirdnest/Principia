@@ -108,11 +108,10 @@ class BarycentricRotatingReferenceFrame
   template<
       int degree,
       std::vector<not_null<MassiveBody const*>> const
-          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies,
-      CachedDerivatives
-          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*cache>
+          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
   Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
-      Instant const& t) const;
+      Instant const& t,
+      CachedDerivatives& cache) const;
 
   Vector<Acceleration, InertialFrame> GravitationalAcceleration(
       Instant const& t,
