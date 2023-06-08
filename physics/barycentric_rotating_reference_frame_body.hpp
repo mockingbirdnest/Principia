@@ -105,8 +105,10 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
     Instant const& t) const {
-  return BarycentreDerivative<degree,
-                              &BarycentricRotatingReferenceFrame::primaries_>(
+  return BarycentreDerivative<
+      degree,
+      &BarycentricRotatingReferenceFrame::primaries_,
+      &BarycentricRotatingReferenceFrame::last_evaluated_primary_derivatives_>(
       t);
 }
 
@@ -115,9 +117,10 @@ template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     SecondaryDerivative(Instant const& t) const {
-  return BarycentreDerivative<
-      degree,
-      &BarycentricRotatingReferenceFrame::secondaries_>(t);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::secondaries_,
+                              &BarycentricRotatingReferenceFrame::
+                                  last_evaluated_secondary_derivatives_>(t);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -186,10 +189,18 @@ template<typename InertialFrame, typename ThisFrame>
 template<
     int degree,
     std::vector<not_null<MassiveBody const*>> const
-        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
+        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies,
+    typename BarycentricRotatingReferenceFrame<InertialFrame,
+                                               ThisFrame>::CachedDerivatives
+        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*cache>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     BarycentreDerivative(Instant const& t) const {
+  auto& cache_key = this->*cache.times[degree];
+  auto& cached = std::get<degree>(this->*cache.derivatives);
+  if (cache_key == t) {
+    return cached;
+  }
   BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                        GravitationalParameter>
       result;
@@ -210,7 +221,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
                  body->gravitational_parameter());
     }
   }
-  return result.Get();
+  cache_key = t;
+  return cached = result.Get();
 }
 
 template<typename InertialFrame, typename ThisFrame>

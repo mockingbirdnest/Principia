@@ -108,7 +108,9 @@ class BarycentricRotatingReferenceFrame
   template<
       int degree,
       std::vector<not_null<MassiveBody const*>> const
-          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
+          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies,
+      CachedDerivatives
+          BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*cache>
   Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
       Instant const& t) const;
 
@@ -134,9 +136,14 @@ class BarycentricRotatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const secondaries_;
   GravitationalParameter const primary_gravitational_parameter_;
   GravitationalParameter const secondary_gravitational_parameter_;
-  // TODO(egg): This is thread-hostile.  Do we care?
-  mutable CachedDerivatives cached_primary_derivatives_;
-  mutable CachedDerivatives cached_secondary_derivatives_;
+  mutable absl::Mutex lock_;
+  // These members optimize costly computations from |BarycentreDerivative| in
+  // the frequent case where properties of the frame are repeatedly requested
+  // for the same time.
+  mutable CachedDerivatives last_evaluated_primary_derivatives_
+      GUARDED_BY(lock_);
+  mutable CachedDerivatives last_evaluated_secondary_derivatives_
+      GUARDED_BY(lock_);
 };
 
 }  // namespace internal
