@@ -26,7 +26,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-GravitationalParameter add_gravitational_parameter(
+inline GravitationalParameter add_gravitational_parameter(
     GravitationalParameter const& sum,
     not_null<MassiveBody const*> const body) {
   return sum + body->gravitational_parameter();
