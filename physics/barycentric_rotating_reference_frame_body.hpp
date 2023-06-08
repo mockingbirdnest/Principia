@@ -194,31 +194,31 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     BarycentreDerivative(Instant const& t, CachedDerivatives& cache) const {
   Instant& cache_key = cache.times[degree];
   auto& cached = std::get<degree>(cache.derivatives);
-  if (cache_key == t) {
-    return cached;
-  }
-  BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
-                       GravitationalParameter>
-      result;
-  for (not_null const body : this->*bodies) {
-    if constexpr (degree == 0) {
-      result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
-                 body->gravitational_parameter());
-    } else if constexpr (degree == 1) {
-      result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
-                 body->gravitational_parameter());
-    } else if constexpr (degree == 2) {
-      result.Add(
-          ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(body, t),
-          body->gravitational_parameter());
-    } else {
-      static_assert(degree == 3);
-      result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
-                 body->gravitational_parameter());
+  if (cache_key != t) {
+    BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
+                         GravitationalParameter>
+        result;
+    for (not_null const body : this->*bodies) {
+      if constexpr (degree == 0) {
+        result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
+                   body->gravitational_parameter());
+      } else if constexpr (degree == 1) {
+        result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
+                   body->gravitational_parameter());
+      } else if constexpr (degree == 2) {
+        result.Add(
+            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(body, t),
+            body->gravitational_parameter());
+      } else {
+        static_assert(degree == 3);
+        result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
+                   body->gravitational_parameter());
+      }
     }
+    cache_key = t;
+    cached = result.Get();
   }
-  cache_key = t;
-  return cached = result.Get();
+  return cached;
 }
 
 template<typename InertialFrame, typename ThisFrame>
