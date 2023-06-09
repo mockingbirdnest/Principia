@@ -23,6 +23,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_space_transformations;
@@ -200,65 +201,60 @@ void RunBenchmark(benchmark::State& state,
                   Perspective<Navigation, Camera> const& perspective) {
   Satellites satellites;
   Planetarium planetarium = satellites.MakePlanetarium(perspective);
-  RP2Lines<Length, Camera> lines;
-  int total_lines = 0;
+  std::vector<ScaledSpacePoint> line;
   int iterations = 0;
   // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   for (auto _ : state) {
-    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory(),
-                                    satellites.goes_8_trajectory().begin(),
-                                    satellites.goes_8_trajectory().end(),
-                                    now,
-                                    /*reverse=*/false);
-    total_lines += lines.size();
+    planetarium.PlotMethod3(
+        satellites.goes_8_trajectory(),
+        satellites.goes_8_trajectory().begin(),
+        satellites.goes_8_trajectory().end(),
+        now,
+        /*reverse=*/false,
+        /*add_point=*/
+        [&line](ScaledSpacePoint const& point) { line.push_back(point); },
+        /*max_points=*/std::numeric_limits<int>::max());
     ++iterations;
   }
-  Length min_x = Infinity<Length>;
-  Length min_y = Infinity<Length>;
-  Length max_x = -Infinity<Length>;
-  Length max_y = -Infinity<Length>;
-  int points = 0;
-  for (auto const& line : lines) {
-    points += line.size();
-    for (auto const& point : line) {
-      min_x = std::min(min_x, point.x());
-      min_y = std::min(min_y, point.y());
-      max_x = std::max(max_x, point.x());
-      max_y = std::max(max_y, point.y());
-    }
+  Interval<double> x;
+  Interval<double> y;
+  Interval<double> z;
+  for (auto const& point : line) {
+    x.Include(point.x);
+    y.Include(point.y);
+    z.Include(point.z);
   }
-  state.SetLabel(std::to_string(points) + " points in " +
-                 std::to_string(total_lines / iterations) + " lines within [" +
-                 DebugString(min_x) + ", " + DebugString(max_x) + "] × [" +
-                 DebugString(min_y) + ", " + DebugString(max_y) + "]");
+  state.SetLabel((std::stringstream() << line.size() << " points within " << x
+                                      << " × " << y << " × " << z)
+                     .str());
 }
 
-void BM_PlanetariumPlotMethod2NearPolarPerspective(benchmark::State& state) {
+void BM_PlanetariumPlotMethod3NearPolarPerspective(benchmark::State& state) {
   RunBenchmark(state, PolarPerspective(near));
 }
 
-void BM_PlanetariumPlotMethod2FarPolarPerspective(benchmark::State& state) {
+void BM_PlanetariumPlotMethod3FarPolarPerspective(benchmark::State& state) {
   RunBenchmark(state, PolarPerspective(far));
 }
 
-void BM_PlanetariumPlotMethod2NearEquatorialPerspective(
+void BM_PlanetariumPlotMethod3NearEquatorialPerspective(
     benchmark::State& state) {
   RunBenchmark(state, EquatorialPerspective(near));
 }
 
-void BM_PlanetariumPlotMethod2FarEquatorialPerspective(
+void BM_PlanetariumPlotMethod3FarEquatorialPerspective(
     benchmark::State& state) {
   RunBenchmark(state, EquatorialPerspective(far));
 }
 
-BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective)
+BENCHMARK(BM_PlanetariumPlotMethod3NearPolarPerspective)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective)
+BENCHMARK(BM_PlanetariumPlotMethod3FarPolarPerspective)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective)
+BENCHMARK(BM_PlanetariumPlotMethod3NearEquatorialPerspective)
     ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective)
+BENCHMARK(BM_PlanetariumPlotMethod3FarEquatorialPerspective)
     ->Unit(benchmark::kMillisecond);
 
 }  // namespace geometry
