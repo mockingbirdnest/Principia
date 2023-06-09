@@ -3,6 +3,8 @@
 #include "ksp_plugin/planetarium.hpp"
 
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 #include "astronomy/time_scales.hpp"
 #include "base/status_utilities.hpp"
