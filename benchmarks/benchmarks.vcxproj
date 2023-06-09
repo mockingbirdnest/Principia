@@ -25,30 +25,8 @@
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
     <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp" />
-    <ClCompile Include="apsides.cpp" />
-    <ClCompile Include="checkpointer_benchmark.cpp" />
-    <ClCompile Include="discrete_trajectory.cpp" />
-    <ClCompile Include="lagrange_equipotentials.cpp" />
-    <ClCompile Include="rigid_reference_frame.cpp" />
-    <ClCompile Include="elliptic_integrals_benchmark.cpp" />
-    <ClCompile Include="elliptic_functions_benchmark.cpp" />
-    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
-    <ClCompile Include="encoder.cpp" />
-    <ClCompile Include="ephemeris.cpp" />
-    <ClCompile Include="fast_sin_cos_2π_benchmark.cpp" />
-    <ClCompile Include="geopotential.cpp" />
-    <ClCompile Include="global_optimization.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="nearest_neighbour.cpp" />
-    <ClCompile Include="newhall.cpp" />
-    <ClCompile Include="orbital_elements.cpp" />
-    <ClCompile Include="perspective.cpp" />
     <ClCompile Include="planetarium_plot_methods.cpp" />
-    <ClCompile Include="polynomial.cpp" />
-    <ClCompile Include="quantities.cpp" />
-    <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp" />
-    <ClCompile Include="thread_pool.cpp" />
-    <ClCompile Include="чебышёв_series.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp" />
