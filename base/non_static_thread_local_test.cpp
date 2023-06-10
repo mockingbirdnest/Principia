@@ -20,12 +20,11 @@ using namespace std::chrono_literals;
 class NonStaticThreadLocalTest : public ::testing::Test {
  protected:
   struct T {
-    non_static_thread_local<int, T> i{this, 9};
-    non_static_thread_local<int, T> j{this, 8};
-    non_static_thread_local<std::unique_ptr<int>, T> p{this};
-    non_static_thread_local<std::vector<int>, T> v{
-        this,
-        std::initializer_list{1, 2, 5}};
+    non_static_thread_local<int> i = 9;
+    non_static_thread_local<int> j = 8;
+    non_static_thread_local<std::unique_ptr<int>> p;
+    non_static_thread_local<std::vector<int>> v =
+        std::initializer_list{1, 2, 5};
   };
 
   T x_;
@@ -57,7 +56,7 @@ TEST_F(NonStaticThreadLocalTest, ReadWrite) {
     EXPECT_THAT(x_.i(), Eq(2));
     EXPECT_THAT(y_.i(), Eq(12));
     EXPECT_THAT(x_.v(), IsEmpty());
-    EXPECT_THAT(x_.j(), Eq(8));
+    EXPECT_THAT(x_.j(), Eq(102));
   });
   t1.join();
   t2.join();

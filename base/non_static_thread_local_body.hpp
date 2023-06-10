@@ -9,39 +9,37 @@ namespace base {
 namespace _non_static_thread_local {
 namespace internal {
 
-template<typename T, typename That>
+template<typename T>
 template<typename... Args>
-non_static_thread_local<T, That>::non_static_thread_local(
-    not_null<That*> const that, Args&&... args)
-    : that_(that),
-      get_(
-          [that, tuple = std::tuple{std::forward<Args>(args)...}]() -> T& {
+non_static_thread_local<T>::non_static_thread_local(Args&&... args)
+    : get_(
+          [this, tuple = std::tuple{std::forward<Args>(args)...}]() -> T& {
         auto const [it, inserted] = members_.map_.emplace(
-            std::piecewise_construct, std::tuple{that}, tuple);
+            std::piecewise_construct, std::tuple{this}, tuple);
         return it->second;
       }) {}
 
-template<typename T, typename That>
-non_static_thread_local<T, That>::~non_static_thread_local() {
+template<typename T>
+non_static_thread_local<T>::~non_static_thread_local() {
   absl::MutexLock l(&members_.lock_);
   for (not_null const member_map : members_.extant_maps_) {
-    member_map->map_.erase(that_);
+    member_map->map_.erase(this);
   }
 }
 
-template<typename T, typename That>
-T const& non_static_thread_local<T, That>::operator()() const& {
+template<typename T>
+T const& non_static_thread_local<T>::operator()() const& {
   return get_();
 }
 
-template<typename T, typename That>
-T& non_static_thread_local<T, That>::operator()() & {
+template<typename T>
+T& non_static_thread_local<T>::operator()() & {
   return get_();
 }
 
-template<typename T, typename That>
+template<typename T>
 
-T&& non_static_thread_local<T, That>::operator()() && {
+T&& non_static_thread_local<T>::operator()() && {
   return std::move(get_());
 }
 
