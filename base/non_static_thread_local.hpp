@@ -18,7 +18,7 @@ template<typename T>
 class non_static_thread_local final {
  public:
   template<typename... Args>
-  non_static_thread_local(Args&&... args);
+  non_static_thread_local(Args&&... args);  // NOLINT(runtime/explicit)
   ~non_static_thread_local();
 
   T const& operator()() const&;
