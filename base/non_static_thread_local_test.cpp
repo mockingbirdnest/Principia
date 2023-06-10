@@ -21,6 +21,7 @@ class NonStaticThreadLocalTest : public ::testing::Test {
  protected:
   struct T {
     non_static_thread_local<int, T> i{this, 9};
+    non_static_thread_local<int, T> j{this, 8};
     non_static_thread_local<std::unique_ptr<int>, T> p{this};
     non_static_thread_local<std::vector<int>, T> v{
         this,
@@ -35,6 +36,7 @@ TEST_F(NonStaticThreadLocalTest, ReadWrite) {
   std::thread t1([this] {
     EXPECT_THAT(x_.i(), Eq(9));
     EXPECT_THAT(y_.i(), Eq(9));
+    EXPECT_THAT(x_.j(), Eq(8));
     EXPECT_THAT(x_.v(), SizeIs(3));
     x_.v().push_back(3);
     x_.i() = 1;
@@ -43,16 +45,19 @@ TEST_F(NonStaticThreadLocalTest, ReadWrite) {
     EXPECT_THAT(x_.i(), Eq(1));
     EXPECT_THAT(y_.i(), Eq(11));
     EXPECT_THAT(x_.v(), SizeIs(4));
+    EXPECT_THAT(x_.j(), Eq(8));
   });
   std::thread t2([this] {
     EXPECT_THAT(x_.i(), Eq(9));
     EXPECT_THAT(x_.v(), SizeIs(3));
     x_.v().clear();
     x_.i() = 2;
+    x_.j() = 102;
     y_.i() = 12;
     EXPECT_THAT(x_.i(), Eq(2));
     EXPECT_THAT(y_.i(), Eq(12));
     EXPECT_THAT(x_.v(), IsEmpty());
+    EXPECT_THAT(x_.j(), Eq(8));
   });
   t1.join();
   t2.join();
