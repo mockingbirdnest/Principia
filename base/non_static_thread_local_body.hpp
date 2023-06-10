@@ -20,6 +20,18 @@ non_static_thread_local<T>::non_static_thread_local(Args&&... args)
       }) {}
 
 template<typename T>
+template<typename U, typename>
+non_static_thread_local<T>::non_static_thread_local(
+    std::initializer_list<U> initializer_list)
+    : get_([this, initializer_list]() -> T& {
+        auto const [it, inserted] =
+            members_.map_.emplace(std::piecewise_construct,
+                                  std::tuple{this},
+                                  std::tuple{initializer_list});
+        return it->second;
+      }) {}
+
+template<typename T>
 non_static_thread_local<T>::~non_static_thread_local() {
   absl::MutexLock l(&members_.lock_);
   for (not_null const member_map : members_.extant_maps_) {

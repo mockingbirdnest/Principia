@@ -3,6 +3,7 @@
 #include <functional>
 #include <map>
 #include <set>
+#include <type_traits>
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
@@ -19,6 +20,10 @@ class non_static_thread_local final {
  public:
   template<typename... Args>
   non_static_thread_local(Args&&... args);  // NOLINT(runtime/explicit)
+  template<typename U,
+           typename = std::enable_if_t<
+               std::is_constructible_v<T, std::initializer_list<U>>>>
+  non_static_thread_local(std::initializer_list<U> initializer_list);
   ~non_static_thread_local();
 
   T const& operator()() const&;

@@ -21,10 +21,9 @@ class NonStaticThreadLocalTest : public ::testing::Test {
  protected:
   struct T {
     non_static_thread_local<int> i = 9;
-    non_static_thread_local<int> j = 8;
+    non_static_thread_local<int> j{8};
     non_static_thread_local<std::unique_ptr<int>> p;
-    non_static_thread_local<std::vector<int>> v =
-        std::initializer_list{1, 2, 5};
+    non_static_thread_local<std::vector<int>> v{1, 2, 5};
   };
 
   T x_;
