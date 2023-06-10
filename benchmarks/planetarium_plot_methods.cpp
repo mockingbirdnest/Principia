@@ -40,7 +40,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT(whitespace/line_length)
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -342,7 +342,7 @@ void BM_PlanetariumPlotMethod3(
 #define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL( \
     name, plotting_frame)                                                  \
   PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR(               \
-      PolarPerspective##name, &PolarPerspective, (plotting_frame));         \
+      PolarPerspective##name, &PolarPerspective, (plotting_frame));        \
   PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR(               \
       EquatorialPerspective##name, &EquatorialPerspective, (plotting_frame))
 
