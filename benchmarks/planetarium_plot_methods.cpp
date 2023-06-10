@@ -207,15 +207,20 @@ class Satellites {
         /*sphere_radius_multiplier=*/1,
         /*angular_resolution=*/0.4 * ArcMinute,
         /*field_of_view=*/90 * Degree);
+    Instant const t = goes_8_trajectory().front().time;
+    Similarity<Navigation, GCRS> const plotting_to_gcrs =
+        gcrs().ToThisFrameAtTimeSimilarly(t).similarity() *
+        plotting_frame->FromThisFrameAtTimeSimilarly(t).similarity();
     return Planetarium(
         parameters,
         perspective,
         ephemeris_.get(),
         plotting_frame,
-        [](Position<Navigation> const& plotted_point) {
+        [plotting_to_gcrs](Position<Navigation> const& plotted_point) {
           constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
           return ScaledSpacePoint::FromCoordinates(
-              ((plotted_point - Navigation::origin) * inverse_scale_factor)
+              ((plotting_to_gcrs(plotted_point) - GCRS::origin) *
+               inverse_scale_factor)
                   .coordinates());
         });
   }
