@@ -54,6 +54,8 @@
     <ClInclude Include="mod.hpp" />
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="monostable_body.hpp" />
+    <ClInclude Include="non_static_thread_local.hpp" />
+    <ClInclude Include="non_static_thread_local_body.hpp" />
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="optional_logging.hpp" />
@@ -102,6 +104,7 @@
     <ClCompile Include="jthread_test.cpp" />
     <ClCompile Include="macos_allocator_replacement_test.cpp" />
     <ClCompile Include="malloc_allocator_test.cpp" />
+    <ClCompile Include="non_static_thread_local_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
