@@ -15,6 +15,15 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 
+// A non-static data member of type non_static_thread_local<T> functions as a
+// non-static thread-local data member of type T: it is an independent object
+// for each instance of the enclosing class and for each accessing thread.
+// Access is done through the operator().
+// For each T, a global lock is taken as part of the following operations:
+// 1. For each object of type non_static_thread_local<T>: destruction;
+// 2. For each thread, the first access to an object of type
+//    non_static_thread_local<T>.
+// Access is otherwise lock-free.
 template<typename T>
 class non_static_thread_local final {
  public:
@@ -31,17 +40,10 @@ class non_static_thread_local final {
   T&& operator()() &&;
 
  private:
-  class MemberMap {
+  class MemberMap final {
    public:
-    MemberMap() {
-      absl::MutexLock l(&lock_);
-      extant_maps_.insert(this);
-    }
-
-    ~MemberMap() {
-      absl::MutexLock l(&lock_);
-      extant_maps_.erase(this);
-    }
+    MemberMap();
+    ~MemberMap();
 
     std::map<not_null<non_static_thread_local*>, T> map_;
 
@@ -49,18 +51,9 @@ class non_static_thread_local final {
     static std::set<not_null<MemberMap*>> extant_maps_ GUARDED_BY(&lock_);
   };
   std::function<T&()> const get_;
+  // Emplaced lazily on the first call to |get_| from this thread.
   static thread_local std::optional<MemberMap> members_;
 };
-
-template<typename T>
-absl::Mutex non_static_thread_local<T>::MemberMap::lock_;
-template<typename T>
-std::set<not_null<typename non_static_thread_local<T>::MemberMap*>>
-    non_static_thread_local<T>::MemberMap::extant_maps_;
-
-template<typename T>
-thread_local std::optional<typename non_static_thread_local<T>::MemberMap>
-    non_static_thread_local<T>::members_;
 
 }  // namespace internal
 
