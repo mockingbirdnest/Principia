@@ -45,7 +45,9 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -115,14 +117,40 @@ class Satellites {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             EphemerisParameters())),
+        sun_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Sun))),
+        mercury_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Mercury))),
+        venus_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Venus))),
         earth_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Earth))),
+        moon_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Moon))),
         earth_centred_inertial_(
             make_not_null_unique<
                 BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
                 ephemeris_.get(),
-                earth_)) {
+                earth_)),
+        earth_moon_lagrange_(
+            make_not_null_unique<
+                RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
+                ephemeris_.get(),
+                std::vector<not_null<MassiveBody const*>>{earth_},
+                std::vector<not_null<MassiveBody const*>>{moon_})),
+        sun_earth_lagrange_(
+            make_not_null_unique<
+                RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
+                ephemeris_.get(),
+                std::vector<not_null<MassiveBody const*>>{sun_,
+                                                          mercury_,
+                                                          venus_},
+                std::vector<not_null<MassiveBody const*>>{earth_, moon_})) {
     // Two-line elements for GOES-8:
     // 1 23051U 94022A   00004.06628221 -.00000243  00000-0  00000-0 0  9630
     // 2 23051   0.4232  97.7420 0004776 192.8349 121.5613  1.00264613 28364
@@ -155,22 +183,36 @@ class Satellites {
   }
 
   Planetarium MakePlanetarium(
-      Perspective<Navigation, Camera> const& perspective) const {
+      Perspective<Navigation, Camera> const& perspective,
+      not_null<PlottingFrame const*> plotting_frame) const {
     // No dark area, human visual acuity, wide field of view.
     Planetarium::Parameters parameters(
         /*sphere_radius_multiplier=*/1,
         /*angular_resolution=*/0.4 * ArcMinute,
         /*field_of_view=*/90 * Degree);
-    return Planetarium(parameters,
-                       perspective,
-                       ephemeris_.get(),
-                       earth_centred_inertial_.get(),
+    return Planetarium(
+        parameters,
+        perspective,
+        ephemeris_.get(),
+        plotting_frame,
         [](Position<Navigation> const& plotted_point) {
           constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
           return ScaledSpacePoint::FromCoordinates(
-              ((plotted_point - Navigation::origin) *
-               inverse_scale_factor).coordinates());
+              ((plotted_point - Navigation::origin) * inverse_scale_factor)
+                  .coordinates());
         });
+  }
+
+  PlottingFrame const& earth_centred_inertial() const {
+    return *earth_centred_inertial_;
+  }
+
+  PlottingFrame const& earth_moon_lagrange() const {
+    return *earth_moon_lagrange_;
+  }
+
+  PlottingFrame const& sun_earth_lagrange() const {
+    return *sun_earth_lagrange_;
   }
 
  private:
@@ -192,17 +234,33 @@ class Satellites {
 
   not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
+  not_null<MassiveBody const*> const sun_;
+  not_null<MassiveBody const*> const mercury_;
+  not_null<MassiveBody const*> const venus_;
   not_null<MassiveBody const*> const earth_;
-  not_null<std::unique_ptr<NavigationFrame>> const earth_centred_inertial_;
+  not_null<MassiveBody const*> const moon_;
+  not_null<std::unique_ptr<PlottingFrame>> const earth_centred_inertial_;
+  not_null<std::unique_ptr<PlottingFrame>> const earth_moon_lagrange_;
+  not_null<std::unique_ptr<PlottingFrame>> const sun_earth_lagrange_;
   DiscreteTrajectory<Barycentric> goes_8_trajectory_;
 };
 
 }  // namespace
 
-void RunBenchmark(benchmark::State& state,
-                  Perspective<Navigation, Camera> const& perspective) {
+template<typename... Args>
+void BM_PlanetariumPlotMethod3(
+    benchmark::State& state,
+                  Args&&... args) {
+  auto const [perspective, plotting_frame] =
+      std::make_tuple(std::move(args)...);
+  static_assert(std::is_same_v<decltype(perspective),
+                               Perspective<Navigation, Camera> const>);
+  static_assert(
+      std::is_same_v<decltype(plotting_frame),
+                     PlottingFrame const& (Satellites::*const)() const>);
   Satellites satellites;
-  Planetarium planetarium = satellites.MakePlanetarium(perspective);
+  Planetarium planetarium =
+      satellites.MakePlanetarium(perspective, &(satellites.*plotting_frame)());
   std::vector<ScaledSpacePoint> line;
   int iterations = 0;
   // This is the time of a lunar eclipse in January 2000.
@@ -232,32 +290,41 @@ void RunBenchmark(benchmark::State& state,
                      .str());
 }
 
-void BM_PlanetariumPlotMethod3NearPolarPerspective(benchmark::State& state) {
-  RunBenchmark(state, PolarPerspective(near));
-}
+#define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR( \
+    name, perspective, plotting_frame, scale)                      \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+                    Near##name,                                    \
+                    (perspective)(near * (scale)),                 \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond);                             \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+                    Far##name,                                     \
+                    (perspective)(far * (scale)),                  \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond)
 
-void BM_PlanetariumPlotMethod3FarPolarPerspective(benchmark::State& state) {
-  RunBenchmark(state, PolarPerspective(far));
-}
+#define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(  \
+    name, plotting_frame, scale)                                            \
+  PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR(                \
+      PolarPerspective##name, PolarPerspective, (plotting_frame), (scale)); \
+  PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR(                \
+      EquatorialPerspective##name,                                          \
+      EquatorialPerspective,                                                \
+      (plotting_frame),                                                     \
+      (scale))
 
-void BM_PlanetariumPlotMethod3NearEquatorialPerspective(
-    benchmark::State& state) {
-  RunBenchmark(state, EquatorialPerspective(near));
-}
-
-void BM_PlanetariumPlotMethod3FarEquatorialPerspective(
-    benchmark::State& state) {
-  RunBenchmark(state, EquatorialPerspective(far));
-}
-
-BENCHMARK(BM_PlanetariumPlotMethod3NearPolarPerspective)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod3FarPolarPerspective)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod3NearEquatorialPerspective)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod3FarEquatorialPerspective)
-    ->Unit(benchmark::kMillisecond);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    ECI,
+    &Satellites::earth_centred_inertial,
+    1);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    EML,
+    &Satellites::earth_moon_lagrange,
+    (1 * Metre) / (385'000 * Kilo(Metre)));
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    SEL,
+    &Satellites::sun_earth_lagrange,
+    (1 * Metre) / (1 * AstronomicalUnit));
 
 }  // namespace geometry
 }  // namespace principia
