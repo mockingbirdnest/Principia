@@ -49,7 +49,7 @@ class non_static_thread_local final {
     static std::set<not_null<MemberMap*>> extant_maps_ GUARDED_BY(&lock_);
   };
   std::function<T&()> const get_;
-  static thread_local MemberMap members_;
+  static thread_local std::optional<MemberMap> members_;
 };
 
 template<typename T>
@@ -59,7 +59,7 @@ std::set<not_null<typename non_static_thread_local<T>::MemberMap*>>
     non_static_thread_local<T>::MemberMap::extant_maps_;
 
 template<typename T>
-thread_local typename non_static_thread_local<T>::MemberMap
+thread_local std::optional<typename non_static_thread_local<T>::MemberMap>
     non_static_thread_local<T>::members_;
 
 }  // namespace internal

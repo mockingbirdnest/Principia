@@ -14,7 +14,10 @@ template<typename... Args>
 non_static_thread_local<T>::non_static_thread_local(Args&&... args)
     : get_(
           [this, tuple = std::tuple{std::forward<Args>(args)...}]() -> T& {
-        auto const [it, inserted] = members_.map_.emplace(
+        if (!members_.has_value()) {
+          members_.emplace();
+        }
+        auto const [it, inserted] = members_->map_.emplace(
             std::piecewise_construct, std::tuple{this}, tuple);
         return it->second;
       }) {}
@@ -24,8 +27,11 @@ template<typename U, typename>
 non_static_thread_local<T>::non_static_thread_local(
     std::initializer_list<U> initializer_list)
     : get_([this, initializer_list]() -> T& {
+        if (!members_.has_value()) {
+          members_.emplace();
+        }
         auto const [it, inserted] =
-            members_.map_.emplace(std::piecewise_construct,
+            members_->map_.emplace(std::piecewise_construct,
                                   std::tuple{this},
                                   std::tuple{initializer_list});
         return it->second;
@@ -33,8 +39,8 @@ non_static_thread_local<T>::non_static_thread_local(
 
 template<typename T>
 non_static_thread_local<T>::~non_static_thread_local() {
-  absl::MutexLock l(&members_.lock_);
-  for (not_null const member_map : members_.extant_maps_) {
+  absl::MutexLock l(&MemberMap::lock_);
+  for (not_null const member_map : MemberMap::extant_maps_) {
     member_map->map_.erase(this);
   }
 }
