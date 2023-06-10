@@ -20,7 +20,7 @@ using namespace principia::base::_not_null;
 // for each instance of the enclosing class and for each accessing thread.
 // Access is done through the operator().
 // For each T, a global lock is taken as part of the following operations:
-// 1. For each object of type non_static_thread_local<T>: destruction;
+// 1. For each object of type non_static_thread_local<T>, its destruction;
 // 2. For each thread, the first access to an object of type
 //    non_static_thread_local<T>.
 // Access is otherwise lock-free.
