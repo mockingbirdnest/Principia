@@ -2,6 +2,8 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
+#include <algorithm>
+
 namespace principia {
 namespace ksp_plugin {
 namespace _planetarium {
