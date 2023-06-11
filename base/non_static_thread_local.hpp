@@ -21,11 +21,17 @@ using namespace principia::base::_not_null;
 // Access is done through the operator().
 // For each T, a global lock is taken as part of the following operations:
 // 1. For each object of type non_static_thread_local<T>, its destruction;
-// 2. For each thread, the first access to an object of type
-//    non_static_thread_local<T>.
+// 2. For each thread:
+//    a. the first access to an object of type non_static_thread_local<T>,
+//    b. if a. happened, the destruction of the thread.
+// In addition, for each (object, thread) pair, a lock is taken at the first
+// access; however, this lock can only be contended by the destruction of an
+// object of type non_static_thread_local<T>.
 // Access is otherwise lock-free.
 template<typename T>
 class non_static_thread_local final {
+  using InstanceMap = std::map<not_null<non_static_thread_local*>,
+                               not_null<std::shared_ptr<T>>>;
  public:
   template<typename... Args>
   non_static_thread_local(Args&&... args);  // NOLINT(runtime/explicit)
@@ -40,19 +46,28 @@ class non_static_thread_local final {
   T&& operator()() &&;
 
  private:
-  class MemberMap final {
+  class RegisteredInstanceMap final {
    public:
-    MemberMap();
-    ~MemberMap();
+    RegisteredInstanceMap();
+    ~RegisteredInstanceMap();
 
-    std::map<not_null<non_static_thread_local*>, T> map_;
+    // This map is read lock-free, but mutated under |thread_lock_| for
+    // consistency.
+    absl::Mutex thread_lock_;
+    std::shared_ptr<InstanceMap const> map_ PT_GUARDED_BY(thread_lock_) =
+        std::make_shared<InstanceMap const>();
 
-    static absl::Mutex lock_;
-    static std::set<not_null<MemberMap*>> extant_maps_ GUARDED_BY(&lock_);
+    static absl::Mutex global_lock_ ACQUIRED_BEFORE(thread_lock_);
+    static std::set<not_null<RegisteredInstanceMap*>> extant_maps_
+        GUARDED_BY(global_lock_);
   };
-  std::function<T&()> const get_;
-  // Emplaced lazily on the first call to |get_| from this thread.
-  static thread_local std::optional<MemberMap> members_;
+
+  T& Get();
+
+  std::function<not_null<std::unique_ptr<T>>()> const initialize_;
+  // Emplaced lazily on the first call to |Get| from this thread.
+  static thread_local std::optional<RegisteredInstanceMap>
+      this_thread_all_instances_;
 };
 
 }  // namespace internal
