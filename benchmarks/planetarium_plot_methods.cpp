@@ -291,7 +291,7 @@ void BM_PlanetariumPlotMethod3(
         Length const distance_from_earth),
     Length const distance_from_earth,
     PlottingFrame const& (Satellites::*const plotting_frame)() const) {
-  Satellites satellites;
+  static Satellites satellites;
   Instant const t = satellites.goes_8_trajectory().front().time;
   PlottingFrame const& plotting = (satellites.*plotting_frame)();
   Planetarium planetarium = satellites.MakePlanetarium(
