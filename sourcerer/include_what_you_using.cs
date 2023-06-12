@@ -95,6 +95,8 @@ class IncludeWhatYouUsing {
   private static void FixRedundantUsingDirectives(
       Parser.File body,
       Parser.File header) {
+    // Find the using directives that are present in the body and in the header.
+    // They are redundant in the body.
     List<UsingDirective> body_using_directives =
         FindUsingDirectives(body, internal_only: true);
     List<UsingDirective> header_using_directives =
@@ -106,15 +108,35 @@ class IncludeWhatYouUsing {
                                          where common_ns.Contains(ud.ns)
                                          select ud;
 
+    // Remove the redundant using directives.
+    bool all_body_using_directives_are_unneeded =
+        unneeded_body_using_directives.ToList().Count ==
+        body_using_directives.Count;
+    Node following_node_in_parent = null;
     foreach (UsingDirective ud in unneeded_body_using_directives) {
       var parent = ud.parent;
       Debug.Assert(parent is Namespace,
                    "Internal using directive not within a namespace");
-      int internal_position_in_parent = ud.position_in_parent;
+      int ud_position_in_parent = ud.position_in_parent;
       var preceding_nodes_in_parent =
-          parent.children.Take(internal_position_in_parent).ToList();
+          parent.children.Take(ud_position_in_parent).ToList();
       var following_nodes_in_parent = parent.children.
-          Skip(internal_position_in_parent + 1).ToList();
+          Skip(ud_position_in_parent + 1).ToList();
+      following_node_in_parent = following_nodes_in_parent[0];
+      parent.children = preceding_nodes_in_parent;
+      parent.AddChildren(following_nodes_in_parent);
+    }
+
+    // If all the using directives are gone, remove any extra blank line that
+    // followed them.
+    if (all_body_using_directives_are_unneeded &&
+        following_node_in_parent is Text{ text: "" } blank_line) {
+      var parent = blank_line.parent;
+      var blank_line_position_in_parent = blank_line.position_in_parent;
+      var preceding_nodes_in_parent =
+          parent.children.Take(blank_line_position_in_parent).ToList();
+      var following_nodes_in_parent = parent.children.
+          Skip(blank_line_position_in_parent + 1).ToList();
       parent.children = preceding_nodes_in_parent;
       parent.AddChildren(following_nodes_in_parent);
     }
