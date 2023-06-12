@@ -83,8 +83,6 @@ class IncludeWhatYouUsing {
       foreach (FileInfo input_file in all_body_files) {
         if (corresponding_header.ContainsKey(input_file)) {
           var parser_file = file_info_to_file[input_file];
-          var a = corresponding_header[input_file];
-          var b = file_info_to_file[a];
           FixRedundantUsingDirectives(parser_file,
                                       file_info_to_file[
                                           corresponding_header[input_file]]);
