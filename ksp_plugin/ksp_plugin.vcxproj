@@ -56,6 +56,7 @@
     <ClInclude Include="manœuvre_body.hpp" />
     <ClInclude Include="part.hpp" />
     <ClInclude Include="planetarium.hpp" />
+    <ClInclude Include="planetarium_body.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="renderer.hpp" />

@@ -132,21 +132,11 @@ class Planetarium {
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points) const;
 
-  // The same method, operating on the |Trajectory| interface.
+  // The same method, operating on the |Trajectory| interface for any frame that
+  // can be converted to |Navigation|.
+  template<typename Frame>
   void PlotMethod3(
-      Trajectory<Barycentric> const& trajectory,
-      Instant const& first_time,
-      Instant const& last_time,
-      Instant const& now,
-      bool reverse,
-      std::function<void(ScaledSpacePoint const&)> const& add_point,
-      int max_points,
-      Length* minimal_distance = nullptr) const;
-
-  // The same method, operating on a trajectory already plotted in the plotting
-  // frame.
-  void PlotMethod3(
-      Trajectory<Navigation> const& trajectory,
+      Trajectory<Frame> const& trajectory,
       Instant const& first_time,
       Instant const& last_time,
       Instant const& now,
@@ -190,3 +180,5 @@ using internal::ScaledSpacePoint;
 }  // namespace _planetarium
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#include "ksp_plugin/planetarium_body.hpp"

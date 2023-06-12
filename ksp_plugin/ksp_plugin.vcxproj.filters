@@ -80,6 +80,9 @@
     <ClInclude Include="geometric_potential_plotter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="planetarium_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
