@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace principia {
 namespace sourcerer {
@@ -21,6 +22,8 @@ internal class Sourcerer {
       Renamespacer.Run(args_after_0);
     } else if (args[0] == "include_what_you_using") {
       IncludeWhatYouUsing.Run(args_after_0);
+    } else {
+      throw new ArgumentException("Unknown command " + args[0]);
     }
   }
 }

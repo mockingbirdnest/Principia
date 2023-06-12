@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using static principia.sourcerer.Analyser;
 using static principia.sourcerer.Filenames;
 using static principia.sourcerer.Parser;
@@ -42,10 +43,10 @@ class IncludeWhatYouUsing {
       throw new NullReferenceException();
     }
 
-    // Parse all the files in our projects.
-    var file_info_to_file = new Dictionary<FileInfo, Parser.File>();
-    var corresponding_header = new Dictionary<FileInfo, FileInfo>();
     foreach (DirectoryInfo project in projects) {
+      // Parse all the files in this project.
+      var file_info_to_file = new Dictionary<FileInfo, Parser.File>();
+      var file_name_to_file_info = new Dictionary<string, FileInfo>();
       FileInfo[] hpp_files = project.GetFiles("*.hpp");
       FileInfo[] cpp_files = project.GetFiles("*.cpp");
       FileInfo[] body_hpp_files = Array.FindAll(hpp_files, IsBodyHpp);
@@ -55,18 +56,35 @@ class IncludeWhatYouUsing {
         if (excluded.Contains(input_file.Name)) {
           continue;
         }
-        if (Filenames.IsBody(input_file, extra_headers)) {
-          var corresponding_header_file =
-              new FileInfo(Filenames.CorrespondingHeader(input_file));
-          corresponding_header.Add(input_file, corresponding_header_file);
-        }
         Parser.File parser_file =
             Parser.ParseFile(input_file, IsBody(input_file, extra_headers));
         file_info_to_file.Add(input_file, parser_file);
+        file_name_to_file_info.Add(Path.GetFullPath(input_file.Name,
+                                                    input_file.DirectoryName),
+                                   input_file);
       }
+
+      // Map the bodies to their headers.
+      var corresponding_header = new Dictionary<FileInfo, FileInfo>();
+      foreach (FileInfo input_file in all_body_files) {
+        if (Filenames.IsTest(input_file)) {
+          continue;
+        }
+        string corresponding_header_file_name =
+            Filenames.CorrespondingHeader(input_file);
+        var corresponding_header_file =
+            file_name_to_file_info[corresponding_header_file_name];
+        if (corresponding_header_file != input_file) {
+          corresponding_header.Add(input_file, corresponding_header_file);
+        }
+      }
+
+      // Remove redundant using directives from the bodies.
       foreach (FileInfo input_file in all_body_files) {
         if (corresponding_header.ContainsKey(input_file)) {
           var parser_file = file_info_to_file[input_file];
+          var a = corresponding_header[input_file];
+          var b = file_info_to_file[a];
           FixRedundantUsingDirectives(parser_file,
                                       file_info_to_file[
                                           corresponding_header[input_file]]);
