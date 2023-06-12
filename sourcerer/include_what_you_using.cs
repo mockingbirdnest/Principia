@@ -67,15 +67,16 @@ class IncludeWhatYouUsing {
       // Map the bodies to their headers.
       var corresponding_header = new Dictionary<FileInfo, FileInfo>();
       foreach (FileInfo input_file in all_body_files) {
-        if (Filenames.IsTest(input_file)) {
-          continue;
-        }
         string corresponding_header_file_name =
             Filenames.CorrespondingHeader(input_file);
-        var corresponding_header_file =
-            file_name_to_file_info[corresponding_header_file_name];
-        if (corresponding_header_file != input_file) {
-          corresponding_header.Add(input_file, corresponding_header_file);
+        // Benchmarks and tests don't have a corresponding header.
+        if (file_name_to_file_info.ContainsKey(
+                corresponding_header_file_name)) {
+          var corresponding_header_file =
+              file_name_to_file_info[corresponding_header_file_name];
+          if (corresponding_header_file != input_file) {
+            corresponding_header.Add(input_file, corresponding_header_file);
+          }
         }
       }
 
