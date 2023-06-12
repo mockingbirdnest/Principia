@@ -3,6 +3,8 @@
 #include "ksp_plugin/planetarium.hpp"
 
 #include <algorithm>
+#include <limits>
+#include <vector>
 
 #include "astronomy/time_scales.hpp"
 #include "base/status_utilities.hpp"
@@ -18,11 +20,13 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_space_transformations;
@@ -36,12 +40,17 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
@@ -55,49 +64,45 @@ constexpr Length far = 400'000 * Kilo(Metre);
 constexpr Length focal = 1 * Metre;
 
 Perspective<Navigation, Camera> PolarPerspective(
+    Similarity<Navigation, GCRS> const& navigation_to_gcrs_at_epoch,
     Length const distance_from_earth) {
-  using LeftNavigation =
-      Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
-  return {
-      RigidTransformation<Navigation, Camera>(
-          Navigation::origin + Displacement<Navigation>(
-                                   {0 * Metre, 0 * Metre, distance_from_earth}),
-          Camera::origin,
-          Rotation<LeftNavigation, Camera>(
-              Vector<double, LeftNavigation>({1, 0, 0}),
-              Vector<double, LeftNavigation>({0, -1, 0}),
-              Bivector<double, LeftNavigation>({0, 0, -1}))
-                  .Forget<OrthogonalMap>() *
-              Signature<Navigation, LeftNavigation>(
-                  Sign::Positive(),
-                  Sign::Positive(),
-                  DeduceSignReversingOrientation{})
-                  .Forget<OrthogonalMap>())
-          .Forget<Similarity>(),
-      focal};
+  using LeftGCRS = Frame<struct LeftGCRSTag, Arbitrary, Handedness::Left>;
+  return {RigidTransformation<GCRS, Camera>(
+              GCRS::origin + Displacement<GCRS>(
+                                 {0 * Metre, 0 * Metre, distance_from_earth}),
+              Camera::origin,
+              Rotation<LeftGCRS, Camera>(Vector<double, LeftGCRS>({1, 0, 0}),
+                                         Vector<double, LeftGCRS>({0, -1, 0}),
+                                         Bivector<double, LeftGCRS>({0, 0, -1}))
+                      .Forget<OrthogonalMap>() *
+                  Signature<GCRS, LeftGCRS>(Sign::Positive(),
+                                            Sign::Positive(),
+                                            DeduceSignReversingOrientation{})
+                      .Forget<OrthogonalMap>())
+                  .Forget<Similarity>() *
+              navigation_to_gcrs_at_epoch,
+          focal};
 }
 
 Perspective<Navigation, Camera> EquatorialPerspective(
+    Similarity<Navigation, GCRS> const& navigation_to_gcrs_at_epoch,
     Length const distance_from_earth) {
-  using LeftNavigation =
-      Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
-  return {
-      RigidTransformation<Navigation, Camera>(
-          Navigation::origin + Displacement<Navigation>(
-                                   {0 * Metre, distance_from_earth, 0 * Metre}),
-          Camera::origin,
-          Rotation<LeftNavigation, Camera>(
-              Vector<double, LeftNavigation>({1, 0, 0}),
-              Vector<double, LeftNavigation>({0, 0, 1}),
-              Bivector<double, LeftNavigation>({0, -1, 0}))
-                  .Forget<OrthogonalMap>() *
-              Signature<Navigation, LeftNavigation>(
-                  Sign::Positive(),
-                  Sign::Positive(),
-                  DeduceSignReversingOrientation{})
-                  .Forget<OrthogonalMap>())
-          .Forget<Similarity>(),
-      focal};
+  using LeftGCRS = Frame<struct LeftGCRSTag, Arbitrary, Handedness::Left>;
+  return {RigidTransformation<GCRS, Camera>(
+              GCRS::origin + Displacement<GCRS>(
+                                 {0 * Metre, distance_from_earth, 0 * Metre}),
+              Camera::origin,
+              Rotation<LeftGCRS, Camera>(Vector<double, LeftGCRS>({1, 0, 0}),
+                                         Vector<double, LeftGCRS>({0, 0, 1}),
+                                         Bivector<double, LeftGCRS>({0, -1, 0}))
+                      .Forget<OrthogonalMap>() *
+                  Signature<GCRS, LeftGCRS>(Sign::Positive(),
+                                            Sign::Positive(),
+                                            DeduceSignReversingOrientation{})
+                      .Forget<OrthogonalMap>())
+                  .Forget<Similarity>() *
+              navigation_to_gcrs_at_epoch,
+          focal};
 }
 
 class Satellites {
@@ -112,14 +117,57 @@ class Satellites {
             /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                      /*geopotential_tolerance=*/0x1p-24},
             EphemerisParameters())),
+        sun_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Sun))),
+        mercury_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Mercury))),
+        venus_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Venus))),
         earth_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Earth))),
+        moon_(solar_system_->massive_body(
+            *ephemeris_,
+            SolarSystemFactory::name(SolarSystemFactory::Moon))),
+        gcrs_(
+            make_not_null_unique<
+                BodyCentredNonRotatingReferenceFrame<Barycentric, GCRS>>(
+                ephemeris_.get(),
+            earth_)),
         earth_centred_inertial_(
             make_not_null_unique<
                 BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
                 ephemeris_.get(),
-                earth_)) {
+                earth_)),
+        earth_centred_earth_fixed_(
+            make_not_null_unique<
+                BodySurfaceReferenceFrame<Barycentric, Navigation>>(
+                ephemeris_.get(),
+                earth_)),
+        geocentric_solar_ecliptic_(
+            make_not_null_unique<
+                BodyCentredBodyDirectionReferenceFrame<Barycentric,
+                                                       Navigation>>(
+                ephemeris_.get(),
+                earth_,
+                sun_)),
+        earth_moon_lagrange_(
+            make_not_null_unique<
+                RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
+                ephemeris_.get(),
+                std::vector<not_null<MassiveBody const*>>{earth_},
+                std::vector<not_null<MassiveBody const*>>{moon_})),
+        sun_earth_lagrange_(
+            make_not_null_unique<
+                RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
+                ephemeris_.get(),
+                std::vector<not_null<MassiveBody const*>>{sun_,
+                                                          mercury_,
+                                                          venus_},
+                std::vector<not_null<MassiveBody const*>>{earth_, moon_})) {
     // Two-line elements for GOES-8:
     // 1 23051U 94022A   00004.06628221 -.00000243  00000-0  00000-0 0  9630
     // 2 23051   0.4232  97.7420 0004776 192.8349 121.5613  1.00264613 28364
@@ -152,22 +200,53 @@ class Satellites {
   }
 
   Planetarium MakePlanetarium(
-      Perspective<Navigation, Camera> const& perspective) const {
+      Perspective<Navigation, Camera> const& perspective,
+      not_null<PlottingFrame const*> plotting_frame) const {
     // No dark area, human visual acuity, wide field of view.
     Planetarium::Parameters parameters(
         /*sphere_radius_multiplier=*/1,
         /*angular_resolution=*/0.4 * ArcMinute,
         /*field_of_view=*/90 * Degree);
-    return Planetarium(parameters,
-                       perspective,
-                       ephemeris_.get(),
-                       earth_centred_inertial_.get(),
-        [](Position<Navigation> const& plotted_point) {
+    Instant const t = goes_8_trajectory().front().time;
+    Similarity<Navigation, GCRS> const plotting_to_gcrs =
+        gcrs().ToThisFrameAtTimeSimilarly(t).similarity() *
+        plotting_frame->FromThisFrameAtTimeSimilarly(t).similarity();
+    return Planetarium(
+        parameters,
+        perspective,
+        ephemeris_.get(),
+        plotting_frame,
+        [plotting_to_gcrs](Position<Navigation> const& plotted_point) {
           constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
           return ScaledSpacePoint::FromCoordinates(
-              ((plotted_point - Navigation::origin) *
-               inverse_scale_factor).coordinates());
+              ((plotting_to_gcrs(plotted_point) - GCRS::origin) *
+               inverse_scale_factor)
+                  .coordinates());
         });
+  }
+
+  ReferenceFrame<Barycentric, GCRS> const& gcrs() const {
+    return *gcrs_;
+  }
+
+  PlottingFrame const& earth_centred_inertial() const {
+    return *earth_centred_inertial_;
+  }
+
+  PlottingFrame const& earth_centred_earth_fixed() const {
+    return *earth_centred_earth_fixed_;
+  }
+
+  PlottingFrame const& geocentric_solar_ecliptic() const {
+    return *geocentric_solar_ecliptic_;
+  }
+
+  PlottingFrame const& earth_moon_lagrange() const {
+    return *earth_moon_lagrange_;
+  }
+
+  PlottingFrame const& sun_earth_lagrange() const {
+    return *sun_earth_lagrange_;
   }
 
  private:
@@ -189,77 +268,104 @@ class Satellites {
 
   not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
   not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
-  not_null<MassiveBody const*> const earth_;
-  not_null<std::unique_ptr<NavigationFrame>> const earth_centred_inertial_;
+  not_null<MassiveBody const*> const sun_;
+  not_null<MassiveBody const*> const mercury_;
+  not_null<MassiveBody const*> const venus_;
+  not_null<RotatingBody<Barycentric> const*> const earth_;
+  not_null<MassiveBody const*> const moon_;
+  not_null<std::unique_ptr<ReferenceFrame<Barycentric, GCRS>>> const gcrs_;
+  not_null<std::unique_ptr<PlottingFrame>> const earth_centred_inertial_;
+  not_null<std::unique_ptr<PlottingFrame>> const earth_centred_earth_fixed_;
+  not_null<std::unique_ptr<PlottingFrame>> const geocentric_solar_ecliptic_;
+  not_null<std::unique_ptr<PlottingFrame>> const earth_moon_lagrange_;
+  not_null<std::unique_ptr<PlottingFrame>> const sun_earth_lagrange_;
   DiscreteTrajectory<Barycentric> goes_8_trajectory_;
 };
 
 }  // namespace
 
-void RunBenchmark(benchmark::State& state,
-                  Perspective<Navigation, Camera> const& perspective) {
-  Satellites satellites;
-  Planetarium planetarium = satellites.MakePlanetarium(perspective);
-  RP2Lines<Length, Camera> lines;
-  int total_lines = 0;
+void BM_PlanetariumPlotMethod3(
+    benchmark::State& state,
+    Perspective<Navigation, Camera> (*const perspective)(
+        Similarity<Navigation, GCRS> const& navigation_to_gcrs_at_epoch,
+        Length const distance_from_earth),
+    Length const distance_from_earth,
+    PlottingFrame const& (Satellites::*const plotting_frame)() const) {
+  static Satellites satellites;
+  Instant const t = satellites.goes_8_trajectory().front().time;
+  PlottingFrame const& plotting = (satellites.*plotting_frame)();
+  Planetarium planetarium = satellites.MakePlanetarium(
+      perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
+                   plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
+                  distance_from_earth),
+      &plotting);
+  std::vector<ScaledSpacePoint> line;
   int iterations = 0;
   // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   for (auto _ : state) {
-    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory(),
-                                    satellites.goes_8_trajectory().begin(),
-                                    satellites.goes_8_trajectory().end(),
-                                    now,
-                                    /*reverse=*/false);
-    total_lines += lines.size();
+    line.clear();
+    planetarium.PlotMethod3(
+        satellites.goes_8_trajectory(),
+        satellites.goes_8_trajectory().begin(),
+        satellites.goes_8_trajectory().end(),
+        now,
+        /*reverse=*/false,
+        /*add_point=*/
+        [&line](ScaledSpacePoint const& point) { line.push_back(point); },
+        /*max_points=*/std::numeric_limits<int>::max());
     ++iterations;
   }
-  Length min_x = Infinity<Length>;
-  Length min_y = Infinity<Length>;
-  Length max_x = -Infinity<Length>;
-  Length max_y = -Infinity<Length>;
-  int points = 0;
-  for (auto const& line : lines) {
-    points += line.size();
-    for (auto const& point : line) {
-      min_x = std::min(min_x, point.x());
-      min_y = std::min(min_y, point.y());
-      max_x = std::max(max_x, point.x());
-      max_y = std::max(max_y, point.y());
-    }
+  Interval<double> x;
+  Interval<double> y;
+  Interval<double> z;
+  for (auto const& point : line) {
+    x.Include(point.x);
+    y.Include(point.y);
+    z.Include(point.z);
   }
-  state.SetLabel(std::to_string(points) + " points in " +
-                 std::to_string(total_lines / iterations) + " lines within [" +
-                 DebugString(min_x) + ", " + DebugString(max_x) + "] × [" +
-                 DebugString(min_y) + ", " + DebugString(max_y) + "]");
+  state.SetLabel((std::stringstream() << line.size() << " points within " << x
+                                      << " × " << y << " × " << z)
+                     .str());
 }
 
-void BM_PlanetariumPlotMethod2NearPolarPerspective(benchmark::State& state) {
-  RunBenchmark(state, PolarPerspective(near));
-}
+#define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR( \
+    name, perspective, plotting_frame)                             \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+                    Near##name,                                    \
+                    (perspective),                                 \
+                    near,                                          \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond);                             \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+                    Far##name,                                     \
+                    (perspective),                                 \
+                    far,                                           \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond)
 
-void BM_PlanetariumPlotMethod2FarPolarPerspective(benchmark::State& state) {
-  RunBenchmark(state, PolarPerspective(far));
-}
+#define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL( \
+    name, plotting_frame)                                                  \
+  PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR(               \
+      PolarPerspective##name, &PolarPerspective, (plotting_frame));        \
+  PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR(               \
+      EquatorialPerspective##name, &EquatorialPerspective, (plotting_frame))
 
-void BM_PlanetariumPlotMethod2NearEquatorialPerspective(
-    benchmark::State& state) {
-  RunBenchmark(state, EquatorialPerspective(near));
-}
-
-void BM_PlanetariumPlotMethod2FarEquatorialPerspective(
-    benchmark::State& state) {
-  RunBenchmark(state, EquatorialPerspective(far));
-}
-
-BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective)
-    ->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective)
-    ->Unit(benchmark::kMillisecond);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    ECI,
+    &Satellites::earth_centred_inertial);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    ECEF,
+    &Satellites::earth_centred_earth_fixed);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    GSE,
+    &Satellites::geocentric_solar_ecliptic);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    EML,
+    &Satellites::earth_moon_lagrange);
+PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
+    SEL,
+    &Satellites::sun_earth_lagrange);
 
 }  // namespace geometry
 }  // namespace principia
