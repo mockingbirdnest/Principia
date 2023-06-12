@@ -1,4 +1,5 @@
 ﻿.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:base `
     --exclude:macos_allocator_replacement.hpp `
     --exclude:macos_allocator_replacement_test.cpp `
@@ -20,6 +21,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:geometry `
     --exclude:macros.hpp `
     --dry_run:false `
@@ -37,6 +39,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:quantities `
     --exclude:macros.hpp `
     --dry_run:false `
@@ -54,6 +57,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:numerics `
     --exclude:macros.hpp `
     --dry_run:false `
@@ -71,6 +75,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:testing_utilities `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -89,6 +94,7 @@
     --client:quantities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:integrators `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -107,6 +113,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:astronomy `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -125,6 +132,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:benchmarks `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -143,6 +151,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:journal `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -161,6 +170,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:ksp_plugin `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -179,6 +189,7 @@
     --client:testing_utilities `
     --client:tools
   .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:ksp_plugin_test `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -197,6 +208,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:mathematica `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -215,6 +227,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:physics `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
@@ -238,6 +251,7 @@
     --client:testing_utilities `
     --client:tools
 .\sourcerer\bin\Debug\net7.0\sourcerer.exe `
+    renamespacer `
     --project:tools `
     --exclude:macros.hpp `
     --exclude:matchers.hpp `
