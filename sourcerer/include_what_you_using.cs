@@ -112,7 +112,10 @@ class IncludeWhatYouUsing {
   }
 
   private static void FixIncludes(Parser.File file) {
-    List<Include> existing_includes = FindIncludes(file);
+    var existing_includes =
+        (from inc in FindIncludes(file)
+        where !inc.is_own_body && !inc.is_own_header
+        select inc).ToArray();
     List<UsingDirective> using_directives =
         FindUsingDirectives(file, internal_only: true);
 
@@ -148,12 +151,12 @@ class IncludeWhatYouUsing {
       }
       // If there is no include for this namespace, add one (in order).
       if (!found) {
-        new_includes.Add(new Include(parent: null, using_path));
+        new_includes.Add(new Include(parent: null, using_path, file.file_info));
       }
     }
 
     int first_include_position = existing_includes[0].position_in_parent;
-    int last_include_position = existing_includes[existing_includes.Count - 1].
+    int last_include_position = existing_includes[existing_includes.Length - 1].
         position_in_parent;
     var preceding_nodes_in_file =
         file.children.Take(first_include_position).ToList();

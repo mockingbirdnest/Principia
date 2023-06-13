@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Transactions;
 using System.Xml.Linq;
 
 namespace principia {
@@ -20,12 +21,11 @@ public class Parser {
     while (!reader.EndOfStream) {
       string line = reader.ReadLine()!;
       string uncommented_line = Uncomment(line, ref in_comment);
-      if (IsPrincipiaInclude(uncommented_line) &&
-          !IsOwnHeaderInclude(uncommented_line, file_info) &&
-          !IsOwnBodyInclude(uncommented_line, file_info)) {
+      if (IsInclude(uncommented_line)) {
         var include = new Include(line,
                                   parent: current,
-                                  ParseIncludedPath(uncommented_line));
+                                  ParseIncludedPath(uncommented_line),
+                                  file_info);
       } else if (IsOpeningNamespace(uncommented_line)) {
         current = new Namespace(line,
                                 parent: current,
@@ -216,12 +216,21 @@ public class Parser {
   }
 
   public class Include : Node {
-    public Include(Node parent, string[] path) :
-        this(text: null, parent, path) { }
+    // The |file_info| is the file where this include appears, not the one that
+    // is included.
+    public Include(Node parent, string[] path, FileInfo file_info) :
+        this(text: null, parent, path, file_info) { }
 
-    public Include(string? text, Node parent, string[] path) :
-        base(text, parent) {
+    public Include(string? text, Node parent, string[] path, FileInfo file_info)
+        : base(text, parent) {
       this.path = path;
+      file_info_ = file_info;
+      own_body_ = Regex.Replace(file_info_.Name,
+                                @"(?<!_body)\.hpp$",
+                                "_body.hpp");
+      own_header_ = Regex.Replace(file_info_.Name,
+                                  @"(_body|_test)?\.[hc]pp$",
+                                  ".hpp");
     }
 
     public override string Cxx() {
@@ -234,6 +243,31 @@ public class Parser {
     }
 
     public string[] path;
+
+    public bool is_own_body =>
+        text ==
+        "#include \"" +
+        file_info_.Directory.Name +
+        "/" +
+        own_body_ +
+        "\"";
+
+    public bool is_own_header =>
+        text ==
+        "#include \"" +
+        file_info_.Directory.Name +
+        "/" +
+        own_header_ +
+        "\"";
+
+    public bool is_principia =>
+        // Principia header files end in .hpp or .pb.h.
+        text.StartsWith("#include \"") &&
+        (text.EndsWith(".hpp\"") || text.EndsWith(".pb.h\""));
+
+    private FileInfo file_info_;
+    private string own_body_;
+    private string own_header_;
   }
 
   public class Namespace : Declaration {
@@ -407,33 +441,14 @@ public class Parser {
             Regex.IsMatch(line, @"^[A-Z][a-z]\w+\(.*$"));
   }
 
+  private static bool IsInclude(string line) {
+    return Regex.IsMatch(line, @"^#include [^ ]+$");
+  }
+
   private static bool IsOpeningNamespace(string line) {
     return line != "namespace {" &&
            line.StartsWith("namespace ") &&
            !Regex.IsMatch(line, @"^namespace \w+ = .*$");
-  }
-
-  private static bool IsOwnBodyInclude(string line, FileInfo input_file) {
-    string own_body = Regex.Replace(
-        input_file.Name,
-        @"(?<!_body)\.hpp$",
-        "_body.hpp");
-    return line ==
-           "#include \"" + input_file.Directory.Name + "/" + own_body + "\"";
-  }
-
-  private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
-    string own_header = Regex.Replace(
-        input_file.Name,
-        @"(_body|_test)?\.[hc]pp$",
-        ".hpp");
-    return line ==
-           "#include \"" + input_file.Directory.Name + "/" + own_header + "\"";
-  }
-
-  private static bool IsPrincipiaInclude(string line) {
-    // Principia header files end in .hpp.
-    return line.StartsWith("#include \"") && line.EndsWith(".hpp\"");
   }
 
   private static bool IsStruct(string line) {
