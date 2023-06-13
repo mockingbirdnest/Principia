@@ -118,6 +118,16 @@ class IncludeWhatYouUsing {
       var parent = ud.parent;
       Debug.Assert(parent is Namespace,
                    "Internal using directive not within a namespace");
+
+      // Don't process using directives that are not in the namespace for this
+      // file.  They probably indicate that we are reopening someone else's
+      // namespace, and we wouldn't want to touch that.
+      var ns1 = parent as Namespace;
+      if (ns1.parent is Namespace ns2 &&
+          ns2.name != body.file_namespace_simple_name) {
+        continue;
+      }
+
       int ud_position_in_parent = ud.position_in_parent;
       var preceding_nodes_in_parent =
           parent.children.Take(ud_position_in_parent).ToList();
