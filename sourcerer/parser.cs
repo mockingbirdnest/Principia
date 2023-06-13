@@ -21,7 +21,8 @@ public class Parser {
       string line = reader.ReadLine()!;
       string uncommented_line = Uncomment(line, ref in_comment);
       if (IsPrincipiaInclude(uncommented_line) &&
-          !IsOwnHeaderInclude(uncommented_line, file_info)) {
+          !IsOwnHeaderInclude(uncommented_line, file_info) &&
+          !IsOwnBodyInclude(uncommented_line, file_info)) {
         var include = new Include(line,
                                   parent: current,
                                   ParseIncludedPath(uncommented_line));
@@ -412,12 +413,22 @@ public class Parser {
            !Regex.IsMatch(line, @"^namespace \w+ = .*$");
   }
 
+  private static bool IsOwnBodyInclude(string line, FileInfo input_file) {
+    string own_body = Regex.Replace(
+        input_file.Name,
+        @"(?<!_body)\.hpp$",
+        "_body.hpp");
+    return line ==
+           "#include \"" + input_file.Directory.Name + "/" + own_body + "\"";
+  }
+
   private static bool IsOwnHeaderInclude(string line, FileInfo input_file) {
     string own_header = Regex.Replace(
         input_file.Name,
-        @"(_body|_test)?\.[hc]pp",
+        @"(_body|_test)?\.[hc]pp$",
         ".hpp");
-    return line == "#include \"" + own_header + "\"";
+    return line ==
+           "#include \"" + input_file.Directory.Name + "/" + own_header + "\"";
   }
 
   private static bool IsPrincipiaInclude(string line) {
