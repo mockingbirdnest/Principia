@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using static principia.sourcerer.Analyser;
 using static principia.sourcerer.Filenames;
 using static principia.sourcerer.Parser;
@@ -83,13 +84,62 @@ class IncludeWhatYouUsing {
       // Remove redundant using directives from the bodies.
       foreach (FileInfo input_file in all_body_files) {
         if (corresponding_header.ContainsKey(input_file)) {
-          var parser_file = file_info_to_file[input_file];
-          FixRedundantUsingDirectives(parser_file,
+          FixRedundantUsingDirectives(file_info_to_file[input_file],
                                       file_info_to_file[
                                           corresponding_header[input_file]]);
-          RewriteFile(input_file, parser_file, dry_run);
         }
       }
+
+      foreach (FileInfo input_file in all_files) {
+          var parser_file = file_info_to_file[input_file];
+          FixRedundantIncludes(parser_file);
+          RewriteFile(input_file, parser_file, dry_run);
+      }
+    }
+  }
+
+  private static void FixRedundantIncludes(Parser.File file) {
+    List<Include> includes = FindIncludes(file);
+    List<UsingDirective> using_directives =
+        FindUsingDirectives(file, internal_only: true);
+
+    // Build the list of headers corresponding to the namespaces mentioned in
+    // using directives.
+    var using_namespaces = from ud in using_directives select ud.ns;
+    var using_paths = new List<string[]>();
+    foreach (string ns in using_namespaces) {
+      var segments = ns.Split("::");
+      var using_path = new string[]{};
+      foreach (string segment in segments) {
+        if (segment == "principia") {
+          continue;
+        } else if (segment[0] == '_') {
+          string header_filename =
+              Regex.Replace(segment, @"^_", "") + ".hpp";
+          using_path = using_path.Append(header_filename).ToArray();
+        } else {
+          using_path = using_path.Append(segment).ToArray();
+        }
+      }
+      using_paths.Add(using_path);
+    }
+
+    // Determine which includes are unneeded.
+    var unneeded_includes = from inc in includes where
+                                !using_paths.Contains(inc.path) select inc;
+
+    // Remove the redundant includes.
+    foreach (Include inc in unneeded_includes) {
+      var parent = inc.parent;
+      Debug.Assert(parent is Parser.File, "Include not within a file");
+
+      int inc_position_in_parent = inc.position_in_parent;
+      var preceding_nodes_in_parent =
+          parent.children.Take(inc_position_in_parent).ToList();
+      var following_nodes_in_parent = parent.children.
+          Skip(inc_position_in_parent + 1).ToList();
+      parent.children = preceding_nodes_in_parent;
+      parent.AddChildren(following_nodes_in_parent);
     }
   }
 
@@ -111,8 +161,8 @@ class IncludeWhatYouUsing {
 
     // Remove the redundant using directives.
     bool all_body_using_directives_are_unneeded =
-        unneeded_body_using_directives.ToList().Count ==
-        body_using_directives.Count;
+    unneeded_body_using_directives.ToList().Count ==
+    body_using_directives.Count;
     Node following_node_in_parent = null;
     foreach (UsingDirective ud in unneeded_body_using_directives) {
       var parent = ud.parent;
