@@ -136,7 +136,7 @@ class IncludeWhatYouUsing {
       using_paths.Add(using_path);
     }
 
-    var new_includes = new List<Include>();
+    var new_includes = new List<Node>();
     foreach (string[] using_path in using_paths) {
       bool found = false;
       foreach (Include inc in existing_includes) {
@@ -148,7 +148,7 @@ class IncludeWhatYouUsing {
       }
       // If there is no include for this namespace, add one (in order).
       if (!found) {
-        new_includes.Add(new Include(file, using_path));
+        new_includes.Add(new Include(parent: null, using_path));
       }
     }
 
@@ -160,6 +160,7 @@ class IncludeWhatYouUsing {
     var following_nodes_in_file = file.children.
         Skip(last_include_position + 1).ToList();
     file.children = preceding_nodes_in_file;
+    file.AddChildren(new_includes);
     file.AddChildren(following_nodes_in_file);
   }
 
