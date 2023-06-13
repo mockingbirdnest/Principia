@@ -173,6 +173,12 @@ class IncludeWhatYouUsing {
         file.children.Take(first_include_position).ToList();
     var following_nodes_in_file = file.children.
         Skip(last_include_position + 1).ToList();
+    if (new_includes.Count == 0 &&
+        following_nodes_in_file[0] is Text{ text: "" }) {
+      // If we remove all the includes, don't leave consecutive blank lines.
+      following_nodes_in_file = file.children.
+          Skip(last_include_position + 2).ToList();
+    }
     file.children = preceding_nodes_in_file;
     file.AddChildren(new_includes);
     file.AddChildren(following_nodes_in_file);
