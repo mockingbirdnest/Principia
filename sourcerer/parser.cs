@@ -261,9 +261,9 @@ public class Parser {
         "\"";
 
     public bool is_principia =>
-        // Principia header files end in .hpp or .pb.h.
-        text.StartsWith("#include \"") &&
-        (text.EndsWith(".hpp\"") || text.EndsWith(".pb.h\""));
+        // Principia headers files end in .hpp.  The protos are not considered
+        // Principia headers because we have no control over their structure.
+        text.StartsWith("#include \"") && text.EndsWith(".hpp\"");
 
     public bool is_system =>
         text.StartsWith("#include <");

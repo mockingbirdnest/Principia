@@ -121,28 +121,37 @@ class IncludeWhatYouUsing {
     List<UsingDirective> using_directives =
         FindUsingDirectives(file, internal_only: true);
 
-    // Build the sorted set of includes that are needed based on the namespaces
-    // mentioned in using directives.
+    // Build the sorted set of path that must actually be included.
+    var new_include_paths = new SortedSet<string[]>(new StringArrayComparer());
+
+    // First, the paths mentioned in using directives.
     var using_namespaces = from ud in using_directives select ud.ns;
-    var using_paths = new SortedSet<string[]>(new StringArrayComparer());
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::");
-      var using_path = new string[]{};
+      var include_path = new string[]{};
       foreach (string segment in segments) {
         if (segment == "principia") {
           continue;
         } else if (segment[0] == '_') {
           string header_filename = Regex.Replace(segment, @"^_", "");
-          using_path = using_path.Append(header_filename).ToArray();
+          include_path = include_path.Append(header_filename).ToArray();
         } else {
-          using_path = using_path.Append(segment).ToArray();
+          include_path = include_path.Append(segment).ToArray();
         }
       }
-      using_paths.Add(using_path);
+      new_include_paths.Add(include_path);
+    }
+
+    // Add the headers that are not Principia headers, we must preserve them
+    // (but reorder as needed).
+    foreach (Include inc in existing_includes) {
+      if (!inc.is_principia) {
+        new_include_paths.Add(inc.path);
+      }
     }
 
     var new_includes = new List<Node>();
-    foreach (string[] using_path in using_paths) {
+    foreach (string[] using_path in new_include_paths) {
       bool found = false;
       foreach (Include inc in existing_includes) {
         if (inc.path == using_path) {
@@ -187,8 +196,8 @@ class IncludeWhatYouUsing {
 
     // Remove the redundant using directives.
     bool all_body_using_directives_are_unneeded =
-    unneeded_body_using_directives.ToList().Count ==
-    body_using_directives.Count;
+        unneeded_body_using_directives.ToList().Count ==
+        body_using_directives.Count;
     Node following_node_in_parent = null;
     foreach (UsingDirective ud in unneeded_body_using_directives) {
       var parent = ud.parent;
