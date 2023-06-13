@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +11,20 @@ using static principia.sourcerer.Rewriter;
 
 namespace principia {
 namespace sourcerer {
+
+public class StringArrayComparer : IComparer<string[]> {
+  public int Compare(string[] left, string[] right) {
+    int i = 0;
+    while (i < left.Length && i < right.Length) {
+      int i_compare = string.Compare(left[i], right[i]);
+      if (i_compare != 0) {
+        return i_compare;
+      }
+      ++i;
+    }
+    return left.Length - right.Length;
+  }
+}
 
 class IncludeWhatYouUsing {
 
@@ -106,7 +119,7 @@ class IncludeWhatYouUsing {
     // Build the sorted set of includes that are needed based on the namespaces
     // mentioned in using directives.
     var using_namespaces = from ud in using_directives select ud.ns;
-    var using_paths = new SortedSet<string[]>();
+    var using_paths = new SortedSet<string[]>(new StringArrayComparer());
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::");
       var using_path = new string[]{};
@@ -140,7 +153,8 @@ class IncludeWhatYouUsing {
     }
 
     int first_include_position = existing_includes[0].position_in_parent;
-    int last_include_position = existing_includes[-1].position_in_parent;
+    int last_include_position = existing_includes[existing_includes.Count - 1].
+        position_in_parent;
     var preceding_nodes_in_file =
         file.children.Take(first_include_position).ToList();
     var following_nodes_in_file = file.children.
