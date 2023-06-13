@@ -214,7 +214,10 @@ public class Parser {
   }
 
   public class Include : Node {
-    public Include(string text, Node parent, string[] path) :
+    public Include(Node parent, string[] path) :
+        this(text: null, parent, path) { }
+
+    public Include(string? text, Node parent, string[] path) :
         base(text, parent) {
       this.path = path;
     }

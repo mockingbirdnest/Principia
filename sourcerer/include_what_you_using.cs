@@ -92,21 +92,21 @@ class IncludeWhatYouUsing {
 
       foreach (FileInfo input_file in all_files) {
           var parser_file = file_info_to_file[input_file];
-          FixRedundantIncludes(parser_file);
+          FixIncludes(parser_file);
           RewriteFile(input_file, parser_file, dry_run);
       }
     }
   }
 
-  private static void FixRedundantIncludes(Parser.File file) {
-    List<Include> includes = FindIncludes(file);
+  private static void FixIncludes(Parser.File file) {
+    List<Include> existing_includes = FindIncludes(file);
     List<UsingDirective> using_directives =
         FindUsingDirectives(file, internal_only: true);
 
-    // Build the list of headers corresponding to the namespaces mentioned in
-    // using directives.
+    // Build the sorted set of includes that are needed based on the namespaces
+    // mentioned in using directives.
     var using_namespaces = from ud in using_directives select ud.ns;
-    var using_paths = new List<string[]>();
+    var using_paths = new SortedSet<string[]>();
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::");
       var using_path = new string[]{};
@@ -114,8 +114,7 @@ class IncludeWhatYouUsing {
         if (segment == "principia") {
           continue;
         } else if (segment[0] == '_') {
-          string header_filename =
-              Regex.Replace(segment, @"^_", "") + ".hpp";
+          string header_filename = Regex.Replace(segment, @"^_", "");
           using_path = using_path.Append(header_filename).ToArray();
         } else {
           using_path = using_path.Append(segment).ToArray();
@@ -124,23 +123,30 @@ class IncludeWhatYouUsing {
       using_paths.Add(using_path);
     }
 
-    // Determine which includes are unneeded.
-    var unneeded_includes = from inc in includes where
-                                !using_paths.Contains(inc.path) select inc;
-
-    // Remove the redundant includes.
-    foreach (Include inc in unneeded_includes) {
-      var parent = inc.parent;
-      Debug.Assert(parent is Parser.File, "Include not within a file");
-
-      int inc_position_in_parent = inc.position_in_parent;
-      var preceding_nodes_in_parent =
-          parent.children.Take(inc_position_in_parent).ToList();
-      var following_nodes_in_parent = parent.children.
-          Skip(inc_position_in_parent + 1).ToList();
-      parent.children = preceding_nodes_in_parent;
-      parent.AddChildren(following_nodes_in_parent);
+    var new_includes = new List<Include>();
+    foreach (string[] using_path in using_paths) {
+      bool found = false;
+      foreach (Include inc in existing_includes) {
+        if (inc.path == using_path) {
+          // There is already an include for this path, reuse it.
+          new_includes.Add(inc);
+          found = true;
+        }
+      }
+      // If there is no include for this namespace, add one (in order).
+      if (!found) {
+        new_includes.Add(new Include(file, using_path));
+      }
     }
+
+    int first_include_position = existing_includes[0].position_in_parent;
+    int last_include_position = existing_includes[-1].position_in_parent;
+    var preceding_nodes_in_file =
+        file.children.Take(first_include_position).ToList();
+    var following_nodes_in_file = file.children.
+        Skip(last_include_position + 1).ToList();
+    file.children = preceding_nodes_in_file;
+    file.AddChildren(following_nodes_in_file);
   }
 
   private static void FixRedundantUsingDirectives(
