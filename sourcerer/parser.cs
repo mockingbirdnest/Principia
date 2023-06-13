@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace principia {
 namespace sourcerer {
@@ -220,6 +221,11 @@ public class Parser {
     public Include(string? text, Node parent, string[] path) :
         base(text, parent) {
       this.path = path;
+    }
+
+    public override string Cxx() {
+      Debug.Assert(must_rewrite, "inconsistent rewrite");
+      return "#include \"" + string.Join('/', path) + ".hpp\"";
     }
 
     public override void WriteNode(string indent = "") {
