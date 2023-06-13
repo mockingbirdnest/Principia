@@ -265,6 +265,9 @@ public class Parser {
         text.StartsWith("#include \"") &&
         (text.EndsWith(".hpp\"") || text.EndsWith(".pb.h\""));
 
+    public bool is_system =>
+        text.StartsWith("#include <");
+
     private FileInfo file_info_;
     private string own_body_;
     private string own_header_;

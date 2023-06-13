@@ -112,9 +112,11 @@ class IncludeWhatYouUsing {
   }
 
   private static void FixIncludes(Parser.File file) {
+    // Extract the headers, and filter out those that we don't want to touch no
+    // matter what.
     var existing_includes =
         (from inc in FindIncludes(file)
-        where !inc.is_own_body && !inc.is_own_header
+        where !inc.is_own_body && !inc.is_own_header && !inc.is_system
         select inc).ToArray();
     List<UsingDirective> using_directives =
         FindUsingDirectives(file, internal_only: true);
