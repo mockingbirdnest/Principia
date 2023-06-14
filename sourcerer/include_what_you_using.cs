@@ -122,6 +122,11 @@ class IncludeWhatYouUsing {
     return extra_system_headers.Contains(included_header);
   }
 
+  private static bool IsBlessedBySourcerer(Include include) {
+    string magic = "// 🧙";
+    return include.text.EndsWith(magic);
+  }
+
   private static void FixIncludes(Parser.File file,
                                   HashSet<string> extra_system_headers) {
     // Extract the includes.
