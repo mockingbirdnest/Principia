@@ -120,18 +120,26 @@ class IncludeWhatYouUsing {
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::");
       var include_path = new string[]{};
+      bool skip = false;
       foreach (string segment in segments) {
         if (segment == "principia") {
           continue;
         } else if (segment[0] == '_') {
-          string header_filename = Regex.Replace(segment, @"^_", "");
-          include_path = include_path.Append(header_filename).ToArray();
+          // Don't add an include for our own header.  This matters for tests.
+          if (segment == file.file_namespace_simple_name) {
+            skip = true;
+          } else {
+            string header_filename = Regex.Replace(segment, @"^_", "");
+            include_path = include_path.Append(header_filename).ToArray();
+          }
           break;
         } else {
           include_path = include_path.Append(segment).ToArray();
         }
       }
-      new_include_paths.Add(include_path);
+      if (!skip) {
+        new_include_paths.Add(include_path);
+      }
     }
 
     // Extract the includes.
@@ -144,8 +152,8 @@ class IncludeWhatYouUsing {
                                             !inc.is_system
                                       select inc;
 
-    // Determine the first block of consecutive includes.  We won't touch the
-    // rest, it's probably contains something odd.
+    // Locate the first block of consecutive includes.  We won't touch
+    // subsequent blocks, they probably contain something odd.
     var consecutive_includes = new List<Include>();
     int? position_in_parent = null;
     foreach (Include inc in non_own_non_system_includes) {
