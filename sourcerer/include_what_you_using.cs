@@ -112,10 +112,12 @@ class IncludeWhatYouUsing {
   }
 
   private static void FixIncludes(Parser.File file) {
-    // Extract the headers, and filter out those that we don't want to touch no
+    // Extract the includes.
+    var all_includes = FindIncludes(file);
+    // Filter out those that we don't want to touch no
     // matter what.
     var existing_includes =
-        (from inc in FindIncludes(file)
+        (from inc in all_includes
         where !inc.is_own_body && !inc.is_own_header && !inc.is_system
         select inc).ToArray();
     List<UsingDirective> using_directives =
@@ -166,16 +168,44 @@ class IncludeWhatYouUsing {
       }
     }
 
-    int first_include_position = existing_includes[0].position_in_parent;
-    int last_include_position = existing_includes[existing_includes.Length - 1].
-        position_in_parent;
+    if (existing_includes.Length == 0 && new_includes.Count == 0) {
+      // Nothing before, nothing after, done.
+      return;
+    }
+
+    // Replace the includes in |existing_includes| (that's the big block,
+    // excluding our header and system headers) with |new_includes|.
+    int first_include_position;
+    int last_include_position;
+    if (existing_includes.Length == 0) {
+      // There is no existing big block of includes, so we have to do fancy
+      // footwork to decide where to hook |new_includes|.
+      var start_includes =
+          (from inc in all_includes where !inc.is_own_body select inc).
+          ToArray();
+      int include_position;
+      if (start_includes.Length == 0) {
+        // No includes at all.  Let's insert at the beginning of the file.
+        include_position = 0;
+      } else {
+        include_position = start_includes[start_includes.Length - 1].
+            position_in_parent;
+      }
+      first_include_position = include_position;
+      last_include_position = include_position;
+    } else {
+      // There is a big block, find its position.
+      first_include_position = existing_includes[0].position_in_parent;
+      last_include_position = existing_includes[existing_includes.Length - 1].
+          position_in_parent;
+    }
     var preceding_nodes_in_file =
         file.children.Take(first_include_position).ToList();
     var following_nodes_in_file = file.children.
         Skip(last_include_position + 1).ToList();
     if (new_includes.Count == 0 &&
         following_nodes_in_file[0] is Text{ text: "" }) {
-      // If we remove all the includes, don't leave consecutive blank lines.
+      // If we removed all the includes, don't leave consecutive blank lines.
       following_nodes_in_file = file.children.
           Skip(last_include_position + 2).ToList();
     }
