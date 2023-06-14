@@ -150,6 +150,7 @@ class IncludeWhatYouUsing {
         } else if (segment[0] == '_') {
           string header_filename = Regex.Replace(segment, @"^_", "");
           include_path = include_path.Append(header_filename).ToArray();
+          break;
         } else {
           include_path = include_path.Append(segment).ToArray();
         }
