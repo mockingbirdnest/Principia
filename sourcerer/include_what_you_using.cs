@@ -32,7 +32,6 @@ class IncludeWhatYouUsing {
     // Parse the arguments.
     var projects = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
-    var extra_system_headers = new HashSet<string>();
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -46,8 +45,6 @@ class IncludeWhatYouUsing {
           dry_run = bool.Parse(value);
         } else if (option == "exclude") {
           excluded.Add(value);
-        } else if (option == "extra_system_header") {
-          extra_system_headers.Add(value);
         } else {
           throw new ArgumentException("Unknown option " + option);
         }
@@ -106,45 +103,19 @@ class IncludeWhatYouUsing {
 
       foreach (FileInfo input_file in all_files) {
           var parser_file = file_info_to_file[input_file];
-          FixIncludes(parser_file, extra_system_headers);
+          FixIncludes(parser_file);
           RewriteFile(input_file, parser_file, dry_run);
       }
     }
   }
 
-  private static bool IsExtraSystemHeader(Include include,
-                                          HashSet<string>
-                                              extra_system_headers) {
-    string included_header =
-        Regex.Replace(Regex.Replace(include.text, "^#include \"", ""),
-                      "\"$",
-                      "");
-    return extra_system_headers.Contains(included_header);
-  }
-
-  private static bool IsBlessedBySourcerer(Include include) {
-    string magic = "// 🧙";
-    return include.text.EndsWith(magic);
-  }
-
-  private static void FixIncludes(Parser.File file,
-                                  HashSet<string> extra_system_headers) {
-    // Extract the includes.
-    var all_includes = FindIncludes(file);
-    // Filter out those that we don't want to touch no
-    // matter what.
-    var existing_includes =
-        (from inc in all_includes
-        where !inc.is_own_body && !inc.is_own_header && !inc.is_system &&
-              !IsExtraSystemHeader(inc, extra_system_headers)
-        select inc).ToArray();
-    List<UsingDirective> using_directives =
-        FindUsingDirectives(file, internal_only: false);
-
+  private static void FixIncludes(Parser.File file) {
     // Build the sorted set of path that must actually be included.
     var new_include_paths = new SortedSet<string[]>(new StringArrayComparer());
 
     // First, the paths mentioned in using directives.
+    List<UsingDirective> using_directives =
+        FindUsingDirectives(file, internal_only: false);
     var using_namespaces = from ud in using_directives select ud.ns;
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::");
@@ -163,42 +134,69 @@ class IncludeWhatYouUsing {
       new_include_paths.Add(include_path);
     }
 
-    // Add the headers that are not Principia headers, we must preserve them
-    // (but reorder as needed).
-    foreach (Include inc in existing_includes) {
-      if (!inc.is_principia) {
-        new_include_paths.Add(inc.path);
+    // Extract the includes.
+    var all_includes = FindIncludes(file);
+
+    // Eliminate our own headers and the system headers.
+    var non_own_non_system_includes = from inc in all_includes
+                                      where !inc.is_own_body &&
+                                            !inc.is_own_header &&
+                                            !inc.is_system
+                                      select inc;
+
+    // Determine the first block of consecutive includes.  We won't touch the
+    // rest, it's probably contains something odd.
+    var consecutive_includes = new List<Include>();
+    int? position_in_parent = null;
+    foreach (Include inc in non_own_non_system_includes) {
+      if (position_in_parent.HasValue) {
+        position_in_parent  = position_in_parent.Value + 1;
+        if (position_in_parent.Value == inc.position_in_parent) {
+          consecutive_includes.Add(inc);
+        } else {
+          break;
+        }
+      } else {
+        position_in_parent = inc.position_in_parent;
+        consecutive_includes.Add(inc);
       }
+    }
+
+    // Determine the includes that we must preserve no matter what.  For the
+    // Principia headers, this includes only the blessed ones.
+    var preserved_includes =  from inc in consecutive_includes
+                              where !inc.is_principia ||
+                                    inc.is_blessed_by_sourcerer
+                              select inc;
+    var preserved_includes_by_path = new Dictionary<string[], Include>();
+    foreach (Include inc in preserved_includes) {
+      new_include_paths.Add(inc.path);
+      preserved_includes_by_path.Add(inc.path, inc);
     }
 
     var new_includes = new List<Node>();
     foreach (string[] using_path in new_include_paths) {
-      bool found = false;
-      foreach (Include inc in existing_includes) {
-        if (inc.path == using_path) {
-          // There is already an include for this path, reuse it.
-          new_includes.Add(inc);
-          found = true;
-        }
-      }
-      // If there is no include for this namespace, add one (in order).
-      if (!found) {
-        new_includes.Add(new Include(parent: null, using_path, file.file_info));
+      if (preserved_includes_by_path.ContainsKey(using_path)) {
+        // There is already an include for this path, reuse it.
+        new_includes.Add(preserved_includes_by_path[using_path]);
+      } else {
+        // If there is no include for this namespace, add one (in order).
+        new_includes.Add(
+            new Include(parent: null, using_path, file.file_info));
       }
     }
 
-    if (existing_includes.Length == 0 && new_includes.Count == 0) {
+    if (consecutive_includes.Count == 0 && new_includes.Count == 0) {
       // Nothing before, nothing after, done.
       return;
     }
 
-    // Replace the includes in |existing_includes| (that's the big block,
-    // excluding our header and system headers) with |new_includes|.
+    // Replace the includes in |consecutive_includes| with |new_includes|.
     int first_include_position;
     int last_include_position;
-    if (existing_includes.Length == 0) {
-      // There is no existing big block of includes, so we have to do fancy
-      // footwork to decide where to hook |new_includes|.
+    if (consecutive_includes.Count == 0) {
+      // There is no existing block of consecutive includes, so we have to do
+      // fancy footwork to decide where to hook |new_includes|.
       var start_includes =
           (from inc in all_includes where !inc.is_own_body select inc).
           ToArray();
@@ -213,10 +211,11 @@ class IncludeWhatYouUsing {
       first_include_position = include_position;
       last_include_position = include_position;
     } else {
-      // There is a big block, find its position.
-      first_include_position = existing_includes[0].position_in_parent;
-      last_include_position = existing_includes[existing_includes.Length - 1].
-          position_in_parent;
+      // There is a block of consecutive includes, find its position.
+      first_include_position = consecutive_includes[0].position_in_parent;
+      last_include_position =
+          consecutive_includes[consecutive_includes.Count - 1].
+              position_in_parent;
     }
     var preceding_nodes_in_file =
         file.children.Take(first_include_position).ToList();
