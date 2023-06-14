@@ -32,7 +32,7 @@ class IncludeWhatYouUsing {
     // Parse the arguments.
     var projects = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
-    var extra_headers = new HashSet<string>();
+    var extra_system_headers = new HashSet<string>();
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -46,8 +46,8 @@ class IncludeWhatYouUsing {
           dry_run = bool.Parse(value);
         } else if (option == "exclude") {
           excluded.Add(value);
-        } else if (option == "extra_header") {
-          extra_headers.Add(value);
+        } else if (option == "extra_system_header") {
+          extra_system_headers.Add(value);
         } else {
           throw new ArgumentException("Unknown option " + option);
         }
@@ -71,7 +71,8 @@ class IncludeWhatYouUsing {
           continue;
         }
         Parser.File parser_file =
-            Parser.ParseFile(input_file, IsBody(input_file, extra_headers));
+            Parser.ParseFile(input_file,
+                             IsBody(input_file, new HashSet<string>()));
         file_info_to_file.Add(input_file, parser_file);
         file_name_to_file_info.Add(Path.GetFullPath(input_file.Name,
                                                     input_file.DirectoryName),
@@ -105,20 +106,32 @@ class IncludeWhatYouUsing {
 
       foreach (FileInfo input_file in all_files) {
           var parser_file = file_info_to_file[input_file];
-          FixIncludes(parser_file);
+          FixIncludes(parser_file, extra_system_headers);
           RewriteFile(input_file, parser_file, dry_run);
       }
     }
   }
 
-  private static void FixIncludes(Parser.File file) {
+  private static bool IsExtraSystemHeader(Include include,
+                                          HashSet<string>
+                                              extra_system_headers) {
+    string included_header =
+        Regex.Replace(Regex.Replace(include.text, "^#include \"", ""),
+                      "\"$",
+                      "");
+    return extra_system_headers.Contains(included_header);
+  }
+
+  private static void FixIncludes(Parser.File file,
+                                  HashSet<string> extra_system_headers) {
     // Extract the includes.
     var all_includes = FindIncludes(file);
     // Filter out those that we don't want to touch no
     // matter what.
     var existing_includes =
         (from inc in all_includes
-        where !inc.is_own_body && !inc.is_own_header && !inc.is_system
+        where !inc.is_own_body && !inc.is_own_header && !inc.is_system &&
+              !IsExtraSystemHeader(inc, extra_system_headers)
         select inc).ToArray();
     List<UsingDirective> using_directives =
         FindUsingDirectives(file, internal_only: false);
