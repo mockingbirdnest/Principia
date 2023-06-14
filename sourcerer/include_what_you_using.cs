@@ -121,7 +121,7 @@ class IncludeWhatYouUsing {
         where !inc.is_own_body && !inc.is_own_header && !inc.is_system
         select inc).ToArray();
     List<UsingDirective> using_directives =
-        FindUsingDirectives(file, internal_only: true);
+        FindUsingDirectives(file, internal_only: false);
 
     // Build the sorted set of path that must actually be included.
     var new_include_paths = new SortedSet<string[]>(new StringArrayComparer());
