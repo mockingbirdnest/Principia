@@ -12,29 +12,34 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(conformal_map,
-                     TEMPLATE(typename Scalar,
-                              typename FromFrame,
-                              typename ToFrame) class,
-                     ConformalMap);
-FORWARD_DECLARE_FROM(identity,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Identity);
-FORWARD_DECLARE_FROM(permutation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Permutation);
-FORWARD_DECLARE_FROM(rotation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Rotation);
-FORWARD_DECLARE_FROM(signature,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Signature);
-FORWARD_DECLARE_FROM(
-    symmetric_bilinear_form,
-    TEMPLATE(typename Scalar,
-            typename Frame,
-            template<typename, typename> typename Multivector) class,
-    SymmetricBilinearForm);
+FORWARD_DECLARE(TEMPLATE(typename Scalar,
+                         typename FromFrame,
+                         typename ToFrame) class,
+                ConformalMap,
+                FROM(conformal_map));
+FORWARD_DECLARE_FROM2(identity,
+                      TEMPLATE(typename FromFrame, typename ToFrame) class,
+                      Identity,
+                      orthogonal_map);
+FORWARD_DECLARE_FROM2(permutation,
+                      TEMPLATE(typename FromFrame, typename ToFrame) class,
+                      Permutation,
+                      orthogonal_map);
+FORWARD_DECLARE_FROM2(rotation,
+                      TEMPLATE(typename FromFrame, typename ToFrame) class,
+                      Rotation,
+                      orthogonal_map);
+FORWARD_DECLARE_FROM2(signature,
+                      TEMPLATE(typename FromFrame, typename ToFrame) class,
+                      Signature,
+                      orthogonal_map);
+FORWARD_DECLARE(TEMPLATE(typename Scalar,
+                         typename Frame,
+                         template<typename, typename>
+                         typename Multivector) class,
+                SymmetricBilinearForm,
+                FROM(symmetric_bilinear_form),
+                INTO(orthogonal_map))
 
 class ConformalMapTest;
 class OrthogonalMapTest;
@@ -47,14 +52,9 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_identity;
 using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_quaternion;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
-using namespace principia::geometry::_signature;
-using namespace principia::geometry::_symmetric_bilinear_form;
 
 // An orthogonal map between the inner product spaces |FromFrame| and
 // |ToFrame|, as well as the induced maps on the exterior algebra.

@@ -219,6 +219,45 @@ inline void noreturn() { std::exit(0); }
     using internal::declared_name;                       \
   }
 
+#define FORWARD_DECLARE_FROM2(from_package_name,      \
+                              template_and_class_key, \
+                              declared_name,          \
+                              into_package_name)      \
+  namespace _##from_package_name {                    \
+    namespace internal {                              \
+    template_and_class_key declared_name;             \
+    }                                                 \
+    using internal::declared_name;                    \
+  }                                                   \
+  namespace _##into_package_name {                    \
+    namespace internal {                              \
+      using namespace _##from_package_name;           \
+    }                                                 \
+  }
+
+#define FROM(package_name) _##package_name
+
+#define INTO(package_name) _##package_name
+
+#define INTO_HELPER(from_package_name, ...) \
+  __VA_OPT__(                               \
+    namespace __VA_ARGS__ {                 \
+      namespace internal {                  \
+        using namespace from_package_name;  \
+      }                                     \
+    }                                       \
+)
+
+#define FORWARD_DECLARE(                                           \
+    template_and_class_key, declared_name, from_package_name, ...) \
+  namespace from_package_name {                                    \
+    namespace internal {                                           \
+      template_and_class_key declared_name;                        \
+    }                                                              \
+    using internal::declared_name;                                 \
+  }                                                                \
+  INTO_HELPER(from_package_name, __VA_ARGS__)
+
 #define FORWARD_DECLARE_FUNCTION_FROM(                            \
     package_name, template_and_result, declared_name, parameters) \
   namespace _##package_name {                                     \
