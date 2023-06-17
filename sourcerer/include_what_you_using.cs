@@ -14,9 +14,14 @@ namespace sourcerer {
 
 public class StringArrayComparer : IComparer<string[]> {
   public int Compare(string[]? left, string[]? right) {
+    if (left == null) {
+      return right == null ? 0 : -1;
+    } else if (right == null) {
+      return 1;
+    }
     int i = 0;
     while (i < left.Length && i < right.Length) {
-      int i_compare = string.Compare(left[i], right[i]);
+      int i_compare = string.CompareOrdinal(left[i], right[i]);
       if (i_compare != 0) {
         return i_compare;
       }
@@ -72,7 +77,7 @@ class IncludeWhatYouUsing {
                              IsBody(input_file, new HashSet<string>()));
         file_info_to_file.Add(input_file, parser_file);
         file_name_to_file_info.Add(Path.GetFullPath(input_file.Name,
-                                                    input_file.DirectoryName),
+                                                    input_file.DirectoryName!),
                                    input_file);
       }
 
@@ -262,7 +267,7 @@ class IncludeWhatYouUsing {
         body_using_directives.Count;
     Node? following_node_in_parent = null;
     foreach (UsingDirective ud in unneeded_body_using_directives) {
-      var parent = ud.parent;
+      Node? parent = ud.parent;
       Debug.Assert(parent is Namespace,
                    "Internal using directive not within a namespace");
 
@@ -270,7 +275,7 @@ class IncludeWhatYouUsing {
       // file.  They probably indicate that we are reopening someone else's
       // namespace, and we wouldn't want to touch that.
       var ns1 = parent as Namespace;
-      if (ns1.parent is Namespace ns2 &&
+      if (ns1!.parent is Namespace ns2 &&
           ns2.name != body.file_namespace_simple_name) {
         continue;
       }
@@ -292,7 +297,7 @@ class IncludeWhatYouUsing {
       var parent = blank_line.parent;
       var blank_line_position_in_parent = blank_line.position_in_parent;
       var preceding_nodes_in_parent =
-          parent.children.Take(blank_line_position_in_parent).ToList();
+          parent!.children.Take(blank_line_position_in_parent).ToList();
       var following_nodes_in_parent = parent.children.
           Skip(blank_line_position_in_parent + 1).ToList();
       parent.children = preceding_nodes_in_parent;

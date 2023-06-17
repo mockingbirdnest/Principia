@@ -12,7 +12,7 @@ namespace sourcerer {
 public class Filenames {
   public static string CorrespondingHeader(FileInfo file_info) {
     return Regex.Replace(
-        Path.GetFullPath(file_info.Name, file_info.DirectoryName),
+        Path.GetFullPath(file_info.Name, file_info.DirectoryName!),
         @"_body\.hpp$|\.cpp$",
         @".hpp");
   }

@@ -248,12 +248,12 @@ public class Parser {
     public string[] path;
 
     public bool is_blessed_by_sourcerer =>
-        Regex.IsMatch(text, @"// 🧙 .+$");
+        text != null && Regex.IsMatch(text, @"// 🧙 .+$");
 
     public bool is_own_body =>
         text ==
         "#include \"" +
-        file_info_.Directory.Name +
+        file_info_.Directory!.Name +
         "/" +
         own_body_ +
         "\"";
@@ -261,7 +261,7 @@ public class Parser {
     public bool is_own_header =>
         text ==
         "#include \"" +
-        file_info_.Directory.Name +
+        file_info_.Directory!.Name +
         "/" +
         own_header_ +
         "\"";
@@ -269,14 +269,15 @@ public class Parser {
     public bool is_principia =>
         // Principia headers files end in .hpp.  The protos are not considered
         // Principia headers because we have no control over their structure.
+        text != null &&
         text.StartsWith("#include \"") && text.EndsWith(".hpp\"");
 
     public bool is_system =>
-        text.StartsWith("#include <");
+        text != null && text.StartsWith("#include <");
 
-    private FileInfo file_info_;
-    private string own_body_;
-    private string own_header_;
+    private readonly FileInfo file_info_;
+    private readonly string own_body_;
+    private readonly string own_header_;
   }
 
   public class Namespace : Declaration {
@@ -530,7 +531,8 @@ public class Parser {
   private static string Uncomment(string line, ref bool in_comment) {
     string uncommented_line = line;
     if (in_comment) {
-      int end_of_comment = uncommented_line.IndexOf("*/", 0);
+      int end_of_comment =
+          uncommented_line.IndexOf("*/", 0, StringComparison.Ordinal);
       if (end_of_comment >= 0) {
         uncommented_line = uncommented_line.Substring(end_of_comment + 2);
         in_comment = false;
@@ -541,11 +543,15 @@ public class Parser {
     Debug.Assert(!in_comment);
     uncommented_line = Regex.Replace(uncommented_line, @"//.*$", "");
     for (;;) {
-      int start_of_comment = uncommented_line.IndexOf("/*", 0);
+      int start_of_comment =
+          uncommented_line.IndexOf("/*", 0, StringComparison.Ordinal);
       if (start_of_comment < 0) {
         break;
       }
-      int end_of_comment = uncommented_line.IndexOf("*/", start_of_comment + 2);
+      int end_of_comment =
+          uncommented_line.IndexOf("*/",
+                                   start_of_comment + 2,
+                                   StringComparison.Ordinal);
       if (end_of_comment > 0) {
         uncommented_line = uncommented_line.Substring(0, start_of_comment) +
                            uncommented_line.Substring(end_of_comment + 2);
