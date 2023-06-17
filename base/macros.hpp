@@ -235,18 +235,30 @@ inline void noreturn() { std::exit(0); }
     }                                                 \
   }
 
+#define EMPTY()
+#define DEFER1(m) m EMPTY()
+#define EVAL(...) EVAL16(__VA_ARGS__)
+#define EVAL16(...) EVAL8(EVAL8(__VA_ARGS__))
+#define EVAL8(...) EVAL4(EVAL4(__VA_ARGS__))
+#define EVAL4(...) EVAL2(EVAL2(__VA_ARGS__))
+#define EVAL2(...) EVAL1(EVAL1(__VA_ARGS__))
+#define EVAL1(...) __VA_ARGS__
+#define MAP(m, a0, a1, ...) m(a0, a1) __VA_OPT__(DEFER1(_MAP)()(m, a0, __VA_ARGS__))
+#define _MAP() MAP
+
 #define FROM(package_name) _##package_name
 
 #define INTO(package_name) _##package_name
 
+#define INTO_HELPER2(from_package_name, into_package_name) \
+  namespace into_package_name {                                 \
+  namespace internal {                                          \
+  using namespace from_package_name;                            \
+  }                                                             \
+  }
+
 #define INTO_HELPER(from_package_name, ...) \
-  __VA_OPT__(                               \
-    namespace __VA_ARGS__ {                 \
-      namespace internal {                  \
-        using namespace from_package_name;  \
-      }                                     \
-    }                                       \
-)
+  EVAL4(MAP(INTO_HELPER2, from_package_name, __VA_ARGS__))
 
 #define FORWARD_DECLARE(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \
