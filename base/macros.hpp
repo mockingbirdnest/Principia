@@ -235,30 +235,36 @@ inline void noreturn() { std::exit(0); }
     }                                                 \
   }
 
-#define EMPTY()
-#define DEFER1(m) m EMPTY()
-#define EVAL(...) EVAL16(__VA_ARGS__)
-#define EVAL16(...) EVAL8(EVAL8(__VA_ARGS__))
-#define EVAL8(...) EVAL4(EVAL4(__VA_ARGS__))
-#define EVAL4(...) EVAL2(EVAL2(__VA_ARGS__))
-#define EVAL2(...) EVAL1(EVAL1(__VA_ARGS__))
-#define EVAL1(...) __VA_ARGS__
-#define MAP(m, a0, a1, ...) m(a0, a1) __VA_OPT__(DEFER1(_MAP)()(m, a0, __VA_ARGS__))
-#define _MAP() MAP
+// The macro magic is inspired from
+// http://jhnet.co.uk/articles/cpp_magic#turning-multiple-expansion-passes-into-recursion.
+#define PRINCIPIA_EMPTY()
+#define PRINCIPIA_DEFER1(m) m PRINCIPIA_EMPTY()
+
+#define PRINCIPIA_EVAL(...) PRINCIPIA_EVAL16(__VA_ARGS__)
+#define PRINCIPIA_EVAL16(...) PRINCIPIA_EVAL8(PRINCIPIA_EVAL8(__VA_ARGS__))
+#define PRINCIPIA_EVAL8(...) PRINCIPIA_EVAL4(PRINCIPIA_EVAL4(__VA_ARGS__))
+#define PRINCIPIA_EVAL4(...) PRINCIPIA_EVAL2(PRINCIPIA_EVAL2(__VA_ARGS__))
+#define PRINCIPIA_EVAL2(...) PRINCIPIA_EVAL1(PRINCIPIA_EVAL1(__VA_ARGS__))
+#define PRINCIPIA_EVAL1(...) __VA_ARGS__
+
+#define PRINCIPIA_MAP2(m, a0, a1, ...) \
+  m(a0, a1) __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP2)()(m, a0, __VA_ARGS__))
+#define _PRINCIPIA_MAP2() PRINCIPIA_MAP2
 
 #define FROM(package_name) _##package_name
 
 #define INTO(package_name) _##package_name
 
-#define INTO_HELPER2(from_package_name, into_package_name) \
+#define USING_DIRECTIVE_INTO(from_package_name, into_package_name) \
   namespace into_package_name {                                 \
   namespace internal {                                          \
   using namespace from_package_name;                            \
   }                                                             \
   }
 
-#define INTO_HELPER(from_package_name, ...) \
-  EVAL4(MAP(INTO_HELPER2, from_package_name, __VA_ARGS__))
+#define USING_DIRECTIVES_INTO(from_package_name, ...) \
+  PRINCIPIA_EVAL16(                                   \
+      PRINCIPIA_MAP2(USING_DIRECTIVE_INTO, from_package_name, __VA_ARGS__))
 
 #define FORWARD_DECLARE(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \
@@ -268,7 +274,7 @@ inline void noreturn() { std::exit(0); }
     }                                                              \
     using internal::declared_name;                                 \
   }                                                                \
-  INTO_HELPER(from_package_name, __VA_ARGS__)
+  USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
 
 #define FORWARD_DECLARE_FUNCTION_FROM(                            \
     package_name, template_and_result, declared_name, parameters) \
