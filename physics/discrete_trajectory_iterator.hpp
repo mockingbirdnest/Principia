@@ -21,7 +21,6 @@ namespace _discrete_trajectory_iterator {
 namespace internal {
 
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 
