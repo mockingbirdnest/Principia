@@ -6,12 +6,13 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(
-    symmetric_bilinear_form,
+FORWARD_DECLARE(
     TEMPLATE(typename Scalar,
              typename Frame,
              template<typename, typename> typename Multivector) class,
-    SymmetricBilinearForm);
+    SymmetricBilinearForm,
+    FROM(symmetric_bilinear_form),
+    INTO(signature));
 
 namespace _signature {
 namespace internal {
@@ -21,7 +22,6 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_sign;
-using namespace principia::geometry::_symmetric_bilinear_form;
 
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};

@@ -205,28 +205,66 @@ inline void noreturn() { std::exit(0); }
 #define PRINCIPIA_MAX4(x1, x2, x3, x4) std::max({(x1), (x2), (x3), (x4)})
 #endif
 
+// The macro magic is inspired from http://jhnet.co.uk/articles/cpp_magic.  Note
+// that we are using __VA_OPT__ to stop the recursion and detect empty argument
+// lists because we are modern.
+#define PRINCIPIA_EMPTY()
+#define PRINCIPIA_DEFER1(m) m PRINCIPIA_EMPTY()
+
+#define PRINCIPIA_EVAL(...) PRINCIPIA_EVAL16(__VA_ARGS__)
+#define PRINCIPIA_EVAL16(...) PRINCIPIA_EVAL8(PRINCIPIA_EVAL8(__VA_ARGS__))
+#define PRINCIPIA_EVAL8(...) PRINCIPIA_EVAL4(PRINCIPIA_EVAL4(__VA_ARGS__))
+#define PRINCIPIA_EVAL4(...) PRINCIPIA_EVAL2(PRINCIPIA_EVAL2(__VA_ARGS__))
+#define PRINCIPIA_EVAL2(...) PRINCIPIA_EVAL1(PRINCIPIA_EVAL1(__VA_ARGS__))
+#define PRINCIPIA_EVAL1(...) __VA_ARGS__
+
+#define PRINCIPIA_MAP2(m, a0, a1, ...) \
+  m(a0, a1) __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP2)()(m, a0, __VA_ARGS__))
+#define _PRINCIPIA_MAP2() PRINCIPIA_MAP2
+
+#define USING_DIRECTIVE_INTO(from_package_name, into_package_name) \
+  namespace into_package_name {                                    \
+    namespace internal {                                           \
+      using namespace from_package_name;                           \
+    }                                                              \
+  }
+
+#define USING_DIRECTIVES_INTO(from_package_name, ...) \
+  __VA_OPT__(PRINCIPIA_EVAL16(                        \
+      PRINCIPIA_MAP2(USING_DIRECTIVE_INTO, from_package_name, __VA_ARGS__)))
+
 // Forward declaration of a class or struct declared in an internal namespace
 // according to #602.
 // Usage:
-// FORWARD_DECLARE_FROM(p1, struct, T);
-// FORWARD_DECLARE_FROM(p2, TEMPLATE(int i) class, U);
-#define FORWARD_DECLARE_FROM(                            \
-    package_name, template_and_class_key, declared_name) \
-  namespace _##package_name {                            \
-    namespace internal {                                 \
-    template_and_class_key declared_name;                \
-    }                                                    \
-    using internal::declared_name;                       \
-  }
+//   FORWARD_DECLARE(struct, T, FROM(pack));
+//   FORWARD_DECLARE(TEMPLATE(int i) class, U, FROM(pack));
+//   FORWARD_DECLARE(class, T, FROM(pack), INTO(pack1), INTO(pack2));
+// There must be a FROM argument.  Optionally, there can be multiple INTO
+// arguments, in which case a using directive for pack is inserted into pack1,
+// pack2, etc.
 
-#define FORWARD_DECLARE_FUNCTION_FROM(                            \
-    package_name, template_and_result, declared_name, parameters) \
-  namespace _##package_name {                                     \
-    namespace internal {                                          \
-    template_and_result declared_name parameters;                 \
-    }                                                             \
-    using internal::declared_name;                                \
-  }
+#define FROM(package_name) _##package_name
+#define INTO(package_name) _##package_name
+
+#define FORWARD_DECLARE(                                           \
+    template_and_class_key, declared_name, from_package_name, ...) \
+  namespace from_package_name {                                    \
+    namespace internal {                                           \
+      template_and_class_key declared_name;                        \
+    }                                                              \
+    using internal::declared_name;                                 \
+  }                                                                \
+  USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
+
+#define FORWARD_DECLARE_FUNCTION(                                           \
+    template_and_result, declared_name, parameters, from_package_name, ...) \
+  namespace from_package_name {                                             \
+    namespace internal {                                                    \
+      template_and_result declared_name parameters;                         \
+    }                                                                       \
+    using internal::declared_name;                                          \
+  }                                                                         \
+  USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
 
 }  // namespace base
 }  // namespace principia
