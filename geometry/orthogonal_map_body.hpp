@@ -2,8 +2,8 @@
 
 #include "geometry/orthogonal_map.hpp"
 
-#include "geometry/rotation.hpp"  // 🧙
-#include "geometry/signature.hpp"  // 🧙
+#include "geometry/rotation.hpp"  // 🧙 For MakeRotation.
+#include "geometry/signature.hpp"  // 🧙 For MakeSignature.
 
 namespace principia {
 namespace geometry {

@@ -2,7 +2,7 @@
 
 #include "geometry/conformal_map.hpp"
 
-#include "geometry/homothecy.hpp"  // 🧙
+#include "geometry/homothecy.hpp"  // 🧙 For MakeHomothecy.
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {

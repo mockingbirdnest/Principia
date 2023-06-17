@@ -7,7 +7,7 @@
 
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
-#include "geometry/barycentre_calculator.hpp"  // 🧙
+#include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"

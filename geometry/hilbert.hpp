@@ -3,7 +3,7 @@
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
-#include "geometry/grassmann.hpp"  // 🧙
+#include "geometry/grassmann.hpp"  // 🧙 For _grassmann::internal.
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
 

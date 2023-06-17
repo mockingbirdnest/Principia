@@ -248,7 +248,7 @@ public class Parser {
     public string[] path;
 
     public bool is_blessed_by_sourcerer =>
-        text.EndsWith("// 🧙");
+        Regex.IsMatch(text, @"// 🧙 .+$");
 
     public bool is_own_body =>
         text ==
