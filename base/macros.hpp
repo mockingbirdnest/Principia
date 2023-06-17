@@ -253,10 +253,6 @@ inline void noreturn() { std::exit(0); }
   m(a0, a1) __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP2)()(m, a0, __VA_ARGS__))
 #define _PRINCIPIA_MAP2() PRINCIPIA_MAP2
 
-#define FROM(package_name) _##package_name
-
-#define INTO(package_name) _##package_name
-
 #define USING_DIRECTIVE_INTO(from_package_name, into_package_name) \
   namespace into_package_name {                                    \
     namespace internal {                                           \
@@ -267,6 +263,19 @@ inline void noreturn() { std::exit(0); }
 #define USING_DIRECTIVES_INTO(from_package_name, ...) \
   __VA_OPT__(PRINCIPIA_EVAL16(                        \
       PRINCIPIA_MAP2(USING_DIRECTIVE_INTO, from_package_name, __VA_ARGS__)))
+
+// Forward declaration of a class or struct declared in an internal namespace
+// according to #602.
+// Usage:
+//   FORWARD_DECLARE(struct, T, FROM(pack));
+//   FORWARD_DECLARE(TEMPLATE(int i) class, U, FROM(pack));
+//   FORWARD_DECLARE(class, T, FROM(pack), INTO(pack1), INTO(pack2));
+// There must be a FROM argument.  Optionally, there can be multiple INTO
+// arguments, in which case a using directive for pack is inserted into pack1,
+// pack2, etc.
+
+#define FROM(package_name) _##package_name
+#define INTO(package_name) _##package_name
 
 #define FORWARD_DECLARE(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \
