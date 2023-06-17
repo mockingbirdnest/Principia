@@ -1,3 +1,5 @@
+#include "geometry/perspective.hpp"
+
 #include <limits>
 
 #include "geometry/frame.hpp"
@@ -5,18 +7,6 @@
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
-#include "geometry/sphere.hpp"
-#include "quantities/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/vanishes_before.hpp"
-#include "geometry/perspective.hpp"
-#include "geometry/space_transformations.hpp"
-#include "geometry/rotation.hpp"
-#include "geometry/rp2_point.hpp"
-#include "geometry/space.hpp"
 #include "geometry/sphere.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
