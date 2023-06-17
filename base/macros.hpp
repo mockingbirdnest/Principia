@@ -237,6 +237,8 @@ inline void noreturn() { std::exit(0); }
 
 // The macro magic is inspired from
 // http://jhnet.co.uk/articles/cpp_magic#turning-multiple-expansion-passes-into-recursion.
+// Note that we are using __VA_OPT__ to stop the recursion and detect empty
+// argument lists because we are modern.
 #define PRINCIPIA_EMPTY()
 #define PRINCIPIA_DEFER1(m) m PRINCIPIA_EMPTY()
 
@@ -256,15 +258,15 @@ inline void noreturn() { std::exit(0); }
 #define INTO(package_name) _##package_name
 
 #define USING_DIRECTIVE_INTO(from_package_name, into_package_name) \
-  namespace into_package_name {                                 \
-  namespace internal {                                          \
-  using namespace from_package_name;                            \
-  }                                                             \
+  namespace into_package_name {                                    \
+    namespace internal {                                           \
+      using namespace from_package_name;                           \
+    }                                                              \
   }
 
 #define USING_DIRECTIVES_INTO(from_package_name, ...) \
-  PRINCIPIA_EVAL16(                                   \
-      PRINCIPIA_MAP2(USING_DIRECTIVE_INTO, from_package_name, __VA_ARGS__))
+  __VA_OPT__(PRINCIPIA_EVAL16(                        \
+      PRINCIPIA_MAP2(USING_DIRECTIVE_INTO, from_package_name, __VA_ARGS__)))
 
 #define FORWARD_DECLARE(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \
