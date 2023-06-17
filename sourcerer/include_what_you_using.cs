@@ -13,7 +13,7 @@ namespace principia {
 namespace sourcerer {
 
 public class StringArrayComparer : IComparer<string[]> {
-  public int Compare(string[] left, string[] right) {
+  public int Compare(string[]? left, string[]? right) {
     int i = 0;
     while (i < left.Length && i < right.Length) {
       int i_compare = string.Compare(left[i], right[i]);
@@ -110,7 +110,7 @@ class IncludeWhatYouUsing {
   }
 
   private static void FixIncludes(Parser.File file) {
-    // Build the sorted set of path that must actually be included.
+    // Build the sorted set of paths that must actually be included.
     var new_include_paths = new SortedSet<string[]>(new StringArrayComparer());
 
     // First, the paths mentioned in using directives.
@@ -119,7 +119,7 @@ class IncludeWhatYouUsing {
     var using_namespaces = from ud in using_directives select ud.ns;
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::");
-      var include_path = new string[]{};
+      var include_path = Array.Empty<string>();
       bool skip = false;
       foreach (string segment in segments) {
         if (segment == "principia") {
@@ -260,7 +260,7 @@ class IncludeWhatYouUsing {
     bool all_body_using_directives_are_unneeded =
         unneeded_body_using_directives.ToList().Count ==
         body_using_directives.Count;
-    Node following_node_in_parent = null;
+    Node? following_node_in_parent = null;
     foreach (UsingDirective ud in unneeded_body_using_directives) {
       var parent = ud.parent;
       Debug.Assert(parent is Namespace,

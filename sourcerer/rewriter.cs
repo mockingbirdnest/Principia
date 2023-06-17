@@ -22,18 +22,10 @@ public class Rewriter {
 
   private static void RewriteNode(StreamWriter writer, Parser.Node node) {
     foreach (Parser.Node child in node.children) {
-      if (child.must_rewrite) {
-        writer.WriteLine(child.Cxx());
-      } else {
-        writer.WriteLine(child.text);
-      }
+      writer.WriteLine(child.must_rewrite ? child.Cxx() : child.text);
       if (child is Namespace ns) {
         RewriteNode(writer, child);
-        if (ns.must_rewrite) {
-          writer.WriteLine(ns.ClosingCxx());
-        } else {
-          writer.WriteLine(ns.closing_text);
-        }
+        writer.WriteLine(ns.must_rewrite ? ns.ClosingCxx() : ns.closing_text);
       }
     }
   }

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace principia {
 namespace sourcerer {
 
 // Usage:
-//   sourcerer --project:quantities \
+//   sourcerer renamespacer \
+//             --project:quantities \
 //             --client:base --client:physics \
 //             --exclude:macros.hpp --dry_run:false
 // This will renamespace quantities and fix the references in the client

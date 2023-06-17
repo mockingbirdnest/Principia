@@ -218,10 +218,13 @@ public class Parser {
   public class Include : Node {
     // The |file_info| is the file where this include appears, not the one that
     // is included.
-    public Include(Node parent, string[] path, FileInfo file_info) :
+    public Include(Node? parent, string[] path, FileInfo file_info) :
         this(text: null, parent, path, file_info) { }
 
-    public Include(string? text, Node parent, string[] path, FileInfo file_info)
+    public Include(string? text,
+                   Node? parent,
+                   string[] path,
+                   FileInfo file_info)
         : base(text, parent) {
       this.path = path;
       file_info_ = file_info;
