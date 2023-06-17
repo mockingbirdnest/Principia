@@ -17,7 +17,7 @@
 namespace principia {
 
 namespace ksp_plugin {
-FORWARD_DECLARE_FROM(part, class, Part);
+FORWARD_DECLARE(class, Part, FROM(part));
 }  // namespace ksp_plugin
 
 namespace base {

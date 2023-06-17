@@ -205,40 +205,9 @@ inline void noreturn() { std::exit(0); }
 #define PRINCIPIA_MAX4(x1, x2, x3, x4) std::max({(x1), (x2), (x3), (x4)})
 #endif
 
-// Forward declaration of a class or struct declared in an internal namespace
-// according to #602.
-// Usage:
-// FORWARD_DECLARE_FROM(p1, struct, T);
-// FORWARD_DECLARE_FROM(p2, TEMPLATE(int i) class, U);
-#define FORWARD_DECLARE_FROM(                            \
-    package_name, template_and_class_key, declared_name) \
-  namespace _##package_name {                            \
-    namespace internal {                                 \
-    template_and_class_key declared_name;                \
-    }                                                    \
-    using internal::declared_name;                       \
-  }
-
-#define FORWARD_DECLARE_FROM2(from_package_name,      \
-                              template_and_class_key, \
-                              declared_name,          \
-                              into_package_name)      \
-  namespace _##from_package_name {                    \
-    namespace internal {                              \
-    template_and_class_key declared_name;             \
-    }                                                 \
-    using internal::declared_name;                    \
-  }                                                   \
-  namespace _##into_package_name {                    \
-    namespace internal {                              \
-      using namespace _##from_package_name;           \
-    }                                                 \
-  }
-
-// The macro magic is inspired from
-// http://jhnet.co.uk/articles/cpp_magic#turning-multiple-expansion-passes-into-recursion.
-// Note that we are using __VA_OPT__ to stop the recursion and detect empty
-// argument lists because we are modern.
+// The macro magic is inspired from http://jhnet.co.uk/articles/cpp_magic.  Note
+// that we are using __VA_OPT__ to stop the recursion and detect empty argument
+// lists because we are modern.
 #define PRINCIPIA_EMPTY()
 #define PRINCIPIA_DEFER1(m) m PRINCIPIA_EMPTY()
 

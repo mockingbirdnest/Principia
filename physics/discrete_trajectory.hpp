@@ -23,11 +23,6 @@
 
 namespace principia {
 namespace physics {
-
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectorySegment);
-
 namespace _discrete_trajectory {
 namespace internal {
 

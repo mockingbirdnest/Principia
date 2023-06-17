@@ -14,14 +14,16 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(homothecy,
-                     TEMPLATE(typename Scalar,
-                              typename FromFrame,
-                              typename ToFrame) class,
-                     Homothecy);
-FORWARD_DECLARE_FROM(orthogonal_map,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     OrthogonalMap);
+FORWARD_DECLARE(TEMPLATE(typename Scalar,
+                         typename FromFrame,
+                         typename ToFrame) class,
+                Homothecy,
+                FROM(homothecy),
+                INTO(conformal_map));
+FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
+                OrthogonalMap,
+                FROM(orthogonal_map),
+                INTO(conformal_map));
 
 namespace _conformal_map {
 namespace internal {
@@ -32,8 +34,6 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_homothecy;
-using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;

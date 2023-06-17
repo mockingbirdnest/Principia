@@ -12,9 +12,10 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(rotation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Rotation);
+FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
+                Rotation,
+                FROM(rotation),
+                INTO(symmetric_bilinear_form));
 
 namespace _symmetric_bilinear_form {
 namespace internal {

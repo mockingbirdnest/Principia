@@ -36,11 +36,11 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FROM(
-    polynomial,
+FORWARD_DECLARE(
     TEMPLATE(typename Value, typename Argument, int degree_,
-            template<typename, typename, int> typename Evaluator) class,
-    PolynomialInMonomialBasis);
+             template<typename, typename, int> typename Evaluator) class,
+    PolynomialInMonomialBasis,
+    FROM(polynomial));
 }  // namespace numerics
 
 namespace mathematica {

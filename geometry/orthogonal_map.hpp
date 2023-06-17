@@ -23,7 +23,7 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 INTO(orthogonal_map));
 FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 Permutation,
-                FROM(permation),
+                FROM(permutation),
                 INTO(orthogonal_map));
 FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 Rotation,
@@ -33,13 +33,13 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 Signature,
                 FROM(signature),
                 INTO(orthogonal_map));
-FORWARD_DECLARE(TEMPLATE(typename Scalar,
-                         typename Frame,
-                         template<typename, typename>
-                         typename Multivector) class,
-                SymmetricBilinearForm,
-                FROM(symmetric_bilinear_form),
-                INTO(orthogonal_map));
+FORWARD_DECLARE(
+    TEMPLATE(typename Scalar,
+             typename Frame,
+             template<typename, typename> typename Multivector) class,
+    SymmetricBilinearForm,
+    FROM(symmetric_bilinear_form),
+    INTO(orthogonal_map));
 
 class ConformalMapTest;
 class OrthogonalMapTest;

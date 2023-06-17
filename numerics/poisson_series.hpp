@@ -21,12 +21,12 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE_FROM(poisson_series,
-                     TEMPLATE(typename Value,
-                              int aperiodic_degree, int periodic_degree,
-                              template<typename, typename, int> class Evaluator)
-                              class,
-                     PoissonSeries);
+FORWARD_DECLARE(
+    TEMPLATE(typename Value,
+             int aperiodic_degree, int periodic_degree,
+             template<typename, typename, int> class Evaluator) class,
+    PoissonSeries,
+    FROM(poisson_series));
 }  // namespace numerics
 
 namespace mathematica {

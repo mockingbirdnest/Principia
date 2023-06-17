@@ -31,7 +31,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(part, class, Part);
+FORWARD_DECLARE(class, Part, FROM(part), INTO(pile_up));
 
 class TestablePileUp;
 
@@ -45,7 +45,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
-using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
