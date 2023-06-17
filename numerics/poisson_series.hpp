@@ -30,8 +30,7 @@ FORWARD_DECLARE(
 }  // namespace numerics
 
 namespace mathematica {
-FORWARD_DECLARE_FUNCTION_FROM(
-    mathematica,
+FORWARD_DECLARE_FUNCTION(
     TEMPLATE(typename Value,
              int aperiodic_degree, int periodic_degree,
              template<typename, typename, int> class Evaluator,
@@ -40,7 +39,8 @@ FORWARD_DECLARE_FUNCTION_FROM(
     (numerics::_poisson_series::PoissonSeries<Value,
                                               aperiodic_degree, periodic_degree,
                                               Evaluator> const& series,
-     OptionalExpressIn express_in));
+     OptionalExpressIn express_in),
+     FROM(mathematica));
 }  // namespace mathematica
 
 namespace numerics {

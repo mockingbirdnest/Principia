@@ -256,14 +256,15 @@ inline void noreturn() { std::exit(0); }
   }                                                                \
   USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
 
-#define FORWARD_DECLARE_FUNCTION_FROM(                            \
-    package_name, template_and_result, declared_name, parameters) \
-  namespace _##package_name {                                     \
-    namespace internal {                                          \
-    template_and_result declared_name parameters;                 \
-    }                                                             \
-    using internal::declared_name;                                \
-  }
+#define FORWARD_DECLARE_FUNCTION(                                           \
+    template_and_result, declared_name, parameters, from_package_name, ...) \
+  namespace from_package_name {                                             \
+    namespace internal {                                                    \
+      template_and_result declared_name parameters;                         \
+    }                                                                       \
+    using internal::declared_name;                                          \
+  }                                                                         \
+  USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
 
 }  // namespace base
 }  // namespace principia

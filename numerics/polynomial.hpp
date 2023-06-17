@@ -44,16 +44,16 @@ FORWARD_DECLARE(
 }  // namespace numerics
 
 namespace mathematica {
-FORWARD_DECLARE_FUNCTION_FROM(
-    mathematica,
-    TEMPLATE(typename Value, typename Argument, int degree_,
-             template<typename, typename, int> typename Evaluator,
-             typename OptionalExpressIn) std::string,
-    ToMathematicaBody,
-    (numerics::_polynomial::
-         PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-             polynomial,
-     OptionalExpressIn express_in));
+FORWARD_DECLARE_FUNCTION(
+   TEMPLATE(typename Value, typename Argument, int degree_,
+            template<typename, typename, int> typename Evaluator,
+            typename OptionalExpressIn) std::string,
+   ToMathematicaBody,
+   (numerics::_polynomial::
+        PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+            polynomial,
+    OptionalExpressIn express_in),
+    FROM(mathematica));
 }  // namespace mathematica
 
 namespace numerics {
