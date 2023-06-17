@@ -1,6 +1,7 @@
 #include "geometry/plane.hpp"
 
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

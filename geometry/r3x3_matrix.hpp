@@ -6,11 +6,11 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/macros.hpp"
+#include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
+#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {

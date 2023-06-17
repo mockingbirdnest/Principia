@@ -2,10 +2,11 @@
 
 #include <string>
 
-#include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 

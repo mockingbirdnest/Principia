@@ -3,9 +3,11 @@
 #include <sstream>
 
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 

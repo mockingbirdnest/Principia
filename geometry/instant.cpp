@@ -5,7 +5,9 @@
 #include <string_view>
 
 #include "absl/strings/str_format.h"
+#include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

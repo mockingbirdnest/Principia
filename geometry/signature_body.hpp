@@ -2,7 +2,9 @@
 
 #include "geometry/signature.hpp"
 
-#include "base/traits.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/quaternion.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 
 namespace principia {
@@ -10,7 +12,6 @@ namespace geometry {
 namespace _signature {
 namespace internal {
 
-using namespace principia::base::_traits;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;

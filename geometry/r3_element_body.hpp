@@ -7,10 +7,9 @@
 #include <string>
 #include <type_traits>
 
-#include "base/macros.hpp"
 #include "glog/logging.h"
+#include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
 
 namespace principia {
@@ -20,7 +19,6 @@ namespace internal {
 
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_serialization;
 
 // We want zero initialization here, so the default constructor won't do.

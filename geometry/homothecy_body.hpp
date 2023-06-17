@@ -12,7 +12,6 @@ namespace internal {
 
 using namespace principia::geometry::_quaternion;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)

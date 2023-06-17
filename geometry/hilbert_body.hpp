@@ -2,9 +2,7 @@
 
 #include "geometry/hilbert.hpp"
 
-#include "geometry/grassmann.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "hilbert.hpp"
 
 namespace principia {
 namespace geometry {

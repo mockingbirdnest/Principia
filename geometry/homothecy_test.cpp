@@ -4,10 +4,12 @@
 
 #include "geometry/conformal_map.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/r3_element.hpp"
+#include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"

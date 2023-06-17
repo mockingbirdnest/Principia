@@ -4,9 +4,7 @@
 #include <tuple>
 #include <type_traits>
 
-#include "base/macros.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 
 // The use of FORCE_INLINE in this file is because we want the construction of

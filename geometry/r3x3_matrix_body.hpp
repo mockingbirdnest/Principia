@@ -6,18 +6,14 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _r3x3_matrix {
 namespace internal {
 
-using namespace principia::base::_tags;
-using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar>

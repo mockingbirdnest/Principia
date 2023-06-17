@@ -6,11 +6,9 @@
 #include <string>
 #include <utility>
 
-#include "base/traits.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
-#include "geometry/r3_element.hpp"
-#include "geometry/sign.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -18,7 +16,6 @@ namespace geometry {
 namespace _permutation {
 namespace internal {
 
-using namespace principia::base::_traits;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
