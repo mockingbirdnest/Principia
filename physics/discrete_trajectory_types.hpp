@@ -13,16 +13,16 @@
 namespace principia {
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectorySegment);
+FORWARD_DECLARE(TEMPLATE(typename Frame) class,
+                DiscreteTrajectorySegment,
+                FROM(discrete_trajectory_segment),
+                INTO(discrete_trajectory_types));
 
 namespace _discrete_trajectory_types {
 namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_quantities;
 
 // |max_dense_intervals| is the maximal number of dense intervals before

@@ -10,7 +10,7 @@
 namespace principia {
 namespace journal {
 
-FORWARD_DECLARE_FROM(method, template<typename Profile> class, Method);
+FORWARD_DECLARE(template<typename Profile> class, Method, FROM(method));
 
 class RecorderTest;
 

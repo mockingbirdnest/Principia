@@ -12,15 +12,17 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(permutation,
-                     TEMPLATE(typename FromFrame, typename ToFrame) class,
-                     Permutation);
-FORWARD_DECLARE_FROM(
-    symmetric_bilinear_form,
-    TEMPLATE(typename Scalar,
-            typename Frame,
-            template<typename S, typename F> typename Multivector) class,
-    SymmetricBilinearForm);
+FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
+                Permutation,
+                FROM(permutation),
+                INTO(rotation));
+FORWARD_DECLARE(TEMPLATE(typename Scalar,
+                         typename Frame,
+                         template<typename S, typename F>
+                         typename Multivector) class,
+                SymmetricBilinearForm,
+                FROM(symmetric_bilinear_form),
+                INTO(rotation));
 
 namespace _rotation {
 namespace internal {
@@ -30,11 +32,9 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
-using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
-using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_quantities;
 
 // |EulerAngles| and |CardanoAngles| have values in binary-coded ternary

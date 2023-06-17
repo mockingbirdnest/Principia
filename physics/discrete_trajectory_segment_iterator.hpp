@@ -11,22 +11,25 @@
 namespace principia {
 
 namespace testing_utilities {
-FORWARD_DECLARE_FROM(discrete_trajectory_factories,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectoryFactoriesFriend);
+FORWARD_DECLARE(TEMPLATE(typename Frame) class,
+                DiscreteTrajectoryFactoriesFriend,
+                FROM(discrete_trajectory_factories));
 }  // namespace testing_utilities
 
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectory);
-FORWARD_DECLARE_FROM(discrete_trajectory_iterator,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectoryIterator);
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectorySegment);
+FORWARD_DECLARE(TEMPLATE(typename Frame) class,
+                DiscreteTrajectory,
+                FROM(discrete_trajectory),
+                INTO(discrete_trajectory_segment_iterator));
+FORWARD_DECLARE(TEMPLATE(typename Frame) class,
+                DiscreteTrajectoryIterator,
+                FROM(discrete_trajectory_iterator),
+                INTO(discrete_trajectory_segment_iterator));
+FORWARD_DECLARE(TEMPLATE(typename Frame) class,
+                DiscreteTrajectorySegment,
+                FROM(discrete_trajectory_segment),
+                INTO(discrete_trajectory_segment_iterator));
 
 class DiscreteTrajectoryIteratorTest;
 class DiscreteTrajectorySegmentIteratorTest;
@@ -36,9 +39,6 @@ namespace _discrete_trajectory_segment_iterator {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_discrete_trajectory_iterator;
-using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_range;
 
 template<typename Frame>

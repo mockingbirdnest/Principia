@@ -12,15 +12,15 @@
 namespace principia {
 namespace physics {
 
-FORWARD_DECLARE_FROM(discrete_trajectory_segment,
-                     TEMPLATE(typename Frame) class,
-                     DiscreteTrajectorySegment);
+FORWARD_DECLARE(TEMPLATE(typename Frame) class,
+                DiscreteTrajectorySegment,
+                FROM(discrete_trajectory_segment),
+                INTO(discrete_trajectory_iterator));
 
 namespace _discrete_trajectory_iterator {
 namespace internal {
 
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 

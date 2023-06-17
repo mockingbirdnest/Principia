@@ -10,12 +10,13 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE_FROM(
-    symmetric_bilinear_form,
+FORWARD_DECLARE(
     TEMPLATE(typename Scalar,
              typename Frame,
              template<typename, typename> typename Multivector) class,
-    SymmetricBilinearForm);
+    SymmetricBilinearForm,
+    FROM(symmetric_bilinear_form),
+    INTO(identity));
 
 namespace _identity {
 namespace internal {
@@ -27,7 +28,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
-using namespace principia::geometry::_symmetric_bilinear_form;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>
