@@ -7,7 +7,6 @@ namespace principia {
 namespace base {
 
 using ::testing::AnyOf;
-using ::testing::Eq;
 using ::testing::Test;
 using namespace principia::base::_cpuid;
 
@@ -18,7 +17,7 @@ TEST_F(CPUIDTest, Vendor) {
   // hard to expect things from the feature flags.  This could be expanded to an
   // AnyOf as needed if the tests are run on non-Intel processors.
   EXPECT_THAT(CPUVendorIdentificationString(),
-              AnyOf(Eq("AuthenticAMD"), Eq("GenuineIntel")));
+              AnyOf("AuthenticAMD", "GenuineIntel"));
 }
 
 TEST_F(CPUIDTest, CPUFeatureFlags) {
