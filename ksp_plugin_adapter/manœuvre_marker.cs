@@ -4,6 +4,11 @@ namespace principia.ksp_plugin_adapter
   // by a sphere 1 unit in radius.
   internal class ManœuvreMarker : UnityEngine.MonoBehaviour,
                                   IMouseEvents {
+    public bool IsHovered {
+      get;
+      private set;
+    } = false;
+
     public void Awake() {
       base_ = MakeTrihedronBase();
       tangent_ = MakeTrihedronArrow();
@@ -14,8 +19,6 @@ namespace principia.ksp_plugin_adapter
       tangent_.transform.SetParent(gameObject.transform, false);
       normal_.transform.SetParent(gameObject.transform, false);
       binormal_.transform.SetParent(gameObject.transform, false);
-
-      UpdateMarkerColors();
 
       var collider = gameObject.AddComponent<UnityEngine.SphereCollider>();
       collider.radius = 0.75f;
@@ -43,22 +46,53 @@ namespace principia.ksp_plugin_adapter
       transform.localScale = UnityEngine.Vector3.one * (float)scale
           * ScaledSpace.InverseScaleFactor;
 
+      UpdateMarkerColors();
+
       gameObject.SetActive(true);
     }
 
     public void Disable() {
       gameObject.SetActive(false);
+      IsHovered = false;
     }
 
     private void SetColor(UnityEngine.GameObject go, UnityEngine.Color color) {
+      if (IsHovered) {
+        UnityEngine.Color.RGBToHSV(color, out float h, out float s, out float v);
+        color = UnityEngine.Color.HSVToRGB(h, s, v * 1.375f, hdr: true);
+      }
       go.GetComponentInChildren<UnityEngine.Renderer>().material.color = color;
     }
 
     private void UpdateMarkerColors() {
-      SetColor(base_, XKCDColors.OffWhite);
+      SetColor(base_, XKCDColors.LightGrey);
       SetColor(tangent_, Style.Tangent);
       SetColor(normal_, Style.Normal);
       SetColor(binormal_, Style.Binormal);
+    }
+
+    public void OnMouseEnter() {
+      if (!isActiveAndEnabled) {
+        return;
+      }
+      IsHovered = true;
+    }
+
+    public void OnMouseDown() {}
+
+    public void OnMouseDrag() {}
+
+    public void OnMouseUp() {}
+
+    public void OnMouseExit() {
+      if (!isActiveAndEnabled) {
+        return;
+      }
+      IsHovered = false;
+    }
+
+    public UnityEngine.MonoBehaviour GetInstance() {
+      return this;
     }
 
     private static UnityEngine.GameObject MakeTrihedronBase() {
@@ -82,30 +116,6 @@ namespace principia.ksp_plugin_adapter
       cylinder.GetComponent<UnityEngine.Renderer>().material =
         new UnityEngine.Material(marker_material);
       return arrow;
-    }
-
-    public void OnMouseEnter() {
-      UnityEngine.Debug.Log("^^^mouseEnter");
-    }
-
-    public void OnMouseDown() {
-      UnityEngine.Debug.Log("^^^mouseDown");
-    }
-
-    public void OnMouseDrag() {
-      UnityEngine.Debug.Log("^^^mouseDrag");
-    }
-
-    public void OnMouseUp() {
-      UnityEngine.Debug.Log("^^^mouseUp");
-    }
-
-    public void OnMouseExit() {
-      UnityEngine.Debug.Log("^^^mouseExit");
-    }
-
-    public UnityEngine.MonoBehaviour GetInstance() {
-      return this;
     }
 
     private UnityEngine.GameObject base_;
