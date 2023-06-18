@@ -129,6 +129,11 @@ class IncludeWhatYouUsing {
       foreach (string segment in segments) {
         if (segment == "principia") {
           continue;
+        } else if (segment == "std") {
+          // We have using directives for namespaces in std, don't emit an
+          // include for them.
+          skip = true;
+          continue;
         } else if (segment[0] == '_') {
           // Don't add an include for our own header.  This matters for tests.
           if (segment == file.file_namespace_simple_name) {
