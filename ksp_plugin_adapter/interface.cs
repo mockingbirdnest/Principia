@@ -78,14 +78,14 @@ public enum FrameType {
 // We imbue PlottingFrameParameters and NavigationFrameParameters with a common
 // interface and make the latter behave like a subtype of the former.
 
-internal interface ReferenceFrameParameters {
-  FrameType extension  { get; set; }
-  int centre_index  { get; set; }
-  int[] primary_index  { get; set; }
-  int[] secondary_index  { get; set; }
+internal interface IReferenceFrameParameters {
+  FrameType Extension  { get; set; }
+  int CentreIndex { get; set; }
+  int[] PrimaryIndex { get; set; }
+  int[] SecondaryIndex { get; set; }
 }
 
-internal partial class PlottingFrameParameters : ReferenceFrameParameters {
+internal partial class PlottingFrameParameters : IReferenceFrameParameters {
   public PlottingFrameParameters() {
     primary_index = new int[]{};
     secondary_index = new int[]{};
@@ -100,16 +100,14 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
           extension = p.extension,
           centre_index = p.centre_index,
       };
-      (result as ReferenceFrameParameters).primary_index =
-          (p as ReferenceFrameParameters).primary_index;
-      (result as ReferenceFrameParameters).secondary_index =
-          (p as ReferenceFrameParameters).secondary_index;
+      result.PrimaryIndex = p.PrimaryIndex;
+      result.SecondaryIndex = p.SecondaryIndex;
       return result;
     }
   }
 
   public override bool Equals(object obj) {
-    return obj is ReferenceFrameParameters other && this == other;
+    return obj is IReferenceFrameParameters other && this == other;
   }
 
   public override int GetHashCode() =>
@@ -118,92 +116,87 @@ internal partial class PlottingFrameParameters : ReferenceFrameParameters {
        secondary_index.DefaultIfEmpty(-1).First()).GetHashCode();
 
   public static bool operator ==(PlottingFrameParameters left,
-                                 ReferenceFrameParameters right) {
-    return (left as ReferenceFrameParameters).extension == right.extension &&
-           left.centre_index == right.centre_index &&
-           left.primary_index == right.primary_index &&
-           (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
-               right.secondary_index);
+                                 IReferenceFrameParameters right) {
+    return left.Extension == right.Extension &&
+           left.centre_index == right.CentreIndex &&
+           left.PrimaryIndex.SequenceEqual(right.PrimaryIndex) &&
+           left.SecondaryIndex.SequenceEqual(right.SecondaryIndex);
   }
 
   public static bool operator !=(PlottingFrameParameters left,
-                                 ReferenceFrameParameters right) {
+                                 IReferenceFrameParameters right) {
     return !(left == right);
   }
 
-  FrameType ReferenceFrameParameters.extension {
+  public FrameType Extension {
     get => (FrameType)extension;
     set => extension = (int)value;
   }
 
-  int ReferenceFrameParameters.centre_index {
+  public int CentreIndex {
     get => centre_index;
     set => centre_index = value;
   }
 
-  int[] ReferenceFrameParameters.primary_index {
+  public int[] PrimaryIndex {
     get => primary_index;
     set => primary_index = value;
   }
 
-  int[] ReferenceFrameParameters.secondary_index {
+  public int[] SecondaryIndex {
     get => secondary_index;
     set => secondary_index = value;
   }
 }
 
-internal partial struct NavigationFrameParameters : ReferenceFrameParameters {
+internal partial struct NavigationFrameParameters : IReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(
       NavigationFrameParameters p) {
     var result = new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
     };
-    (result as ReferenceFrameParameters).primary_index =
-        (p as ReferenceFrameParameters).primary_index;
-    (result as ReferenceFrameParameters).secondary_index =
-        (p as ReferenceFrameParameters).secondary_index;
+    result.PrimaryIndex = p.PrimaryIndex;
+    result.SecondaryIndex = p.SecondaryIndex;
     return result;
   }
 
   public override bool Equals(object obj) {
-    return obj is ReferenceFrameParameters other && this == other;
+    return obj is IReferenceFrameParameters other && this == other;
   }
 
   public override int GetHashCode() =>
       (extension, centre_index, primary_index, secondary_index).GetHashCode();
 
   public static bool operator ==(NavigationFrameParameters left,
-                                 ReferenceFrameParameters right) {
-    return (left as ReferenceFrameParameters).extension == right.extension &&
-           left.centre_index == right.centre_index &&
-           (left as ReferenceFrameParameters).primary_index.SequenceEqual(
-            right.primary_index) &&
-           (left as ReferenceFrameParameters).secondary_index.SequenceEqual(
-               right.secondary_index);
+                                 IReferenceFrameParameters right) {
+    return left.Extension == right.Extension &&
+           left.CentreIndex == right.CentreIndex &&
+           left.PrimaryIndex.SequenceEqual(right.PrimaryIndex) &&
+           left.SecondaryIndex.SequenceEqual(right.SecondaryIndex);
   }
 
   public static bool operator !=(NavigationFrameParameters left,
-                                 ReferenceFrameParameters right) {
+                                 IReferenceFrameParameters right) {
     return !(left == right);
   }
 
-  FrameType ReferenceFrameParameters.extension {
+  public FrameType Extension {
     get => (FrameType)extension;
     set => extension = (int)value;
   }
 
-  int ReferenceFrameParameters.centre_index {
+  public int CentreIndex {
     get => centre_index;
     set => centre_index = value;
   }
 
-  int[] ReferenceFrameParameters.primary_index {
+  public int[] PrimaryIndex {
     get => primary_index == -1 ? new int[] {} : new[] { primary_index };
     set => primary_index = value.DefaultIfEmpty(-1).Single();
   }
 
-  int[] ReferenceFrameParameters.secondary_index {
+  public int[] SecondaryIndex {
     get => secondary_index == -1 ? new int[] {} : new[] { secondary_index };
     set => secondary_index = value.DefaultIfEmpty(-1).Single();
   }
