@@ -1,8 +1,9 @@
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=DiscreteCosine  // NOLINT(whitespace/line_length)
+
 #include "benchmarks/quantities.hpp"
 
 #include<vector>
 
-// Must come last to avoid conflicts when defining the CHECK macros.
 #include "benchmark/benchmark.h"
 
 namespace principia {

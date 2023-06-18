@@ -1,3 +1,5 @@
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=EvaluatePolynomial  // NOLINT(whitespace/line_length)
+
 #include <random>
 #include <tuple>
 

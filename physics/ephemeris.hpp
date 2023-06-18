@@ -26,7 +26,6 @@
 #include "physics/integration_parameters.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
-#include "physics/protector.hpp"
 #include "physics/tensors.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "serialization/numerics.pb.h"
