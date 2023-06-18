@@ -123,7 +123,7 @@ class IncludeWhatYouUsing {
         FindUsingDirectives(file, internal_only: false);
     var using_namespaces = from ud in using_directives select ud.ns;
     foreach (string ns in using_namespaces) {
-      var segments = ns.Split("::");
+      var segments = ns.Split("::", StringSplitOptions.RemoveEmptyEntries);
       var include_path = Array.Empty<string>();
       bool skip = false;
       foreach (string segment in segments) {
