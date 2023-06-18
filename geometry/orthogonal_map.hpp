@@ -1,11 +1,12 @@
 #pragma once
 
 #include "base/mappable.hpp"
+#include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
-#include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 #include "serialization/geometry.pb.h"
 

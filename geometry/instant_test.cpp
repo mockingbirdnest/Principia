@@ -2,10 +2,12 @@
 
 #include <strstream>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
-#include "geometry/sign.hpp"
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {

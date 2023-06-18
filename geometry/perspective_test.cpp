@@ -1,13 +1,12 @@
+#include "geometry/perspective.hpp"
+
 #include <limits>
 
-#include "geometry/affine_map.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/perspective.hpp"
-#include "geometry/space_transformations.hpp"
 #include "geometry/rotation.hpp"
-#include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/sphere.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

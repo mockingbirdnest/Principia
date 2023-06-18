@@ -5,13 +5,11 @@
 #include <vector>
 
 #include "base/array.hpp"
-#include "geometry/affine_map.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/point.hpp"
-#include "geometry/space_transformations.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/sphere.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

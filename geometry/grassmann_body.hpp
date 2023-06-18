@@ -6,6 +6,7 @@
 
 #include "base/not_constructible.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {

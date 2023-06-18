@@ -1,10 +1,12 @@
+#include "geometry/r3x3_matrix.hpp"
+
 #include <utility>
 
-#include "quantities/elementary_functions.hpp"
-#include "geometry/r3x3_matrix.hpp"
+#include "geometry/r3_element.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"

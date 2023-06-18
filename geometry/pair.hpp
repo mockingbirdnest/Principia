@@ -1,9 +1,10 @@
 #pragma once
 
-#include "base/mappable.hpp"
+#include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
-#include "geometry/barycentre_calculator.hpp"
-#include "geometry/point.hpp"
+#include "base/not_null.hpp"
+#include "base/traits.hpp"
+#include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/traits.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"

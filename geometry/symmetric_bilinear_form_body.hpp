@@ -6,10 +6,6 @@
 #include <limits>
 #include <string>
 
-#include "geometry/grassmann.hpp"
-#include "geometry/r3_element.hpp"
-#include "geometry/rotation.hpp"
-#include "geometry/sign.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -20,7 +16,6 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

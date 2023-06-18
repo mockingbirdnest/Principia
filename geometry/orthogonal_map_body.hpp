@@ -2,17 +2,16 @@
 
 #include "geometry/orthogonal_map.hpp"
 
-#include "geometry/frame.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/linear_map.hpp"
-#include "geometry/r3_element.hpp"
-#include "geometry/sign.hpp"
+#include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _orthogonal_map {
 namespace internal {
+
+using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_signature;
 
 template<typename FromFrame, typename ToFrame>
 Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {

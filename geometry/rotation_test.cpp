@@ -1,17 +1,15 @@
 #include "geometry/rotation.hpp"
 
 #include "geometry/frame.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
-#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
@@ -28,7 +26,9 @@ using ::testing::Gt;
 using ::testing::Lt;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_identity;
+using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

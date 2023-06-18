@@ -8,14 +8,17 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {

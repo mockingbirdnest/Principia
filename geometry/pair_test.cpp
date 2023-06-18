@@ -1,5 +1,6 @@
 #include "geometry/pair.hpp"
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"

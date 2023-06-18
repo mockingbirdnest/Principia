@@ -4,6 +4,7 @@
 #include <string>
 
 #include "base/not_constructible.hpp"
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "google/protobuf/descriptor.h"

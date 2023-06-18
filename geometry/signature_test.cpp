@@ -3,13 +3,15 @@
 #include <vector>
 
 #include "geometry/frame.hpp"
-#include "geometry/identity.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/r3_element.hpp"
+#include "geometry/r3x3_matrix.hpp"
+#include "geometry/sign.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"

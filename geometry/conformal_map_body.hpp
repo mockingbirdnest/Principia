@@ -2,6 +2,7 @@
 
 #include "geometry/conformal_map.hpp"
 
+#include "geometry/homothecy.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -9,8 +10,8 @@ namespace geometry {
 namespace _conformal_map {
 namespace internal {
 
+using namespace principia::geometry::_homothecy;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Scalar ConformalMap<Scalar, FromFrame, ToFrame>::scale() const {

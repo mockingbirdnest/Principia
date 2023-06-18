@@ -2,10 +2,7 @@
 
 #include "geometry/identity.hpp"
 
-#include "base/mappable.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/sign.hpp"
 
 namespace principia {
 namespace geometry {

@@ -46,6 +46,16 @@ public class Analyser {
     return null;
   }
 
+  // Returns the list of top-level includes in |file|.
+  public static List<Include> FindIncludes(File file) {
+    var includes = new List<Include>();
+    foreach (Node child in file.children) {
+      if (child is Include inc) {
+        includes.Add(inc);
+      }
+    }
+    return includes;
+  }
 
   // Returns the list of innermost namespaces found in |node| and its
   // descendants.

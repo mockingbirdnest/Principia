@@ -6,6 +6,7 @@
 #include <string>
 
 #include "numerics/double_precision.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

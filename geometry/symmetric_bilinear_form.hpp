@@ -2,21 +2,16 @@
 
 #include <string>
 
-#include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
-
-FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
-                Rotation,
-                FROM(rotation),
-                INTO(symmetric_bilinear_form));
-
 namespace _symmetric_bilinear_form {
 namespace internal {
 
@@ -24,6 +19,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_named_quantities;
 
 // A symmetric bilinear form with dimensionality |Scalar|, on the given kind of

@@ -2,14 +2,17 @@
 
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/cpuid.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
-#include "quantities/quantities.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"

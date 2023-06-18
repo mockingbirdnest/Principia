@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
 #if OS_WIN
 #include <windows.h>
 #include <psapi.h>

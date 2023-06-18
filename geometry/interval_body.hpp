@@ -9,8 +9,6 @@ namespace geometry {
 namespace _interval {
 namespace internal {
 
-using namespace principia::quantities::_quantities;
-
 template<typename T>
 Difference<T> Interval<T>::measure() const {
   return max >= min ? max - min : Difference<T>{};
