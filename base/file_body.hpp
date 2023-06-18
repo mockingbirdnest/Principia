@@ -6,6 +6,7 @@
 #include <string>
 #include <system_error>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
 
 namespace principia {
