@@ -1,3 +1,5 @@
+// .\Release\x64\benchmarks.exe --benchmark_filter=LagrangeEquipotential
+
 #include "physics/lagrange_equipotentials.hpp"
 
 #include <vector>
