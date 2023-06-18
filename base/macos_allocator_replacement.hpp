@@ -28,6 +28,7 @@
 #include "absl/container/inlined_vector.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/container/node_hash_set.h"
+#include "base/macros.hpp"  // 🧙 For OS_MACOSX.
 
 #if !OS_MACOSX
 #error Only include this file for macOS
