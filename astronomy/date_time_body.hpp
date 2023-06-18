@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <limits>
 
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For CONSTEXPR_CHECK.
 #include "base/mod.hpp"
 #include "glog/logging.h"
 

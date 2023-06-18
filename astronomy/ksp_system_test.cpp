@@ -22,7 +22,7 @@
 #include "physics/solar_system.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/astronomy.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace astronomy {

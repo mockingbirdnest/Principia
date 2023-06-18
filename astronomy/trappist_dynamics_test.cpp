@@ -37,7 +37,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace astronomy {

@@ -1,5 +1,6 @@
 ﻿.\sourcerer\bin\Debug\net7.0\sourcerer.exe `
     include_what_you_using `
+    --project:astronomy `
     --project:base `
     --project:benchmarks `
     --project:geometry `

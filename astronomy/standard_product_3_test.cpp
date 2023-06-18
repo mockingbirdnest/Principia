@@ -11,7 +11,7 @@
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
