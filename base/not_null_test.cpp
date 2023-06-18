@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
 #else

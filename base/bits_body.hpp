@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For CONSTEXPR_DCHECK.
 #include "glog/logging.h"
 
 namespace principia {

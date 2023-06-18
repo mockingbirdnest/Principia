@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/macros.hpp"  // 🧙 For CONSTEXPR_NAN.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
