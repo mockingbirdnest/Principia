@@ -71,6 +71,11 @@ class BurnEditor : ScalingRenderer {
             NavigationFrameParameters parameters) {
       reference_frame_selector_.SetFrameParameters(parameters);
     } else {
+          var newThing = new NavigationFrameParameters {
+            extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
+            primary_index = plotting_frame_parameters.SecondaryIndex[0],
+            secondary_index = plotting_frame_parameters.PrimaryIndex[0],
+          };
       // If the plotting frame is not a navigation frame, it is the rotating-
       // pulsating frame; use the corresponding rotating frame as the default
       // navigation frame.
@@ -78,14 +83,7 @@ class BurnEditor : ScalingRenderer {
       // is the main body of the secondary system; for instance, we go from a
       // frame which fixes the Sun and the barycentre of the Earth-Moon system
       // to one which fixes the Earth and the direction of the Sun.
-      reference_frame_selector_.SetFrameParameters(
-          new NavigationFrameParameters {
-            extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
-            primary_index = (plotting_frame_parameters
-                             as ReferenceFrameParameters).secondary_index[0],
-            secondary_index = (plotting_frame_parameters
-                               as ReferenceFrameParameters).primary_index[0],
-          });
+      reference_frame_selector_.SetFrameParameters(newThing);
     }
     ComputeEngineCharacteristics();
   }
