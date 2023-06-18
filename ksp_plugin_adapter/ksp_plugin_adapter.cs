@@ -253,6 +253,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private readonly MapNodePool map_node_pool_;
   private ManeuverNode guidance_node_;
 
+  private readonly List<ManœuvreMarker> manœuvre_markers_pool_ =
+      new List<ManœuvreMarker>();
+
   // UI for the apocalypse notification.
   [KSPField(isPersistant = true)]
   private readonly Dialog apocalypse_dialog_ = new Dialog(persist_state: true);
@@ -892,8 +895,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (map_renderer_ == null) {
       map_renderer_ = PlanetariumCamera.Camera.gameObject.
           AddComponent<RenderingActions>();
-      map_renderer_.pre_cull = () => { RenderTrajectories(); };
-      map_renderer_.post_render = () => { RenderManœuvreMarkers(); };
+      map_renderer_.pre_cull = () => {
+        RenderTrajectories();
+        RenderManœuvreMarkers();
+      };
     }
 
     if (galaxy_cube_rotator_ == null) {
@@ -2170,59 +2175,62 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
-          GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        GLLines.Draw(() => {
-          if (main_vessel_guid == null) {
-            return;
-          }
-          if (plugin_.FlightPlanExists(main_vessel_guid)) {
-            int number_of_anomalous_manœuvres =
-                plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
-            int number_of_manœuvres =
-                plugin_.FlightPlanNumberOfManoeuvres(main_vessel_guid);
-            int number_of_segments =
-                plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
-            for (int i = 0; i < number_of_segments; ++i) {
-              bool is_burn = i % 2 == 1;
-              using (DisposableIterator rendered_segments =
-                  plugin_.FlightPlanRenderedSegment(main_vessel_guid,
-                                                    sun_world_position,
-                                                    i)) {
-                if (rendered_segments.IteratorAtEnd()) {
-                  Log.Info("Skipping segment " + i);
-                  continue;
-                }
-                Vector3d position_at_start = (Vector3d)rendered_segments.
-                    IteratorGetDiscreteTrajectoryXYZ();
-                if (is_burn) {
-                  int manœuvre_index = i / 2;
-                  if (manœuvre_index <
-                      number_of_manœuvres - number_of_anomalous_manœuvres) {
-                    NavigationManoeuvreFrenetTrihedron manœuvre =
-                        plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                            main_vessel_guid,
-                            manœuvre_index);
-                    double scale =
-                        (ScaledSpace.ScaledToLocalSpace(
-                             MapView.MapCamera.transform.position) -
-                         position_at_start).magnitude *
-                        0.015;
-                    Action<XYZ, UnityEngine.Color> add_vector =
-                        (world_direction, colour) => {
-                          UnityEngine.GL.Color(colour);
-                          GLLines.AddSegment(position_at_start,
-                                             position_at_start +
-                                             scale * (Vector3d)world_direction);
-                        };
-                    add_vector(manœuvre.tangent, Style.Tangent);
-                    add_vector(manœuvre.normal, Style.Normal);
-                    add_vector(manœuvre.binormal, Style.Binormal);
+        GLLines.NewPlanetarium(plugin_, sun_world_position)) {
+        if (main_vessel_guid == null) {
+          return;
+        }
+        if (plugin_.FlightPlanExists(main_vessel_guid)) {
+          int number_of_anomalous_manœuvres =
+              plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
+          int number_of_manœuvres =
+              plugin_.FlightPlanNumberOfManoeuvres(main_vessel_guid);
+          int number_of_segments =
+              plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
+          int number_of_rendered_manœuvres = 0;
+          for (int i = 0; i < number_of_segments; ++i) {
+            bool is_burn = i % 2 == 1;
+            using (DisposableIterator rendered_segments =
+                plugin_.FlightPlanRenderedSegment(main_vessel_guid,
+                                                  sun_world_position,
+                                                  i)) {
+              if (rendered_segments.IteratorAtEnd()) {
+                Log.Info("Skipping segment " + i);
+                continue;
+              }
+              Vector3d position_at_start = (Vector3d)rendered_segments.
+                IteratorGetDiscreteTrajectoryXYZ();
+              if (is_burn) {
+                int manœuvre_index = i / 2;
+                if (manœuvre_index <
+                    number_of_manœuvres - number_of_anomalous_manœuvres) {
+                  NavigationManoeuvreFrenetTrihedron manœuvre =
+                      plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                          main_vessel_guid,
+                          manœuvre_index);
+                  double scale =
+                      (ScaledSpace.ScaledToLocalSpace(
+                           MapView.MapCamera.transform.position) -
+                       position_at_start).magnitude *
+                      0.02;
+                  if (number_of_rendered_manœuvres
+                      >= manœuvre_markers_pool_.Count) {
+                    var marker = new UnityEngine.GameObject("manœuvre_marker");
+                    manœuvre_markers_pool_.
+                        Add(marker.AddComponent<ManœuvreMarker>());
                   }
+                  manœuvre_markers_pool_[number_of_rendered_manœuvres].
+                      Render(position_at_start, manœuvre, scale);
+                  number_of_rendered_manœuvres += 1;
                 }
               }
             }
           }
-        });
+          for (int i = manœuvre_markers_pool_.Count - 1;
+               i >= number_of_rendered_manœuvres;
+               i--) {
+            manœuvre_markers_pool_[i].Disable();
+          }
+        }
       }
     }
   }
