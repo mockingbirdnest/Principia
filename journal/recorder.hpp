@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "absl/synchronization/mutex.h"
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "serialization/journal.pb.h"
 
