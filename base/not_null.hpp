@@ -5,7 +5,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/macros.hpp"
 #include "base/not_constructible.hpp"
 #include "base/traits.hpp"
 #include "glog/logging.h"

@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl.hpp"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/fixed_array.h"
@@ -28,8 +29,6 @@
 #include "absl/container/inlined_vector.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/container/node_hash_set.h"
-#include "base/macros.hpp"
-#include "base/malloc_allocator.hpp"
 
 #if !OS_MACOSX
 #error Only include this file for macOS

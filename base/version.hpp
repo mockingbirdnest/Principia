@@ -1,7 +1,5 @@
 #pragma once
 
-#include "base/macros.hpp"
-
 namespace principia {
 namespace base {
 namespace _version {

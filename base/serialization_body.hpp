@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base/hexadecimal.hpp"
 #include "base/serialization.hpp"
 
 namespace principia {

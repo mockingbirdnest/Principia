@@ -8,7 +8,6 @@
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
-#include "base/macros.hpp"
 
 namespace principia {
 namespace base {

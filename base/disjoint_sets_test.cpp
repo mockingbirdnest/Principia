@@ -2,8 +2,9 @@
 
 #include <vector>
 
-#include "gtest/gtest.h"
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 using ::testing::Eq;
 
