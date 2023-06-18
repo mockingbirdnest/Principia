@@ -79,12 +79,10 @@ class BurnEditor : ScalingRenderer {
       // frame which fixes the Sun and the barycentre of the Earth-Moon system
       // to one which fixes the Earth and the direction of the Sun.
       reference_frame_selector_.SetFrameParameters(
-          new NavigationFrameParameters {
-            extension = (int)FrameType.BODY_CENTRED_PARENT_DIRECTION,
-            primary_index = (plotting_frame_parameters
-                             as ReferenceFrameParameters).secondary_index[0],
-            secondary_index = (plotting_frame_parameters
-                               as ReferenceFrameParameters).primary_index[0],
+          new NavigationFrameParameters{
+              Extension = FrameType.BODY_CENTRED_PARENT_DIRECTION,
+              PrimaryIndex = new[]{plotting_frame_parameters.SecondaryIndex[0]},
+              SecondaryIndex = new[]{plotting_frame_parameters.PrimaryIndex[0]},
           });
     }
     ComputeEngineCharacteristics();
