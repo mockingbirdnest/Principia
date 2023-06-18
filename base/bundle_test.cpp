@@ -3,8 +3,8 @@
 #include <atomic>
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {

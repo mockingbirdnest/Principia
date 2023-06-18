@@ -3,8 +3,6 @@
 #include <fstream>
 #include <string>
 
-#include "base/not_null.hpp"
-
 namespace principia {
 namespace base {
 namespace _get_line {

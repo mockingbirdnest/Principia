@@ -4,7 +4,10 @@
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {

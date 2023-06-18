@@ -10,8 +10,6 @@ namespace astronomy {
 namespace _fortran_astrodynamics_toolkit {
 namespace internal {
 
-using namespace principia::numerics::_fixed_arrays;
-
 template<int nmodel, int mmodel>
 R3Element<double> ComputeGravityAccelerationLear(
     R3Element<double> const& rgr,

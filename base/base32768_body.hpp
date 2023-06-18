@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/bits.hpp"
-#include "base/macros.hpp"
 #include "glog/logging.h"
 
 // Clang doesn't have a correct |std::array| yet, and we don't actually use this

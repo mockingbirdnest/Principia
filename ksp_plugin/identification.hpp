@@ -5,6 +5,7 @@
 #include <set>
 #include <string>
 
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 
 namespace principia {

@@ -4,6 +4,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {

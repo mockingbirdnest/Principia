@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "base/array.hpp"
+#include "base/not_null.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"

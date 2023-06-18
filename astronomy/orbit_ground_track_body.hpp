@@ -5,8 +5,11 @@
 #include <limits>
 #include <vector>
 
+#include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "physics/apsides.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {

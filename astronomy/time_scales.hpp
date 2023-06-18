@@ -4,6 +4,7 @@
 
 #include "astronomy/date_time.hpp"
 #include "geometry/instant.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace astronomy {

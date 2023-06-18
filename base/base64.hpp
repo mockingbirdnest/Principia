@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "base/array.hpp"
 #include "base/encoder.hpp"
 
 namespace principia {

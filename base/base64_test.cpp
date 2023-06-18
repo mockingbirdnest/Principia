@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "base/array.hpp"
 #include "gtest/gtest.h"
 
 namespace principia {

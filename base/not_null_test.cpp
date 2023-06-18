@@ -6,9 +6,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/macros.hpp"
-#include "gtest/gtest.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 using ::testing::Eq;
 

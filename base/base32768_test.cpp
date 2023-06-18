@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/array.hpp"
-#include "base/macros.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

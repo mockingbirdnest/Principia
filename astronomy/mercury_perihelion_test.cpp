@@ -1,26 +1,26 @@
 #include <fstream>
 #include <numeric>
 
-#include "astronomy/epoch.hpp"
+#include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/mathematica.hpp"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {

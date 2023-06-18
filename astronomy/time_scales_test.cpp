@@ -1,9 +1,13 @@
 #include "astronomy/time_scales.hpp"
 
+#include "astronomy/date_time.hpp"
+#include "astronomy/epoch.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"

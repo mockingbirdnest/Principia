@@ -16,7 +16,6 @@
 #include "absl/container/inlined_vector.h"
 #include "absl/container/node_hash_map.h"
 #include "absl/container/node_hash_set.h"
-#include "base/macros.hpp"
 #include "base/malloc_allocator.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

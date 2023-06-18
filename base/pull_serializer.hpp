@@ -9,11 +9,10 @@
 #include "absl/base/thread_annotations.h"
 #include "absl/synchronization/mutex.h"
 #include "base/array.hpp"
-#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "gipfeli/compression.h"
-#include "google/protobuf/message.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/message.h"
 
 namespace principia {
 namespace base {
