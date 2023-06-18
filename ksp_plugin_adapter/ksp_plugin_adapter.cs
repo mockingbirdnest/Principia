@@ -253,7 +253,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private readonly MapNodePool map_node_pool_;
   private ManeuverNode guidance_node_;
 
-  private readonly List<ManœuvreMarker> manœuvre_markers_pool_ =
+  private readonly List<ManœuvreMarker> manœuvre_marker_pool_ =
       new List<ManœuvreMarker>();
 
   // UI for the apocalypse notification.
@@ -2208,12 +2208,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                           main_vessel_guid,
                           manœuvre_index);
                   if (number_of_rendered_manœuvres
-                      >= manœuvre_markers_pool_.Count) {
+                      >= manœuvre_marker_pool_.Count) {
                     var marker = new UnityEngine.GameObject("manœuvre_marker");
-                    manœuvre_markers_pool_.
+                    manœuvre_marker_pool_.
                         Add(marker.AddComponent<ManœuvreMarker>());
                   }
-                  manœuvre_markers_pool_[number_of_rendered_manœuvres].
+                  manœuvre_marker_pool_[number_of_rendered_manœuvres].
                       Render(world_position: position_at_start,
                              manœuvre,
                              get_burn: () => {
@@ -2231,10 +2231,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               }
             }
           }
-          for (int i = manœuvre_markers_pool_.Count - 1;
-               i >= number_of_rendered_manœuvres;
-               i--) {
-            manœuvre_markers_pool_[i].Disable();
+          for (int i = number_of_rendered_manœuvres;
+               i < manœuvre_marker_pool_.Count;
+               ++i) {
+            manœuvre_marker_pool_[i].Disable();
           }
         }
       }
