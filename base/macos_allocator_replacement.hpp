@@ -20,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include "absl.hpp"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/fixed_array.h"

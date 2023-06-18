@@ -129,9 +129,9 @@ class IncludeWhatYouUsing {
       foreach (string segment in segments) {
         if (segment == "principia") {
           continue;
-        } else if (segment == "std") {
-          // We have using directives for namespaces in std, don't emit an
-          // include for them.
+        } else if (segment == "absl" || segment == "std") {
+          // We have using directives for namespaces in absl or std, don't emit
+          // an include for them.
           skip = true;
           continue;
         } else if (segment[0] == '_') {
