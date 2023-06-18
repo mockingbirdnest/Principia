@@ -10,11 +10,11 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
-#include "base/status_utilities.hpp"
-#include "geometry/instant.hpp"
-#include "geometry/space.hpp"
 #include "glog/logging.h"
 #include "numerics/finite_difference.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -23,9 +23,6 @@ namespace internal {
 
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_map_util;
-using namespace principia::base::_not_null;
-using namespace principia::geometry::_instant;
-using namespace principia::geometry::_space;
 using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -3,7 +3,6 @@
 
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/serialization.hpp"
 #include "geometry/frame.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

@@ -5,11 +5,12 @@
 
 #include "absl/status/statusor.h"
 #include "astronomy/orbit_recurrence.hpp"
-#include "astronomy/orbital_elements.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace astronomy {

@@ -13,6 +13,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
 #include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
 #include "base/graveyard.hpp"
@@ -27,6 +28,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/logger.hpp"
+#include "mathematica/mathematica.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
@@ -36,6 +38,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 

@@ -7,6 +7,8 @@
 
 #include "base/mod.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {

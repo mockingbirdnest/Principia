@@ -3,7 +3,6 @@
 #include "astronomy/stabilize_ksp.hpp"
 
 #include "physics/kepler_orbit.hpp"
-#include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

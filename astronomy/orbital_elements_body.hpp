@@ -8,13 +8,15 @@
 
 #include "absl/strings/str_cat.h"
 #include "base/jthread.hpp"
-#include "base/status_utilities.hpp"
-#include "numerics/quadrature.hpp"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
+#include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/quadrature.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -30,8 +32,6 @@ using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;

@@ -2,16 +2,31 @@
 
 #include <memory>
 
+#include "astronomy/date_time.hpp"
+#include "astronomy/frames.hpp"
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/orbital_elements.hpp"
-#include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
+#include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
+#include "physics/trajectory.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
 #if PRINCIPIA_LOG_TO_MATHEMATICA
 #include "mathematica/logger.hpp"
 #endif

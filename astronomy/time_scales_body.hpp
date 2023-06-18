@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <string>
 
-#include "astronomy/date_time.hpp"
 #include "astronomy/epoch.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
@@ -18,7 +17,6 @@ namespace astronomy {
 namespace _time_scales {
 namespace internal {
 
-using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_epoch;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
