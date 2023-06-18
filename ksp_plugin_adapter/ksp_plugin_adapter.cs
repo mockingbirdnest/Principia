@@ -2207,11 +2207,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                       plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
                           main_vessel_guid,
                           manœuvre_index);
-                  double scale =
-                      (ScaledSpace.ScaledToLocalSpace(
-                           MapView.MapCamera.transform.position) -
-                       position_at_start).magnitude *
-                      0.02;
                   if (number_of_rendered_manœuvres
                       >= manœuvre_markers_pool_.Count) {
                     var marker = new UnityEngine.GameObject("manœuvre_marker");
@@ -2221,7 +2216,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   manœuvre_markers_pool_[number_of_rendered_manœuvres].
                       Render(world_position: position_at_start,
                              manœuvre,
-                             scale,
                              get_burn: () => {
                               return plugin_.FlightPlanGetManoeuvre(
                                   main_vessel_guid,

@@ -11,6 +11,11 @@ namespace principia.ksp_plugin_adapter
       private set;
     } = false;
 
+    public bool IsDragged {
+      get;
+      private set;
+    } = false;
+
     public void Awake() {
       base_ = MakeTrihedronBase();
       tangent_ = MakeTrihedronArrow();
@@ -32,7 +37,6 @@ namespace principia.ksp_plugin_adapter
 
     public void Render(Vector3d world_position,
                        NavigationManoeuvreFrenetTrihedron manœuvre,
-                       double scale,
                        Func<Burn> get_burn,
                        Action<Burn> modify_burn) {
       tangent_vector_ = (Vector3d)manœuvre.tangent;
@@ -52,10 +56,10 @@ namespace principia.ksp_plugin_adapter
           UnityEngine.Vector3.up,
           (Vector3d)manœuvre.binormal);
 
-      transform.localScale = UnityEngine.Vector3.one * (float)scale
-          * ScaledSpace.InverseScaleFactor;
+      normalized_scale_ = (ScaledSpace.ScaledToLocalSpace(MapView.MapCamera.transform.position) - world_position).magnitude * 0.015 * ScaledSpace.InverseScaleFactor;
+      UpdateScale();
 
-      UpdateMarkerColors();
+      UpdateColors();
 
       gameObject.SetActive(true);
     }
@@ -63,6 +67,7 @@ namespace principia.ksp_plugin_adapter
     public void Disable() {
       gameObject.SetActive(false);
       IsHovered = false;
+      IsDragged = false;
     }
 
     private void SetColor(UnityEngine.GameObject go, UnityEngine.Color color) {
@@ -73,11 +78,16 @@ namespace principia.ksp_plugin_adapter
       go.GetComponentInChildren<UnityEngine.Renderer>().material.color = color;
     }
 
-    private void UpdateMarkerColors() {
+    private void UpdateColors() {
       SetColor(base_, XKCDColors.LightGrey);
       SetColor(tangent_, Style.Tangent);
       SetColor(normal_, Style.Normal);
       SetColor(binormal_, Style.Binormal);
+    }
+
+    private void UpdateScale() {
+      hover_scale_offset_ = UnityEngine.Mathf.MoveTowards(hover_scale_offset_, IsHovered ? 1.25f : 1f, 0.075f);
+      transform.localScale = Vector3d.one * normalized_scale_ * hover_scale_offset_;
     }
 
     private UnityEngine.Vector3 ScreenManœuvrePosition() =>
@@ -92,6 +102,7 @@ namespace principia.ksp_plugin_adapter
 
     public void OnMouseDown() {
       mouse_offset_at_click_ = UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
+      IsDragged = true;
     }
 
     public void OnMouseDrag() {
@@ -115,7 +126,12 @@ namespace principia.ksp_plugin_adapter
       modify_burn_(burn);
     }
 
-    public void OnMouseUp() {}
+    public void OnMouseUp() {
+      if (!isActiveAndEnabled) {
+        return;
+      }
+      IsDragged = false;
+    }
 
     public void OnMouseExit() {
       if (!isActiveAndEnabled) {
@@ -162,6 +178,9 @@ namespace principia.ksp_plugin_adapter
     private UnityEngine.GameObject tangent_;
     private UnityEngine.GameObject normal_;
     private UnityEngine.GameObject binormal_;
+
+    private double normalized_scale_;
+    private float hover_scale_offset_;
 
     private UnityEngine.Vector3 mouse_offset_at_click_;
 
