@@ -2219,7 +2219,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                         Add(marker.AddComponent<ManœuvreMarker>());
                   }
                   manœuvre_markers_pool_[number_of_rendered_manœuvres].
-                      Render(position_at_start, manœuvre, scale);
+                      Render(world_position: position_at_start,
+                             manœuvre,
+                             scale,
+                             get_burn: () => {
+                              return plugin_.FlightPlanGetManoeuvre(
+                                  main_vessel_guid,
+                                  manœuvre_index).burn;
+                             },
+                             modify_burn: (burn) => {
+                              flight_planner_.ModifyIthBurn(main_vessel_guid,
+                                                            manœuvre_index,
+                                                            burn);
+                             });
                   number_of_rendered_manœuvres += 1;
                 }
               }

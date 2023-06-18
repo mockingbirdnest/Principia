@@ -1,3 +1,5 @@
+using System;
+
 namespace principia.ksp_plugin_adapter
 {
   // Note that the 'base' scale of the marker is such that it is circumscribed
@@ -30,7 +32,14 @@ namespace principia.ksp_plugin_adapter
 
     public void Render(Vector3d world_position,
                        NavigationManoeuvreFrenetTrihedron manœuvre,
-                       double scale) {
+                       double scale,
+                       Func<Burn> get_burn,
+                       Action<Burn> modify_burn) {
+      tangent_vector_ = (Vector3d)manœuvre.tangent;
+
+      get_burn_ = get_burn;
+      modify_burn_ = modify_burn;
+
       transform.position = ScaledSpace.LocalToScaledSpace(world_position);
 
       tangent_.transform.localRotation = UnityEngine.Quaternion.FromToRotation(
@@ -71,6 +80,9 @@ namespace principia.ksp_plugin_adapter
       SetColor(binormal_, Style.Binormal);
     }
 
+    private UnityEngine.Vector3 ScreenManœuvrePosition() =>
+      ScaledToFlattenedScreenPosition(transform.position);
+
     public void OnMouseEnter() {
       if (!isActiveAndEnabled) {
         return;
@@ -78,9 +90,30 @@ namespace principia.ksp_plugin_adapter
       IsHovered = true;
     }
 
-    public void OnMouseDown() {}
+    public void OnMouseDown() {
+      mouse_offset_at_click_ = UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
+    }
 
-    public void OnMouseDrag() {}
+    public void OnMouseDrag() {
+      if (!isActiveAndEnabled) {
+        return;
+      }
+
+      var mouse_offset_now = UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
+      var drag = mouse_offset_now - mouse_offset_at_click_;
+      // Prevent blowup due to wiggly noodles.
+      if (drag.sqrMagnitude < 1f) {
+        return;
+      }
+
+      var screen_tangent = (ScaledToFlattenedScreenPosition(transform.position + tangent_vector_) - ScreenManœuvrePosition()).normalized;
+
+      var projection = UnityEngine.Vector3.Dot(screen_tangent, drag);
+      var Δut = projection * UnityEngine.Mathf.Exp(-mouse_offset_now.sqrMagnitude * 5e-3f) * 2f;
+      var burn = get_burn_();
+      burn.initial_time += Δut;
+      modify_burn_(burn);
+    }
 
     public void OnMouseUp() {}
 
@@ -118,10 +151,23 @@ namespace principia.ksp_plugin_adapter
       return arrow;
     }
 
+    private static UnityEngine.Vector3 ScaledToFlattenedScreenPosition(
+        UnityEngine.Vector3 scaled_position) {
+      var position = PlanetariumCamera.Camera.WorldToScreenPoint(scaled_position);
+      position.z = 0;
+      return position;
+    }
+
     private UnityEngine.GameObject base_;
     private UnityEngine.GameObject tangent_;
     private UnityEngine.GameObject normal_;
     private UnityEngine.GameObject binormal_;
+
+    private UnityEngine.Vector3 mouse_offset_at_click_;
+
+    private Vector3d tangent_vector_;
+    private Func<Burn> get_burn_;
+    private Action<Burn> modify_burn_;
 
     private static UnityEngine.Material marker_material_;
     public static UnityEngine.Material marker_material {
