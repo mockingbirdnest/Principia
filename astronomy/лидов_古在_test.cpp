@@ -27,11 +27,10 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+
 #if PRINCIPIA_LOG_TO_MATHEMATICA
 #include "mathematica/logger.hpp"
 #endif
-#include "testing_utilities/matchers.hpp"
-#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace astronomy {
