@@ -275,10 +275,14 @@ public class Parser {
         "\"";
 
     public bool is_principia =>
-        // Principia headers files end in .hpp.  The protos are not considered
-        // Principia headers because we have no control over their structure.
+        // Principia headers files end in .hpp, .generated.h or .mathematica.h.
+        // The protos are not considered Principia headers because we have no
+        // control over their structure.
         text != null &&
-        text.StartsWith("#include \"") && text.EndsWith(".hpp\"");
+        text.StartsWith("#include \"") &&
+        (text.EndsWith(".hpp\"") ||
+         text.EndsWith(".generated.h\"") ||
+         text.EndsWith(".mathematica.h\""));
 
     public bool is_system =>
         text != null && text.StartsWith("#include <");
