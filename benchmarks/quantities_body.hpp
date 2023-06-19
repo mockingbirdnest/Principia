@@ -6,9 +6,6 @@
 #include <vector>
 
 #include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/numbers.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

@@ -1,7 +1,5 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=PCP --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
 
-#include "numerics/nearest_neighbour.hpp"
-
 #include <random>
 #include <vector>
 
@@ -9,6 +7,7 @@
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "numerics/nearest_neighbour.hpp"
 
 namespace principia {
 namespace numerics {

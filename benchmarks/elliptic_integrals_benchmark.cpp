@@ -6,7 +6,7 @@
 #include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "numerics/elliptic_integrals.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

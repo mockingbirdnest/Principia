@@ -17,6 +17,16 @@ public class Filenames {
         @".hpp");
   }
 
+  public static string GetExtension(FileInfo file_info) {
+    // If the file is foo.mathematica.h, this returns .mathematica.h.
+    return Regex.Replace(file_info.Name, @"^[^.]*\.", ".");
+  }
+
+  public static string RemoveExtension(FileInfo file_info) {
+    // If the file is foo.mathematica.h, this returns foo.
+    return Regex.Replace(file_info.Name, @"\..+$", "");
+  }
+
   public static bool IsBody(FileInfo file_info, HashSet<string> extra_headers) {
     if (extra_headers.Contains(file_info.Name)) {
       return false;
@@ -27,6 +37,11 @@ public class Filenames {
 
   public static bool IsBodyHpp(FileInfo file_info) {
     return Regex.IsMatch(file_info.Name, @"^.*_body\.hpp$");
+  }
+
+  public static bool IsGeneratedH(FileInfo file_info) {
+    return Regex.IsMatch(file_info.Name,
+                         @"^.*\.generated\.h$|^.*\.mathematica\.h$");
   }
 
   public static bool IsTest(FileInfo file_info) {

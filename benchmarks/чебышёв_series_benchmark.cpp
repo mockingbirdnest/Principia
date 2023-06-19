@@ -23,10 +23,13 @@
 
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

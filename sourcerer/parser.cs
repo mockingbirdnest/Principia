@@ -25,6 +25,7 @@ public class Parser {
         var include = new Include(line,
                                   parent: current,
                                   ParseIncludedPath(uncommented_line),
+                                  extension: "hpp",
                                   file_info);
       } else if (IsOpeningNamespace(uncommented_line)) {
         current = new Namespace(line,
@@ -218,15 +219,22 @@ public class Parser {
   public class Include : Node {
     // The |file_info| is the file where this include appears, not the one that
     // is included.
-    public Include(Node? parent, string[] path, FileInfo file_info) :
-        this(text: null, parent, path, file_info) { }
+    public Include(Node? parent,
+                   string[] path,
+                   string extension,
+                   FileInfo file_info) : this(text: null,
+                                              parent,
+                                              path,
+                                              extension,
+                                              file_info) {}
 
     public Include(string? text,
                    Node? parent,
                    string[] path,
-                   FileInfo file_info)
-        : base(text, parent) {
+                   string extension,
+                   FileInfo file_info) : base(text, parent) {
       this.path = path;
+      extension_ = extension;
       file_info_ = file_info;
       own_body_ = Regex.Replace(file_info_.Name,
                                 @"(?<!_body)\.hpp$",
@@ -238,7 +246,7 @@ public class Parser {
 
     public override string Cxx() {
       Debug.Assert(must_rewrite, "inconsistent rewrite");
-      return "#include \"" + string.Join('/', path) + ".hpp\"";
+      return "#include \"" + string.Join('/', path) + extension_ + "\"";
     }
 
     public override void WriteNode(string indent = "") {
@@ -267,14 +275,19 @@ public class Parser {
         "\"";
 
     public bool is_principia =>
-        // Principia headers files end in .hpp.  The protos are not considered
-        // Principia headers because we have no control over their structure.
+        // Principia headers files end in .hpp, .generated.h or .mathematica.h.
+        // The protos are not considered Principia headers because we have no
+        // control over their structure.
         text != null &&
-        text.StartsWith("#include \"") && text.EndsWith(".hpp\"");
+        text.StartsWith("#include \"") &&
+        (text.EndsWith(".hpp\"") ||
+         text.EndsWith(".generated.h\"") ||
+         text.EndsWith(".mathematica.h\""));
 
     public bool is_system =>
         text != null && text.StartsWith("#include <");
 
+    private readonly string extension_;
     private readonly FileInfo file_info_;
     private readonly string own_body_;
     private readonly string own_header_;

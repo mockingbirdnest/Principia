@@ -1,14 +1,12 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=Checkpointer --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
-#include "physics/checkpointer.hpp"
-
 #include <memory>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
-#include "quantities/named_quantities.hpp"
+#include "physics/checkpointer.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/integrators.pb.h"

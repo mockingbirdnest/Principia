@@ -1,13 +1,12 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=FastSinCos  // NOLINT(whitespace/line_length)
 
-#include "numerics/fast_sin_cos_2π.hpp"
-
 #include <pmmintrin.h>
 #include <random>
 #include <vector>
 
 #include "benchmark/benchmark.h"
-#include "quantities/numbers.hpp"
+#include "numerics/fast_sin_cos_2π.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
 namespace numerics {

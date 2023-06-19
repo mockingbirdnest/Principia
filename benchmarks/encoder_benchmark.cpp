@@ -1,12 +1,10 @@
 // .\Release\x64\benchmarks.exe --benchmark_min_time=2 --benchmark_repetitions=10 --benchmark_filter=Base32768  // NOLINT(whitespace/line_length)
 
-#include "base/encoder.hpp"
-
 #include <random>
 
 #include "base/array.hpp"
-#include "base/base64.hpp"
 #include "base/base32768.hpp"
+#include "base/base64.hpp"
 #include "base/hexadecimal.hpp"
 #include "benchmark/benchmark.h"
 

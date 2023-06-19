@@ -1,7 +1,5 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=LagrangeEquipotential
 
-#include "physics/lagrange_equipotentials.hpp"
-
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -11,6 +9,8 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/lagrange_equipotentials.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"

@@ -1,11 +1,9 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Geopotential  // NOLINT(whitespace/line_length)
 
-#include "physics/geopotential_body.hpp"
-
 #include <random>
 #include <vector>
 
-#include "astronomy/fortran_astrodynamics_toolkit.hpp"
+#include "astronomy/fortran_astrodynamics_toolkit.hpp"    // 🧙 For fortran_astrodynamics_toolkit_.  // NOLINT
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
@@ -15,8 +13,13 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "numerics/legendre.hpp"
+#include "numerics/legendre_normalization_factor.mathematica.h"
+#include "physics/geopotential.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
