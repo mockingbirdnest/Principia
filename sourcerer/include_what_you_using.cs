@@ -36,7 +36,9 @@ class IncludeWhatYouUsing {
   public static void Run(string[] args) {
     // Parse the arguments.
     var projects = new List<DirectoryInfo>();
+    var references = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
+    var extra_headers = new HashSet<string>();
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -46,10 +48,14 @@ class IncludeWhatYouUsing {
         string value = split[2];
         if (option == "project") {
           projects.Add(new DirectoryInfo(value));
+        } else if (option == "reference") {
+          references.Add(new DirectoryInfo(value));
         } else if (option == "dry_run") {
           dry_run = bool.Parse(value);
         } else if (option == "exclude") {
           excluded.Add(value);
+        } else if (option == "extra_header") {
+          extra_headers.Add(value);
         } else {
           throw new ArgumentException("Unknown option " + option);
         }
@@ -59,6 +65,37 @@ class IncludeWhatYouUsing {
       throw new NullReferenceException();
     }
 
+    // Start by collecting all the header files, even the ones that we won't
+    // be processing.  We need this to use the correct header name for generated
+    // files.  Sorting is not necessary, but it's convenient to reuse our
+    // comparer.
+    var include_paths_to_file_info =
+        new SortedDictionary<string[], FileInfo>(new StringArrayComparer());
+    foreach (DirectoryInfo reference in references.Union(projects).ToArray()) {
+      FileInfo[] h_files = reference.GetFiles("*.h");
+      FileInfo[] hpp_files = reference.GetFiles("*.hpp");
+      FileInfo[] all_header_files = h_files.Union(hpp_files).ToArray();
+      foreach (FileInfo header_file in all_header_files) {
+        if (Filenames.IsBody(header_file, extra_headers)) {
+          continue;
+        }
+        var path = new string[]
+            { reference.Name, Filenames.RemoveExtension(header_file) };
+
+        // We have, for instance, both profiles.hpp and profiles.generated.h.
+        // We prefer the former.
+        if (include_paths_to_file_info.ContainsKey(path)) {
+          if (!Filenames.IsGeneratedH(header_file)) {
+            include_paths_to_file_info.Remove(path);
+            include_paths_to_file_info.Add(path, header_file);
+          }
+        } else {
+          include_paths_to_file_info.Add(path, header_file);
+        }
+      }
+    }
+
+    // Parse all the files in all the projects and process them.
     foreach (DirectoryInfo project in projects) {
       // Parse all the files in this project.
       var file_info_to_file = new Dictionary<FileInfo, Parser.File>();
@@ -108,13 +145,15 @@ class IncludeWhatYouUsing {
 
       foreach (FileInfo input_file in all_files) {
           var parser_file = file_info_to_file[input_file];
-          FixIncludes(parser_file);
+          FixIncludes(parser_file, include_paths_to_file_info);
           RewriteFile(input_file, parser_file, dry_run);
       }
     }
   }
 
-  private static void FixIncludes(Parser.File file) {
+  private static void FixIncludes(Parser.File file,
+                                  SortedDictionary<string[], FileInfo>
+                                      include_paths_to_file_info ) {
     // Build the sorted set of paths that must actually be included.
     var new_include_paths = new SortedSet<string[]>(new StringArrayComparer());
 
@@ -199,8 +238,12 @@ class IncludeWhatYouUsing {
         new_includes.Add(preserved_includes_by_path[using_path]);
       } else {
         // If there is no include for this namespace, add one (in order).
-        new_includes.Add(
-            new Include(parent: null, using_path, file.file_info));
+        var included_file = include_paths_to_file_info[using_path];
+        var included_file_extension = Filenames.GetExtension(included_file);
+        new_includes.Add(new Include(parent: null,
+                                     using_path,
+                                     included_file_extension,
+                                     file.file_info));
       }
     }
 
