@@ -3,7 +3,7 @@
 #include <random>
 #include <vector>
 
-#include "astronomy/fortran_astrodynamics_toolkit.hpp"
+#include "astronomy/fortran_astrodynamics_toolkit.hpp"    // 🧙 For fortran_astrodynamics_toolkit_.  // NOLINT
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
