@@ -20,6 +20,7 @@ permissions:
 
 jobs:
   start:
+    if: github.repository == 'mockingbirdnest/Principia'
     runs-on: windows-latest
     steps:
     - name: Azure login
@@ -43,6 +44,7 @@ jobs:
         azPSVersion: 'latest'
 
   build:
+    if: github.repository == 'mockingbirdnest/Principia'
     runs-on: ${{ matrix.configuration }}
     strategy:
       matrix:
