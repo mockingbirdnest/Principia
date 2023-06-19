@@ -1,11 +1,10 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=MLSL --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
 
-#include "numerics/global_optimization.hpp"
-
 #include <random>
 
 #include "absl/strings/str_cat.h"
 #include "benchmark/benchmark.h"
+#include "numerics/global_optimization.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"

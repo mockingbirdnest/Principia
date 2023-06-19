@@ -1,7 +1,5 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Geopotential  // NOLINT(whitespace/line_length)
 
-#include "physics/geopotential_body.hpp"
-
 #include <random>
 #include <vector>
 
@@ -9,6 +7,7 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
+#include "physics/geopotential_body.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"

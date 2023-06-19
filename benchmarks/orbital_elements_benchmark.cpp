@@ -1,11 +1,10 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=OrbitalElements --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
-#include "astronomy/orbital_elements.hpp"
-
 #include <limits>
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
+#include "astronomy/orbital_elements.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"

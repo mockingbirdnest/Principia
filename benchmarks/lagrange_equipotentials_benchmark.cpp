@@ -1,10 +1,9 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=LagrangeEquipotential
 
-#include "physics/lagrange_equipotentials.hpp"
-
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "physics/lagrange_equipotentials.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"

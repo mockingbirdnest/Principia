@@ -1,12 +1,11 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Planetarium  // NOLINT(whitespace/line_length)
 
-#include "ksp_plugin/planetarium.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
+#include "ksp_plugin/planetarium.hpp"
 #include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"

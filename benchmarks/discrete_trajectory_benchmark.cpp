@@ -1,7 +1,5 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=DiscreteTrajectory --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
-#include "physics/discrete_trajectory.hpp"
-
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -12,6 +10,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
