@@ -9,7 +9,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/status_utilities.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"

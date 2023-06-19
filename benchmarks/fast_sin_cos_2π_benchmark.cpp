@@ -6,7 +6,7 @@
 
 #include "numerics/fast_sin_cos_2π.hpp"
 #include "benchmark/benchmark.h"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
 namespace numerics {
