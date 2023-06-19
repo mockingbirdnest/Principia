@@ -2,11 +2,9 @@
 
 #include <limits>
 
-#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
 #include "base/not_null.hpp"
-#include "base/status_utilities.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -15,8 +13,10 @@
 #include "physics/apsides.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/oblate_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"

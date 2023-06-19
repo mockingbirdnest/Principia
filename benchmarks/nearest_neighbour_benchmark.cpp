@@ -3,11 +3,11 @@
 #include <random>
 #include <vector>
 
-#include "numerics/nearest_neighbour.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "numerics/nearest_neighbour.hpp"
 
 namespace principia {
 namespace numerics {

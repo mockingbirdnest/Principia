@@ -4,10 +4,8 @@
 #include <utility>
 #include <vector>
 
-#include "astronomy/frames.hpp"
-#include "benchmark/benchmark.h"
 #include "base/not_null.hpp"
-#include "base/status_utilities.hpp"
+#include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -15,21 +13,21 @@
 #include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/numbers.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
-#include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {

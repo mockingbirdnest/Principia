@@ -12,6 +12,7 @@
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/чебышёв_series.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 

@@ -3,13 +3,15 @@
 #include <random>
 #include <vector>
 
-#include "geometry/perspective.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
-#include "geometry/space_transformations.hpp"
-#include "geometry/space.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/perspective.hpp"
+#include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
+#include "geometry/sphere.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 

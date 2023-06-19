@@ -1,6 +1,9 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=Checkpointer --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
+#include "base/not_null.hpp"
+#include "geometry/instant.hpp"
 #include "physics/checkpointer.hpp"
+#include "quantities/si.hpp"
 
 #include <memory>
 

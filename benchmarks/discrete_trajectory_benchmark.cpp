@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/barycentre_calculator.hpp"
@@ -10,11 +9,13 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
 namespace principia {

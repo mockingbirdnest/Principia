@@ -2,14 +2,14 @@
 
 #include <limits>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
-#include "base/not_null.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
-#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/methods.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -20,6 +20,7 @@
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

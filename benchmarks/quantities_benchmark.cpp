@@ -2,8 +2,9 @@
 
 #include<vector>
 
-#include "benchmarks/quantities.hpp"
 #include "benchmark/benchmark.h"
+#include "benchmarks/quantities.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace quantities {

@@ -2,10 +2,9 @@
 
 #include <random>
 
-#include "base/encoder.hpp"
 #include "base/array.hpp"
-#include "base/base64.hpp"
 #include "base/base32768.hpp"
+#include "base/base64.hpp"
 #include "base/hexadecimal.hpp"
 #include "benchmark/benchmark.h"
 
