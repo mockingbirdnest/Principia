@@ -5,17 +5,18 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.hpp"
 #include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/integrators.hpp"
+#include "integrators/methods.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "mathematica/logger.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
-#include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"

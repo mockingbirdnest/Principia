@@ -17,9 +17,10 @@
 #include "geometry/instant.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "integrators/starter.hpp" // 🧙 For _starter.
+#include "integrators/starter.hpp"  // 🧙 For _starter.
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace integrators {

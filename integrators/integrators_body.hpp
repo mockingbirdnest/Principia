@@ -8,11 +8,9 @@
 #include <vector>
 
 
-#include "base/macros.hpp"
-#include "base/traits.hpp"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/explicit_linear_multistep_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/explicit_runge_kutta_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/methods.hpp"

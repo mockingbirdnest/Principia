@@ -15,7 +15,7 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "integrators/starter.hpp"
+#include "integrators/starter.hpp"  // 🧙 For _starter.
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -28,7 +28,6 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
-using namespace principia::integrators::_starter;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 

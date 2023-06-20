@@ -12,9 +12,9 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/instant.hpp"
-#include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace integrators {

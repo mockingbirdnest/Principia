@@ -12,18 +12,15 @@
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"  // 🧙 For _methods.
-#include "quantities/quantities.hpp"
+#include "numerics/double_precision.hpp"
 
 namespace principia {
 namespace integrators {
 namespace _embedded_explicit_generalized_runge_kutta_nyström_integrator {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 template<typename Method, typename ODE_>
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::

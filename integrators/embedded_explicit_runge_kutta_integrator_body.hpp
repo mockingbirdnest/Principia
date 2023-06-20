@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/for_all_of.hpp"
-#include "base/jthread.hpp"
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
+#include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -20,10 +20,8 @@ namespace _embedded_explicit_runge_kutta_integrator {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 template<typename Method, typename ODE_>

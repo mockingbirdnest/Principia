@@ -4,18 +4,16 @@
 
 #include <vector>
 
-#include "base/jthread.hpp"
 #include "geometry/sign.hpp"
-#include "integrators/methods.hpp"
+#include "numerics/double_precision.hpp"
 #include "numerics/ulp_distance.hpp"
-#include "quantities/quantities.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace integrators {
 namespace _symplectic_runge_kutta_nyström_integrator {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_ulp_distance;

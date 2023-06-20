@@ -15,10 +15,10 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/instant.hpp"
-#include "numerics/fixed_arrays.hpp"
-#include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/integrators.pb.h"
 
 namespace principia {
