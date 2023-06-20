@@ -9,8 +9,8 @@
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/version.hpp"
-#include "journal/profiles.hpp"
 #include "glog/logging.h"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
 #define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
 

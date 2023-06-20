@@ -3,7 +3,7 @@
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "journal/player.hpp"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
 #include "serialization/journal.pb.h"
 
 namespace principia {

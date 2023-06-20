@@ -12,7 +12,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
 #include "serialization/journal.pb.h"
 
 namespace principia {

@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
 #include "ksp_plugin/plugin.hpp"
 #include "serialization/journal.pb.h"
 
