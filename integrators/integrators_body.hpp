@@ -10,14 +10,14 @@
 
 #include "base/macros.hpp"
 #include "base/traits.hpp"
-#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
-#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
-#include "integrators/explicit_linear_multistep_integrator.hpp"
-#include "integrators/explicit_runge_kutta_integrator.hpp"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/explicit_linear_multistep_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/explicit_runge_kutta_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/methods.hpp"
-#include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "quantities/serialization.hpp"
 
 // A case branch in a switch on the serialized integrator |kind|.  It determines

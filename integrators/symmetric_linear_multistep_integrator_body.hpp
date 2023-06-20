@@ -7,17 +7,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/jthread.hpp"
 #include "geometry/serialization.hpp"
-#include "integrators/methods.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"    // 🧙 For _symplectic_runge_kutta_nyström_integrator.  // NOLINT
 
 namespace principia {
 namespace integrators {
 namespace _symmetric_linear_multistep_integrator {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_serialization;
 
 int const startup_step_divisor = 16;
