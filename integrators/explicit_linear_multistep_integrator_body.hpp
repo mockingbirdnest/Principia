@@ -8,10 +8,8 @@
 #include <vector>
 
 #include "base/for_all_of.hpp"
-#include "base/jthread.hpp"
 #include "geometry/serialization.hpp"
-#include "integrators/explicit_runge_kutta_integrator.hpp"
-#include "integrators/methods.hpp"
+#include "integrators/explicit_runge_kutta_integrator.hpp"  // 🧙 For _explicit_runge_kutta_integrator.  // NOLINT
 
 namespace principia {
 namespace integrators {
@@ -19,7 +17,6 @@ namespace _explicit_linear_multistep_integrator {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_serialization;
 
 int const startup_step_divisor = 16;

@@ -27,6 +27,9 @@ public class Parser {
                                   ParseIncludedPath(uncommented_line),
                                   extension: "hpp",
                                   file_info);
+      } else if (IsPreprocessorDirective(uncommented_line)) {
+        var preprocessor_directive =
+            new PreprocessorDirective(line, parent: current);
       } else if (IsOpeningNamespace(uncommented_line)) {
         current = new Namespace(line,
                                 parent: current,
@@ -259,20 +262,18 @@ public class Parser {
         text != null && Regex.IsMatch(text, @"// 🧙 .+$");
 
     public bool is_own_body =>
-        text ==
-        "#include \"" +
-        file_info_.Directory!.Name +
-        "/" +
-        own_body_ +
-        "\"";
+        text.StartsWith("#include \"" +
+                        file_info_.Directory!.Name +
+                        "/" +
+                        own_body_ +
+                        "\"");
 
     public bool is_own_header =>
-        text ==
-        "#include \"" +
-        file_info_.Directory!.Name +
-        "/" +
-        own_header_ +
-        "\"";
+        text.StartsWith("#include \"" +
+                        file_info_.Directory!.Name +
+                        "/" +
+                        own_header_ +
+                        "\"");
 
     public bool is_principia =>
         // Principia headers files end in .hpp, .generated.h or .mathematica.h.
@@ -286,6 +287,8 @@ public class Parser {
 
     public bool is_system =>
         text != null && text.StartsWith("#include <");
+
+    public bool is_conditional = false;
 
     private readonly string extension_;
     private readonly FileInfo file_info_;
@@ -329,6 +332,22 @@ public class Parser {
     public bool is_compatibility_namespace => name.Contains("::");
     public bool is_internal = false;
     public string? closing_text;
+  }
+
+  public class PreprocessorDirective : Node {
+    public PreprocessorDirective(string text, Node parent) : base(
+        text,
+        parent) {
+      if (text == null) {
+        throw new ArgumentNullException();
+      }
+    }
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Text (" + text + ")");
+    }
+
+    public bool is_if => text.StartsWith("#if");
   }
 
   public class Struct : Declaration {
@@ -472,6 +491,10 @@ public class Parser {
     return line != "namespace {" &&
            line.StartsWith("namespace ") &&
            !Regex.IsMatch(line, @"^namespace \w+ = .*$");
+  }
+
+  private static bool IsPreprocessorDirective(string line) {
+    return line.StartsWith("#");
   }
 
   private static bool IsStruct(string line) {

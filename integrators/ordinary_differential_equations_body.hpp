@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "base/for_all_of.hpp"
+#include "base/for_all_of.hpp"  // 🧙 For for_all_of.
 
 namespace principia {
 namespace integrators {
