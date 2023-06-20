@@ -194,48 +194,60 @@ class IncludeWhatYouUsing {
     // Extract the includes.
     var all_includes = FindIncludes(file);
 
-    // Eliminate our own headers and the system headers.
-    var non_own_non_system_includes = from inc in all_includes
-                                      where !inc.is_own_body &&
-                                            !inc.is_own_header &&
-                                            !inc.is_system
-                                      select inc;
+    // Build a map from the path to the include.  Sorted to use our comparer.
+    var all_includes_by_path =
+        new SortedDictionary<string[], Include>(new StringArrayComparer());
+    foreach (Include inc in all_includes) {
+      all_includes_by_path.Add(inc.path, inc);
+    }
 
-    // Locate the first block of consecutive includes.  We won't touch
+    // Eliminate our own headers, the conditional headers and the system
+    // headers.
+    var user_includes = from inc in all_includes
+                        where !inc.is_own_body &&
+                              !inc.is_own_header &&
+                              !inc.is_conditional &&
+                              !inc.is_system
+                        select inc;
+
+    // Locate the first block of consecutive user includes.  We won't touch
     // subsequent blocks, they probably contain something odd.
-    var consecutive_includes = new List<Include>();
+    var consecutive_user_includes = new List<Include>();
     int? position_in_parent = null;
-    foreach (Include inc in non_own_non_system_includes) {
+    foreach (Include inc in user_includes) {
       if (position_in_parent.HasValue) {
         position_in_parent  = position_in_parent.Value + 1;
         if (position_in_parent.Value == inc.position_in_parent) {
-          consecutive_includes.Add(inc);
+          consecutive_user_includes.Add(inc);
         } else {
           break;
         }
       } else {
         position_in_parent = inc.position_in_parent;
-        consecutive_includes.Add(inc);
+        consecutive_user_includes.Add(inc);
       }
     }
 
-    // Determine the includes that we must preserve no matter what.  For the
-    // Principia headers, this includes only the blessed ones.
-    var preserved_includes =  from inc in consecutive_includes
-                              where !inc.is_principia ||
-                                    inc.is_blessed_by_sourcerer
-                              select inc;
-    var preserved_includes_by_path = new Dictionary<string[], Include>();
-    foreach (Include inc in preserved_includes) {
+    // Determine the includes that we must preserve.  For the Principia headers,
+    // this includes only the blessed ones.
+    var preserved_user_includes =  from inc in consecutive_user_includes
+                                   where !inc.is_principia ||
+                                         inc.is_blessed_by_sourcerer
+                                   select inc;
+    foreach (Include inc in preserved_user_includes) {
       new_include_paths.Add(inc.path);
-      preserved_includes_by_path.Add(inc.path, inc);
     }
 
     var new_includes = new List<Node>();
     foreach (string[] using_path in new_include_paths) {
-      if (preserved_includes_by_path.ContainsKey(using_path)) {
-        // There is already an include for this path, reuse it.
-        new_includes.Add(preserved_includes_by_path[using_path]);
+      if (all_includes_by_path.ContainsKey(using_path)) {
+        // There is already an include for this path, reuse it, unless it is a
+        // conditional include in which case we leave it alone.
+        var existing_include = all_includes_by_path[using_path];
+        if (existing_include.is_conditional) {
+          continue;
+        }
+        new_includes.Add(existing_include);
       } else {
         // If there is no include for this namespace, add one (in order).
         var included_file = include_paths_to_file_info[using_path];
@@ -247,7 +259,7 @@ class IncludeWhatYouUsing {
       }
     }
 
-    if (consecutive_includes.Count == 0 && new_includes.Count == 0) {
+    if (consecutive_user_includes.Count == 0 && new_includes.Count == 0) {
       // Nothing before, nothing after, done.
       return;
     }
@@ -255,7 +267,7 @@ class IncludeWhatYouUsing {
     // Replace the includes in |consecutive_includes| with |new_includes|.
     int first_include_position;
     int last_include_position;
-    if (consecutive_includes.Count == 0) {
+    if (consecutive_user_includes.Count == 0) {
       // There is no existing block of consecutive includes, so we have to do
       // fancy footwork to decide where to hook |new_includes|.
       var start_includes =
@@ -273,9 +285,9 @@ class IncludeWhatYouUsing {
       last_include_position = include_position;
     } else {
       // There is a block of consecutive includes, find its position.
-      first_include_position = consecutive_includes[0].position_in_parent;
+      first_include_position = consecutive_user_includes[0].position_in_parent;
       last_include_position =
-          consecutive_includes[consecutive_includes.Count - 1].
+          consecutive_user_includes[consecutive_user_includes.Count - 1].
               position_in_parent;
     }
     var preceding_nodes_in_file =

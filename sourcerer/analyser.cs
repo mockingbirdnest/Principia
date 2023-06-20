@@ -54,13 +54,11 @@ public class Analyser {
       if (child is PreprocessorDirective cpp) {
         after_cpp_if = cpp.is_if;
       } else if (child is Include inc) {
-        // Skip the includes that immediately follow a preprocessor #if.  We
-        // don't want to touch.
-        if (after_cpp_if) {
-          after_cpp_if = false;
-        } else {
-          includes.Add(inc);
-        }
+        includes.Add(inc);
+        // Mark the includes that occur immediately after a preprocessor #if as
+        // conditional.
+        inc.is_conditional = after_cpp_if;
+        after_cpp_if = false;
       } else {
         after_cpp_if = false;
       }
