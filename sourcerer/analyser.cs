@@ -49,9 +49,20 @@ public class Analyser {
   // Returns the list of top-level includes in |file|.
   public static List<Include> FindIncludes(File file) {
     var includes = new List<Include>();
+    bool after_cpp_if = false;
     foreach (Node child in file.children) {
-      if (child is Include inc) {
-        includes.Add(inc);
+      if (child is PreprocessorDirective cpp) {
+        after_cpp_if = cpp.is_if;
+      } else if (child is Include inc) {
+        // Skip the includes that immediately follow a preprocessor #if.  We
+        // don't want to touch.
+        if (after_cpp_if) {
+          after_cpp_if = false;
+        } else {
+          includes.Add(inc);
+        }
+      } else {
+        after_cpp_if = false;
       }
     }
     return includes;
