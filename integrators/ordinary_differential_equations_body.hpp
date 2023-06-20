@@ -4,15 +4,13 @@
 
 #include <vector>
 
-#include "base/for_all_of.hpp"
+#include "base/for_all_of.hpp"  // 🧙 For for_all_of.
 
 namespace principia {
 namespace integrators {
 namespace _ordinary_differential_equations {
 namespace internal {
 namespace termination_condition {
-
-using namespace principia::base::_for_all_of;
 
 inline void UpdateWithAbort(absl::Status const& updater,
                             absl::Status& updated) {

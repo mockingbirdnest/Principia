@@ -27,7 +27,7 @@ public class Parser {
                                   ParseIncludedPath(uncommented_line),
                                   extension: "hpp",
                                   file_info);
-    } else if (IsPreprocessorDirective(uncommented_line)) {
+      } else if (IsPreprocessorDirective(uncommented_line)) {
         var preprocessor_directive =
             new PreprocessorDirective(line, parent: current);
       } else if (IsOpeningNamespace(uncommented_line)) {

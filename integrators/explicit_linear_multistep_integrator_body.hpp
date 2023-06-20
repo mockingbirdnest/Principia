@@ -9,7 +9,7 @@
 
 #include "base/for_all_of.hpp"
 #include "geometry/serialization.hpp"
-#include "integrators/explicit_runge_kutta_integrator.hpp"    // 🧙 For _explicit_runge_kutta_integrator.  // NOLINT
+#include "integrators/explicit_runge_kutta_integrator.hpp"  // 🧙 For _explicit_runge_kutta_integrator.  // NOLINT
 
 namespace principia {
 namespace integrators {
