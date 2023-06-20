@@ -27,9 +27,9 @@
 #include "base/fingerprint2011.hpp"
 #include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For NAMED.
 #include "base/not_null.hpp"
-#include "base/optional_logging.hpp"
+#include "base/optional_logging.hpp"  // 🧙 For logging.
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
@@ -42,7 +42,7 @@
 #include "geometry/rotation.hpp"
 #include "google/protobuf/arena.h"
 #include "journal/method.hpp"
-#include "journal/profiles.hpp"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -87,6 +87,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_integrators;
+using namespace principia::journal::_method;
 using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;

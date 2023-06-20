@@ -1,12 +1,12 @@
 #include "ksp_plugin/identification.hpp"
 
-#include "ksp_plugin/part.hpp"
-#include "ksp_plugin/vessel.hpp"
-
 namespace principia {
 namespace ksp_plugin {
 namespace _identification {
 namespace internal {
+
+using namespace principia::ksp_plugin::_part;
+using namespace principia::ksp_plugin::_vessel;
 
 bool PartByPartIdComparator::operator()(not_null<Part*> const left,
                                         not_null<Part*> const right) const {

@@ -1,4 +1,4 @@
-#include "geometric_potential_plotter.hpp"
+#include "ksp_plugin/geometric_potential_plotter.hpp"
 
 #include <algorithm>
 #include <functional>
