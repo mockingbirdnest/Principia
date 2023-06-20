@@ -7,7 +7,6 @@
 #include "base/serialization.hpp"
 #include "base/version.hpp"
 #include "glog/logging.h"
-#include "journal/profiles.hpp"
 
 namespace principia {
 namespace journal {
