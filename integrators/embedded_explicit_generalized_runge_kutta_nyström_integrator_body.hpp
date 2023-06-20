@@ -8,9 +8,10 @@
 #include <optional>
 #include <vector>
 
-#include "base/jthread.hpp"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
+#include "integrators/methods.hpp"  // 🧙 For _methods.
 #include "quantities/quantities.hpp"
 
 namespace principia {
