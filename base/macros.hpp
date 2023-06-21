@@ -257,7 +257,7 @@ inline void noreturn() { std::exit(0); }
 #define FOO_NOT_LAST(x) x,
 #define FOO_LAST(x) _ ## x
 
-#define FROM2(...) PRINCIPIA_EVAL16(PRINCIPIA_MAP_LAST(FOO, __VA_ARGS__))
+#define FROM2(...) PRINCIPIA_MAP_LAST(FOO, __VA_ARGS__))
 
 #define OPENING_NAMESPACE(ns) namespace ns {
 #define OPENING_NAMESPACES(...) \
@@ -269,14 +269,14 @@ inline void noreturn() { std::exit(0); }
   __VA_OPT__(                       \
       PRINCIPIA_EVAL16(PRINCIPIA_MAP1(CLOSING_NAMESPACE, __VA_ARGS__)))
 
-#define FORWARD_DECLARE2(                                           \
+#define FORWARD_DECLARE2(                                          \
     template_and_class_key, declared_name, from_package_name, ...) \
-  OPENING_NAMESPACES(from_package_name)                            \
+  OPENING_NAMESPACES(PRINCIPIA_EVAL16(from_package_name))          \
   namespace internal {                                             \
   template_and_class_key declared_name;                            \
   }                                                                \
   using internal::declared_name;                                   \
-  CLOSING_NAMESPACES(from_package_name)                            \
+  CLOSING_NAMESPACES(PRINCIPIA_EVAL16(from_package_name))          \
   USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
 
 #define FORWARD_DECLARE(                                           \
