@@ -249,17 +249,25 @@ inline void noreturn() { std::exit(0); }
 #define FROM(package_name) _##package_name
 #define INTO(package_name) _##package_name
 
-#define FROM2(...)  __VA_ARGS__
+#define PRINCIPIA_MAP_LAST(m, a0, ...) \
+  m##__VA_OPT__(_NOT)##_LAST(a0)       \
+      __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP_LAST)()(m, __VA_ARGS__))
+#define _PRINCIPIA_MAP_LAST() PRINCIPIA_MAP_LAST
+
+#define FOO_NOT_LAST(x) x,
+#define FOO_LAST(x) _ ## x
+
+#define FROM2(...) PRINCIPIA_EVAL16(PRINCIPIA_MAP_LAST(FOO, __VA_ARGS__))
 
 #define OPENING_NAMESPACE(ns) namespace ns {
-#define OPENING_NAMESPACES(ns, ...) \
+#define OPENING_NAMESPACES(...) \
   __VA_OPT__(                       \
-      PRINCIPIA_EVAL16(PRINCIPIA_MAP1(OPENING_NAMESPACE, ns, __VA_ARGS__)))
+      PRINCIPIA_EVAL16(PRINCIPIA_MAP1(OPENING_NAMESPACE, __VA_ARGS__)))
 
 #define CLOSING_NAMESPACE(ns) }
-#define CLOSING_NAMESPACES(ns, ...) \
+#define CLOSING_NAMESPACES(...) \
   __VA_OPT__(                       \
-      PRINCIPIA_EVAL16(PRINCIPIA_MAP1(CLOSING_NAMESPACE, ns, __VA_ARGS__)))
+      PRINCIPIA_EVAL16(PRINCIPIA_MAP1(CLOSING_NAMESPACE, __VA_ARGS__)))
 
 #define FORWARD_DECLARE2(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \
