@@ -218,6 +218,9 @@ inline void noreturn() { std::exit(0); }
 #define PRINCIPIA_EVAL2(...) PRINCIPIA_EVAL1(PRINCIPIA_EVAL1(__VA_ARGS__))
 #define PRINCIPIA_EVAL1(...) __VA_ARGS__
 
+#define PRINCIPIA_MAP1(m, a0, ...) \
+  m(a0) __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP1)()(m, __VA_ARGS__))
+#define _PRINCIPIA_MAP1() PRINCIPIA_MAP1
 #define PRINCIPIA_MAP2(m, a0, a1, ...) \
   m(a0, a1) __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP2)()(m, a0, __VA_ARGS__))
 #define _PRINCIPIA_MAP2() PRINCIPIA_MAP2
@@ -245,6 +248,28 @@ inline void noreturn() { std::exit(0); }
 
 #define FROM(package_name) _##package_name
 #define INTO(package_name) _##package_name
+
+#define FROM2(...)  __VA_ARGS__
+
+#define OPENING_NAMESPACE(ns) namespace ns {
+#define OPENING_NAMESPACES(ns, ...) \
+  __VA_OPT__(                       \
+      PRINCIPIA_EVAL16(PRINCIPIA_MAP1(OPENING_NAMESPACE, ns, __VA_ARGS__)))
+
+#define CLOSING_NAMESPACE(ns) }
+#define CLOSING_NAMESPACES(ns, ...) \
+  __VA_OPT__(                       \
+      PRINCIPIA_EVAL16(PRINCIPIA_MAP1(CLOSING_NAMESPACE, ns, __VA_ARGS__)))
+
+#define FORWARD_DECLARE2(                                           \
+    template_and_class_key, declared_name, from_package_name, ...) \
+  OPENING_NAMESPACES(from_package_name)                            \
+  namespace internal {                                             \
+  template_and_class_key declared_name;                            \
+  }                                                                \
+  using internal::declared_name;                                   \
+  CLOSING_NAMESPACES(from_package_name)                            \
+  USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
 
 #define FORWARD_DECLARE(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \

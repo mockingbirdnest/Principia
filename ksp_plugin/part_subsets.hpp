@@ -16,10 +16,10 @@
 
 namespace principia {
 
-namespace ksp_plugin {
+//namespace ksp_plugin {
 // TODO(phl): Beef up INTO to be able to write INTO(base, disjoint_set).
-FORWARD_DECLARE(class, Part, FROM(part));
-}  // namespace ksp_plugin
+FORWARD_DECLARE2(class, Part, FROM2(ksp_plugin, part));
+//}  // namespace ksp_plugin
 
 namespace base {
 namespace _disjoint_sets {
