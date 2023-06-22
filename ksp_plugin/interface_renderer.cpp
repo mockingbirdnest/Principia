@@ -1,6 +1,4 @@
-#include "ksp_plugin/iterators.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "physics/discrete_trajectory.hpp"
+#include "ksp_plugin/interface.hpp"
 
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"

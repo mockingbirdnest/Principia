@@ -1,7 +1,4 @@
-#include "geometry/grassmann.hpp"
-#include "ksp_plugin/identification.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/si.hpp"
+#include "ksp_plugin/interface.hpp"
 
 #include <algorithm>
 #include <chrono>

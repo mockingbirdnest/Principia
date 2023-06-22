@@ -1,17 +1,4 @@
-#include "geometry/affine_map.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/orthogonal_map.hpp"
-#include "geometry/perspective.hpp"
-#include "geometry/rotation.hpp"
-#include "geometry/rp2_point.hpp"
-#include "geometry/space_transformations.hpp"
-#include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/iterators.hpp"
-#include "ksp_plugin/planetarium.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "physics/discrete_trajectory.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
+#include "ksp_plugin/interface.hpp"
 
 #include <algorithm>
 #include <limits>
