@@ -8,7 +8,7 @@
 #include "absl/strings/str_cat.h"
 #include "base/array.hpp"
 #include "journal/method.hpp"
-#include "journal/profiles.hpp"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -19,6 +19,7 @@ namespace interface {
 using namespace principia::base::_array;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_r3_element;
+using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_vessel;

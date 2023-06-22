@@ -4,7 +4,7 @@
 
 #include "geometry/rp2_point.hpp"
 #include "journal/method.hpp"
-#include "journal/profiles.hpp"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
@@ -17,6 +17,7 @@ namespace interface {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
