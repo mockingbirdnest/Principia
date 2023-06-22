@@ -24,9 +24,7 @@
     <Manifest>
       <AdditionalManifestFiles>$(ProjectDir)principia.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
-    <ClCompile>
-      <PreprocessToFile>true</PreprocessToFile>
-    </ClCompile>
+    <ClCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
     <Manifest>
