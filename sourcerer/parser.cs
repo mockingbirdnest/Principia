@@ -268,12 +268,15 @@ public class Parser {
                         own_body_ +
                         "\"");
 
-    public bool is_own_header =>
-        text.StartsWith("#include \"" +
-                        file_info_.Directory!.Name +
-                        "/" +
-                        own_header_ +
-                        "\"");
+    public bool is_own_header {
+      get => is_own_header_ ||
+             text.StartsWith("#include \"" +
+                             file_info_.Directory!.Name +
+                             "/" +
+                             own_header_ +
+                             "\"");
+      set => is_own_header_ = value;
+    }
 
     public bool is_principia =>
         // Principia headers files end in .hpp, .generated.h or .mathematica.h.
@@ -289,6 +292,8 @@ public class Parser {
         text != null && text.StartsWith("#include <");
 
     public bool is_conditional = false;
+
+    private bool is_own_header_ = false;
 
     private readonly string extension_;
     private readonly FileInfo file_info_;
