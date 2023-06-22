@@ -2,13 +2,14 @@
 
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/rp2_point.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
-#include "ksp_plugin/plugin.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 

@@ -15,9 +15,9 @@
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
+#include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 

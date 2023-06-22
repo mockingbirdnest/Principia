@@ -7,11 +7,18 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "base/array.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/r3_element.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
+#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "physics/apsides.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rigid_motion.hpp"
 
 namespace principia {
 namespace interface {

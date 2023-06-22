@@ -1,10 +1,13 @@
 #include "ksp_plugin/interface.hpp"
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
@@ -13,7 +16,9 @@
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

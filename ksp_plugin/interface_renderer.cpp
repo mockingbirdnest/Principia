@@ -3,7 +3,6 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/iterators.hpp"
-#include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "physics/discrete_trajectory.hpp"
 

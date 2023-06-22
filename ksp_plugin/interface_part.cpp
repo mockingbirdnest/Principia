@@ -7,9 +7,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/iterators.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

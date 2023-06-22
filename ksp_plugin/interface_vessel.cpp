@@ -4,10 +4,14 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/sign.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
+#include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "quantities/quantities.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
