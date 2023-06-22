@@ -2,6 +2,8 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
+#include <algorithm>
+
 #include "geometry/sign.hpp"
 #include "physics/similar_motion.hpp"
 #include "quantities/elementary_functions.hpp"
