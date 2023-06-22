@@ -2,13 +2,10 @@
 
 #include <list>
 
-#include "base/disjoint_sets.hpp"
-#include "base/not_null.hpp"
-#include "geometry/grassmann.hpp"
+#include "base/disjoint_sets.hpp"  // 🧙 For _disjoint_sets.
 #include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 
 // This ksp_plugin file is in namespace |base| to specialize templates declared
@@ -16,10 +13,7 @@
 
 namespace principia {
 
-//namespace ksp_plugin {
-// TODO(phl): Beef up INTO to be able to write INTO(base, disjoint_set).
-FORWARD_DECLARE2(class, Part, FROM2(ksp_plugin, part));
-//}  // namespace ksp_plugin
+FORWARD_DECLARE(class, Part, FROM(ksp_plugin, part), INTO(base, disjoint_sets));
 
 namespace base {
 namespace _disjoint_sets {
@@ -27,7 +21,6 @@ namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
-using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_ephemeris;
 
