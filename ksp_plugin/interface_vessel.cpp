@@ -1,4 +1,11 @@
-#include "ksp_plugin/interface.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/sign.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 #include <numeric>
 #include <string>

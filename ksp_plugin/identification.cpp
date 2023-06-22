@@ -1,4 +1,5 @@
-#include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/part.hpp"
+#include "ksp_plugin/vessel.hpp"
 
 namespace principia {
 namespace ksp_plugin {

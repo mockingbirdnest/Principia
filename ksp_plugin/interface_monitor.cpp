@@ -1,4 +1,5 @@
-#include "ksp_plugin/interface.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 #include <algorithm>
 #include <array>

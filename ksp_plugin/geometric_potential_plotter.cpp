@@ -4,9 +4,6 @@
 #include <functional>
 #include <vector>
 
-#include "numerics/global_optimization.hpp"
-#include "physics/rotating_pulsating_reference_frame.hpp"
-
 namespace principia {
 namespace ksp_plugin {
 namespace _geometric_potential_plotter {

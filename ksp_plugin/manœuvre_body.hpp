@@ -5,8 +5,9 @@
 #include <cmath>
 #include <functional>
 
-#include "base/not_null.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -15,13 +16,10 @@ namespace _manœuvre {
 namespace internal {
 
 using std::placeholders::_1;
-using namespace principia::base::_not_null;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_rotation;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,

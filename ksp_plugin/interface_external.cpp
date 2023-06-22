@@ -1,4 +1,14 @@
-#include "ksp_plugin/interface.hpp"
+#include "base/array.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/r3_element.hpp"
+#include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/vessel.hpp"
+#include "physics/apsides.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rigid_motion.hpp"
 
 #include <limits>
 #include <string>

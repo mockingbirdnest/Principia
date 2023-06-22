@@ -5,26 +5,22 @@
 #include <utility>
 #include <vector>
 
-#include "geometry/instant.hpp"
-#include "geometry/point.hpp"
+#include "geometry/sign.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/similar_motion.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
-using namespace principia::geometry::_instant;
-using namespace principia::geometry::_r3_element;
-using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_sign;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 namespace {
 constexpr int max_plot_method_2_steps = 10'000;

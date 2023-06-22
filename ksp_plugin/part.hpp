@@ -7,13 +7,13 @@
 #include <string>
 
 #include "base/disjoint_sets.hpp"
-#include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/part_subsets.hpp"
-#include "ksp_plugin/pile_up.hpp"
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/pile_up.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"

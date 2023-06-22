@@ -9,10 +9,11 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "base/macros.hpp"
+#include "base/jthread.hpp"
 #include "base/map_util.hpp"
+#include "base/traits.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "ksp_plugin/integrators.hpp"
-#include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
@@ -24,13 +25,9 @@ namespace internal {
 using ::std::placeholders::_1;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
-using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::ksp_plugin::_integrators;
-using namespace principia::physics::_clientele;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
 

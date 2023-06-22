@@ -2,7 +2,7 @@
 
 #include "ksp_plugin/frames.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {

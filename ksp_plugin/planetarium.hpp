@@ -6,6 +6,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
 #include "geometry/sphere.hpp"
@@ -14,6 +15,7 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
