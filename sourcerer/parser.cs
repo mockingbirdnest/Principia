@@ -262,19 +262,21 @@ public class Parser {
         text != null && Regex.IsMatch(text, @"// 🧙 .+$");
 
     public bool is_own_body =>
-        text.StartsWith("#include \"" +
-                        file_info_.Directory!.Name +
-                        "/" +
-                        own_body_ +
-                        "\"");
+        text?.StartsWith("#include \"" +
+                         file_info_.Directory!.Name +
+                         "/" +
+                         own_body_ +
+                         "\"") ==
+        true;
 
     public bool is_own_header {
       get => is_own_header_ ||
-             text.StartsWith("#include \"" +
-                             file_info_.Directory!.Name +
-                             "/" +
-                             own_header_ +
-                             "\"");
+             text?.StartsWith("#include \"" +
+                              file_info_.Directory!.Name +
+                              "/" +
+                              own_header_ +
+                              "\"") ==
+             true;
       set => is_own_header_ = value;
     }
 
@@ -352,7 +354,7 @@ public class Parser {
       Console.WriteLine(indent + "Text (" + text + ")");
     }
 
-    public bool is_if => text.StartsWith("#if");
+    public bool is_if => text?.StartsWith("#if") == true;
   }
 
   public class Struct : Declaration {

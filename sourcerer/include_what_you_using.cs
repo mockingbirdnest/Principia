@@ -302,17 +302,14 @@ class IncludeWhatYouUsing {
         // No includes at all.  Let's insert at the beginning of the file.
         include_position = 0;
       } else {
-        include_position = start_includes[start_includes.Length - 1].
-            position_in_parent;
+        include_position = start_includes[^1].position_in_parent;
       }
       first_include_position = include_position;
       last_include_position = include_position;
     } else {
       // There is a block of consecutive includes, find its position.
       first_include_position = consecutive_user_includes[0].position_in_parent;
-      last_include_position =
-          consecutive_user_includes[consecutive_user_includes.Count - 1].
-              position_in_parent;
+      last_include_position = consecutive_user_includes[^1].position_in_parent;
     }
     var preceding_nodes_in_file =
         file.children.Take(first_include_position).ToList();
