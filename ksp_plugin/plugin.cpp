@@ -35,6 +35,7 @@
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
+#include "ksp_plugin/part_subsets.hpp"  // 🧙 For Subset<Part>.
 #include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"

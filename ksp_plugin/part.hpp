@@ -13,6 +13,7 @@
 #include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/part_subsets.hpp"  // 🧙 For Subset<Part>.
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
