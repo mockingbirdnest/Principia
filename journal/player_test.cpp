@@ -10,14 +10,15 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
-#include "journal/profiles.hpp"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "journal/recorder.hpp"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/plugin.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
 namespace journal {
 
+using namespace principia::journal::_method;
 using namespace principia::journal::_player;
 using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_plugin;

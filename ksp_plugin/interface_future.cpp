@@ -4,13 +4,14 @@
 #include <chrono>
 
 #include "journal/method.hpp"
-#include "journal/profiles.hpp"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 
 namespace principia {
 namespace interface {
 
+using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
 

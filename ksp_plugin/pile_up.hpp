@@ -15,6 +15,9 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "integrators/integrators.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
@@ -24,8 +27,7 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
-#include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/identification.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {

@@ -3,9 +3,13 @@
 #include <vector>
 
 #include "base/jthread.hpp"
+#include "base/not_null.hpp"
+#include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/equipotential.hpp"
 #include "physics/lagrange_equipotentials.hpp"
+#include "physics/massive_body.hpp"
 
 namespace principia {
 namespace ksp_plugin {

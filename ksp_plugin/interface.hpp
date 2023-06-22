@@ -7,14 +7,14 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
-#include "geometry/space.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rp2_point.hpp"
+#include "geometry/space.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/pile_up.hpp"
@@ -23,7 +23,10 @@
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/kepler_orbit.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/rigid_reference_frame.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

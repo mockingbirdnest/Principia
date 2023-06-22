@@ -2,8 +2,15 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/pull_serializer.hpp"
+#include "base/push_deserializer.hpp"
 #include "journal/player.hpp"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
+#include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/planetarium.hpp"
+#include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {

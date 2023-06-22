@@ -4,6 +4,11 @@
 
 #include <algorithm>
 
+#include "geometry/sign.hpp"
+#include "physics/similar_motion.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+
 namespace principia {
 namespace ksp_plugin {
 namespace _planetarium {
@@ -13,7 +18,6 @@ using namespace principia::geometry::_sign;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 // A helper function that converts a trajectory expressed in |Frame| into one
 // expressed in |Navigation|, using the given |plotting_frame| if needed for the

@@ -218,6 +218,12 @@ inline void noreturn() { std::exit(0); }
 #define PRINCIPIA_EVAL2(...) PRINCIPIA_EVAL1(PRINCIPIA_EVAL1(__VA_ARGS__))
 #define PRINCIPIA_EVAL1(...) __VA_ARGS__
 
+// Applies m_LAST to its last argument and m_NOT_LAST to the others.
+#define PRINCIPIA_MAP1_LAST(m, a0, ...) \
+  m##__VA_OPT__(_NOT)##_LAST(a0)       \
+      __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP1_LAST)()(m, __VA_ARGS__))
+#define _PRINCIPIA_MAP1_LAST() PRINCIPIA_MAP1_LAST
+
 #define PRINCIPIA_MAP2(m, a0, a1, ...) \
   m(a0, a1) __VA_OPT__(PRINCIPIA_DEFER1(_PRINCIPIA_MAP2)()(m, a0, __VA_ARGS__))
 #define _PRINCIPIA_MAP2() PRINCIPIA_MAP2
@@ -238,13 +244,19 @@ inline void noreturn() { std::exit(0); }
 // Usage:
 //   FORWARD_DECLARE(struct, T, FROM(pack));
 //   FORWARD_DECLARE(TEMPLATE(int i) class, U, FROM(pack));
-//   FORWARD_DECLARE(class, T, FROM(pack), INTO(pack1), INTO(pack2));
+//   FORWARD_DECLARE(class, T,
+//                   FROM(pack_a, pack_b),
+//                   INTO(pack1_a, pack1_b),
+//                   INTO(pack2));
 // There must be a FROM argument.  Optionally, there can be multiple INTO
 // arguments, in which case a using directive for pack is inserted into pack1,
 // pack2, etc.
 
-#define FROM(package_name) _##package_name
-#define INTO(package_name) _##package_name
+#define NAMESPACE_NOT_LAST(x) x ::
+#define NAMESPACE_LAST(x) _ ## x
+
+#define FROM(...) PRINCIPIA_EVAL16(PRINCIPIA_MAP1_LAST(NAMESPACE, __VA_ARGS__))
+#define INTO(...) PRINCIPIA_EVAL16(PRINCIPIA_MAP1_LAST(NAMESPACE, __VA_ARGS__))
 
 #define FORWARD_DECLARE(                                           \
     template_and_class_key, declared_name, from_package_name, ...) \

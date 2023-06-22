@@ -4,8 +4,11 @@
 #include <memory>
 
 #include "base/not_null.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/ephemeris.hpp"
 
 namespace principia {
 namespace base {

@@ -16,43 +16,36 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "astronomy/epoch.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
+#include "base/fingerprint2011.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
-#include "base/not_null.hpp"
-#include "base/optional_logging.hpp"
 #include "base/serialization.hpp"
-#include "base/unique_ptr_logging.hpp"
-#include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
-#include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "ksp_plugin/part_subsets.hpp"
+#include "ksp_plugin/part_subsets.hpp"  // 🧙 For Subset<Part>.
 #include "physics/apsides.hpp"
-#include "physics/barycentric_rotating_reference_frame_body.hpp"
+#include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
-#include "physics/body_surface_reference_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
-#include "physics/frame_field.hpp"
-#include "physics/massive_body.hpp"
-#include "physics/rigid_reference_frame.hpp"
+#include "physics/body_surface_reference_frame.hpp"
+#include "physics/kepler_orbit.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -67,16 +60,12 @@ using namespace principia::base::_file;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_map_util;
-using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_integrators;
@@ -87,17 +76,10 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
-using namespace principia::physics::_frame_field;
 using namespace principia::physics::_kepler_orbit;
-using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
-using namespace principia::physics::_rigid_motion;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_si;
 
 // Keep this consistent with |prediction_steps_| in |main_window.cs|.
 constexpr std::int64_t max_steps_in_prediction = 1 << 24;

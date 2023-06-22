@@ -12,8 +12,14 @@
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
+#include "integrators/integrators.hpp"
+#include "ksp_plugin/orbit_analyser.hpp"
+#include "ksp_plugin/plugin.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

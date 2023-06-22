@@ -5,6 +5,7 @@
 #include "physics/geopotential.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {

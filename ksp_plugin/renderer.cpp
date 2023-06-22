@@ -3,8 +3,9 @@
 #include <algorithm>
 #include <optional>
 
+#include "base/ranges.hpp"
 #include "geometry/grassmann.hpp"
-#include "physics/apsides.hpp"
+#include "geometry/permutation.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
@@ -13,7 +14,6 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_ranges;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_permutation;

@@ -5,17 +5,16 @@
 
 #include "geometry/grassmann.hpp"
 #include "journal/method.hpp"
-#include "journal/profiles.hpp"
+#include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/iterators.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
 
 using namespace principia::geometry::_grassmann;
+using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

@@ -6,12 +6,10 @@
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
-#include "base/not_null.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
-#include "physics/rigid_motion.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -20,12 +18,9 @@ namespace internal {
 
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
-using namespace principia::physics::_rigid_motion;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 constexpr Mass untruthful_part_mass = 1 * Kilogram;

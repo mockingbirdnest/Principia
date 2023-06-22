@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.FileSystemGlobbing;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -39,6 +40,7 @@ class IncludeWhatYouUsing {
     var references = new List<DirectoryInfo>();
     var excluded = new HashSet<string>();
     var extra_headers = new HashSet<string>();
+    var special_own_headers = new Dictionary<Matcher, string>();
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -56,6 +58,11 @@ class IncludeWhatYouUsing {
           excluded.Add(value);
         } else if (option == "extra_header") {
           extra_headers.Add(value);
+        } else if (option == "special_own_header") {
+          string[] glob_and_path = value.Split('=');
+          var matcher = new Matcher();
+          matcher.AddInclude(glob_and_path[0]);
+          special_own_headers.Add(matcher, glob_and_path[1]);
         } else {
           throw new ArgumentException("Unknown option " + option);
         }
@@ -145,7 +152,9 @@ class IncludeWhatYouUsing {
 
       foreach (FileInfo input_file in all_files) {
           var parser_file = file_info_to_file[input_file];
-          FixIncludes(parser_file, include_paths_to_file_info);
+          FixIncludes(parser_file,
+                      include_paths_to_file_info,
+                      special_own_headers);
           RewriteFile(input_file, parser_file, dry_run);
       }
     }
@@ -153,7 +162,19 @@ class IncludeWhatYouUsing {
 
   private static void FixIncludes(Parser.File file,
                                   SortedDictionary<string[], FileInfo>
-                                      include_paths_to_file_info ) {
+                                      include_paths_to_file_info,
+                                  Dictionary<Matcher, string>
+                                      special_own_headers) {
+    // Determine if this file has a special own header.
+    string[]? special_own_header = null;
+    foreach (var pair in special_own_headers) {
+      if (pair.Key.Match(
+              Path.GetFullPath(file.file_info.Name,
+                               file.file_info.DirectoryName!)).HasMatches) {
+        special_own_header = pair.Value.Replace(".hpp", "").Split('/');
+      }
+    }
+
     // Build the sorted set of paths that must actually be included.
     var new_include_paths = new SortedSet<string[]>(new StringArrayComparer());
 
@@ -199,6 +220,9 @@ class IncludeWhatYouUsing {
         new SortedDictionary<string[], Include>(new StringArrayComparer());
     foreach (Include inc in all_includes) {
       all_includes_by_path.Add(inc.path, inc);
+      if (special_own_header?.SequenceEqual(inc.path) == true) {
+        inc.is_own_header = true;
+      }
     }
 
     // Eliminate our own headers, the conditional headers and the system
@@ -278,17 +302,14 @@ class IncludeWhatYouUsing {
         // No includes at all.  Let's insert at the beginning of the file.
         include_position = 0;
       } else {
-        include_position = start_includes[start_includes.Length - 1].
-            position_in_parent;
+        include_position = start_includes[^1].position_in_parent;
       }
       first_include_position = include_position;
       last_include_position = include_position;
     } else {
       // There is a block of consecutive includes, find its position.
       first_include_position = consecutive_user_includes[0].position_in_parent;
-      last_include_position =
-          consecutive_user_includes[consecutive_user_includes.Count - 1].
-              position_in_parent;
+      last_include_position = consecutive_user_includes[^1].position_in_parent;
     }
     var preceding_nodes_in_file =
         file.children.Take(first_include_position).ToList();
