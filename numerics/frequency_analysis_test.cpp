@@ -37,6 +37,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_apodization;
 using namespace principia::numerics::_fast_fourier_transform;
 using namespace principia::numerics::_frequency_analysis;
 using namespace principia::numerics::_piecewise_poisson_series;

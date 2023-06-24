@@ -29,6 +29,7 @@ namespace numerics {
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_apodization;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_evaluators;
