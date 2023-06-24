@@ -2,10 +2,12 @@
 
 #include <filesystem>
 
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

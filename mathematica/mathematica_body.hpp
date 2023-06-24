@@ -10,10 +10,10 @@
 #include <tuple>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
-#include "base/traits.hpp"
-#include "quantities/si.hpp"
+#include "base/not_null.hpp"
 
 namespace principia {
 namespace mathematica {
@@ -24,8 +24,6 @@ using namespace principia::astronomy::_epoch;
 using namespace principia::base::_mod;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
-using namespace principia::quantities::_quantities;
 
 // Wraps the string in quotes and escapes things properly.
 inline std::string Escape(std::string_view const str) {
