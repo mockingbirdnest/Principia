@@ -5,10 +5,10 @@
 
 #include "glog/logging.h"
 #include "gtest/gtest.h"
-#include "quantities/numbers.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {

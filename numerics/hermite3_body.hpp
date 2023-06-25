@@ -14,7 +14,6 @@ namespace _hermite3 {
 namespace internal {
 
 using namespace principia::numerics::_root_finders;
-using namespace principia::quantities::_named_quantities;
 
 template<typename Argument, typename Value>
 Hermite3<Argument, Value>::Hermite3(

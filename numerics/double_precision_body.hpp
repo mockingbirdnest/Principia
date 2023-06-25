@@ -9,13 +9,15 @@
 #include <string>
 #include <type_traits>
 
+#include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "quantities/traits.hpp"
 
 namespace principia {
 namespace numerics {
@@ -29,7 +31,6 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_traits;
 

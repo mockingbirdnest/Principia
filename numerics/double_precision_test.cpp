@@ -4,9 +4,15 @@
 #include <random>
 
 #include "geometry/frame.hpp"
+#include "geometry/point.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 

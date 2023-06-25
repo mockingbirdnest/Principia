@@ -8,11 +8,9 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
-#include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/approximate_quantity.hpp"
-#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace numerics {

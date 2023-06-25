@@ -6,7 +6,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
-#include "numerics/fixed_arrays.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {

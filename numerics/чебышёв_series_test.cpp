@@ -3,9 +3,10 @@
 #include "astronomy/frames.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

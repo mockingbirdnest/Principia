@@ -1,8 +1,7 @@
 #pragma once
 
-#include "base/macros.hpp"
 #include "numerics/polynomial.hpp"
-#include "quantities/quantities.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {

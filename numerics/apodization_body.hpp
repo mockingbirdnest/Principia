@@ -4,7 +4,6 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 
 // The formulæ below differs from those in

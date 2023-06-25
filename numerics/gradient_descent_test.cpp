@@ -1,6 +1,7 @@
 #include "numerics/gradient_descent.hpp"
 
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"

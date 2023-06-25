@@ -2,10 +2,10 @@
 
 #include <vector>
 
-#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/cbrt.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"

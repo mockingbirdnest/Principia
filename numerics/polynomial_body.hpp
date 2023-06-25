@@ -8,33 +8,26 @@
 #include <utility>
 #include <vector>
 
-#include "absl/strings/str_join.h"
 #include "absl/strings/str_cat.h"
-#include "base/macros.hpp"
-#include "base/not_constructible.hpp"
-#include "base/traits.hpp"
+#include "absl/strings/str_join.h"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/quadrature.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _polynomial {
 namespace internal {
 
-using namespace principia::base::_not_constructible;
-using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_quadrature;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_tuples;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
 // coefficients of the same monomial as a polynomial of (x - x₂), i.e.:

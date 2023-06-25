@@ -5,10 +5,11 @@
 #include <utility>
 
 #include "gtest/gtest.h"
-#include "quantities/numbers.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/serialization.hpp"
 
 #include "quantities/quantities.hpp"

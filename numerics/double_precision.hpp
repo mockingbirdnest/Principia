@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "base/not_null.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"

@@ -8,7 +8,6 @@
 #include <type_traits>
 
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -18,10 +17,7 @@ namespace numerics {
 namespace _nearest_neighbour {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 

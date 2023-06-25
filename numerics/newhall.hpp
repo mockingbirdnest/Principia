@@ -5,9 +5,8 @@
 
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
-#include "numerics/чебышёв_series.hpp"
 #include "numerics/polynomial.hpp"
-#include "quantities/quantities.hpp"
+#include "numerics/чебышёв_series.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {

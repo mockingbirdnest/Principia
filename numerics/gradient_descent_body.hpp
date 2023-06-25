@@ -7,11 +7,9 @@
 #include <optional>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/hermite2.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/si.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -22,7 +20,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 // A helper to use |Argument| with |SymmetricBilinearForm|.
 template<typename A>

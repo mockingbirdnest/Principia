@@ -4,7 +4,6 @@
 
 #include <limits>
 
-#include "base/macros.hpp"
 #include "numerics/log_b.hpp"
 #include "numerics/scale_b.hpp"
 

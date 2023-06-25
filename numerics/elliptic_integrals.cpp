@@ -1,4 +1,10 @@
+#include "base/tags.hpp"
 #include "glog/logging.h"
+#include "numerics/combinatorics.hpp"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 #include <limits>
 #include <tuple>
@@ -27,7 +33,6 @@ using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {

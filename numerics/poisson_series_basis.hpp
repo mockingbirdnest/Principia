@@ -6,7 +6,6 @@
 
 #include "geometry/hilbert.hpp"
 #include "geometry/instant.hpp"
-#include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {

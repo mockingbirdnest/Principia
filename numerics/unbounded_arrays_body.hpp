@@ -5,18 +5,14 @@
 #include <cmath>
 #include <vector>
 
-#include "base/macros.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "unbounded_arrays.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _unbounded_arrays {
 namespace internal {
 
-using namespace principia::base::_tags;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 template<class T>
 template<class U, class... Args>

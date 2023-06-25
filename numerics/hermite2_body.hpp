@@ -6,14 +6,10 @@
 #include <utility>
 #include <vector>
 
-#include "numerics/root_finders.hpp"
-
 namespace principia {
 namespace numerics {
 namespace _hermite2 {
 namespace internal {
-
-using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument>
 Hermite2<Value, Argument>::Hermite2(
