@@ -40,6 +40,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::physics::_discrete_trajectory_segment_range;
+using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
 class DiscreteTrajectorySegmentIterator {

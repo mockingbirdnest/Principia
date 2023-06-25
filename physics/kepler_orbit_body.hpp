@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "base/optional_serialization.hpp"
+#include "base/optional_serialization.hpp"  // 🧙 For optional serialization.
 #include "geometry/frame.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
