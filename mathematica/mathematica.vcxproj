@@ -44,7 +44,7 @@
     <None Include="generate_graphs.wl" />
     <None Include="navball.wl" />
     <None Include="integration.wl" />
-    <None Include="newhall.nb" />
+    <None Include="newhall.wl" />
     <None Include="phobos.nb" />
     <None Include="solar_systems_convergence.wl" />
   </ItemGroup>

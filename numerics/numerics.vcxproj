@@ -59,8 +59,8 @@
     <ClInclude Include="nearest_neighbour.hpp" />
     <ClInclude Include="nearest_neighbour_body.hpp" />
     <ClInclude Include="newhall.hpp" />
-    <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
+    <ClInclude Include="newhall_matrices.mathematica.h" />
     <ClInclude Include="next.hpp" />
     <ClInclude Include="next_body.hpp" />
     <ClInclude Include="piecewise_poisson_series.hpp" />
