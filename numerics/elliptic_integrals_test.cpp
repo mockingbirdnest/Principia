@@ -12,8 +12,6 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/serialization.hpp"
 
-#include "quantities/quantities.hpp"
-
 namespace principia {
 namespace numerics {
 
