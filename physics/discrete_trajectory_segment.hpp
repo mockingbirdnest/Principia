@@ -7,6 +7,7 @@
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
