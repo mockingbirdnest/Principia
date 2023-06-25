@@ -155,6 +155,10 @@ With[
 "};
 
 }  // namespace internal
+
+using internal::Denominators;
+using internal::Numerators;
+
 }  // namespace _finite_difference_coefficients
 }  // namespace numerics
 }  // namespace principia

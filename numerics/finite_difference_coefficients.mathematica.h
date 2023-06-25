@@ -90,6 +90,10 @@ constexpr std::array<double, 9> Denominators{
 };
 
 }  // namespace internal
+
+using internal::Denominators;
+using internal::Numerators;
+
 }  // namespace _finite_difference_coefficients
 }  // namespace numerics
 }  // namespace principia

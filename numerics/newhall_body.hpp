@@ -7,7 +7,7 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
-#include "numerics/newhall.mathematica.h"
+#include "numerics/newhall_matrices.mathematica.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
@@ -19,6 +19,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_newhall_matrices;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
