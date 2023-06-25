@@ -7,6 +7,7 @@
 #include "geometry/interval.hpp"
 #include "numerics/poisson_series.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {

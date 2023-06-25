@@ -1,16 +1,14 @@
-#include "glog/logging.h"
+#include "numerics/elliptic_integrals.hpp"
 
 #include <limits>
 #include <tuple>
 #include <utility>
 
+#include "base/tags.hpp"
 #include "numerics/combinatorics.hpp"
-#include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/numbers.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 // The implementation in this file is derived from [Fuk18] (license: MIT). The
@@ -27,7 +25,6 @@ using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {

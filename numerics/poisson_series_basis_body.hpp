@@ -5,9 +5,7 @@
 #include <algorithm>
 
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/hilbert.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/si.hpp"
 #include "quantities/traits.hpp"
 
 namespace principia {
@@ -16,7 +14,6 @@ namespace _poisson_series_basis {
 namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_traits;
 

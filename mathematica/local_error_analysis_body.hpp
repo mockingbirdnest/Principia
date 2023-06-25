@@ -5,11 +5,12 @@
 #include <filesystem>
 #include <vector>
 
-#include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/solar_system_fingerprints.hpp"
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
-#include "base/status_utilities.hpp"
 #include "mathematica/mathematica.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/massive_body.hpp"
 
 namespace principia {
 namespace mathematica {
@@ -19,11 +20,9 @@ namespace internal {
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::base::_file;
-using namespace principia::base::_not_null;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_massive_body;
-using namespace principia::quantities::_si;
 
 template<typename Frame>
 LocalErrorAnalyser<Frame>::LocalErrorAnalyser(

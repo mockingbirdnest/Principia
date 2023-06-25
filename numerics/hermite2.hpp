@@ -4,7 +4,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/array.hpp"
 #include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 

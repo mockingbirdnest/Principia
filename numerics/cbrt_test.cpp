@@ -10,8 +10,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"
+#include "numerics/fma.hpp"
 #include "numerics/next.hpp"
-#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {

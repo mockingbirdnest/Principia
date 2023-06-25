@@ -11,7 +11,7 @@
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
-#include "numerics/scale_b.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -21,8 +21,6 @@ namespace internal {
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Argument, typename Function>

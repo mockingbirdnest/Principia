@@ -3,12 +3,10 @@
 #include <tuple>
 
 #include "glog/logging.h"
-#include "numerics/combinatorics.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

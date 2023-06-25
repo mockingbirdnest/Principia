@@ -2,7 +2,6 @@
 
 #include <tuple>
 
-#include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"

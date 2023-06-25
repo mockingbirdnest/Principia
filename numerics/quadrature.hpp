@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {

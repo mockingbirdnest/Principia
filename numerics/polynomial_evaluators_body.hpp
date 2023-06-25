@@ -6,6 +6,7 @@
 #include <tuple>
 
 #include "base/bits.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {

@@ -3,7 +3,6 @@
 #include <immintrin.h>
 
 #include "base/cpuid.hpp"
-#include "base/macros.hpp"
 
 namespace principia {
 namespace numerics {

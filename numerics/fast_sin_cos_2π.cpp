@@ -2,7 +2,6 @@
 
 #include <pmmintrin.h>
 
-#include "base/macros.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 

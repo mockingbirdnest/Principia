@@ -84,9 +84,6 @@
     <None Include="integration.wl">
       <Filter>Scripts</Filter>
     </None>
-    <None Include="newhall.nb">
-      <Filter>Scripts</Filter>
-    </None>
     <None Include="phobos.nb">
       <Filter>Scripts</Filter>
     </None>
@@ -100,6 +97,12 @@
       <Filter>Scripts</Filter>
     </None>
     <None Include="fukushima_elliptic_bd.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="fornberg.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="newhall.wl">
       <Filter>Scripts</Filter>
     </None>
   </ItemGroup>

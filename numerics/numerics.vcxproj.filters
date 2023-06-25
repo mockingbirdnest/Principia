@@ -41,9 +41,6 @@
     <ClInclude Include="root_finders_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="newhall.mathematica.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="hermite3.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -109,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="finite_difference_body.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="finite_difference.mathematica.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="elliptic_integrals.hpp">
       <Filter>Header Files</Filter>
@@ -232,6 +226,12 @@
     </ClInclude>
     <ClInclude Include="global_optimization_body.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="finite_difference_coefficients.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newhall_matrices.mathematica.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

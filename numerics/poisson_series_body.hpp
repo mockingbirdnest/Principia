@@ -10,10 +10,7 @@
 #include <vector>
 
 #include "numerics/double_precision.hpp"
-#include "numerics/quadrature.hpp"
-#include "numerics/ulp_distance.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -23,8 +20,6 @@ namespace internal {
 
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months

@@ -5,10 +5,7 @@
 #include <map>
 #include <optional>
 
-#include "base/bits.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/numbers.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -16,9 +13,7 @@ namespace numerics {
 namespace _fast_fourier_transform {
 namespace internal {
 
-using namespace principia::base::_bits;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 // Implementation of the Danielson-Lánczos algorithm using templates for

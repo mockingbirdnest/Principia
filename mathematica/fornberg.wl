@@ -104,7 +104,7 @@ fornbergNumeratorMatrix[n_]:=fornbergNumeratorMatrix[n]=fornbergDenominator[n]fo
 
 SetDirectory[ParentDirectory[NotebookDirectory[]]];
 Export[
-"numerics\\finite_difference.mathematica.h",
+"numerics\\finite_difference_coefficients.mathematica.h",
 With[
 {\[ScriptCapitalN]=9},
 "#pragma once
@@ -116,7 +116,7 @@ With[
 
 namespace principia {
 namespace numerics {
-namespace _finite_difference {
+namespace _finite_difference_coefficients {
 namespace internal {
 
 using namespace principia::numerics::_fixed_arrays;
@@ -155,7 +155,11 @@ With[
 "};
 
 }  // namespace internal
-}  // namespace _finite_difference
+
+using internal::Denominators;
+using internal::Numerators;
+
+}  // namespace _finite_difference_coefficients
 }  // namespace numerics
 }  // namespace principia
 "],

@@ -3,7 +3,7 @@
 #include <random>
 #include <vector>
 
-#include "astronomy/fortran_astrodynamics_toolkit.hpp"    // 🧙 For fortran_astrodynamics_toolkit_.  // NOLINT
+#include "astronomy/fortran_astrodynamics_toolkit.hpp"  // 🧙 For fortran_astrodynamics_toolkit_.  // NOLINT
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
@@ -186,15 +186,15 @@ void BM_ComputeGeopotentialDistance(benchmark::State& state) {
 
 #define PRINCIPIA_CASE_COMPUTE_GEOPOTENTIAL_F90(d)                         \
   case (d): {                                                              \
-    numerics::FixedMatrix<double, (d) + 1, (d) + 1> cnm;                   \
-    numerics::FixedMatrix<double, (d) + 1, (d) + 1> snm;                   \
+    FixedMatrix<double, (d) + 1, (d) + 1> cnm;                             \
+    FixedMatrix<double, (d) + 1, (d) + 1> snm;                             \
     for (int n = 0; n <= (d); ++n) {                                       \
       for (int m = 0; m <= n; ++m) {                                       \
         cnm(n, m) = earth.cos()(n, m) * LegendreNormalizationFactor(n, m); \
         snm(n, m) = earth.sin()(n, m) * LegendreNormalizationFactor(n, m); \
       }                                                                    \
     }                                                                      \
-    for (auto _ : state) {                                          \
+    for (auto _ : state) {                                                 \
       Vector<Exponentiation<Length, -2>, ICRS> acceleration;               \
       for (auto const& displacement : displacements) {                     \
         acceleration =                                                     \

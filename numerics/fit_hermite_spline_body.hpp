@@ -3,7 +3,7 @@
 #include <list>
 #include <type_traits>
 
-#include "base/jthread.hpp"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/ranges.hpp"
 #include "numerics/hermite3.hpp"
 

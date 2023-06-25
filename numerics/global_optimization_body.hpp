@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -19,12 +19,10 @@ namespace _global_optimization {
 namespace internal {
 
 using base::noreturn;
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 
 // Values that are too small cause extra activity in |Add| and deeper recursion
 // in |FindNearestNeighbour|.  Values that are too large cause extra function

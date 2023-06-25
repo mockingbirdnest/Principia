@@ -1,7 +1,6 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include "gtest/gtest.h"
-
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {

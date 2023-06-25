@@ -2,12 +2,14 @@
 
 #include "numerics/finite_difference.hpp"
 
-#include "numerics/finite_difference.mathematica.h"
+#include "numerics/finite_difference_coefficients.mathematica.h"
 
 namespace principia {
 namespace numerics {
 namespace _finite_difference {
 namespace internal {
+
+using namespace principia::numerics::_finite_difference_coefficients;
 
 template<typename Value, typename Argument, std::size_t n>
 Derivative<Value, Argument> FiniteDifference(

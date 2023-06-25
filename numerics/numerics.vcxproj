@@ -17,6 +17,7 @@
   <ItemGroup>
     <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
+    <ClInclude Include="finite_difference_coefficients.mathematica.h" />
     <ClInclude Include="global_optimization.hpp" />
     <ClInclude Include="global_optimization_body.hpp" />
     <ClInclude Include="gradient_descent.hpp" />
@@ -34,7 +35,6 @@
     <ClInclude Include="fast_fourier_transform_body.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="finite_difference.hpp" />
-    <ClInclude Include="finite_difference.mathematica.h" />
     <ClInclude Include="finite_difference_body.hpp" />
     <ClInclude Include="fit_hermite_spline.hpp" />
     <ClInclude Include="fit_hermite_spline_body.hpp" />
@@ -59,8 +59,8 @@
     <ClInclude Include="nearest_neighbour.hpp" />
     <ClInclude Include="nearest_neighbour_body.hpp" />
     <ClInclude Include="newhall.hpp" />
-    <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
+    <ClInclude Include="newhall_matrices.mathematica.h" />
     <ClInclude Include="next.hpp" />
     <ClInclude Include="next_body.hpp" />
     <ClInclude Include="piecewise_poisson_series.hpp" />

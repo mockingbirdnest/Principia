@@ -12,6 +12,7 @@
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -24,8 +25,6 @@ using namespace principia::numerics::_fast_fourier_transform;
 using namespace principia::numerics::_gauss_legendre_weights;
 using namespace principia::numerics::_legendre_roots;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<int points, typename Argument, typename Function>

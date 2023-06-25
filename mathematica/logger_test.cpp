@@ -8,6 +8,7 @@
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/mathematica.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

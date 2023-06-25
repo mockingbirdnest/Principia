@@ -4,7 +4,6 @@
 
 #include <tuple>
 
-#include "base/macros.hpp"
 #include "numerics/combinatorics.hpp"
 #include "quantities/elementary_functions.hpp"
 
