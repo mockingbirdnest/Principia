@@ -219,7 +219,7 @@ class IncludeWhatYouUsing {
     var all_includes_by_path =
         new SortedDictionary<string[], Include>(new StringArrayComparer());
     foreach (Include inc in all_includes) {
-      all_includes_by_path.Add(inc.path, inc);
+      all_includes_by_path.TryAdd(inc.path, inc);
       if (special_own_header?.SequenceEqual(inc.path) == true) {
         inc.is_own_header = true;
       }
