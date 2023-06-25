@@ -102,5 +102,8 @@
     <None Include="fukushima_elliptic_bd.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="fornberg.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

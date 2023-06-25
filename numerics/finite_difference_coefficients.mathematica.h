@@ -7,7 +7,7 @@
 
 namespace principia {
 namespace numerics {
-namespace _finite_difference {
+namespace _finite_difference_coefficients {
 namespace internal {
 
 using namespace principia::numerics::_fixed_arrays;
@@ -90,6 +90,6 @@ constexpr std::array<double, 9> Denominators{
 };
 
 }  // namespace internal
-}  // namespace _finite_difference
+}  // namespace _finite_difference_coefficients
 }  // namespace numerics
 }  // namespace principia
