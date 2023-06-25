@@ -40,6 +40,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_harmonic_damping;
@@ -123,8 +124,8 @@ class GeopotentialTest : public ::testing::Test {
     double const mu =
         earth.gravitational_parameter() / si::Unit<GravitationalParameter>;
     double const rbar = earth.reference_radius() / Metre;
-    numerics::FixedMatrix<double, 10, 10> cnm;
-    numerics::FixedMatrix<double, 10, 10> snm;
+    FixedMatrix<double, 10, 10> cnm;
+    FixedMatrix<double, 10, 10> snm;
     for (int n = 0; n <= 9; ++n) {
       for (int m = 0; m <= n; ++m) {
         cnm(n, m) = earth.cos()(n, m) * LegendreNormalizationFactor(n, m);
