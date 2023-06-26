@@ -1,4 +1,4 @@
-#include "hierarchical_system.hpp"
+#include "physics/hierarchical_system.hpp"
 
 #include <algorithm>
 #include <map>

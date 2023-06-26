@@ -34,6 +34,7 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::astronomy::_fortran_astrodynamics_toolkit;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;

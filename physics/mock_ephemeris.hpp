@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "gmock/gmock.h"
-#include "integrators/mock_integrators.hpp"
+#include "integrators/mock_integrators.hpp"  // 🧙 For MockFixedStepSizeIntegrator.  // NOLINT
 #include "physics/ephemeris.hpp"
 #include "testing_utilities/matchers.hpp"
 

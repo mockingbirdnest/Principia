@@ -1,4 +1,4 @@
-#include "jacobi_coordinates.hpp"
+#include "physics/jacobi_coordinates.hpp"
 
 #include <algorithm>
 #include <vector>

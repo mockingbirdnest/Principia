@@ -8,7 +8,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
-#include "base/status_utilities.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "quantities/quantities.hpp"
 
 namespace principia {

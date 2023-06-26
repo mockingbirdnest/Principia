@@ -5,7 +5,7 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/mock_rigid_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
