@@ -1,9 +1,10 @@
 #include "physics/checkpointer.hpp"
 
-#include "base/status_utilities.hpp"
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {

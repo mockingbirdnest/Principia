@@ -6,23 +6,16 @@
 #include <optional>
 #include <vector>
 
-#include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/rotation.hpp"
 #include "physics/oblate_body.hpp"
-#include "quantities/constants.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
 namespace _rotating_body {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
-using namespace principia::geometry::_rotation;
 using namespace principia::physics::_oblate_body;
-using namespace principia::quantities::_si;
 
 template<typename Frame>
 RotatingBody<Frame>::Parameters::Parameters(

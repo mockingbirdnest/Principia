@@ -10,7 +10,19 @@
 
 #include <vector>
 
-#include "physics/reference_frame.hpp"
+#include "base/not_null.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
+#include "physics/barycentric_rotating_reference_frame.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/similar_motion.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/tuples.hpp"
 
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 

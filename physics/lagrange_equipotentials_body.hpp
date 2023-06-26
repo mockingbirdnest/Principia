@@ -5,7 +5,17 @@
 #include <functional>
 
 #include "physics/lagrange_equipotentials.hpp"
+#include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/plane.hpp"
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "numerics/global_optimization.hpp"
+#include "numerics/root_finders.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -21,7 +31,6 @@ using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

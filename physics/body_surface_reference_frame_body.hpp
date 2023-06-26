@@ -4,19 +4,18 @@
 
 #include <utility>
 
-#include "base/not_null.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace physics {
 namespace _body_surface_reference_frame {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::quantities::_named_quantities;
 
 template<typename InertialFrame, typename ThisFrame>
 BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::

@@ -3,7 +3,6 @@
 #include "physics/harmonic_damping.hpp"
 
 #include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -11,7 +10,6 @@ namespace _harmonic_damping {
 namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

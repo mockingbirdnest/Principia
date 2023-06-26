@@ -5,11 +5,13 @@
 #include <string>
 
 #include "base/optional_serialization.hpp"  // 🧙 For optional serialization.
-#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/sign.hpp"
 #include "geometry/space.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -22,8 +24,6 @@ using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Frame>

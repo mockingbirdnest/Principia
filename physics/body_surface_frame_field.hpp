@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"

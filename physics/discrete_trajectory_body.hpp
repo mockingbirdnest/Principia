@@ -9,6 +9,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
+#include "physics/discrete_trajectory_segment.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -16,8 +17,6 @@ namespace physics {
 namespace _discrete_trajectory {
 namespace internal {
 
-using namespace principia::base::_not_null;
-using namespace principia::base::_tags;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_quantities;
 

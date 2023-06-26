@@ -6,11 +6,13 @@
 #include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "physics/ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 

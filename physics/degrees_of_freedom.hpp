@@ -3,13 +3,10 @@
 #include <string>
 #include <vector>
 
-#include "base/not_null.hpp"
-#include "geometry/barycentre_calculator.hpp"
-#include "geometry/grassmann.hpp"
+#include "base/not_constructible.hpp"
+#include "base/traits.hpp"
 #include "geometry/pair.hpp"
-#include "geometry/point.hpp"
 #include "geometry/space.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace physics {

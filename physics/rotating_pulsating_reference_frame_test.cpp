@@ -3,15 +3,34 @@
 #include <memory>
 #include <utility>
 
-#include "astronomy/orbital_elements.hpp"
-#include "gtest/gtest.h"
+#include "astronomy/epoch.hpp"
+#include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
+#include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "integrators/explicit_runge_kutta_integrator.hpp"
+#include "integrators/methods.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/kepler_orbit.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
-#include "testing_utilities/solar_system_factory.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
 namespace physics {

@@ -9,12 +9,10 @@
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/grassmann.hpp"
-#include "geometry/instant.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/gradient_descent.hpp"
+#include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -25,16 +23,10 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_instant;
-using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_si;
 
 // If the potential is below the total energy by this factor, return an empty
 // equipotential line.

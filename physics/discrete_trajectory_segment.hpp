@@ -9,6 +9,7 @@
 #include "absl/status/status.h"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"

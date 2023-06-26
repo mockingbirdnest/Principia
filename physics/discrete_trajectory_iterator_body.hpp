@@ -2,7 +2,6 @@
 
 #include "physics/discrete_trajectory_iterator.hpp"
 
-#include "astronomy/epoch.hpp"
 #include "geometry/instant.hpp"
 
 namespace principia {

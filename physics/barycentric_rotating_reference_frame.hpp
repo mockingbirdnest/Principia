@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
@@ -20,8 +21,9 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace physics {

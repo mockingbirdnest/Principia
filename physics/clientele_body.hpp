@@ -1,6 +1,5 @@
 #pragma once
 
-#include "clientele.hpp"
 #include "physics/clientele.hpp"
 
 namespace principia {

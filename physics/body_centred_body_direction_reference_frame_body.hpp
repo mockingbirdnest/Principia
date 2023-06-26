@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <utility>
 
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -14,11 +16,9 @@ namespace physics {
 namespace _body_centred_body_direction_reference_frame {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

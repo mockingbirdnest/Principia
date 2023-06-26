@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "absl/container/btree_set.h"
-#include "base/status_utilities.hpp"
 
 namespace principia {
 namespace physics {

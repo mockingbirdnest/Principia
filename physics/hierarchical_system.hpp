@@ -4,10 +4,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/frame.hpp"
-#include "geometry/identity.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/jacobi_coordinates.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "serialization/physics.pb.h"
