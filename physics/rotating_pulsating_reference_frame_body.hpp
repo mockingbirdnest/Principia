@@ -2,8 +2,10 @@
 
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
+#include <string>
 #include <vector>
 #include <set>
+
 #include "geometry/homothecy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
