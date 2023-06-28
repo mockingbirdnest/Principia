@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "integrators/integrators.hpp"
 #include "integrators/mock_integrators.hpp"  // 🧙 For MockFixedStepSizeIntegrator.  // NOLINT
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace physics {
