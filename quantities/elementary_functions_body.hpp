@@ -17,7 +17,9 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
+using namespace principia::numerics::_next;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
