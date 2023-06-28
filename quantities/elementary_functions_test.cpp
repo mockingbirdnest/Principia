@@ -1,3 +1,5 @@
+#include "quantities/elementary_functions.hpp"
+
 #include <functional>
 #include <string>
 
@@ -8,13 +10,6 @@
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
-#include "quantities/uk.hpp"
-#include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/numerics.hpp"
-#include "testing_utilities/vanishes_before.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
