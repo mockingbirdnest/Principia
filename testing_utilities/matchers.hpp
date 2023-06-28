@@ -8,6 +8,7 @@
 #include "gmock/gmock.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "quantities/quantities.hpp"  // 🧙 For the clients.
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
