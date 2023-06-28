@@ -5,7 +5,6 @@
 
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace testing_utilities {

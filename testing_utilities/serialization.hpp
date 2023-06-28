@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/array.hpp"
-#include "base/macros.hpp"
 #include "serialization/testing_utilities.pb.h"
 
 namespace principia {

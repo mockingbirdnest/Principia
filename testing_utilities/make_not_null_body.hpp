@@ -1,6 +1,5 @@
 #pragma once
 
-#include "base/macros.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {

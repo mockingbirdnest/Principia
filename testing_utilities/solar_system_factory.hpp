@@ -5,15 +5,11 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "geometry/frame.hpp"
-#include "geometry/rotation.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
