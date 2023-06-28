@@ -3,11 +3,12 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/frame.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace physics {

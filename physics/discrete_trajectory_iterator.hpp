@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "absl/container/btree_map.h"
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"

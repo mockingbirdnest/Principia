@@ -7,12 +7,15 @@
 #include "base/traits.hpp"
 #include "geometry/conformal_map.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/homothecy.hpp"
-#include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {

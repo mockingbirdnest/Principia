@@ -1,8 +1,20 @@
 #include "physics/mechanical_system.hpp"
 
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
+#include "geometry/orthogonal_map.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/rigid_motion.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/componentwise.hpp"
 
 namespace principia {

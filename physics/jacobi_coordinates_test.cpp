@@ -1,4 +1,4 @@
-#include "jacobi_coordinates.hpp"
+#include "physics/jacobi_coordinates.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -6,6 +6,11 @@
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/kepler_orbit.hpp"
+#include "physics/massive_body.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 

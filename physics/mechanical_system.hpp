@@ -5,13 +5,15 @@
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "quantities/quantities.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/tensors.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {

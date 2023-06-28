@@ -3,7 +3,7 @@
 #include <list>
 
 #include "absl/container/btree_set.h"
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "geometry/instant.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"

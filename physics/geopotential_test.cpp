@@ -5,12 +5,21 @@
 
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
-#include "numerics/legendre.hpp"
+#include "numerics/fixed_arrays.hpp"
+#include "numerics/legendre_normalization_factor.mathematica.h"
+#include "physics/harmonic_damping.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -34,6 +43,7 @@ using ::testing::ElementsAre;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Property;
+using namespace principia::astronomy::_fortran_astrodynamics_toolkit;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;

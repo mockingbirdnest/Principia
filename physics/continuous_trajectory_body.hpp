@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/status_utilities.hpp"
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
+#include "numerics/poisson_series.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
@@ -22,15 +22,11 @@ namespace physics {
 namespace _continuous_trajectory {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::numerics::_polynomial;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_ulp_distance;
 using namespace principia::numerics::_чебышёв_series;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 constexpr int max_degree = 17;

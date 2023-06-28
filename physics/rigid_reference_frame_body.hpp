@@ -2,6 +2,7 @@
 
 #include "physics/rigid_reference_frame.hpp"
 
+#include "geometry/r3x3_matrix.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
@@ -14,15 +15,12 @@ namespace physics {
 namespace _rigid_reference_frame {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>

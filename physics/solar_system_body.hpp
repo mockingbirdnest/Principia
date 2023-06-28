@@ -11,22 +11,17 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/space.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/space.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
-#include "physics/degrees_of_freedom.hpp"
-#include "physics/hierarchical_system.hpp"
-#include "physics/massive_body.hpp"
-#include "physics/oblate_body.hpp"
-#include "physics/rotating_body.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/si.hpp"
 #include "serialization/astronomy.pb.h"
@@ -42,15 +37,12 @@ using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_map_util;
-using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 inline serialization::GravityModel ParseGravityModel(

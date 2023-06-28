@@ -8,10 +8,10 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/polynomial.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "physics/harmonic_damping.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {

@@ -8,9 +8,9 @@
 #include <set>
 #include <string>
 
-#include "geometry/barycentre_calculator.hpp"
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
-#include "quantities/quantities.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -18,12 +18,9 @@ namespace physics {
 namespace _barycentric_rotating_reference_frame {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 inline GravitationalParameter add_gravitational_parameter(

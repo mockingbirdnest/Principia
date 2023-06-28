@@ -3,7 +3,13 @@
 #include <map>
 #include <vector>
 
+#include "base/not_null.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/equipotential.hpp"
+#include "physics/massive_body.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace physics {

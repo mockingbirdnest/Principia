@@ -6,6 +6,8 @@
 
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/rotating_body.hpp"
 
 namespace principia {
 namespace physics {
@@ -13,7 +15,6 @@ namespace _body_centred_non_rotating_reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_identity;
-using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rotating_body;

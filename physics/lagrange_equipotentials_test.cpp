@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/status_utilities.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -14,13 +13,16 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/massless_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 

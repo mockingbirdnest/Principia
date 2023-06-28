@@ -6,11 +6,14 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/affine_map.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/space_transformations.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {

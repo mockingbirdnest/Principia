@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/identity.hpp"
+#include "geometry/rotation.hpp"
 #include "physics/similar_motion.hpp"
 
 namespace principia {

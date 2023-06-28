@@ -10,6 +10,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"

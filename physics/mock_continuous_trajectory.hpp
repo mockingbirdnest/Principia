@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "gmock/gmock.h"
-#include "physics/continuous_trajectory.hpp"
 
 namespace principia {
 namespace physics {

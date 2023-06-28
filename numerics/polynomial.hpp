@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"

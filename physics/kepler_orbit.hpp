@@ -4,9 +4,13 @@
 #include <ostream>
 #include <string>
 
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/massive_body.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {

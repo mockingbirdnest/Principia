@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {

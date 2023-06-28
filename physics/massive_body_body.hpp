@@ -5,11 +5,10 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.hpp"
 #include "geometry/frame.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
-#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/constants.hpp"
 #include "serialization/geometry.pb.h"
 

@@ -2,7 +2,7 @@
 
 #include "physics/body_surface_frame_field.hpp"
 
-#include "physics/continuous_trajectory.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -10,7 +10,6 @@ namespace physics {
 namespace _body_surface_frame_field {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 

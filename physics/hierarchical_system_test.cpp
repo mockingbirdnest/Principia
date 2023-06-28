@@ -1,12 +1,20 @@
-#include "hierarchical_system.hpp"
+#include "physics/hierarchical_system.hpp"
 
 #include <algorithm>
 #include <map>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/degrees_of_freedom.hpp"
+#include "physics/kepler_orbit.hpp"
+#include "physics/massive_body.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"

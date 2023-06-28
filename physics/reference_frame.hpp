@@ -3,11 +3,14 @@
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/similar_motion.hpp"
+#include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 

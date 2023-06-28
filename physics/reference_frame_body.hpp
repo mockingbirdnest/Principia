@@ -2,6 +2,7 @@
 
 #include "physics/reference_frame.hpp"
 
+#include "geometry/r3x3_matrix.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -12,12 +13,10 @@ namespace physics {
 namespace _reference_frame {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>

@@ -8,6 +8,7 @@
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/piecewise_poisson_series.hpp"

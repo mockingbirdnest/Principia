@@ -3,9 +3,9 @@
 #include <vector>
 
 #include "gmock/gmock.h"
-#include "integrators/mock_integrators.hpp"
-#include "physics/ephemeris.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "integrators/integrators.hpp"
+#include "integrators/mock_integrators.hpp"  // 🧙 For MockFixedStepSizeIntegrator.  // NOLINT
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace physics {

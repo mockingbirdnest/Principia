@@ -6,14 +6,15 @@
 #include <iterator>
 #include <vector>
 
+#include "geometry/identity.hpp"
 #include "google/protobuf/repeated_field.h"
+#include "physics/jacobi_coordinates.hpp"
 
 namespace principia {
 namespace physics {
 namespace _hierarchical_system {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_identity;
 using namespace principia::physics::_jacobi_coordinates;
 

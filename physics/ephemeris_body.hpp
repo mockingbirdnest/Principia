@@ -13,19 +13,18 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/jthread.hpp"
-#include "base/macros.hpp"
 #include "base/map_util.hpp"
-#include "base/not_null.hpp"
-#include "geometry/grassmann.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/sign.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "integrators/integrators.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
+#include "numerics/double_precision.hpp"
 #include "numerics/hermite3.hpp"
-#include "physics/continuous_trajectory.hpp"
+#include "numerics/root_finders.hpp"
+#include "physics/oblate_body.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -39,24 +38,17 @@ using ::std::placeholders::_3;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
-using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
-using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 using namespace std::chrono_literals;

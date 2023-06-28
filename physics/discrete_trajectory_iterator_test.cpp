@@ -14,7 +14,7 @@
 #include "physics/discrete_trajectory_types.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace physics {

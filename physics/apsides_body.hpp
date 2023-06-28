@@ -6,9 +6,14 @@
 #include <vector>
 
 #include "base/array.hpp"
-#include "base/jthread.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/sign.hpp"
+#include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
