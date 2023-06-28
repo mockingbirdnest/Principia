@@ -1,12 +1,16 @@
 #include <functional>
 #include <string>
 
-#include "google/protobuf/stubs/common.h"
 #include "glog/logging.h"
+#include "google/protobuf/stubs/common.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
-#include "quantities/bipm.hpp"
 #include "quantities/constants.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
+#include "quantities/uk.hpp"
+#include "testing_utilities/algebra.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"

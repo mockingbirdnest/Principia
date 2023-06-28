@@ -15,7 +15,6 @@ namespace quantities {
 namespace _tuples {
 namespace internal {
 
-using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_named_quantities;
 
 // A helper for getting the type of an element even for an index that is not in

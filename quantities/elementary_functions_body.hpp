@@ -7,10 +7,10 @@
 #include <cmath>
 #include <type_traits>
 
-#include "quantities/si.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace quantities {
