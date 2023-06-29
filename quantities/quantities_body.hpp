@@ -7,8 +7,6 @@
 #include <limits>
 #include <string>
 
-#include "base/macros.hpp"
-
 namespace principia {
 namespace quantities {
 namespace _quantities {

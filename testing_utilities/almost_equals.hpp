@@ -10,12 +10,13 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace testing_utilities {

@@ -2,9 +2,6 @@
 
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
-#include "base/status_utilities.hpp"
-#include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -14,12 +11,8 @@ namespace testing_utilities {
 namespace _discrete_trajectory_factories {
 namespace internal {
 
-using namespace principia::base::_not_null;
-using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Frame>

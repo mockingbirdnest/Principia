@@ -10,8 +10,6 @@
 #include <limits>
 #include <string>
 
-#include "geometry/grassmann.hpp"
-#include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "numerics/ulp_distance.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -21,9 +19,7 @@ namespace testing_utilities {
 namespace _almost_equals {
 namespace internal {
 
-using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_ulp_distance;
-using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::testing_utilities::_numerics;
 
 // Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.

@@ -9,11 +9,8 @@
 #include <string>
 #include <utility>
 
-#include "geometry/grassmann.hpp"
-#include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
-#include "numerics/ulp_distance.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -21,7 +18,6 @@ namespace _is_near {
 namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 
 template<typename T>
 testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(

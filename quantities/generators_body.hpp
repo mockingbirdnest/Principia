@@ -6,7 +6,6 @@
 
 #include "base/not_constructible.hpp"
 #include "quantities/dimensions.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {

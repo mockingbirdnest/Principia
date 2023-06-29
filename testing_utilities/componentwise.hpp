@@ -12,7 +12,6 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "physics/degrees_of_freedom.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace testing_utilities {

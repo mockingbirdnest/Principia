@@ -3,7 +3,7 @@
 #include <string>
 
 #include "quantities/named_quantities.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 
 namespace principia {

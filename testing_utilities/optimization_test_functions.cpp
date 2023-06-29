@@ -2,7 +2,6 @@
 
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

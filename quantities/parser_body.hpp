@@ -8,8 +8,6 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/dimensions.hpp"
-#include "quantities/named_quantities.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace quantities {

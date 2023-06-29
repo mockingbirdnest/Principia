@@ -2,8 +2,6 @@
 
 #include <string>
 
-#include "quantities/quantities.hpp"
-
 namespace principia {
 namespace quantities {
 namespace _parser {

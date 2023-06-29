@@ -3,8 +3,9 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/bipm.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 
 namespace principia {
 namespace testing_utilities {

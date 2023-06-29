@@ -15,7 +15,6 @@ namespace _approximate_quantity {
 namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Dimensions>

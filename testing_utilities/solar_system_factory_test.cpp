@@ -4,12 +4,20 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/solar_system.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {

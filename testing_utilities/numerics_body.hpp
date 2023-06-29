@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace testing_utilities {

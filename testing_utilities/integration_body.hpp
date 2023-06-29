@@ -6,10 +6,8 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "geometry/instant.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -17,11 +15,7 @@ namespace _integration {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
-using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_instant;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 inline absl::Status ComputeHarmonicOscillatorAcceleration1D(

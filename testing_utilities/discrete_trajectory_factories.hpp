@@ -4,6 +4,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
