@@ -21,7 +21,7 @@ using ::testing::Gt;
 using ::testing::Lt;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
-using namespace principia::ksp_plugin::_fake_plugin;
+using namespace principia::ksp_plugin_test::_fake_plugin;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_vessel;

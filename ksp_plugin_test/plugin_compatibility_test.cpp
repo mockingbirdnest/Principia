@@ -41,7 +41,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

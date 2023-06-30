@@ -6,7 +6,7 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
-namespace ksp_plugin {
+namespace ksp_plugin_test {
 namespace _fake_plugin {
 namespace internal {
 
@@ -65,5 +65,5 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
 
 }  // namespace internal
 }  // namespace _fake_plugin
-}  // namespace ksp_plugin
+}  // namespace ksp_plugin_test
 }  // namespace principia

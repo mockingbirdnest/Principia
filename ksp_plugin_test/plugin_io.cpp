@@ -10,7 +10,7 @@
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
-namespace ksp_plugin {
+namespace ksp_plugin_test {
 namespace _plugin_io {
 namespace internal {
 
@@ -108,5 +108,5 @@ void WritePluginToFile(std::filesystem::path const& filename,
 
 }  // namespace internal
 }  // namespace _plugin_io
-}  // namespace ksp_plugin
+}  // namespace ksp_plugin_test
 }  // namespace principia

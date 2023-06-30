@@ -30,7 +30,7 @@ using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
