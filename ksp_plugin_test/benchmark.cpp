@@ -12,7 +12,6 @@
 #include "ksp_plugin/interface.hpp"  // 🧙 For interfacing functions.
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"

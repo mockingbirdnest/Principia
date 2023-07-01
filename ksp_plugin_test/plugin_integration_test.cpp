@@ -22,7 +22,6 @@
 #include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/plugin.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
