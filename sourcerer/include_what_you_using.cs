@@ -155,6 +155,7 @@ class IncludeWhatYouUsing {
           FixIncludes(parser_file,
                       include_paths_to_file_info,
                       special_own_headers);
+          FixUsingDirectivesOrdering(parser_file);
           RewriteFile(input_file, parser_file, dry_run);
       }
     }
@@ -384,6 +385,42 @@ class IncludeWhatYouUsing {
       parent.children = preceding_nodes_in_parent;
       parent.AddChildren(following_nodes_in_parent);
     }
+  }
+
+  private static void FixUsingDirectivesOrdering(Parser.File file) {
+    List<UsingDirective> using_directives =
+        FindUsingDirectives(file, internal_only: true);
+    if (using_directives.Count == 0) {
+      return;
+    }
+
+    // Order the using directives by namespace name.
+    var namespace_to_using_directive =
+        new SortedDictionary<string, UsingDirective>();
+    foreach (var ud in using_directives) {
+      // Don't process using directives that are not in the namespace for this
+      // file.  They probably indicate that we are reopening someone else's
+      // namespace, and we wouldn't want to touch that.
+      var ns1 = ud.parent as Namespace;
+      if (ns1!.parent is Namespace ns2 &&
+          ns2.name != file.file_namespace_simple_name) {
+        continue;
+      }
+      namespace_to_using_directive.Add(ud.ns, ud);
+    }
+
+    var parent = using_directives[0].parent;
+    int first_position_in_parent = using_directives[0].position_in_parent;
+    int last_position_in_parent = using_directives[^1].position_in_parent;
+    var preceding_nodes_in_parent =
+        parent.children.Take(first_position_in_parent).ToList();
+    var following_nodes_in_parent = parent.children.
+        Skip(last_position_in_parent + 1).ToList();
+    parent.children = preceding_nodes_in_parent;
+    foreach (var pair in namespace_to_using_directive) {
+      parent.AddChild(pair.Value);
+    }
+    parent.AddChildren(following_nodes_in_parent);
   }
 }
 
