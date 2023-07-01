@@ -274,6 +274,12 @@ public class Parser {
     public bool is_own_header {
       get => is_own_header_ ||
              text?.StartsWith("#include \"" +
+                              file_info_.Directory!.Name +
+                              "/" +
+                              own_header_ +
+                              "\"") ==
+             true ||
+             text?.StartsWith("#include \"" +
                               own_header_directory_ +
                               "/" +
                               own_header_ +
