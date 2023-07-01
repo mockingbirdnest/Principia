@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ksp_plugin/celestial.hpp"
-
 #include "gmock/gmock.h"
 #include "testing_utilities/make_not_null.hpp"
 

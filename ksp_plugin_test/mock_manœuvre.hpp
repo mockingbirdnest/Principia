@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "ksp_plugin/manœuvre.hpp"
+#include "ksp_plugin/manœuvre.hpp"  // 🧙 For Manœuvre.
 
 namespace principia {
 namespace ksp_plugin {

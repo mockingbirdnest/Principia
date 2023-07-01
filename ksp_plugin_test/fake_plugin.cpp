@@ -3,14 +3,15 @@
 #include <optional>
 #include <string>
 
+#include "physics/massless_body.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
-namespace ksp_plugin {
+namespace ksp_plugin_test {
 namespace _fake_plugin {
 namespace internal {
 
-using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
@@ -65,5 +66,5 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
 
 }  // namespace internal
 }  // namespace _fake_plugin
-}  // namespace ksp_plugin
+}  // namespace ksp_plugin_test
 }  // namespace principia

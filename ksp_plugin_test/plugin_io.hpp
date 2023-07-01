@@ -8,7 +8,7 @@
 #include "ksp_plugin/plugin.hpp"
 
 namespace principia {
-namespace ksp_plugin {
+namespace ksp_plugin_test {
 namespace _plugin_io {
 namespace internal {
 
@@ -48,5 +48,5 @@ using internal::ReadPluginFromFile;
 using internal::WritePluginToFile;
 
 }  // namespace _plugin_io
-}  // namespace ksp_plugin
+}  // namespace ksp_plugin_test
 }  // namespace principia

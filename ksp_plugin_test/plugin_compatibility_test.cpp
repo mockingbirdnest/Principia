@@ -1,22 +1,26 @@
+#include "ksp_plugin/plugin.hpp"
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "astronomy/time_scales.hpp"
+#include "astronomy/date_time.hpp"
 #include "astronomy/mercury_orbiter.hpp"
-#include "base/array.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/interface.hpp"
-#include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
 #include "testing_utilities/string_log_sink.hpp"
@@ -41,7 +45,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;

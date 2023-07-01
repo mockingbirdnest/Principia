@@ -3,7 +3,7 @@
 #include <list>
 
 #include "gmock/gmock.h"
-#include "ksp_plugin/vessel.hpp"
+#include "ksp_plugin/vessel.hpp"  // 🧙 For Vessel.
 
 namespace principia {
 namespace ksp_plugin {
