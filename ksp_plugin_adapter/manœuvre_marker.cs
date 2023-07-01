@@ -30,10 +30,11 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
   }
 
   public void Render(Vector3d world_position,
+                     Vector3d initial_plotted_velocity,
                      NavigationManoeuvreFrenetTrihedron manœuvre,
                      Func<Burn> get_burn,
                      Action<Burn> modify_burn) {
-    tangent_vector_ = (Vector3d)manœuvre.tangent;
+    initial_plotted_velocity_ = initial_plotted_velocity;
 
     get_burn_ = get_burn;
     modify_burn_ = modify_burn;
@@ -114,21 +115,20 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
 
     var mouse_offset_now =
         UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
-    var drag = mouse_offset_now - mouse_offset_at_click_;
-    // Prevent blowup due to wiggly noodles.
-    if (drag.sqrMagnitude < 1f) {
-      return;
-    }
+    var mouse_displacement = mouse_offset_now - mouse_offset_at_click_;
 
-    var screen_tangent =
-        (ScaledToFlattenedScreenPosition(transform.position + tangent_vector_) -
-         ScreenManœuvrePosition()).normalized;
+    // TODO(egg): This is silly; consider returning that from the C++, or at
+    // least transforming the velocity directly.
+    var screen_velocity =
+        (ScaledToFlattenedScreenPosition(
+             transform.position +
+             ScaledSpace.InverseScaleFactor * initial_plotted_velocity_) -
+         ScreenManœuvrePosition());
 
-    var projection = UnityEngine.Vector3.Dot(screen_tangent, drag);
-    var Δut = projection *
-              UnityEngine.Mathf.Exp(-mouse_offset_now.sqrMagnitude * 5e-3f);
+    var Δt = UnityEngine.Vector3.Dot(screen_velocity, mouse_displacement) /
+              screen_velocity.sqrMagnitude;
     var burn = get_burn_();
-    burn.initial_time += Δut;
+    burn.initial_time += Δt;
     modify_burn_(burn);
   }
 
@@ -190,7 +190,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
 
   private UnityEngine.Vector3 mouse_offset_at_click_;
 
-  private Vector3d tangent_vector_;
+  private Vector3d initial_plotted_velocity_;
   private Func<Burn> get_burn_;
   private Action<Burn> modify_burn_;
 

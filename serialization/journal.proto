@@ -240,7 +240,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5185.
+  extensions 5000 to 5999;  // Last used: 5186.
 }
 
 message AdvanceTime {
@@ -943,6 +943,23 @@ message FlightPlanGetManoeuvreFrenetTrihedron {
   }
   message Return {
     required NavigationManoeuvreFrenetTrihedron result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetManoeuvreInitialPlottedVelocity {
+  extend Method {
+    optional FlightPlanGetManoeuvreInitialPlottedVelocity extension = 5186;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required XYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

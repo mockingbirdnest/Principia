@@ -2213,8 +2213,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                     manœuvre_marker_pool_.
                         Add(marker.AddComponent<ManœuvreMarker>());
                   }
+                  var initial_plotted_velocity =
+                      (Vector3d)plugin_.FlightPlanGetManoeuvreInitialPlottedVelocity(
+                          main_vessel_guid, manœuvre_index);
                   manœuvre_marker_pool_[number_of_rendered_manœuvres].
                       Render(world_position: position_at_start,
+                             initial_plotted_velocity,
                              manœuvre,
                              get_burn: () => {
                               return plugin_.FlightPlanGetManoeuvre(
