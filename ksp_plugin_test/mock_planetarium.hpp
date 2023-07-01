@@ -1,7 +1,10 @@
 #pragma once
 
-#include "ksp_plugin/planetarium.hpp"
-
+#include "geometry/signature.hpp"
+#include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/make_not_null.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "quantities/si.hpp"
