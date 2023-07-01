@@ -16,9 +16,9 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"
-#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
+#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/numbers.hpp"

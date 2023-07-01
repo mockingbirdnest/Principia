@@ -7,13 +7,13 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin_test/mock_celestial.hpp"
-#include "ksp_plugin_test/mock_vessel.hpp"
+#include "ksp_plugin_test/mock_celestial.hpp"  // 🧙 For MockCelestial.
+#include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"
-#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
+#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

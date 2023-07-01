@@ -16,9 +16,9 @@
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "integrators/mock_integrators.hpp"
+#include "integrators/mock_integrators.hpp"  // 🧙 For mock integrators.
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"

@@ -14,17 +14,17 @@
 #include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin_test/mock_flight_plan.hpp"
-#include "ksp_plugin_test/mock_manœuvre.hpp"
-#include "ksp_plugin_test/mock_plugin.hpp"
-#include "ksp_plugin_test/mock_renderer.hpp"
-#include "ksp_plugin_test/mock_vessel.hpp"
+#include "ksp_plugin_test/mock_flight_plan.hpp"  // 🧙 For MockFlightPlan.
+#include "ksp_plugin_test/mock_manœuvre.hpp"  // 🧙 For MockManœuvre.
+#include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
+#include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
+#include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"
-#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
+#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"

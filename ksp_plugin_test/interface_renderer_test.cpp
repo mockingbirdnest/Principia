@@ -6,10 +6,10 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin_test/mock_plugin.hpp"
-#include "ksp_plugin_test/mock_renderer.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
+#include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "quantities/si.hpp"
 
 namespace principia {

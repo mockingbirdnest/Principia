@@ -34,7 +34,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_rigid_reference_frame.hpp"
-#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
