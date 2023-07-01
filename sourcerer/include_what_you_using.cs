@@ -447,13 +447,13 @@ class IncludeWhatYouUsing {
           ns2.name == file.file_namespace_simple_name) {
         // Order by namespace name.
         var namespace_to_using_directive =
-            new SortedDictionary<string, UsingDirective>(
-                StringComparer.Ordinal);
+            new SortedDictionary<string[], UsingDirective>(
+                new StringArrayComparer());
         for (int pos = first_position_in_parent;
              pos <= last_position_in_parent;
              ++pos) {
           var ud = parent.children[pos] as UsingDirective;
-          namespace_to_using_directive.Add(ud.ns, ud);
+          namespace_to_using_directive.Add(ud.ns.Split("::"), ud);
         }
 
         // Replace this segment of using directives with an ordered segment.
