@@ -447,7 +447,8 @@ class IncludeWhatYouUsing {
           ns2.name == file.file_namespace_simple_name) {
         // Order by namespace name.
         var namespace_to_using_directive =
-            new SortedDictionary<string, UsingDirective>();
+            new SortedDictionary<string, UsingDirective>(
+                StringComparer.Ordinal);
         for (int pos = first_position_in_parent;
              pos <= last_position_in_parent;
              ++pos) {
