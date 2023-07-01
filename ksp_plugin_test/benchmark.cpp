@@ -7,7 +7,7 @@
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For interfacing functions.
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
