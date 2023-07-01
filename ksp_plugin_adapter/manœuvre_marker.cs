@@ -117,8 +117,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
         UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
     var mouse_displacement = mouse_offset_now - mouse_offset_at_click_;
 
-    // TODO(egg): This is silly; consider returning that from the C++, or at
-    // least transforming the velocity directly.
+    // TODO(egg): This is cheesy. Could we do it in the C++?
     var screen_velocity =
         (ScaledToFlattenedScreenPosition(
              transform.position +
