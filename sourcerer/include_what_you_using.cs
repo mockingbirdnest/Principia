@@ -416,9 +416,9 @@ class IncludeWhatYouUsing {
           previous_position_in_parent = position_in_parent;
         } else {
           // A change of segment.
-          segments.Add(Tuple.Create(parent,
-                                    first_position_in_parent.Value,
-                                    last_position_in_parent.Value));
+          segments.Add(Tuple.Create(parent!,
+                                    first_position_in_parent!.Value,
+                                    last_position_in_parent!.Value));
           parent = ud.parent;
           first_position_in_parent = position_in_parent;
           last_position_in_parent = position_in_parent;
@@ -428,8 +428,8 @@ class IncludeWhatYouUsing {
       // Close the last segment.
       if (parent != null) {
         segments.Add(Tuple.Create(parent,
-                                  first_position_in_parent.Value,
-                                  last_position_in_parent.Value));
+                                  first_position_in_parent!.Value,
+                                  last_position_in_parent!.Value));
       }
     }
 
@@ -452,7 +452,7 @@ class IncludeWhatYouUsing {
              pos <= last_position_in_parent;
              ++pos) {
           var ud = parent.children[pos] as UsingDirective;
-          namespace_to_using_directive.Add(ud.ns.Split("::"), ud);
+          namespace_to_using_directive.Add(ud!.ns.Split("::"), ud);
         }
 
         // Replace this segment of using directives with an ordered segment.
