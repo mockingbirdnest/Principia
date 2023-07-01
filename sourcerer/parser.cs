@@ -245,6 +245,8 @@ public class Parser {
       own_header_ = Regex.Replace(file_info_.Name,
                                   @"(_body|_test)?\.[hc]pp$",
                                   ".hpp");
+      own_header_directory_ = Regex.Replace(file_info_.Directory!.Name,
+                                            @"_test$", "");
     }
 
     public override string Cxx() {
@@ -272,7 +274,7 @@ public class Parser {
     public bool is_own_header {
       get => is_own_header_ ||
              text?.StartsWith("#include \"" +
-                              file_info_.Directory!.Name +
+                              own_header_directory_ +
                               "/" +
                               own_header_ +
                               "\"") ==
@@ -301,6 +303,7 @@ public class Parser {
     private readonly FileInfo file_info_;
     private readonly string own_body_;
     private readonly string own_header_;
+    private readonly string own_header_directory_;
   }
 
   public class Namespace : Declaration {
