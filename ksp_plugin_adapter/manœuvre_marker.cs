@@ -7,6 +7,7 @@ namespace principia.ksp_plugin_adapter {
 internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
   public bool IsHovered { get; private set; } = false;
   public bool IsDragged { get; private set; } = false;
+  public bool IsPinned { get; private set;} = false;
   public bool IsInteracting => IsHovered || IsDragged;
 
   public void Awake() {
@@ -92,12 +93,18 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
   }
 
   private void UpdateCaption() {
-    if (!IsInteracting) {
+    if (!IsInteracting && !IsPinned) {
       caption_.SetActive(false);
       return;
     }
     caption_.SetActive(true);
     caption_.transform.position = ScaledToUIPosition(transform.position).position;
+
+    if (IsInteracting) {
+      caption_text_.color = caption_color;
+    } else {
+      caption_text_.color = caption_color_pinned;
+    }
 
     var manœuvre = get_manœuvre_();
     var burn = manœuvre.burn;
@@ -140,6 +147,15 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
     mouse_offset_at_click_ =
         UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
     IsDragged = true;
+  }
+
+  public void OnMouseOver() {
+    if (!isActiveAndEnabled) {
+      return;
+    }
+    if (Mouse.Right.GetButtonUp()) {
+      IsPinned = !IsPinned;
+    }
   }
 
   public void OnMouseDrag() {
@@ -217,7 +233,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
     text.font = UISkinManager.TMPFont;
     text.fontSize = 140;
     text.alignment = TMPro.TextAlignmentOptions.Top;
-    text.color = caption_color;
     return caption;
   }
 
@@ -272,7 +287,9 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
   }
 
   public static UnityEngine.Color caption_color
-    = new UnityEngine.Color(191f / 255f, 1f, 0f);
+    = new UnityEngine.Color(191f / 255f, 1f, 0f, 1f);
+  public static UnityEngine.Color caption_color_pinned
+    = new UnityEngine.Color(191f / 255f, 1f, 0f, 0.6f);
 }
 
 }
