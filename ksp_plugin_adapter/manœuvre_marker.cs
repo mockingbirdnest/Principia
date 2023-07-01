@@ -4,7 +4,7 @@ namespace principia.ksp_plugin_adapter {
 
 // Note that the 'base' scale of the marker is such that it is circumscribed
 // by a sphere 1 unit in radius.
-internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
+internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   public bool IsHovered { get; private set; } = false;
   public bool IsDragged { get; private set; } = false;
   public bool IsPinned { get; private set;} = false;
@@ -193,10 +193,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
       return;
     }
     IsHovered = false;
-  }
-
-  public UnityEngine.MonoBehaviour GetInstance() {
-    return this;
   }
 
   private static UnityEngine.GameObject MakeTrihedronBase() {
