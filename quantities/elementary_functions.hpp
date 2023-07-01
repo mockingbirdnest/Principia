@@ -8,8 +8,8 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 // Equivalent to |std::fma(x, y, z)|.
 template<typename Q1, typename Q2>

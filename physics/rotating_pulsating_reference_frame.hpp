@@ -32,9 +32,9 @@ namespace _rotating_pulsating_reference_frame {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_frame;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
