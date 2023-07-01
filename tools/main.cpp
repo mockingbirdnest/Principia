@@ -1,12 +1,10 @@
 #include <iostream>
 #include <string>
 
-#include "astronomy/epoch.hpp"
 #include "glog/logging.h"
-#include "quantities/parser.hpp"
-#include "tools/generate_configuration.hpp"
-#include "tools/generate_kopernicus.hpp"
-#include "tools/generate_profiles.hpp"
+#include "tools/generate_configuration.hpp"  // 🧙 For _generate_configuration.
+#include "tools/generate_kopernicus.hpp"  // 🧙 for _generate_kopernicus.
+#include "tools/generate_profiles.hpp"  // 🧙 For _generate_profiles.
 
 using namespace principia::tools::_generate_configuration;
 using namespace principia::tools::_generate_kopernicus;

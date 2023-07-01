@@ -13,6 +13,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
