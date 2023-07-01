@@ -434,9 +434,7 @@ class IncludeWhatYouUsing {
       }
     }
 
-    // Sort the segments.
-    var namespace_to_using_directive =
-        new SortedDictionary<string, UsingDirective>();
+    // Output each segment in alphabetical order.
     foreach (var segment in segments) {
       Parser.Node parent = segment.Item1;
       int first_position_in_parent = segment.Item2;
@@ -447,6 +445,16 @@ class IncludeWhatYouUsing {
       if (parent is Namespace ns1 &&
           ns1.parent is Namespace ns2 &&
           ns2.name == file.file_namespace_simple_name) {
+        // Order by namespace name.
+        var namespace_to_using_directive =
+            new SortedDictionary<string, UsingDirective>();
+        for (int pos = first_position_in_parent;
+             pos <= last_position_in_parent;
+             ++pos) {
+          var ud = parent.children[pos] as UsingDirective;
+          namespace_to_using_directive.Add(ud.ns, ud);
+        }
+
         // Replace this segment of using directives with an ordered segment.
         var preceding_nodes_in_parent =
             parent.children.Take(first_position_in_parent).ToList();
