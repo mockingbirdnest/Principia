@@ -395,55 +395,68 @@ class IncludeWhatYouUsing {
       return;
     }
 
-    // Process the using directives by consecutive segments.
-    Parser.Node? parent = null;
-    int? first_position_in_parent = null;
-    int? last_position_in_parent = null;
-    int? previous_position_in_parent = null;
+    // Build consecutive segments of using directives.
+    var segments = new List<Tuple<Parser.Node, int, int>>();
+    {
+      Parser.Node? parent = null;
+      int? first_position_in_parent = null;
+      int? last_position_in_parent = null;
+      int? previous_position_in_parent = null;
+      foreach (var ud in using_directives) {
+        int position_in_parent = ud.position_in_parent;
+        if (!previous_position_in_parent.HasValue) {
+          // First using directive in a segment.
+          parent = ud.parent;
+          first_position_in_parent = position_in_parent;
+          last_position_in_parent = position_in_parent;
+          previous_position_in_parent = position_in_parent;
+        } else if (ud.parent == parent &&
+                   position_in_parent == previous_position_in_parent.Value + 1) {
+          // Subsequent using directive in a segment.
+          last_position_in_parent = position_in_parent;
+          previous_position_in_parent = position_in_parent;
+        } else {
+          // A change of segment.
+          segments.Add(Tuple.Create(parent,
+                                    first_position_in_parent.Value,
+                                    last_position_in_parent.Value));
+          parent = ud.parent;
+          first_position_in_parent = position_in_parent;
+          last_position_in_parent = position_in_parent;
+          previous_position_in_parent = position_in_parent;
+        }
+      }
+      // Close the last segment.
+      if (parent != null) {
+        segments.Add(Tuple.Create(parent,
+                                  first_position_in_parent.Value,
+                                  last_position_in_parent.Value));
+      }
+    }
+
+    // Sort the segments.
     var namespace_to_using_directive =
         new SortedDictionary<string, UsingDirective>();
-    foreach (var ud in using_directives) {
-      int position_in_parent = ud.position_in_parent;
-      if (!previous_position_in_parent.HasValue) {
-        // First using directive in a segment.
-        previous_position_in_parent = position_in_parent;
-        parent = ud.parent;
-        first_position_in_parent = position_in_parent;
-        last_position_in_parent = position_in_parent;
-        namespace_to_using_directive.Add(ud.ns, ud);
-      } else if (ud.parent == parent &&
-                 position_in_parent == previous_position_in_parent.Value + 1) {
-        // Subsequent using directive in a segment.
-        previous_position_in_parent = position_in_parent;
-        last_position_in_parent = position_in_parent;
-        namespace_to_using_directive.Add(ud.ns, ud);
-      } else {
-        // Change of segment.  Check if the using directive is in the namespace
-        // for this file.  If it isn't, we are reopening someone else's
-        // namespace and we wouldn't want to touch that.
-        if (parent is Namespace ns1 &&
-            ns1.parent is Namespace ns2 &&
-            ns2.name == file.file_namespace_simple_name) {
-        }
-
-        // Replace this segment of using with an ordered segment.
+    foreach (var segment in segments) {
+      Parser.Node parent = segment.Item1;
+      int first_position_in_parent = segment.Item2;
+      int last_position_in_parent = segment.Item3;
+      // Check if the using directive is in the namespace for this file.  If it
+      // isn't, we are reopening someone else's namespace and we wouldn't want
+      // to touch that.
+      if (parent is Namespace ns1 &&
+          ns1.parent is Namespace ns2 &&
+          ns2.name == file.file_namespace_simple_name) {
+        // Replace this segment of using directives with an ordered segment.
         var preceding_nodes_in_parent =
-            parent.children.Take(first_position_in_parent.Value).ToList();
+            parent.children.Take(first_position_in_parent).ToList();
         var following_nodes_in_parent = parent.children.
-            Skip(last_position_in_parent.Value + 1).ToList();
+            Skip(last_position_in_parent + 1).ToList();
         parent.children = preceding_nodes_in_parent;
         foreach (var pair in namespace_to_using_directive) {
           parent.AddChild(pair.Value);
         }
         parent.AddChildren(following_nodes_in_parent);
-
-        // Reset the iteration state.
-        parent = ud.parent;
-        first_position_in_parent = position_in_parent;
-        last_position_in_parent = position_in_parent;
-        previous_position_in_parent = position_in_parent;
-        namespace_to_using_directive.Clear();
-        namespace_to_using_directive.Add(ud.ns, ud);
       }
     }
   }
