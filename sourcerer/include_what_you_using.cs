@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.FileSystemGlobbing;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -394,33 +395,57 @@ class IncludeWhatYouUsing {
       return;
     }
 
-    // Order the using directives by namespace name.
+    // Process the using directives by consecutive segments.
+    Parser.Node? parent = null;
+    int? first_position_in_parent = null;
+    int? last_position_in_parent = null;
+    int? previous_position_in_parent = null;
     var namespace_to_using_directive =
         new SortedDictionary<string, UsingDirective>();
     foreach (var ud in using_directives) {
-      // Don't process using directives that are not in the namespace for this
-      // file.  They probably indicate that we are reopening someone else's
-      // namespace, and we wouldn't want to touch that.
-      var ns1 = ud.parent as Namespace;
-      if (ns1!.parent is Namespace ns2 &&
-          ns2.name != file.file_namespace_simple_name) {
-        continue;
-      }
-      namespace_to_using_directive.Add(ud.ns, ud);
-    }
+      int position_in_parent = ud.position_in_parent;
+      if (!previous_position_in_parent.HasValue) {
+        // First using directive in a segment.
+        previous_position_in_parent = position_in_parent;
+        parent = ud.parent;
+        first_position_in_parent = position_in_parent;
+        last_position_in_parent = position_in_parent;
+        namespace_to_using_directive.Add(ud.ns, ud);
+      } else if (ud.parent == parent &&
+                 position_in_parent == previous_position_in_parent.Value + 1) {
+        // Subsequent using directive in a segment.
+        previous_position_in_parent = position_in_parent;
+        last_position_in_parent = position_in_parent;
+        namespace_to_using_directive.Add(ud.ns, ud);
+      } else {
+        // Change of segment.  Check if the using directive is in the namespace
+        // for this file.  If it isn't, we are reopening someone else's
+        // namespace and we wouldn't want to touch that.
+        if (parent is Namespace ns1 &&
+            ns1.parent is Namespace ns2 &&
+            ns2.name == file.file_namespace_simple_name) {
+        }
 
-    var parent = using_directives[0].parent;
-    int first_position_in_parent = using_directives[0].position_in_parent;
-    int last_position_in_parent = using_directives[^1].position_in_parent;
-    var preceding_nodes_in_parent =
-        parent.children.Take(first_position_in_parent).ToList();
-    var following_nodes_in_parent = parent.children.
-        Skip(last_position_in_parent + 1).ToList();
-    parent.children = preceding_nodes_in_parent;
-    foreach (var pair in namespace_to_using_directive) {
-      parent.AddChild(pair.Value);
+        // Replace this segment of using with an ordered segment.
+        var preceding_nodes_in_parent =
+            parent.children.Take(first_position_in_parent.Value).ToList();
+        var following_nodes_in_parent = parent.children.
+            Skip(last_position_in_parent.Value + 1).ToList();
+        parent.children = preceding_nodes_in_parent;
+        foreach (var pair in namespace_to_using_directive) {
+          parent.AddChild(pair.Value);
+        }
+        parent.AddChildren(following_nodes_in_parent);
+
+        // Reset the iteration state.
+        parent = ud.parent;
+        first_position_in_parent = position_in_parent;
+        last_position_in_parent = position_in_parent;
+        previous_position_in_parent = position_in_parent;
+        namespace_to_using_directive.Clear();
+        namespace_to_using_directive.Add(ud.ns, ud);
+      }
     }
-    parent.AddChildren(following_nodes_in_parent);
   }
 }
 
