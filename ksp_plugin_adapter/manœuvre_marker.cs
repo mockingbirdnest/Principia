@@ -26,30 +26,36 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
     transform.SetLayerRecursive((int)PrincipiaPluginAdapter.UnityLayers.
                                     Atmosphere);
 
+    caption_ = MakeCaption();
+    caption_.transform.SetParent(transform, false);
+    caption_text_ = caption_.GetComponentInChildren<TMPro.TextMeshPro>();
+    caption_.SetLayerRecursive((int)PrincipiaPluginAdapter.UnityLayers.UI);
+
     Disable();
   }
 
   public void Render(Vector3d world_position,
                      Vector3d initial_plotted_velocity,
-                     NavigationManoeuvreFrenetTrihedron manœuvre,
-                     Func<Burn> get_burn,
+                     int index,
+                     NavigationManoeuvreFrenetTrihedron trihedron,
+                     Func<NavigationManoeuvre> get_manœuvre,
                      Action<Burn> modify_burn) {
     initial_plotted_velocity_ = initial_plotted_velocity;
-
-    get_burn_ = get_burn;
+    index_ = index;
+    get_manœuvre_ = get_manœuvre;
     modify_burn_ = modify_burn;
 
     transform.position = ScaledSpace.LocalToScaledSpace(world_position);
 
     tangent_.transform.localRotation = UnityEngine.Quaternion.FromToRotation(
         UnityEngine.Vector3.up,
-        (Vector3d)manœuvre.tangent);
+        (Vector3d)trihedron.tangent);
     normal_.transform.localRotation = UnityEngine.Quaternion.FromToRotation(
         UnityEngine.Vector3.up,
-        (Vector3d)manœuvre.normal);
+        (Vector3d)trihedron.normal);
     binormal_.transform.localRotation = UnityEngine.Quaternion.FromToRotation(
         UnityEngine.Vector3.up,
-        (Vector3d)manœuvre.binormal);
+        (Vector3d)trihedron.binormal);
 
     normalized_scale_ =
         (ScaledSpace.ScaledToLocalSpace(MapView.MapCamera.transform.position) -
@@ -59,6 +65,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
     UpdateScale();
 
     UpdateColors();
+    UpdateCaption();
 
     gameObject.SetActive(true);
   }
@@ -84,12 +91,39 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
     SetColor(binormal_, Style.Binormal);
   }
 
+  private void UpdateCaption() {
+    if (!IsInteracting) {
+      caption_.SetActive(false);
+      return;
+    }
+    caption_.SetActive(true);
+    caption_.transform.position = ScaledToUIPosition(transform.position).position;
+
+    var manœuvre = get_manœuvre_();
+    var burn = manœuvre.burn;
+    var caption = L10N.CacheFormat(
+      "#Principia_MapNode_ManœuvreCaption",
+      index_ + 1,
+      ((Vector3d)burn.delta_v).magnitude.ToString("0.000"),
+      manœuvre.duration.ToString("0.0"),
+      "T" + new PrincipiaTimeSpan(
+              Planetarium.GetUniversalTime() - burn.initial_time).
+          Format(with_leading_zeroes: false, with_seconds: true).
+          Replace(Culture.culture.NumberFormat.NegativeSign, "-")
+    );
+
+    caption_text_.SetText(caption);
+  }
+
   private void UpdateScale() {
     hover_scale_offset_ = UnityEngine.Mathf.MoveTowards(hover_scale_offset_,
       IsInteracting ? 1.25f : 1f,
       0.075f);
-    transform.localScale =
-        Vector3d.one * normalized_scale_ * hover_scale_offset_;
+    var resulting_scale = normalized_scale_ * hover_scale_offset_;
+    transform.localScale = Vector3d.one * resulting_scale;
+    // Inversely scale the label, since it is drawn in UI coordinates and thus
+    // does not require additional dynamic scaling.
+    caption_.transform.localScale = Vector3d.one / resulting_scale;
   }
 
   private UnityEngine.Vector3 ScreenManœuvrePosition() =>
@@ -126,7 +160,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
 
     var Δt = UnityEngine.Vector3.Dot(screen_velocity, mouse_displacement) /
               screen_velocity.sqrMagnitude;
-    var burn = get_burn_();
+    var burn = get_manœuvre_().burn;
     burn.initial_time += Δt;
     modify_burn_(burn);
   }
@@ -172,11 +206,39 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
     return arrow;
   }
 
+  private static UnityEngine.GameObject MakeCaption() {
+    var caption = new UnityEngine.GameObject("caption");
+    var caption_inner = new UnityEngine.GameObject("TMPro");
+    var text = caption_inner.AddComponent<TMPro.TextMeshPro>();
+    var inner_transform = caption_inner.GetComponent<UnityEngine.RectTransform>();
+    inner_transform.SetParent(caption.transform, false);
+    inner_transform.localPosition = new UnityEngine.Vector3(0f, -10f, 0f);
+    inner_transform.sizeDelta = new UnityEngine.Vector2(300f, 1f);
+    text.font = UISkinManager.TMPFont;
+    text.fontSize = 140;
+    text.alignment = TMPro.TextAlignmentOptions.Top;
+    text.color = caption_color;
+    return caption;
+  }
+
   private static UnityEngine.Vector3 ScaledToFlattenedScreenPosition(
-      UnityEngine.Vector3 scaled_position) {
+      Vector3d scaled_position) {
     var position = PlanetariumCamera.Camera.WorldToScreenPoint(scaled_position);
     position.z = 0;
     return position;
+  }
+
+  private static (UnityEngine.Vector3 position, bool visible) ScaledToUIPosition(
+    Vector3d scaled_position) {
+      bool visible = false;
+      var position = KSP.UI.Screens.Mapview.MapViewCanvasUtil.ScaledToUISpacePos(
+          scaled_position,
+          ref visible,
+          KSP.UI.Screens.Mapview.MapNode.zSpaceEasing,
+          KSP.UI.Screens.Mapview.MapNode.zSpaceMidpoint,
+          KSP.UI.Screens.Mapview.MapNode.zSpaceUIStart,
+          KSP.UI.Screens.Mapview.MapNode.zSpaceLength);
+    return (position, visible);
   }
 
   private UnityEngine.GameObject base_;
@@ -184,13 +246,17 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
   private UnityEngine.GameObject normal_;
   private UnityEngine.GameObject binormal_;
 
+  private UnityEngine.GameObject caption_;
+  private TMPro.TextMeshPro caption_text_;
+
   private double normalized_scale_;
   private float hover_scale_offset_;
 
   private UnityEngine.Vector3 mouse_offset_at_click_;
 
   private Vector3d initial_plotted_velocity_;
-  private Func<Burn> get_burn_;
+  private int index_;
+  private Func<NavigationManoeuvre> get_manœuvre_;
   private Action<Burn> modify_burn_;
 
   private static UnityEngine.Material marker_material_;
@@ -204,6 +270,9 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour, IMouseEvents {
       return marker_material_;
     }
   }
+
+  public static UnityEngine.Color caption_color
+    = new UnityEngine.Color(191f / 255f, 1f, 0f);
 }
 
 }

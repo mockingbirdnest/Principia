@@ -2203,7 +2203,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 int manœuvre_index = i / 2;
                 if (manœuvre_index <
                     number_of_manœuvres - number_of_anomalous_manœuvres) {
-                  NavigationManoeuvreFrenetTrihedron manœuvre =
+                  NavigationManoeuvreFrenetTrihedron trihedron =
                       plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
                           main_vessel_guid,
                           manœuvre_index);
@@ -2219,11 +2219,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   manœuvre_marker_pool_[number_of_rendered_manœuvres].
                       Render(world_position: position_at_start,
                              initial_plotted_velocity,
-                             manœuvre,
-                             get_burn: () => {
+                             index: manœuvre_index,
+                             trihedron,
+                             get_manœuvre: () => {
                               return plugin_.FlightPlanGetManoeuvre(
                                   main_vessel_guid,
-                                  manœuvre_index).burn;
+                                  manœuvre_index);
                              },
                              modify_burn: (burn) => {
                               flight_planner_.ModifyIthBurn(main_vessel_guid,
