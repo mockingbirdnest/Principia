@@ -387,10 +387,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               return;
             }
             case BurnEditor.Event.Changed: {
-              var status =
-                  plugin.FlightPlanReplace(vessel_guid, burn.Burn(), i);
-              UpdateStatus(status, i);
-              burn.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+              ModifyIthBurn(vessel_guid, i, burn.Burn());
               break;
             }
             case BurnEditor.Event.None: {
@@ -403,6 +400,14 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           return;
         }
       }
+    }
+  }
+
+  internal void ModifyIthBurn(string vessel_guid, int i, Burn burn) {
+    var status = plugin.FlightPlanReplace(vessel_guid, burn, i);
+    UpdateStatus(status, i);
+    if (burn_editors_?.Count > 0) {
+      burn_editors_[i].Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
     }
   }
 
