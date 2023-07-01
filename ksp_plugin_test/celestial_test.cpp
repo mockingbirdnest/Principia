@@ -1,9 +1,14 @@
 #include "ksp_plugin/celestial.hpp"
 
+#include "astronomy/epoch.hpp"
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/frames.hpp"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

@@ -3,10 +3,14 @@
 #include <string>
 
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/frames.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/quantities.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 

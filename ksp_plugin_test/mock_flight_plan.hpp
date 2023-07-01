@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gmock/gmock.h"
-#include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/flight_plan.hpp"  // 🧙 For FlightPlan.
 
 namespace principia {
 namespace ksp_plugin {

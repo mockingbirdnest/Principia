@@ -10,20 +10,26 @@
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "ksp_plugin/part.hpp"
+#include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/tensors.hpp"
@@ -64,7 +70,7 @@ using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_plugin_io;
+using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;

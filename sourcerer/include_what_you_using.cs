@@ -268,7 +268,7 @@ class IncludeWhatYouUsing {
         // There is already an include for this path, reuse it, unless it is a
         // conditional include in which case we leave it alone.
         var existing_include = all_includes_by_path[using_path];
-        if (existing_include.is_conditional) {
+        if (existing_include.is_conditional || existing_include.is_own_header) {
           continue;
         }
         new_includes.Add(existing_include);

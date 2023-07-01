@@ -3,11 +3,15 @@
 #include <string>
 
 #include "astronomy/frames.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/vessel.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 
 namespace principia {
-namespace ksp_plugin {
+namespace ksp_plugin_test {
 namespace _fake_plugin {
 namespace internal {
 
@@ -39,5 +43,5 @@ class FakePlugin : public Plugin {
 using internal::FakePlugin;
 
 }  // namespace _fake_plugin
-}  // namespace ksp_plugin
+}  // namespace ksp_plugin_test
 }  // namespace principia
