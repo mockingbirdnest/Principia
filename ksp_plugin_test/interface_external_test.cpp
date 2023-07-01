@@ -2,10 +2,17 @@
 
 #include <string>
 
+#include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/fake_plugin.hpp"
-#include "physics/kepler_orbit.hpp"
+#include "physics/solar_system.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"

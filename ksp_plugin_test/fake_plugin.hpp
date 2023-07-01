@@ -3,7 +3,11 @@
 #include <string>
 
 #include "astronomy/frames.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/vessel.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 
 namespace principia {

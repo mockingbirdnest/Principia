@@ -1,13 +1,17 @@
 #include "ksp_plugin/interface.hpp"
 
-#include "geometry/affine_map.hpp"
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/planetarium.hpp"
+#include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin_test/mock_planetarium.hpp"  // 🧙 For MockPlanetarium.
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRendeder.

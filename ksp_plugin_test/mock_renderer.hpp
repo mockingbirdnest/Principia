@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "ksp_plugin_test/mock_celestial.hpp"  // 🧙 For MockCelestial.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/rigid_reference_frame.hpp"
 
 namespace principia {
 namespace ksp_plugin {

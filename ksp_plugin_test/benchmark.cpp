@@ -3,13 +3,20 @@
 #include <string>
 #include <vector>
 
+#include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interfacing functions.
+#include "ksp_plugin/iterators.hpp"
+#include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/serialization.hpp"
 

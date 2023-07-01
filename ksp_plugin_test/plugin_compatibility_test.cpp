@@ -3,9 +3,9 @@
 #include <utility>
 #include <vector>
 
-#include "astronomy/time_scales.hpp"
+#include "astronomy/date_time.hpp"
 #include "astronomy/mercury_orbiter.hpp"
-#include "base/array.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "glog/logging.h"
@@ -13,6 +13,15 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
+#include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin_test/plugin_io.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/serialization.hpp"
+#include "testing_utilities/string_log_sink.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/discrete_trajectory.hpp"

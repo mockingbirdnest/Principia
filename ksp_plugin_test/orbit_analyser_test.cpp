@@ -3,11 +3,24 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
+#include "astronomy/frames.hpp"
+#include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/standard_product_3.hpp"
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "physics/body_surface_reference_frame.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
