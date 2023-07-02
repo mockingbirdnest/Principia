@@ -35,8 +35,8 @@ using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 

@@ -17,8 +17,8 @@ namespace mathematica {
 namespace _local_error_analysis {
 namespace internal {
 
-using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_solar_system_fingerprints;
+using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_file;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_degrees_of_freedom;

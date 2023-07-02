@@ -19,11 +19,11 @@ namespace internal {
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massive_body;
-using namespace principia::ksp_plugin::_frames;
 
 class GeometricPotentialPlotter {
  public:

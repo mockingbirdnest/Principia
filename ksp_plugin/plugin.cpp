@@ -74,8 +74,8 @@ using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
-using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
