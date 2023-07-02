@@ -29,7 +29,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     binormal_.transform.SetParent(gameObject.transform, false);
 
     var collider = gameObject.AddComponent<UnityEngine.SphereCollider>();
-    collider.radius = 1f;
+    collider.radius = 0.75f;
 
     transform.SetLayerRecursive((int)PrincipiaPluginAdapter.UnityLayers.
                                     Atmosphere);
