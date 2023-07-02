@@ -72,34 +72,32 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
         ScaledSpace.InverseScaleFactor;
     UpdateScale();
 
-    UpdateColors();
+    UpdateColours();
     UpdateCaption();
 
     gameObject.SetActive(true);
-    enabled = true;
   }
 
   public void Disable() {
     gameObject.SetActive(false);
-    enabled = false;
     IsHovered = false;
     IsDragged = false;
     IsPinned = false;
   }
 
-  private void SetColor(UnityEngine.GameObject go, UnityEngine.Color color) {
+  private void SetColour(UnityEngine.GameObject go, UnityEngine.Color colour) {
     if (IsInteracting) {
-      UnityEngine.Color.RGBToHSV(color, out float h, out float s, out float v);
-      color = UnityEngine.Color.HSVToRGB(h, s, v * 1.375f, hdr: true);
+      UnityEngine.Color.RGBToHSV(colour, out float h, out float s, out float v);
+      colour = UnityEngine.Color.HSVToRGB(h, s, v * 1.375f, hdr: true);
     }
-    go.GetComponentInChildren<UnityEngine.Renderer>().material.color = color;
+    go.GetComponentInChildren<UnityEngine.Renderer>().material.color = colour;
   }
 
-  private void UpdateColors() {
-    SetColor(base_, XKCDColors.LightGrey);
-    SetColor(tangent_, Style.Tangent);
-    SetColor(normal_, Style.Normal);
-    SetColor(binormal_, Style.Binormal);
+  private void UpdateColours() {
+    SetColour(base_, XKCDColors.LightGrey);
+    SetColour(tangent_, Style.Tangent);
+    SetColour(normal_, Style.Normal);
+    SetColour(binormal_, Style.Binormal);
   }
 
   private void UpdateCaption() {
@@ -111,9 +109,9 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     caption_.transform.position = ScaledToUIPosition(transform.position).position;
 
     if (IsInteracting) {
-      caption_text_.color = caption_color;
+      caption_text_.color = caption_colour;
     } else {
-      caption_text_.color = caption_color_pinned;
+      caption_text_.color = caption_colour_pinned;
     }
 
     var manœuvre = get_manœuvre_();
@@ -138,7 +136,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
       0.075f);
     var resulting_scale = normalized_scale_ * hover_scale_offset_;
     transform.localScale = Vector3d.one * resulting_scale;
-    // Inversely scale the label, since it is drawn in UI coordinates and thus
+    // Inversely scale the caption, since it is drawn in UI coordinates and thus
     // does not require additional dynamic scaling.
     caption_.transform.localScale = Vector3d.one / resulting_scale;
   }
@@ -147,9 +145,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
       ScaledToFlattenedScreenPosition(transform.position);
 
   public void OnMouseEnter() {
-    if (!isActiveAndEnabled) {
-      return;
-    }
     IsHovered = true;
   }
 
@@ -160,19 +155,12 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 
   public void OnMouseOver() {
-    if (!isActiveAndEnabled) {
-      return;
-    }
     if (Mouse.Right.GetButtonUp()) {
       IsPinned = !IsPinned;
     }
   }
 
   public void OnMouseDrag() {
-    if (!isActiveAndEnabled) {
-      return;
-    }
-
     var mouse_offset_now =
         UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
     var mouse_displacement = mouse_offset_now - mouse_offset_at_click_;
@@ -192,23 +180,14 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 
   public void OnMouseUp() {
-    if (!isActiveAndEnabled) {
-      return;
-    }
     IsDragged = false;
   }
 
   public void OnMouseExit() {
-    if (!isActiveAndEnabled) {
-      return;
-    }
     IsHovered = false;
   }
 
   public void Update() {
-    if (!isActiveAndEnabled) {
-      return;
-    }
     HasInteractingMarker |= IsInteracting;
 
     // Only run one copy of this coroutine.
@@ -309,10 +288,9 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     }
   }
 
-  public static UnityEngine.Color caption_color
+  public static UnityEngine.Color caption_colour
     = new UnityEngine.Color(191f / 255f, 1f, 0f, 1f);
-  public static UnityEngine.Color caption_color_pinned
+  public static UnityEngine.Color caption_colour_pinned
     = new UnityEngine.Color(191f / 255f, 1f, 0f, 0.6f);
 }
-
 }
