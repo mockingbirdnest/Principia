@@ -7,7 +7,7 @@ namespace principia.ksp_plugin_adapter {
 internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   public bool IsHovered { get; private set; } = false;
   public bool IsDragged { get; private set; } = false;
-  public bool IsPinned { get; private set;} = false;
+  public bool IsPinned { get; private set; } = false;
   public bool IsInteracting => IsHovered || IsDragged;
 
   public void Awake() {
@@ -75,6 +75,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     gameObject.SetActive(false);
     IsHovered = false;
     IsDragged = false;
+    IsPinned = false;
   }
 
   private void SetColor(UnityEngine.GameObject go, UnityEngine.Color color) {
