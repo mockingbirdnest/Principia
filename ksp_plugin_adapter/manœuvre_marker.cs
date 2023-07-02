@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 
 namespace principia.ksp_plugin_adapter {
 
@@ -9,6 +10,12 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   public bool IsDragged { get; private set; } = false;
   public bool IsPinned { get; private set; } = false;
   public bool IsInteracting => IsHovered || IsDragged;
+
+  // As mouse events are sent before |Update|, we compute this state there.
+  // We clear it as late as possible, in |WaitForEndOfFrame|.
+  // In particular, the value is meaningful at |BetterLateThanNeverLateUpdate|,
+  // during which it is consumed by node markers.
+  public static bool HasInteractingMarker { get; private set; }
 
   public void Awake() {
     base_ = MakeTrihedronBase();
@@ -22,7 +29,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     binormal_.transform.SetParent(gameObject.transform, false);
 
     var collider = gameObject.AddComponent<UnityEngine.SphereCollider>();
-    collider.radius = 0.75f;
+    collider.radius = 1f;
 
     transform.SetLayerRecursive((int)PrincipiaPluginAdapter.UnityLayers.
                                     Atmosphere);
@@ -69,10 +76,12 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     UpdateCaption();
 
     gameObject.SetActive(true);
+    enabled = true;
   }
 
   public void Disable() {
     gameObject.SetActive(false);
+    enabled = false;
     IsHovered = false;
     IsDragged = false;
     IsPinned = false;
@@ -194,6 +203,23 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
       return;
     }
     IsHovered = false;
+  }
+
+  public void Update() {
+    if (!isActiveAndEnabled) {
+      return;
+    }
+    HasInteractingMarker |= IsInteracting;
+
+    // Only run one copy of this coroutine.
+    if (index_ == 0) {
+      StartCoroutine(ResetInteractivityStatus());
+    }
+  }
+
+  private static IEnumerator ResetInteractivityStatus() {
+    yield return new UnityEngine.WaitForEndOfFrame();
+    HasInteractingMarker = false;
   }
 
   private static UnityEngine.GameObject MakeTrihedronBase() {
