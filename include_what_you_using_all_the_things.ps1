@@ -14,4 +14,13 @@
     --project:quantities `
     --project:testing_utilities `
     --project:tools `
-    --dry_run:false
+    --dry_run:false `
+    --extra_header:body.hpp `
+    --extra_header:massive_body.hpp `
+    --extra_header:massless_body.hpp `
+    --extra_header:oblate_body.hpp `
+    --extra_header:rotating_body.hpp `
+    --special_own_header:ksp_plugin/interface_*.cpp=ksp_plugin/interface.hpp `
+    --special_own_header:ksp_plugin_test/interface_*.cpp=ksp_plugin/interface.hpp `
+    --special_own_header:ksp_plugin_test/benchmark.cpp=ksp_plugin/plugin.hpp `
+    --special_own_header:ksp_plugin_test/plugin*_test.cpp=ksp_plugin/plugin.hpp
