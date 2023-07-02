@@ -356,7 +356,7 @@ XYZ __cdecl principia__FlightPlanGetManoeuvreInitialPlottedVelocity(
 
   auto const& [t, dof] =
       GetFlightPlan(*plugin, vessel_guid).GetSegment(2 * index)->back();
-  Velocity<Navigation> v =
+  Velocity<Navigation> const v =
       plugin->renderer().BarycentricToPlotting(t)(dof).velocity();
   return m.Return(ToXYZ(plugin->renderer().PlottingToWorld(
       plugin->CurrentTime(), plugin->PlanetariumRotation())(v)));

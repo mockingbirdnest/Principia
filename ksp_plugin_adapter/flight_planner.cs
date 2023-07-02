@@ -406,8 +406,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   internal void ModifyIthBurn(string vessel_guid, int i, Burn burn) {
     var status = plugin.FlightPlanReplace(vessel_guid, burn, i);
     UpdateStatus(status, i);
-    if (burn_editors_?.Count > 0) {
-      burn_editors_[i].Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+    if (burn_editors_?.Count > i && burn_editors_[i] is BurnEditor editor) {
+      editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
     }
   }
 

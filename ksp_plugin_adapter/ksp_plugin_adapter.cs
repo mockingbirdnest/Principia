@@ -344,7 +344,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     map_node_pool_ = new MapNodePool(
         show_unpinned: () => main_window_.show_unpinned_markers,
-        can_hover: () => !ManœuvreMarker.HasInteractingMarker);
+        can_hover: () => !ManœuvreMarker.has_interacting_marker);
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ =
@@ -2232,7 +2232,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                                             manœuvre_index,
                                                             burn);
                              });
-                  number_of_rendered_manœuvres += 1;
+                  ++number_of_rendered_manœuvres;
                 }
               }
             }

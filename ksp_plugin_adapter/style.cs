@@ -6,6 +6,14 @@ internal static class Style {
   public static UnityEngine.Color Normal { get; } = XKCDColors.AquaBlue;
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
 
+  public static UnityEngine.Color ManœuvreMarkerBase { get; } = XKCDColors.LightGrey;
+
+  // As used by stock map node markers.
+  public static UnityEngine.Color MarkerCaption { get; }
+    = new UnityEngine.Color(191f / 255f, 1f, 0f, 1f);
+  public static UnityEngine.Color MarkerCaptionPinned { get; }
+    = new UnityEngine.Color(191f / 255f, 1f, 0f, 0.6f);
+
   public static UnityEngine.GUIStyle DarkToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
     style.active.textColor = ultra_cool_grey_;
