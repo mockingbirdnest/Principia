@@ -2528,7 +2528,7 @@ extend google.protobuf.FieldOptions {
   // (size_of) option designating this field.
   optional bool is_csharp_owned = 50015;
 
-  // For a field of an interchange message, specifies whether the generate C#
+  // For a field of an interchange message, specifies whether the generated C#
   // field should be private (the default is public).
   optional bool is_private = 50017;
 }
