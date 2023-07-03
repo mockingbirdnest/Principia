@@ -13,14 +13,12 @@ enum Encoding {
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
 message NavigationFrameParameters {
+  option (is_class) = true;
   // Must correspond to a rigid reference frame.
   required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
   required int32 centre_index = 2;
-  required int32 primary_index = 3;
-  // TODO(phl): Consider repeated, but this requires making it possible to use
-  // the same struct in ownership transfer and no-ownership-transfer marshaling,
-  // as this struct is passed both in and out.
-  required int32 secondary_index = 4;
+  required int32 primary_index = 3 [(is_private) = true];
+  required int32 secondary_index = 4 [(is_private) = true];
 }
 
 message XYZ {
@@ -2529,13 +2527,17 @@ extend google.protobuf.FieldOptions {
   // object is owned by C# and not by C++.  There must be a field with a
   // (size_of) option designating this field.
   optional bool is_csharp_owned = 50015;
+
+  // For a field of an interchange message, specifies whether the generate C#
+  // field should be private (the default is public).
+  optional bool is_private = 50017;
 }
 
 extend google.protobuf.MessageOptions {
   // For an interchange message, specifies the custom marshaler to use.
   optional string custom_marshaler = 50011;
   // For an interchange message, specifies that a class should be generated
-  // instead of a struct.
+  // instead of a struct in the C# code.
   optional bool is_class = 50016;
   // For an interchange message, specifies whether the generated C# struct
   // should be public (the default is internal).
