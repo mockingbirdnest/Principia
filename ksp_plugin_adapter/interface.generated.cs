@@ -9,11 +9,11 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 [StructLayout(LayoutKind.Sequential)]
-internal partial struct NavigationFrameParameters {
+internal partial class NavigationFrameParameters {
   public int extension;
   public int centre_index;
-  public int primary_index;
-  public int secondary_index;
+  private int primary_index;
+  private int secondary_index;
 }
 
 [StructLayout(LayoutKind.Sequential)]
