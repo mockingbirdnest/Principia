@@ -2534,6 +2534,9 @@ extend google.protobuf.FieldOptions {
 extend google.protobuf.MessageOptions {
   // For an interchange message, specifies the custom marshaler to use.
   optional string custom_marshaler = 50011;
+  // For an interchange message, specifies that a class should be generated
+  // instead of a struct.
+  optional bool is_class = 50016;
   // For an interchange message, specifies whether the generated C# struct
   // should be public (the default is internal).
   optional bool is_public = 50012;

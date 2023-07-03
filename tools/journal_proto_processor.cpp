@@ -1451,14 +1451,19 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "internal partial class " + name + " {\n";
   } else {
     MessageOptions const& message_options = descriptor->options();
+    std::string keyword = "struct";
+    if (message_options.HasExtension(journal::serialization::is_class)) {
+      CHECK(message_options.GetExtension(journal::serialization::is_class));
+      keyword = "class";
+    }
     std::string visibility = "internal";
     if (message_options.HasExtension(journal::serialization::is_public)) {
       CHECK(message_options.GetExtension(journal::serialization::is_public));
       visibility = "public";
     }
     cs_interchange_type_declaration_[descriptor] =
-        "[StructLayout(LayoutKind.Sequential)]\n" + visibility +
-        " partial struct " + name + " {\n";
+        "[StructLayout(LayoutKind.Sequential)]\n" + visibility + " partial " +
+        keyword + " " + name + " {\n";
   }
   // Produce a class-specific overload of new to be able to safely delete the
   // storage in principia__DeleteVoid.
