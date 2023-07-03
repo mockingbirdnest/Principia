@@ -66,12 +66,12 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
           break;
         case FrameType.ROTATING_PULSATING:
           selected_celestial = FlightGlobals.Bodies[
-              parameters.SecondaryIndex[0]];
+              parameters.SecondaryIndices[0]];
           break;
         case FrameType.BARYCENTRIC_ROTATING:
         case FrameType.BODY_CENTRED_PARENT_DIRECTION:
           selected_celestial =
-              FlightGlobals.Bodies[parameters.PrimaryIndex[0]];
+              FlightGlobals.Bodies[parameters.PrimaryIndices[0]];
           break;
       }
     });
@@ -476,8 +476,8 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         return new ReferenceFrameParameters{
             Extension = frame_type,
             CentreIndex = selected_celestial.flightGlobalsIndex,
-            PrimaryIndex = new int[]{},
-            SecondaryIndex = new int[]{},
+            PrimaryIndices = new int[]{},
+            SecondaryIndices = new int[]{},
         };
       case FrameType.BARYCENTRIC_ROTATING:
         // Deprecated, might as well do the same as its other two-body friends.
@@ -488,18 +488,18 @@ internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWind
         // terminology of |BodyCentredBodyDirection|).
         return new ReferenceFrameParameters{
             Extension = frame_type,
-            PrimaryIndex =
+            PrimaryIndices =
                 new[] {selected_celestial.flightGlobalsIndex},
-            SecondaryIndex =
+            SecondaryIndices =
                 new[] {selected_celestial.referenceBody.flightGlobalsIndex}};
       case FrameType.ROTATING_PULSATING:
         return new ReferenceFrameParameters{
             Extension = frame_type,
-            PrimaryIndex = (
+            PrimaryIndices = (
               from body in System(selected_celestial.referenceBody,
                                   end: selected_celestial)
               select body.flightGlobalsIndex).ToArray(),
-            SecondaryIndex = (
+            SecondaryIndices = (
               from body in System(selected_celestial)
               select body.flightGlobalsIndex).ToArray()
 
