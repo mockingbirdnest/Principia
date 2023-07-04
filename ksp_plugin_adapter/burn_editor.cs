@@ -67,7 +67,7 @@ class BurnEditor : ScalingRenderer {
         L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
     PlottingFrameParameters plotting_frame_parameters =
         adapter_.plotting_frame_selector_.FrameParameters();
-    if ((NavigationFrameParameters?)plotting_frame_parameters is
+    if ((NavigationFrameParameters)plotting_frame_parameters is
             NavigationFrameParameters parameters) {
       reference_frame_selector_.SetFrameParameters(parameters);
     } else {
@@ -81,8 +81,8 @@ class BurnEditor : ScalingRenderer {
       reference_frame_selector_.SetFrameParameters(
           new NavigationFrameParameters{
               Extension = FrameType.BODY_CENTRED_PARENT_DIRECTION,
-              PrimaryIndex = new[]{plotting_frame_parameters.SecondaryIndex[0]},
-              SecondaryIndex = new[]{plotting_frame_parameters.PrimaryIndex[0]},
+              PrimaryIndices = new[]{plotting_frame_parameters.SecondaryIndices[0]},
+              SecondaryIndices = new[]{plotting_frame_parameters.PrimaryIndices[0]},
           });
     }
     ComputeEngineCharacteristics();

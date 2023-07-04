@@ -81,8 +81,8 @@ public enum FrameType {
 internal interface IReferenceFrameParameters {
   FrameType Extension  { get; set; }
   int CentreIndex { get; set; }
-  int[] PrimaryIndex { get; set; }
-  int[] SecondaryIndex { get; set; }
+  int[] PrimaryIndices { get; set; }
+  int[] SecondaryIndices { get; set; }
 }
 
 internal partial class PlottingFrameParameters : IReferenceFrameParameters {
@@ -91,7 +91,7 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
     secondary_index = new int[]{};
   }
 
-  public static explicit operator NavigationFrameParameters?(
+  public static explicit operator NavigationFrameParameters(
       PlottingFrameParameters p) {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
       return null;
@@ -100,8 +100,8 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
           extension = p.extension,
           centre_index = p.centre_index,
       };
-      result.PrimaryIndex = p.PrimaryIndex;
-      result.SecondaryIndex = p.SecondaryIndex;
+      result.PrimaryIndices = p.PrimaryIndices;
+      result.SecondaryIndices = p.SecondaryIndices;
       return result;
     }
   }
@@ -119,8 +119,8 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
                                  IReferenceFrameParameters right) {
     return left.Extension == right.Extension &&
            left.centre_index == right.CentreIndex &&
-           left.PrimaryIndex.SequenceEqual(right.PrimaryIndex) &&
-           left.SecondaryIndex.SequenceEqual(right.SecondaryIndex);
+           left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
+           left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
   }
 
   public static bool operator !=(PlottingFrameParameters left,
@@ -138,26 +138,26 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
     set => centre_index = value;
   }
 
-  public int[] PrimaryIndex {
+  public int[] PrimaryIndices {
     get => primary_index;
     set => primary_index = value;
   }
 
-  public int[] SecondaryIndex {
+  public int[] SecondaryIndices {
     get => secondary_index;
     set => secondary_index = value;
   }
 }
 
-internal partial struct NavigationFrameParameters : IReferenceFrameParameters {
+internal partial class NavigationFrameParameters : IReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(
       NavigationFrameParameters p) {
     var result = new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
     };
-    result.PrimaryIndex = p.PrimaryIndex;
-    result.SecondaryIndex = p.SecondaryIndex;
+    result.PrimaryIndices = p.PrimaryIndices;
+    result.SecondaryIndices = p.SecondaryIndices;
     return result;
   }
 
@@ -172,8 +172,8 @@ internal partial struct NavigationFrameParameters : IReferenceFrameParameters {
                                  IReferenceFrameParameters right) {
     return left.Extension == right.Extension &&
            left.CentreIndex == right.CentreIndex &&
-           left.PrimaryIndex.SequenceEqual(right.PrimaryIndex) &&
-           left.SecondaryIndex.SequenceEqual(right.SecondaryIndex);
+           left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
+           left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
   }
 
   public static bool operator !=(NavigationFrameParameters left,
@@ -191,12 +191,12 @@ internal partial struct NavigationFrameParameters : IReferenceFrameParameters {
     set => centre_index = value;
   }
 
-  public int[] PrimaryIndex {
+  public int[] PrimaryIndices {
     get => primary_index == -1 ? new int[] {} : new[] { primary_index };
     set => primary_index = value.DefaultIfEmpty(-1).Single();
   }
 
-  public int[] SecondaryIndex {
+  public int[] SecondaryIndices {
     get => secondary_index == -1 ? new int[] {} : new[] { secondary_index };
     set => secondary_index = value.DefaultIfEmpty(-1).Single();
   }

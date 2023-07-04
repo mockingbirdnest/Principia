@@ -1451,14 +1451,19 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "internal partial class " + name + " {\n";
   } else {
     MessageOptions const& message_options = descriptor->options();
+    std::string keyword = "struct";
+    if (message_options.HasExtension(journal::serialization::is_class)) {
+      CHECK(message_options.GetExtension(journal::serialization::is_class));
+      keyword = "class";
+    }
     std::string visibility = "internal";
     if (message_options.HasExtension(journal::serialization::is_public)) {
       CHECK(message_options.GetExtension(journal::serialization::is_public));
       visibility = "public";
     }
     cs_interchange_type_declaration_[descriptor] =
-        "[StructLayout(LayoutKind.Sequential)]\n" + visibility +
-        " partial struct " + name + " {\n";
+        "[StructLayout(LayoutKind.Sequential)]\n" + visibility + " partial " +
+        keyword + " " + name + " {\n";
   }
   // Produce a class-specific overload of new to be able to safely delete the
   // storage in principia__DeleteVoid.
@@ -1482,6 +1487,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::vector<std::string> deserialized_expressions;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
+    FieldOptions const& field_options = field_descriptor->options();
     std::string const& field_descriptor_name = field_descriptor->name();
 
     // If the field needs extra storage for deserialization, generate it now.
@@ -1555,8 +1561,13 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_cs_private_setter_fn_[field_descriptor](fn_arguments) + "\n" +
             "  }\n";
       } else {
+        std::string visibility = "public";
+        if (field_options.HasExtension(journal::serialization::is_private)) {
+          CHECK(field_options.GetExtension(journal::serialization::is_private));
+          visibility = "private";
+        }
         cs_interchange_type_declaration_[descriptor] +=
-            "  public " + field_cs_type_[field_descriptor] + " " +
+            "  " + visibility + " " + field_cs_type_[field_descriptor] + " " +
             field_descriptor_name + ";\n";
       }
 
