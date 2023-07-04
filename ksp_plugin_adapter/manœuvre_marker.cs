@@ -42,14 +42,15 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 
   // Call on each frame (at or later than |Update|) to set the state of the marker.
-  public void Render(Vector3d world_position,
+  public void Render(int index,
+                     FlightPlanner flight_planner,
+                     Vector3d world_position,
                      Vector3d initial_plotted_velocity,
-                     NavigationManoeuvreFrenetTrihedron trihedron,
-                     Func<NavigationManoeuvre> get_manœuvre,
-                     Action<Burn> modify_burn) {
+                     NavigationManoeuvreFrenetTrihedron trihedron) {
+    index_ = index;
+    flight_planner_ = flight_planner;
+
     initial_plotted_velocity_ = initial_plotted_velocity;
-    get_manœuvre_ = get_manœuvre;
-    modify_burn_ = modify_burn;
 
     transform.position = ScaledSpace.LocalToScaledSpace(world_position);
 
@@ -140,9 +141,9 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
 
     var Δt = UnityEngine.Vector3.Dot(screen_velocity, mouse_displacement) /
               screen_velocity.sqrMagnitude;
-    var burn = get_manœuvre_().burn;
+    var burn = flight_planner_.GetManœuvre(index_).burn;
     burn.initial_time += Δt;
-    modify_burn_(burn);
+    flight_planner_.ReplaceBurn(index_, burn);
   }
 
   public void OnMouseUp() {
@@ -196,8 +197,8 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   private UnityEngine.Vector3 mouse_offset_at_click_;
 
   private Vector3d initial_plotted_velocity_;
-  private Func<NavigationManoeuvre> get_manœuvre_;
-  private Action<Burn> modify_burn_;
+  private int index_;
+  private FlightPlanner flight_planner_;
 
   // In scaled space units:
   private const float collider_radius = 0.75f;

@@ -2217,19 +2217,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                       (Vector3d)plugin_.FlightPlanGetManoeuvreInitialPlottedVelocity(
                           main_vessel_guid, manœuvre_index);
                   manœuvre_marker_pool_[number_of_rendered_manœuvres].
-                      Render(world_position: position_at_start,
+                      Render(manœuvre_index,
+                             flight_planner_,
+                             world_position: position_at_start,
                              initial_plotted_velocity,
-                             trihedron,
-                             get_manœuvre: () => {
-                              return plugin_.FlightPlanGetManoeuvre(
-                                  main_vessel_guid,
-                                  manœuvre_index);
-                             },
-                             modify_burn: (burn) => {
-                              flight_planner_.ModifyIthBurn(main_vessel_guid,
-                                                            manœuvre_index,
-                                                            burn);
-                             });
+                             trihedron);
                   ++number_of_rendered_manœuvres;
                 }
               }

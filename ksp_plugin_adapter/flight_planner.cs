@@ -49,6 +49,26 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     node.SetValue("show_guidance", show_guidance_, createIfNotFound : true);
   }
 
+  internal NavigationManoeuvre GetManœuvre(int i) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
+      Log.Fatal("there is no predicted vessel");
+    }
+    return plugin.FlightPlanGetManoeuvre(vessel_guid, i);
+  }
+
+  internal void ReplaceBurn(int i, Burn burn) {
+    string vessel_guid = predicted_vessel?.id.ToString();
+    if (vessel_guid == null) {
+      return;
+    }
+    var status = plugin.FlightPlanReplace(vessel_guid, burn, i);
+    UpdateStatus(status, i);
+    if (burn_editors_?.Count > i && burn_editors_[i] is BurnEditor editor) {
+      editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+    }
+  }
+
   protected override string Title =>
       L10N.CacheFormat("#Principia_FlightPlan_Title");
 
@@ -387,7 +407,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               return;
             }
             case BurnEditor.Event.Changed: {
-              ModifyIthBurn(vessel_guid, i, burn.Burn());
+              ReplaceBurn(i, burn.Burn());
               break;
             }
             case BurnEditor.Event.None: {
@@ -400,14 +420,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           return;
         }
       }
-    }
-  }
-
-  internal void ModifyIthBurn(string vessel_guid, int i, Burn burn) {
-    var status = plugin.FlightPlanReplace(vessel_guid, burn, i);
-    UpdateStatus(status, i);
-    if (burn_editors_?.Count > i && burn_editors_[i] is BurnEditor editor) {
-      editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
     }
   }
 
