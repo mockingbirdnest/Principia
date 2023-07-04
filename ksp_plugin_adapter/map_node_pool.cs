@@ -45,12 +45,11 @@ internal class MapNodePool {
         new List<KSP.UI.Screens.Mapview.MapNode>(MaxNodesPerProvenance);
   }
 
-  public MapNodePool(Func<bool> show_unpinned, Func<bool> can_hover) {
+  public MapNodePool(Func<bool> show_unpinned) {
     nodes_ = new Dictionary<Provenance, SingleProvenancePool>();
     properties_ =
         new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
     show_unpinned_ = show_unpinned;
-    can_hover_ = can_hover;
   }
 
   public void Clear() {
@@ -199,13 +198,6 @@ internal class MapNodePool {
       icon.visible = properties_[node].visible &&
                      (show_unpinned_() || node.Pinned);
       icon.color = properties_[node].colour;
-      node.Interactable = can_hover_();
-      // If the node shouldn't be interactable, then it cannot be actively
-      // hovered. So, force remove the existing active hover state.
-      // This is the same call used by the stock code.
-      if (!node.Interactable && node.Hover) {
-        node.OnPointerExit(null);
-      }
     };
     new_node.OnUpdateType += (KSP.UI.Screens.Mapview.MapNode node,
                               KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
@@ -332,7 +324,6 @@ internal class MapNodePool {
   private Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>
       properties_;
   private Func<bool> show_unpinned_;
-  private Func<bool> can_hover_;
 }
 
 }  // namespace ksp_plugin_adapter

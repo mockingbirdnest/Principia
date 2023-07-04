@@ -343,8 +343,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     map_node_pool_ = new MapNodePool(
-        show_unpinned: () => main_window_.show_unpinned_markers,
-        can_hover: () => !ManœuvreMarker.has_interacting_marker);
+        show_unpinned: () => main_window_.show_unpinned_markers);
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ =
@@ -2220,7 +2219,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   manœuvre_marker_pool_[number_of_rendered_manœuvres].
                       Render(world_position: position_at_start,
                              initial_plotted_velocity,
-                             index: manœuvre_index,
                              trihedron,
                              get_manœuvre: () => {
                               return plugin_.FlightPlanGetManoeuvre(

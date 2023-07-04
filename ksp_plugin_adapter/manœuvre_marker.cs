@@ -7,16 +7,9 @@ namespace ksp_plugin_adapter {
 internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   public bool is_hovered { get; private set; } = false;
   public bool is_dragged { get; private set; } = false;
-  public bool is_pinned { get; private set; } = false;
-  // Note that |is_hovered| alone does not imply |is_interacting|: the cursor
-  // may move off the marker while still dragging.
+  // Note that |is_hovered| is not a necessary condition for |is_interacting|:
+  // the cursor may move off the marker while still dragging.
   public bool is_interacting => is_hovered || is_dragged;
-
-  // As mouse events are sent before |Update|, we compute this state there.
-  // We clear it as late as possible, in |WaitForEndOfFrame|.
-  // In particular, the value is meaningful at |BetterLateThanNeverLateUpdate|,
-  // during which it is consumed by node markers.
-  public static bool has_interacting_marker { get; private set; }
 
   // Construct the geometry of the marker when instantiated.
   // 1. Build the mesh of the marker (base 'bulb' & one cylinder for each axis).
@@ -45,23 +38,16 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     transform.SetLayerRecursive((int)PrincipiaPluginAdapter.UnityLayers.
                                     Atmosphere);
 
-    caption_ = MakeCaption();
-    caption_.transform.SetParent(transform, false);
-    caption_text_ = caption_.GetComponentInChildren<TMPro.TextMeshPro>();
-    caption_.SetLayerRecursive((int)PrincipiaPluginAdapter.UnityLayers.UI);
-
     Disable();
   }
 
   // Call on each frame (at or later than |Update|) to set the state of the marker.
   public void Render(Vector3d world_position,
                      Vector3d initial_plotted_velocity,
-                     int index,
                      NavigationManoeuvreFrenetTrihedron trihedron,
                      Func<NavigationManoeuvre> get_manœuvre,
                      Action<Burn> modify_burn) {
     initial_plotted_velocity_ = initial_plotted_velocity;
-    index_ = index;
     get_manœuvre_ = get_manœuvre;
     modify_burn_ = modify_burn;
 
@@ -85,7 +71,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     UpdateScale();
 
     UpdateColours();
-    UpdateCaption();
 
     gameObject.SetActive(true);
   }
@@ -96,7 +81,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     gameObject.SetActive(false);
     is_hovered = false;
     is_dragged = false;
-    is_pinned = false;
   }
 
   private void SetColour(UnityEngine.GameObject game_object,
@@ -118,39 +102,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     SetColour(binormal_, Style.Binormal);
   }
 
-  // Open/close/pin the caption based on hover/pin state.
-  private void UpdateCaption() {
-    if (!is_interacting && !is_pinned) {
-      caption_.SetActive(false);
-      return;
-    }
-    caption_.SetActive(true);
-    caption_.transform.position = ScaledToUIPosition(transform.position).position;
-
-    // Note that we check for |is_interacting| rather than |is_pinned|; this is
-    // so that the brighter hover colour is applied in the 'hovered and pinned'
-    // state.
-    if (is_interacting) {
-      caption_text_.color = Style.MarkerCaption;
-    } else {
-      caption_text_.color = Style.MarkerCaptionPinned;
-    }
-
-    var manœuvre = get_manœuvre_();
-    var burn = manœuvre.burn;
-    var caption = L10N.CacheFormat(
-      "#Principia_MapNode_ManœuvreCaption",
-      index_ + 1,
-      ((Vector3d)burn.delta_v).magnitude.ToString("0.000"),
-      manœuvre.duration.ToString("0.0"),
-      "T" + new PrincipiaTimeSpan(
-              Planetarium.GetUniversalTime() - burn.initial_time).
-          Format(with_leading_zeroes: false, with_seconds: true).
-          Replace(Culture.culture.NumberFormat.NegativeSign, "-")
-    );
-    caption_text_.SetText(caption);
-  }
-
   // Increase the size of the marker (with an animation) when interacting.
   private void UpdateScale() {
     current_hover_scale_multiplier_ = UnityEngine.Mathf.MoveTowards(
@@ -159,9 +110,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
         0.0625f);
     var resulting_scale = normalized_scale_ * current_hover_scale_multiplier_;
     transform.localScale = Vector3d.one * resulting_scale;
-    // Inversely scale the caption, since it is drawn in UI coordinates and thus
-    // does not require additional dynamic scaling.
-    caption_.transform.localScale = Vector3d.one / resulting_scale;
   }
 
   private UnityEngine.Vector3 ScreenManœuvrePosition() =>
@@ -176,12 +124,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     mouse_offset_at_click_ =
         UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
     is_dragged = true;
-  }
-
-  public void OnMouseOver() {
-    if (Mouse.Right.GetButtonUp()) {
-      is_pinned = !is_pinned;
-    }
   }
 
   public void OnMouseDrag() {
@@ -212,21 +154,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 #endregion Mouse Events
 
-  // Accumulate and reset the interactivity states of all active markers.
-  public void Update() {
-    has_interacting_marker |= is_interacting;
-
-    // Only run one copy of this coroutine.
-    if (index_ == 0) {
-      StartCoroutine(ResetInteractivityStatus());
-    }
-  }
-
-  private static IEnumerator ResetInteractivityStatus() {
-    yield return new UnityEngine.WaitForEndOfFrame();
-    has_interacting_marker = false;
-  }
-
   private static UnityEngine.GameObject MakeTrihedronBase() {
     var sphere = UnityEngine.GameObject.CreatePrimitive(
         UnityEngine.PrimitiveType.Sphere);
@@ -251,20 +178,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     return arrow;
   }
 
-  private static UnityEngine.GameObject MakeCaption() {
-    var caption = new UnityEngine.GameObject("caption");
-    var caption_inner = new UnityEngine.GameObject("TMPro");
-    var text = caption_inner.AddComponent<TMPro.TextMeshPro>();
-    var inner_transform = caption_inner.GetComponent<UnityEngine.RectTransform>();
-    inner_transform.SetParent(caption.transform, false);
-    inner_transform.localPosition = new UnityEngine.Vector3(0f, -10f, 0f);
-    inner_transform.sizeDelta = new UnityEngine.Vector2(300f, 1f);
-    text.font = UISkinManager.TMPFont;
-    text.fontSize = 140;
-    text.alignment = TMPro.TextAlignmentOptions.Top;
-    return caption;
-  }
-
   private static UnityEngine.Vector3 ScaledToFlattenedScreenPosition(
       Vector3d scaled_position) {
     var position = PlanetariumCamera.Camera.WorldToScreenPoint(scaled_position);
@@ -272,27 +185,10 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     return position;
   }
 
-  // From |MapNode.OnUpdatePositionToUI|.
-  private static (UnityEngine.Vector3 position, bool visible) ScaledToUIPosition(
-    Vector3d scaled_position) {
-      bool visible = false;
-      var position = KSP.UI.Screens.Mapview.MapViewCanvasUtil.ScaledToUISpacePos(
-          scaled_position,
-          ref visible,
-          KSP.UI.Screens.Mapview.MapNode.zSpaceEasing,
-          KSP.UI.Screens.Mapview.MapNode.zSpaceMidpoint,
-          KSP.UI.Screens.Mapview.MapNode.zSpaceUIStart,
-          KSP.UI.Screens.Mapview.MapNode.zSpaceLength);
-    return (position, visible);
-  }
-
   private UnityEngine.GameObject base_;
   private UnityEngine.GameObject tangent_;
   private UnityEngine.GameObject normal_;
   private UnityEngine.GameObject binormal_;
-
-  private UnityEngine.GameObject caption_;
-  private TMPro.TextMeshPro caption_text_;
 
   private double normalized_scale_;
   private float current_hover_scale_multiplier_;
@@ -300,7 +196,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   private UnityEngine.Vector3 mouse_offset_at_click_;
 
   private Vector3d initial_plotted_velocity_;
-  private int index_;
   private Func<NavigationManoeuvre> get_manœuvre_;
   private Action<Burn> modify_burn_;
 
