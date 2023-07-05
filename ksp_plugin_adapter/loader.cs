@@ -9,7 +9,7 @@ namespace ksp_plugin_adapter {
 
 internal static class Loader {
   internal static string LoadPrincipiaDllAndInitGoogleLogging() {
-    if (loaded_principia_dll_) {
+    if (loaded_principia_dll) {
       return null;
     }
     bool is_32_bit = IntPtr.Size == 4;
@@ -63,7 +63,7 @@ internal static class Loader {
       }
     }
     try {
-      loaded_principia_dll_ = true;
+      loaded_principia_dll = true;
       Log.InitGoogleLogging();
       return null;
     } catch (Exception e) {
@@ -113,7 +113,7 @@ internal static class Loader {
   private static extern IntPtr LoadLibrary(
       [MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
-  internal static bool loaded_principia_dll_ { get; private set; } = false;
+  internal static bool loaded_principia_dll { get; private set; } = false;
 }
 
 }  // namespace ksp_plugin_adapter

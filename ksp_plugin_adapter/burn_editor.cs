@@ -61,14 +61,15 @@ class BurnEditor : ScalingRenderer {
         field_width      : 7){
         value            = initial_time_ - time_base
     };
-    reference_frame_selector_ = new ReferenceFrameSelector<NavigationFrameParameters>(
-        adapter_,
-        ReferenceFrameChanged,
-        L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
+    reference_frame_selector_ =
+        new ReferenceFrameSelector<NavigationFrameParameters>(
+            adapter_,
+            ReferenceFrameChanged,
+            L10N.CacheFormat("#Principia_BurnEditor_ManœuvringFrame"));
     PlottingFrameParameters plotting_frame_parameters =
         adapter_.plotting_frame_selector_.FrameParameters();
     if ((NavigationFrameParameters)plotting_frame_parameters is
-            NavigationFrameParameters parameters) {
+        NavigationFrameParameters parameters) {
       reference_frame_selector_.SetFrameParameters(parameters);
     } else {
       // If the plotting frame is not a navigation frame, it is the rotating-
@@ -78,12 +79,13 @@ class BurnEditor : ScalingRenderer {
       // is the main body of the secondary system; for instance, we go from a
       // frame which fixes the Sun and the barycentre of the Earth-Moon system
       // to one which fixes the Earth and the direction of the Sun.
-      reference_frame_selector_.SetFrameParameters(
-          new NavigationFrameParameters{
-              Extension = FrameType.BODY_CENTRED_PARENT_DIRECTION,
-              PrimaryIndices = new[]{plotting_frame_parameters.SecondaryIndices[0]},
-              SecondaryIndices = new[]{plotting_frame_parameters.PrimaryIndices[0]},
-          });
+      reference_frame_selector_.SetFrameParameters(new NavigationFrameParameters{
+          Extension = FrameType.BODY_CENTRED_PARENT_DIRECTION,
+          PrimaryIndices = new[]
+              { plotting_frame_parameters.SecondaryIndices[0] },
+          SecondaryIndices = new[]
+              { plotting_frame_parameters.PrimaryIndices[0] },
+      });
     }
     ComputeEngineCharacteristics();
   }
@@ -200,18 +202,18 @@ class BurnEditor : ScalingRenderer {
       }
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label("", GUILayoutWidth(3));
-        if (decrement_revolution == null) {
-          PrincipiaPluginAdapter.LoadTextureOrDie(out decrement_revolution,
+        if (decrement_revolution_ == null) {
+          PrincipiaPluginAdapter.LoadTextureOrDie(out decrement_revolution_,
                                                   "decrement_revolution.png");
         }
-        if (increment_revolution == null) {
-          PrincipiaPluginAdapter.LoadTextureOrDie(out increment_revolution,
+        if (increment_revolution_ == null) {
+          PrincipiaPluginAdapter.LoadTextureOrDie(out increment_revolution_,
                                                   "increment_revolution.png");
         }
         if (orbital_period is double period) {
           if (UnityEngine.GUILayout.Button(
                   new UnityEngine.GUIContent(
-                      decrement_revolution,
+                      decrement_revolution_,
                       L10N.CacheFormat(
                           "#Principia_BurnEditor_DecrementRevolution") +
                       "\n(" + new PrincipiaTimeSpan(-period).Format(
@@ -224,7 +226,7 @@ class BurnEditor : ScalingRenderer {
           UnityEngine.GUILayout.Space(Width(5));
           if (UnityEngine.GUILayout.Button(
                   new UnityEngine.GUIContent(
-                      increment_revolution,
+                      increment_revolution_,
                       L10N.CacheFormat(
                           "#Principia_BurnEditor_IncrementRevolution") +
                       "\n(" + new PrincipiaTimeSpan(+period).Format(
@@ -394,7 +396,7 @@ class BurnEditor : ScalingRenderer {
 
   private string FormatΔvComponent(double metres_per_second) {
     // The granularity of Instant in 1950.
-    double dt = 2.3841857910156250e-7;  // 2⁻²² s.
+    const double dt = 2.3841857910156250e-7; // 2⁻²² s.
     double initial_acceleration =
         thrust_in_kilonewtons_ / initial_mass_in_tonnes_;
     double Isp = specific_impulse_in_seconds_g0_ * 9.80665;
@@ -495,8 +497,8 @@ class BurnEditor : ScalingRenderer {
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";
 
-  private static UnityEngine.Texture decrement_revolution;
-  private static UnityEngine.Texture increment_revolution;
+  private static UnityEngine.Texture decrement_revolution_;
+  private static UnityEngine.Texture increment_revolution_;
   private const char figure_space = '\u2007';
 }
 

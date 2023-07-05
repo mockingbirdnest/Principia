@@ -227,7 +227,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
               L10N.CacheFormat("#Principia_MainWindow_Declutter_Show"));
           show_unpinned_markers = UnityEngine.GUILayout.Toggle(
               show_unpinned_markers,
-              L10N.CacheFormat("#Principia_MainWindow_Declutter_UnpinnedMarkers"));
+              L10N.CacheFormat(
+                  "#Principia_MainWindow_Declutter_UnpinnedMarkers"));
           show_unpinned_celestials = UnityEngine.GUILayout.Toggle(
               show_unpinned_celestials,
               L10N.CacheFormat(
@@ -442,7 +443,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                          enabled: adaptive_step_parameters.HasValue)) {
         AdaptiveStepParameters new_adaptive_step_parameters =
             new AdaptiveStepParameters{
-                integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+                integrator_kind =
+                    adaptive_step_parameters.Value.integrator_kind,
                 max_steps = prediction_steps,
                 length_integration_tolerance = prediction_length_tolerance,
                 speed_integration_tolerance = prediction_length_tolerance
@@ -453,14 +455,16 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       }
       if (RenderSelector(prediction_steps_,
                          ref prediction_steps_index_,
-                         L10N.CacheFormat("#Principia_PredictionSettings_Steps"),
+                         L10N.CacheFormat(
+                             "#Principia_PredictionSettings_Steps"),
                          (i) => string.Format(Culture.culture,
                                               "{0:0.0e0}",
                                               prediction_steps_[i]),
                          enabled: adaptive_step_parameters.HasValue)) {
         AdaptiveStepParameters new_adaptive_step_parameters =
             new AdaptiveStepParameters{
-                integrator_kind = adaptive_step_parameters.Value.integrator_kind,
+                integrator_kind =
+                    adaptive_step_parameters.Value.integrator_kind,
                 max_steps = prediction_steps,
                 length_integration_tolerance = prediction_length_tolerance,
                 speed_integration_tolerance = prediction_length_tolerance
@@ -523,7 +527,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private long prediction_steps => prediction_steps_[prediction_steps_index_];
 
-  private DifferentialSlider history_length_ = new DifferentialSlider(
+  private readonly DifferentialSlider history_length_ = new DifferentialSlider(
       label            :
           L10N.CacheFormat("#Principia_MainWindow_HistoryLength"),
       unit             : null,

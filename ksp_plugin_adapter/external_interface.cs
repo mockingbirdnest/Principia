@@ -107,7 +107,7 @@ public class ExternalInterface {
 
   private ExternalInterface(PrincipiaPluginAdapter adapter) {
     adapter_ = adapter;
-    if (!Loader.loaded_principia_dll_) {
+    if (!Loader.loaded_principia_dll) {
       throw new DllNotFoundException("The Principia native DLL failed to load");
     }
   }

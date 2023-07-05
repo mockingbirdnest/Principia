@@ -113,7 +113,7 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   private UnityEngine.QuaternionD last_fresh_planetarium_camera_rotation_;
 
   // The camera reference rotation applied during the previous frame; this is
-  // used when transfering camera coordinates to preserve continuity.
+  // used when transferring camera coordinates to preserve continuity.
   private UnityEngine.QuaternionD previous_camera_reference_rotation_;
   // The scale of the plotting frame.  This is used when in a pulsating frame,
   // to keep the camera at a constant in-frame distance from its target.

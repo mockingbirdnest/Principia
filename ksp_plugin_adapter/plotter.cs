@@ -161,8 +161,9 @@ class Plotter {
                                        double history_length,
                                        CelestialBody root,
                                        double tan_angular_resolution) {
-    CelestialTrajectories trajectories;
-    if (!celestial_trajectory_meshes_.TryGetValue(root, out trajectories)) {
+    if (!celestial_trajectory_meshes_.TryGetValue(
+            root,
+            out CelestialTrajectories trajectories)) {
       trajectories = celestial_trajectory_meshes_[root] =
           new CelestialTrajectories();
     }

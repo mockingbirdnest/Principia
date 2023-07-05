@@ -156,8 +156,8 @@ internal static class Formatters {
 }
 
 internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
-  public OrbitAnalyser(PrincipiaPluginAdapter adapter,
-                       PredictedVessel predicted_vessel) : base(
+  protected OrbitAnalyser(PrincipiaPluginAdapter adapter,
+                          PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel,
       UnityEngine.GUILayout.MinWidth(0)) {
@@ -279,11 +279,9 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
             (int)(mission_duration / elements.Value.nodal_period);
         int anomalistic_revolutions =
             (int)(mission_duration / elements.Value.anomalistic_period);
-        int ground_track_cycles = analysis.recurrence.HasValue
-                                      ? nodal_revolutions /
-                                        analysis.recurrence.Value.
-                                            number_of_revolutions
-                                      : 0;
+        int ground_track_cycles = nodal_revolutions /
+                                  analysis.recurrence?.number_of_revolutions ??
+                                  0;
         string duration_in_ground_track_cycles =
             ground_track_cycles > 0
                 ?  L10N.CacheFormat(
