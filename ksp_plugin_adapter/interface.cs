@@ -93,13 +93,12 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
     if ((FrameType)p.extension == FrameType.ROTATING_PULSATING) {
       return null;
     } else {
-      var result = new NavigationFrameParameters{
+      return new NavigationFrameParameters{
           extension = p.extension,
           centre_index = p.centre_index,
+          PrimaryIndices = p.PrimaryIndices,
+          SecondaryIndices = p.SecondaryIndices
       };
-      result.PrimaryIndices = p.PrimaryIndices;
-      result.SecondaryIndices = p.SecondaryIndices;
-      return result;
     }
   }
 
@@ -149,13 +148,12 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
 internal partial class NavigationFrameParameters : IReferenceFrameParameters {
   public static implicit operator PlottingFrameParameters(
       NavigationFrameParameters p) {
-    var result = new PlottingFrameParameters{
+    return new PlottingFrameParameters{
         extension = p.extension,
         centre_index = p.centre_index,
+        PrimaryIndices = p.PrimaryIndices,
+        SecondaryIndices = p.SecondaryIndices
     };
-    result.PrimaryIndices = p.PrimaryIndices;
-    result.SecondaryIndices = p.SecondaryIndices;
-    return result;
   }
 
   public override bool Equals(object obj) {
