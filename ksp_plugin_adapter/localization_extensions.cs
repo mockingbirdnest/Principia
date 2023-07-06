@@ -8,8 +8,8 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal static class L10N {
-  private const string english_us_ = "en-us";
-  private const string french_ = "fr-fr";
+  private const string english_us = "en-us";
+  private const string french = "fr-fr";
 
   public static bool IsCJKV(string text) {
     return Regex.IsMatch(
@@ -35,8 +35,8 @@ internal static class L10N {
   }
 
   private static bool StartsWithCapitalizedDefiniteArticle(string s) {
-    return (UILanguage() == english_us_ && s.StartsWith("The ")) ||
-           (UILanguage() == french_ &&
+    return (UILanguage() == english_us && s.StartsWith("The ")) ||
+           (UILanguage() == french &&
             (s.StartsWith("La ") || s.StartsWith("Le ")));
   }
 
@@ -183,10 +183,10 @@ internal static class L10N {
     return CacheFormat(name, (from arg in args select arg.ToString()).ToArray());
   }
 
-  private static LRUCache lru_cache_ = new LRUCache();
-  private static Dictionary<CelestialBody, string> names_ =
+  private static readonly LRUCache lru_cache_ = new LRUCache();
+  private static readonly Dictionary<CelestialBody, string> names_ =
       new Dictionary<CelestialBody, string>();
-  private static Dictionary<CelestialBody, string> initials_ =
+  private static readonly Dictionary<CelestialBody, string> initials_ =
       new Dictionary<CelestialBody, string>();
 }
 

@@ -7,18 +7,32 @@ internal static class Style {
   public static UnityEngine.Color Binormal { get; } = XKCDColors.PurplePink;
 
   public static UnityEngine.GUIStyle DarkToggleButton() {
-    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
-    style.active.textColor = ultra_cool_grey_;
-    style.hover.textColor = ultra_cool_grey_;
-    style.normal.textColor = ultra_cool_grey_;
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button){
+        active = {
+            textColor = ultra_cool_grey_
+        },
+        hover = {
+            textColor = ultra_cool_grey_
+        },
+        normal = {
+            textColor = ultra_cool_grey_
+        }
+    };
     return style;
   }
 
   public static UnityEngine.GUIStyle LitToggleButton() {
-    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button);
-    style.onActive.textColor = XKCDColors.Spearmint;
-    style.onHover.textColor = XKCDColors.Spearmint;
-    style.onNormal.textColor = XKCDColors.Spearmint;
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button){
+        onActive = {
+            textColor = XKCDColors.Spearmint
+        },
+        onHover = {
+            textColor = XKCDColors.Spearmint
+        },
+        onNormal = {
+            textColor = XKCDColors.Spearmint
+        }
+    };
     style.active = style.onActive;
     style.hover = style.onHover;
     style.normal = style.onNormal;
@@ -26,30 +40,46 @@ internal static class Style {
   }
 
   public static UnityEngine.GUIStyle Info(UnityEngine.GUIStyle style) {
-    var info_style = new UnityEngine.GUIStyle(style);
-    info_style.focused.textColor = ultra_cool_grey_;
-    info_style.normal.textColor = ultra_cool_grey_;
+    var info_style = new UnityEngine.GUIStyle(style){
+        focused = {
+            textColor = ultra_cool_grey_
+        },
+        normal = {
+            textColor = ultra_cool_grey_
+        }
+    };
     return info_style;
   }
 
   public static UnityEngine.GUIStyle Warning(UnityEngine.GUIStyle style) {
-    var warning_style = new UnityEngine.GUIStyle(style);
-    warning_style.focused.textColor = XKCDColors.Orange;
-    warning_style.normal.textColor = XKCDColors.Orange;
+    var warning_style = new UnityEngine.GUIStyle(style){
+        focused = {
+            textColor = XKCDColors.Orange
+        },
+        normal = {
+            textColor = XKCDColors.Orange
+        }
+    };
     return warning_style;
   }
 
   public static UnityEngine.GUIStyle Error(UnityEngine.GUIStyle style) {
-    var error_style = new UnityEngine.GUIStyle(style);
-    error_style.focused.textColor = XKCDColors.Red;
-    error_style.normal.textColor = XKCDColors.Red;
+    var error_style = new UnityEngine.GUIStyle(style){
+        focused = {
+            textColor = XKCDColors.Red
+        },
+        normal = {
+            textColor = XKCDColors.Red
+        }
+    };
     return error_style;
   }
 
   public static UnityEngine.GUIStyle Aligned(UnityEngine.TextAnchor alignment,
                                              UnityEngine.GUIStyle style) {
-    var aligned_style = new UnityEngine.GUIStyle(style);
-    aligned_style.alignment = alignment;
+    var aligned_style = new UnityEngine.GUIStyle(style){
+        alignment = alignment
+    };
     return aligned_style;
   }
 
@@ -58,10 +88,11 @@ internal static class Style {
   }
 
   public static UnityEngine.GUIStyle Multiline(UnityEngine.GUIStyle style) {
-    var multiline_style = new UnityEngine.GUIStyle(style);
-    multiline_style.alignment = UnityEngine.TextAnchor.UpperLeft;
-    multiline_style.fixedHeight = 0;
-    multiline_style.wordWrap = true;
+    var multiline_style = new UnityEngine.GUIStyle(style){
+        alignment = UnityEngine.TextAnchor.UpperLeft,
+        fixedHeight = 0,
+        wordWrap = true
+    };
     return multiline_style;
   }
 

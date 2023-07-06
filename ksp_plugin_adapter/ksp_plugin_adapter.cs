@@ -145,7 +145,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private int? last_guidance_manœuvre_ = null;
 
   private static Dictionary<CelestialBody, Orbit> unmodified_orbits_;
-  private static Dictionary<CelestialBody, double> unmodified_initial_rotations_;
+  private static Dictionary<CelestialBody, double>
+      unmodified_initial_rotations_;
 
   private Krakensbane krakensbane_;
 
@@ -272,7 +273,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   internal readonly ReferenceFrameSelector<PlottingFrameParameters>
       plotting_frame_selector_;
   [KSPField(isPersistant = true)]
-  private MainWindow main_window_;
+  private readonly MainWindow main_window_;
 
   public bool show_celestial_trajectory(CelestialBody celestial) {
     return main_window_.show_unpinned_celestials ||
@@ -414,14 +415,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     QP from_parent = plugin_.CelestialFromParent(body.flightGlobalsIndex);
     // TODO(egg): Some of this might be be superfluous and redundant.
     Orbit original = body.orbit;
-    Orbit copy = new Orbit(original.inclination,
-                           original.eccentricity,
-                           original.semiMajorAxis,
-                           original.LAN,
-                           original.argumentOfPeriapsis,
-                           original.meanAnomalyAtEpoch,
-                           original.epoch,
-                           original.referenceBody);
+    var copy = new Orbit(original.inclination,
+                         original.eccentricity,
+                         original.semiMajorAxis,
+                         original.LAN,
+                         original.argumentOfPeriapsis,
+                         original.meanAnomalyAtEpoch,
+                         original.epoch,
+                         original.referenceBody);
     copy.UpdateFromStateVectors((Vector3d)from_parent.q,
                                 (Vector3d)from_parent.p,
                                 copy.referenceBody,
@@ -1423,9 +1424,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
             // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
             // transform nonsense must probably be done.
-            // NOTE(egg): we must set the position and rotation of the |Transform|
-            // as well as that of the |RigidBody| because we are performing this
-            // correction after the physics step.
+            // NOTE(egg): we must set the position and rotation of the
+            // |Transform| as well as that of the |RigidBody| because we are
+            // performing this correction after the physics step.
             // See https://github.com/mockingbirdnest/Principia/pull/1427,
             // https://github.com/mockingbirdnest/Principia/issues/1307#issuecomment-478337241.
             part.rb.position = (Vector3d)part_actual_motion.qp.q;
@@ -2168,7 +2169,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
     string main_vessel_guid = PredictedVessel()?.id.ToString();
     if (MapView.MapIsEnabled) {
-      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      var sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         GLLines.Draw(() => {

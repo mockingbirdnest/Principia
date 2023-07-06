@@ -20,7 +20,8 @@ internal static class CelestialExtensions {
   }
 }
 
-internal class ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWindowRenderer
+internal class
+    ReferenceFrameSelector<ReferenceFrameParameters> : SupervisedWindowRenderer
   where ReferenceFrameParameters : IReferenceFrameParameters,
                                    new() {
   public delegate void Callback(ReferenceFrameParameters frame_parameters,

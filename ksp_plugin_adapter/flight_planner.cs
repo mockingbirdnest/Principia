@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -526,8 +525,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                     initial_time,
                                     index,
                                     get_burn_at_index : burn_editors_.
-                                        ElementAtOrDefault);
-        editor.minimized = false;
+                                        ElementAtOrDefault){
+            minimized = false
+        };
         Burn candidate_burn = editor.Burn();
         var status = plugin.FlightPlanInsert(
             vessel_guid,

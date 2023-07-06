@@ -37,7 +37,7 @@ internal class DifferentialSlider : ScalingRenderer {
       // fractional part.  Remove leading figure spaces so that a sign may be
       // entered after them, see #3480; turn any remaining figure spaces into
       // 0s, in case the user edits a blank leading digit.
-      parser_ = (string s, out double value) => double.TryParse(
+      parser_ = (string s, out double v) => double.TryParse(
           s.Replace(',', '.').Replace('-', '−').Replace("'", "")
            .TrimStart(figure_space)
            .Replace(figure_space, '0'),
@@ -47,7 +47,7 @@ internal class DifferentialSlider : ScalingRenderer {
           NumberStyles.AllowThousands |
           NumberStyles.AllowTrailingWhite,
           Culture.culture.NumberFormat,
-          out value);
+          out v);
     } else {
       parser_ = parser;
     }
@@ -277,16 +277,16 @@ internal class DifferentialSlider : ScalingRenderer {
           new UnityEngine.GUIContent(formatted_value_),
           (scroll_adjustment_ ?? arrows_adjustment_.Value).index);
       indicator_position.y -= Width(0.08f);
-      if (scroll_indicator == null) {
+      if (scroll_indicator_ == null) {
         PrincipiaPluginAdapter.LoadTextureOrDie(
-            out scroll_indicator,
+            out scroll_indicator_,
             "digit_scroll_indicator.png");
       }
       UnityEngine.GUI.DrawTexture(
           new UnityEngine.Rect(indicator_position,
                                 new UnityEngine.Vector2(Width(1.28f),
                                                         Width(1.28f))),
-                                scroll_indicator);
+                                scroll_indicator_);
     }
   }
 
@@ -371,7 +371,7 @@ internal class DifferentialSlider : ScalingRenderer {
   // during some events handling.
   private double? value_;
   private string formatted_value_;
-  private UnityEngine.TextAnchor alignment_;
+  private readonly UnityEngine.TextAnchor alignment_;
 
   // Represents a possible adjustment of the digit at |index| in
   // |formatted_value_|.  The unit in that place is |increment|.
@@ -381,15 +381,15 @@ internal class DifferentialSlider : ScalingRenderer {
       this.increment = increment;
     }
 
-    public double increment;
-    public int index;
+    public readonly double increment;
+    public readonly int index;
   }
 
   // This field is set if a digit is being hovered over.
   private DigitAdjustment? scroll_adjustment_;
   // This field is set if the text edition cursor is before a digit.
   private DigitAdjustment? arrows_adjustment_;
-  private static UnityEngine.Texture scroll_indicator;
+  private static UnityEngine.Texture scroll_indicator_;
 
   private string text_field_name => GetHashCode() + ":text_field";
   private const char figure_space = '\u2007';
