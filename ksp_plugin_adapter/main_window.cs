@@ -531,8 +531,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       label            :
           L10N.CacheFormat("#Principia_MainWindow_HistoryLength"),
       unit             : null,
-      log10_lower_rate : 0,
-      log10_upper_rate : 7,
+      log10_lower_rate : log10_history_lower_rate,
+      log10_upper_rate : log10_history_upper_rate,
       min_value        : 10,
       max_value        : double.PositiveInfinity,
       formatter        : Formatters.FormatMissionDuration,
@@ -554,6 +554,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private const int default_prediction_length_tolerance_index = 1;
   private const int default_prediction_steps_index = 4;
+
+  private const double log10_history_lower_rate = 3.0;
+  private const double log10_history_upper_rate = 7.0;
 
   private readonly PrincipiaPluginAdapter adapter_;
   private readonly FlightPlanner flight_planner_;
