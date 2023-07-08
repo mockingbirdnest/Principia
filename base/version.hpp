@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/macros.hpp"  // 🧙 For OS_WIN.
+
 namespace principia {
 namespace base {
 namespace _version {
