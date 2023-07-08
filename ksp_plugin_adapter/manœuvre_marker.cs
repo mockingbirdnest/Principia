@@ -11,6 +11,12 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   // the cursor may move off the marker while still dragging.
   public bool is_interacting => is_hovered || is_dragged;
 
+  // As mouse events are sent before |Update|, we compute this state there.
+  // We clear it as late as possible, in |WaitForEndOfFrame|.
+  // In particular, the value is meaningful at |BetterLateThanNeverLateUpdate|,
+  // during which it is consumed by node markers.
+  public static bool has_interacting_marker { get; private set; }
+
   // Construct the geometry of the marker when instantiated.
   // 1. Build the mesh of the marker (base 'bulb' & one cylinder for each axis).
   // 2. Attach a spherical collider (centred on the bulb) to the gameobject for
@@ -204,6 +210,21 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     is_hovered = false;
   }
 #endregion Mouse Events
+
+  // Accumulate and reset the interactivity states of all active markers.
+  public void Update() {
+    has_interacting_marker |= is_interacting;
+
+    // Only run one copy of this coroutine.
+    if (index_ == 0) {
+      StartCoroutine(ResetInteractivityStatus());
+    }
+  }
+
+  private static IEnumerator ResetInteractivityStatus() {
+    yield return new UnityEngine.WaitForEndOfFrame();
+    has_interacting_marker = false;
+  }
 
   private static UnityEngine.GameObject MakeTrihedronBase() {
     var sphere = UnityEngine.GameObject.CreatePrimitive(
