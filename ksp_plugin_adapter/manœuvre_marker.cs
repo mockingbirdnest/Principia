@@ -1,9 +1,16 @@
-﻿using System.Collections;
+using System.Collections;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
+  public static ManœuvreMarker Create(FlightPlanner flight_planner) {
+    var game_object = new UnityEngine.GameObject("manœuvre_marker");
+    var marker = game_object.AddComponent<ManœuvreMarker>();
+    marker.flight_planner_ = flight_planner;
+    return marker;
+  }
+
   public bool is_hovered { get; private set; } = false;
   public bool is_dragged { get; private set; } = false;
   public bool is_pinned { get; private set; } = false;
@@ -53,13 +60,10 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
 
   // Call on each frame (at or later than |Update|) to set the state of the marker.
   public void Render(int index,
-                     FlightPlanner flight_planner,
                      Vector3d world_position,
                      Vector3d initial_plotted_velocity,
                      NavigationManoeuvreFrenetTrihedron trihedron) {
     index_ = index;
-    flight_planner_ = flight_planner;
-
     initial_plotted_velocity_ = initial_plotted_velocity;
 
     var screen_position = ScaledSpace.LocalToScaledSpace(world_position);
@@ -282,6 +286,8 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     return (position, visible);
   }
 
+  private FlightPlanner flight_planner_;
+
   private UnityEngine.GameObject base_;
   private UnityEngine.GameObject tangent_;
   private UnityEngine.GameObject normal_;
@@ -297,7 +303,6 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
 
   private Vector3d initial_plotted_velocity_;
   private int index_;
-  private FlightPlanner flight_planner_;
 
   // In scaled space units:
   private const float collider_radius = 0.75f;
