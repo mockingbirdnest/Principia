@@ -99,3 +99,22 @@ jobs:
         }
         $errors | write-error
         exit $errors.Length
+
+  check-iwyu:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build sourcerer
+      shell: pwsh
+      env:
+        PRINCIPIA_MSBUILD_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe
+      run: |
+        &"${{ env.PRINCIPIA_MSBUILD_PATH }}"                `
+            .\sourcerer\sourcerer.csproj
+            /t:"Clean;Build"
+            /property:Configuration=Release
+    - name: Include what you using
+      shell: pwsh
+      run: |
+        .\include_what_you_using.ps1
+        git diff --exit-code
