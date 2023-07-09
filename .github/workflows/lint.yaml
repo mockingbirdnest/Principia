@@ -104,6 +104,11 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Restore Release
+      uses: mockingbirdnest/actions/windows/restore@main
+      with:
+        configuration: Release
+        solution_directory: .
     - name: Build sourcerer
       shell: pwsh
       env:
