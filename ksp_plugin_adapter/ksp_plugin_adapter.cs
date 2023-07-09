@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -2213,8 +2213,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                           manœuvre_index);
                   if (number_of_rendered_manœuvres
                       >= manœuvre_marker_pool_.Count) {
-                    manœuvre_marker_pool_.
-                        Add(ManœuvreMarker.Create(flight_planner_));
+                    manœuvre_marker_pool_.Add(
+                        ManœuvreMarker.Create(main_window_, flight_planner_));
                   }
                   var initial_plotted_velocity =
                       (Vector3d)plugin_.FlightPlanGetManoeuvreInitialPlottedVelocity(

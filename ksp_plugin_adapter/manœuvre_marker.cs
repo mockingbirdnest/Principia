@@ -1,12 +1,14 @@
-using System.Collections;
+﻿using System.Collections;
 
 namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
-  public static ManœuvreMarker Create(FlightPlanner flight_planner) {
+  public static ManœuvreMarker Create(MainWindow main_window,
+                                      FlightPlanner flight_planner) {
     var game_object = new UnityEngine.GameObject("manœuvre_marker");
     var marker = game_object.AddComponent<ManœuvreMarker>();
+    marker.main_window_ = main_window;
     marker.flight_planner_ = flight_planner;
     return marker;
   }
@@ -192,6 +194,10 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
         UnityEngine.Input.mousePosition - ScreenManœuvrePosition();
     var mouse_displacement = mouse_offset_now - mouse_offset_at_click_;
 
+    // Only count as a drag for the purpose of distinguishing from clicks
+    // if the mouse moves at least a pixel (relative to the marker).
+    has_dragged_this_click_ |= mouse_displacement.sqrMagnitude > 1f;
+
     // TODO(egg): This is cheesy. Could we do it in the C++?
     var screen_velocity =
         (ScaledToFlattenedScreenPosition(
@@ -207,7 +213,17 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 
   public void OnMouseUp() {
+    if (!has_dragged_this_click_) {
+      OnMouseClicked();
+    }
     is_dragged = false;
+    has_dragged_this_click_ = false;
+  }
+
+  public void OnMouseClicked() {
+    main_window_.Show();
+    flight_planner_.Show();
+    flight_planner_.RequestEditorFocus(index_);
   }
 
   public void OnMouseExit() {
@@ -286,6 +302,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     return (position, visible);
   }
 
+  private MainWindow main_window_;
   private FlightPlanner flight_planner_;
 
   private UnityEngine.GameObject base_;
@@ -300,6 +317,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   private float current_hover_scale_multiplier_;
 
   private UnityEngine.Vector3 mouse_offset_at_click_;
+  private bool has_dragged_this_click_;
 
   private Vector3d initial_plotted_velocity_;
   private int index_;
