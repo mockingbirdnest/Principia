@@ -99,3 +99,32 @@ jobs:
         }
         $errors | write-error
         exit $errors.Length
+
+  check-iwyu:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Restore Release
+      uses: mockingbirdnest/actions/windows/restore@main
+      with:
+        configuration: Release
+        solution_directory: .
+    - name: Build sourcerer
+      shell: pwsh
+      env:
+        PRINCIPIA_MSBUILD_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe
+      run: |
+        &"${{ env.PRINCIPIA_MSBUILD_PATH }}" `
+            .\sourcerer\sourcerer.csproj     `
+            /t:"Clean;Build"                 `
+            /property:Configuration=Release
+    - name: Include what you using
+      shell: pwsh
+      run: |
+        &.\include_what_you_using_all_the_things.ps1
+        $files = (git diff --name-only)
+        foreach ($file in $files) {
+          $diff = (git diff $file)
+          echo "::warning file=$file,line=1,title=Include what you using::include_what_you_using_all_the_things.ps1 modifies this file as follows:%0A$([string]::join('%0A', (git diff $file)))"
+        }
+        exit $files.Length
