@@ -41,7 +41,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/serialization.hpp"
 

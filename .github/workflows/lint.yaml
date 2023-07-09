@@ -116,5 +116,9 @@ jobs:
     - name: Include what you using
       shell: pwsh
       run: |
-        .\include_what_you_using.ps1
-        git diff --exit-code
+        &.\include_what_you_using_all_the_things.ps1
+        $files = (git diff --name-only)
+        foreach ($file in $files) {
+          $diff = (git diff $file)
+          echo "::warning file=$file,line=1,title=Include what you using::include_what_you_using_all_the_things.ps1 modifies this file as follows:%0A$([string]::join('%0A', (git diff $file)))"
+        }
