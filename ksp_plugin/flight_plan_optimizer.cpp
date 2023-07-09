@@ -81,6 +81,8 @@ FlightPlanOptimizer::Evaluate𝛁DistanceToCelestial(Celestial const& celestial,
       celestial, argument_δy, index, flight_plan);
   auto const distance_δz = EvaluateDistanceToCelestialWithReplacement(
       celestial, argument_δz, index, flight_plan);
+
+  return LengthGradient{};
 }
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
@@ -91,7 +93,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
   NavigationManœuvre::Burn burn = flight_plan.GetManœuvre(index).burn();
   burn.intensity = {.Δv = argument.Δv};
   burn.timing = {.initial_time = argument.initial_time};
-  flight_plan.Replace(burn, index);
+  auto const status = flight_plan.Replace(burn, index);
   return EvaluateDistanceToCelestial(
       celestial, argument.initial_time, flight_plan);
 }
