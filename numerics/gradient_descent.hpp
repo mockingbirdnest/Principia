@@ -43,6 +43,8 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
 }  // namespace internal
 
 using internal::BroydenFletcherGoldfarbShanno;
+using internal::Gradient;
+using internal::Field;
 
 }  // namespace _gradient_descent
 }  // namespace numerics
