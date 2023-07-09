@@ -12,14 +12,17 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::quantities::_quantities;
 
 class FlightPlanOptimizer {
  public:
   explicit FlightPlanOptimizer(not_null<FlightPlan*> flight_plan);
 
-  void Optimize(int index, Celestial const& goal);
+  void Optimize(int index, Celestial const& celestial);
 
  private:
+  Length DistanceToCelestial(Celestial const& celestial);
+
   not_null<FlightPlan*> const flight_plan_;
 };
 
