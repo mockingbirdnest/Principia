@@ -97,7 +97,6 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_serialization;
 
