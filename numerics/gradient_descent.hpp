@@ -15,8 +15,8 @@ namespace numerics {
 namespace _gradient_descent {
 namespace internal {
 
-using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
