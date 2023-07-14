@@ -22,6 +22,8 @@ class FixedMatrix;
 template<typename Scalar, int size_>
 class FixedVector final {
  public:
+  static constexpr int dimension = size_;
+
   constexpr FixedVector();
   explicit FixedVector(uninitialized_t);
 
@@ -188,6 +190,11 @@ class FixedUpperTriangularMatrix final {
 
   std::array<Scalar, size()> data_;
 };
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr Product<ScalarLeft, ScalarRight> InnerProduct(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
