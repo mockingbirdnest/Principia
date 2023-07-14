@@ -78,6 +78,11 @@ class SymmetricBilinearForm {
   template<typename Eigenframe>
   Eigensystem<Eigenframe> Diagonalize() const;
 
+  template<typename S = Scalar,
+           typename = std::enable_if_t<std::is_floating_point_v<S> ||
+                                       std::is_integral_v<S>>>
+  static SymmetricBilinearForm<S, Frame, Multivector> InnerProductForm();
+
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
   template<typename F = Frame,

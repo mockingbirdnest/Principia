@@ -6,7 +6,6 @@
 #include <cmath>
 #include <optional>
 
-#include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -15,21 +14,8 @@ namespace numerics {
 namespace _gradient_descent {
 namespace internal {
 
-using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
-
-// A helper to use |Argument| with |SymmetricBilinearForm|.
-template<typename A>
-struct ArgumentHelper;
-
-template<typename Scalar, typename Frame>
-struct ArgumentHelper<Vector<Scalar, Frame>> {
-  static SymmetricBilinearForm<double, Frame, Vector> InnerProductForm() {
-    return geometry::_symmetric_bilinear_form::InnerProductForm<Frame,
-                                                                Vector>();
-  }
-};
 
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
@@ -187,7 +173,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
   auto const H₀ = InnerProduct(s₀, y₀) *
-                  ArgumentHelper<Difference<Argument>>::InnerProductForm() /
+                  Generator<Scalar, Argument>::Form::InnerProductForm() /
                   y₀.Norm²();
 
   auto xₖ = x₁;

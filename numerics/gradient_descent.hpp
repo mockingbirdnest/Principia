@@ -6,6 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
+#include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,6 +19,7 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
+using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -32,15 +34,16 @@ struct Generator<Scalar, FixedVector<S, s>> {
   using Gradient = FixedVector<Quotient<Scalar, S>, s>;
 };
 
-template<typename Scalar, typename S, typename F, int r>
-struct Generator<Scalar, Multivector<S, F, r>> {
-  using Gradient = Multivector<Quotient<Scalar, S>, F, r>;
+template<typename Scalar, typename S, typename F>
+struct Generator<Scalar, Vector<S, F>> {
+  using Gradient = Vector<Quotient<Scalar, S>, F>;
+  using Form = SymmetricBilinearForm<double, F, Vector>;///InnerProductForm?
 };
 
-template
-<typename Scalar, typename V>
+template<typename Scalar, typename V>
 struct Generator<Scalar, Point<V>> {
   using Gradient = typename Generator<Scalar, V>::Gradient;
+  using Form = typename Generator<Scalar, V>::Form;
 };
 
 // In this file |Argument| must be such that its difference belongs to a Hilbert
