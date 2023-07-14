@@ -4,6 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"

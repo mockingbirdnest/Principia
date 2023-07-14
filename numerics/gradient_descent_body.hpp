@@ -6,7 +6,6 @@
 #include <cmath>
 #include <optional>
 
-#include "geometry/grassmann.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -16,7 +15,6 @@ namespace numerics {
 namespace _gradient_descent {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
