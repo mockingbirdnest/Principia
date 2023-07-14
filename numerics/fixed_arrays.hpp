@@ -35,6 +35,7 @@ class FixedVector final {
   TransposedView<FixedVector> Transpose() const;
 
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   static constexpr int size() { return size_; }
 
@@ -196,15 +197,38 @@ constexpr Product<ScalarLeft, ScalarRight> InnerProduct(
     FixedVector<ScalarLeft, size> const& left,
     FixedVector<ScalarRight, size> const& right);
 
+template<typename Scalar, int size>
+constexpr FixedVector<double, size> Normalize(
+    FixedVector<Scalar, size> const& vector);
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size> operator-(
+    FixedVector<Scalar, size> const& right);
+
 template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
+constexpr FixedVector<Sum<ScalarLeft, ScalarRight>, size> operator+(
     FixedVector<ScalarLeft, size> const& left,
-    ScalarRight const& right);
+    FixedVector<ScalarRight, size> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
     FixedVector<ScalarLeft, size> const& left,
     FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Product<ScalarLeft, ScalarRight>, size> operator*(
+    ScalarLeft const left,
+    FixedVector<ScalarRight, size> const& right);
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Product<ScalarLeft, ScalarRight>, size> operator*(
+    FixedVector<ScalarLeft, size> const& left,
+    ScalarRight const right);
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
+    FixedVector<ScalarLeft, size> const& left,
+    ScalarRight const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int size>
 constexpr Product<ScalarLeft, ScalarRight> operator*(
