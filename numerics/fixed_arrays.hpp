@@ -206,6 +206,15 @@ template<typename Scalar, int size>
 constexpr FixedVector<double, size> Normalize(
     FixedVector<Scalar, size> const& vector);
 
+template<typename LScalar, typename RScalar, int lsize, int rsize>
+constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
+    FixedVector<LScalar, lsize> const& left,
+    FixedVector<RScalar, rsize> const& right);
+
+template<typename Scalar, int size>
+constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
+    FixedVector<Scalar, size> const& vector);
+
 template<typename Scalar, int size>
 constexpr FixedVector<Scalar, size> operator-(
     FixedVector<Scalar, size> const& right);
@@ -219,10 +228,20 @@ constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right);
 
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedMatrix<RScalar, rows, columns> const& right);
+
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedMatrix<RScalar, rows, columns> const& right);
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
@@ -264,6 +283,11 @@ template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> operator*(
     TransposedView<FixedVector<LScalar, size>> const& left,
     FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int lsize, int rsize>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rsize, lsize> operator*(
+    FixedVector<LScalar, lsize> const& left,
+    TransposedView<FixedVector<RScalar, rsize>> const& right);
 
 template<typename LScalar, typename RScalar,
          int rows, int dimension, int columns>
