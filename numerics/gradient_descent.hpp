@@ -3,11 +3,7 @@
 #include <functional>
 #include <optional>
 
-#include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
-#include "geometry/point.hpp"
-#include "geometry/symmetric_bilinear_form.hpp"
-#include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -16,11 +12,7 @@ namespace numerics {
 namespace _gradient_descent {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
-using namespace principia::geometry::_point;
-using namespace principia::geometry::_symmetric_bilinear_form;
-using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
