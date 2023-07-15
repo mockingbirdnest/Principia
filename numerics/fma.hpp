@@ -3,6 +3,7 @@
 #include <immintrin.h>
 
 #include "base/cpuid.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_FMA_IF_AVAILABLE.
 
 namespace principia {
 namespace numerics {
@@ -20,7 +21,7 @@ constexpr bool CanEmitFMAInstructions = false;
 
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
-#if PRINCIPIA_USE_FMA_IF_AVAILABLE
+#if PRINCIPIA_USE_FMA_IF_AVAILABLE()
 inline bool const UseHardwareFMA =
     CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA);
 #else
