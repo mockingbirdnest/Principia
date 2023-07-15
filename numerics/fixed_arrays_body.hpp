@@ -368,86 +368,166 @@ template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
+  return DotProduct<LScalar, RScalar, size>::Compute(left, right);
 }
 
 template<typename Scalar, int size>
 constexpr FixedVector<double, size> Normalize(
     FixedVector<Scalar, size> const& vector) {
+  return vector /
+         Sqrt(DotProduct<Scalar, Scalar, size>::Compute(vector, vector));
 }
 
 template<typename LScalar, typename RScalar, int lsize, int rsize>
 constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
     FixedVector<LScalar, lsize> const& left,
     FixedVector<RScalar, rsize> const& right) {
+  FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
+  for (int i = 0; i < lsize; ++i) {
+    for (int j = 0; j < i; ++j) {
+      auto const r = 0.5 * (left[i] * right[j] + left[j] * right[i]);
+      result(i, j) = r;
+      result(j, i) = r;
+    }
+    result(i, i) = left[i] * right[i];
+  }
+  return result;
 }
 
 template<typename Scalar, int size>
 constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
     FixedVector<Scalar, size> const& vector) {
+  FixedMatrix<Square<Scalar>, size, size> result(uninitialized);
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < i; ++j) {
+      auto const r =  vector[i] * vector[j];
+      result(i, j) = r;
+      result(j, i) = r;
+    }
+    result(i, i) = Pow<2>(vector[i]);
+  }
+  return result;
 }
 
 template<typename Scalar, int size>
 constexpr FixedVector<Scalar, size> operator-(
     FixedVector<Scalar, size> const& right) {
+  std::array<Scalar, size> result;
+  for (int i = 0; i < size; ++i) {
+    result[i] = -right[i];
+  }
+  return FixedVector<Difference<Scalar>, size>(std::move(result));
 }
 
 template<typename Scalar, int rows, int columns>
 constexpr FixedMatrix<Scalar, rows, columns> operator-(
     FixedMatrix<Scalar, rows, columns> const& right) {
+  FixedMatrix<Scalar, rows, columns> result(uninitialized);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < columns; ++j) {
+      result(i, j) = -right(i, j);
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
+  std::array<Sum<LScalar, RScalar>, size> result;
+  for (int i = 0; i < size; ++i) {
+    result[i] = left[i] + right[i];
+  }
+  return FixedVector<Sum<LScalar, RScalar>, size>(std::move(result));
 }
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right) {
+  FixedMatrix<Sum<LScalar, RScalar>, rows, columns> result(uninitialized);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < columns; ++j) {
+      result(i, j) = left(i, j) + right(i, j);
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
-  std::array<Difference<LScalar, RScalar>, size> result{};
+  std::array<Difference<LScalar, RScalar>, size> result;
   for (int i = 0; i < size; ++i) {
     result[i] = left[i] - right[i];
   }
-  return FixedVector<Difference<LScalar, RScalar>, size>(
-      std::move(result));
+  return FixedVector<Difference<LScalar, RScalar>, size>(std::move(result));
 }
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right) {
+  FixedMatrix<Difference<LScalar, RScalar>, rows, columns> result(
+      uninitialized);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < columns; ++j) {
+      result(i, j) = left(i, j) - right(i, j);
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     LScalar const left,
     FixedVector<RScalar, size> const& right) {
+  std::array<Product<LScalar, RScalar>, size> result;
+  for (int i = 0; i < size; ++i) {
+    result[i] = left * right[i];
+  }
+  return FixedVector<Product<LScalar, RScalar>, size>(std::move(result));
 }
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     FixedVector<LScalar, size> const& left,
     RScalar const right) {
+  std::array<Product<LScalar, RScalar>, size> result;
+  for (int i = 0; i < size; ++i) {
+    result[i] = left[i] * right;
+  }
+  return FixedVector<Product<LScalar, RScalar>, size>(std::move(result));
 }
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
     LScalar const left,
     FixedMatrix<RScalar, rows, columns> const& right) {
+  FixedMatrix<Product<LScalar, RScalar>, rows, columns> result(
+      uninitialized);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < columns; ++j) {
+      result(i, j) = left * right(i, j);
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     RScalar const right) {
+  FixedMatrix<Product<LScalar, RScalar>, rows, columns> result(
+      uninitialized);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < columns; ++j) {
+      result(i, j) = left(i, j) * right;
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar, int size>
@@ -465,6 +545,14 @@ template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> operator/(
     FixedMatrix<LScalar, rows, columns> const& left,
     RScalar const right) {
+  FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> result(
+      uninitialized);
+  for (int i = 0; i < rows; ++i) {
+    for (int j = 0; j < columns; ++j) {
+      result(i, j) = left(i, j) / right;
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar, int size>
@@ -486,6 +574,13 @@ template<typename LScalar, typename RScalar, int lsize, int rsize>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rsize, lsize> operator*(
     FixedVector<LScalar, lsize> const& left,
     TransposedView<FixedVector<RScalar, rsize>> const& right) {
+  FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
+  for (int i = 0; i < lsize; ++i) {
+    for (int j = 0; j < rsize; ++j) {
+      result(i, j) = left[i] * right.transpose[j];
+    }
+  }
+  return result;
 }
 
 template<typename LScalar, typename RScalar,
@@ -493,7 +588,7 @@ template<typename LScalar, typename RScalar,
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
 operator*(FixedMatrix<LScalar, rows, dimension> const& left,
           FixedMatrix<RScalar, dimension, columns> const& right) {
-  FixedMatrix<Product<LScalar, RScalar>, rows, columns> result;
+  FixedMatrix<Product<LScalar, RScalar>, rows, columns> result{};
   for (int i = 0; i < left.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
       for (int k = 0; k < left.columns(); ++k) {
