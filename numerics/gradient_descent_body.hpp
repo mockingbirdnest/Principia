@@ -17,6 +17,24 @@ namespace internal {
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
 
+template<typename Scalar, typename S, int s>
+struct Generator<Scalar, FixedVector<S, s>> {
+  using Gradient = FixedVector<Quotient<Scalar, S>, s>;
+  static FixedMatrix<double, s, s> InnerProductForm();
+};
+
+template<typename Scalar, typename S, typename F>
+struct Generator<Scalar, Vector<S, F>> {
+  using Gradient = Vector<Quotient<Scalar, S>, F>;
+  static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
+};
+
+template<typename Scalar, typename V>
+struct Generator<Scalar, Point<V>> {
+  using Gradient = typename Generator<Scalar, V>::Gradient;
+  static decltype(Generator<Scalar, V>::InnerProductForm()) InnerProductForm();
+};
+
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
 

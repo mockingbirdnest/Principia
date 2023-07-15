@@ -24,31 +24,16 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// A helper for generating types derived from |Scalar| and |Argument|.
-template<typename Scalar, typename Argument>
-struct Generator;
-
-template
-<typename Scalar, typename S, int s>
-struct Generator<Scalar, FixedVector<S, s>> {
-  using Gradient = FixedVector<Quotient<Scalar, S>, s>;
-  static FixedMatrix<double, s, s> InnerProductForm();
-};
-
-template<typename Scalar, typename S, typename F>
-struct Generator<Scalar, Vector<S, F>> {
-  using Gradient = Vector<Quotient<Scalar, S>, F>;
-  static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
-};
-
-template<typename Scalar, typename V>
-struct Generator<Scalar, Point<V>> {
-  using Gradient = typename Generator<Scalar, V>::Gradient;
-  static decltype(Generator<Scalar, V>::InnerProductForm()) InnerProductForm();
-};
-
 // In this file |Argument| must be such that its difference belongs to a Hilbert
 // space.
+
+// A helper for generating declarations derived from |Scalar| and |Argument|.
+// It must declare the type of the gradient and a function returning the inner
+// product form thus:
+//   using Gradient = ...;
+//   static ... InnerProductForm();
+template<typename Scalar, typename Argument>
+struct Generator;
 
 template<typename Scalar, typename Argument>
 using Field = std::function<Scalar(Argument const&)>;
