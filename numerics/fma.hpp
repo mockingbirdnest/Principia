@@ -3,6 +3,7 @@
 #include <immintrin.h>
 
 #include "base/cpuid.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_FMA_IF_AVAILABLE.
 
 namespace principia {
 namespace numerics {

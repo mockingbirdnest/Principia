@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "glog/logging.h"
 #include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
