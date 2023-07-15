@@ -104,6 +104,20 @@ TEST_F(FixedArraysTest, AdditiveGroups) {
                                         -10, -10, 11})), m23_ - n23_);
 }
 
+TEST_F(FixedArraysTest, VectorSpaces) {
+  EXPECT_EQ((FixedVector<double, 3>({12, -2, 24})), 2 * u3_);
+  EXPECT_EQ((FixedVector<double, 3>({-30, -93, 141})), v3_ * -3);
+
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({2, -4,  0,
+                                        4,  6, 14})), 2 * m23_);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-15,   3, -9,
+                                        -36, -39, 12})), n23_ * -3);
+
+  EXPECT_EQ((FixedVector<double, 3>({2.5, 7.75, -11.75})), v3_ / 4);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-2.5,  0.5, -1.5,
+                                          -6, -6.5,  2})), n23_ / -2);
+}
+
 TEST_F(FixedArraysTest, MultiplicationDivision) {
   EXPECT_EQ(v3_, m34_ * v4_);
   EXPECT_EQ((FixedVector<double, 4>({-1.5, -1.5, 0.5, 2.0})), v4_ / 2.0);
