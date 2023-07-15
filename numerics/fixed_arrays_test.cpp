@@ -1,13 +1,14 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include "gtest/gtest.h"
+#include "numerics/transposed_view.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 
 using namespace principia::numerics::_fixed_arrays;
-
+using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_elementary_functions;
 
 class FixedArraysTest : public ::testing::Test {
@@ -118,12 +119,16 @@ TEST_F(FixedArraysTest, VectorSpaces) {
                                           -6, -6.5,  2})), n23_ / -2);
 }
 
-TEST_F(FixedArraysTest, MultiplicationDivision) {
-  EXPECT_EQ(v3_, m34_ * v4_);
-  EXPECT_EQ((FixedVector<double, 4>({-1.5, -1.5, 0.5, 2.0})), v4_ / 2.0);
+TEST_F(FixedArraysTest, Algebra) {
+  EXPECT_EQ(-535, TransposedView(u3_) * v3_);
+  EXPECT_EQ((FixedMatrix<double, 3, 4>({-30, -30,  10,   40,
+                                        -93, -93,  31,  124,
+                                        141, 141, -47, -188})),
+             v3_ * TransposedView(v4_));
   EXPECT_EQ((FixedMatrix<double, 2, 4>({ 0,  14, -22,   3,
                                         14, -63,   5, -92})),
             m23_ * m34_);
+  EXPECT_EQ(v3_, m34_ * v4_);
 }
 
 TEST_F(FixedArraysTest, VectorIndexing) {

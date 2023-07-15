@@ -581,7 +581,7 @@ constexpr Product<LScalar, RScalar> operator*(
 }
 
 template<typename LScalar, typename RScalar, int lsize, int rsize>
-constexpr FixedMatrix<Product<LScalar, RScalar>, rsize, lsize> operator*(
+constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
     FixedVector<LScalar, lsize> const& left,
     TransposedView<FixedVector<RScalar, rsize>> const& right) {
   FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
