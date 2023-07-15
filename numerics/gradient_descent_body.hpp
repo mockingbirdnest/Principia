@@ -173,7 +173,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
   auto const H₀ = InnerProduct(s₀, y₀) *
-                  Generator<Scalar, Argument>::Form::InnerProductForm() /
+                  Generator<Scalar, Argument>::InnerProductForm() /
                   y₀.Norm²();
 
   auto xₖ = x₁;

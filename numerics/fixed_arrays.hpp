@@ -92,6 +92,11 @@ class FixedMatrix final {
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
 
+  template<typename LScalar, typename RScalar>
+  Product<Scalar, Product<LScalar, RScalar>>
+      operator()(FixedVector<LScalar, columns_> const& left,
+                 FixedVector<RScalar, rows_> const& right) const;
+
   static FixedMatrix Identity();
 
  private:
@@ -192,10 +197,10 @@ class FixedUpperTriangularMatrix final {
   std::array<Scalar, size()> data_;
 };
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> InnerProduct(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> InnerProduct(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
 
 template<typename Scalar, int size>
 constexpr FixedVector<double, size> Normalize(
@@ -205,51 +210,71 @@ template<typename Scalar, int size>
 constexpr FixedVector<Scalar, size> operator-(
     FixedVector<Scalar, size> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Sum<ScalarLeft, ScalarRight>, size> operator+(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns> operator-(
+    FixedMatrix<Scalar, rows, columns> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Product<ScalarLeft, ScalarRight>, size> operator*(
-    ScalarLeft const left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Product<ScalarLeft, ScalarRight>, size> operator*(
-    FixedVector<ScalarLeft, size> const& left,
-    ScalarRight const right);
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+    LScalar const left,
+    FixedVector<RScalar, size> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
-    FixedVector<ScalarLeft, size> const& left,
-    ScalarRight const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+    FixedVector<LScalar, size> const& left,
+    RScalar const right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> operator*(
-    ScalarLeft* const left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(LScalar const left,
+          FixedMatrix<RScalar, rows, columns> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> operator*(
-    TransposedView<FixedVector<ScalarLeft, size>> const& left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(FixedMatrix<LScalar, rows, columns> const& left,
+          RScalar const right);
 
-template<typename ScalarLeft, typename ScalarRight,
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
+    FixedVector<LScalar, size> const& left,
+    RScalar const& right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
+operator/(FixedMatrix<LScalar, rows, columns> const& left,
+          RScalar const right);
+
+// TODO(phl): We should have a RowView.
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> operator*(
+    LScalar* const left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> operator*(
+    TransposedView<FixedVector<LScalar, size>> const& left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar,
          int rows, int dimension, int columns>
-constexpr FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns>
-operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
-          FixedMatrix<ScalarRight, dimension, columns> const& right);
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(FixedMatrix<LScalar, rows, dimension> const& left,
+          FixedMatrix<RScalar, dimension, columns> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
-constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
-    FixedMatrix<ScalarLeft, rows, columns> const& left,
-    FixedVector<ScalarRight, columns> const& right);
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedVector<RScalar, columns> const& right);
 
 template<typename Scalar, int size>
 std::ostream& operator<<(std::ostream& out,

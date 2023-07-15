@@ -32,18 +32,19 @@ template
 <typename Scalar, typename S, int s>
 struct Generator<Scalar, FixedVector<S, s>> {
   using Gradient = FixedVector<Quotient<Scalar, S>, s>;
+  static FixedMatrix<double, s, s> InnerProductForm();
 };
 
 template<typename Scalar, typename S, typename F>
 struct Generator<Scalar, Vector<S, F>> {
   using Gradient = Vector<Quotient<Scalar, S>, F>;
-  using Form = SymmetricBilinearForm<double, F, Vector>;///InnerProductForm?
+  static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
 };
 
 template<typename Scalar, typename V>
 struct Generator<Scalar, Point<V>> {
   using Gradient = typename Generator<Scalar, V>::Gradient;
-  using Form = typename Generator<Scalar, V>::Form;
+  static decltype(Generator<Scalar, V>::InnerProductForm()) InnerProductForm();
 };
 
 // In this file |Argument| must be such that its difference belongs to a Hilbert
