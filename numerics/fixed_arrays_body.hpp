@@ -78,11 +78,12 @@ FixedVector<Scalar, size_>::Transpose() const {
 
 template<typename Scalar, int size_>
 Scalar FixedVector<Scalar, size_>::Norm() const {
-  Square<Scalar> norm²{};
-  for (auto const c : data_) {
-    norm² += c * c;
-  }
-  return Sqrt(norm²);
+  return Sqrt(Norm²());
+}
+
+template<typename Scalar, int size_>
+inline Square<Scalar> FixedVector<Scalar, size_>::Norm²() const {
+  return DotProduct<Scalar, Scalar, size_>::Compute(data_, data_);
 }
 
 template<typename Scalar, int size_>
@@ -154,6 +155,15 @@ template<int r>
 Scalar const* FixedMatrix<Scalar, rows_, columns_>::row() const {
   static_assert(r < rows_);
   return &data_[r * columns()];
+}
+
+template<typename Scalar, int rows_, int columns_>
+template<typename LScalar, typename RScalar>
+Product<Scalar, Product<LScalar, RScalar>>
+FixedMatrix<Scalar, rows_, columns_>::operator()(
+    FixedVector<LScalar, columns_> const& left,
+    FixedVector<RScalar, rows_> const& right) const {
+  return TransposedView(left) * (*this * right);
 }
 
 template<typename Scalar, int rows_, int columns_>

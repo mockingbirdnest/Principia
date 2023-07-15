@@ -35,6 +35,28 @@ struct Generator<Scalar, Point<V>> {
   static decltype(Generator<Scalar, V>::InnerProductForm()) InnerProductForm();
 };
 
+template<typename Scalar, typename S, int s>
+FixedMatrix<double, s, s>
+Generator<Scalar, FixedVector<S, s>>::InnerProductForm() {
+  FixedMatrix<double, s, s> result{};
+  for (int i = 0; i < s; ++i) {
+    result(i, i) = 1;
+  }
+  return result;
+}
+
+template<typename Scalar, typename S, typename F>
+SymmetricBilinearForm<double, F, Vector>
+Generator<Scalar, Vector<S, F>>::InnerProductForm() {
+  return geometry::_symmetric_bilinear_form::InnerProductForm<F, Vector>();
+}
+
+template<typename Scalar, typename V>
+decltype(Generator<Scalar, V>::InnerProductForm())
+Generator<Scalar, Point<V>>::InnerProductForm() {
+  return Generator<Scalar, V>::InnerProductForm();
+}
+
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
 
