@@ -15,38 +15,38 @@ namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
 
-// A helper class to compute the dot product of two arrays.  |ScalarLeft| and
-// |ScalarRight| are the types of the elements of the arrays.  |Left| and
-// |Right| are the (deduced) types of the arrays.  They must both have an
-// operator[].  |size| is the size of the arrays.
-template<typename ScalarLeft, typename ScalarRight, int size, int i = size - 1>
+// A helper class to compute the dot product of two arrays.  |LScalar| and
+// |RScalar| are the types of the elements of the arrays.  |Left| and |Right|
+// are the (deduced) types of the arrays.  They must both have an operator[].
+// |size| is the size of the arrays.  This unrolling helps with performance.
+template<typename LScalar, typename RScalar, int size, int i = size - 1>
 struct DotProduct {
   template<typename Left, typename Right>
-  static Product<ScalarLeft, ScalarRight> Compute(Left const& left,
-                                                  Right const& right);
+  static Product<LScalar, RScalar> Compute(Left const& left,
+                                           Right const& right);
 };
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-struct DotProduct<ScalarLeft, ScalarRight, size, 0> {
+template<typename LScalar, typename RScalar, int size>
+struct DotProduct<LScalar, RScalar, size, 0> {
   template<typename Left, typename Right>
-  static Product<ScalarLeft, ScalarRight> Compute(Left const& left,
-                                                  Right const& right);
+  static Product<LScalar, RScalar> Compute(Left const& left,
+                                           Right const& right);
 };
 
-template<typename ScalarLeft, typename ScalarRight, int size, int i>
+template<typename LScalar, typename RScalar, int size, int i>
 template<typename Left, typename Right>
-Product<ScalarLeft, ScalarRight>
-DotProduct<ScalarLeft, ScalarRight, size, i>::Compute(Left const& left,
-                                                      Right const& right) {
+Product<LScalar, RScalar>
+DotProduct<LScalar, RScalar, size, i>::Compute(Left const& left,
+                                               Right const& right) {
   return left[i] * right[i] +
-         DotProduct<ScalarLeft, ScalarRight, size, i - 1>::Compute(left, right);
+         DotProduct<LScalar, RScalar, size, i - 1>::Compute(left, right);
 }
 
-template<typename ScalarLeft, typename ScalarRight, int size>
+template<typename LScalar, typename RScalar, int size>
 template<typename Left, typename Right>
-Product<ScalarLeft, ScalarRight>
-DotProduct<ScalarLeft, ScalarRight, size, 0>::Compute(Left const& left,
-                                                      Right const& right) {
+Product<LScalar, RScalar>
+DotProduct<LScalar, RScalar, size, 0>::Compute(Left const& left,
+                                               Right const& right) {
   return left[0] * right[0];
 }
 
@@ -364,50 +364,136 @@ auto FixedUpperTriangularMatrix<Scalar, columns_>::Transpose(
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
-    FixedVector<ScalarLeft, size> const& left,
-    ScalarRight const& right) {
-  FixedVector<Quotient<ScalarLeft, ScalarRight>, size> result(uninitialized);
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> InnerProduct(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right) {
+}
+
+template<typename Scalar, int size>
+constexpr FixedVector<double, size> Normalize(
+    FixedVector<Scalar, size> const& vector) {
+}
+
+template<typename LScalar, typename RScalar, int lsize, int rsize>
+constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
+    FixedVector<LScalar, lsize> const& left,
+    FixedVector<RScalar, rsize> const& right) {
+}
+
+template<typename Scalar, int size>
+constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
+    FixedVector<Scalar, size> const& vector) {
+}
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size> operator-(
+    FixedVector<Scalar, size> const& right) {
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns> operator-(
+    FixedMatrix<Scalar, rows, columns> const& right) {
+}
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right) {
+}
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedMatrix<RScalar, rows, columns> const& right) {
+}
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right) {
+  std::array<Difference<LScalar, RScalar>, size> result{};
+  for (int i = 0; i < size; ++i) {
+    result[i] = left[i] - right[i];
+  }
+  return FixedVector<Difference<LScalar, RScalar>, size>(
+      std::move(result));
+}
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedMatrix<RScalar, rows, columns> const& right) {
+}
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+    LScalar const left,
+    FixedVector<RScalar, size> const& right) {
+}
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+    FixedVector<LScalar, size> const& left,
+    RScalar const right) {
+}
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
+    LScalar const left,
+    FixedMatrix<RScalar, rows, columns> const& right) {
+}
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    RScalar const right) {
+}
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
+    FixedVector<LScalar, size> const& left,
+    RScalar const& right) {
+  FixedVector<Quotient<LScalar, RScalar>, size> result(uninitialized);
   for (int i = 0; i < left.size(); ++i) {
     result[i] = left[i] / right;
   }
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right) {
-  std::array<Difference<ScalarLeft, ScalarRight>, size> result{};
-  for (int i = 0; i < size; ++i) {
-    result[i] = left[i] - right[i];
-  }
-  return FixedVector<Difference<ScalarLeft, ScalarRight>, size>(
-      std::move(result));
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> operator/(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    RScalar const right) {
 }
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> operator*(
-    ScalarLeft* const left,
-    FixedVector<ScalarRight, size> const& right) {
-  return DotProduct<ScalarLeft, ScalarRight, size>::Compute(left, right.data_);
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> operator*(
+    LScalar* const left,
+    FixedVector<RScalar, size> const& right) {
+  return DotProduct<LScalar, RScalar, size>::Compute(left, right.data_);
 }
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> operator*(
-    TransposedView<FixedVector<ScalarLeft, size>> const& left,
-    FixedVector<ScalarRight, size> const& right) {
-  return DotProduct<ScalarLeft, ScalarRight, size>::Compute(
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> operator*(
+    TransposedView<FixedVector<LScalar, size>> const& left,
+    FixedVector<RScalar, size> const& right) {
+  return DotProduct<LScalar, RScalar, size>::Compute(
       left.transpose.data_, right.data_);
 }
 
-template<typename ScalarLeft, typename ScalarRight,
+template<typename LScalar, typename RScalar, int lsize, int rsize>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rsize, lsize> operator*(
+    FixedVector<LScalar, lsize> const& left,
+    TransposedView<FixedVector<RScalar, rsize>> const& right) {
+}
+
+template<typename LScalar, typename RScalar,
          int rows, int dimension, int columns>
-constexpr FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns>
-operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
-          FixedMatrix<ScalarRight, dimension, columns> const& right) {
-  FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns> result;
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(FixedMatrix<LScalar, rows, dimension> const& left,
+          FixedMatrix<RScalar, dimension, columns> const& right) {
+  FixedMatrix<Product<LScalar, RScalar>, rows, columns> result;
   for (int i = 0; i < left.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
       for (int k = 0; k < left.columns(); ++k) {
@@ -418,18 +504,18 @@ operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
-constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
-    FixedMatrix<ScalarLeft, rows, columns> const& left,
-    FixedVector<ScalarRight, columns> const& right) {
-  std::array<Product<ScalarLeft, ScalarRight>, rows> result;
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedVector<RScalar, columns> const& right) {
+  std::array<Product<LScalar, RScalar>, rows> result;
   auto const* row = left.data_.data();
   for (int i = 0; i < rows; ++i) {
     result[i] =
-        DotProduct<ScalarLeft, ScalarRight, columns>::Compute(row, right.data_);
+        DotProduct<LScalar, RScalar, columns>::Compute(row, right.data_);
     row += columns;
   }
-  return FixedVector<Product<ScalarLeft, ScalarRight>, rows>(std::move(result));
+  return FixedVector<Product<LScalar, RScalar>, rows>(std::move(result));
 }
 
 template<typename Scalar, int size>

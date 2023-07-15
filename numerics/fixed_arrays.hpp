@@ -215,6 +215,8 @@ template<typename Scalar, int size>
 constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
     FixedVector<Scalar, size> const& vector);
 
+// Additive groups.
+
 template<typename Scalar, int size>
 constexpr FixedVector<Scalar, size> operator-(
     FixedVector<Scalar, size> const& right);
@@ -242,6 +244,8 @@ template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right);
+
+// Vector spaces.
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
@@ -273,6 +277,8 @@ constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
 operator/(FixedMatrix<LScalar, rows, columns> const& left,
           RScalar const right);
 
+// Hilbert space and algebra.
+
 // TODO(phl): We should have a RowView.
 template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> operator*(
@@ -299,6 +305,8 @@ template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedVector<RScalar, columns> const& right);
+
+// Ouput.
 
 template<typename Scalar, int size>
 std::ostream& operator<<(std::ostream& out,
