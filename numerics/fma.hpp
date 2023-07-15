@@ -3,6 +3,7 @@
 #include <immintrin.h>
 
 #include "base/cpuid.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 
 namespace principia {
 namespace numerics {
