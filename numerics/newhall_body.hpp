@@ -64,7 +64,7 @@ template<int degree, typename RightElement, typename Result>
 void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
               QV<RightElement> const& right,
               Result& result) {
-  auto const* row = left.row<0>();
+  auto const* row = left.template row<0>();
   for (int i = 0; i < degree + 1; ++i) {
     result[i] = DotProduct<>::Compute(row, right);
     row += 2 * divisions + 2;
