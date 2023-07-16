@@ -156,7 +156,7 @@ Product<Scalar, Product<LScalar, RScalar>>
 FixedMatrix<Scalar, rows_, columns_>::operator()(
     FixedVector<LScalar, columns_> const& left,
     FixedVector<RScalar, rows_> const& right) const {
-  return TransposedView{.transpose = left} * (*this * right);
+  return left.Transpose() * (*this * right);
 }
 
 template<typename Scalar, int rows_, int columns_>
