@@ -384,8 +384,7 @@ constexpr Product<LScalar, RScalar> InnerProduct(
 template<typename Scalar, int size>
 constexpr FixedVector<double, size> Normalize(
     FixedVector<Scalar, size> const& vector) {
-  return vector /
-         Sqrt(DotProduct<Scalar, Scalar, size>::Compute(vector, vector));
+  return vector / vector.Norm();
 }
 
 template<typename LScalar, typename RScalar, int lsize, int rsize>

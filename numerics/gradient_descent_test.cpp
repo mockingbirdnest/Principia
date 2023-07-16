@@ -190,8 +190,8 @@ TEST_F(GradientDescentTest, Fixed) {
           /*start_argument=*/Argument({0 * Metre, 0 * Metre}),
           field,
           gradient,
-          /*tolerance=*/1 * Milli(Metre));
-  EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 0)));
+          /*tolerance=*/1 * Micro(Metre));
+  EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 1)));
 }
 
 }  // namespace numerics

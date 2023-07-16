@@ -88,6 +88,7 @@ TEST_F(FixedArraysTest, Assignment) {
 TEST_F(FixedArraysTest, Norm) {
   EXPECT_EQ(35, v4_.Transpose() * v4_);
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
+  EXPECT_EQ(35, v4_.Norm²());
   EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
 }
 
