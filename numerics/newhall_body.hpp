@@ -113,11 +113,11 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
 
 template<typename Value,
          typename DehomogeneizedCoefficients, int degree, int k>
-void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k>::Convert(
-    std::array<Value, degree + 1> const& homogeneous_coefficients,
-    Frequency const& scale,
-    Exponentiation<Frequency, k> const& scale_k,
-    DehomogeneizedCoefficients& dehomogeneized_coefficients) {
+void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k>::
+Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
+        Frequency const& scale,
+        Exponentiation<Frequency, k> const& scale_k,
+        DehomogeneizedCoefficients& dehomogeneized_coefficients) {
   std::get<k>(dehomogeneized_coefficients) =
       homogeneous_coefficients[k] * scale_k;
   Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k + 1>::Convert(
@@ -146,18 +146,23 @@ struct NewhallApproximator {
       Value& error_estimate);
 };
 
+// The error estimate must be computed in the Чебышёв basis because the elements
+// of the monomial basis are not bounded.
 #define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                 \
   template<typename Value, template<typename, typename, int> class Evaluator> \
   struct NewhallApproximator<Value, (degree), Evaluator> {                    \
     static std::array<Value, ((degree) + 1)> HomogeneousCoefficients(         \
         QV<Value> const& qv,                                                  \
         Value& error_estimate) {                                              \
+      error_estimate = DotProduct<>::Compute(                                 \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
+              .row<(degree)>(),                                               \
+          qv);                                                                \
       std::array<Value, ((degree) + 1)> result;                               \
       Multiply<(degree)>(                                                     \
           newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04,        \
           qv,                                                                 \
           result);                                                            \
-      error_estimate = result[degree];                                        \
       return result;                                                          \
     }                                                                         \
   }
