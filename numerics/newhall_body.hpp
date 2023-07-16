@@ -30,9 +30,10 @@ constexpr int divisions = 8;
 template<typename Value>
 using QV = std::array<Value, 2 * divisions + 2>;
 
+// A helper to unroll the dot product between an array-like object (which must
+// have an operator[]) and a |QV|.
 template<int index = 2 * divisions + 1>
 struct DotProduct {
-  // Left must have an operator[].
   template<typename Left, typename RightElement>
   static RightElement Compute(Left const& left, QV<RightElement> const& right);
 };
@@ -57,6 +58,8 @@ RightElement DotProduct<0>::Compute(Left const& left,
   return left[0] * right[0];
 }
 
+// Fills |result| (which must be array-like) with the result of multiplying a
+// matrix with a |QV|.
 template<int degree, typename RightElement, typename Result>
 void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
               QV<RightElement> const& right,
