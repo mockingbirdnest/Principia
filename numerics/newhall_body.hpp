@@ -23,6 +23,10 @@ using namespace principia::quantities::_quantities;
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;
 
+// Logically |QV| should be heterogeneous, as it contains positions (or
+// displacements) and velocities.  However, this would require giving dimensions
+// to the derivatives of the Чебышёв polynomials.  Let's no go there, let's do a
+// bit of type decay instead.
 template<typename Value>
 using QV = std::array<Value, 2 * divisions + 2>;
 
@@ -208,7 +212,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
   }
 
   std::vector<Vector> coefficients;
-  coefficients.resize(degree);
+  coefficients.resize(degree + 1);
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(3);
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(4);
