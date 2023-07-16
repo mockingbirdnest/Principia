@@ -1,13 +1,14 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include "gtest/gtest.h"
+#include "numerics/transposed_view.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 
 using namespace principia::numerics::_fixed_arrays;
-
+using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_elementary_functions;
 
 class FixedArraysTest : public ::testing::Test {
@@ -18,6 +19,9 @@ class FixedArraysTest : public ::testing::Test {
              6,  -3, -2, -9}),
       m23_({1, -2,  0,
             2,  3,  7}),
+      n23_({5,  -1,  3,
+            12, 13, -4}),
+      u3_({6, -1, 12}),
       v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
       sl4_({
@@ -35,6 +39,8 @@ class FixedArraysTest : public ::testing::Test {
 
   FixedMatrix<double, 3, 4> m34_;
   FixedMatrix<double, 2, 3> m23_;
+  FixedMatrix<double, 2, 3> n23_;
+  FixedVector<double, 3> u3_;
   FixedVector<double, 3> v3_;
   FixedVector<double, 4> v4_;
   FixedStrictlyLowerTriangularMatrix<double, 4> sl4_;
@@ -82,15 +88,48 @@ TEST_F(FixedArraysTest, Assignment) {
 TEST_F(FixedArraysTest, Norm) {
   EXPECT_EQ(35, v4_.Transpose() * v4_);
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
+  EXPECT_EQ(35, v4_.Norm²());
   EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
 }
 
-TEST_F(FixedArraysTest, MultiplicationDivision) {
-  EXPECT_EQ(v3_, m34_ * v4_);
-  EXPECT_EQ((FixedVector<double, 4>({-1.5, -1.5, 0.5, 2.0})), v4_ / 2.0);
+TEST_F(FixedArraysTest, AdditiveGroups) {
+  EXPECT_EQ((FixedVector<double, 3>({-10, -31, 47})), -v3_);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-1,  2,  0,
+                                        -2, -3, -7})), -m23_);
+
+  EXPECT_EQ((FixedVector<double, 3>({16, 30, -35})), u3_ + v3_);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({ 6, -3, 3,
+                                        14, 16, 3})), m23_ + n23_);
+
+  EXPECT_EQ((FixedVector<double, 3>({-4, -32, 59})), u3_ - v3_);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({ -4,  -1, -3,
+                                        -10, -10, 11})), m23_ - n23_);
+}
+
+TEST_F(FixedArraysTest, VectorSpaces) {
+  EXPECT_EQ((FixedVector<double, 3>({12, -2, 24})), 2 * u3_);
+  EXPECT_EQ((FixedVector<double, 3>({-30, -93, 141})), v3_ * -3);
+
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({2, -4,  0,
+                                        4,  6, 14})), 2 * m23_);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-15,   3, -9,
+                                        -36, -39, 12})), n23_ * -3);
+
+  EXPECT_EQ((FixedVector<double, 3>({2.5, 7.75, -11.75})), v3_ / 4);
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-2.5,  0.5, -1.5,
+                                          -6, -6.5,  2})), n23_ / -2);
+}
+
+TEST_F(FixedArraysTest, Algebra) {
+  EXPECT_EQ(-535, TransposedView(u3_) * v3_);
+  EXPECT_EQ((FixedMatrix<double, 3, 4>({-30, -30,  10,   40,
+                                        -93, -93,  31,  124,
+                                        141, 141, -47, -188})),
+             v3_ * TransposedView(v4_));
   EXPECT_EQ((FixedMatrix<double, 2, 4>({ 0,  14, -22,   3,
                                         14, -63,   5, -92})),
             m23_ * m34_);
+  EXPECT_EQ(v3_, m34_ * v4_);
 }
 
 TEST_F(FixedArraysTest, VectorIndexing) {

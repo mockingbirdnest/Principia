@@ -4,6 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -20,6 +21,7 @@ using ::testing::Optional;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -166,6 +168,30 @@ TEST_F(GradientDescentTest, Rosenbrock) {
                 Optional(AbsoluteErrorFrom(expected_minimum,
                                            IsNear(0.86_(1) * Micro(Metre)))));
   }
+}
+
+TEST_F(GradientDescentTest, Fixed) {
+  using Scalar = Voltage;
+  using Argument = FixedVector<Length, 2>;
+
+  auto field = [](Argument const& argument) -> Voltage {
+    return 3 * (Volt / Pow<2>(Metre)) * (Pow<2>(argument[0] - 1 * Metre) +
+                                         Pow<2>(argument[1] + 2 * Metre));
+  };
+  auto gradient = [](Argument const& argument) {
+    return FixedVector<Quotient<Voltage, Length>, 2>(
+        {6 * (Volt / Pow<2>(Metre)) * (argument[0] - 1 * Metre),
+         6 * (Volt / Pow<2>(Metre)) * (argument[1] + 2 * Metre)});
+  };
+
+  Argument const expected_minimum({1 * Metre, -2 * Metre});
+  auto const actual_minimum =
+      BroydenFletcherGoldfarbShanno<Scalar, Argument>(
+          /*start_argument=*/Argument({0 * Metre, 0 * Metre}),
+          field,
+          gradient,
+          /*tolerance=*/1 * Micro(Metre));
+  EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 1)));
 }
 
 }  // namespace numerics
