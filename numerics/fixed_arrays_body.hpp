@@ -101,13 +101,6 @@ constexpr Scalar const& FixedVector<Scalar, size_>::operator[](
 }
 
 template<typename Scalar, int size_>
-FixedVector<Scalar, size_>::operator std::vector<Scalar>() const {
-  std::vector<Scalar> result(data_.size());
-  std::copy(data_.begin(), data_.end(), result.begin());
-  return result;
-}
-
-template<typename Scalar, int size_>
 bool FixedVector<Scalar, size_>::operator==(FixedVector const& right) const {
   return data_ == right.data_;
 }
