@@ -140,7 +140,7 @@ Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
 
 template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator {
+struct NewhallApproximator {
   static std::array<Value, degree + 1> HomogeneousCoefficients(
       QV<Value> const& qv,
       Value& error_estimate);
@@ -148,7 +148,7 @@ struct NewhallAppromixator {
 
 #define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                 \
   template<typename Value, template<typename, typename, int> class Evaluator> \
-  struct NewhallAppromixator<Value, (degree), Evaluator> {                    \
+  struct NewhallApproximator<Value, (degree), Evaluator> {                    \
     static std::array<Value, ((degree) + 1)> HomogeneousCoefficients(         \
         QV<Value> const& qv,                                                  \
         Value& error_estimate) {                                              \
@@ -267,7 +267,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
   Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return origin +
          Dehomogeneize<Difference<Value>, degree, Evaluator>(
-             NewhallAppromixator<Difference<Value>, degree, Evaluator>::
+             NewhallApproximator<Difference<Value>, degree, Evaluator>::
                  HomogeneousCoefficients(qv, error_estimate),
              /*scale=*/1.0 / duration_over_two,
              t_mid);
