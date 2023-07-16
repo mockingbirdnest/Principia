@@ -40,8 +40,7 @@ struct Generator<Scalar, Vector<S, F>> {
 template<typename Scalar, typename V>
 struct Generator<Scalar, Point<V>> {
   using Gradient = typename Generator<Scalar, V>::Gradient;
-#if (_MSC_FULL_VER == 193'431'942 || \
-     _MSC_FULL_VER == 193'632'532 || \
+#if (_MSC_FULL_VER == 193'632'532 || \
      _MSC_FULL_VER == 193'632'535)
   using InnerProductFormResult =
       decltype(Generator<Scalar, V>::InnerProductForm());
@@ -68,8 +67,7 @@ Generator<Scalar, Vector<S, F>>::InnerProductForm() {
 }
 
 template<typename Scalar, typename V>
-#if (_MSC_FULL_VER == 193'431'942 || \
-     _MSC_FULL_VER == 193'632'532 || \
+#if (_MSC_FULL_VER == 193'632'532 || \
      _MSC_FULL_VER == 193'632'535)
 typename Generator<Scalar, Point<V>>::InnerProductFormResult
 #else
