@@ -26,44 +26,48 @@ constexpr int divisions = 8;
 template<typename Value>
 using QV = std::array<Value, 2 * divisions + 2>;
 
-template<typename RightElement, int size, int i = size - 1>
+template<int index = 2 * divisions + 1>
 struct DotProduct {
   // Left must have an operator[].
-  template<typename Left>
+  template<typename Left, typename RightElement>
   static RightElement Compute(Left const& left, QV<RightElement> const& right);
 };
 
-template<typename RightElement, int size>
-struct DotProduct<RightElement, size, 0> {
-  template<typename Left>
+template<>
+struct DotProduct<0> {
+  template<typename Left, typename RightElement>
   static RightElement Compute(Left const& left, QV<RightElement> const& right);
 };
 
-template<typename RightElement, int size, int i>
-template<typename Left>
-RightElement DotProduct<RightElement, size, i>::Compute(
-    Left const& left,
-    QV<RightElement> const& right) {
-  return left[i] * right[i] +
-         DotProduct<RightElement, size, i - 1>::Compute(left, right);
+template<int index>
+template<typename Left, typename RightElement>
+RightElement DotProduct<index>::Compute(Left const& left,
+                                        QV<RightElement> const& right) {
+  return left[index] * right[index] +
+         DotProduct<index - 1>::Compute(left, right);
 }
 
-template<typename RightElement, int size>
-template<typename Left>
-RightElement DotProduct<RightElement, size, 0>::Compute(
-    Left const& left,
-    QV<RightElement> const& right) {
+template<typename Left, typename RightElement>
+RightElement DotProduct<0>::Compute(Left const& left,
+                                    QV<RightElement> const& right) {
   return left[0] * right[0];
 }
 
-template<typename Value, int degree>
-void operator*(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
-               QV<Value> const& right) {}
+template<int degree, typename RightElement, typename Result>
+void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
+              QV<RightElement> const& right,
+              Result& result) {
+  auto const* row = left.row<0>();
+  for (int i = 0; i < degree + 1; ++i) {
+    result[i] = DotProduct<>::Compute(row, right);
+    row += 2 * divisions + 2;
+  }
+}
 
 template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
-    FixedVector<Value, degree + 1> const& homogeneous_coefficients,
+    std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin);
 
@@ -71,7 +75,7 @@ template<typename Value,
          typename DehomogeneizedCoefficients, int degree, int k>
 struct Dehomogeneizer {
   static void Convert(
-      FixedVector<Value, degree + 1> const& homogeneous_coefficients,
+      std::array<Value, degree + 1> const& homogeneous_coefficients,
       Frequency const& scale,
       Exponentiation<Frequency, k> const& scale_k,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
@@ -81,7 +85,7 @@ template<typename Value,
          typename DehomogeneizedCoefficients, int degree>
 struct Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree> {
   static void Convert(
-      FixedVector<Value, degree + 1> const& homogeneous_coefficients,
+      std::array<Value, degree + 1> const& homogeneous_coefficients,
       Frequency const& scale,
       Exponentiation<Frequency, degree> const& scale_degree,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
@@ -90,7 +94,7 @@ struct Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree> {
 template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
-    FixedVector<Value, degree + 1> const& homogeneous_coefficients,
+    std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin) {
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
@@ -106,7 +110,7 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
 template<typename Value,
          typename DehomogeneizedCoefficients, int degree, int k>
 void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k>::Convert(
-    FixedVector<Value, degree + 1> const& homogeneous_coefficients,
+    std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Exponentiation<Frequency, k> const& scale_k,
     DehomogeneizedCoefficients& dehomogeneized_coefficients) {
@@ -122,7 +126,7 @@ void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k>::Convert(
 template<typename Value,
          typename DehomogeneizedCoefficients, int degree>
 void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree>::
-Convert(FixedVector<Value, degree + 1> const& homogeneous_coefficients,
+Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
         Frequency const& scale,
         Exponentiation<Frequency, degree> const& scale_degree,
         DehomogeneizedCoefficients& dehomogeneized_coefficients) {
@@ -133,23 +137,25 @@ Convert(FixedVector<Value, degree + 1> const& homogeneous_coefficients,
 template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator {
-  static FixedVector<Value, degree + 1> HomogeneousCoefficients(
-      FixedVector<Value, 2 * divisions + 2> const& qv,
+  static std::array<Value, degree + 1> HomogeneousCoefficients(
+      QV<Value> const& qv,
       Value& error_estimate);
 };
 
-#define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                  \
-  template<typename Value, template<typename, typename, int> class Evaluator>  \
-  struct NewhallAppromixator<Value, (degree), Evaluator> {                     \
-    static FixedVector<Value, ((degree) + 1)> HomogeneousCoefficients(         \
-        FixedVector<Value, 2 * divisions + 2> const& qv,                       \
-        Value& error_estimate) {                                               \
-      error_estimate =                                                         \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04           \
-              .row<(degree)>() *                                               \
-          qv;                                                                  \
-      return newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04 * qv; \
-    }                                                                          \
+#define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                 \
+  template<typename Value, template<typename, typename, int> class Evaluator> \
+  struct NewhallAppromixator<Value, (degree), Evaluator> {                    \
+    static std::array<Value, ((degree) + 1)> HomogeneousCoefficients(         \
+        QV<Value> const& qv,                                                  \
+        Value& error_estimate) {                                              \
+      std::array<Value, ((degree) + 1)> result;                               \
+      Multiply<(degree)>(                                                     \
+          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04,        \
+          qv,                                                                 \
+          result);                                                            \
+      error_estimate = result[degree];                                        \
+      return result;                                                          \
+    }                                                                         \
   }
 
 PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(3);
@@ -170,10 +176,12 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION
 
-#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)     \
-  case (degree):                                                          \
-    coefficients = std::vector<Vector>(                                   \
-        newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv); \
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree) \
+  case (degree):                                                      \
+    Multiply<(degree)>(                                               \
+        newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04,   \
+        qv,                                                           \
+        coefficients);                                                \
     break
 
 template<typename Vector>
@@ -191,7 +199,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Vector, 2 * divisions + 2> qv;
+  QV<Vector> qv;
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
@@ -200,7 +208,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
   }
 
   std::vector<Vector> coefficients;
-  coefficients.reserve(degree);
+  coefficients.resize(degree);
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(3);
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(4);
@@ -244,7 +252,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  FixedVector<Difference<Value>, 2 * divisions + 2> qv;
+  QV<Difference<Value>> qv;
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
