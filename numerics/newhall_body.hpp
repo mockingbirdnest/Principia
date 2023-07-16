@@ -23,6 +23,43 @@ using namespace principia::quantities::_quantities;
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;
 
+template<typename Value>
+using QV = std::array<Value, 2 * divisions + 2>;
+
+template<typename RightElement, int size, int i = size - 1>
+struct DotProduct {
+  // Left must have an operator[].
+  template<typename Left>
+  static RightElement Compute(Left const& left, QV<RightElement> const& right);
+};
+
+template<typename RightElement, int size>
+struct DotProduct<RightElement, size, 0> {
+  template<typename Left>
+  static RightElement Compute(Left const& left, QV<RightElement> const& right);
+};
+
+template<typename RightElement, int size, int i>
+template<typename Left>
+RightElement DotProduct<RightElement, size, i>::Compute(
+    Left const& left,
+    QV<RightElement> const& right) {
+  return left[i] * right[i] +
+         DotProduct<RightElement, size, i - 1>::Compute(left, right);
+}
+
+template<typename RightElement, int size>
+template<typename Left>
+RightElement DotProduct<RightElement, size, 0>::Compute(
+    Left const& left,
+    QV<RightElement> const& right) {
+  return left[0] * right[0];
+}
+
+template<typename Value, int degree>
+void operator*(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
+               QV<Value> const& right) {}
+
 template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
