@@ -19,14 +19,19 @@ using namespace principia::quantities::_quantities;
 // In this file |Argument| must be such that its difference belongs to a Hilbert
 // space.
 
+// A helper for generating declarations derived from |Scalar| and |Argument|.
+// It must declare the type of the gradient and a function returning the inner
+// product form thus:
+//   using Gradient = ...;
+//   static ... InnerProductForm();
+template<typename Scalar, typename Argument>
+struct Generator;
+
 template<typename Scalar, typename Argument>
 using Field = std::function<Scalar(Argument const&)>;
 
 template<typename Scalar, typename Argument>
-using Gradient =
-    Product<Scalar,
-            Quotient<Difference<Argument>,
-                     typename Hilbert<Difference<Argument>>::Norm²Type>>;
+using Gradient = typename Generator<Scalar, Argument>::Gradient;
 
 // Stops when the search displacement is smaller than |tolerance|.  Returns
 // |nullopt| if no minimum is found within distance |radius| of
