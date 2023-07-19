@@ -2,6 +2,7 @@
 
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -10,11 +11,13 @@ namespace internal {
 
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 constexpr Time absolute_δt = 1 * Second;
 constexpr Speed absolute_δv = 1 * Metre / Second;
+constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
 FlightPlanOptimizer::FlightPlanOptimizer(
@@ -27,6 +30,26 @@ void FlightPlanOptimizer::Optimize(int const index,
   Argument const start_argument{
       .initial_time = manœuvre.burn().timing.initial_time.value(),
       .Δv = manœuvre.burn().intensity.Δv.value()};
+}
+
+FlightPlanOptimizer::HomogeneousArgument FlightPlanOptimizer::Homogeneize(
+    Argument const& argument) {
+  auto const& Δv_coordinates = argument.Δv.coordinates();
+  return HomogeneousArgument(
+      {(argument.initial_time - Instant{}) * time_homogeneization_factor,
+       Δv_coordinates.x,
+       Δv_coordinates.y,
+       Δv_coordinates.z});
+}
+
+FlightPlanOptimizer::Argument FlightPlanOptimizer::Dehomogeneize(
+    HomogeneousArgument const& homogeneous_argument) {
+  return Argument{
+      .initial_time =
+          Instant{} + homogeneous_argument[0] / time_homogeneization_factor,
+      .Δv = Velocity<Frenet<Navigation>>({homogeneous_argument[1],
+                                          homogeneous_argument[2],
+                                          homogeneous_argument[3]})};
 }
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestial(

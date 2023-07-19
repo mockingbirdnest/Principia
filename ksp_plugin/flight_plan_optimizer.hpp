@@ -21,32 +21,11 @@ using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-
-struct Argument {
-  Instant initial_time;
-  Velocity<Frenet<Navigation>> Δv;
-};
-
-struct ArgumentDifference {
-  static constexpr int dimension = 4;
-  Time time_difference;
-  Velocity<Frenet<Navigation>> Δv_difference;
-
-  double Norm() const;
-};
-
-ArgumentDifference operator-(Argument const& left, Argument const& right);
-ArgumentDifference operator/(ArgumentDifference const& left,
-                             double const& right);
-ArgumentDifference operator*(Length const& left,
-                             ArgumentDifference const& right);
-
-double InnerProduct(ArgumentDifference const& left,
-                    ArgumentDifference const& right);
 
 class FlightPlanOptimizer {
  public:
@@ -55,9 +34,20 @@ class FlightPlanOptimizer {
   void Optimize(int index, Celestial const& celestial);
 
  private:
+  struct Argument {
+    Instant initial_time;
+    Velocity<Frenet<Navigation>> Δv;
+  };
 
-  using LengthField = Field<Length, Argument>;
-  using LengthGradient = Gradient<Length, Argument>;
+  using HomogeneousArgument = FixedVector<Speed, 4>;
+
+  using LengthField = Field<Length, HomogeneousArgument>;
+  using LengthGradient = Gradient<Length, HomogeneousArgument>;
+
+  static HomogeneousArgument Homogeneize(
+      Argument const& argument);
+  static Argument Dehomogeneize(
+      HomogeneousArgument const& homogeneous_argument);
 
   static Length EvaluateDistanceToCelestial(Celestial const& celestial,
                                             Instant const& begin_time,
