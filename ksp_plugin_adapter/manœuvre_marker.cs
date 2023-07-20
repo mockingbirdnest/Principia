@@ -155,6 +155,12 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 #endregion Mouse Events
 
+  public void Update() {
+    if(!MapView.MapIsEnabled) {
+      Disable();
+    }
+  }
+
   private static UnityEngine.GameObject MakeTrihedronBase() {
     var sphere = UnityEngine.GameObject.CreatePrimitive(
         UnityEngine.PrimitiveType.Sphere);
