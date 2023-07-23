@@ -71,6 +71,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   internal void RequestEditorFocus(int i) {
     requested_editor_focus_index_ = i;
   }
+
   protected override string Title =>
       L10N.CacheFormat("#Principia_FlightPlan_Title");
 
@@ -370,7 +371,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           RenderUpcomingEvents();
         }
 
-      // Fixme(al2me6): this current event check prevents the window from being
+      // TODO(al2me6): This current event check prevents the window from being
       // zero-sized for a single frame. How it does this is unclear to me and
       // should be investigated.
       if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
