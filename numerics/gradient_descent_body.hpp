@@ -7,7 +7,9 @@
 #include <optional>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -17,21 +19,63 @@ namespace _gradient_descent {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
 
-// A helper to use |Argument| with |SymmetricBilinearForm|.
-template<typename A>
-struct ArgumentHelper;
-
-template<typename Scalar, typename Frame>
-struct ArgumentHelper<Vector<Scalar, Frame>> {
-  static SymmetricBilinearForm<double, Frame, Vector> InnerProductForm() {
-    return geometry::_symmetric_bilinear_form::InnerProductForm<Frame,
-                                                                Vector>();
-  }
+template<typename Scalar, typename S, int s>
+struct Generator<Scalar, FixedVector<S, s>> {
+  using Gradient = FixedVector<Quotient<Scalar, S>, s>;
+  static FixedMatrix<double, s, s> InnerProductForm();
 };
+
+template<typename Scalar, typename S, typename F>
+struct Generator<Scalar, Vector<S, F>> {
+  using Gradient = Vector<Quotient<Scalar, S>, F>;
+  static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
+};
+
+template<typename Scalar, typename V>
+struct Generator<Scalar, Point<V>> {
+  using Gradient = typename Generator<Scalar, V>::Gradient;
+#if (_MSC_FULL_VER == 193'632'532 || \
+     _MSC_FULL_VER == 193'632'535)
+  using InnerProductFormResult =
+      decltype(Generator<Scalar, V>::InnerProductForm());
+  static InnerProductFormResult InnerProductForm();
+#else
+  static decltype(Generator<Scalar, V>::InnerProductForm()) InnerProductForm();
+#endif
+};
+
+template<typename Scalar, typename S, int s>
+FixedMatrix<double, s, s>
+Generator<Scalar, FixedVector<S, s>>::InnerProductForm() {
+  FixedMatrix<double, s, s> result{};
+  for (int i = 0; i < s; ++i) {
+    result(i, i) = 1;
+  }
+  return result;
+}
+
+template<typename Scalar, typename S, typename F>
+SymmetricBilinearForm<double, F, Vector>
+Generator<Scalar, Vector<S, F>>::InnerProductForm() {
+  return geometry::_symmetric_bilinear_form::InnerProductForm<F, Vector>();
+}
+
+template<typename Scalar, typename V>
+#if (_MSC_FULL_VER == 193'632'532 || \
+     _MSC_FULL_VER == 193'632'535)
+typename Generator<Scalar, Point<V>>::InnerProductFormResult
+#else
+decltype(Generator<Scalar, V>::InnerProductForm())
+#endif
+Generator<Scalar, Point<V>>::InnerProductForm() {
+  return Generator<Scalar, V>::InnerProductForm();
+}
 
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
@@ -189,7 +233,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
   auto const H₀ = InnerProduct(s₀, y₀) *
-                  ArgumentHelper<Difference<Argument>>::InnerProductForm() /
+                  Generator<Scalar, Argument>::InnerProductForm() /
                   y₀.Norm²();
 
   auto xₖ = x₁;

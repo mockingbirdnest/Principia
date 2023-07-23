@@ -39,6 +39,11 @@ struct ExponentiationGenerator<double, n> : not_constructible {
   using Type = double;
 };
 
+template<int n>
+struct ExponentiationGenerator<int, n> : not_constructible {
+  using Type = int;
+};
+
 template<template<typename> typename Quantity, typename D, int n>
 struct NthRootGenerator<Quantity<D>, n, void> : not_constructible {
   using Type = typename Collapse<

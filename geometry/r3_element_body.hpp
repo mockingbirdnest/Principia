@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "glog/logging.h"
 #include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -83,7 +84,7 @@ Scalar const& R3Element<Scalar>::operator[](
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator+=(
     R3Element<Scalar> const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   xy = _mm_add_pd(xy, right.xy);
   zt = _mm_add_sd(zt, right.zt);
 #else
@@ -97,7 +98,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator+=(
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator-=(
     R3Element<Scalar> const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   xy = _mm_sub_pd(xy, right.xy);
   zt = _mm_sub_sd(zt, right.zt);
 #else
@@ -110,7 +111,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator-=(
 
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   __m128d const right_128d = ToM128D(right);
   xy = _mm_mul_pd(xy, right_128d);
   zt = _mm_mul_sd(zt, right_128d);
@@ -124,7 +125,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
 
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   __m128d const right_128d = ToM128D(right);
   xy = _mm_div_pd(xy, right_128d);
   zt = _mm_div_sd(zt, right_128d);
@@ -218,7 +219,7 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   return R3Element<Scalar>(_mm_add_pd(left.xy, right.xy),
                            _mm_add_sd(left.zt, right.zt));
 #else
@@ -231,7 +232,7 @@ R3Element<Scalar> operator+(R3Element<Scalar> const& left,
 template<typename Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   return R3Element<Scalar>(_mm_sub_pd(left.xy, right.xy),
                            _mm_sub_sd(left.zt, right.zt));
 #else
@@ -245,7 +246,7 @@ template<typename LScalar, typename RScalar, typename>
 R3Element<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3Element<RScalar> const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   __m128d const left_128d = ToM128D(left);
   return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(right.xy, left_128d),
                                               _mm_mul_sd(right.zt, left_128d));
@@ -259,7 +260,7 @@ R3Element<Product<LScalar, RScalar>> operator*(
 template<typename LScalar, typename RScalar, typename>
 R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
                                                RScalar const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   __m128d const right_128d = ToM128D(right);
   return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(left.xy, right_128d),
                                               _mm_mul_sd(left.zt, right_128d));
@@ -273,7 +274,7 @@ R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
 template<typename LScalar, typename RScalar, typename>
 R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
                                                 RScalar const& right) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   __m128d const right_128d = ToM128D(right);
   return R3Element<Quotient<LScalar, RScalar>>(_mm_div_pd(left.xy, right_128d),
                                                _mm_div_sd(left.zt, right_128d));

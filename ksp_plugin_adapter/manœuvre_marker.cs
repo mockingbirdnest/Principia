@@ -233,6 +233,10 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
 
   // Accumulate and reset the interactivity states of all active markers.
   public void Update() {
+    if(!MapView.MapIsEnabled) {
+      Disable();
+    }
+
     has_interacting_marker |= is_interacting;
 
     // Only run one copy of this coroutine.

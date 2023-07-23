@@ -22,6 +22,8 @@ class FixedMatrix;
 template<typename Scalar, int size_>
 class FixedVector final {
  public:
+  static constexpr int dimension = size_;
+
   constexpr FixedVector();
   explicit FixedVector(uninitialized_t);
 
@@ -33,13 +35,12 @@ class FixedVector final {
   TransposedView<FixedVector> Transpose() const;
 
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   static constexpr int size() { return size_; }
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
-
-  explicit operator std::vector<Scalar>() const;
 
   bool operator==(FixedVector const& right) const;
   bool operator!=(FixedVector const& right) const;
@@ -88,6 +89,11 @@ class FixedMatrix final {
 
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
+
+  template<typename LScalar, typename RScalar>
+  Product<Scalar, Product<LScalar, RScalar>>
+      operator()(FixedVector<LScalar, columns_> const& left,
+                 FixedVector<RScalar, rows_> const& right) const;
 
   static FixedMatrix Identity();
 
@@ -189,36 +195,116 @@ class FixedUpperTriangularMatrix final {
   std::array<Scalar, size()> data_;
 };
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Quotient<ScalarLeft, ScalarRight>, size> operator/(
-    FixedVector<ScalarLeft, size> const& left,
-    ScalarRight const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> InnerProduct(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
-    FixedVector<ScalarLeft, size> const& left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename Scalar, int size>
+constexpr FixedVector<double, size> Normalize(
+    FixedVector<Scalar, size> const& vector);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> operator*(
-    ScalarLeft* const left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename LScalar, typename RScalar, int lsize, int rsize>
+constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
+    FixedVector<LScalar, lsize> const& left,
+    FixedVector<RScalar, rsize> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int size>
-constexpr Product<ScalarLeft, ScalarRight> operator*(
-    TransposedView<FixedVector<ScalarLeft, size>> const& left,
-    FixedVector<ScalarRight, size> const& right);
+template<typename Scalar, int size>
+constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
+    FixedVector<Scalar, size> const& vector);
 
-template<typename ScalarLeft, typename ScalarRight,
+// Additive groups.
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size> operator-(
+    FixedVector<Scalar, size> const& right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns> operator-(
+    FixedMatrix<Scalar, rows, columns> const& right);
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedMatrix<RScalar, rows, columns> const& right);
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedMatrix<RScalar, rows, columns> const& right);
+
+// Vector spaces.
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+    LScalar const left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+    FixedVector<LScalar, size> const& left,
+    RScalar const right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(LScalar const left,
+          FixedMatrix<RScalar, rows, columns> const& right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(FixedMatrix<LScalar, rows, columns> const& left,
+          RScalar const right);
+
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
+    FixedVector<LScalar, size> const& left,
+    RScalar const& right);
+
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
+operator/(FixedMatrix<LScalar, rows, columns> const& left,
+          RScalar const right);
+
+// Hilbert space and algebra.
+
+// TODO(phl): We should have a RowView.
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> operator*(
+    LScalar* const left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int size>
+constexpr Product<LScalar, RScalar> operator*(
+    TransposedView<FixedVector<LScalar, size>> const& left,
+    FixedVector<RScalar, size> const& right);
+
+template<typename LScalar, typename RScalar, int lsize, int rsize>
+constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
+    FixedVector<LScalar, lsize> const& left,
+    TransposedView<FixedVector<RScalar, rsize>> const& right);
+
+template<typename LScalar, typename RScalar,
          int rows, int dimension, int columns>
-constexpr FixedMatrix<Product<ScalarLeft, ScalarRight>, rows, columns>
-operator*(FixedMatrix<ScalarLeft, rows, dimension> const& left,
-          FixedMatrix<ScalarRight, dimension, columns> const& right);
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+operator*(FixedMatrix<LScalar, rows, dimension> const& left,
+          FixedMatrix<RScalar, dimension, columns> const& right);
 
-template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
-constexpr FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
-    FixedMatrix<ScalarLeft, rows, columns> const& left,
-    FixedVector<ScalarRight, columns> const& right);
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
+    FixedMatrix<LScalar, rows, columns> const& left,
+    FixedVector<RScalar, columns> const& right);
+
+// Ouput.
 
 template<typename Scalar, int size>
 std::ostream& operator<<(std::ostream& out,
