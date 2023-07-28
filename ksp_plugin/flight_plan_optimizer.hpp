@@ -27,16 +27,20 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
+//TODO(phl)comment
 class FlightPlanOptimizer {
  public:
   explicit FlightPlanOptimizer(not_null<FlightPlan*> flight_plan);
 
-  void Optimize(int index, Celestial const& celestial);
+  absl::Status Optimize(int index,
+                        Celestial const& celestial,
+                        Speed const& Δv_tolerance);
 
  private:
+  // The |Argument| is relative to the current properties of the burn.
   struct Argument {
-    Instant initial_time;
-    Velocity<Frenet<Navigation>> Δv;
+    Time Δinitial_time;
+    Velocity<Frenet<Navigation>> ΔΔv;
   };
 
   using HomogeneousArgument = FixedVector<Speed, 4>;
@@ -44,8 +48,7 @@ class FlightPlanOptimizer {
   using LengthField = Field<Length, HomogeneousArgument>;
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
 
-  static HomogeneousArgument Homogeneize(
-      Argument const& argument);
+  static HomogeneousArgument Homogeneize(Argument const& argument);
   static Argument Dehomogeneize(
       HomogeneousArgument const& homogeneous_argument);
 
@@ -54,15 +57,23 @@ class FlightPlanOptimizer {
                                             FlightPlan const& flight_plan);
   static Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
+      Instant const& begin_time,
       Argument const& argument,
       int index,
       FlightPlan& flight_plan);
 
-  static LengthGradient Evaluate𝛁DistanceToCelestial(Celestial const& celestial,
-                                                     Argument const& argument,
-                                                     int const index,
-                                                     FlightPlan& flight_plan);
+  static LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
+      Celestial const& celestial,
+      Instant const& begin_time,
+      Argument const& argument,
+      int index,
+      FlightPlan& flight_plan);
 
+  static absl::Status ReplaceBurn(Argument const& argument,
+                                  int index,
+                                  FlightPlan& flight_plan);
+
+  static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
 };
 
