@@ -124,6 +124,25 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     }
     UnityEngine.GUI.skin = skin_;
     if (show_) {
+      // N.B.(al2me6): Empirical observation gave the following conclusions:
+      // In each frame, |OnGUI| (from whence this method is ultimately called)
+      // will be called at least twice, with the following order of event types:
+      // 1. Layout
+      // 2. For each interaction during that frame (e.g., mouse event):
+      //   a. Interaction event
+      //   b. Layout
+      // 3. Repaint
+      // cf. <https://docs.unity3d.com/ScriptReference/Event.html>.
+      // Furthermore, |Shrink| is not safe to call in the (time) window between
+      // the call to |GUILayout.Window| in the last Layout of the frame and the
+      // subsequent Repaint; doing so may cause the window to become blank for
+      // one frame.  Thus, here (in a Layout, before drawing the window) is a
+      // safe place to execute any requested shrinks.
+      if (shrink_scheduled_
+          && UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
+        Shrink();
+        shrink_scheduled_ = false;
+      }
       rectangle_ = UnityEngine.GUILayout.Window(
           id         : this.GetHashCode(),
           screenRect : rectangle_,
@@ -205,7 +224,11 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     }
   }
 
-  public void Shrink() {
+  public void ScheduleShrink() {
+    shrink_scheduled_ = true;
+  }
+
+  private void Shrink() {
     rectangle_.height = 0.0f;
     rectangle_.width = 0.0f;
   }
@@ -268,6 +291,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   private readonly string lock_name_;
   private UnityEngine.GUISkin skin_;
   private bool must_centre_ = true;
+  private bool shrink_scheduled_ = false;
   private bool show_ = false;
   protected UnityEngine.Rect rectangle_;
   private DateTime tooltip_begin_;
