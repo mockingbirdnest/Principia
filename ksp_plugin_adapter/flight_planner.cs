@@ -68,6 +68,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
   }
 
+  internal void RequestEditorFocus(int i) {
+    requested_editor_focus_index_ = i;
+  }
+
   protected override string Title =>
       L10N.CacheFormat("#Principia_FlightPlan_Title");
 
@@ -366,6 +370,18 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         if (burn_editors_.Count > 0) {
           RenderUpcomingEvents();
         }
+
+      // TODO(al2me6): This current event check prevents the window from being
+      // zero-sized for a single frame. How it does this is unclear to me and
+      // should be investigated.
+      if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
+          requested_editor_focus_index_ is int requested_focus) {
+        requested_editor_focus_index_ = null;
+        for (int i = 0; i < burn_editors_.Count; ++i) {
+          burn_editors_[i].minimized = requested_focus != i;
+        }
+        Shrink();
+      }
 
         // Compute the final times for each manœuvre before displaying them.
         var final_times = new List<double>();
@@ -777,6 +793,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private Status status_ = Status.OK;
   private int? first_error_manœuvre_;  // May exceed the number of manœuvres.
   private bool message_was_displayed_ = false;
+
+  private int? requested_editor_focus_index_;
 
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
