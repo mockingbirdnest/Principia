@@ -1,5 +1,6 @@
 #include "ksp_plugin/plugin.hpp"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,9 +14,12 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -35,6 +39,7 @@ using ::testing::HasSubstr;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pair;
+using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::internal::CaptureStderr;
 using ::testing::internal::GetCapturedStderr;
@@ -43,9 +48,12 @@ using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::ksp_plugin::_celestial;
+using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -148,24 +156,21 @@ TEST_F(PluginCompatibilityTest, Reach) {
               Eq("1970-08-14T08:47:05"_DateTime));
   ASSERT_TRUE(ifnity->has_flight_plan());
   ifnity->ReadFlightPlanFromMessage();
-  EXPECT_THAT(ifnity->flight_plan()
-                  .adaptive_step_parameters()
-                  .length_integration_tolerance(),
-              Eq(1 * Metre));
-  EXPECT_THAT(ifnity->flight_plan().adaptive_step_parameters().max_steps(),
-              Eq(16'000));
-  EXPECT_THAT(ifnity->flight_plan().number_of_manœuvres(), Eq(16));
+  FlightPlan const& flight_plan = ifnity->flight_plan();
+  EXPECT_THAT(
+      flight_plan.adaptive_step_parameters().length_integration_tolerance(),
+      Eq(1 * Metre));
+  EXPECT_THAT(flight_plan.adaptive_step_parameters().max_steps(), Eq(16'000));
+  EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
   std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
-  for (int i = 0; i < ifnity->flight_plan().number_of_manœuvres(); ++i) {
+  for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
     manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
-        TTSecond(ifnity->flight_plan().GetManœuvre(i).initial_time()),
-        ifnity->flight_plan().GetManœuvre(i).Δv().Norm());
+        TTSecond(flight_plan.GetManœuvre(i).initial_time()),
+        flight_plan.GetManœuvre(i).Δv().Norm());
   }
   // The flight plan only covers the inner solar system (this is probably
   // because of #3035).
   // It also differs from https://youtu.be/7BDxZV7UD9I?t=439.
-  // TODO(egg): Compute the flybys and figure out what exactly is going on in
-  // this flight plan.
   EXPECT_THAT(manœuvre_ignition_tt_seconds_and_Δvs,
               ElementsAre(Pair("1970-08-14T09:34:49"_DateTime,
                                3.80488671073918022e+03 * (Metre / Second)),
@@ -199,6 +204,49 @@ TEST_F(PluginCompatibilityTest, Reach) {
                                1.00404183285598275e-03 * (Metre / Second)),
                           Pair("1977-07-28T22:47:53"_DateTime,
                                1.39666705839172456e-01 * (Metre / Second))));
+
+  // Compute the flybys.
+  std::map<Instant, std::string> flybys;
+  for (Index index = 0; plugin->HasCelestial(index); ++index) {
+    Celestial const& celestial = plugin->GetCelestial(index);
+    auto const& celestial_trajectory = celestial.trajectory();
+    auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
+    DiscreteTrajectory<Barycentric> apoapsides;
+    DiscreteTrajectory<Barycentric> periapsides;
+
+    // The begin time avoid spurious periapsides right after the launch.
+    ComputeApsides(celestial_trajectory,
+                   flight_plan_trajectory,
+                   flight_plan_trajectory.upper_bound("1970-08-15T00:00:00"_TT),
+                   flight_plan_trajectory.end(),
+                   /*max_points=*/100,
+                   apoapsides,
+                   periapsides);
+    auto const radius = celestial.body()->mean_radius();
+    for (const auto [time, _] : periapsides) {
+      if ((celestial_trajectory.EvaluatePosition(time) -
+           flight_plan_trajectory.EvaluatePosition(time))
+              .Norm() < 50 * radius) {
+        flybys[time] = celestial.body()->name();
+      }
+    }
+  }
+
+  // The flybys are reasonably similar to https://youtu.be/7BDxZV7UD9I?t=439,
+  // but not identical.
+  EXPECT_THAT(
+      flybys,
+      ElementsAre(
+          Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1971-08-29T23:33:54"_DateTime), "Mars"),
+          Pair(ResultOf(&TTSecond, "1972-03-26T11:23:30"_DateTime), "Earth"),
+          Pair(ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime), "Moon"),
+          Pair(ResultOf(&TTSecond, "1972-11-02T21:15:50"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1973-06-15T13:17:25"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1974-07-25T22:45:52"_DateTime), "Mercury"),
+          Pair(ResultOf(&TTSecond, "1974-09-05T08:27:45"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1975-04-18T00:42:26"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1976-04-26T17:38:08"_DateTime), "Venus")));
 
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));
