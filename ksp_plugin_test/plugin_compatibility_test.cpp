@@ -13,9 +13,12 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
