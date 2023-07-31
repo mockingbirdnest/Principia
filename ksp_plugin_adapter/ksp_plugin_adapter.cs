@@ -344,7 +344,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     map_node_pool_ = new MapNodePool(
-        show_unpinned: () => main_window_.show_unpinned_markers);
+        visibility_modifiers: () => new MapNodePool.VisibilityModifiers(
+            show_unpinned: main_window_.show_unpinned_markers,
+            can_hover: !ManœuvreMarker.has_interacting_marker)
+        );
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
     orbit_analyser_ = new CurrentOrbitAnalyser(this, PredictedVessel);
     plotting_frame_selector_ =
@@ -2210,16 +2213,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                           manœuvre_index);
                   if (number_of_rendered_manœuvres
                       >= manœuvre_marker_pool_.Count) {
-                    var marker = new UnityEngine.GameObject("manœuvre_marker");
-                    manœuvre_marker_pool_.
-                        Add(marker.AddComponent<ManœuvreMarker>());
+                    manœuvre_marker_pool_.Add(
+                        ManœuvreMarker.Create(main_window_, flight_planner_));
                   }
                   var initial_plotted_velocity =
                       (Vector3d)plugin_.FlightPlanGetManoeuvreInitialPlottedVelocity(
                           main_vessel_guid, manœuvre_index);
                   manœuvre_marker_pool_[number_of_rendered_manœuvres].
                       Render(manœuvre_index,
-                             flight_planner_,
                              world_position: position_at_start,
                              initial_plotted_velocity,
                              trihedron);

@@ -39,17 +39,27 @@ internal class MapNodePool {
                                             type == other.type;
   }
 
+  public readonly struct VisibilityModifiers {
+    public readonly bool show_unpinned;
+    public readonly bool can_hover;
+
+    public VisibilityModifiers(bool show_unpinned, bool can_hover) {
+      this.show_unpinned = show_unpinned;
+      this.can_hover = can_hover;
+    }
+}
+
   public class SingleProvenancePool {
     public int nodes_used;
     public List<KSP.UI.Screens.Mapview.MapNode> nodes =
         new List<KSP.UI.Screens.Mapview.MapNode>(MaxNodesPerProvenance);
   }
 
-  public MapNodePool(Func<bool> show_unpinned) {
+  public MapNodePool(Func<VisibilityModifiers> visibility_modifiers) {
     nodes_ = new Dictionary<Provenance, SingleProvenancePool>();
     properties_ =
         new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
-    show_unpinned_ = show_unpinned;
+    visibility_modifiers_ = visibility_modifiers;
   }
 
   public void Clear() {
@@ -195,9 +205,17 @@ internal class MapNodePool {
     new_node.OnUpdateVisible += (KSP.UI.Screens.Mapview.MapNode node,
                                  KSP.UI.Screens.Mapview.MapNode.IconData
                                      icon) => {
+      var visibility = visibility_modifiers_();
       icon.visible = properties_[node].visible &&
-                     (show_unpinned_() || node.Pinned);
+                     (visibility.show_unpinned || node.Pinned);
       icon.color = properties_[node].colour;
+      node.Interactable = visibility.can_hover;
+      // If the node shouldn't be interactable, then it cannot be actively
+      // hovered. So, force remove the existing active hover state.
+      // This is the same call used by the stock code.
+      if (!node.Interactable && node.Hover) {
+        node.OnPointerExit(null);
+      }
     };
     new_node.OnUpdateType += (KSP.UI.Screens.Mapview.MapNode node,
                               KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
@@ -323,7 +341,7 @@ internal class MapNodePool {
   private Dictionary<Provenance, SingleProvenancePool> nodes_;
   private Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>
       properties_;
-  private Func<bool> show_unpinned_;
+  private Func<VisibilityModifiers> visibility_modifiers_;
 }
 
 }  // namespace ksp_plugin_adapter
