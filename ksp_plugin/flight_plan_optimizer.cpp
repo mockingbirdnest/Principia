@@ -15,8 +15,8 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-constexpr Time absolute_δt = 1 * Second;
-constexpr Speed absolute_δv = 1 * Metre / Second;
+constexpr Time absolute_δt = 1 * Milli(Second);
+constexpr Speed absolute_δv = 1 * Milli(Metre) / Second;
 constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
@@ -27,24 +27,31 @@ FlightPlanOptimizer::FlightPlanOptimizer(
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Celestial const& celestial,
                                            Speed const& Δv_tolerance) {
+  // The following is a copy, and is not affected by changes to the
+  // |flight_plan_|.
   NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
-  Instant const begin_time = manœuvre.burn().timing.initial_time.value();
+  LOG(ERROR)<<flight_plan_->GetManœuvre(index).initial_time()<<" "
+<<flight_plan_->GetManœuvre(index).Δv();
 
-  auto const f = [this, begin_time, &celestial, index](
+  //LOG(ERROR)<<EvaluateDistanceToCelestial(celestial, manœuvre.initial_time(), *flight_plan_);
+
+  auto const f = [this, &celestial, index, &manœuvre](
                      HomogeneousArgument const& homogeneous_argument) {
+    LOG(ERROR)<<"Function";
     return EvaluateDistanceToCelestialWithReplacement(
         celestial,
-        begin_time,
         Dehomogeneize(homogeneous_argument),
+        manœuvre,
         index,
         *flight_plan_);
   };
-  auto const grad_f = [this, begin_time, &celestial, index](
+  auto const grad_f = [this, &celestial, index, &manœuvre](
                           HomogeneousArgument const& homogeneous_argument) {
+    LOG(ERROR)<<"Gradient";
     return Evaluate𝛁DistanceToCelestialWithReplacement(
         celestial,
-        begin_time,
         Dehomogeneize(homogeneous_argument),
+        manœuvre,
         index,
         *flight_plan_);
   };
@@ -53,7 +60,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
       BroydenFletcherGoldfarbShanno<Length, HomogeneousArgument>(
           Homogeneize(start_argument_), f, grad_f, Δv_tolerance);
   if (solution.has_value()) {
-    return ReplaceBurn(Dehomogeneize(solution.value()), index, *flight_plan_);
+    return ReplaceBurn(
+        Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
   } else {
     return absl::NotFoundError("No better burn");
   }
@@ -88,28 +96,41 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
   DiscreteTrajectory<Barycentric> periapsides;
   ComputeApsides(celestial_trajectory,
                  vessel_trajectory,
-                 vessel_trajectory.find(begin_time),
+                 vessel_trajectory.lower_bound(begin_time),
                  vessel_trajectory.end(),
                  max_apsides,
                  apoapsides,
                  periapsides);
   Length distance = Infinity<Length>;
+  Instant t;
   for (const auto& [time, degrees_of_freedom] : periapsides) {
+    //LOG(ERROR)<<time<<" "<<(degrees_of_freedom.position() -
+    //                     celestial_trajectory.EvaluatePosition(time))
+    //                        .Norm();
+    if ((degrees_of_freedom.position() -
+                         celestial_trajectory.EvaluatePosition(time))
+                            .Norm() < distance) {
+      t = time;
+    }
     distance = std::min(distance,
                         (degrees_of_freedom.position() -
                          celestial_trajectory.EvaluatePosition(time))
                             .Norm());
   }
+  LOG(ERROR)<<t<<" "<<distance;
   return distance;
 }
 
 FlightPlanOptimizer::LengthGradient
 FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
     Celestial const& celestial,
-    Instant const& begin_time,
     Argument const& argument,
+    NavigationManœuvre const& manœuvre,
     int const index,
     FlightPlan& flight_plan) {
+  auto const distance = EvaluateDistanceToCelestialWithReplacement(
+      celestial, argument, manœuvre, index, flight_plan);
+
   Argument argument_δt = argument;
   argument_δt.Δinitial_time += absolute_δt;
 
@@ -125,41 +146,60 @@ FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
       {argument_ΔΔv.x, argument_ΔΔv.y, argument_ΔΔv.z + absolute_δv});
 
   auto const distance_δt = EvaluateDistanceToCelestialWithReplacement(
-      celestial, begin_time, argument_δt, index, flight_plan);
+      celestial, argument_δt, manœuvre, index, flight_plan);
   auto const distance_δx = EvaluateDistanceToCelestialWithReplacement(
-      celestial, begin_time, argument_δx, index, flight_plan);
+      celestial, argument_δx, manœuvre, index, flight_plan);
   auto const distance_δy = EvaluateDistanceToCelestialWithReplacement(
-      celestial, begin_time, argument_δy, index, flight_plan);
+      celestial, argument_δy, manœuvre, index, flight_plan);
   auto const distance_δz = EvaluateDistanceToCelestialWithReplacement(
-      celestial, begin_time, argument_δz, index, flight_plan);
+      celestial, argument_δz, manœuvre, index, flight_plan);
 
-  return LengthGradient{};
+  LOG(ERROR)<< (distance_δt - distance) / absolute_δt<<" "<<
+      (distance_δx - distance) / absolute_δv<<" "<<
+      (distance_δy - distance) / absolute_δv<<" "<<
+      (distance_δz - distance) / absolute_δv;
+
+  return LengthGradient({
+      (distance_δt - distance) / (absolute_δt * time_homogeneization_factor),
+      (distance_δx - distance) / absolute_δv,
+      (distance_δy - distance) / absolute_δv,
+      (distance_δz - distance) / absolute_δv});
 }
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     Celestial const& celestial,
-    Instant const& begin_time,
     Argument const& argument,
+    NavigationManœuvre const& manœuvre,
     int const index,
     FlightPlan& flight_plan) {
-  if (ReplaceBurn(argument, index, flight_plan).ok()) {
-    return EvaluateDistanceToCelestial(celestial, begin_time, flight_plan);
+  Length distance;
+  if (ReplaceBurn(argument, manœuvre, index, flight_plan).ok()) {
+    LOG(ERROR)<<argument.Δinitial_time<<" "<<argument.ΔΔv;
+    distance = EvaluateDistanceToCelestial(
+        celestial, manœuvre.initial_time(), flight_plan);
   } else {
     // If the updated burn cannot replace the existing one (e.g., because it
     // overlaps with the next burn) return an infinite length to move the
     // optimizer away from this place.
-    return Infinity<Length>;
+    distance = Infinity<Length>;
   }
+  CHECK_OK(flight_plan.Replace(manœuvre.burn(), index));
+  return distance;
 }
 
-absl::Status FlightPlanOptimizer::ReplaceBurn(Argument const& argument,
-                                              int const index,
-                                              FlightPlan& flight_plan) {
-  NavigationManœuvre::Burn burn = flight_plan.GetManœuvre(index).burn();
-  burn.intensity = {.Δv = burn.intensity.Δv.value() + argument.ΔΔv};
+absl::Status FlightPlanOptimizer::ReplaceBurn(
+    Argument const& argument,
+    NavigationManœuvre const& manœuvre,
+    int const index,
+    FlightPlan& flight_plan) {
+  NavigationManœuvre::Burn burn = manœuvre.burn();
+  burn.intensity = {.Δv = manœuvre.Δv() + argument.ΔΔv};
   burn.timing = {.initial_time =
-                     burn.timing.initial_time.value() + argument.Δinitial_time};
-  return flight_plan.Replace(burn, index);
+                     manœuvre.initial_time() + argument.Δinitial_time};
+  auto s = flight_plan.Replace(burn, index);
+//  LOG(ERROR)<<flight_plan.GetManœuvre(index).initial_time()<<" "
+//<<flight_plan.GetManœuvre(index).Δv();
+  return s;
 }
 
 }  // namespace internal

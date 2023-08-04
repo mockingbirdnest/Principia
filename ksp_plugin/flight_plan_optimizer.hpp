@@ -57,19 +57,20 @@ class FlightPlanOptimizer {
                                             FlightPlan const& flight_plan);
   static Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Instant const& begin_time,
       Argument const& argument,
+      NavigationManœuvre const& manœuvre,
       int index,
       FlightPlan& flight_plan);
 
   static LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Instant const& begin_time,
       Argument const& argument,
+      NavigationManœuvre const& manœuvre,
       int index,
       FlightPlan& flight_plan);
 
   static absl::Status ReplaceBurn(Argument const& argument,
+                                  NavigationManœuvre const& manœuvre,
                                   int index,
                                   FlightPlan& flight_plan);
 
