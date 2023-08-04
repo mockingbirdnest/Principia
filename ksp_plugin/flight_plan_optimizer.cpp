@@ -60,6 +60,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
       BroydenFletcherGoldfarbShanno<Length, HomogeneousArgument>(
           Homogeneize(start_argument_), f, grad_f, Δv_tolerance);
   if (solution.has_value()) {
+    LOG(ERROR)<<solution.value();
     return ReplaceBurn(
         Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
   } else {
