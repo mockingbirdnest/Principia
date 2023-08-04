@@ -109,13 +109,47 @@ TEST_F(FlightPlanOptimizerTest, Reach) {
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
 
-  LOG(ERROR)<<flight_plan.GetManœuvre(0).initial_time();
-
   FlightPlanOptimizer optimizer(&flight_plan);
-  CHECK_OK(optimizer.Optimize(/*index=*/0, moon, 1 * Metre / Second));
+
+  //auto const manœuvre0 = flight_plan.GetManœuvre(0);
+  //CHECK_OK(optimizer.Optimize(/*index=*/0, moon, 1 * Metre / Second));
+
+  //ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  //LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
+  //EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-26T21:00:36"_DateTime));
+  //EXPECT_THAT(flyby_distance, IsNear(44949.7_(1) * Kilo(Metre)));
+
+  //CHECK_OK(flight_plan.Replace(manœuvre0.burn(), /*index=*/0));
+
+  //auto const manœuvre1 = flight_plan.GetManœuvre(1);
+  //CHECK_OK(optimizer.Optimize(/*index=*/1, moon, 1 * Metre / Second));
+
+  //ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  //LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
+  //EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:07:23"_DateTime));
+  //EXPECT_THAT(flyby_distance, IsNear(57785.6_(1) * Kilo(Metre)));
+
+  //CHECK_OK(flight_plan.Replace(manœuvre1.burn(), /*index=*/1));
+
+  //auto const manœuvre2 = flight_plan.GetManœuvre(2);
+  //CHECK_OK(optimizer.Optimize(/*index=*/2, moon, 1 * Metre / Second));
+
+  //ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  //LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
+  //EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:26"_DateTime));
+  //EXPECT_THAT(flyby_distance, IsNear(58664.1_(1) * Kilo(Metre)));
+
+  //CHECK_OK(flight_plan.Replace(manœuvre2.burn(), /*index=*/2));
+
+  auto const manœuvre3 = flight_plan.GetManœuvre(3);
+  CHECK_OK(optimizer.Optimize(/*index=*/3, moon, 1 * Metre / Second));
 
   ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
   LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-26T21:04:31"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(48062.2_(1) * Kilo(Metre)));
+
+  CHECK_OK(flight_plan.Replace(manœuvre3.burn(), /*index=*/3));
 }
 
 }  // namespace ksp_plugin
