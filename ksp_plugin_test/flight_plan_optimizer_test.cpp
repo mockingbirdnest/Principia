@@ -8,6 +8,7 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -18,6 +19,7 @@ using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
@@ -31,6 +33,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 
 class FlightPlanOptimizerTest : public testing::Test {
  protected:
@@ -141,15 +144,47 @@ TEST_F(FlightPlanOptimizerTest, Reach) {
 
   //CHECK_OK(flight_plan.Replace(manœuvre2.burn(), /*index=*/2));
 
-  auto const manœuvre3 = flight_plan.GetManœuvre(3);
-  CHECK_OK(optimizer.Optimize(/*index=*/3, moon, 1 * Metre / Second));
+  //auto const manœuvre3 = flight_plan.GetManœuvre(3);
+  //CHECK_OK(optimizer.Optimize(/*index=*/3, moon, 1 * Metre / Second));
+
+  //ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  //LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
+  //EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-26T21:04:31"_DateTime));
+  //EXPECT_THAT(flyby_distance, IsNear(48062.2_(1) * Kilo(Metre)));
+
+  //CHECK_OK(flight_plan.Replace(manœuvre3.burn(), /*index=*/3));
+
+  auto const manœuvre6 = flight_plan.GetManœuvre(6);
+  CHECK_OK(optimizer.Optimize(/*index=*/6, moon, 1 * Metre / Second));
+
+  EXPECT_EQ(0, flight_plan.number_of_anomalous_manœuvres());
+  EXPECT_EQ(manœuvre6.initial_time(),
+            flight_plan.GetManœuvre(6).initial_time());
+  EXPECT_THAT((manœuvre6.Δv() - flight_plan.GetManœuvre(6).Δv()).Norm(),
+              IsNear(1.0_(1) * Metre / Second));
 
   ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
   LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
-  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-26T21:04:31"_DateTime));
-  EXPECT_THAT(flyby_distance, IsNear(48062.2_(1) * Kilo(Metre)));
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:22:55"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(24788.5_(1) * Kilo(Metre)));
 
-  CHECK_OK(flight_plan.Replace(manœuvre3.burn(), /*index=*/3));
+  CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
+
+  auto const manœuvre7 = flight_plan.GetManœuvre(7);
+  EXPECT_THAT(optimizer.Optimize(/*index=*/7, moon, 1 * Metre / Second),
+              StatusIs(termination_condition::VanishingStepSize));
+
+  // We cannot compute flybys because the flight plan basically goes through the
+  // centre of the Moon.
+  EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  EXPECT_THAT(
+      manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
+      IsNear(-3.4_(1) * Milli(Second)));
+  EXPECT_THAT(
+      (manœuvre7.Δv() - flight_plan.GetManœuvre(7).Δv()).Norm(),
+      IsNear(61.9_(1) * Metre / Second));
+
+  CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
 }
 
 }  // namespace ksp_plugin
