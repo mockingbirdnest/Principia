@@ -257,7 +257,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
     if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {  // NOLINT
-      return xₖ;
+      return xₖ₊₁;
     }
 
     // The formula (6.17) from [NW06] is inconvenient because it uses external
