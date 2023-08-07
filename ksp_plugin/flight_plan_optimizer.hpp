@@ -32,8 +32,8 @@ using namespace principia::quantities::_quantities;
 // A class to optimize a flight to go through or near a celestial.
 class FlightPlanOptimizer {
  public:
-  // Constructs an optimizer for |flight_plan|.  |flight_plan| must overlive
-  // this object.
+  // Constructs an optimizer for |flight_plan|.  |flight_plan| must outlive this
+  // object.
   explicit FlightPlanOptimizer(not_null<FlightPlan*> flight_plan);
 
   // Optimizes the manœuvre at the given |index| to go through (or close to)
