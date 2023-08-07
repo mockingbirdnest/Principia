@@ -37,6 +37,14 @@ using namespace principia::testing_utilities::_matchers;
 
 class FlightPlanOptimizerTest : public testing::Test {
  protected:
+  FlightPlanOptimizerTest() {
+    google::SetStderrLogging(google::INFO);
+  }
+
+  ~FlightPlanOptimizerTest() override {
+    google::SetStderrLogging(FLAGS_stderrthreshold);
+  }
+
   static Celestial const& FindCelestialByName(std::string_view const name,
                                               Plugin const& plugin) {
     for (Index index = 0; plugin.HasCelestial(index); ++index) {
@@ -78,7 +86,7 @@ class FlightPlanOptimizerTest : public testing::Test {
 };
 
 // This test tweaks the burns of the flight plan that precede the Moon flyby, in
-// order to collide head on with the Moon.
+// order to collide head on with the Moon.  This test takes about 10 minutes.
 TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
@@ -115,6 +123,10 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 
   FlightPlanOptimizer optimizer(&flight_plan);
 
+  // In the code below we cannot compute flybys because the flight plan
+  // basically goes through the centre of the Moon.
+
+  LOG(INFO) << "Optimizing manœuvre 5";
   auto const manœuvre5 = flight_plan.GetManœuvre(5);
   EXPECT_THAT(optimizer.Optimize(/*index=*/5, moon, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
@@ -129,6 +141,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 
   CHECK_OK(flight_plan.Replace(manœuvre5.burn(), /*index=*/5));
 
+  LOG(INFO) << "Optimizing manœuvre 6";
   auto const manœuvre6 = flight_plan.GetManœuvre(6);
   EXPECT_THAT(optimizer.Optimize(/*index=*/6, moon, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
@@ -141,12 +154,11 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 
   CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
 
+  LOG(INFO) << "Optimizing manœuvre 7";
   auto const manœuvre7 = flight_plan.GetManœuvre(7);
   EXPECT_THAT(optimizer.Optimize(/*index=*/7, moon, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
-  // We cannot compute flybys because the flight plan basically goes through the
-  // centre of the Moon.
   EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
   EXPECT_THAT(
       manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
