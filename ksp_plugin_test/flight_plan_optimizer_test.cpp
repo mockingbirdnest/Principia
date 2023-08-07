@@ -5,11 +5,23 @@
 
 #include "astronomy/date_time.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/not_null.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/ordinary_differential_equations.hpp"
+#include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "physics/apsides.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 

@@ -6,8 +6,10 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "physics/reference_frame.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

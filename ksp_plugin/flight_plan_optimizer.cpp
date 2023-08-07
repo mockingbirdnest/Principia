@@ -5,6 +5,7 @@
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -14,7 +15,6 @@ namespace internal {
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 constexpr Time absolute_δt = 1 * Milli(Second);
