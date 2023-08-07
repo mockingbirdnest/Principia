@@ -1,5 +1,8 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
+#include <utility>
+#include <vector>
+
 #include "astronomy/date_time.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.

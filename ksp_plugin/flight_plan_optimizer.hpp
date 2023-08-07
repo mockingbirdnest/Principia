@@ -27,11 +27,18 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-//TODO(phl)comment
+// A class to optimize a flight to go through or near a celestial.
 class FlightPlanOptimizer {
  public:
+  // Constructs an optimizer for |flight_plan|.  |flight_plan| must overlive
+  // this object.
   explicit FlightPlanOptimizer(not_null<FlightPlan*> flight_plan);
 
+  // Optimizes the manœuvre at the given |index| to go through (or close to)
+  // |celestial|.  The |Δv_tolerance| is used for the initial choice of the step
+  // and for deciding when to stop, and must be small enough to not miss
+  // interesting features of the trajectory, and large enough to avoid costly
+  // startup steps.  Changes the flight plan passed at construction.
   absl::Status Optimize(int index,
                         Celestial const& celestial,
                         Speed const& Δv_tolerance);
@@ -43,6 +50,7 @@ class FlightPlanOptimizer {
     Velocity<Frenet<Navigation>> ΔΔv;
   };
 
+  // The data structure passed to the gradient descent algorithm.
   using HomogeneousArgument = FixedVector<Speed, 4>;
 
   using LengthField = Field<Length, HomogeneousArgument>;
@@ -52,9 +60,14 @@ class FlightPlanOptimizer {
   static Argument Dehomogeneize(
       HomogeneousArgument const& homogeneous_argument);
 
+  // Compute the closest periapsis of the |flight_plan| with respect to the
+  // |celestial|, occurring after |begin_time|.
   static Length EvaluateDistanceToCelestial(Celestial const& celestial,
                                             Instant const& begin_time,
                                             FlightPlan const& flight_plan);
+
+  // Replaces the manœuvre at the given |index| based on the |argument|, and
+  // computes the closest periapis.  Leaves the |flight_plan| unchanged.
   static Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
       Argument const& argument,
@@ -62,6 +75,9 @@ class FlightPlanOptimizer {
       int index,
       FlightPlan& flight_plan);
 
+  // Replaces the manœuvre at the given |index| based on the |argument|, and
+  // computes the gradient of the closest periapis with respect to the
+  // |argument|.  Leaves the |flight_plan| unchanged.
   static LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
       Celestial const& celestial,
       Argument const& argument,
@@ -69,6 +85,7 @@ class FlightPlanOptimizer {
       int index,
       FlightPlan& flight_plan);
 
+  // Replaces the burn at the given |index| based on the |argument|.
   static absl::Status ReplaceBurn(Argument const& argument,
                                   NavigationManœuvre const& manœuvre,
                                   int index,
