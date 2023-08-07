@@ -110,7 +110,6 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   Instant flyby_time;
   Length flyby_distance;
   ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
-  LOG(ERROR)<<flyby_time<<" "<<flyby_distance;
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
 
