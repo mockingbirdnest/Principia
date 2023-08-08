@@ -83,6 +83,9 @@
     <ClInclude Include="planetarium_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="flight_plan_optimizer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -191,6 +194,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="geometric_potential_plotter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flight_plan_optimizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

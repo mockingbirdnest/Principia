@@ -26,6 +26,7 @@
     <ClCompile Include="..\ksp_plugin\celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp" />
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp" />
+    <ClCompile Include="..\ksp_plugin\flight_plan_optimizer.cpp" />
     <ClCompile Include="..\ksp_plugin\geometric_potential_plotter.cpp" />
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
@@ -53,6 +54,7 @@
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="equator_relevance_threshold_test.cpp" />
+    <ClCompile Include="flight_plan_optimizer_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
     <ClCompile Include="interface_external_test.cpp" />
     <ClCompile Include="interface_flight_plan_test.cpp" />

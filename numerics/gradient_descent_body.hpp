@@ -125,7 +125,7 @@ double Zoom(double α_lo,
 
     // If the function has become (numerically) constant, we might as well
     // return, even though the value of αⱼ may not satisfy the strong Wolfe
-    // condition.
+    // condition (it probably doesn't, otherwise we would have exited earlier).
     if (previous_ϕ_αⱼ.has_value() && previous_ϕ_αⱼ.value() == ϕ_αⱼ) {
       satisfies_strong_wolfe_condition = false;
       return αⱼ;
@@ -257,7 +257,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
     if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {  // NOLINT
-      return xₖ;
+      return xₖ₊₁;
     }
 
     // The formula (6.17) from [NW06] is inconvenient because it uses external
