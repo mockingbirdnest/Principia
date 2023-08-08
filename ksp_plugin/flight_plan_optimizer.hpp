@@ -48,7 +48,7 @@ class FlightPlanOptimizer {
   //TODO(phl)comment
   absl::Status Optimize(int index,
                         Celestial const& celestial,
-                        Length const& distance,
+                        Length const& target_distance,
                         Speed const& Δv_tolerance);
 
  private:
