@@ -45,6 +45,12 @@ class FlightPlanOptimizer {
                         Celestial const& celestial,
                         Speed const& Δv_tolerance);
 
+  //TODO(phl)comment
+  absl::Status Optimize(int index,
+                        Celestial const& celestial,
+                        Length const& distance,
+                        Speed const& Δv_tolerance);
+
  private:
   // The |Argument| is relative to the current properties of the burn.
   struct Argument {

@@ -63,6 +63,52 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   }
 }
 
+absl::Status FlightPlanOptimizer::Optimize(int const index,
+                                           Celestial const& celestial,
+                                           Length const& target_distance,
+                                           Speed const& Δv_tolerance) {
+  // The following is a copy, and is not affected by changes to the
+  // |flight_plan_|.
+  NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
+
+  auto const f = [this, &celestial, index, &manœuvre, target_distance](
+                     HomogeneousArgument const& homogeneous_argument) {
+    auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
+        celestial,
+        Dehomogeneize(homogeneous_argument),
+        manœuvre,
+        index,
+        *flight_plan_);
+    return Pow<2>(actual_distance - target_distance);
+  };
+  auto const grad_f = [this, &celestial, index, &manœuvre, target_distance](
+                          HomogeneousArgument const& homogeneous_argument) {
+    auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
+        celestial,
+        Dehomogeneize(homogeneous_argument),
+        manœuvre,
+        index,
+        *flight_plan_);
+    auto const actual_gradient = Evaluate𝛁DistanceToCelestialWithReplacement(
+        celestial,
+        Dehomogeneize(homogeneous_argument),
+        manœuvre,
+        index,
+        *flight_plan_);
+    return 2 * (actual_distance - target_distance) * actual_gradient;
+  };
+
+  auto const solution =
+      BroydenFletcherGoldfarbShanno<Square<Length>, HomogeneousArgument>(
+          Homogeneize(start_argument_), f, grad_f, Δv_tolerance);
+  if (solution.has_value()) {
+    return ReplaceBurn(
+        Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
+  } else {
+    return absl::NotFoundError("No better burn");
+  }
+}
+
 FlightPlanOptimizer::HomogeneousArgument FlightPlanOptimizer::Homogeneize(
     Argument const& argument) {
   auto const& ΔΔv_coordinates = argument.ΔΔv.coordinates();

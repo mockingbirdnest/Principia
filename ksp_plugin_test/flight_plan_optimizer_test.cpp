@@ -185,5 +185,93 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
 }
 
+// This test tweaks the burns of the flight plan that precede the Moon flyby, in
+// order to collide head on with the Moon.  This test takes about 10 minutes.
+//TODO(phl)comment
+TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+
+  auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
+  EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
+  EXPECT_THAT(TTSecond(ifnity->trajectory().front().time),
+              Eq("1970-08-14T08:03:46"_DateTime));
+  EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
+              Eq("1970-08-14T08:47:05"_DateTime));
+  ASSERT_TRUE(ifnity->has_flight_plan());
+  ifnity->ReadFlightPlanFromMessage();
+  FlightPlan& flight_plan = ifnity->flight_plan();
+  EXPECT_THAT(
+      flight_plan.adaptive_step_parameters().length_integration_tolerance(),
+      Eq(1 * Metre));
+  EXPECT_THAT(flight_plan.adaptive_step_parameters().max_steps(), Eq(16'000));
+  EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
+  std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
+  for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
+    manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
+        TTSecond(flight_plan.GetManœuvre(i).initial_time()),
+        flight_plan.GetManœuvre(i).Δv().Norm());
+  }
+
+  Celestial const& moon = FindCelestialByName("Moon", *plugin);
+  Instant flyby_time;
+  Length flyby_distance;
+  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
+
+  FlightPlanOptimizer optimizer(&flight_plan);
+
+  // In the code below we cannot compute flybys because the flight plan
+  // basically goes through the centre of the Moon.
+
+  LOG(INFO) << "Optimizing manœuvre 5";
+  auto const manœuvre5 = flight_plan.GetManœuvre(5);
+  EXPECT_THAT(
+      optimizer.Optimize(
+          /*index=*/5, moon, 2000 * Kilo(Metre), 1 * Milli(Metre) / Second),
+      StatusIs(termination_condition::VanishingStepSize));
+
+  EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  EXPECT_THAT(
+      manœuvre5.initial_time() - flight_plan.GetManœuvre(5).initial_time(),
+      IsNear(-10.3_(1) * Micro(Second)));
+  EXPECT_THAT(
+      (manœuvre5.Δv() - flight_plan.GetManœuvre(5).Δv()).Norm(),
+      IsNear(1.09_(1) * Metre / Second));
+
+  CHECK_OK(flight_plan.Replace(manœuvre5.burn(), /*index=*/5));
+
+  //LOG(INFO) << "Optimizing manœuvre 6";
+  //auto const manœuvre6 = flight_plan.GetManœuvre(6);
+  //EXPECT_THAT(optimizer.Optimize(/*index=*/6, moon, 1 * Milli(Metre) / Second),
+  //            StatusIs(termination_condition::VanishingStepSize));
+
+  //EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  //EXPECT_EQ(manœuvre6.initial_time(),
+  //          flight_plan.GetManœuvre(6).initial_time());
+  //EXPECT_THAT((manœuvre6.Δv() - flight_plan.GetManœuvre(6).Δv()).Norm(),
+  //            IsNear(1.29_(1) * Metre / Second));
+
+  //CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
+
+  //LOG(INFO) << "Optimizing manœuvre 7";
+  //auto const manœuvre7 = flight_plan.GetManœuvre(7);
+  //EXPECT_THAT(optimizer.Optimize(/*index=*/7, moon, 1 * Milli(Metre) / Second),
+  //            StatusIs(termination_condition::VanishingStepSize));
+
+  //EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  //EXPECT_THAT(
+  //    manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
+  //    IsNear(-4.9_(1) * Milli(Second)));
+  //EXPECT_THAT(
+  //    (manœuvre7.Δv() - flight_plan.GetManœuvre(7).Δv()).Norm(),
+  //    IsNear(62.3_(1) * Metre / Second));
+
+  //CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia
