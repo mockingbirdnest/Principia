@@ -1,5 +1,6 @@
 #pragma once
 
+#include "absl/container/flat_hash_map.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -61,7 +62,18 @@ class FlightPlanOptimizer {
   struct Argument {
     Time Δinitial_time;
     Velocity<Frenet<Navigation>> ΔΔv;
+
+    friend bool operator==(Argument const& left, Argument const& right);
+
+    template<typename H>
+    friend H AbslHashValue(H h, Argument const& argument);
   };
+
+  // Function evaluations are very expensive, as they require integrating a
+  // flight plan and finding periapsides.  We don't want do to them
+  // unnecessarily.  You generally don't want to hash floats, but it's a case
+  // where it's kosher.
+  using EvaluationCache = absl::flat_hash_map<Argument, Length>;
 
   // The data structure passed to the gradient descent algorithm.
   using HomogeneousArgument = FixedVector<Speed, 4>;
@@ -86,7 +98,8 @@ class FlightPlanOptimizer {
       Argument const& argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan);
+      FlightPlan& flight_plan,
+      EvaluationCache& cache);
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the gradient of the closest periapis with respect to the
@@ -96,7 +109,8 @@ class FlightPlanOptimizer {
       Argument const& argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan);
+      FlightPlan& flight_plan,
+      EvaluationCache& cache);
 
   // Replaces the burn at the given |index| based on the |argument|.
   static absl::Status ReplaceBurn(Argument const& argument,
@@ -106,6 +120,10 @@ class FlightPlanOptimizer {
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
+
+  friend bool operator==(Argument const& left, Argument const& right);
+  template<typename H>
+  friend H AbslHashValue(H h, Argument const& argument);
 };
 
 }  // namespace internal
