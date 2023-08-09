@@ -186,8 +186,8 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 }
 
 // This test tweaks the burns of the flight plan that precede the Moon flyby, in
-// order to collide head on with the Moon.  This test takes about 10 minutes.
-//TODO(phl)comment
+// order to fly at (approximately) 2000 km from the centre of the Moon.  This
+// test takes about 10 minutes.
 TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
@@ -242,33 +242,40 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
 
   CHECK_OK(flight_plan.Replace(manœuvre5.burn(), /*index=*/5));
 
-  //LOG(INFO) << "Optimizing manœuvre 6";
-  //auto const manœuvre6 = flight_plan.GetManœuvre(6);
-  //EXPECT_THAT(optimizer.Optimize(/*index=*/6, moon, 1 * Milli(Metre) / Second),
-  //            StatusIs(termination_condition::VanishingStepSize));
+  LOG(INFO) << "Optimizing manœuvre 6";
+  auto const manœuvre6 = flight_plan.GetManœuvre(6);
+  EXPECT_OK(optimizer.Optimize(
+      /*index=*/6, moon, 2000 * Kilo(Metre), 1 * Milli(Metre) / Second));
 
-  //EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
-  //EXPECT_EQ(manœuvre6.initial_time(),
-  //          flight_plan.GetManœuvre(6).initial_time());
-  //EXPECT_THAT((manœuvre6.Δv() - flight_plan.GetManœuvre(6).Δv()).Norm(),
-  //            IsNear(1.29_(1) * Metre / Second));
+  EXPECT_THAT(
+      manœuvre6.initial_time() - flight_plan.GetManœuvre(6).initial_time(),
+      IsNear(0.12_(1) * Micro(Second)));
+  EXPECT_THAT((manœuvre6.Δv() - flight_plan.GetManœuvre(6).Δv()).Norm(),
+              IsNear(1.331_(1) * Metre / Second));
 
-  //CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
+  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:16:08"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(2001.7_(1) * Kilo(Metre)));
 
-  //LOG(INFO) << "Optimizing manœuvre 7";
-  //auto const manœuvre7 = flight_plan.GetManœuvre(7);
-  //EXPECT_THAT(optimizer.Optimize(/*index=*/7, moon, 1 * Milli(Metre) / Second),
-  //            StatusIs(termination_condition::VanishingStepSize));
+  CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
 
-  //EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
-  //EXPECT_THAT(
-  //    manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
-  //    IsNear(-4.9_(1) * Milli(Second)));
-  //EXPECT_THAT(
-  //    (manœuvre7.Δv() - flight_plan.GetManœuvre(7).Δv()).Norm(),
-  //    IsNear(62.3_(1) * Metre / Second));
+  LOG(INFO) << "Optimizing manœuvre 7";
+  auto const manœuvre7 = flight_plan.GetManœuvre(7);
+  EXPECT_OK(optimizer.Optimize(
+      /*index=*/7, moon, 2000 * Kilo(Metre), 1 * Milli(Metre) / Second));
 
-  //CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
+  EXPECT_THAT(
+      manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
+      IsNear(12.5_(1) * Milli(Second)));
+  EXPECT_THAT(
+      (manœuvre7.Δv() - flight_plan.GetManœuvre(7).Δv()).Norm(),
+      IsNear(61.2_(1) * Metre / Second));
+
+  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:14:49"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(2000.0_(1) * Kilo(Metre)));
+
+  CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
 }
 
 }  // namespace ksp_plugin
