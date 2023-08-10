@@ -124,25 +124,9 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     }
     UnityEngine.GUI.skin = skin_;
     if (show_) {
-      // NOTE(al2me6): Empirical observation led to the following conclusions:
-      // In each frame, |OnGUI| (from whence this method is ultimately called)
-      // is called at least twice, with the following order of event types:
-      // 1. Layout
-      // 2. For each interaction during that frame (e.g., mouse event):
-      //   a. Interaction event
-      //   b. Layout
-      // 3. Repaint
-      // cf. <https://docs.unity3d.com/ScriptReference/Event.html>.
-      // Furthermore, |Shrink| is not safe to call between the call to
-      // |GUILayout.Window| in the last Layout of the frame and the subsequent
-      // Repaint; doing so may cause the window to become blank for one frame.
-      // Thus, here (in a Layout, before drawing the window) is a safe place to
-      // execute any requested shrinks.
-      if (shrink_scheduled_
-          && UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
-        Shrink();
-        shrink_scheduled_ = false;
-      }
+      // NOTE: Calling |Shrink| here (in a Layout, before drawing the window)
+      // satisfies the conditions noted in its doc comment and is safe.
+      Shrink();
       rectangle_ = UnityEngine.GUILayout.Window(
           id         : this.GetHashCode(),
           screenRect : rectangle_,
@@ -228,9 +212,25 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     shrink_scheduled_ = true;
   }
 
+  // NOTE(al2me6): Empirical observation led to the following conclusions:
+  // In each frame, |OnGUI| (from whence this method is ultimately called)
+  // is called at least twice, with the following order of event types:
+  // 1. Layout
+  // 2. For each interaction during that frame (e.g., mouse event):
+  //   a. Interaction event
+  //   b. Layout
+  // 3. Repaint
+  // cf. <https://docs.unity3d.com/ScriptReference/Event.html>.
+  // Furthermore, this function is not safe to call between the call to
+  // |GUILayout.Window| in the last Layout of the frame and the subsequent
+  // Repaint; doing so may cause the window to become blank for one frame.
   private void Shrink() {
-    rectangle_.height = 0.0f;
-    rectangle_.width = 0.0f;
+    if (shrink_scheduled_
+        && UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
+      rectangle_.height = 0.0f;
+      rectangle_.width = 0.0f;
+      shrink_scheduled_ = false;
+    }
   }
 
   // Visibility.
