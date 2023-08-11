@@ -142,7 +142,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         editor.Close();
       }
       burn_editors_ = null;
-      Shrink();
+      ScheduleShrink();
     }
   }
 
@@ -341,7 +341,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             new PlannedOrbitAnalyser(adapter_, predicted_vessel_);
         plugin.FlightPlanDelete(vessel_guid);
         ResetStatus();
-        Shrink();
+        ScheduleShrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -371,16 +371,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           RenderUpcomingEvents();
         }
 
-      // TODO(al2me6): This current event check prevents the window from being
-      // zero-sized for a single frame. How it does this is unclear to me and
-      // should be investigated.
-      if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint &&
-          requested_editor_focus_index_ is int requested_focus) {
+      if (requested_editor_focus_index_ is int requested_focus) {
         requested_editor_focus_index_ = null;
         for (int i = 0; i < burn_editors_.Count; ++i) {
           burn_editors_[i].minimized = requested_focus != i;
         }
-        Shrink();
+        ScheduleShrink();
       }
 
         // Compute the final times for each manœuvre before displaying them.
@@ -413,12 +409,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               burn_editors_[i].Close();
               burn_editors_.RemoveAt(i);
               UpdateBurnEditorIndices();
-              Shrink();
+              ScheduleShrink();
               return;
             }
             case BurnEditor.Event.Minimized:
             case BurnEditor.Event.Maximized: {
-              Shrink();
+              ScheduleShrink();
               return;
             }
             case BurnEditor.Event.Changed: {
@@ -576,7 +572,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           burn_editors_.Insert(index, editor);
           UpdateBurnEditorIndices();
           UpdateStatus(status, index);
-          Shrink();
+          ScheduleShrink();
           return true;
         }
         // TODO(phl): The error messaging here will be either confusing or

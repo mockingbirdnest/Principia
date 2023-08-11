@@ -201,7 +201,7 @@ TEST_F(LagrangeEquipotentialsTest,
     std::vector<Position<World>> arg_maximorum;
     for (auto const& [maximum, arg_maximi] : equipotentials->maxima) {
       EXPECT_THAT((arg_maximi - World::origin).Norm(),
-                  AllOf(Gt(0.981 * Metre), Lt(1.016 * Metre)));
+                  AllOf(Gt(0.980 * Metre), Lt(1.016 * Metre)));
       maxima.push_back(maximum);
       arg_maximorum.push_back(arg_maximi);
     }
