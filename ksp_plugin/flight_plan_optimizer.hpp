@@ -112,6 +112,15 @@ class FlightPlanOptimizer {
       FlightPlan& flight_plan,
       EvaluationCache& cache);
 
+  static LengthGradient EvaluateDirectional𝛁DistanceToCelestialWithReplacement(
+      Celestial const& celestial,
+      Argument const& argument,
+      Difference<Argument> const& direction,
+      NavigationManœuvre const& manœuvre,
+      int index,
+      FlightPlan& flight_plan,
+      EvaluationCache& cache);
+
   // Replaces the burn at the given |index| based on the |argument|.
   static absl::Status ReplaceBurn(Argument const& argument,
                                   NavigationManœuvre const& manœuvre,
