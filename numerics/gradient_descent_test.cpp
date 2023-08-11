@@ -51,16 +51,40 @@ TEST_F(GradientDescentTest, Quadratic) {
          2 * (coordinates.y - 2 * Metre),
          2 * (coordinates.z + 3 * Metre)});
   };
+  auto directional_gradient = [](Position<World> const& position,
+                                 Displacement<World> const& displacement) {
+    auto const position_coordinates = (position - World::origin).coordinates();
+    auto const displacement_coordinates = displacement.coordinates();
+    return 2 *
+           ((position_coordinates.x - 1 * Metre) * displacement_coordinates.x +
+            (position_coordinates.y - 2 * Metre) * displacement_coordinates.y +
+            (position_coordinates.z + 3 * Metre) * displacement_coordinates.z);
+  };
 
   Position<World> const expected_minimum =
       World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
-  auto const actual_minimum =
-      BroydenFletcherGoldfarbShanno<Exponentiation<Length, 2>, Position<World>>(
-          /*start_argument=*/World::origin,
-          field,
-          gradient,
-          /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 2)));
+  {
+    auto const actual_minimum =
+        BroydenFletcherGoldfarbShanno<Exponentiation<Length, 2>,
+                                      Position<World>>(
+            /*start_argument=*/World::origin,
+            field,
+            gradient,
+            /*tolerance=*/1 * Micro(Metre));
+    EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 2)));
+  }
+
+  {
+    auto const actual_minimum =
+        BroydenFletcherGoldfarbShanno<Exponentiation<Length, 2>,
+                                      Position<World>>(
+            /*start_argument=*/World::origin,
+            field,
+            gradient,
+            directional_gradient,
+            /*tolerance=*/1 * Micro(Metre));
+    EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 2)));
+  }
 }
 
 TEST_F(GradientDescentTest, Quartic) {
