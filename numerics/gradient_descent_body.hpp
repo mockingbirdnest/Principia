@@ -98,7 +98,7 @@ double Zoom(double α_lo,
             Argument const& x,
             Difference<Argument> const& p,
             Field<Scalar, Argument> const& f,
-            DirectionalGradient<Scalar, Argument> const& directional_grad_f,
+            GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
             bool& satisfies_strong_wolfe_condition) {
   std::optional<Scalar> previous_ϕ_αⱼ;
   satisfies_strong_wolfe_condition = true;
@@ -138,7 +138,7 @@ double Zoom(double α_lo,
       α_hi = αⱼ;
       ϕ_α_hi = ϕ_αⱼ;
     } else {
-      auto const ϕʹ_αⱼ = directional_grad_f(x + αⱼ * p, p);
+      auto const ϕʹ_αⱼ = gateaux_derivative_f(x + αⱼ * p, p);
       if (Abs(ϕʹ_αⱼ) <= -c₂ * ϕʹ_0) {
         return αⱼ;
       }
@@ -159,7 +159,7 @@ double LineSearch(
     Difference<Argument> const& p,
     Gradient<Scalar, Argument> const& grad_f_x,
     Field<Scalar, Argument> const& f,
-    DirectionalGradient<Scalar, Argument> const& directional_grad_f,
+    GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     bool& satisfies_strong_wolfe_condition) {
   auto const ϕ_0 = f(x);
   auto const ϕʹ_0 = InnerProduct(grad_f_x, p);
@@ -177,10 +177,10 @@ double LineSearch(
                   ϕ_αᵢ₋₁, ϕ_αᵢ,
                   ϕʹ_αᵢ₋₁,
                   ϕ_0, ϕʹ_0,
-                  x, p, f, directional_grad_f,
+                  x, p, f, gateaux_derivative_f,
                   satisfies_strong_wolfe_condition);
     }
-    auto const ϕʹ_αᵢ = directional_grad_f(x + αᵢ * p, p);
+    auto const ϕʹ_αᵢ = gateaux_derivative_f(x + αᵢ * p, p);
     if (Abs(ϕʹ_αᵢ) <= -c₂ * ϕʹ_0) {
       return αᵢ;
     }
@@ -189,7 +189,7 @@ double LineSearch(
                   ϕ_αᵢ, ϕ_αᵢ₋₁,
                   ϕʹ_αᵢ,
                   ϕ_0, ϕʹ_0,
-                  x, p, f, directional_grad_f,
+                  x, p, f, gateaux_derivative_f,
                   satisfies_strong_wolfe_condition);
     }
 
@@ -207,13 +207,13 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
     typename Hilbert<Difference<Argument>>::NormType const& radius) {
-  DirectionalGradient<Scalar, Argument> const directional_grad_f =
+  GateauxDerivative<Scalar, Argument> const gateaux_derivative_f =
       [&grad_f](Argument const& argument,
                 Difference<Argument> const& direction) {
         return InnerProduct(grad_f(argument), direction);
       };
   return BroydenFletcherGoldfarbShanno(
-      start_argument, f, grad_f, directional_grad_f, tolerance, radius);
+      start_argument, f, grad_f, gateaux_derivative_f, tolerance, radius);
 }
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
@@ -222,7 +222,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    DirectionalGradient<Scalar, Argument> const& directional_grad_f,
+    GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
     typename Hilbert<Difference<Argument>>::NormType const& radius) {
   bool satisfies_strong_wolfe_condition;
@@ -241,7 +241,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   // have other unpleasant properties.
   Difference<Argument> const p₀ = -Normalize(grad_f_x₀) * tolerance;
 
-  double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, directional_grad_f,
+  double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, gateaux_derivative_f,
                                satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
   if (!satisfies_strong_wolfe_condition) {
@@ -267,7 +267,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     if (pₖ.Norm() <= tolerance) {
       return xₖ;
     }
-    double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, directional_grad_f,
+    double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, gateaux_derivative_f,
                                  satisfies_strong_wolfe_condition);
     auto const xₖ₊₁ = xₖ + αₖ * pₖ;
     auto const grad_f_xₖ₊₁ = grad_f(xₖ₊₁);
