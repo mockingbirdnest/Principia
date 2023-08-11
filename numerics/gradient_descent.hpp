@@ -27,11 +27,17 @@ using namespace principia::quantities::_quantities;
 template<typename Scalar, typename Argument>
 struct Generator;
 
-template<typename Scalar, typename Argument>
-using Field = std::function<Scalar(Argument const&)>;
+template<typename Value, typename Argument>
+using Field = std::function<Value(Argument const&)>;
 
 template<typename Scalar, typename Argument>
 using Gradient = typename Generator<Scalar, Argument>::Gradient;
+
+// Must return InnerProduct(grad_f(argument), direction);
+template<typename Scalar, typename Argument>
+using DirectionalGradient =
+    std::function<Scalar(Argument const& argument,
+                         Difference<Argument> const& direction)>;
 
 // Stops when the search displacement is smaller than |tolerance|.  Returns
 // |nullopt| if no minimum is found within distance |radius| of
@@ -41,6 +47,19 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
+    typename Hilbert<Difference<Argument>>::NormType const& radius =
+        Infinity<typename Hilbert<Difference<Argument>>::NormType>);
+
+// Same as above, but the directional gradient of f is passed in addition to its
+// gradient.  Useful when the directional gradient is significantly less
+// expensive to compute than the full gradient.
+template<typename Scalar, typename Argument>
+std::optional<Argument> BroydenFletcherGoldfarbShanno(
+    Argument const& start_argument,
+    Field<Scalar, Argument> const& f,
+    Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+    DirectionalGradient<Scalar, Argument> const& directional_grad_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
     typename Hilbert<Difference<Argument>>::NormType const& radius =
         Infinity<typename Hilbert<Difference<Argument>>::NormType>);
