@@ -205,7 +205,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         // This will remove the "Select" UI so it must shrink.
         if (show_selection_ui_) {
           show_selection_ui_ = false;
-          Shrink();
+          ScheduleShrink();
         }
         selecting_active_vessel_target = false;
       }
@@ -512,7 +512,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     if (UnityEngine.GUILayout.Button(toggle)) {
       show = !show;
       if (!show) {
-        Shrink();
+        ScheduleShrink();
       }
     }
     if (show) {

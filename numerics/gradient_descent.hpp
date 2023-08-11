@@ -51,9 +51,9 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
     typename Hilbert<Difference<Argument>>::NormType const& radius =
         Infinity<typename Hilbert<Difference<Argument>>::NormType>);
 
-// Same as above, but the directional gradient of f is passed in addition to its
-// gradient.  Useful when the directional gradient is significantly less
-// expensive to compute than the full gradient.
+// Same as above, but the Gateaux derivative of f is passed in addition to its
+// gradient.  Useful when the Gateaux derivative is significantly less expensive
+// to compute than the full gradient.
 template<typename Scalar, typename Argument>
 std::optional<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,

@@ -607,7 +607,7 @@ internal class
         string button_text = expanded_[celestial] ? "−" : "+";
         if (UnityEngine.GUILayout.Button(
                 button_text, GUILayoutWidth(offset))) {
-          Shrink();
+          ScheduleShrink();
           expanded_[celestial] = !expanded_[celestial];
         }
       }
@@ -619,7 +619,7 @@ internal class
       } else if (UnityEngine.GUILayout.Toggle(pinned[celestial], "") !=
                  pinned[celestial]) {
         pinned[celestial] = !pinned[celestial];
-        Shrink();
+        ScheduleShrink();
       }
     }
     if (!celestial.is_leaf(target)) {
@@ -636,7 +636,7 @@ internal class
           if (UnityEngine.GUILayout.Toggle(target_pinned_, "") !=
               target_pinned_) {
             target_pinned_ = !target_pinned_;
-            Shrink();
+            ScheduleShrink();
           }
         }
       }
