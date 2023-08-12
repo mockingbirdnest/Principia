@@ -111,6 +111,10 @@ bool FixedVector<Scalar, size_>::operator!=(FixedVector const& right) const {
   return data_ != right.data_;
 }
 
+template<typename H, typename Scalar, int size_>
+H AbslHashValue(H h, FixedVector<Scalar, size_> const& vector) {
+}
+
 template<typename Scalar, int rows_, int columns_>
 constexpr FixedMatrix<Scalar, rows_, columns_>::FixedMatrix()
     : data_{} {}

@@ -17,8 +17,7 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-constexpr Time absolute_δt = 1 * Milli(Second);
-constexpr Speed absolute_δv = 1 * Milli(Metre) / Second;
+constexpr Speed δ_homogeneous_argument = 1 * Milli(Metre) / Second;
 constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
@@ -38,31 +37,22 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   auto const f = [this, &cache, &celestial, index, &manœuvre](
                      HomogeneousArgument const& homogeneous_argument) {
     return EvaluateDistanceToCelestialWithReplacement(
-        celestial,
-        Dehomogeneize(homogeneous_argument),
-        manœuvre,
-        index,
-        *flight_plan_,
-        cache);
+        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
   };
   auto const grad_f = [this, &cache, &celestial, index, &manœuvre](
                           HomogeneousArgument const& homogeneous_argument) {
     return Evaluate𝛁DistanceToCelestialWithReplacement(
-        celestial,
-        Dehomogeneize(homogeneous_argument),
-        manœuvre,
-        index,
-        *flight_plan_,
-        cache);
+        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
   };
-  auto const directional_grad_f =
+  auto const gateaux_derivative_f =
       [this, &cache, &celestial, index, &manœuvre](
           HomogeneousArgument const& homogeneous_argument,
           Difference<HomogeneousArgument> const&
               direction_homogeneous_argument) {
-        return EvaluateDirectional𝛁DistanceToCelestialWithReplacement(
+        return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
             celestial,
-            Dehomogeneize(homogeneous_argument),
+            homogeneous_argument,
+            direction_homogeneous_argument,
             manœuvre,
             index,
             *flight_plan_,
@@ -93,34 +83,19 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   auto const f = [this, &cache, &celestial, index, &manœuvre, target_distance](
                      HomogeneousArgument const& homogeneous_argument) {
     auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
-        celestial,
-        Dehomogeneize(homogeneous_argument),
-        manœuvre,
-        index,
-        *flight_plan_,
-        cache);
+        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
     return Pow<2>(actual_distance - target_distance);
   };
   auto const grad_f =
      [this, &cache, &celestial, index, &manœuvre, target_distance](
          HomogeneousArgument const& homogeneous_argument) {
     auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
-        celestial,
-        Dehomogeneize(homogeneous_argument),
-        manœuvre,
-        index,
-        *flight_plan_,
-        cache);
+        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
     auto const actual_gradient = Evaluate𝛁DistanceToCelestialWithReplacement(
-        celestial,
-        Dehomogeneize(homogeneous_argument),
-        manœuvre,
-        index,
-        *flight_plan_,
-        cache);
+        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
     return 2 * (actual_distance - target_distance) * actual_gradient;
   };
-  auto const directional_grad_f =
+  auto const gateaux_derivative_f =
       [this, &cache, &celestial, index, &manœuvre, target_distance](
           HomogeneousArgument const& homogeneous_argument,
           Difference<HomogeneousArgument> const&
@@ -135,21 +110,6 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   } else {
     return absl::NotFoundError("No better burn");
   }
-}
-
-bool operator==(FlightPlanOptimizer::Argument const& left,
-                FlightPlanOptimizer::Argument const& right) {
-  return left.Δinitial_time == right.Δinitial_time && left.ΔΔv == right.ΔΔv;
-}
-
-template<typename H>
-H AbslHashValue(H h, FlightPlanOptimizer::Argument const& argument) {
-  auto const coordinates = argument.ΔΔv.coordinates();
-  return H::combine(std::move(h),
-                    argument.Δinitial_time / Second,
-                    coordinates.x / (Metre / Second),
-                    coordinates.y / (Metre / Second),
-                    coordinates.z / (Metre / Second));
 }
 
 FlightPlanOptimizer::HomogeneousArgument FlightPlanOptimizer::Homogeneize(
@@ -199,98 +159,63 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
 FlightPlanOptimizer::LengthGradient
 FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
     Celestial const& celestial,
-    Argument const& argument,
+    HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
     int const index,
     FlightPlan& flight_plan,
     EvaluationCache& cache) {
   auto const distance = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument, manœuvre, index, flight_plan, cache);
+      celestial, homogeneous_argument, manœuvre, index, flight_plan, cache);
 
-  Argument argument_δt = argument;
-  argument_δt.Δinitial_time += absolute_δt;
-
-  auto const argument_ΔΔv = argument.ΔΔv.coordinates();
-  Argument argument_δx = argument;
-  argument_δx.ΔΔv = Velocity<Frenet<Navigation>>(
-      {argument_ΔΔv.x + absolute_δv, argument_ΔΔv.y, argument_ΔΔv.z});
-  Argument argument_δy = argument;
-  argument_δy.ΔΔv = Velocity<Frenet<Navigation>>(
-      {argument_ΔΔv.x, argument_ΔΔv.y + absolute_δv, argument_ΔΔv.z});
-  Argument argument_δz = argument;
-  argument_δz.ΔΔv = Velocity<Frenet<Navigation>>(
-      {argument_ΔΔv.x, argument_ΔΔv.y, argument_ΔΔv.z + absolute_δv});
-
-  auto const distance_δt = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δt, manœuvre, index, flight_plan, cache);
-  auto const distance_δx = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δx, manœuvre, index, flight_plan, cache);
-  auto const distance_δy = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δy, manœuvre, index, flight_plan, cache);
-  auto const distance_δz = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δz, manœuvre, index, flight_plan, cache);
-
-  return LengthGradient({
-      (distance_δt - distance) / (absolute_δt * time_homogeneization_factor),
-      (distance_δx - distance) / absolute_δv,
-      (distance_δy - distance) / absolute_δv,
-      (distance_δz - distance) / absolute_δv});
+  LengthGradient gradient;
+  for (int i = 0; i < HomogeneousArgument::dimension; ++i) {
+    HomogeneousArgument homogeneous_argument_δi = homogeneous_argument;
+    homogeneous_argument_δi[i] += δ_homogeneous_argument;
+    auto const distance_δi =
+        EvaluateDistanceToCelestialWithReplacement(celestial,
+                                                   homogeneous_argument_δi,
+                                                   manœuvre,
+                                                   index,
+                                                   flight_plan,
+                                                   cache);
+    gradient[i] = (distance_δi - distance) / δ_homogeneous_argument;
+  }
+  return gradient;
 }
 
-FlightPlanOptimizer::LengthGradient
-FlightPlanOptimizer::EvaluateDirectional𝛁DistanceToCelestialWithReplacement(
+Length FlightPlanOptimizer::
+EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
     Celestial const& celestial,
-    Argument const& argument,
-    Difference<Argument> const& direction,
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const& direction_homogeneous_argument,
     NavigationManœuvre const& manœuvre,
     int const index,
     FlightPlan& flight_plan,
     EvaluationCache& cache) {
   auto const distance = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument, manœuvre, index, flight_plan, cache);
-
-  Argument argument_δt = argument;
-  argument_δt.Δinitial_time += absolute_δt;
-
-  auto const argument_ΔΔv = argument.ΔΔv.coordinates();
-  Argument argument_δx = argument;
-  argument_δx.ΔΔv = Velocity<Frenet<Navigation>>(
-      {argument_ΔΔv.x + absolute_δv, argument_ΔΔv.y, argument_ΔΔv.z});
-  Argument argument_δy = argument;
-  argument_δy.ΔΔv = Velocity<Frenet<Navigation>>(
-      {argument_ΔΔv.x, argument_ΔΔv.y + absolute_δv, argument_ΔΔv.z});
-  Argument argument_δz = argument;
-  argument_δz.ΔΔv = Velocity<Frenet<Navigation>>(
-      {argument_ΔΔv.x, argument_ΔΔv.y, argument_ΔΔv.z + absolute_δv});
-
-  auto const distance_δt = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δt, manœuvre, index, flight_plan, cache);
-  auto const distance_δx = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δx, manœuvre, index, flight_plan, cache);
-  auto const distance_δy = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δy, manœuvre, index, flight_plan, cache);
-  auto const distance_δz = EvaluateDistanceToCelestialWithReplacement(
-      celestial, argument_δz, manœuvre, index, flight_plan, cache);
-
-  return LengthGradient({
-      (distance_δt - distance) / (absolute_δt * time_homogeneization_factor),
-      (distance_δx - distance) / absolute_δv,
-      (distance_δy - distance) / absolute_δv,
-      (distance_δz - distance) / absolute_δv});
+      celestial, homogeneous_argument, manœuvre, index, flight_plan, cache);
+  double const h = δ_homogeneous_argument /
+                   direction_homogeneous_argument.Norm();
+  auto const homogeneous_argument_h =
+      homogeneous_argument + h * direction_homogeneous_argument;
+  auto const distance_δh = EvaluateDistanceToCelestialWithReplacement(
+      celestial, homogeneous_argument_h, manœuvre, index, flight_plan, cache);
+  return (distance_δh - distance) / h;
 }
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     Celestial const& celestial,
-    Argument const& argument,
+    HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
     int const index,
     FlightPlan& flight_plan,
     EvaluationCache& cache) {
-  if (auto const it = cache.find(argument); it != cache.end()) {
+  if (auto const it = cache.find(homogeneous_argument); it != cache.end()) {
     return it->second;
   }
 
   Length distance;
+  Argument const argument = Dehomogeneize(homogeneous_argument);
   if (ReplaceBurn(argument, manœuvre, index, flight_plan).ok()) {
     distance = EvaluateDistanceToCelestial(
         celestial, manœuvre.initial_time(), flight_plan);
@@ -301,7 +226,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     distance = Infinity<Length>;
   }
   CHECK_OK(flight_plan.Replace(manœuvre.burn(), index));
-  cache.emplace(argument, distance);
+  cache.emplace(homogeneous_argument, distance);
   return distance;
 }
 

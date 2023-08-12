@@ -62,21 +62,16 @@ class FlightPlanOptimizer {
   struct Argument {
     Time Δinitial_time;
     Velocity<Frenet<Navigation>> ΔΔv;
-
-    friend bool operator==(Argument const& left, Argument const& right);
-
-    template<typename H>
-    friend H AbslHashValue(H h, Argument const& argument);
   };
+
+  // The data structure passed to the gradient descent algorithm.
+  using HomogeneousArgument = FixedVector<Speed, 4>;
 
   // Function evaluations are very expensive, as they require integrating a
   // flight plan and finding periapsides.  We don't want do to them
   // unnecessarily.  You generally don't want to hash floats, but it's a case
   // where it's kosher.
-  using EvaluationCache = absl::flat_hash_map<Argument, Length>;
-
-  // The data structure passed to the gradient descent algorithm.
-  using HomogeneousArgument = FixedVector<Speed, 4>;
+  using EvaluationCache = absl::flat_hash_map<HomogeneousArgument, Length>;
 
   using LengthField = Field<Length, HomogeneousArgument>;
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
@@ -95,7 +90,7 @@ class FlightPlanOptimizer {
   // computes the closest periapis.  Leaves the |flight_plan| unchanged.
   static Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Argument const& argument,
+      HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
       FlightPlan& flight_plan,
@@ -106,16 +101,16 @@ class FlightPlanOptimizer {
   // |argument|.  Leaves the |flight_plan| unchanged.
   static LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Argument const& argument,
+      HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
       FlightPlan& flight_plan,
       EvaluationCache& cache);
 
-  static LengthGradient EvaluateDirectional𝛁DistanceToCelestialWithReplacement(
+  static Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Argument const& argument,
-      Difference<Argument> const& direction,
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& direction_homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
       FlightPlan& flight_plan,
