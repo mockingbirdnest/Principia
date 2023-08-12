@@ -45,6 +45,17 @@ class FlightPlanOptimizer {
                         Celestial const& celestial,
                         Speed const& Δv_tolerance);
 
+  // Optimizes the manœuvre at the given |index| to have a periapsis at the
+  // specified |target_distance| of the |celestial|.  The |Δv_tolerance| is used
+  // for the initial choice of the step and for deciding when to stop, and must
+  // be small enough to not miss interesting features of the trajectory, and
+  // large enough to avoid costly startup steps.  Changes the flight plan passed
+  // at construction.
+  absl::Status Optimize(int index,
+                        Celestial const& celestial,
+                        Length const& target_distance,
+                        Speed const& Δv_tolerance);
+
  private:
   // The |Argument| is relative to the current properties of the burn.
   struct Argument {
