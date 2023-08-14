@@ -33,9 +33,14 @@ using namespace principia::quantities::_quantities;
 // A class to optimize a flight to go through or near a celestial.
 class FlightPlanOptimizer {
  public:
+  // Called throughout the optimization to let the client know the tentative
+  // state of the flight plan.
+  using ProgressCallback = std::function<void(FlightPlan const&)>;
+
   // Constructs an optimizer for |flight_plan|.  |flight_plan| must outlive this
   // object.
-  explicit FlightPlanOptimizer(not_null<FlightPlan*> flight_plan);
+  FlightPlanOptimizer(not_null<FlightPlan*> flight_plan,
+                      ProgressCallback progress_callback = nullptr);
 
   // Optimizes the manœuvre at the given |index| to go through (or close to)
   // |celestial|.  The |Δv_tolerance| is used for the initial choice of the step
@@ -82,13 +87,13 @@ class FlightPlanOptimizer {
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
   // |celestial|, occurring after |begin_time|.
-  static Length EvaluateDistanceToCelestial(Celestial const& celestial,
-                                            Instant const& begin_time,
-                                            FlightPlan const& flight_plan);
+  Length EvaluateDistanceToCelestial(Celestial const& celestial,
+                                     Instant const& begin_time,
+                                     FlightPlan const& flight_plan);
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the closest periapis.  Leaves the |flight_plan| unchanged.
-  static Length EvaluateDistanceToCelestialWithReplacement(
+  Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
@@ -99,7 +104,7 @@ class FlightPlanOptimizer {
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the gradient of the closest periapis with respect to the
   // |argument|.  Leaves the |flight_plan| unchanged.
-  static LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
+  LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
@@ -107,7 +112,7 @@ class FlightPlanOptimizer {
       FlightPlan& flight_plan,
       EvaluationCache& cache);
 
-  static Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+  Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       Difference<HomogeneousArgument> const& direction_homogeneous_argument,
@@ -124,6 +129,7 @@ class FlightPlanOptimizer {
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
+  ProgressCallback const progress_callback_;
 
   friend bool operator==(Argument const& left, Argument const& right);
   template<typename H>

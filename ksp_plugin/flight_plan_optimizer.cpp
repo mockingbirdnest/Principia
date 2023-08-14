@@ -22,8 +22,10 @@ constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
 FlightPlanOptimizer::FlightPlanOptimizer(
-    not_null<FlightPlan*> const flight_plan)
-    : flight_plan_(flight_plan) {}
+    not_null<FlightPlan*> const flight_plan,
+    ProgressCallback progress_callback)
+    : flight_plan_(flight_plan),
+      progress_callback_(std::move(progress_callback)) {}
 
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Celestial const& celestial,
@@ -49,7 +51,6 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
     HomogeneousArgument const& homogeneous_argument,
     Difference<HomogeneousArgument> const&
         direction_homogeneous_argument) {
-LOG(ERROR)<<"Gateaux";
     return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
         celestial,
         homogeneous_argument,
@@ -105,7 +106,6 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
           HomogeneousArgument const& homogeneous_argument,
           Difference<HomogeneousArgument> const&
               direction_homogeneous_argument) {
-LOG(ERROR)<<"Gateaux";
     auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
         celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
     auto const actual_gateaux_derivative =
@@ -170,6 +170,9 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
                         (degrees_of_freedom.position() -
                          celestial_trajectory.EvaluatePosition(time))
                             .Norm());
+  }
+  if (progress_callback_ != nullptr) {
+    progress_callback_(flight_plan);
   }
   return distance;
 }
