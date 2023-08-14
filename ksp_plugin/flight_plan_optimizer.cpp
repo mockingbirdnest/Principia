@@ -46,22 +46,27 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   };
   auto const gateaux_derivative_f =
       [this, &cache, &celestial, index, &manœuvre](
-          HomogeneousArgument const& homogeneous_argument,
-          Difference<HomogeneousArgument> const&
-              direction_homogeneous_argument) {
-        return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
-            celestial,
-            homogeneous_argument,
-            direction_homogeneous_argument,
-            manœuvre,
-            index,
-            *flight_plan_,
-            cache);
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const&
+        direction_homogeneous_argument) {
+LOG(ERROR)<<"Gateaux";
+    return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+        celestial,
+        homogeneous_argument,
+        direction_homogeneous_argument,
+        manœuvre,
+        index,
+        *flight_plan_,
+        cache);
   };
 
   auto const solution =
       BroydenFletcherGoldfarbShanno<Length, HomogeneousArgument>(
-          Homogeneize(start_argument_), f, grad_f, Δv_tolerance);
+          Homogeneize(start_argument_),
+          f,
+          grad_f,
+          gateaux_derivative_f,
+          Δv_tolerance);
   if (solution.has_value()) {
     return ReplaceBurn(
         Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
@@ -99,11 +104,24 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
       [this, &cache, &celestial, index, &manœuvre, target_distance](
           HomogeneousArgument const& homogeneous_argument,
           Difference<HomogeneousArgument> const&
-              direction_homogeneous_argument) {};
+              direction_homogeneous_argument) {
+LOG(ERROR)<<"Gateaux";
+    auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
+        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
+    auto const actual_gateaux_derivative =
+        EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+        celestial, homogeneous_argument, direction_homogeneous_argument,
+        manœuvre, index, *flight_plan_, cache);
+    return 2 * (actual_distance - target_distance) * actual_gateaux_derivative;
+  };
 
   auto const solution =
       BroydenFletcherGoldfarbShanno<Square<Length>, HomogeneousArgument>(
-          Homogeneize(start_argument_), f, grad_f, Δv_tolerance);
+          Homogeneize(start_argument_),
+          f,
+          grad_f,
+          gateaux_derivative_f,
+          Δv_tolerance);
   if (solution.has_value()) {
     return ReplaceBurn(
         Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
