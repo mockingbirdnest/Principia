@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[岩澤](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%E5%B2%A9%E6%BE%A4), the July version of Principia, is available, with UI improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/44N3yus).**
+**&lrm;[Jacobi](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#jacobi), the August version of Principia, is available, with UI improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/47AblxF).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia 岩澤 for 1.8.1—1.12.5](https://share.weiyun.com/cOQUrwgP).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Jacobi for 1.8.1—1.12.5](https://share.weiyun.com/h4KQLeph).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/44N3yus).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [岩澤](https://github.com/mockingbirdnest/Principia/releases/tag/2023071719-%E5%B2%A9%E6%BE%A4) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/47AblxF).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Jacobi](https://github.com/mockingbirdnest/Principia/releases/tag/2023081610-Jacobi) release.
