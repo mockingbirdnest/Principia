@@ -6,6 +6,7 @@
 #include "base/tags.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -15,6 +16,7 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
@@ -44,6 +46,14 @@ class FixedVector final {
 
   bool operator==(FixedVector const& right) const;
   bool operator!=(FixedVector const& right) const;
+
+  template<typename H>
+  friend H AbslHashValue(H h, FixedVector const& vector) {
+    for (int index = 0; index < size_; ++index) {
+      h = H::combine(std::move(h), vector.data_[index] / si::Unit<Scalar>);
+    }
+    return h;
+  }
 
  private:
   std::array<Scalar, size_> data_;

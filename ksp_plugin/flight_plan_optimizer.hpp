@@ -1,5 +1,6 @@
 #pragma once
 
+#include "absl/container/flat_hash_map.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -32,9 +33,14 @@ using namespace principia::quantities::_quantities;
 // A class to optimize a flight to go through or near a celestial.
 class FlightPlanOptimizer {
  public:
+  // Called throughout the optimization to let the client know the tentative
+  // state of the flight plan.
+  using ProgressCallback = std::function<void(FlightPlan const&)>;
+
   // Constructs an optimizer for |flight_plan|.  |flight_plan| must outlive this
   // object.
-  explicit FlightPlanOptimizer(not_null<FlightPlan*> flight_plan);
+  FlightPlanOptimizer(not_null<FlightPlan*> flight_plan,
+                      ProgressCallback progress_callback = nullptr);
 
   // Optimizes the manœuvre at the given |index| to go through (or close to)
   // |celestial|.  The |Δv_tolerance| is used for the initial choice of the step
@@ -66,6 +72,12 @@ class FlightPlanOptimizer {
   // The data structure passed to the gradient descent algorithm.
   using HomogeneousArgument = FixedVector<Speed, 4>;
 
+  // Function evaluations are very expensive, as they require integrating a
+  // flight plan and finding periapsides.  We don't want do to them
+  // unnecessarily.  You generally don't want to hash floats, but it's a case
+  // where it's kosher.
+  using EvaluationCache = absl::flat_hash_map<HomogeneousArgument, Length>;
+
   using LengthField = Field<Length, HomogeneousArgument>;
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
 
@@ -75,28 +87,39 @@ class FlightPlanOptimizer {
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
   // |celestial|, occurring after |begin_time|.
-  static Length EvaluateDistanceToCelestial(Celestial const& celestial,
-                                            Instant const& begin_time,
-                                            FlightPlan const& flight_plan);
+  Length EvaluateDistanceToCelestial(Celestial const& celestial,
+                                     Instant const& begin_time,
+                                     FlightPlan const& flight_plan);
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the closest periapis.  Leaves the |flight_plan| unchanged.
-  static Length EvaluateDistanceToCelestialWithReplacement(
+  Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Argument const& argument,
+      HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan);
+      FlightPlan& flight_plan,
+      EvaluationCache& cache);
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the gradient of the closest periapis with respect to the
   // |argument|.  Leaves the |flight_plan| unchanged.
-  static LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
+  LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
       Celestial const& celestial,
-      Argument const& argument,
+      HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan);
+      FlightPlan& flight_plan,
+      EvaluationCache& cache);
+
+  Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+      Celestial const& celestial,
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& direction_homogeneous_argument,
+      NavigationManœuvre const& manœuvre,
+      int index,
+      FlightPlan& flight_plan,
+      EvaluationCache& cache);
 
   // Replaces the burn at the given |index| based on the |argument|.
   static absl::Status ReplaceBurn(Argument const& argument,
@@ -106,6 +129,11 @@ class FlightPlanOptimizer {
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
+  ProgressCallback const progress_callback_;
+
+  friend bool operator==(Argument const& left, Argument const& right);
+  template<typename H>
+  friend H AbslHashValue(H h, Argument const& argument);
 };
 
 }  // namespace internal
