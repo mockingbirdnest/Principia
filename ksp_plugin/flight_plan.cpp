@@ -224,6 +224,33 @@ double FlightPlan::progress_of_analysis(int coast_index) const {
   return coast_analysers_[coast_index]->progress_of_next_analysis();
 }
 
+void FlightPlan::EnableAnalysis(bool const enabled) {
+  if (enabled != analysis_is_enabled_) {
+    if (enabled) {
+      // Request analysis of all the non-anomalous coasts.
+      for (int index = 0;
+           index < segments_.size() - anomalous_segments_;
+           ++index) {
+        if (index % 2 == 0) {
+          auto const& coast = segments_[index];
+          auto const& [first_time, first_degrees_of_freedom] = coast->front();
+          coast_analysers_[index / 2]->RequestAnalysis(
+              {.first_time = first_time,
+               .first_degrees_of_freedom = first_degrees_of_freedom,
+               .mission_duration = coast->back().time - first_time,
+               .extended_mission_duration = desired_final_time_ - first_time});
+        }
+      }
+    } else {
+      // Immediately stop all the analyses.
+      for (auto const& coast_analyser : coast_analysers_) {
+        coast_analyser->Interrupt();
+      }
+    }
+    analysis_is_enabled_ = enabled;
+  }
+}
+
 void FlightPlan::WriteToMessage(
     not_null<serialization::FlightPlan*> const message) const {
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
@@ -400,12 +427,14 @@ absl::Status FlightPlan::ComputeSegments(
         anomalous_segments_ = 1;
         anomalous_status_ = status;
       }
-      auto const& [first_time, first_degrees_of_freedom] = coast->front();
-      coast_analysers_[it - manœuvres_.begin()]->RequestAnalysis(
-          {.first_time = first_time,
-           .first_degrees_of_freedom = first_degrees_of_freedom,
-           .mission_duration = coast->back().time - first_time,
-           .extended_mission_duration = desired_final_time_ - first_time});
+      if (analysis_is_enabled_) {
+        auto const& [first_time, first_degrees_of_freedom] = coast->front();
+        coast_analysers_[it - manœuvres_.begin()]->RequestAnalysis(
+            {.first_time = first_time,
+             .first_degrees_of_freedom = first_degrees_of_freedom,
+             .mission_duration = coast->back().time - first_time,
+             .extended_mission_duration = desired_final_time_ - first_time});
+      }
     }
 
     AddLastSegment();
@@ -429,12 +458,14 @@ absl::Status FlightPlan::ComputeSegments(
     // having to extend the flight plan by hand.
     desired_final_time_ =
         std::max(desired_final_time_, segments_.back()->t_max());
-    auto const& [first_time, first_degrees_of_freedom] =
-        segments_.back()->front();
-    coast_analysers_.back()->RequestAnalysis(
-        {.first_time = first_time,
-         .first_degrees_of_freedom = first_degrees_of_freedom,
-         .mission_duration = desired_final_time_ - first_time});
+    if (analysis_is_enabled_) {
+      auto const& [first_time, first_degrees_of_freedom] =
+          segments_.back()->front();
+      coast_analysers_.back()->RequestAnalysis(
+          {.first_time = first_time,
+           .first_degrees_of_freedom = first_degrees_of_freedom,
+           .mission_duration = desired_final_time_ - first_time});
+    }
     absl::Status const status =
         CoastSegment(desired_final_time_, segments_.back());
     if (!status.ok()) {
