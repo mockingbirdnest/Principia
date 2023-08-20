@@ -30,6 +30,10 @@ FlightPlanOptimizer::FlightPlanOptimizer(
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Celestial const& celestial,
                                            Speed const& Δv_tolerance) {
+  // We are going to repeatedly tweak the |flight_plan_|, no point in running
+  // the orbit analysers.
+  flight_plan_->EnableAnalysis(/*enabled=*/false);
+
   // The following is a copy, and is not affected by changes to the
   // |flight_plan_|.
   NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
@@ -69,9 +73,12 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
           gateaux_derivative_f,
           Δv_tolerance);
   if (solution.has_value()) {
-    return ReplaceBurn(
+    auto const replace_status = ReplaceBurn(
         Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
+    flight_plan_->EnableAnalysis(/*enabled=*/true);
+    return replace_status;
   } else {
+    flight_plan_->EnableAnalysis(/*enabled=*/true);
     return absl::NotFoundError("No better burn");
   }
 }
@@ -80,6 +87,10 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Celestial const& celestial,
                                            Length const& target_distance,
                                            Speed const& Δv_tolerance) {
+  // We are going to repeatedly tweak the |flight_plan_|, no point in running
+  // the orbit analysers.
+  flight_plan_->EnableAnalysis(/*enabled=*/false);
+
   // The following is a copy, and is not affected by changes to the
   // |flight_plan_|.
   NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
@@ -123,9 +134,12 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
           gateaux_derivative_f,
           Δv_tolerance);
   if (solution.has_value()) {
-    return ReplaceBurn(
+    auto const replace_status = ReplaceBurn(
         Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
+    flight_plan_->EnableAnalysis(/*enabled=*/true);
+    return replace_status;
   } else {
+    flight_plan_->EnableAnalysis(/*enabled=*/true);
     return absl::NotFoundError("No better burn");
   }
 }

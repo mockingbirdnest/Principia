@@ -117,6 +117,10 @@ class FlightPlan {
   GetSegment(int index) const;
   virtual DiscreteTrajectory<Barycentric> const& GetAllSegments() const;
 
+  // Orbit analysis is enabled at construction, and may be enabled/disabled
+  // dynamically.
+  void EnableAnalysis(bool enabled);
+
   // |coast_index| must be in [0, number_of_manœuvres()].
   virtual OrbitAnalyser::Analysis* analysis(int coast_index);
   double progress_of_analysis(int coast_index) const;
@@ -218,7 +222,12 @@ class FlightPlan {
   absl::Status anomalous_status_;
 
   std::vector<NavigationManœuvre> manœuvres_;
+
+  // The coast analysers always exist for each coast, but they may be idle if
+  // analysis is disabled.
   std::vector<not_null<std::unique_ptr<OrbitAnalyser>>> coast_analysers_;
+  bool analysis_is_enabled_ = true;
+
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
