@@ -1165,7 +1165,7 @@ bool Vessel::IsCollapsible() const {
     }
   }
   CHECK_NE(nullptr, containing_pile_up);
-  for (const auto& part : containing_pile_up->parts()) {
+  for (auto const& part : containing_pile_up->parts()) {
     // Not collapsible if the pile-up contains a part not in this vessel.
     if (!parts.contains(part)) {
       return false;
