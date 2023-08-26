@@ -24,6 +24,11 @@ FlightPlanOptimizationDriver::last_flight_plan() const {
   return last_flight_plan_;
 }
 
+bool FlightPlanOptimizationDriver::done() const {
+  absl::ReaderMutexLock l(&lock_);
+  return optimizer_idle_;
+}
+
 void FlightPlanOptimizationDriver::Interrupt() {
   optimizer_ = jthread();
   // We are single-threaded here, no need to lock.
@@ -37,19 +42,24 @@ void FlightPlanOptimizationDriver::RequestOptimization(
   if (optimizer_idle_) {
     optimizer_idle_ = false;
     optimizer_ = MakeStoppableThread([this, parameters]() {
+      absl::Status optimization_status;
       if (parameters.target_distance == Length{}) {
-        flight_plan_optimizer_
-            .Optimize(parameters.index,
-                      *parameters.celestial,
-                      parameters.Δv_tolerance)
-            .IgnoreError();
+        optimization_status =
+            flight_plan_optimizer_.Optimize(parameters.index,
+                                            *parameters.celestial,
+                                            parameters.Δv_tolerance);
       } else {
-        flight_plan_optimizer_
-            .Optimize(parameters.index,
-                      *parameters.celestial,
-                      parameters.target_distance,
-                      parameters.Δv_tolerance)
-            .IgnoreError();
+        optimization_status =
+            flight_plan_optimizer_.Optimize(parameters.index,
+                                            *parameters.celestial,
+                                            parameters.target_distance,
+                                            parameters.Δv_tolerance);
+      }
+
+      absl::MutexLock l(&lock_);
+      if (optimization_status.ok()) {
+        last_flight_plan_ =
+            make_not_null_shared<FlightPlan>(flight_plan_under_optimization_);
       }
       optimizer_idle_ = true;
     });

@@ -40,6 +40,9 @@ class FlightPlanOptimizationDriver {
   // Returns the last flight plan evaluated by the optimizer.
   std::shared_ptr<FlightPlan> last_flight_plan() const;
 
+  // Returns true if the optimization is done.
+  bool done() const;
+
   // Cancels any optimization in progress.
   void Interrupt();
 
