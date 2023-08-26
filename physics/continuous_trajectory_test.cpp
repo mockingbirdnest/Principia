@@ -1,15 +1,17 @@
 #include "physics/continuous_trajectory.hpp"
 
 #include <algorithm>
-#include <deque>
 #include <functional>
 #include <limits>
+#include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -26,6 +28,8 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
 
 namespace principia {
 namespace physics {
@@ -163,7 +167,7 @@ class ContinuousTrajectoryTest : public testing::Test {
       // We use this way of computing the time (as opposed to consecutive
       // additions) because it results in a bit of jitter in the intervals,
       // which matters for continuity.
-      Instant ti = time + (i + 1) * step;
+      Instant const ti = time + (i + 1) * step;
       EXPECT_OK(
           trajectory.Append(ti,
                             DegreesOfFreedom<World>(position_function(ti),
@@ -197,7 +201,7 @@ class ContinuousTrajectoryTest : public testing::Test {
       serialization::ContinuousTrajectory const& message) {
     serialization::ContinuousTrajectory pre_gröbner = message;
     for (int i = 0; i < pre_gröbner.instant_polynomial_pair_size(); ++i) {
-      auto const coefficient0 = pre_gröbner.instant_polynomial_pair(i).
+      auto const& coefficient0 = pre_gröbner.instant_polynomial_pair(i).
           polynomial().
           GetExtension(serialization::PolynomialInMonomialBasis::extension).
               coefficient(0).point().multivector();
@@ -275,7 +279,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
     t += step;
     EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
     EXPECT_EQ(5, trajectory->degree());
-    EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
+    EXPECT_EQ(Sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
   }
 
@@ -289,7 +293,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
     t += step;
     EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
     EXPECT_EQ(5, trajectory->degree());
-    EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
+    EXPECT_EQ(Sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
   }
 
@@ -325,7 +329,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
     t += step;
     EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
     EXPECT_EQ(7, trajectory->degree());
-    EXPECT_EQ(sqrt(3.44) * Metre, trajectory->adjusted_tolerance());
+    EXPECT_EQ(Sqrt(3.44) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
   }
 
