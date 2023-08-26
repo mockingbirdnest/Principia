@@ -1,11 +1,10 @@
 #include "ksp_plugin/flight_plan.hpp"
 
 #include <algorithm>
-#include <optional>
 #include <utility>
 #include <vector>
 
-#include "geometry/grassmann.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -18,7 +17,6 @@ namespace ksp_plugin {
 namespace _flight_plan {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -66,6 +64,39 @@ FlightPlan::FlightPlan(
       ephemeris_, DefaultHistoryParameters()));
   CHECK(manœuvres_.empty());
   ComputeSegments(manœuvres_.begin(), manœuvres_.end()).IgnoreError();
+}
+
+FlightPlan::FlightPlan(FlightPlan const& other)
+    : initial_mass_(other.initial_mass_),
+      initial_time_(other.initial_time_),
+      initial_degrees_of_freedom_(other.initial_degrees_of_freedom_),
+      desired_final_time_(other.desired_final_time_),
+      anomalous_segments_(other.anomalous_segments_),
+      manœuvres_(other.manœuvres_),
+      coast_analysers_(),
+      analysis_is_enabled_(other.analysis_is_enabled_),
+      ephemeris_(other.ephemeris_),
+      adaptive_step_parameters_(other.adaptive_step_parameters_),
+      generalized_adaptive_step_parameters_(
+          other.generalized_adaptive_step_parameters_) {
+  bool first = true;
+  for (auto const& other_segment : other.trajectory_.segments()) {
+    if (!first) {
+      trajectory_.NewSegment();
+    }
+    for (auto const& [time, degrees_of_freedom] : other_segment) {
+      CHECK_OK(trajectory_.Append(time, degrees_of_freedom));
+    }
+  }
+  for (auto it = trajectory_.segments().begin();
+       it != trajectory_.segments().end();
+       ++it) {
+    segments_.push_back(it);
+  }
+  for (int i = 0; i < coast_analysers_.size(); ++i) {
+    coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
+        ephemeris_, DefaultHistoryParameters()));
+  }
 }
 
 Instant FlightPlan::initial_time() const {
@@ -485,7 +516,7 @@ void FlightPlan::AddLastSegment() {
 }
 
 void FlightPlan::ResetLastSegment() {
-  auto const last_segment = segments_.back();
+  auto const& last_segment = segments_.back();
   trajectory_.ForgetAfter(std::next(last_segment->begin()));
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
@@ -493,7 +524,7 @@ void FlightPlan::ResetLastSegment() {
 }
 
 void FlightPlan::PopLastSegment() {
-  auto last_segment = segments_.back();
+  auto& last_segment = segments_.back();
   trajectory_.DeleteSegments(last_segment);
   segments_.pop_back();
   if (anomalous_segments_ > 0) {

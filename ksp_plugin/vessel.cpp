@@ -2,19 +2,15 @@
 
 #include <algorithm>
 #include <functional>
-#include <limits>
-#include <list>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "base/jthread.hpp"
 #include "base/map_util.hpp"
 #include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "ksp_plugin/integrators.hpp"
-#include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
@@ -23,12 +19,10 @@ namespace _vessel {
 namespace internal {
 
 using ::std::placeholders::_1;
-using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::ksp_plugin::_integrators;
-using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
 
 using namespace std::chrono_literals;
@@ -131,7 +125,7 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
   CHECK_LE(kept_parts_.size(), parts_.size());
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
-  auto result = std::move(it->second);
+  auto&& result = std::move(it->second);
   LOG(INFO) << "Extracting part " << result->ShortDebugString()
             << " from vessel " << ShortDebugString();
   parts_.erase(it);
@@ -467,7 +461,7 @@ void Vessel::CreateFlightPlan(
         flight_plan_adaptive_step_parameters,
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
-  auto const flight_plan_start = backstory_->back();
+  auto const& flight_plan_start = backstory_->back();
   flight_plans_.emplace_back(make_not_null_unique<FlightPlan>(
       initial_mass,
       /*initial_time=*/flight_plan_start.time,
@@ -493,9 +487,10 @@ void Vessel::DuplicateFlightPlan() {
     flight_plans_.emplace(it, std::get<serialization::FlightPlan>(original));
   } else if (std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
                  original)) {
-    std::get<not_null<std::unique_ptr<FlightPlan>>>(original)->WriteToMessage(
-        &std::get<serialization::FlightPlan>(*flight_plans_.emplace(
-            it, std::in_place_type<serialization::FlightPlan>)));
+    flight_plans_.emplace(
+        it,
+        make_not_null_unique<FlightPlan>(
+            *std::get<not_null<std::unique_ptr<FlightPlan>>>(original)));
   } else {
     LOG(FATAL) << "Unexpected flight plan variant " << original.index();
   }
@@ -1170,7 +1165,7 @@ bool Vessel::IsCollapsible() const {
     }
   }
   CHECK_NE(nullptr, containing_pile_up);
-  for (const auto part : containing_pile_up->parts()) {
+  for (auto const& part : containing_pile_up->parts()) {
     // Not collapsible if the pile-up contains a part not in this vessel.
     if (!parts.contains(part)) {
       return false;

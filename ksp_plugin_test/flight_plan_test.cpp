@@ -5,7 +5,6 @@
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
@@ -23,14 +22,12 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/reference_frame.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -46,7 +43,6 @@ using ::testing::Lt;
 using ::testing::MockFunction;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
@@ -63,13 +59,11 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
@@ -566,6 +560,33 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->desired_final_time());
   EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
   EXPECT_EQ(5, flight_plan_read->number_of_segments());
+}
+
+TEST_F(FlightPlanTest, Copy) {
+  EXPECT_OK(flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
+
+  serialization::FlightPlan message1;
+  flight_plan_->WriteToMessage(&message1);
+
+  FlightPlan const flight_plan_copy(*flight_plan_);
+  serialization::FlightPlan message2;
+  flight_plan_copy.WriteToMessage(&message2);
+
+  EXPECT_TRUE(message2.has_initial_mass());
+  EXPECT_TRUE(message2.has_initial_time());
+  EXPECT_TRUE(message2.has_desired_final_time());
+  EXPECT_TRUE(message2.has_adaptive_step_parameters());
+  EXPECT_TRUE(message2.adaptive_step_parameters().has_integrator());
+  EXPECT_TRUE(message2.adaptive_step_parameters().has_max_steps());
+  EXPECT_TRUE(
+      message2.adaptive_step_parameters().has_length_integration_tolerance());
+  EXPECT_TRUE(
+      message2.adaptive_step_parameters().has_speed_integration_tolerance());
+  EXPECT_EQ(2, message2.manoeuvre_size());
+
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 TEST_F(FlightPlanTest, Insertion) {
