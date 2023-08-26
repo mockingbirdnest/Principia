@@ -1,5 +1,6 @@
 #include "ksp_plugin/vessel.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <set>
 #include <string>

@@ -15,7 +15,6 @@
 #include "physics/ephemeris.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
-#include "ksp_plugin/manœuvre.hpp"
 
 namespace principia {
 namespace ksp_plugin {
