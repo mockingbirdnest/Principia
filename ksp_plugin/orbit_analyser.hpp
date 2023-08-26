@@ -2,8 +2,9 @@
 
 #include <atomic>
 #include <optional>
-#include <thread>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
 #include "astronomy/orbit_ground_track.hpp"
 #include "astronomy/orbit_recurrence.hpp"
@@ -111,7 +112,7 @@ class OrbitAnalyser {
 
   virtual ~OrbitAnalyser();
 
-  // Cancel any computation in progress, causing the next call to
+  // Cancels any computation in progress, causing the next call to
   // |RequestAnalysis| to be processed as fast as possible.
   void Interrupt();
 

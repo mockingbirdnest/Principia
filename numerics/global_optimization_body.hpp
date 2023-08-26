@@ -223,7 +223,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         // of the box: it's possible that xᵢ would be near one vertex of the box
         // and the stationary point near the opposite vertex.
         ++number_of_local_searches;
-        auto const stationary_point =
+        auto const status_or_stationary_point =
             BroydenFletcherGoldfarbShanno(xᵢ,
                                           f,
                                           grad_f,
@@ -232,13 +232,15 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
         // If the new stationary point is sufficiently far from the ones we
         // already know, record it.
-        if (stationary_point.has_value() &&
-            IsNewStationaryPoint(stationary_point.value(),
-                                 stationary_point_neighbourhoods,
-                                 local_search_tolerance)) {
-          stationary_points.push_back(
-              std::make_unique<Argument>(stationary_point.value()));
-          stationary_point_neighbourhoods.Add(stationary_points.back().get());
+        if (status_or_stationary_point.ok()) {
+          auto const& stationary_point = status_or_stationary_point.value();
+          if (IsNewStationaryPoint(stationary_point,
+                                   stationary_point_neighbourhoods,
+                                   local_search_tolerance)) {
+            stationary_points.push_back(
+                std::make_unique<Argument>(stationary_point));
+            stationary_point_neighbourhoods.Add(stationary_points.back().get());
+          }
         }
         // A local search has been started from xᵢ, so no point in considering
         // it again.

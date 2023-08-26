@@ -125,7 +125,7 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
   CHECK_LE(kept_parts_.size(), parts_.size());
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
-  auto&& result = std::move(it->second);
+  auto result = std::move(it->second);
   LOG(INFO) << "Extracting part " << result->ShortDebugString()
             << " from vessel " << ShortDebugString();
   parts_.erase(it);

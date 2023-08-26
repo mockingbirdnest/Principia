@@ -3,9 +3,10 @@
 #include "numerics/gradient_descent.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <optional>
 
+#include "absl/status/status.h"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
@@ -201,7 +202,7 @@ double LineSearch(
 }
 
 template<typename Scalar, typename Argument>
-std::optional<Argument> BroydenFletcherGoldfarbShanno(
+absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
@@ -218,7 +219,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
 template<typename Scalar, typename Argument>
-std::optional<Argument> BroydenFletcherGoldfarbShanno(
+absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
@@ -260,8 +261,9 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
+    RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
-      return std::nullopt;
+      return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
     Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
