@@ -1,20 +1,21 @@
 #pragma once
 
+#include <cstdint>
+#include <memory>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
-#include "integrators/integrators.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
+#include "ksp_plugin/manœuvre.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -23,14 +24,12 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
-using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // A chain of trajectories obtained by executing the corresponding

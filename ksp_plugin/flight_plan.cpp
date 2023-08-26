@@ -1,12 +1,9 @@
 #include "ksp_plugin/flight_plan.hpp"
 
-#include <algorithm>
-#include <optional>
 #include <utility>
 #include <vector>
 
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
-#include "geometry/grassmann.hpp"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -19,7 +16,6 @@ namespace ksp_plugin {
 namespace _flight_plan {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -519,7 +515,7 @@ void FlightPlan::AddLastSegment() {
 }
 
 void FlightPlan::ResetLastSegment() {
-  auto const last_segment = segments_.back();
+  auto const& last_segment = segments_.back();
   trajectory_.ForgetAfter(std::next(last_segment->begin()));
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
@@ -527,7 +523,7 @@ void FlightPlan::ResetLastSegment() {
 }
 
 void FlightPlan::PopLastSegment() {
-  auto last_segment = segments_.back();
+  auto& last_segment = segments_.back();
   trajectory_.DeleteSegments(last_segment);
   segments_.pop_back();
   if (anomalous_segments_ > 0) {

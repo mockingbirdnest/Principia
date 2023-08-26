@@ -5,7 +5,6 @@
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
@@ -23,14 +22,12 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/reference_frame.hpp"
-#include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -46,7 +43,6 @@ using ::testing::Lt;
 using ::testing::MockFunction;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
@@ -63,13 +59,11 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
-using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
