@@ -65,21 +65,22 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
         cache);
   };
 
-  auto const solution =
+  auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<Length, HomogeneousArgument>(
           Homogeneize(start_argument_),
           f,
           grad_f,
           gateaux_derivative_f,
           Δv_tolerance);
-  if (solution.has_value()) {
+  if (status_or_solution.ok()) {
+    auto const& solution = status_or_solution.value();
     auto const replace_status = ReplaceBurn(
-        Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
+        Dehomogeneize(solution), manœuvre, index, *flight_plan_);
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return replace_status;
   } else {
     flight_plan_->EnableAnalysis(/*enabled=*/true);
-    return absl::NotFoundError("No better burn");
+    return status_or_solution.status();
   }
 }
 
@@ -126,21 +127,22 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
     return 2 * (actual_distance - target_distance) * actual_gateaux_derivative;
   };
 
-  auto const solution =
+  auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<Square<Length>, HomogeneousArgument>(
           Homogeneize(start_argument_),
           f,
           grad_f,
           gateaux_derivative_f,
           Δv_tolerance);
-  if (solution.has_value()) {
+  if (status_or_solution.ok()) {
+    auto const& solution = status_or_solution.value();
     auto const replace_status = ReplaceBurn(
-        Dehomogeneize(solution.value()), manœuvre, index, *flight_plan_);
+        Dehomogeneize(solution), manœuvre, index, *flight_plan_);
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return replace_status;
   } else {
     flight_plan_->EnableAnalysis(/*enabled=*/true);
-    return absl::NotFoundError("No better burn");
+    return status_or_solution.status();
   }
 }
 

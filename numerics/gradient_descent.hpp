@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include <optional>
 
+#include "absl/status/statusor.h"
 #include "geometry/hilbert.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -39,11 +39,17 @@ using GateauxDerivative =
     std::function<Scalar(Argument const& argument,
                          Difference<Argument> const& direction)>;
 
+// Statuses returned by the gradient descent.
+namespace termination_condition {
+constexpr absl::StatusCode Done = absl::StatusCode::kOk;
+constexpr absl::StatusCode NoMinimum = absl::StatusCode::kNotFound;
+}  // namespace termination_condition
+
 // Stops when the search displacement is smaller than |tolerance|.  Returns
-// |nullopt| if no minimum is found within distance |radius| of
+// |NoMinimum| if no minimum is found within distance |radius| of
 // |start_argument|.
 template<typename Scalar, typename Argument>
-std::optional<Argument> BroydenFletcherGoldfarbShanno(
+absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
@@ -55,7 +61,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
 // gradient.  Useful when the Gateaux derivative is significantly less expensive
 // to compute than the full gradient.
 template<typename Scalar, typename Argument>
-std::optional<Argument> BroydenFletcherGoldfarbShanno(
+absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
@@ -69,6 +75,7 @@ std::optional<Argument> BroydenFletcherGoldfarbShanno(
 using internal::BroydenFletcherGoldfarbShanno;
 using internal::Gradient;
 using internal::Field;
+namespace termination_condition = internal::termination_condition;
 
 }  // namespace _gradient_descent
 }  // namespace numerics

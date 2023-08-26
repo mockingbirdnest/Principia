@@ -12,12 +12,12 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For IsOkAndHolds.
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace numerics {
 
-using ::testing::Optional;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
@@ -31,6 +31,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_matchers;
 
 class GradientDescentTest : public ::testing::Test {
  protected:
@@ -71,7 +72,8 @@ TEST_F(GradientDescentTest, Quadratic) {
             field,
             gradient,
             /*tolerance=*/1 * Micro(Metre));
-    EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 2)));
+    EXPECT_THAT(actual_minimum,
+                IsOkAndHolds(AlmostEquals(expected_minimum, 2)));
   }
 
   {
@@ -83,7 +85,8 @@ TEST_F(GradientDescentTest, Quadratic) {
             gradient,
             directional_gradient,
             /*tolerance=*/1 * Micro(Metre));
-    EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 2)));
+    EXPECT_THAT(actual_minimum,
+                IsOkAndHolds(AlmostEquals(expected_minimum, 2)));
   }
 }
 
@@ -111,8 +114,8 @@ TEST_F(GradientDescentTest, Quartic) {
           gradient,
           /*tolerance=*/1 * Micro(Metre));
   EXPECT_THAT(actual_minimum,
-              Optional(AbsoluteErrorFrom(expected_minimum,
-                                         IsNear(437_(1) * Micro(Metre)))));
+              IsOkAndHolds(AbsoluteErrorFrom(expected_minimum,
+                                             IsNear(437_(1) * Micro(Metre)))));
 }
 
 TEST_F(GradientDescentTest, Gaussian) {
@@ -143,8 +146,8 @@ TEST_F(GradientDescentTest, Gaussian) {
           gradient,
           /*tolerance=*/1 * Micro(Metre));
   EXPECT_THAT(actual_minimum,
-              Optional(AbsoluteErrorFrom(expected_minimum,
-                                         IsNear(0.78_(1) * Micro(Metre)))));
+              IsOkAndHolds(AbsoluteErrorFrom(expected_minimum,
+                                             IsNear(0.78_(1) * Micro(Metre)))));
 }
 
 TEST_F(GradientDescentTest, Rosenbrock) {
@@ -177,8 +180,8 @@ TEST_F(GradientDescentTest, Rosenbrock) {
             gradient,
             /*tolerance=*/1 * Micro(Metre));
     EXPECT_THAT(actual_minimum,
-                Optional(AbsoluteErrorFrom(expected_minimum,
-                                           IsNear(0.69_(1) * Micro(Metre)))));
+                IsOkAndHolds(AbsoluteErrorFrom(
+                    expected_minimum, IsNear(0.69_(1) * Micro(Metre)))));
   }
   {
     auto const actual_minimum =
@@ -189,8 +192,8 @@ TEST_F(GradientDescentTest, Rosenbrock) {
             gradient,
             /*tolerance=*/1 * Micro(Metre));
     EXPECT_THAT(actual_minimum,
-                Optional(AbsoluteErrorFrom(expected_minimum,
-                                           IsNear(0.86_(1) * Micro(Metre)))));
+                IsOkAndHolds(AbsoluteErrorFrom(
+                    expected_minimum, IsNear(0.86_(1) * Micro(Metre)))));
   }
 }
 
@@ -215,7 +218,7 @@ TEST_F(GradientDescentTest, Fixed) {
           field,
           gradient,
           /*tolerance=*/1 * Micro(Metre));
-  EXPECT_THAT(actual_minimum, Optional(AlmostEquals(expected_minimum, 1)));
+  EXPECT_THAT(actual_minimum, IsOkAndHolds(AlmostEquals(expected_minimum, 1)));
 }
 
 }  // namespace numerics

@@ -40,6 +40,13 @@ MATCHER(IsOk,
   return arg.ok();
 }
 
+MATCHER_P(IsOkAndHolds,
+          value_matcher,
+          std::string(negation ? "is not" : "is") + " ok and holds a value") {
+  return arg.ok() && ::testing::ExplainMatchResult(
+                         value_matcher, arg.value(), result_listener);
+}
+
 MATCHER_P(StatusIs,
           code,
           std::string(negation ? "does not have" : "has") + " code: " +
@@ -65,6 +72,7 @@ MATCHER_P(SSELowHalfIs,
 
 using internal::EqualsProto;
 using internal::IsOk;
+using internal::IsOkAndHolds;
 using internal::SSEHighHalfIs;
 using internal::SSELowHalfIs;
 using internal::StatusIs;
