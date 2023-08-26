@@ -2,15 +2,17 @@
 
 #include "numerics/gradient_descent.hpp"
 
+#include <algorithm>
 #include <optional>
 
+#include "absl/status/status.h"
 #include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
-#include "absl/status/status.h"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
