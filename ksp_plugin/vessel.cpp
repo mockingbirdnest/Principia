@@ -493,9 +493,10 @@ void Vessel::DuplicateFlightPlan() {
     flight_plans_.emplace(it, std::get<serialization::FlightPlan>(original));
   } else if (std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
                  original)) {
-    std::get<not_null<std::unique_ptr<FlightPlan>>>(original)->WriteToMessage(
-        &std::get<serialization::FlightPlan>(*flight_plans_.emplace(
-            it, std::in_place_type<serialization::FlightPlan>)));
+    flight_plans_.emplace(
+        it,
+        make_not_null_unique<FlightPlan>(
+            *std::get<not_null<std::unique_ptr<FlightPlan>>>(original)));
   } else {
     LOG(FATAL) << "Unexpected flight plan variant " << original.index();
   }

@@ -568,6 +568,33 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_EQ(5, flight_plan_read->number_of_segments());
 }
 
+TEST_F(FlightPlanTest, Copy) {
+  EXPECT_OK(flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second));
+  EXPECT_OK(flight_plan_->Insert(MakeFirstBurn(), 0));
+  EXPECT_OK(flight_plan_->Insert(MakeSecondBurn(), 1));
+
+  serialization::FlightPlan message1;
+  flight_plan_->WriteToMessage(&message1);
+
+  FlightPlan const flight_plan_copy(*flight_plan_);
+  serialization::FlightPlan message2;
+  flight_plan_copy.WriteToMessage(&message2);
+
+  EXPECT_TRUE(message2.has_initial_mass());
+  EXPECT_TRUE(message2.has_initial_time());
+  EXPECT_TRUE(message2.has_desired_final_time());
+  EXPECT_TRUE(message2.has_adaptive_step_parameters());
+  EXPECT_TRUE(message2.adaptive_step_parameters().has_integrator());
+  EXPECT_TRUE(message2.adaptive_step_parameters().has_max_steps());
+  EXPECT_TRUE(
+      message2.adaptive_step_parameters().has_length_integration_tolerance());
+  EXPECT_TRUE(
+      message2.adaptive_step_parameters().has_speed_integration_tolerance());
+  EXPECT_EQ(2, message2.manoeuvre_size());
+
+  EXPECT_THAT(message2, EqualsProto(message1));
+}
+
 TEST_F(FlightPlanTest, Insertion) {
   // Check that we get the same flight plan if we add the manœuvres in the
   // opposite order.

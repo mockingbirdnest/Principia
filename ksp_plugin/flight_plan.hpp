@@ -51,6 +51,9 @@ class FlightPlan {
                  adaptive_step_parameters,
              Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
                  generalized_adaptive_step_parameters);
+
+  explicit FlightPlan(FlightPlan const& other);
+
   virtual ~FlightPlan() = default;
 
   // Construction parameters.
@@ -203,8 +206,8 @@ class FlightPlan {
   Instant start_of_previous_coast(int index) const;
 
   Mass const initial_mass_;
-  Instant initial_time_;
-  DegreesOfFreedom<Barycentric> initial_degrees_of_freedom_;
+  Instant const initial_time_;
+  DegreesOfFreedom<Barycentric> const initial_degrees_of_freedom_;
   Instant desired_final_time_;
 
   // The trajectory of the part, composed of any number of segments,
