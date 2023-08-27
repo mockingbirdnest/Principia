@@ -333,17 +333,38 @@ int Vessel::selected_flight_plan_index() const {
   return selected_flight_plan_index_;
 }
 
+bool Vessel::optimized_flight_plan_selected() const {
+  return optimized_flight_plan_selected_;
+}
+
 void Vessel::SelectFlightPlan(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, flight_plan_count());
+  optimized_flight_plan_selected_ = false;
   selected_flight_plan_index_ = index;
 }
 
+void Vessel::SelectOptimizedFlightPlan() {
+  if (!flight_plan_optimization_driver_.has_value()) {
+    flight_plan_optimization_driver_.emplace(flight_plan());
+  }
+  optimized_flight_plan_selected_ = true;
+}
+
 FlightPlan& Vessel::flight_plan() const {
+  if (optimized_flight_plan_selected_) {
+    CHECK(flight_plan_optimization_driver_.has_value());
+    return *flight_plan_optimization_driver_->last_flight_plan();
+  }
   CHECK(has_deserialized_flight_plan());
   auto& flight_plan =
       *std::get<not_null<std::unique_ptr<FlightPlan>>>(selected_flight_plan());
   return flight_plan;
+}
+
+FlightPlanOptimizationDriver& Vessel::flight_plan_optimization_driver() {
+  CHECK(flight_plan_optimization_driver_.has_value());
+  return *flight_plan_optimization_driver_;
 }
 
 void Vessel::ReadFlightPlanFromMessage() {

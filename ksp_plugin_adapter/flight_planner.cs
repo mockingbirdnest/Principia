@@ -96,13 +96,16 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       int flight_plans = plugin.FlightPlanCount(vessel_guid);
       int selected_flight_plan = plugin.FlightPlanSelected(vessel_guid);
+      bool optimized_flight_plan_selected = plugin.FlightPlanSelectedOptimized(vessel_guid);
       for (int i = 0; i < flight_plans; ++i) {
         var id = new string(L10N.CacheFormat("#Principia_AlphabeticList")[i],
                             1);
-        if (UnityEngine.GUILayout.Toggle(i == selected_flight_plan, id,
+        if (UnityEngine.GUILayout.Toggle(!optimized_flight_plan_selected &&
+                                         (i == selected_flight_plan),
+                                         id,
                                          "Button",
                                          GUILayoutWidth(1)) &&
-            i != selected_flight_plan) {
+            optimized_flight_plan_selected || i != selected_flight_plan) {
           plugin.FlightPlanSelect(vessel_guid, i);
           final_time_.value_if_different =
               plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
@@ -117,6 +120,19 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       } else if (flight_plans < max_flight_plans) {
         must_create_flight_plan =
             UnityEngine.GUILayout.Button("+", GUILayoutWidth(1));
+      }
+      UnityEngine.GUILayout.FlexibleSpace();
+      if (flight_plans > 0) {
+        if (UnityEngine.GUILayout.Toggle(optimized_flight_plan_selected, "Optimize",
+                                         "Button",
+                                         GUILayoutWidth(1)) &&
+            !optimized_flight_plan_selected) {
+          plugin.FlightPlanSelectOptimized(vessel_guid);
+          final_time_.value_if_different =
+              plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
+          ClearBurnEditors();
+          UpdateVesselAndBurnEditors();
+        }
       }
       if (must_create_flight_plan) {
         plugin.FlightPlanCreate(vessel_guid,
@@ -203,6 +219,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
+      bool is_optimization = plugin.FlightPlanSelectedOptimized(vessel_guid);
       if (final_time_.Render(enabled : true)) {
         var status =
             plugin.FlightPlanSetDesiredFinalTime(
@@ -394,6 +411,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             return;
           }
           Style.HorizontalLine();
+          if (is_optimization) {
+            if (adapter_.plotting_frame_selector_.Centre() is CelestialBody centre) {
+              if (UnityEngine.GUILayout.Button($"Optimize {centre.Name()} flyby")) {
+                plugin.FlightPlanOptimizeManoeuvre(vessel_guid, i, centre.flightGlobalsIndex, centre.Radius + 10e3);
+              }
+            }
+          }
           BurnEditor burn = burn_editors_[i];
           switch (burn.Render(
               header          :

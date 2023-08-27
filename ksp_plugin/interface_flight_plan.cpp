@@ -29,6 +29,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_vessel;
@@ -565,11 +566,50 @@ void __cdecl principia__FlightPlanSelect(Plugin const* const plugin,
   return m.Return();
 }
 
+void __cdecl principia__FlightPlanSelectOptimized(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanSelectOptimized> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  plugin->GetVessel(vessel_guid)->SelectOptimizedFlightPlan();
+  return m.Return();
+}
+
 int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
                                           char const* const vessel_guid) {
   journal::Method<journal::FlightPlanSelected> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
+}
+
+bool __cdecl principia__FlightPlanSelectedOptimized(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanSelectedOptimized> m(
+      {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(
+      plugin->GetVessel(vessel_guid)->optimized_flight_plan_selected());
+}
+
+void __cdecl principia__FlightPlanOptimizeManoeuvre(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const manœuvre_index,
+    int const celestial_index,
+    double const distance) {
+  journal::Method<journal::FlightPlanOptimizeManoeuvre> m(
+      {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  FlightPlanOptimizationDriver::Parameters parameters{
+      .index = manœuvre_index,
+      .celestial = &plugin->GetCelestial(celestial_index),
+      .target_distance = distance * Metre,
+      .Δv_tolerance = 1 * Micro(Metre) / Second};
+  plugin->GetVessel(vessel_guid)
+      ->flight_plan_optimization_driver()
+      .RequestOptimization(parameters);
+  return m.Return();
 }
 
 Status* __cdecl principia__FlightPlanSetAdaptiveStepParameters(

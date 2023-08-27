@@ -17,6 +17,7 @@
 #include "geometry/instant.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/flight_plan_optimization_driver.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/manœuvre.hpp"
@@ -50,6 +51,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_manœuvre;
@@ -174,18 +176,24 @@ class Vessel {
   // no flight plan.
   virtual int selected_flight_plan_index() const;
 
+  virtual bool optimized_flight_plan_selected() const;
+
   // Selects the flight plan at the given index, which must lie within
   // [0, flight_plan_count()[.
   virtual void SelectFlightPlan(int index);
+
+  virtual void SelectOptimizedFlightPlan();
 
   // If the flight plan has been deserialized, returns it.  Fails if there is no
   // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
 
+  virtual FlightPlanOptimizationDriver& flight_plan_optimization_driver();
+
   // Deserializes the flight plan if it is held lazily by this object.  Does
   // nothing if there is no such flight plan.  If |has_flight_plan| returns
   // true, calling this method ensures that the flight plan may later be
-  // accessed by |fligh_plan|.  This method is idempotent.
+  // accessed by |flight_plan|.  This method is idempotent.
   void ReadFlightPlanFromMessage();
 
   // Extends the history and psychohistory of this vessel by computing the
@@ -419,6 +427,8 @@ class Vessel {
   std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
                            serialization::FlightPlan>> flight_plans_;
   int selected_flight_plan_index_ = -1;
+  std::optional<FlightPlanOptimizationDriver> flight_plan_optimization_driver_;
+  bool optimized_flight_plan_selected_ = false;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
