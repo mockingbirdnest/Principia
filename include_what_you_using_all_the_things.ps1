@@ -1,5 +1,6 @@
 ﻿.\sourcerer\bin\Release\net7.0\sourcerer.exe `
     include_what_you_using `
+    --dry_run:false `
     --project:astronomy `
     --project:base `
     --project:benchmarks `
@@ -14,7 +15,6 @@
     --project:quantities `
     --project:testing_utilities `
     --project:tools `
-    --dry_run:false `
     --extra_header:body.hpp `
     --extra_header:massive_body.hpp `
     --extra_header:massless_body.hpp `

@@ -1,5 +1,6 @@
 .\sourcerer\bin\debug\net7.0\sourcerer.exe `
     make_editorconfig `
+    --dry_run:false `
     --project:astronomy `
     --project:base `
     --project:benchmarks `
