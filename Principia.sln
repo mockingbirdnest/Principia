@@ -87,6 +87,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F4
 		generate_version_translation_unit.ps1 = generate_version_translation_unit.ps1
 		include_what_you_using_all_the_things.ps1 = include_what_you_using_all_the_things.ps1
 		install_deps.sh = install_deps.sh
+		make_editorconfig.ps1 = make_editorconfig.ps1
 		make_principia_release.ps1 = make_principia_release.ps1
 		rebuild_all_solutions.ps1 = rebuild_all_solutions.ps1
 		rebuild_debug_and_release_in_parallel.ps1 = rebuild_debug_and_release_in_parallel.ps1
