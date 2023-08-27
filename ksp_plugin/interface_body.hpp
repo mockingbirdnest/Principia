@@ -29,6 +29,7 @@ using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_plugin;

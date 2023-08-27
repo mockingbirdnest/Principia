@@ -20,6 +20,7 @@ namespace internal {
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elliptic_functions;
 using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_elementary_functions;

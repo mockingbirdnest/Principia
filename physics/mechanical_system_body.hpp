@@ -11,6 +11,7 @@ namespace _mechanical_system {
 namespace internal {
 
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename SystemFrame>

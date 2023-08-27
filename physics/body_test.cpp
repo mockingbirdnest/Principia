@@ -23,7 +23,6 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
@@ -40,6 +39,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3_element;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_legendre_normalization_factor;
@@ -54,7 +54,6 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
