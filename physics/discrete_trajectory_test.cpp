@@ -1,6 +1,5 @@
 #include "physics/discrete_trajectory.hpp"
 
-#include <string>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
@@ -844,7 +843,7 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   DiscreteTrajectory<World>::SegmentIterator psychohistory;
   auto const history = DiscreteTrajectory<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
-  EXPECT_THAT(log_warning.string(),
+  EXPECT_THAT(log_warning.string(),  // NOLINT
               AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
 
   // Note that the sizes don't have the same semantics as pre-Hamilton.  The

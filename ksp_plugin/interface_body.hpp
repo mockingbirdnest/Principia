@@ -13,6 +13,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space_transformations.hpp"
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/plugin.hpp"
@@ -29,6 +30,7 @@ using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_plugin;

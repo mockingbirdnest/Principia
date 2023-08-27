@@ -30,6 +30,7 @@
 #include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
@@ -67,6 +68,7 @@ using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;

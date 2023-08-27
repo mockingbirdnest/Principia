@@ -23,6 +23,7 @@
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -89,6 +90,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;

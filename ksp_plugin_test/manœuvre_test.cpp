@@ -7,6 +7,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
@@ -50,6 +51,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::physics::_continuous_trajectory;

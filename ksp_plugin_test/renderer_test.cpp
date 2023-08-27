@@ -5,6 +5,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
@@ -38,6 +39,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_renderer;

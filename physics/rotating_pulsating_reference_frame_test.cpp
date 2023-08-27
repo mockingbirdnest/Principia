@@ -1,17 +1,14 @@
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
 #include <memory>
-#include <utility>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -23,7 +20,6 @@
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -40,7 +36,6 @@ using ::testing::Eq;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -56,7 +51,6 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_componentwise;

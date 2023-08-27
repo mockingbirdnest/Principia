@@ -14,6 +14,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/space_transformations.hpp"
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -44,6 +45,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;

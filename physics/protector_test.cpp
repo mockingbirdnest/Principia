@@ -1,6 +1,7 @@
 #include "physics/protector.hpp"
 
 #include "geometry/instant.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"

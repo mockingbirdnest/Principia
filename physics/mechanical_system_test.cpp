@@ -6,8 +6,8 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
@@ -27,6 +27,7 @@ using namespace principia::geometry::_identity;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_mechanical_system;

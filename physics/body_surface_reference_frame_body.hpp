@@ -6,6 +6,7 @@
 
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
@@ -15,6 +16,7 @@ namespace internal {
 
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::physics::_degrees_of_freedom;
 
 template<typename InertialFrame, typename ThisFrame>
