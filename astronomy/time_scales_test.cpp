@@ -5,7 +5,6 @@
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -25,7 +24,6 @@ using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_instant;
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

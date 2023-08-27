@@ -28,6 +28,7 @@
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_UNICODE_PATH.
 
 namespace principia {
 namespace astronomy {

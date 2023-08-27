@@ -2,7 +2,6 @@
 #include <optional>
 #include <map>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "astronomy/epoch.hpp"

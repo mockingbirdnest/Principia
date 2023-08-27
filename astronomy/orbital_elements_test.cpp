@@ -1,8 +1,6 @@
 #include "astronomy/orbital_elements.hpp"
 
-#include <limits>
 #include <string>
-#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
@@ -22,19 +20,12 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
-#include "physics/oblate_body.hpp"
-#include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
@@ -58,19 +49,12 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
-using namespace principia::physics::_oblate_body;
-using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 class OrbitalElementsTest : public ::testing::Test {

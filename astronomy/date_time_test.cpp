@@ -1,5 +1,6 @@
 #include "astronomy/date_time.hpp"
 
+#include <sstream>
 #include <string>
 
 #include "gmock/gmock.h"
