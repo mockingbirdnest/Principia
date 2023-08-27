@@ -2,8 +2,8 @@
   "profiles": {
     "sourcerer": {
       "commandName": "Project",
-      "commandLineArgs": "include_what_you_using --project:astronomy --project:base --project:benchmarks --project:geometry --project:integrators --project:journal --project:ksp_plugin --project:ksp_plugin_test --project:mathematica --project:numerics --project:physics --project:quantities --project:testing_utilities --project:tools --dry_run:false --extra_header:body.hpp --extra_header:massive_body.hpp --extra_header:massless_body.hpp --extra_header:oblate_body.hpp --extra_header:rotating_body.hpp --special_own_header:ksp_plugin/interface_*.cpp=ksp_plugin/interface.hpp  --special_own_header:ksp_plugin_test/interface_*.cpp=ksp_plugin/interface.hpp --special_own_header:ksp_plugin_test/benchmark.cpp=ksp_plugin/plugin.hpp --special_own_header:ksp_plugin_test/plugin*_test.cpp=ksp_plugin/plugin.hpp",
-      "workingDirectory": "C:\\Users\\phl.bastiani\\Projects\\Principia\\Principia"
+      "commandLineArgs": "    make_editorconfig `\r\n    --project:astronomy `\r\n    --project:base `\r\n    --project:benchmarks `\r\n    --project:geometry `\r\n    --project:integrators `\r\n    --project:journal `\r\n    --project:ksp_plugin `\r\n    --project:ksp_plugin_test `\r\n    --project:mathematica `\r\n    --project:numerics `\r\n    --project:physics `\r\n    --project:quantities `\r\n    --project:testing_utilities `\r\n    --project:tools `\r\n    --extra:gmock/gmock.h=gmock/gmock-matchers.h `\r\n    --extra:gtest/gtest.h=gtest/gtest-matchers.h+gtest/internal/gtest-internal.h `\r\n    --solution:.",
+      "workingDirectory": "C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia"
     }
   }
 }

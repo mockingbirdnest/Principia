@@ -16,7 +16,6 @@
 #include "physics/rotating_body.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
-#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 

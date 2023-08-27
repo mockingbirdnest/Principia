@@ -18,10 +18,12 @@ internal class Sourcerer {
     }
     string[] args_after_0 = new string[args.Length - 1];
     Array.Copy(args, 1, args_after_0, 0, args_after_0.Length);
-    if (args[0] == "renamespacer") {
-      Renamespacer.Run(args_after_0);
-    } else if (args[0] == "include_what_you_using") {
+    if (args[0] == "include_what_you_using") {
       IncludeWhatYouUsing.Run(args_after_0);
+    } else if (args[0] == "make_editorconfig") {
+      MakeEditorconfig.Run(args_after_0);
+    } else if (args[0] == "renamespacer") {
+      Renamespacer.Run(args_after_0);
     } else {
       throw new ArgumentException("Unknown command " + args[0]);
     }
