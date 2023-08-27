@@ -123,9 +123,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       }
       UnityEngine.GUILayout.FlexibleSpace();
       if (flight_plans > 0) {
-        if (UnityEngine.GUILayout.Toggle(optimized_flight_plan_selected, "Optimize",
+        if (UnityEngine.GUILayout.Toggle(optimized_flight_plan_selected, "Optimization",
                                          "Button",
-                                         GUILayoutWidth(1)) &&
+                                         GUILayoutWidth(4)) &&
             !optimized_flight_plan_selected) {
           plugin.FlightPlanSelectOptimized(vessel_guid);
           final_time_.value_if_different =
@@ -172,6 +172,11 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           burn_editors_?.Count) {
         ClearBurnEditors();
         previous_predicted_vessel_ = predicted_vessel;
+      }
+
+      if (vessel_guid != null &&
+          plugin.FlightPlanSelectedOptimized(vessel_guid)) {
+        plugin.FlightPlanUpdateOptimized(vessel_guid);
       }
     }
 

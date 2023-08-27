@@ -8,9 +8,13 @@ namespace internal {
 FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
     FlightPlan const& flight_plan)
     : flight_plan_under_optimization_(flight_plan),
-      flight_plan_optimizer_(&flight_plan_under_optimization_),
-      last_flight_plan_(
-          make_not_null_shared<FlightPlan>(flight_plan_under_optimization_)) {}
+      flight_plan_optimizer_(&flight_plan_under_optimization_,
+                             [this](FlightPlan const& flight_plan) {
+                               UpdateLatestFlightPlan(flight_plan);
+                             }),
+      latest_flight_plan_(
+          make_not_null_shared<FlightPlan>(flight_plan_under_optimization_)),
+      last_flight_plan_(latest_flight_plan_) {}
 
 FlightPlanOptimizationDriver::~FlightPlanOptimizationDriver() {
   // Ensure that we do not have a thread still running with references to the
@@ -20,7 +24,6 @@ FlightPlanOptimizationDriver::~FlightPlanOptimizationDriver() {
 
 std::shared_ptr<FlightPlan>
 FlightPlanOptimizationDriver::last_flight_plan() const {
-  absl::ReaderMutexLock l(&lock_);
   return last_flight_plan_;
 }
 
@@ -58,7 +61,7 @@ void FlightPlanOptimizationDriver::RequestOptimization(
 
       absl::MutexLock l(&lock_);
       if (optimization_status.ok()) {
-        last_flight_plan_ =
+        latest_flight_plan_ =
             make_not_null_shared<FlightPlan>(flight_plan_under_optimization_);
       }
       optimizer_idle_ = true;
@@ -71,10 +74,19 @@ void FlightPlanOptimizationDriver::Wait() const {
   lock_.Await(absl::Condition(&optimizer_idle_));
 }
 
-void FlightPlanOptimizationDriver::UpdateLastFlightPlan(
+bool FlightPlanOptimizationDriver::UpdateLastFlightPlan() {
+  absl::ReaderMutexLock l(&lock_);
+  if (last_flight_plan_ != latest_flight_plan_) {
+    last_flight_plan_ = latest_flight_plan_;
+    return true;
+  }
+  return false;
+}
+
+void FlightPlanOptimizationDriver::UpdateLatestFlightPlan(
     FlightPlan const& flight_plan) {
   absl::MutexLock l(&lock_);
-  last_flight_plan_ = make_not_null_shared<FlightPlan>(flight_plan);
+  latest_flight_plan_ = make_not_null_shared<FlightPlan>(flight_plan);
 }
 
 }  // namespace internal

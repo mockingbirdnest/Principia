@@ -644,5 +644,15 @@ Status* __cdecl principia__FlightPlanSetDesiredFinalTime(
   return m.Return(ToNewStatus(status));
 }
 
+bool __cdecl principia__FlightPlanUpdateOptimized(
+  Plugin const* const plugin,
+  char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanUpdateOptimized> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->GetVessel(vessel_guid)
+                      ->flight_plan_optimization_driver()
+                      .UpdateLastFlightPlan());
+}
+
 }  // namespace interface
 }  // namespace principia
