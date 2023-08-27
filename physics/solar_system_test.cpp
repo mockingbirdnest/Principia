@@ -17,7 +17,6 @@ namespace physics {
 
 using ::testing::ElementsAreArray;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_fingerprint2011;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_methods;

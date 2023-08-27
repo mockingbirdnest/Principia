@@ -6,6 +6,7 @@
 
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
 namespace principia {

@@ -6,6 +6,7 @@
 
 #include "geometry/identity.hpp"
 #include "geometry/rotation.hpp"
+#include "geometry/space_transformations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rotating_body.hpp"
 

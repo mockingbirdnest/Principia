@@ -13,6 +13,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space_transformations.hpp"
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/plugin.hpp"

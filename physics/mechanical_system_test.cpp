@@ -6,6 +6,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"

@@ -8,6 +8,7 @@
 #include "base/hexadecimal.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
+#include "geometry/space_transformations.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 

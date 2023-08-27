@@ -7,6 +7,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space_transformations.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "quantities/elementary_functions.hpp"

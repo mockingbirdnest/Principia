@@ -9,6 +9,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"

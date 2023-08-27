@@ -30,6 +30,7 @@
 #include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"

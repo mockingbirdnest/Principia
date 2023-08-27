@@ -3,6 +3,7 @@
 #include "physics/mechanical_system.hpp"
 
 #include "geometry/space.hpp"
+#include "geometry/space_transformations.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

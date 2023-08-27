@@ -42,7 +42,6 @@ using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
