@@ -20,6 +20,7 @@ namespace internal {
 
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 

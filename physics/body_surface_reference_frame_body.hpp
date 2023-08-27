@@ -15,6 +15,7 @@ namespace internal {
 
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
+using namespace principia::geometry::_space_transformations;
 using namespace principia::physics::_degrees_of_freedom;
 
 template<typename InertialFrame, typename ThisFrame>
