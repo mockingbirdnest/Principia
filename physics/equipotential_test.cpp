@@ -1,6 +1,5 @@
 #include "physics/equipotential.hpp"
 
-#include <algorithm>
 #include <array>
 #include <functional>
 #include <string>
@@ -15,25 +14,18 @@
 #include "geometry/plane.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
-#include "numerics/global_optimization.hpp"
-#include "numerics/root_finders.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/kepler_orbit.hpp"
-#include "physics/massless_body.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -54,19 +46,13 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
-using namespace principia::numerics::_global_optimization;
-using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
-using namespace principia::physics::_kepler_orbit;
-using namespace principia::physics::_massless_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;

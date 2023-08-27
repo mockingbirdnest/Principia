@@ -7,7 +7,6 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"

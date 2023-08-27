@@ -1,12 +1,10 @@
 #include "physics/ephemeris.hpp"
 
 #include <limits>
-#include <map>
 #include <optional>
 #include <random>
 #include <set>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -16,7 +14,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/r3x3_matrix.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
@@ -37,13 +34,11 @@
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
-#include "physics/tensors.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -52,7 +47,6 @@
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
-#include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -71,7 +65,6 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3x3_matrix;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
@@ -90,7 +83,6 @@ using namespace principia::physics::_massless_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::physics::_tensors;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -103,7 +95,6 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
-using namespace principia::testing_utilities::_solar_system_factory;
 using namespace principia::testing_utilities::_vanishes_before;
 using namespace std::chrono_literals;
 

@@ -1,11 +1,7 @@
 #include "physics/solar_system.hpp"
 
-#include <algorithm>
-#include <ios>
-
 #include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
-#include "base/fingerprint2011.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"

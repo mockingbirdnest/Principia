@@ -25,10 +25,8 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
-#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
@@ -58,9 +56,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_numerics;
-using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
 

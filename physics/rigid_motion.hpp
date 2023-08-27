@@ -161,7 +161,6 @@ std::ostream& operator<<(
 
 using internal::AcceleratedRigidMotion;
 using internal::RigidMotion;
-using internal::RigidTransformation;
 
 }  // namespace _rigid_motion
 }  // namespace physics

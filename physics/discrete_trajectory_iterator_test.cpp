@@ -1,12 +1,10 @@
 #include "physics/discrete_trajectory_iterator.hpp"
 
 #include <memory>
-#include <optional>
 
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
