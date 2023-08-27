@@ -12,7 +12,7 @@ class MakeEditorconfig {
   public static void Run(string[] args) {
     var projects = new List<DirectoryInfo>();
     var extras = new Dictionary<string, string>();
-    string solution = null;
+    string? solution = null;
     bool dry_run = true;
     foreach (string arg in args) {
       if (arg.StartsWith("--") && arg.Contains(":")) {
@@ -73,8 +73,8 @@ class MakeEditorconfig {
     // Generate the alternate files map.
     string input_filename = solution! + "/.editorconfig";
     string output_filename = input_filename + ".new";
-    StreamWriter writer = new StreamWriter(output_filename);
-    using (StreamReader reader = new StreamReader(input_filename)) {
+    var writer = new StreamWriter(output_filename);
+    using (var reader = new StreamReader(input_filename)) {
       while (!reader.EndOfStream) {
         string line = reader.ReadLine()!;
         if (line.StartsWith(cpp_include_cleanup_alternate_files)) {
@@ -99,7 +99,7 @@ class MakeEditorconfig {
             var header = extra.Value;
             writer.Write(", " + header + ":" + body);
           }
-          writer.Write('\n');
+          writer.Write("\r\n");
         } else {
           // Uninteresting lines are copied verbatim to the new file.
           writer.WriteLine(line);
