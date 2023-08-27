@@ -17,6 +17,20 @@ public class Filenames {
         @".hpp");
   }
 
+  public static string SolutionRelativePath(string solution_full_path,
+                                            FileInfo file) {
+    string file_full_path = Path.GetFullPath(file.Name, file.DirectoryName!);
+    if (file_full_path.StartsWith(solution_full_path)) {
+      return file_full_path.Substring(solution_full_path.Length + 1);
+    } else {
+      return file_full_path;
+    }
+  }
+
+  public static string ToSlash(string with_backslash) {
+    return with_backslash.Replace('\\', '/');
+  }
+
   public static string GetExtension(FileInfo file_info) {
     // If the file is foo.mathematica.h, this returns .mathematica.h.
     return Regex.Replace(file_info.Name, @"^[^.]*\.", ".");
