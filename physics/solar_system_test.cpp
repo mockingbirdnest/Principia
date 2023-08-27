@@ -1,5 +1,7 @@
 #include "physics/solar_system.hpp"
 
+#include <utility>
+
 #include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
