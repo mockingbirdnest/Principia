@@ -5,6 +5,4 @@ root = true
 cpp_include_cleanup_add_missing_error_tag_type = suggestion
 cpp_include_cleanup_remove_unused_error_tag_type = dimmed
 
-cpp_include_cleanup_alternate_files = base/not_null.hpp:base/not_null_body.hpp
-cpp_include_cleanup_alternate_files = gmock/gmock.h:gmock/gmock-matchers.h
-cpp_include_cleanup_alternate_files = gtest/gtest.h:gtest/gtest-matchers.h,gtest/gtest.h:gtest/internal/gtest-internal.h
+cpp_include_cleanup_alternate_files = base/not_null.hpp:base/not_null_body.hpp, integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp:integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp, physics/apsides.hpp:physics/apsides_body.hpp, quantities/quantities.hpp:quantities/quantities_body.hpp, gmock/gmock.h:gmock/gmock-matchers.h, gtest/gtest.h:gtest/gtest-matchers.h,gtest/gtest.h:gtest/internal/gtest-internal.h
