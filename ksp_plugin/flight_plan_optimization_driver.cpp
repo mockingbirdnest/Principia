@@ -63,6 +63,8 @@ void FlightPlanOptimizationDriver::RequestOptimization(
       if (optimization_status.ok()) {
         last_flight_plan_ =
             make_not_null_shared<FlightPlan>(flight_plan_under_optimization_);
+      } else {
+        LOG(WARNING) << "Optimization returned " << optimization_status;
       }
       optimizer_idle_ = true;
     });
