@@ -1,6 +1,8 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
 
 #include <cmath>
+#include <cstdint>
+#include <future>
 #include <limits>
 #include <list>
 #include <memory>
@@ -38,6 +40,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace physics {

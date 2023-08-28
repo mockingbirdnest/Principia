@@ -2,6 +2,9 @@
 
 #include <pmmintrin.h>
 
+#include <cmath>
+#include <cstdint>
+
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 

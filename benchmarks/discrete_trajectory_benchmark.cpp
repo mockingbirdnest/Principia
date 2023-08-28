@@ -1,8 +1,8 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=DiscreteTrajectory --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
+#include <optional>
 #include <vector>
 
-#include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -12,16 +12,15 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "glog/logging.h"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace physics {
 
-using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -30,8 +29,6 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_types;
-using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;

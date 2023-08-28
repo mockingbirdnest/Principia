@@ -10,7 +10,6 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre_normalization_factor.mathematica.h"
@@ -33,7 +32,6 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_legendre_normalization_factor;

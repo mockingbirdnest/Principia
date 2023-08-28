@@ -12,6 +12,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "glog/logging.h"
 
 namespace principia {
 namespace numerics {

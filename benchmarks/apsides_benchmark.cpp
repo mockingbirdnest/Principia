@@ -1,6 +1,8 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Apsides --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <limits>
+#include <memory>
 
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
@@ -20,6 +22,8 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"
+#include "glog/logging.h"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace physics {
@@ -74,7 +78,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
     StandardProduct3::SatelliteIdentifier const lageos2_id{
         StandardProduct3::SatelliteGroup::General, 52};
 
-    auto const ilrsa_lageos2_trajectory_itrs =
+    auto const& ilrsa_lageos2_trajectory_itrs =
         ilrsa_lageos2_sp3.orbit(lageos2_id).front();
     auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
     CHECK_OK(ephemeris_->Prolong(begin->time));

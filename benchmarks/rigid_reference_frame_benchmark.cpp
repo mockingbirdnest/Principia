@@ -1,16 +1,13 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=RigidReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -28,14 +25,13 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "serialization/geometry.pb.h"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace physics {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;

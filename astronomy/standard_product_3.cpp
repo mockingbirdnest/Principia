@@ -1,7 +1,8 @@
 #include "astronomy/standard_product_3.hpp"
 
-#include <algorithm>
+#include <array>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -11,10 +12,10 @@
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
 #include "glog/logging.h"
-#include "numerics/finite_difference.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace astronomy {
@@ -23,7 +24,6 @@ namespace internal {
 
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_map_util;
-using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -1,7 +1,10 @@
 #include "numerics/elliptic_integrals.hpp"
 
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "base/tags.hpp"
@@ -10,6 +13,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
+#include "glog/logging.h"
 
 // The implementation in this file is derived from [Fuk18] (license: MIT). The
 // original code has been translated into C++ and adapted to the needs of this
