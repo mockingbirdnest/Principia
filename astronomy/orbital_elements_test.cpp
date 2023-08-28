@@ -1,6 +1,7 @@
 #include "astronomy/orbital_elements.hpp"
 
 #include <string>
+#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
