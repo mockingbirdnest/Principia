@@ -8,12 +8,12 @@
 #include <utility>
 
 #include "base/tags.hpp"
+#include "glog/logging.h"
 #include "numerics/combinatorics.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
-#include "glog/logging.h"
 
 // The implementation in this file is derived from [Fuk18] (license: MIT). The
 // original code has been translated into C++ and adapted to the needs of this

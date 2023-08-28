@@ -8,10 +8,10 @@
 #include <limits>
 #include <utility>
 
+#include "glog/logging.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "glog/logging.h"
 
 namespace principia {
 namespace numerics {

@@ -7,6 +7,7 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -38,7 +39,6 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
-#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace geometry {

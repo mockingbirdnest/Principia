@@ -11,12 +11,12 @@
 #include "base/not_null.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
-#include "gmock/gmock.h"
-#include "serialization/physics.pb.h"
-#include "serialization/geometry.pb.h"
-#include "serialization/quantities.pb.h"
-#include "gtest/gtest.h"
 #include "glog/logging.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "serialization/geometry.pb.h"
+#include "serialization/physics.pb.h"
+#include "serialization/quantities.pb.h"
 
 namespace principia {
 namespace base {

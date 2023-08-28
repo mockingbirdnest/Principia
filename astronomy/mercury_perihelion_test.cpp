@@ -2,6 +2,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -17,7 +18,6 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
-#include "glog/logging.h"
 
 namespace principia {
 namespace astronomy {

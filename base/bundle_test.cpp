@@ -5,10 +5,10 @@
 #include <thread>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/matchers.hpp"
-#include "absl/status/status.h"
 
 namespace principia {
 namespace base {

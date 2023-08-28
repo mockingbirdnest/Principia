@@ -5,9 +5,9 @@
 #include <vector>
 
 #include "base/array.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "glog/logging.h"
 
 using ::testing::Each;
 using ::testing::ElementsAre;

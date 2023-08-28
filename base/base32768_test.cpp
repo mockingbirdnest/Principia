@@ -10,9 +10,9 @@
 
 #include "base/array.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "glog/logging.h"
 
 // Clang doesn't have a correct |std::array| yet, and we don't actually use this
 // code, so let's get rid of the entire test.

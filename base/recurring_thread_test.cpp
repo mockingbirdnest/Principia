@@ -4,8 +4,8 @@
 #include <optional>
 #include <thread>
 
-#include "gtest/gtest.h"
 #include "absl/status/status.h"
+#include "gtest/gtest.h"
 
 namespace principia {
 namespace base {

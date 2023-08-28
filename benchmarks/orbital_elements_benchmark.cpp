@@ -6,6 +6,7 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
 #include "integrators/methods.hpp"
@@ -21,7 +22,6 @@
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace astronomy {

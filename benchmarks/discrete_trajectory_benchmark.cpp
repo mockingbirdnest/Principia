@@ -3,11 +3,13 @@
 #include <optional>
 #include <vector>
 
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -15,8 +17,6 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
-#include "glog/logging.h"
-#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 
 namespace principia {
 namespace physics {
