@@ -2,12 +2,10 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
 #include <functional>
 #include <list>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "base/array.hpp"
@@ -18,6 +16,11 @@
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/matchers.hpp"
+#include "serialization/geometry.pb.h"
+#include "serialization/quantities.pb.h"
+#include "gtest/gtest.h"
+#include "google/protobuf/message.h"
+#include "glog/logging.h"
 
 namespace principia {
 namespace base {

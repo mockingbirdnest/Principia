@@ -1,5 +1,6 @@
 #include "base/array.hpp"
 
+#include <memory>
 #include <string>
 
 #include "gmock/gmock.h"

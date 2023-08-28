@@ -1,12 +1,13 @@
 #include "base/hexadecimal.hpp"
 
+#include <cstdint>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/array.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "glog/logging.h"
 
 using ::testing::Each;
 using ::testing::ElementsAre;

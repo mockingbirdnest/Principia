@@ -1,6 +1,11 @@
 #include "base/recurring_thread.hpp"
 
+#include <chrono>
+#include <optional>
+#include <thread>
+
 #include "gtest/gtest.h"
+#include "absl/status/status.h"
 
 namespace principia {
 namespace base {

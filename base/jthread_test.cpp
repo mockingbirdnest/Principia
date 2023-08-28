@@ -1,5 +1,8 @@
 #include "base/jthread.hpp"
 
+#include <ostream>
+#include <thread>
+
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "gtest/gtest.h"

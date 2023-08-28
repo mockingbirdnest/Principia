@@ -1,7 +1,9 @@
 #include "base/pull_serializer.hpp"
 
-#include <cstring>
+#include <cstdint>
+#include <functional>
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,6 +13,10 @@
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
+#include "serialization/geometry.pb.h"
+#include "serialization/quantities.pb.h"
+#include "gtest/gtest.h"
+#include "glog/logging.h"
 
 namespace principia {
 namespace base {
