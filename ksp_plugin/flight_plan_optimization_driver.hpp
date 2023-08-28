@@ -53,10 +53,8 @@ class FlightPlanOptimizationDriver {
   // Waits for the current optimization (if any) to complete.
   void Wait() const;
 
-  bool UpdateLastFlightPlan();
-
  private:
-  void UpdateLatestFlightPlan(FlightPlan const& flight_plan);
+  void UpdateLastFlightPlan(FlightPlan const& flight_plan);
 
   // The flight plan being optimized, asynchronously modified by the optimizer.
   FlightPlan flight_plan_under_optimization_;
@@ -67,8 +65,7 @@ class FlightPlanOptimizationDriver {
   bool optimizer_idle_ GUARDED_BY(lock_) = true;
 
   // The last flight plan evaluated by the optimizer.
-  not_null<std::shared_ptr<FlightPlan>> latest_flight_plan_ GUARDED_BY(lock_);
-  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_;
+  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_ GUARDED_BY(lock_);
 };
 
 }  // namespace internal
