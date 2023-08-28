@@ -1202,18 +1202,6 @@ message FlightPlanSelect {
   optional In in = 1;
 }
 
-message FlightPlanSelectOptimized {
-  extend Method {
-    optional FlightPlanSelectOptimized extension = 5187;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  optional In in = 1;
-}
-
 message FlightPlanSelected {
   extend Method {
     optional FlightPlanSelected extension = 5181;
@@ -1230,9 +1218,9 @@ message FlightPlanSelected {
   optional Return return = 3;
 }
 
-message FlightPlanSelectedOptimized {
+message FlightPlanOptimizationInProgress {
   extend Method {
-    optional FlightPlanSelectedOptimized extension = 5188;
+    optional FlightPlanOptimizationInProgress extension = 5188;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -1283,9 +1271,9 @@ message FlightPlanSetDesiredFinalTime {
   optional Return return = 3;
 }
 
-message FlightPlanUpdateOptimized {
+message FlightPlanUpdateFromOptimization {
   extend Method {
-    optional FlightPlanUpdateOptimized extension = 5190;
+    optional FlightPlanUpdateFromOptimization extension = 5190;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",

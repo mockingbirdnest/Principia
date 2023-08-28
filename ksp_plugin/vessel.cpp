@@ -352,12 +352,20 @@ void Vessel::MakeFlightPlanOptimizationDriver() {
       std::make_unique<FlightPlanOptimizationDriver>(*flight_plan);
 }
 
-void Vessel::UpdateFlightPlanFromOptimization() {
+bool Vessel::UpdateFlightPlanFromOptimization() {
   CHECK(has_deserialized_flight_plan());
   auto& [flight_plan, optimization_driver] =
       std::get<OptimizableFlightPlan>(selected_flight_plan());
-  CHECK_NOTNULL(optimization_driver);
-  flight_plan = optimization_driver->last_flight_plan();
+  if (optimization_driver == nullptr) {
+    return false;
+  }
+  std::shared_ptr const last_flight_plan =
+      optimization_driver->last_flight_plan();
+  if (flight_plan != last_flight_plan) {
+    flight_plan = last_flight_plan;
+    return true;
+  }
+  return false;
 }
 
 FlightPlanOptimizationDriver* Vessel::flight_plan_optimization_driver() {

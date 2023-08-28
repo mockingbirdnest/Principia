@@ -566,15 +566,6 @@ void __cdecl principia__FlightPlanSelect(Plugin const* const plugin,
   return m.Return();
 }
 
-void __cdecl principia__FlightPlanSelectOptimized(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanSelectOptimized> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  plugin->GetVessel(vessel_guid)->SelectOptimizedFlightPlan();
-  return m.Return();
-}
-
 int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
                                           char const* const vessel_guid) {
   journal::Method<journal::FlightPlanSelected> m({plugin, vessel_guid});
@@ -582,14 +573,15 @@ int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
   return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
 }
 
-bool __cdecl principia__FlightPlanSelectedOptimized(
+bool __cdecl principia__FlightPlanOptimizationInProgress(
     Plugin const* const plugin,
     char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanSelectedOptimized> m(
+  journal::Method<journal::FlightPlanOptimizationInProgress> m(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      plugin->GetVessel(vessel_guid)->optimized_flight_plan_selected());
+  auto const* driver =
+      plugin->GetVessel(vessel_guid)->flight_plan_optimization_driver();
+  return m.Return(driver != nullptr && !driver->done());
 }
 
 void __cdecl principia__FlightPlanOptimizeManoeuvre(
@@ -601,14 +593,20 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
   journal::Method<journal::FlightPlanOptimizeManoeuvre> m(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
+  auto& vessel = *plugin->GetVessel(vessel_guid);
+  {
+    auto* const old_driver = vessel.flight_plan_optimization_driver();
+    if (old_driver != nullptr) {
+      old_driver->Interrupt();
+    }
+  }
+  vessel.MakeFlightPlanOptimizationDriver();
   FlightPlanOptimizationDriver::Parameters parameters{
       .index = manœuvre_index,
       .celestial = &plugin->GetCelestial(celestial_index),
       .target_distance = distance * Metre,
       .Δv_tolerance = 1 * Micro(Metre) / Second};
-  plugin->GetVessel(vessel_guid)
-      ->flight_plan_optimization_driver()
-      .RequestOptimization(parameters);
+  vessel.flight_plan_optimization_driver()->RequestOptimization(parameters);
   return m.Return();
 }
 
@@ -644,14 +642,14 @@ Status* __cdecl principia__FlightPlanSetDesiredFinalTime(
   return m.Return(ToNewStatus(status));
 }
 
-bool __cdecl principia__FlightPlanUpdateOptimized(
-  Plugin const* const plugin,
-  char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanUpdateOptimized> m({plugin, vessel_guid});
+bool __cdecl principia__FlightPlanUpdateFromOptimization(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanUpdateFromOptimization> m(
+      {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->GetVessel(vessel_guid)
-                      ->flight_plan_optimization_driver()
-                      .UpdateLastFlightPlan());
+  return m.Return(
+      plugin->GetVessel(vessel_guid)->UpdateFlightPlanFromOptimization());
 }
 
 }  // namespace interface

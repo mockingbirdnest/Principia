@@ -186,7 +186,7 @@ class Vessel {
 
   virtual void MakeFlightPlanOptimizationDriver();
 
-  virtual void UpdateFlightPlanFromOptimization();
+  virtual bool UpdateFlightPlanFromOptimization();
 
   virtual FlightPlanOptimizationDriver* flight_plan_optimization_driver();
 
