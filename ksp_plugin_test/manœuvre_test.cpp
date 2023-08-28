@@ -1,11 +1,13 @@
 #include "ksp_plugin/manœuvre.hpp"
 
+#include <cmath>
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
@@ -29,10 +31,13 @@
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
-#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "serialization/geometry.pb.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "serialization/physics.pb.h"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 namespace ksp_plugin {
@@ -49,7 +54,6 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
@@ -70,7 +74,6 @@ using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
-using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_make_not_null;
 using namespace principia::testing_utilities::_numerics;

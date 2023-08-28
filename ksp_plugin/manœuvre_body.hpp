@@ -2,13 +2,10 @@
 
 #include "ksp_plugin/manœuvre.hpp"
 
-#include <cmath>
 #include <functional>
 
-#include "geometry/rotation.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -16,10 +13,8 @@ namespace _manœuvre {
 namespace internal {
 
 using std::placeholders::_1;
-using namespace principia::geometry::_rotation;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::quantities::_elementary_functions;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
