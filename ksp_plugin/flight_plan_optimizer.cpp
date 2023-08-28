@@ -262,7 +262,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     // optimizer away from this place.
     distance = Infinity<Length>;
   }
-  CHECK_OK(flight_plan.Replace(manœuvre.burn(), index));
+  flight_plan.Replace(manœuvre.burn(), index).IgnoreError();
   cache.emplace(homogeneous_argument, distance);
   return distance;
 }
