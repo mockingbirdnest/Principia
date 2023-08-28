@@ -176,19 +176,19 @@ class Vessel {
   // no flight plan.
   virtual int selected_flight_plan_index() const;
 
-  virtual bool optimized_flight_plan_selected() const;
-
   // Selects the flight plan at the given index, which must lie within
   // [0, flight_plan_count()[.
   virtual void SelectFlightPlan(int index);
-
-  virtual void SelectOptimizedFlightPlan();
 
   // If the flight plan has been deserialized, returns it.  Fails if there is no
   // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
 
-  virtual FlightPlanOptimizationDriver& flight_plan_optimization_driver();
+  virtual void MakeFlightPlanOptimizationDriver();
+
+  virtual void UpdateFlightPlanFromOptimization();
+
+  virtual FlightPlanOptimizationDriver* flight_plan_optimization_driver();
 
   // Deserializes the flight plan if it is held lazily by this object.  Does
   // nothing if there is no such flight plan.  If |has_flight_plan| returns
@@ -311,9 +311,13 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
+  struct OptimizableFlightPlan {
+    not_null<std::shared_ptr<FlightPlan>> flight_plan;
+    std::unique_ptr<FlightPlanOptimizationDriver> optimization_driver;
+  };
+
   using LazilyDeserializedFlightPlan =
-      std::variant<not_null<std::unique_ptr<FlightPlan>>,
-                   serialization::FlightPlan>;
+      std::variant<OptimizableFlightPlan, serialization::FlightPlan>;
 
   // Return functions that can be passed to a |Checkpointer| to write this
   // vessel to a checkpoint or read it back.
@@ -424,11 +428,8 @@ class Vessel {
   RecurringThread<PrognosticatorParameters,
                   DiscreteTrajectory<Barycentric>> prognosticator_;
 
-  std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
-                           serialization::FlightPlan>> flight_plans_;
+  std::vector<LazilyDeserializedFlightPlan> flight_plans_;
   int selected_flight_plan_index_ = -1;
-  std::optional<FlightPlanOptimizationDriver> flight_plan_optimization_driver_;
-  bool optimized_flight_plan_selected_ = false;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
