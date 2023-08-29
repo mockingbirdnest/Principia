@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 
 #include "base/not_null.hpp"
@@ -126,6 +127,8 @@ class Manœuvre {
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 
+  void clear_coasting_trajectory();
+
   // Sets the trajectory segment at the end of which the manœuvre takes place.
   // Must be called before any of the functions below.  |trajectory| must have a
   // point at |initial_time()|.
@@ -175,7 +178,7 @@ class Manœuvre {
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
   Burn burn_;  // All optionals filled.
-  DiscreteTrajectorySegmentIterator<InertialFrame> coasting_trajectory_;
+  std::optional<DegreesOfFreedom<InertialFrame>> initial_degrees_of_freedom_;
 };
 
 }  // namespace internal
