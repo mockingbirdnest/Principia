@@ -127,6 +127,8 @@ class Manœuvre {
   // Returns true if and only if [initial_time, final_time] ⊆ ]begin, end[.
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 
+  void clear_coasting_trajectory();
+
   // Sets the trajectory segment at the end of which the manœuvre takes place.
   // Must be called before any of the functions below.  |trajectory| must have a
   // point at |initial_time()|.

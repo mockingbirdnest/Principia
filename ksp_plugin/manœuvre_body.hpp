@@ -164,6 +164,11 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
 }
 
 template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::clear_coasting_trajectory() {
+  initial_degrees_of_freedom_ = std::nullopt;
+}
+
+template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
     DiscreteTrajectorySegmentIterator<InertialFrame> const trajectory) {
   typename DiscreteTrajectory<InertialFrame>::iterator const it =
