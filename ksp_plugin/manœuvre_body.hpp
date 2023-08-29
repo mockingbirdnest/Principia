@@ -207,7 +207,8 @@ template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
   CHECK(initial_degrees_of_freedom_.has_value());
-  return ComputeFrenetFrame(initial_time(), initial_degrees_of_freedom_.value());
+  return ComputeFrenetFrame(initial_time(),
+                            initial_degrees_of_freedom_.value());
 }
 
 template<typename InertialFrame, typename Frame>
