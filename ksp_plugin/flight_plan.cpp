@@ -81,7 +81,9 @@ FlightPlan::FlightPlan(FlightPlan const& other)
           other.generalized_adaptive_step_parameters_) {
   bool first = true;
   for (auto const& other_segment : other.trajectory_.segments()) {
-    if (!first) {
+    if (first) {
+      first = false;
+    } else {
       trajectory_.NewSegment();
     }
     for (auto const& [time, degrees_of_freedom] : other_segment) {

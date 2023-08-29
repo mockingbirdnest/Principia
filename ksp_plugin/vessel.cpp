@@ -361,24 +361,10 @@ bool Vessel::UpdateFlightPlanFromOptimization() {
   }
   std::shared_ptr const last_flight_plan =
       optimization_driver->last_flight_plan();
-  // REMOVE BEFORE FLIGHT
-  serialization::FlightPlan serialized_last_flight_plan;
-  serialization::FlightPlan serialized_flight_plan;
-  last_flight_plan->WriteToMessage(&serialized_last_flight_plan);
-  flight_plan->WriteToMessage(&serialized_flight_plan);
-  if (serialized_last_flight_plan.SerializeAsString() !=
-      serialized_flight_plan.SerializeAsString()) {
-    flight_plan =
-        FlightPlan::ReadFromMessage(serialized_last_flight_plan, ephemeris_);
-  // if (flight_plan != last_flight_plan) {
-  //  flight_plan = last_flight_plan;
+   if (flight_plan != last_flight_plan) {
+    flight_plan = last_flight_plan;
     return true;
   }
-  // REMOVE BEFORE FLIGHT: not needed once last_flight_plan is correct.
-  if (optimization_driver->done()) {
-    optimization_driver = nullptr;
-  }
-  // REMOVE BEFORE FLIGHT
   return false;
 }
 
