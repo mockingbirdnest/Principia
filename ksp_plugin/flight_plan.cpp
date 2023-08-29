@@ -449,11 +449,13 @@ absl::Status FlightPlan::ComputeSegments(
   for (auto it = begin; it != end; ++it) {
     auto& manœuvre = *it;
     auto& coast = segments_.back();
-    manœuvre.set_coasting_trajectory(coast);
+    manœuvre.clear_coasting_trajectory();
 
     if (anomalous_segments_ == 0) {
       absl::Status const status = CoastSegment(manœuvre.initial_time(), coast);
-      if (!status.ok()) {
+      if (status.ok()) {
+        manœuvre.set_coasting_trajectory(coast);
+      } else {
         overall_status.Update(status);
         anomalous_segments_ = 1;
         anomalous_status_ = status;

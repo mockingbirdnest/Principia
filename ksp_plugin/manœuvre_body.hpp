@@ -2,13 +2,10 @@
 
 #include "ksp_plugin/manœuvre.hpp"
 
-#include <cmath>
 #include <functional>
 
-#include "geometry/rotation.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -16,10 +13,8 @@ namespace _manœuvre {
 namespace internal {
 
 using std::placeholders::_1;
-using namespace principia::geometry::_rotation;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::quantities::_elementary_functions;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
@@ -169,9 +164,17 @@ bool Manœuvre<InertialFrame, Frame>::FitsBetween(Instant const& begin,
 }
 
 template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::clear_coasting_trajectory() {
+  initial_degrees_of_freedom_ = std::nullopt;
+}
+
+template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
     DiscreteTrajectorySegmentIterator<InertialFrame> const trajectory) {
-  coasting_trajectory_ = trajectory;
+  typename DiscreteTrajectory<InertialFrame>::iterator const it =
+      trajectory->find(initial_time());
+  CHECK(it != trajectory->end());
+  initial_degrees_of_freedom_ = it->degrees_of_freedom;
 }
 
 template<typename InertialFrame, typename Frame>
@@ -208,10 +211,9 @@ Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
 template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
-  typename DiscreteTrajectory<InertialFrame>::iterator const it =
-      coasting_trajectory_->find(initial_time());
-  CHECK(it != coasting_trajectory_->end());
-  return ComputeFrenetFrame(initial_time(), it->degrees_of_freedom);
+  CHECK(initial_degrees_of_freedom_.has_value());
+  return ComputeFrenetFrame(initial_time(),
+                            initial_degrees_of_freedom_.value());
 }
 
 template<typename InertialFrame, typename Frame>
