@@ -176,7 +176,7 @@ class Manœuvre {
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
   Burn burn_;  // All optionals filled.
-  DiscreteTrajectorySegmentIterator<InertialFrame> coasting_trajectory_;
+  std::optional<DegreesOfFreedom<InertialFrame>> initial_degrees_of_freedom_;
 };
 
 }  // namespace internal
