@@ -3,6 +3,7 @@
 #include <cmath>
 #include <memory>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -29,15 +30,14 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
+#include "serialization/geometry.pb.h"
+#include "serialization/ksp_plugin.pb.h"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/numerics.hpp"
-#include "serialization/geometry.pb.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "serialization/physics.pb.h"
-#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 namespace ksp_plugin {
