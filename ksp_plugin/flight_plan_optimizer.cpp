@@ -176,6 +176,8 @@ absl::Status FlightPlanOptimizer::Optimize(Metric& metric,
   // the orbit analysers.
   flight_plan_->EnableAnalysis(/*enabled=*/false);
 
+  cache_.clear();
+
   // The following is a copy, and is not affected by changes to the
   // |flight_plan_|.  It is moved into the metric.
   NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
@@ -184,9 +186,9 @@ absl::Status FlightPlanOptimizer::Optimize(Metric& metric,
   auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
           Homogeneize(start_argument_),
-          std::bind(&Metric::Evaluate, metric, _1),
-          std::bind(&Metric::EvaluateGradient, metric, _1),
-          std::bind(&Metric::EvaluateGateauxDerivative, metric, _1, _2),
+          std::bind(&Metric::Evaluate, &metric, _1),
+          std::bind(&Metric::EvaluateGradient, &metric, _1),
+          std::bind(&Metric::EvaluateGateauxDerivative, &metric, _1, _2),
           Δv_tolerance);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();

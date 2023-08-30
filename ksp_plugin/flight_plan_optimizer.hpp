@@ -108,7 +108,6 @@ class FlightPlanOptimizer {
   // where it's kosher.
   using EvaluationCache = absl::flat_hash_map<HomogeneousArgument, Length>;
 
-  using LengthField = Field<Length, HomogeneousArgument>;
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
 
   static HomogeneousArgument Homogeneize(Argument const& argument);
