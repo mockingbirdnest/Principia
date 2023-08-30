@@ -86,8 +86,6 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   // |flight_plan_|.
   NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
 
-  EvaluationCache cache;
-
   auto const f = [this, &cache, &celestial, index, &manœuvre](
                      HomogeneousArgument const& homogeneous_argument) {
     return EvaluateDistanceToCelestialWithReplacement(
@@ -246,10 +244,9 @@ FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
     int const index,
-    FlightPlan& flight_plan,
-    EvaluationCache& cache) {
+    FlightPlan& flight_plan) {
   auto const distance = EvaluateDistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument, manœuvre, index, flight_plan, cache);
+      celestial, homogeneous_argument, manœuvre, index, flight_plan);
 
   LengthGradient gradient;
   for (int i = 0; i < HomogeneousArgument::dimension; ++i) {
@@ -260,8 +257,7 @@ FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
                                                    homogeneous_argument_δi,
                                                    manœuvre,
                                                    index,
-                                                   flight_plan,
-                                                   cache);
+                                                   flight_plan);
     gradient[i] = (distance_δi - distance) / δ_homogeneous_argument;
   }
   return gradient;
@@ -274,16 +270,15 @@ EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
     Difference<HomogeneousArgument> const& direction_homogeneous_argument,
     NavigationManœuvre const& manœuvre,
     int const index,
-    FlightPlan& flight_plan,
-    EvaluationCache& cache) {
+    FlightPlan& flight_plan) {
   auto const distance = EvaluateDistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument, manœuvre, index, flight_plan, cache);
+      celestial, homogeneous_argument, manœuvre, index, flight_plan);
   double const h = δ_homogeneous_argument /
                    direction_homogeneous_argument.Norm();
   auto const homogeneous_argument_h =
       homogeneous_argument + h * direction_homogeneous_argument;
   auto const distance_δh = EvaluateDistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument_h, manœuvre, index, flight_plan, cache);
+      celestial, homogeneous_argument_h, manœuvre, index, flight_plan);
   return (distance_δh - distance) / h;
 }
 
@@ -292,9 +287,8 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
     int const index,
-    FlightPlan& flight_plan,
-    EvaluationCache& cache) {
-  if (auto const it = cache.find(homogeneous_argument); it != cache.end()) {
+    FlightPlan& flight_plan) {
+  if (auto const it = cache_.find(homogeneous_argument); it != cache_.end()) {
     return it->second;
   }
 
@@ -310,7 +304,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     distance = Infinity<Length>;
   }
   CHECK_OK(flight_plan.Replace(manœuvre.burn(), index));
-  cache.emplace(homogeneous_argument, distance);
+  cache_.emplace(homogeneous_argument, distance);
   return distance;
 }
 

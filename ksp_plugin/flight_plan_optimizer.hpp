@@ -104,8 +104,7 @@ class FlightPlanOptimizer {
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan,
-      EvaluationCache& cache);
+      FlightPlan& flight_plan);
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the gradient of the closest periapis with respect to the
@@ -115,8 +114,7 @@ class FlightPlanOptimizer {
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan,
-      EvaluationCache& cache);
+      FlightPlan& flight_plan);
 
   Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
       Celestial const& celestial,
@@ -124,8 +122,7 @@ class FlightPlanOptimizer {
       Difference<HomogeneousArgument> const& direction_homogeneous_argument,
       NavigationManœuvre const& manœuvre,
       int index,
-      FlightPlan& flight_plan,
-      EvaluationCache& cache);
+      FlightPlan& flight_plan);
 
   // Replaces the burn at the given |index| based on the |argument|.
   static absl::Status ReplaceBurn(Argument const& argument,
@@ -136,6 +133,8 @@ class FlightPlanOptimizer {
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
   ProgressCallback const progress_callback_;
+
+  EvaluationCache cache_;
 
   friend bool operator==(Argument const& left, Argument const& right);
   template<typename H>
