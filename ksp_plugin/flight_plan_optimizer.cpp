@@ -12,6 +12,8 @@ namespace ksp_plugin {
 namespace _flight_plan_optimizer {
 namespace internal {
 
+using std::placeholders::_1;
+using std::placeholders::_2;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
@@ -84,9 +86,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   }
 }
 
-absl::Status FlightPlanOptimizer::Optimize(int const index,
-                                           Celestial const& celestial,
-                                           Length const& target_distance,
+absl::Status FlightPlanOptimizer::Optimize(Metric const& metric,
+                                           int const index,
                                            Speed const& Δv_tolerance) {
   // We are going to repeatedly tweak the |flight_plan_|, no point in running
   // the orbit analysers.
@@ -130,9 +131,9 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<Square<Length>, HomogeneousArgument>(
           Homogeneize(start_argument_),
-          f,
-          grad_f,
-          gateaux_derivative_f,
+          std::bind(Metric::Evaluate, metric, _1),
+          std::bind(Metric::EvaluateGradient, metric, _1),
+          std::bind(Metric::EvaluateGateauxDerivative, metric, _1, _2),
           Δv_tolerance);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();

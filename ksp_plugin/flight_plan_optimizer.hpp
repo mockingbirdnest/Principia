@@ -33,6 +33,26 @@ using namespace principia::quantities::_quantities;
 // A class to optimize a flight to go through or near a celestial.
 class FlightPlanOptimizer {
  public:
+  // The |Argument| is relative to the current properties of the burn.
+  struct Argument {
+    Time Δinitial_time;
+    Velocity<Frenet<Navigation>> ΔΔv;
+  };
+
+  class Metric {
+   public:
+    virtual double Evaluate(Argument const& argument) const = 0;
+    virtual Gradient<double, Argument> EvaluateGradient(
+        Argument const& argument) const = 0;
+    virtual double EvaluateGateauxDerivative(
+        Argument const& argument,
+        Difference<Argument> const& direction) const = 0;
+  };
+
+  Metric ForCelestialCentre(not_null<Celestial const*> celestial);
+  Metric ForCelestialDistance(not_null<Celestial const*> celestial,
+                              Length const& distance);
+
   // Called throughout the optimization to let the client know the tentative
   // state of the flight plan.
   using ProgressCallback = std::function<void(FlightPlan const&)>;
@@ -47,28 +67,12 @@ class FlightPlanOptimizer {
   // and for deciding when to stop, and must be small enough to not miss
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
-  absl::Status Optimize(int index,
-                        Celestial const& celestial,
-                        Speed const& Δv_tolerance);
-
-  // Optimizes the manœuvre at the given |index| to have a periapsis at the
-  // specified |target_distance| of the |celestial|.  The |Δv_tolerance| is used
-  // for the initial choice of the step and for deciding when to stop, and must
-  // be small enough to not miss interesting features of the trajectory, and
-  // large enough to avoid costly startup steps.  Changes the flight plan passed
-  // at construction.
-  absl::Status Optimize(int index,
-                        Celestial const& celestial,
-                        Length const& target_distance,
+  // REMOVE BEFORE FLIGHT: Comment.
+  absl::Status Optimize(Metric const& metric,
+                        int index,
                         Speed const& Δv_tolerance);
 
  private:
-  // The |Argument| is relative to the current properties of the burn.
-  struct Argument {
-    Time Δinitial_time;
-    Velocity<Frenet<Navigation>> ΔΔv;
-  };
-
   // The data structure passed to the gradient descent algorithm.
   using HomogeneousArgument = FixedVector<Speed, 4>;
 
