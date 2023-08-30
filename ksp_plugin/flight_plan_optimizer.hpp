@@ -1,8 +1,10 @@
 #pragma once
 
-#include <optional>
+#include <functional>
+#include <memory>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -14,8 +16,6 @@
 #include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include <functional>
-#include <absl/status/status.h>
 
 namespace principia {
 namespace ksp_plugin {
@@ -50,11 +50,6 @@ class FlightPlanOptimizer {
   // REMOVE BEFORE FLIGHT: Comment.
   class Metric {
    public:
-    // REMOVE BEFORE FLIGHT: Ugly that we mutate the metric.
-    void Initialize(not_null<FlightPlanOptimizer*> optimizer,
-                    NavigationManœuvre manœuvre,
-                    int index);
-
     virtual double Evaluate(
         HomogeneousArgument const& homogeneous_argument) const = 0;
     virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
@@ -65,19 +60,30 @@ class FlightPlanOptimizer {
         const = 0;
 
    protected:
+    Metric(not_null<FlightPlanOptimizer*> optimizer,
+           NavigationManœuvre manœuvre,
+           int index);
+
     FlightPlanOptimizer& optimizer() const;
     NavigationManœuvre const& manœuvre() const;
     int index() const;
 
    private:
-    FlightPlanOptimizer* optimizer_ = nullptr;
-    std::optional<NavigationManœuvre> manœuvre_;
-    std::optional<int> index_;
+    not_null<FlightPlanOptimizer*> const optimizer_;
+    NavigationManœuvre const manœuvre_;
+    int const index_;
   };
 
-  static Metric ForCelestialCentre(not_null<Celestial const*> celestial);
-  static Metric ForCelestialDistance(not_null<Celestial const*> celestial,
-                                     Length const& target_distance);
+  using MetricFactory = std::function<not_null<std::unique_ptr<Metric>>(
+      not_null<FlightPlanOptimizer*> optimizer,
+      NavigationManœuvre manœuvre,
+      int index)>;
+
+  static MetricFactory ForCelestialCentre(
+      not_null<Celestial const*> celestial);
+  static MetricFactory ForCelestialDistance(
+      not_null<Celestial const*> celestial,
+      Length const& target_distance);
 
   // Called throughout the optimization to let the client know the tentative
   // state of the flight plan.
@@ -94,7 +100,7 @@ class FlightPlanOptimizer {
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
   // REMOVE BEFORE FLIGHT: Comment.
-  absl::Status Optimize(Metric& metric,
+  absl::Status Optimize(MetricFactory const& metric_factory,
                         int index,
                         Speed const& Δv_tolerance);
 

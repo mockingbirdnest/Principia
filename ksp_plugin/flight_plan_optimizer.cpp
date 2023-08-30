@@ -26,7 +26,10 @@ constexpr int max_apsides = 20;
 class FlightPlanOptimizer::MetricForCelestialCentre
     : public FlightPlanOptimizer::Metric {
  public:
-  explicit MetricForCelestialCentre(not_null<Celestial const*> const celestial);
+  MetricForCelestialCentre(not_null<FlightPlanOptimizer*> optimizer,
+                           NavigationManœuvre manœuvre,
+                           int index,
+                           not_null<Celestial const*> celestial);
 
   virtual double Evaluate(
       HomogeneousArgument const& homogeneous_argument) const override;
@@ -47,7 +50,10 @@ class FlightPlanOptimizer::MetricForCelestialCentre
 class FlightPlanOptimizer::MetricForCelestialDistance
     : public FlightPlanOptimizer::Metric {
  public:
-  MetricForCelestialDistance(not_null<Celestial const*> const celestial,
+  MetricForCelestialDistance(not_null<FlightPlanOptimizer*> optimizer,
+                             NavigationManœuvre manœuvre,
+                             int index,
+                             not_null<Celestial const*> const celestial,
                              Length const& target_distance);
 
   virtual double Evaluate(
@@ -68,8 +74,12 @@ class FlightPlanOptimizer::MetricForCelestialDistance
 };
 
 FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
+    not_null<FlightPlanOptimizer*> const optimizer,
+    NavigationManœuvre manœuvre,
+    int const index,
     not_null<Celestial const*> const celestial)
-    : celestial_(celestial) {}
+    : Metric(optimizer, std::move(manœuvre), index),
+      celestial_(celestial) {}
 
 double FlightPlanOptimizer::MetricForCelestialCentre::Evaluate(
     HomogeneousArgument const& homogeneous_argument) const {
@@ -98,9 +108,13 @@ double FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGateauxDerivative(
 }
 
 FlightPlanOptimizer::MetricForCelestialDistance::MetricForCelestialDistance(
+    not_null<FlightPlanOptimizer*> const optimizer,
+    NavigationManœuvre manœuvre,
+    int const index,
     not_null<Celestial const*> const celestial,
     Length const& target_distance)
-    : celestial_(celestial),
+    : Metric(optimizer, manœuvre, index),
+      celestial_(celestial),
       target_distance_(target_distance) {}
 
 double FlightPlanOptimizer::MetricForCelestialDistance::Evaluate(
@@ -142,25 +156,46 @@ FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
          scale_;
 }
 
-void FlightPlanOptimizer::Metric::Initialize(
+FlightPlanOptimizer::Metric::Metric(
     not_null<FlightPlanOptimizer*> const optimizer,
     NavigationManœuvre manœuvre,
-    int const index) {
-  optimizer_ = optimizer;
-  manœuvre_ = std::move(manœuvre);
-  index_ = index;
-}
+    int const index)
+    : optimizer_(optimizer),
+      manœuvre_(std::move(manœuvre)),
+      index_(index) {}
 
 FlightPlanOptimizer& FlightPlanOptimizer::Metric::optimizer() const {
-  return *check_not_null(optimizer_);
+  return *optimizer_;
 }
 
 NavigationManœuvre const& FlightPlanOptimizer::Metric::manœuvre() const {
-  return manœuvre_.value();
+  return manœuvre_;
 }
 
 int FlightPlanOptimizer::Metric::index() const {
-  return index_.value();
+  return index_;
+}
+
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(
+    not_null<Celestial const*> celestial) {
+  return [celestial](not_null<FlightPlanOptimizer*> const optimizer,
+                     NavigationManœuvre manœuvre,
+                     int const index) {
+    return make_not_null_unique<MetricForCelestialCentre>(
+        optimizer, manœuvre, index, celestial);
+  };
+}
+
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialDistance(
+    not_null<Celestial const*> celestial,
+    Length const& target_distance) {
+  return [celestial, target_distance](
+             not_null<FlightPlanOptimizer*> const optimizer,
+             NavigationManœuvre manœuvre,
+             int const index) {
+    return make_not_null_unique<MetricForCelestialDistance>(
+        optimizer, manœuvre, index, celestial, target_distance);
+  };
 }
 
 FlightPlanOptimizer::FlightPlanOptimizer(
@@ -169,7 +204,7 @@ FlightPlanOptimizer::FlightPlanOptimizer(
     : flight_plan_(flight_plan),
       progress_callback_(std::move(progress_callback)) {}
 
-absl::Status FlightPlanOptimizer::Optimize(Metric& metric,
+absl::Status FlightPlanOptimizer::Optimize(MetricFactory const& metric_factory,
                                            int const index,
                                            Speed const& Δv_tolerance) {
   // We are going to repeatedly tweak the |flight_plan_|, no point in running
@@ -180,15 +215,15 @@ absl::Status FlightPlanOptimizer::Optimize(Metric& metric,
 
   // The following is a copy, and is not affected by changes to the
   // |flight_plan_|.  It is moved into the metric.
-  NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
-  metric.Initialize(this, std::move(manœuvre), index);
+  NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
+  auto const metric = metric_factory(this, std::move(manœuvre), index);
 
   auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
           Homogeneize(start_argument_),
-          std::bind(&Metric::Evaluate, &metric, _1),
-          std::bind(&Metric::EvaluateGradient, &metric, _1),
-          std::bind(&Metric::EvaluateGateauxDerivative, &metric, _1, _2),
+          std::bind(&Metric::Evaluate, metric.get(), _1),
+          std::bind(&Metric::EvaluateGradient, metric.get(), _1),
+          std::bind(&Metric::EvaluateGateauxDerivative, metric.get(), _1, _2),
           Δv_tolerance);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
