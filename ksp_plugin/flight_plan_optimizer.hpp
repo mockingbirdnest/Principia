@@ -14,6 +14,8 @@
 #include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include <functional>
+#include <absl/status/status.h>
 
 namespace principia {
 namespace ksp_plugin {
@@ -48,6 +50,7 @@ class FlightPlanOptimizer {
   // REMOVE BEFORE FLIGHT: Comment.
   class Metric {
    public:
+    // REMOVE BEFORE FLIGHT: Ugly that we mutate the metric.
     void Initialize(not_null<FlightPlanOptimizer*> optimizer,
                     NavigationManœuvre manœuvre,
                     int index);
@@ -74,7 +77,7 @@ class FlightPlanOptimizer {
 
   static Metric ForCelestialCentre(not_null<Celestial const*> celestial);
   static Metric ForCelestialDistance(not_null<Celestial const*> celestial,
-                                     Length const& distance);
+                                     Length const& target_distance);
 
   // Called throughout the optimization to let the client know the tentative
   // state of the flight plan.
@@ -91,12 +94,13 @@ class FlightPlanOptimizer {
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
   // REMOVE BEFORE FLIGHT: Comment.
-  absl::Status Optimize(Metric const& metric,
+  absl::Status Optimize(Metric& metric,
                         int index,
                         Speed const& Δv_tolerance);
 
  private:
   class MetricForCelestialCentre;
+  class MetricForCelestialDistance;
 
   // Function evaluations are very expensive, as they require integrating a
   // flight plan and finding periapsides.  We don't want do to them
@@ -151,11 +155,6 @@ class FlightPlanOptimizer {
   ProgressCallback const progress_callback_;
 
   EvaluationCache cache_;
-
-  friend bool operator==(HomogeneousArgument const& left,
-                         HomogeneousArgument const& right);
-  template<typename H>
-  friend H AbslHashValue(H h, HomogeneousArgument const& homogeneous_argument);
 };
 
 }  // namespace internal

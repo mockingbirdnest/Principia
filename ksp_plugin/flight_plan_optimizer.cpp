@@ -23,27 +23,6 @@ constexpr Speed δ_homogeneous_argument = 1 * Milli(Metre) / Second;
 constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
-void FlightPlanOptimizer::Metric::Initialize(
-    not_null<FlightPlanOptimizer*> const optimizer,
-    NavigationManœuvre manœuvre,
-    int const index) {
-  optimizer_ = optimizer;
-  manœuvre_ = std::move(manœuvre);
-  index_ = index;
-}
-
-FlightPlanOptimizer& FlightPlanOptimizer::Metric::optimizer() const {
-  return *check_not_null(optimizer_);
-}
-
-NavigationManœuvre const& FlightPlanOptimizer::Metric::manœuvre() const {
-  return manœuvre_.value();
-}
-
-int FlightPlanOptimizer::Metric::index() const {
-  return index_.value();
-}
-
 class FlightPlanOptimizer::MetricForCelestialCentre
     : public FlightPlanOptimizer::Metric {
  public:
@@ -63,6 +42,29 @@ class FlightPlanOptimizer::MetricForCelestialCentre
   static constexpr Length scale_ = 1 * Metre;
 
   not_null<Celestial const*> const celestial_;
+};
+
+class FlightPlanOptimizer::MetricForCelestialDistance
+    : public FlightPlanOptimizer::Metric {
+ public:
+  MetricForCelestialDistance(not_null<Celestial const*> const celestial,
+                             Length const& target_distance);
+
+  virtual double Evaluate(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  virtual double EvaluateGateauxDerivative(
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+      const override;
+
+ private:
+  // Has no effect because this metric doesn't mix multiple quantities.
+  static constexpr Square<Length> scale_ = 1 * Pow<2>(Metre);
+
+  not_null<Celestial const*> const celestial_;
+  Length const target_distance_;
 };
 
 FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
@@ -95,68 +97,79 @@ double FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGateauxDerivative(
           index()) / scale_;
 }
 
+FlightPlanOptimizer::MetricForCelestialDistance::MetricForCelestialDistance(
+    not_null<Celestial const*> const celestial,
+    Length const& target_distance)
+    : celestial_(celestial),
+      target_distance_(target_distance) {}
+
+double FlightPlanOptimizer::MetricForCelestialDistance::Evaluate(
+    HomogeneousArgument const& homogeneous_argument) const {
+  Length const actual_distance =
+      optimizer().EvaluateDistanceToCelestialWithReplacement(
+          *celestial_, homogeneous_argument, manœuvre(), index());
+  return Pow<2>(actual_distance - target_distance_) / scale_;
+}
+
+Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
+FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGradient(
+    HomogeneousArgument const& homogeneous_argument) const {
+  Length const actual_distance =
+      optimizer().EvaluateDistanceToCelestialWithReplacement(
+          *celestial_, homogeneous_argument, manœuvre(), index());
+  Gradient<Length, FlightPlanOptimizer::HomogeneousArgument> const
+      actual_gradient = optimizer().Evaluate𝛁DistanceToCelestialWithReplacement(
+          *celestial_, homogeneous_argument, manœuvre(), index());
+  return 2 * (actual_distance - target_distance_) * actual_gradient / scale_;
+}
+
+double
+FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+    const {
+  Length const actual_distance =
+      optimizer().EvaluateDistanceToCelestialWithReplacement(
+          *celestial_, homogeneous_argument, manœuvre(), index());
+  Length const actual_gateaux_derivative =
+      optimizer().EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+          *celestial_,
+          homogeneous_argument,
+          homogeneous_argument_direction,
+          manœuvre(),
+          index());
+  return 2 * (actual_distance - target_distance_) * actual_gateaux_derivative /
+         scale_;
+}
+
+void FlightPlanOptimizer::Metric::Initialize(
+    not_null<FlightPlanOptimizer*> const optimizer,
+    NavigationManœuvre manœuvre,
+    int const index) {
+  optimizer_ = optimizer;
+  manœuvre_ = std::move(manœuvre);
+  index_ = index;
+}
+
+FlightPlanOptimizer& FlightPlanOptimizer::Metric::optimizer() const {
+  return *check_not_null(optimizer_);
+}
+
+NavigationManœuvre const& FlightPlanOptimizer::Metric::manœuvre() const {
+  return manœuvre_.value();
+}
+
+int FlightPlanOptimizer::Metric::index() const {
+  return index_.value();
+}
+
 FlightPlanOptimizer::FlightPlanOptimizer(
     not_null<FlightPlan*> const flight_plan,
     ProgressCallback progress_callback)
     : flight_plan_(flight_plan),
       progress_callback_(std::move(progress_callback)) {}
 
-absl::Status FlightPlanOptimizer::Optimize(int const index,
-                                           Celestial const& celestial,
-                                           Speed const& Δv_tolerance) {
-  // We are going to repeatedly tweak the |flight_plan_|, no point in running
-  // the orbit analysers.
-  flight_plan_->EnableAnalysis(/*enabled=*/false);
-
-  // The following is a copy, and is not affected by changes to the
-  // |flight_plan_|.
-  NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
-
-  auto const f = [this, &cache, &celestial, index, &manœuvre](
-                     HomogeneousArgument const& homogeneous_argument) {
-    return EvaluateDistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
-  };
-  auto const grad_f = [this, &cache, &celestial, index, &manœuvre](
-                          HomogeneousArgument const& homogeneous_argument) {
-    return Evaluate𝛁DistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
-  };
-  auto const gateaux_derivative_f =
-      [this, &cache, &celestial, index, &manœuvre](
-    HomogeneousArgument const& homogeneous_argument,
-    Difference<HomogeneousArgument> const&
-        direction_homogeneous_argument) {
-    return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
-        celestial,
-        homogeneous_argument,
-        direction_homogeneous_argument,
-        manœuvre,
-        index,
-        *flight_plan_,
-        cache);
-  };
-
-  auto const status_or_solution =
-      BroydenFletcherGoldfarbShanno<Length, HomogeneousArgument>(
-          Homogeneize(start_argument_),
-          f,
-          grad_f,
-          gateaux_derivative_f,
-          Δv_tolerance);
-  if (status_or_solution.ok()) {
-    auto const& solution = status_or_solution.value();
-    auto const replace_status = ReplaceBurn(
-        Dehomogeneize(solution), manœuvre, index, *flight_plan_);
-    flight_plan_->EnableAnalysis(/*enabled=*/true);
-    return replace_status;
-  } else {
-    flight_plan_->EnableAnalysis(/*enabled=*/true);
-    return status_or_solution.status();
-  }
-}
-
-absl::Status FlightPlanOptimizer::Optimize(Metric const& metric,
+absl::Status FlightPlanOptimizer::Optimize(Metric& metric,
                                            int const index,
                                            Speed const& Δv_tolerance) {
   // We are going to repeatedly tweak the |flight_plan_|, no point in running
@@ -164,46 +177,16 @@ absl::Status FlightPlanOptimizer::Optimize(Metric const& metric,
   flight_plan_->EnableAnalysis(/*enabled=*/false);
 
   // The following is a copy, and is not affected by changes to the
-  // |flight_plan_|.
+  // |flight_plan_|.  It is moved into the metric.
   NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
-
-  EvaluationCache cache;
-
-  auto const f = [this, &cache, &celestial, index, &manœuvre, target_distance](
-                     HomogeneousArgument const& homogeneous_argument) {
-    auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
-    return Pow<2>(actual_distance - target_distance);
-  };
-  auto const grad_f =
-     [this, &cache, &celestial, index, &manœuvre, target_distance](
-         HomogeneousArgument const& homogeneous_argument) {
-    auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
-    auto const actual_gradient = Evaluate𝛁DistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
-    return 2 * (actual_distance - target_distance) * actual_gradient;
-  };
-  auto const gateaux_derivative_f =
-      [this, &cache, &celestial, index, &manœuvre, target_distance](
-          HomogeneousArgument const& homogeneous_argument,
-          Difference<HomogeneousArgument> const&
-              direction_homogeneous_argument) {
-    auto const actual_distance = EvaluateDistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
-    auto const actual_gateaux_derivative =
-        EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
-        celestial, homogeneous_argument, direction_homogeneous_argument,
-        manœuvre, index, *flight_plan_, cache);
-    return 2 * (actual_distance - target_distance) * actual_gateaux_derivative;
-  };
+  metric.Initialize(this, std::move(manœuvre), index);
 
   auto const status_or_solution =
-      BroydenFletcherGoldfarbShanno<Square<Length>, HomogeneousArgument>(
+      BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
           Homogeneize(start_argument_),
-          std::bind(Metric::Evaluate, metric, _1),
-          std::bind(Metric::EvaluateGradient, metric, _1),
-          std::bind(Metric::EvaluateGateauxDerivative, metric, _1, _2),
+          std::bind(&Metric::Evaluate, metric, _1),
+          std::bind(&Metric::EvaluateGradient, metric, _1),
+          std::bind(&Metric::EvaluateGateauxDerivative, metric, _1, _2),
           Δv_tolerance);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
