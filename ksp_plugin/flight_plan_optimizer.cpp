@@ -212,10 +212,9 @@ FlightPlanOptimizer::Argument FlightPlanOptimizer::Dehomogeneize(
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
     Celestial const& celestial,
-    Instant const& begin_time,
-    FlightPlan const& flight_plan) {
+    Instant const& begin_time) const {
   auto const& celestial_trajectory = celestial.trajectory();
-  auto const& vessel_trajectory = flight_plan.GetAllSegments();
+  auto const& vessel_trajectory = flight_plan_->GetAllSegments();
   DiscreteTrajectory<Barycentric> apoapsides;
   DiscreteTrajectory<Barycentric> periapsides;
   ComputeApsides(celestial_trajectory,
@@ -233,7 +232,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
                             .Norm());
   }
   if (progress_callback_ != nullptr) {
-    progress_callback_(flight_plan);
+    progress_callback_(*flight_plan_);
   }
   return distance;
 }
@@ -243,10 +242,9 @@ FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
     Celestial const& celestial,
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int const index,
-    FlightPlan& flight_plan) {
+    int const index) {
   auto const distance = EvaluateDistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument, manœuvre, index, flight_plan);
+      celestial, homogeneous_argument, manœuvre, index);
 
   LengthGradient gradient;
   for (int i = 0; i < HomogeneousArgument::dimension; ++i) {
@@ -256,8 +254,7 @@ FlightPlanOptimizer::Evaluate𝛁DistanceToCelestialWithReplacement(
         EvaluateDistanceToCelestialWithReplacement(celestial,
                                                    homogeneous_argument_δi,
                                                    manœuvre,
-                                                   index,
-                                                   flight_plan);
+                                                   index);
     gradient[i] = (distance_δi - distance) / δ_homogeneous_argument;
   }
   return gradient;
@@ -269,16 +266,15 @@ EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
     HomogeneousArgument const& homogeneous_argument,
     Difference<HomogeneousArgument> const& direction_homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int const index,
-    FlightPlan& flight_plan) {
+    int const index) {
   auto const distance = EvaluateDistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument, manœuvre, index, flight_plan);
+      celestial, homogeneous_argument, manœuvre, index);
   double const h = δ_homogeneous_argument /
                    direction_homogeneous_argument.Norm();
   auto const homogeneous_argument_h =
       homogeneous_argument + h * direction_homogeneous_argument;
   auto const distance_δh = EvaluateDistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument_h, manœuvre, index, flight_plan);
+      celestial, homogeneous_argument_h, manœuvre, index);
   return (distance_δh - distance) / h;
 }
 
@@ -286,24 +282,22 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     Celestial const& celestial,
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int const index,
-    FlightPlan& flight_plan) {
+    int const index) {
   if (auto const it = cache_.find(homogeneous_argument); it != cache_.end()) {
     return it->second;
   }
 
   Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
-  if (ReplaceBurn(argument, manœuvre, index, flight_plan).ok()) {
-    distance = EvaluateDistanceToCelestial(
-        celestial, manœuvre.initial_time(), flight_plan);
+  if (ReplaceBurn(argument, manœuvre, index, *flight_plan_).ok()) {
+    distance = EvaluateDistanceToCelestial(celestial, manœuvre.initial_time());
   } else {
     // If the updated burn cannot replace the existing one (e.g., because it
     // overlaps with the next burn) return an infinite length to move the
     // optimizer away from this place.
     distance = Infinity<Length>;
   }
-  CHECK_OK(flight_plan.Replace(manœuvre.burn(), index));
+  CHECK_OK(flight_plan_->Replace(manœuvre.burn(), index));
   cache_.emplace(homogeneous_argument, distance);
   return distance;
 }
