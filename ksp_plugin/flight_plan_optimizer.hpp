@@ -73,6 +73,8 @@ class FlightPlanOptimizer {
                         Speed const& Δv_tolerance);
 
  private:
+  class MetricForCelestialCentre;
+
   // The data structure passed to the gradient descent algorithm.
   using HomogeneousArgument = FixedVector<Speed, 4>;
 

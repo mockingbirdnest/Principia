@@ -23,6 +23,52 @@ constexpr Speed δ_homogeneous_argument = 1 * Milli(Metre) / Second;
 constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
+class FlightPlanOptimizer::MetricForCelestialCentre
+    : public FlightPlanOptimizer::Metric {
+ public:
+  explicit MetricForCelestialCentre(not_null<Celestial const*> const celestial);
+
+  virtual double Evaluate(Argument const& argument) const override;
+  virtual Gradient<double, Argument> EvaluateGradient(
+      Argument const& argument) const override;
+  virtual double EvaluateGateauxDerivative(
+      Argument const& argument,
+      Difference<Argument> const& direction) const override;
+
+ private:
+  not_null<Celestial const*> const celestial_;
+};
+
+FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
+    not_null<Celestial const*> const celestial)
+    : celestial_(celestial) {}
+
+double FlightPlanOptimizer::MetricForCelestialCentre::Evaluate(
+    Argument const& argument) const {
+  return EvaluateDistanceToCelestialWithReplacement(
+      celestial_, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
+}
+
+Gradient<double, FlightPlanOptimizer::Argument>
+FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGradient(
+    Argument const& argument) const {
+  return Evaluate𝛁DistanceToCelestialWithReplacement(
+      celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
+}
+
+double FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGateauxDerivative(
+    Argument const& argument,
+    Difference<Argument> const& direction) const {
+  return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+      celestial,
+      homogeneous_argument,
+      direction_homogeneous_argument,
+      manœuvre,
+      index,
+      *flight_plan_,
+      cache);
+}
+
 FlightPlanOptimizer::FlightPlanOptimizer(
     not_null<FlightPlan*> const flight_plan,
     ProgressCallback progress_callback)
