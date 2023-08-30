@@ -49,14 +49,19 @@ class FlightPlanOptimizer::MetricForCelestialCentre
  public:
   explicit MetricForCelestialCentre(not_null<Celestial const*> const celestial);
 
-  virtual double Evaluate(Argument const& argument) const override;
-  virtual Gradient<double, Argument> EvaluateGradient(
-      Argument const& argument) const override;
+  virtual double Evaluate(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
+      HomogeneousArgument const& homogeneous_argument) const override;
   virtual double EvaluateGateauxDerivative(
-      Argument const& argument,
-      Difference<Argument> const& direction) const override;
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+      const override;
 
  private:
+  // Has no effect because this metric doesn't mix multiple quantities.
+  static constexpr Length scale_ = 1 * Metre;
+
   not_null<Celestial const*> const celestial_;
 };
 
@@ -65,28 +70,29 @@ FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
     : celestial_(celestial) {}
 
 double FlightPlanOptimizer::MetricForCelestialCentre::Evaluate(
-    Argument const& argument) const {
+    HomogeneousArgument const& homogeneous_argument) const {
   return optimizer().EvaluateDistanceToCelestialWithReplacement(
-      *celestial_, Homogeneize(argument), manœuvre(), index());
+      *celestial_, homogeneous_argument, manœuvre(), index()) / scale_;
 }
 
-Gradient<double, FlightPlanOptimizer::Argument>
+Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
 FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGradient(
-    Argument const& argument) const {
+    HomogeneousArgument const& homogeneous_argument) const {
   return optimizer().Evaluate𝛁DistanceToCelestialWithReplacement(
-      *celestial_, Homogeneize(argument), manœuvre(), index());
+      *celestial_, homogeneous_argument, manœuvre(), index()) / scale_;
 }
 
 double FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGateauxDerivative(
-    Argument const& argument,
-    Difference<Argument> const& direction) const {
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+    const {
   return optimizer()
       .EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
           *celestial_,
-          Homogeneize(argument),
-          direction_homogeneous_argument,
+          homogeneous_argument,
+          homogeneous_argument_direction,
           manœuvre(),
-          index());
+          index()) / scale_;
 }
 
 FlightPlanOptimizer::FlightPlanOptimizer(

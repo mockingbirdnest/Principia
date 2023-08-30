@@ -42,6 +42,9 @@ class FlightPlanOptimizer {
     Velocity<Frenet<Navigation>> ΔΔv;
   };
 
+  // The data structure passed to the gradient descent algorithm.
+  using HomogeneousArgument = FixedVector<Speed, 4>;
+
   // REMOVE BEFORE FLIGHT: Comment.
   class Metric {
    public:
@@ -49,12 +52,14 @@ class FlightPlanOptimizer {
                     NavigationManœuvre manœuvre,
                     int index);
 
-    virtual double Evaluate(Argument const& argument) const = 0;
-    virtual Gradient<double, Argument> EvaluateGradient(
-        Argument const& argument) const = 0;
+    virtual double Evaluate(
+        HomogeneousArgument const& homogeneous_argument) const = 0;
+    virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
+        HomogeneousArgument const& homogeneous_argument) const = 0;
     virtual double EvaluateGateauxDerivative(
-        Argument const& argument,
-        Difference<Argument> const& direction) const = 0;
+        HomogeneousArgument const& homogeneous_argument,
+        Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+        const = 0;
 
    protected:
     FlightPlanOptimizer& optimizer() const;
@@ -92,9 +97,6 @@ class FlightPlanOptimizer {
 
  private:
   class MetricForCelestialCentre;
-
-  // The data structure passed to the gradient descent algorithm.
-  using HomogeneousArgument = FixedVector<Speed, 4>;
 
   // Function evaluations are very expensive, as they require integrating a
   // flight plan and finding periapsides.  We don't want do to them
@@ -150,9 +152,10 @@ class FlightPlanOptimizer {
 
   EvaluationCache cache_;
 
-  friend bool operator==(Argument const& left, Argument const& right);
+  friend bool operator==(HomogeneousArgument const& left,
+                         HomogeneousArgument const& right);
   template<typename H>
-  friend H AbslHashValue(H h, Argument const& argument);
+  friend H AbslHashValue(H h, HomogeneousArgument const& homogeneous_argument);
 };
 
 }  // namespace internal
