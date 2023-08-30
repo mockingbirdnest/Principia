@@ -23,6 +23,27 @@ constexpr Speed δ_homogeneous_argument = 1 * Milli(Metre) / Second;
 constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
 constexpr int max_apsides = 20;
 
+void FlightPlanOptimizer::Metric::Initialize(
+    not_null<FlightPlanOptimizer*> const optimizer,
+    NavigationManœuvre manœuvre,
+    int const index) {
+  optimizer_ = optimizer;
+  manœuvre_ = std::move(manœuvre);
+  index_ = index;
+}
+
+FlightPlanOptimizer& FlightPlanOptimizer::Metric::optimizer() const {
+  return *check_not_null(optimizer_);
+}
+
+NavigationManœuvre const& FlightPlanOptimizer::Metric::manœuvre() const {
+  return manœuvre_.value();
+}
+
+int FlightPlanOptimizer::Metric::index() const {
+  return index_.value();
+}
+
 class FlightPlanOptimizer::MetricForCelestialCentre
     : public FlightPlanOptimizer::Metric {
  public:
@@ -45,28 +66,27 @@ FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
 
 double FlightPlanOptimizer::MetricForCelestialCentre::Evaluate(
     Argument const& argument) const {
-  return EvaluateDistanceToCelestialWithReplacement(
-      celestial_, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
+  return optimizer().EvaluateDistanceToCelestialWithReplacement(
+      *celestial_, Homogeneize(argument), manœuvre(), index());
 }
 
 Gradient<double, FlightPlanOptimizer::Argument>
 FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGradient(
     Argument const& argument) const {
-  return Evaluate𝛁DistanceToCelestialWithReplacement(
-      celestial, homogeneous_argument, manœuvre, index, *flight_plan_, cache);
+  return optimizer().Evaluate𝛁DistanceToCelestialWithReplacement(
+      *celestial_, Homogeneize(argument), manœuvre(), index());
 }
 
 double FlightPlanOptimizer::MetricForCelestialCentre::EvaluateGateauxDerivative(
     Argument const& argument,
     Difference<Argument> const& direction) const {
-  return EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
-      celestial,
-      homogeneous_argument,
-      direction_homogeneous_argument,
-      manœuvre,
-      index,
-      *flight_plan_,
-      cache);
+  return optimizer()
+      .EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
+          *celestial_,
+          Homogeneize(argument),
+          direction_homogeneous_argument,
+          manœuvre(),
+          index());
 }
 
 FlightPlanOptimizer::FlightPlanOptimizer(

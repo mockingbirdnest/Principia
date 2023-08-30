@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "absl/container/flat_hash_map.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
@@ -40,14 +42,29 @@ class FlightPlanOptimizer {
     Velocity<Frenet<Navigation>> ΔΔv;
   };
 
+  // REMOVE BEFORE FLIGHT: Comment.
   class Metric {
    public:
+    void Initialize(not_null<FlightPlanOptimizer*> optimizer,
+                    NavigationManœuvre manœuvre,
+                    int index);
+
     virtual double Evaluate(Argument const& argument) const = 0;
     virtual Gradient<double, Argument> EvaluateGradient(
         Argument const& argument) const = 0;
     virtual double EvaluateGateauxDerivative(
         Argument const& argument,
         Difference<Argument> const& direction) const = 0;
+
+   protected:
+    FlightPlanOptimizer& optimizer() const;
+    NavigationManœuvre const& manœuvre() const;
+    int index() const;
+
+   private:
+    FlightPlanOptimizer* optimizer_ = nullptr;
+    std::optional<NavigationManœuvre> manœuvre_;
+    std::optional<int> index_;
   };
 
   static Metric ForCelestialCentre(not_null<Celestial const*> celestial);
