@@ -27,7 +27,7 @@ class FlightPlanOptimizationDriver {
     Speed Δv_tolerance;
   };
 
-   FlightPlanOptimizationDriver(
+  FlightPlanOptimizationDriver(
       FlightPlan const& flight_plan,
       FlightPlanOptimizer::MetricFactory metric_factory);
 
