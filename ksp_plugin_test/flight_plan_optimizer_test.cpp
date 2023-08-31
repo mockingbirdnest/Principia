@@ -139,17 +139,15 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   std::int64_t number_of_evaluations = 0;
   FlightPlanOptimizer optimizer(
       &flight_plan,
+      FlightPlanOptimizer::ForCelestialCentre(&moon),
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
-
-  auto const metric_factory = FlightPlanOptimizer::ForCelestialCentre(&moon);
 
   // In the code below we cannot compute flybys because the flight plan
   // basically goes through the centre of the Moon.
 
   LOG(INFO) << "Optimizing manœuvre 5";
   auto const manœuvre5 = flight_plan.GetManœuvre(5);
-  EXPECT_THAT(optimizer.Optimize(
-                  metric_factory, /*index=*/5, 1 * Milli(Metre) / Second),
+  EXPECT_THAT(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
   EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
@@ -166,8 +164,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 
   LOG(INFO) << "Optimizing manœuvre 6";
   auto const manœuvre6 = flight_plan.GetManœuvre(6);
-  EXPECT_THAT(optimizer.Optimize(
-                  metric_factory, /*index=*/6, 1 * Milli(Metre) / Second),
+  EXPECT_THAT(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
   EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
@@ -182,8 +179,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 
   LOG(INFO) << "Optimizing manœuvre 7";
   auto const manœuvre7 = flight_plan.GetManœuvre(7);
-  EXPECT_THAT(optimizer.Optimize(
-                  metric_factory, /*index=*/7, 1 * Milli(Metre) / Second),
+  EXPECT_THAT(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
   EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
@@ -236,18 +232,15 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
 
-  auto const metric_factory =
-      FlightPlanOptimizer::ForCelestialDistance(&moon, 2000 * Kilo(Metre));
-
   std::int64_t number_of_evaluations = 0;
   FlightPlanOptimizer optimizer(
       &flight_plan,
+      FlightPlanOptimizer::ForCelestialDistance(&moon, 2000 * Kilo(Metre)),
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
   LOG(INFO) << "Optimizing manœuvre 5";
   auto const manœuvre5 = flight_plan.GetManœuvre(5);
-  EXPECT_OK(optimizer.Optimize(
-      metric_factory, /*index=*/5, 1 * Milli(Metre) / Second));
+  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
       manœuvre5.initial_time() - flight_plan.GetManœuvre(5).initial_time(),
@@ -266,8 +259,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
 
   LOG(INFO) << "Optimizing manœuvre 6";
   auto const manœuvre6 = flight_plan.GetManœuvre(6);
-  EXPECT_OK(optimizer.Optimize(
-      metric_factory, /*index=*/6, 1 * Milli(Metre) / Second));
+  EXPECT_OK(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
       manœuvre6.initial_time() - flight_plan.GetManœuvre(6).initial_time(),
@@ -285,8 +277,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
 
   LOG(INFO) << "Optimizing manœuvre 7";
   auto const manœuvre7 = flight_plan.GetManœuvre(7);
-  EXPECT_OK(optimizer.Optimize(
-      metric_factory, /*index=*/7, 1 * Milli(Metre) / Second));
+  EXPECT_OK(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
       manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),

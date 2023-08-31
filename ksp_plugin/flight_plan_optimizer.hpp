@@ -38,16 +38,24 @@ using namespace principia::quantities::_quantities;
 // is *not* thread-safe.
 class FlightPlanOptimizer {
  public:
-  // The |Argument| is relative to the current properties of the burn.
+  // A point is the phase space on which optimization happens.  It represents a
+  // change in a burn, with respect to the pre-optimization value of that burn.
   struct Argument {
     Time Δinitial_time;
     Velocity<Frenet<Navigation>> ΔΔv;
   };
 
-  // The data structure passed to the gradient descent algorithm.
-  using HomogeneousArgument = FixedVector<Speed, 4>;
+  // For the gradient descent algorithm, |Argument| is transformed into a
+  // homogeneous array of numbers.
+  using HomogeneousArgument = FixedVector<double, 4>;
 
-  // REMOVE BEFORE FLIGHT: Comment.
+  // These functions convert between the two representation of |Argument|.
+  static HomogeneousArgument Homogeneize(Argument const& argument);
+  static Argument Dehomogeneize(
+      HomogeneousArgument const& homogeneous_argument);
+
+  // An metric is an algorithm used to compute the quality of a solution to the
+  // minimization problem.
   class Metric {
    public:
     virtual double Evaluate(
@@ -74,6 +82,8 @@ class FlightPlanOptimizer {
     int const index_;
   };
 
+  // A metric factory is passed at construction of the optimizer and then used
+  // to construct actual metric objects during optimization.
   using MetricFactory = std::function<not_null<std::unique_ptr<Metric>>(
       not_null<FlightPlanOptimizer*> optimizer,
       NavigationManœuvre manœuvre,
@@ -92,6 +102,7 @@ class FlightPlanOptimizer {
   // Constructs an optimizer for |flight_plan|.  |flight_plan| must outlive this
   // object.
   FlightPlanOptimizer(not_null<FlightPlan*> flight_plan,
+                      MetricFactory metric_factory,
                       ProgressCallback progress_callback = nullptr);
 
   // Optimizes the manœuvre at the given |index| to go through (or close to)
@@ -100,8 +111,7 @@ class FlightPlanOptimizer {
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
   // REMOVE BEFORE FLIGHT: Comment.
-  absl::Status Optimize(MetricFactory const& metric_factory,
-                        int index,
+  absl::Status Optimize(int index,
                         Speed const& Δv_tolerance);
 
  private:
@@ -115,10 +125,6 @@ class FlightPlanOptimizer {
   using EvaluationCache = absl::flat_hash_map<HomogeneousArgument, Length>;
 
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
-
-  static HomogeneousArgument Homogeneize(Argument const& argument);
-  static Argument Dehomogeneize(
-      HomogeneousArgument const& homogeneous_argument);
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
   // |celestial|, occurring after |begin_time|.
@@ -157,6 +163,7 @@ class FlightPlanOptimizer {
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
+  MetricFactory const metric_factory_;
   ProgressCallback const progress_callback_;
 
   EvaluationCache cache_;

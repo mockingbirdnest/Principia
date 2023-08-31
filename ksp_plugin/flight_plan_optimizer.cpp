@@ -19,8 +19,13 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-constexpr Speed δ_homogeneous_argument = 1 * Milli(Metre) / Second;
-constexpr Acceleration time_homogeneization_factor = 1 * Metre / Pow<2>(Second);
+// Conversion factors between |Argument| and |HomogeneousArgument|.
+constexpr Time time_homogeneization_factor = 1 * Second;
+constexpr Speed speed_homogeneization_factor = 1 * Metre / Second;
+
+// The displacement in |HomogeneousArgument| used to compute the derivatives.
+constexpr double δ_homogeneous_argument = 1e-3;
+
 constexpr int max_apsides = 20;
 
 class FlightPlanOptimizer::MetricForCelestialCentre
@@ -156,6 +161,26 @@ FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
          scale_;
 }
 
+FlightPlanOptimizer::HomogeneousArgument FlightPlanOptimizer::Homogeneize(
+    Argument const& argument) {
+  auto const& ΔΔv_coordinates = argument.ΔΔv.coordinates();
+  return HomogeneousArgument(
+      {argument.Δinitial_time / time_homogeneization_factor,
+       ΔΔv_coordinates.x / speed_homogeneization_factor,
+       ΔΔv_coordinates.y / speed_homogeneization_factor,
+       ΔΔv_coordinates.z / speed_homogeneization_factor});
+}
+
+FlightPlanOptimizer::Argument FlightPlanOptimizer::Dehomogeneize(
+    HomogeneousArgument const& homogeneous_argument) {
+  return Argument{
+      .Δinitial_time = homogeneous_argument[0] * time_homogeneization_factor,
+      .ΔΔv = Velocity<Frenet<Navigation>>(
+          {homogeneous_argument[1] * speed_homogeneization_factor,
+           homogeneous_argument[2] * speed_homogeneization_factor,
+           homogeneous_argument[3] * speed_homogeneization_factor})};
+}
+
 FlightPlanOptimizer::Metric::Metric(
     not_null<FlightPlanOptimizer*> const optimizer,
     NavigationManœuvre manœuvre,
@@ -200,23 +225,25 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialDistance(
 
 FlightPlanOptimizer::FlightPlanOptimizer(
     not_null<FlightPlan*> const flight_plan,
+    MetricFactory metric_factory,
     ProgressCallback progress_callback)
     : flight_plan_(flight_plan),
+      metric_factory_(std::move(metric_factory)),
       progress_callback_(std::move(progress_callback)) {}
 
-absl::Status FlightPlanOptimizer::Optimize(MetricFactory const& metric_factory,
-                                           int const index,
+absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
   // We are going to repeatedly tweak the |flight_plan_|, no point in running
   // the orbit analysers.
   flight_plan_->EnableAnalysis(/*enabled=*/false);
 
+  // Don't reuse the computations from the previous optimization.
   cache_.clear();
 
   // The following is a copy, and is not affected by changes to the
   // |flight_plan_|.  It is moved into the metric.
   NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
-  auto const metric = metric_factory(this, std::move(manœuvre), index);
+  auto const metric = metric_factory_(this, std::move(manœuvre), index);
 
   auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
@@ -224,7 +251,7 @@ absl::Status FlightPlanOptimizer::Optimize(MetricFactory const& metric_factory,
           std::bind(&Metric::Evaluate, metric.get(), _1),
           std::bind(&Metric::EvaluateGradient, metric.get(), _1),
           std::bind(&Metric::EvaluateGateauxDerivative, metric.get(), _1, _2),
-          Δv_tolerance);
+          Δv_tolerance / speed_homogeneization_factor);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
     auto const replace_status = ReplaceBurn(
@@ -235,25 +262,6 @@ absl::Status FlightPlanOptimizer::Optimize(MetricFactory const& metric_factory,
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return status_or_solution.status();
   }
-}
-
-FlightPlanOptimizer::HomogeneousArgument FlightPlanOptimizer::Homogeneize(
-    Argument const& argument) {
-  auto const& ΔΔv_coordinates = argument.ΔΔv.coordinates();
-  return HomogeneousArgument(
-      {argument.Δinitial_time * time_homogeneization_factor,
-       ΔΔv_coordinates.x,
-       ΔΔv_coordinates.y,
-       ΔΔv_coordinates.z});
-}
-
-FlightPlanOptimizer::Argument FlightPlanOptimizer::Dehomogeneize(
-    HomogeneousArgument const& homogeneous_argument) {
-  return Argument{
-      .Δinitial_time = homogeneous_argument[0] / time_homogeneization_factor,
-      .ΔΔv = Velocity<Frenet<Navigation>>({homogeneous_argument[1],
-                                           homogeneous_argument[2],
-                                           homogeneous_argument[3]})};
 }
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
