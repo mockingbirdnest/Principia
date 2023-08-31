@@ -38,7 +38,7 @@ using namespace principia::quantities::_quantities;
 // is *not* thread-safe.
 class FlightPlanOptimizer {
  public:
-  // A point is the phase space on which optimization happens.  It represents a
+  // A point in the phase space on which optimization happens.  It represents a
   // change in a burn, with respect to the pre-optimization value of that burn.
   struct Argument {
     Time Δinitial_time;
@@ -58,6 +58,8 @@ class FlightPlanOptimizer {
   // minimization problem.
   class Metric {
    public:
+    virtual ~Metric() = default;
+
     virtual double Evaluate(
         HomogeneousArgument const& homogeneous_argument) const = 0;
     virtual Gradient<double, HomogeneousArgument> EvaluateGradient(

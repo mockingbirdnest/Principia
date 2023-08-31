@@ -5,11 +5,9 @@
 #include "absl/synchronization/mutex.h"
 #include "base/jthread.hpp"
 #include "base/not_null.hpp"
-#include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -18,22 +16,20 @@ namespace internal {
 
 using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
-using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 class FlightPlanOptimizationDriver {
  public:
   struct Parameters {
     int index;
-    not_null<Celestial const*> celestial;
-    Length target_distance;
     Speed Δv_tolerance;
   };
 
-  explicit FlightPlanOptimizationDriver(FlightPlan const& flight_plan);
+   FlightPlanOptimizationDriver(
+      FlightPlan const& flight_plan,
+      FlightPlanOptimizer::MetricFactory metric_factory);
 
   virtual ~FlightPlanOptimizationDriver();
 
