@@ -54,7 +54,7 @@ class FlightPlanOptimizer {
   static Argument Dehomogeneize(
       HomogeneousArgument const& homogeneous_argument);
 
-  // An metric is an algorithm used to compute the quality of a solution to the
+  // A metric is an algorithm used to evaluate the quality of a solution to the
   // minimization problem.
   class Metric {
    public:
