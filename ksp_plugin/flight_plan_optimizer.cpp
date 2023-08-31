@@ -36,11 +36,11 @@ class FlightPlanOptimizer::MetricForCelestialCentre
                            int index,
                            not_null<Celestial const*> celestial);
 
-  virtual double Evaluate(
+  double Evaluate(
       HomogeneousArgument const& homogeneous_argument) const override;
-  virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
+  Gradient<double, HomogeneousArgument> EvaluateGradient(
       HomogeneousArgument const& homogeneous_argument) const override;
-  virtual double EvaluateGateauxDerivative(
+  double EvaluateGateauxDerivative(
       HomogeneousArgument const& homogeneous_argument,
       Difference<HomogeneousArgument> const& homogeneous_argument_direction)
       const override;
@@ -61,11 +61,11 @@ class FlightPlanOptimizer::MetricForCelestialDistance
                              not_null<Celestial const*> const celestial,
                              Length const& target_distance);
 
-  virtual double Evaluate(
+  double Evaluate(
       HomogeneousArgument const& homogeneous_argument) const override;
-  virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
+  Gradient<double, HomogeneousArgument> EvaluateGradient(
       HomogeneousArgument const& homogeneous_argument) const override;
-  virtual double EvaluateGateauxDerivative(
+  double EvaluateGateauxDerivative(
       HomogeneousArgument const& homogeneous_argument,
       Difference<HomogeneousArgument> const& homogeneous_argument_direction)
       const override;

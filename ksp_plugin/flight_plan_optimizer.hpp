@@ -105,12 +105,11 @@ class FlightPlanOptimizer {
                       MetricFactory metric_factory,
                       ProgressCallback progress_callback = nullptr);
 
-  // Optimizes the manœuvre at the given |index| to go through (or close to)
-  // |celestial|.  The |Δv_tolerance| is used for the initial choice of the step
-  // and for deciding when to stop, and must be small enough to not miss
+  // Optimizes the manœuvre at the given |index| to minimize the metric passed
+  // at construction.  The |Δv_tolerance| is used for the initial choice of the
+  // step and for deciding when to stop, and must be small enough to not miss
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
-  // REMOVE BEFORE FLIGHT: Comment.
   absl::Status Optimize(int index,
                         Speed const& Δv_tolerance);
 
