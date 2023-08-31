@@ -49,7 +49,7 @@ class FlightPlanOptimizer {
   // homogeneous array of numbers.
   using HomogeneousArgument = FixedVector<double, 4>;
 
-  // These functions convert between the two representation of |Argument|.
+  // These functions convert between the two representations of |Argument|.
   static HomogeneousArgument Homogeneize(Argument const& argument);
   static Argument Dehomogeneize(
       HomogeneousArgument const& homogeneous_argument);

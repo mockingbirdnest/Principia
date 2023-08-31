@@ -202,7 +202,7 @@ int FlightPlanOptimizer::Metric::index() const {
 }
 
 FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(
-    not_null<Celestial const*> celestial) {
+    not_null<Celestial const*> const celestial) {
   return [celestial](not_null<FlightPlanOptimizer*> const optimizer,
                      NavigationManœuvre manœuvre,
                      int const index) {
@@ -212,7 +212,7 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(
 }
 
 FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialDistance(
-    not_null<Celestial const*> celestial,
+    not_null<Celestial const*> const celestial,
     Length const& target_distance) {
   return [celestial, target_distance](
              not_null<FlightPlanOptimizer*> const optimizer,
