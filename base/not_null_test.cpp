@@ -1,7 +1,6 @@
 #include "base/not_null.hpp"
 
 #include <memory>
-#include <utility>
 #include <string>
 #include <type_traits>
 #include <vector>

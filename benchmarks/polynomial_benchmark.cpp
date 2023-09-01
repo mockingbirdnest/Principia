@@ -8,6 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/quantities.hpp"

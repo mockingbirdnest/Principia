@@ -2,12 +2,10 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
 #include <functional>
 #include <list>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "base/array.hpp"
@@ -15,8 +13,13 @@
 #include "base/pull_serializer.hpp"
 #include "base/serialization.hpp"
 #include "gipfeli/gipfeli.h"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
+#include "google/protobuf/message.h"
+#include "gtest/gtest.h"
+#include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
+#include "serialization/quantities.pb.h"
 #include "testing_utilities/matchers.hpp"
 
 namespace principia {

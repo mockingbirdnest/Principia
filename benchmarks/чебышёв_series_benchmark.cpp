@@ -19,6 +19,7 @@
 // BM_EvaluateDisplacement/19     236922     237237       2170
 
 #include <random>
+#include <string>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -28,7 +29,6 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "numerics/чебышёв_series.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -41,7 +41,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_чебышёв_series;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

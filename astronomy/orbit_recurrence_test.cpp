@@ -1,5 +1,7 @@
 #include "astronomy/orbit_recurrence.hpp"
 
+#include <memory>
+
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"

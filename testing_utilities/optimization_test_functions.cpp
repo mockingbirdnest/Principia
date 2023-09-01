@@ -1,5 +1,9 @@
 #include "testing_utilities/optimization_test_functions.hpp"
 
+#include <array>
+#include <cmath>
+#include <cstdint>
+
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"

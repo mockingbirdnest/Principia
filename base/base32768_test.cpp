@@ -1,11 +1,16 @@
 #include "base/base32768.hpp"
 
+#include <array>
+#include <cstdint>
+#include <ios>
 #include <memory>
+#include <ostream>
 #include <random>
 #include <string>
-#include <vector>
 
 #include "base/array.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

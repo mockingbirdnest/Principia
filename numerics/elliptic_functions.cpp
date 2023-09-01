@@ -1,5 +1,6 @@
 #include "numerics/elliptic_functions.hpp"
 
+#include <cmath>
 #include <tuple>
 
 #include "glog/logging.h"

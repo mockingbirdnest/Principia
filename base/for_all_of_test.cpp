@@ -1,6 +1,5 @@
 #include "base/for_all_of.hpp"
 
-#include <algorithm>
 #include <array>
 #include <iostream>
 #include <tuple>
