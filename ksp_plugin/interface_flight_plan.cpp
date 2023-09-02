@@ -30,6 +30,7 @@ using namespace principia::geometry::_orthogonal_map;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
+using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_vessel;
@@ -600,12 +601,12 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
       old_driver->Interrupt();
     }
   }
-  vessel.MakeFlightPlanOptimizationDriver();
-  FlightPlanOptimizationDriver::Parameters parameters{
-      .index = manœuvre_index,
-      .celestial = &plugin->GetCelestial(celestial_index),
-      .target_distance = distance * Metre,
-      .Δv_tolerance = 1 * Micro(Metre) / Second};
+  vessel.MakeFlightPlanOptimizationDriver(
+      FlightPlanOptimizer::ForCelestialDistance(
+          &plugin->GetCelestial(celestial_index), distance * Metre));
+
+  const FlightPlanOptimizationDriver::Parameters parameters{
+      .index = manœuvre_index, .Δv_tolerance = 1 * Micro(Metre) / Second};
   vessel.flight_plan_optimization_driver()->RequestOptimization(parameters);
   return m.Return();
 }
