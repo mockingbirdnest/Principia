@@ -128,9 +128,12 @@ class FlightPlanOptimizer {
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
-  // |celestial|, occurring after |begin_time|.
+  // |celestial|, occurring after |begin_time|.  If |extend_if_needed| is true,
+  // the flight plan is extended to its end is not the point that minimizes the
+  // metric.
   Length EvaluateDistanceToCelestial(Celestial const& celestial,
-                                     Instant const& begin_time) const;
+                                     Instant const& begin_time,
+                                     bool extend_if_needed) const;
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the closest periapis.  Leaves the |flight_plan| unchanged.

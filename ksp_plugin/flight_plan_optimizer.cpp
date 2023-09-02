@@ -276,7 +276,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
     Celestial const& celestial,
-    Instant const& begin_time) const {
+    Instant const& begin_time,
+    bool const extend_if_needed) const {
   auto const& celestial_trajectory = celestial.trajectory();
   auto const& vessel_trajectory = flight_plan_->GetAllSegments();
 
@@ -309,6 +310,8 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
             .Norm();
     if (distance_at_end >= distance_at_closest_periapsis) {
       break;
+    } else if (!extend_if_needed) {
+      return distance_at_end;
     }
 
     // Try to nudge the desired final time.  This may not succeed, in which case
@@ -342,12 +345,18 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     progress_callback_(*flight_plan_);
   }
   if (replace_status.ok()) {
-    distance = EvaluateDistanceToCelestial(celestial, manœuvre.initial_time());
+    distance = EvaluateDistanceToCelestial(celestial,
+                                           manœuvre.initial_time(),
+                                           /*extend_if_needed=*/true);
   } else {
-    // If the updated burn cannot replace the existing one (e.g., because it
-    // overlaps with the next burn) return an infinite length to move the
-    // optimizer away from this place.
-    distance = Infinity<Length>;
+    // If the burn could not be replaced, e.g., because the integrator reached
+    // its maximal number of steps, evaluate the distance as best as we can,
+    // without trying to be smart and extend the flight plan.  This is somewhat
+    // iffy, but better than the alternative of returning an infinity, which
+    // introduces discontinuities.
+    distance = EvaluateDistanceToCelestial(celestial,
+                                           manœuvre.initial_time(),
+                                           /*extend_if_needed=*/false);
   }
   flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
   cache_.emplace(homogeneous_argument, distance);
