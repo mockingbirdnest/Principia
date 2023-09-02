@@ -103,6 +103,8 @@ double Zoom(double α_lo,
             bool& satisfies_strong_wolfe_condition) {
   std::optional<Scalar> previous_ϕ_αⱼ;
   satisfies_strong_wolfe_condition = true;
+  LOG(WARNING) << "Zoom: " << α_lo << " " << α_hi << " " << ϕ_α_lo << " "
+               << ϕ_α_hi;
   for (;;) {
     // Note that there is no guarantee here that α_lo < α_hi.
     DCHECK_NE(α_lo, α_hi);
@@ -125,6 +127,7 @@ double Zoom(double α_lo,
     }
 
     auto const ϕ_αⱼ = f(x + αⱼ * p);
+    LOG(WARNING)<<"  Evaluated at " << αⱼ << " " << ϕ_αⱼ;
 
     // If the function has become (numerically) constant, we might as well
     // return, even though the value of αⱼ may not satisfy the strong Wolfe
@@ -270,6 +273,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
+    LOG(WARNING) << "Iterating from: " << xₖ;
     RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
       // REMOVE BEFORE FLIGHT

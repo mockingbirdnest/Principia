@@ -337,10 +337,11 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
 
   Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
+  auto const replace_status = ReplaceBurn(argument, manœuvre, index);
   if (progress_callback_ != nullptr) {
     progress_callback_(*flight_plan_);
   }
-  if (ReplaceBurn(argument, manœuvre, index).ok()) {
+  if (replace_status.ok()) {
     distance = EvaluateDistanceToCelestial(celestial, manœuvre.initial_time());
   } else {
     // If the updated burn cannot replace the existing one (e.g., because it
