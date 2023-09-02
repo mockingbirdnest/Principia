@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
