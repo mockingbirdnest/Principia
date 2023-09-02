@@ -81,7 +81,9 @@ FlightPlan::FlightPlan(FlightPlan const& other)
           other.generalized_adaptive_step_parameters_) {
   bool first = true;
   for (auto const& other_segment : other.trajectory_.segments()) {
-    if (!first) {
+    if (first) {
+      first = false;
+    } else {
       trajectory_.NewSegment();
     }
     for (auto const& [time, degrees_of_freedom] : other_segment) {
@@ -93,7 +95,7 @@ FlightPlan::FlightPlan(FlightPlan const& other)
        ++it) {
     segments_.push_back(it);
   }
-  for (int i = 0; i < coast_analysers_.size(); ++i) {
+  for (int i = 0; i < other.coast_analysers_.size(); ++i) {
     coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
         ephemeris_, DefaultHistoryParameters()));
   }

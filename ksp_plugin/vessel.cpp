@@ -341,9 +341,37 @@ void Vessel::SelectFlightPlan(int index) {
 
 FlightPlan& Vessel::flight_plan() const {
   CHECK(has_deserialized_flight_plan());
-  auto& flight_plan =
-      *std::get<not_null<std::unique_ptr<FlightPlan>>>(selected_flight_plan());
-  return flight_plan;
+  return *std::get<OptimizableFlightPlan>(selected_flight_plan()).flight_plan;
+}
+
+void Vessel::MakeFlightPlanOptimizationDriver() {
+  CHECK(has_deserialized_flight_plan());
+  auto& [flight_plan, optimization_driver] =
+      std::get<OptimizableFlightPlan>(selected_flight_plan());
+  optimization_driver =
+      std::make_unique<FlightPlanOptimizationDriver>(*flight_plan);
+}
+
+bool Vessel::UpdateFlightPlanFromOptimization() {
+  CHECK(has_deserialized_flight_plan());
+  auto& [flight_plan, optimization_driver] =
+      std::get<OptimizableFlightPlan>(selected_flight_plan());
+  if (optimization_driver == nullptr) {
+    return false;
+  }
+  std::shared_ptr const last_flight_plan =
+      optimization_driver->last_flight_plan();
+   if (flight_plan != last_flight_plan) {
+    flight_plan = last_flight_plan;
+    return true;
+  }
+  return false;
+}
+
+FlightPlanOptimizationDriver* Vessel::flight_plan_optimization_driver() {
+  CHECK(has_deserialized_flight_plan());
+  return std::get<OptimizableFlightPlan>(selected_flight_plan())
+      .optimization_driver.get();
 }
 
 void Vessel::ReadFlightPlanFromMessage() {
@@ -352,7 +380,9 @@ void Vessel::ReadFlightPlanFromMessage() {
           selected_flight_plan())) {
     auto const& message =
         std::get<serialization::FlightPlan>(selected_flight_plan());
-    selected_flight_plan() = FlightPlan::ReadFromMessage(message, ephemeris_);
+    selected_flight_plan() = OptimizableFlightPlan{
+        .flight_plan = FlightPlan::ReadFromMessage(message, ephemeris_),
+        .optimization_driver = nullptr};
   }
 }
 
@@ -462,14 +492,16 @@ void Vessel::CreateFlightPlan(
     Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
         flight_plan_generalized_adaptive_step_parameters) {
   auto const& flight_plan_start = backstory_->back();
-  flight_plans_.emplace_back(make_not_null_unique<FlightPlan>(
-      initial_mass,
-      /*initial_time=*/flight_plan_start.time,
-      /*initial_degrees_of_freedom=*/flight_plan_start.degrees_of_freedom,
-      final_time,
-      ephemeris_,
-      flight_plan_adaptive_step_parameters,
-      flight_plan_generalized_adaptive_step_parameters));
+  flight_plans_.emplace_back(OptimizableFlightPlan{
+      .flight_plan = make_not_null_unique<FlightPlan>(
+          initial_mass,
+          /*initial_time=*/flight_plan_start.time,
+          /*initial_degrees_of_freedom=*/flight_plan_start.degrees_of_freedom,
+          final_time,
+          ephemeris_,
+          flight_plan_adaptive_step_parameters,
+          flight_plan_generalized_adaptive_step_parameters),
+      .optimization_driver = nullptr});
   selected_flight_plan_index_ = flight_plans_.size() - 1;
 }
 
@@ -485,12 +517,13 @@ void Vessel::DuplicateFlightPlan() {
   // the sake of laziness.
   if (std::holds_alternative<serialization::FlightPlan>(original)) {
     flight_plans_.emplace(it, std::get<serialization::FlightPlan>(original));
-  } else if (std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
-                 original)) {
+  } else if (std::holds_alternative<OptimizableFlightPlan>(original)) {
     flight_plans_.emplace(
         it,
-        make_not_null_unique<FlightPlan>(
-            *std::get<not_null<std::unique_ptr<FlightPlan>>>(original)));
+        OptimizableFlightPlan{
+            .flight_plan = make_not_null_unique<FlightPlan>(
+                *std::get<OptimizableFlightPlan>(original).flight_plan),
+            .optimization_driver = nullptr});
   } else {
     LOG(FATAL) << "Unexpected flight plan variant " << original.index();
   }
@@ -507,7 +540,7 @@ void Vessel::DeleteFlightPlan() {
 absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
   CHECK(has_deserialized_flight_plan());
   auto& flight_plan =
-      std::get<not_null<std::unique_ptr<FlightPlan>>>(selected_flight_plan());
+      std::get<OptimizableFlightPlan>(selected_flight_plan()).flight_plan;
   Instant const new_initial_time = backstory_->back().time;
   int first_manœuvre_kept = 0;
   for (int i = 0; i < flight_plan->number_of_manœuvres(); ++i) {
@@ -520,7 +553,7 @@ absl::Status Vessel::RebaseFlightPlan(Mass const& initial_mass) {
       }
     }
   }
-  not_null<std::unique_ptr<FlightPlan>> const original_flight_plan =
+  not_null<std::shared_ptr<FlightPlan>> const original_flight_plan =
       std::move(flight_plan);
   Instant const new_desired_final_time =
       new_initial_time >= original_flight_plan->desired_final_time()
@@ -675,11 +708,12 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     if (std::holds_alternative<serialization::FlightPlan>(flight_plan)) {
       *message->add_flight_plans() =
           std::get<serialization::FlightPlan>(flight_plan);
-    } else if (std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
+    } else if (std::holds_alternative<OptimizableFlightPlan>(
                    flight_plan)) {
       auto& deserialized_flight_plan =
-          std::get<not_null<std::unique_ptr<FlightPlan>>>(flight_plan);
-      deserialized_flight_plan->WriteToMessage(message->add_flight_plans());
+          std::get<OptimizableFlightPlan>(flight_plan);
+      deserialized_flight_plan.flight_plan->WriteToMessage(
+          message->add_flight_plans());
     } else {
       LOG(FATAL) << "Unexpected flight plan variant " << flight_plan.index();
     }
@@ -1176,8 +1210,7 @@ bool Vessel::IsCollapsible() const {
 
 bool Vessel::has_deserialized_flight_plan() const {
   return !flight_plans_.empty() &&
-         std::holds_alternative<not_null<std::unique_ptr<FlightPlan>>>(
-             selected_flight_plan());
+         std::holds_alternative<OptimizableFlightPlan>(selected_flight_plan());
 }
 
 Vessel::LazilyDeserializedFlightPlan& Vessel::selected_flight_plan() {

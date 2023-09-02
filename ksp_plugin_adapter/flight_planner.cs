@@ -99,7 +99,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       for (int i = 0; i < flight_plans; ++i) {
         var id = new string(L10N.CacheFormat("#Principia_AlphabeticList")[i],
                             1);
-        if (UnityEngine.GUILayout.Toggle(i == selected_flight_plan, id,
+        if (UnityEngine.GUILayout.Toggle(i == selected_flight_plan,
+                                         id,
                                          "Button",
                                          GUILayoutWidth(1)) &&
             i != selected_flight_plan) {
@@ -156,6 +157,17 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           burn_editors_?.Count) {
         ClearBurnEditors();
         previous_predicted_vessel_ = predicted_vessel;
+      }
+
+      if (vessel_guid != null && plugin.FlightPlanExists(vessel_guid)) {
+        bool changed = plugin.FlightPlanUpdateFromOptimization(vessel_guid);
+        if (changed) {
+          for (int i = 0; i < (burn_editors_?.Count ?? 0); ++i) {
+            if (burn_editors_[i] is BurnEditor editor) {
+              editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
+            }
+          }
+        }
       }
     }
 
@@ -394,6 +406,15 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             return;
           }
           Style.HorizontalLine();
+          if (adapter_.plotting_frame_selector_.Centre() is CelestialBody centre) {
+            if (plugin.FlightPlanOptimizationInProgress(vessel_guid)) {
+              UnityEngine.GUILayout.Button("Optimizing…");
+            } else if (UnityEngine.GUILayout.Button($"Optimize {centre.Name()} flyby")) {
+              plugin.FlightPlanOptimizeManoeuvre(vessel_guid, i, centre.flightGlobalsIndex, centre.Radius + 10e3);
+            }
+          } else {
+            UnityEngine.GUILayout.Button("Change plotting frame to optimize");
+          }
           BurnEditor burn = burn_editors_[i];
           switch (burn.Render(
               header          :

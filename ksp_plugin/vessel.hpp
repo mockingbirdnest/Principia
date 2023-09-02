@@ -17,6 +17,7 @@
 #include "geometry/instant.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/flight_plan_optimization_driver.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/manœuvre.hpp"
@@ -50,6 +51,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
+using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_manœuvre;
@@ -182,10 +184,16 @@ class Vessel {
   // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
 
+  virtual void MakeFlightPlanOptimizationDriver();
+
+  virtual bool UpdateFlightPlanFromOptimization();
+
+  virtual FlightPlanOptimizationDriver* flight_plan_optimization_driver();
+
   // Deserializes the flight plan if it is held lazily by this object.  Does
   // nothing if there is no such flight plan.  If |has_flight_plan| returns
   // true, calling this method ensures that the flight plan may later be
-  // accessed by |fligh_plan|.  This method is idempotent.
+  // accessed by |flight_plan|.  This method is idempotent.
   void ReadFlightPlanFromMessage();
 
   // Extends the history and psychohistory of this vessel by computing the
@@ -303,9 +311,13 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
+  struct OptimizableFlightPlan {
+    not_null<std::shared_ptr<FlightPlan>> flight_plan;
+    std::unique_ptr<FlightPlanOptimizationDriver> optimization_driver;
+  };
+
   using LazilyDeserializedFlightPlan =
-      std::variant<not_null<std::unique_ptr<FlightPlan>>,
-                   serialization::FlightPlan>;
+      std::variant<OptimizableFlightPlan, serialization::FlightPlan>;
 
   // Return functions that can be passed to a |Checkpointer| to write this
   // vessel to a checkpoint or read it back.
@@ -416,8 +428,7 @@ class Vessel {
   RecurringThread<PrognosticatorParameters,
                   DiscreteTrajectory<Barycentric>> prognosticator_;
 
-  std::vector<std::variant<not_null<std::unique_ptr<FlightPlan>>,
-                           serialization::FlightPlan>> flight_plans_;
+  std::vector<LazilyDeserializedFlightPlan> flight_plans_;
   int selected_flight_plan_index_ = -1;
 
   std::optional<OrbitAnalyser> orbit_analyser_;

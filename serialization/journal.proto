@@ -238,7 +238,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5186.
+  extensions 5000 to 5999;  // Last used: 5187.
 }
 
 message AdvanceTime {
@@ -982,6 +982,21 @@ message FlightPlanInsert {
   optional Return return = 3;
 }
 
+message FlightPlanOptimizeManoeuvre {
+  extend Method {
+    optional FlightPlanOptimizeManoeuvre extension = 5189;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 manoeuvre_index = 3;
+    required int32 celestial_index = 4;
+    required double distance = 5;
+  }
+  optional In in = 1;
+}
+
 
 message FlightPlanNumberOfAnomalousManoeuvres {
   extend Method {
@@ -1203,6 +1218,22 @@ message FlightPlanSelected {
   optional Return return = 3;
 }
 
+message FlightPlanOptimizationInProgress {
+  extend Method {
+    optional FlightPlanOptimizationInProgress extension = 5188;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message FlightPlanSetAdaptiveStepParameters {
   extend Method {
     optional FlightPlanSetAdaptiveStepParameters extension = 5080;
@@ -1235,6 +1266,22 @@ message FlightPlanSetDesiredFinalTime {
   message Return {
     required Status result = 1 [(is_produced) = true];
     required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanUpdateFromOptimization {
+  extend Method {
+    optional FlightPlanUpdateFromOptimization extension = 5190;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
