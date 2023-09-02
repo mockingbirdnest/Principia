@@ -103,8 +103,8 @@ double Zoom(double α_lo,
             bool& satisfies_strong_wolfe_condition) {
   std::optional<Scalar> previous_ϕ_αⱼ;
   satisfies_strong_wolfe_condition = true;
-  LOG(WARNING) << "Zoom: " << α_lo << " " << α_hi << " " << ϕ_α_lo << " "
-               << ϕ_α_hi;
+  VLOG(1) << "Zoom over: [" << α_lo << " (" << ϕ_α_lo << "), "
+                            << α_hi << " (" << ϕ_α_hi << ")]";
   for (;;) {
     // Note that there is no guarantee here that α_lo < α_hi.
     DCHECK_NE(α_lo, α_hi);
@@ -127,15 +127,13 @@ double Zoom(double α_lo,
     }
 
     auto const ϕ_αⱼ = f(x + αⱼ * p);
-    LOG(WARNING)<<"  Evaluated at " << αⱼ << " " << ϕ_αⱼ;
+    VLOG(1) << "  Evaluation at: " << αⱼ << " (" << ϕ_αⱼ << ")";
 
     // If the function has become (numerically) constant, we might as well
     // return, even though the value of αⱼ may not satisfy the strong Wolfe
     // condition (it probably doesn't, otherwise we would have exited earlier).
     if (previous_ϕ_αⱼ.has_value() && previous_ϕ_αⱼ.value() == ϕ_αⱼ) {
-      // REMOVE BEFORE FLIGHT
-      LOG(WARNING) << "Numerically constant: " << previous_ϕ_αⱼ.value() << " "
-                   << ϕ_αⱼ << " " << αⱼ;
+      VLOG(1) << "Numerically constant at: " << αⱼ << " (" << ϕ_αⱼ << ")";
       satisfies_strong_wolfe_condition = false;
       return αⱼ;
     }
@@ -238,11 +236,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
 
-  // REMOVE BEFORE FLIGHT
-  LOG(WARNING) << "Starting from: " << x₀;
+  VLOG(1) << "Starting from: " << x₀;
   if (grad_f_x₀ == Gradient<Scalar, Argument>{}) {
-    // REMOVE BEFORE FLIGHT
-    LOG(WARNING) << "No gradient at: " << x₀;
+    VLOG(1) << "Vanishing gradient at: " << x₀;
     return x₀;
   }
 
@@ -256,8 +252,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
                                satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
   if (!satisfies_strong_wolfe_condition) {
-    // REMOVE BEFORE FLIGHT
-    LOG(WARNING) << "Doesn't satisfy the strong Wolfe condition at: " << x₁;
+    VLOG(1) << "Doesn't satisfy the strong Wolfe condition at: " << x₁;
     return x₁;
   }
 
@@ -273,17 +268,15 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto grad_f_xₖ = grad_f_x₁;
   auto Hₖ = H₀;
   for (;;) {
-    LOG(WARNING) << "Iterating from: " << xₖ;
+    VLOG(1) << "Iterating from: " << xₖ;
     RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
-      // REMOVE BEFORE FLIGHT
-      LOG(WARNING) << "No minimum at: " << xₖ << " " << x₀;
+      VLOG(1) << "No minimum within seach radius at: " << xₖ;
       return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
     Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
-      // REMOVE BEFORE FLIGHT
-      LOG(WARNING) << "Below tolerance at: " << xₖ << " " << pₖ.Norm();
+      VLOG(1) << "Below tolerance at: " << xₖ << ", displacement: " << pₖ.Norm();
       return xₖ;
     }
     double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, gateaux_derivative_f,
@@ -296,13 +289,11 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
     if (!satisfies_strong_wolfe_condition) {
-      // REMOVE BEFORE FLIGHT
-      LOG(WARNING) << "Doesn't satisfy the strong Wolfe condition at: " << xₖ₊₁;
+      VLOG(1) << "Doesn't satisfy the strong Wolfe condition at: " << xₖ₊₁;
       return xₖ₊₁;
     } else if (sₖyₖ == Scalar{}) {  // NOLINT
-      // REMOVE BEFORE FLIGHT
-      LOG(WARNING) << "No progress at: " << xₖ₊₁ << " " << sₖyₖ << " " << sₖ
-                   << " " << yₖ;
+      VLOG(1) << "No progress at: " << xₖ₊₁
+              << " (s: " << sₖ << ", y: " << yₖ << ")";
       return xₖ₊₁;
     }
 
@@ -317,9 +308,6 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     grad_f_xₖ = grad_f_xₖ₊₁;
     Hₖ = Hₖ₊₁;
   }
-  // REMOVE BEFORE FLIGHT
-  LOG(WARNING) << "How do we even get here? " << xₖ;
-  return xₖ;
 }
 
 }  // namespace internal

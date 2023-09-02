@@ -129,8 +129,8 @@ class FlightPlanOptimizer {
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
   // |celestial|, occurring after |begin_time|.  If |extend_if_needed| is true,
-  // the flight plan is extended to its end is not the point that minimizes the
-  // metric.
+  // the flight plan is extended until its end is not the point that minimizes
+  // the metric.
   Length EvaluateDistanceToCelestial(Celestial const& celestial,
                                      Instant const& begin_time,
                                      bool extend_if_needed) const;
@@ -160,9 +160,10 @@ class FlightPlanOptimizer {
       int index);
 
   // Replaces the burn at the given |index| based on the |argument|.
-  absl::Status ReplaceBurn(Argument const& argument,
-                           NavigationManœuvre const& manœuvre,
-                           int index);
+  static absl::Status ReplaceBurn(Argument const& argument,
+                                  NavigationManœuvre const& manœuvre,
+                                  int index,
+                                  FlightPlan& flight_plan);
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;

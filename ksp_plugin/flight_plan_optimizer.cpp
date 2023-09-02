@@ -265,7 +265,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
     auto const replace_status =
-        ReplaceBurn(Dehomogeneize(solution), manœuvre, index);
+        ReplaceBurn(Dehomogeneize(solution), manœuvre, index, *flight_plan_);
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return replace_status;
   } else {
@@ -338,26 +338,23 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     return it->second;
   }
 
-  Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
-  auto const replace_status = ReplaceBurn(argument, manœuvre, index);
+  auto const replace_status =
+      ReplaceBurn(argument, manœuvre, index, *flight_plan_);
   if (progress_callback_ != nullptr) {
     progress_callback_(*flight_plan_);
   }
-  if (replace_status.ok()) {
-    distance = EvaluateDistanceToCelestial(celestial,
-                                           manœuvre.initial_time(),
-                                           /*extend_if_needed=*/true);
-  } else {
-    // If the burn could not be replaced, e.g., because the integrator reached
-    // its maximal number of steps, evaluate the distance as best as we can,
-    // without trying to be smart and extend the flight plan.  This is somewhat
-    // iffy, but better than the alternative of returning an infinity, which
-    // introduces discontinuities.
-    distance = EvaluateDistanceToCelestial(celestial,
-                                           manœuvre.initial_time(),
-                                           /*extend_if_needed=*/false);
-  }
+
+  // If the burn could not be replaced, e.g., because the integrator reached its
+  // maximal number of steps, evaluate the distance as best as we can, without
+  // trying to be smart and extend the flight plan.  This is somewhat iffy, but
+  // better than the alternative of returning an infinity, which introduces
+  // discontinuities.
+  Length const distance =
+      EvaluateDistanceToCelestial(celestial,
+                                  manœuvre.initial_time(),
+                                  /*extend_if_needed=*/replace_status.ok());
+
   flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
   cache_.emplace(homogeneous_argument, distance);
   return distance;
@@ -407,41 +404,13 @@ EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
 absl::Status FlightPlanOptimizer::ReplaceBurn(
     Argument const& argument,
     NavigationManœuvre const& manœuvre,
-    int const index) {
+    int const index,
+    FlightPlan& flight_plan) {
   NavigationManœuvre::Burn burn = manœuvre.burn();
   burn.intensity = {.Δv = manœuvre.Δv() + argument.ΔΔv};
   burn.timing = {.initial_time =
                      manœuvre.initial_time() + argument.Δinitial_time};
-  for (;;) {
-    auto status = flight_plan_->Replace(burn, index);
-    if (true ||
-        status.code() != integrators::_ordinary_differential_equations::
-                             termination_condition::ReachedMaximalStepCount) {
-      return status;
-    }
-
-    // If the flight plan integrator reached the maximum step count, increase it
-    // if possible.  Keep doing this until we get a different error (or we
-    // succeed).
-    do {
-      auto adaptive_step_parameters = flight_plan_->adaptive_step_parameters();
-      auto generalized_adaptive_step_parameters =
-          flight_plan_->generalized_adaptive_step_parameters();
-      if (adaptive_step_parameters.max_steps() == max_steps_in_flight_plan ||
-          generalized_adaptive_step_parameters.max_steps() ==
-              max_steps_in_flight_plan) {
-        return status;
-      }
-      adaptive_step_parameters.set_max_steps(
-          adaptive_step_parameters.max_steps() * 4);
-      generalized_adaptive_step_parameters.set_max_steps(
-          generalized_adaptive_step_parameters.max_steps() * 4);
-      status = flight_plan_->SetAdaptiveStepParameters(
-          adaptive_step_parameters, generalized_adaptive_step_parameters);
-    } while (status.code() ==
-             integrators::_ordinary_differential_equations::
-                 termination_condition::ReachedMaximalStepCount);
-  }
+  return flight_plan.Replace(burn, index);
 }
 
 }  // namespace internal
