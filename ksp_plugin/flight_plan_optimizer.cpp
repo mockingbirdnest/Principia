@@ -1,8 +1,12 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 
+#include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -16,6 +20,7 @@ namespace internal {
 using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
@@ -260,8 +265,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
           Δv_tolerance / speed_homogeneization_factor);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
-    auto const replace_status = ReplaceBurn(
-        Dehomogeneize(solution), manœuvre, index, *flight_plan_);
+    auto const replace_status =
+        ReplaceBurn(Dehomogeneize(solution), manœuvre, index, *flight_plan_);
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return replace_status;
   } else {
@@ -272,7 +277,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
     Celestial const& celestial,
-    Instant const& begin_time) const {
+    Instant const& begin_time,
+    bool const extend_if_needed) const {
   auto const& celestial_trajectory = celestial.trajectory();
   auto const& vessel_trajectory = flight_plan_->GetAllSegments();
 
@@ -305,6 +311,8 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
             .Norm();
     if (distance_at_end >= distance_at_closest_periapsis) {
       break;
+    } else if (!extend_if_needed) {
+      return distance_at_end;
     }
 
     // Try to nudge the desired final time.  This may not succeed, in which case
@@ -331,19 +339,23 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     return it->second;
   }
 
-  Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
-  if (ReplaceBurn(argument, manœuvre, index, *flight_plan_).ok()) {
-    if (progress_callback_ != nullptr) {
-      progress_callback_(*flight_plan_);
-    }
-    distance = EvaluateDistanceToCelestial(celestial, manœuvre.initial_time());
-  } else {
-    // If the updated burn cannot replace the existing one (e.g., because it
-    // overlaps with the next burn) return an infinite length to move the
-    // optimizer away from this place.
-    distance = Infinity<Length>;
+  auto const replace_status =
+      ReplaceBurn(argument, manœuvre, index, *flight_plan_);
+  if (progress_callback_ != nullptr) {
+    progress_callback_(*flight_plan_);
   }
+
+  // If the burn could not be replaced, e.g., because the integrator reached its
+  // maximal number of steps, evaluate the distance as best as we can, without
+  // trying to be smart and extend the flight plan.  This is somewhat iffy, but
+  // better than the alternative of returning an infinity, which introduces
+  // discontinuities.
+  Length const distance =
+      EvaluateDistanceToCelestial(celestial,
+                                  manœuvre.initial_time(),
+                                  /*extend_if_needed=*/replace_status.ok());
+
   flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
   cache_.emplace(homogeneous_argument, distance);
   return distance;
