@@ -271,7 +271,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     VLOG(1) << "Iterating from: " << xₖ;
     RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
-      VLOG(1) << "No minimum within seach radius at: " << xₖ;
+      VLOG(1) << "No minimum within search radius at: " << xₖ;
       return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
     Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;

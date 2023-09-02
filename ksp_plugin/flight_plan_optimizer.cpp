@@ -26,9 +26,6 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-// Keep this consistent with |max_steps_| in |flight_planner.cs|.
-constexpr std::int64_t max_steps_in_flight_plan = 1 << 20;
-
 // Conversion factors between |Argument| and |HomogeneousArgument|.
 constexpr Time time_homogeneization_factor = 1 * Second;
 constexpr Speed speed_homogeneization_factor = 1 * Metre / Second;
