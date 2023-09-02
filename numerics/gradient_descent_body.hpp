@@ -276,7 +276,8 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     }
     Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
-      VLOG(1) << "Below tolerance at: " << xₖ << ", displacement: " << pₖ.Norm();
+      VLOG(1) << "Below tolerance at: " << xₖ
+              << ", displacement: " << pₖ.Norm();
       return xₖ;
     }
     double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, gateaux_derivative_f,
