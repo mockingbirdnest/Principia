@@ -1,8 +1,12 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 
+#include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"

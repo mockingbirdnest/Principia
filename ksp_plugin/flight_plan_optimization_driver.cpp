@@ -1,8 +1,11 @@
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
 
 #include <functional>
+#include <memory>
 
 #include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
+#include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
