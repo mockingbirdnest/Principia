@@ -9,6 +9,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
@@ -21,6 +22,7 @@ using namespace principia::integrators::_embedded_explicit_generalized_runge_kut
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_integrators;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
 
@@ -33,8 +35,9 @@ inline absl::Status DoesNotFit() {
   return absl::Status(FlightPlan::does_not_fit, "Does not fit");
 }
 
-inline absl::Status Singular() {
-  return absl::Status(FlightPlan::singular, "Singular");
+inline absl::Status Singular(Square<Speed> const& Δv²) {
+  return absl::Status(FlightPlan::singular,
+                      absl::StrCat("Singular: ", DebugString(Δv²)));
 }
 
 FlightPlan::FlightPlan(
@@ -79,16 +82,22 @@ FlightPlan::FlightPlan(FlightPlan const& other)
       adaptive_step_parameters_(other.adaptive_step_parameters_),
       generalized_adaptive_step_parameters_(
           other.generalized_adaptive_step_parameters_) {
-  bool first = true;
+  bool first_segment = true;
   for (auto const& other_segment : other.trajectory_.segments()) {
-    if (first) {
-      first = false;
-    } else {
+    if (!first_segment) {
+      // The first segment was created by the constructor of the trajectory.
       trajectory_.NewSegment();
     }
+    bool first_point = true;
     for (auto const& [time, degrees_of_freedom] : other_segment) {
-      CHECK_OK(trajectory_.Append(time, degrees_of_freedom));
+      // For segments other than the first, |NewSegment| copied the last point
+      // of the previous segment.
+      if (!first_point || first_segment) {
+        CHECK_OK(trajectory_.Append(time, degrees_of_freedom));
+      }
+      first_point = false;
     }
+    first_segment = false;
   }
   for (auto it = trajectory_.segments().begin();
        it != trajectory_.segments().end();
@@ -135,7 +144,7 @@ absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
       index == 0 ? initial_mass_ : manœuvres_[index - 1].final_mass(),
       burn);
   if (manœuvre.IsSingular()) {
-    return Singular();
+    return Singular(manœuvre.Δv().Norm²());
   }
   if (!manœuvre.FitsBetween(start_of_previous_coast(index),
                             start_of_burn(index))) {
@@ -167,7 +176,7 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   NavigationManœuvre const manœuvre(manœuvres_[index].initial_mass(),
                                     burn);
   if (manœuvre.IsSingular()) {
-    return Singular();
+    return Singular(manœuvre.Δv().Norm²());
   }
   if (index == number_of_manœuvres() - 1) {
     // This is the last manœuvre.  If it doesn't fit just because the flight
