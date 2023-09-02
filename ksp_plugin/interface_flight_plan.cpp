@@ -7,6 +7,8 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/flight_plan_optimization_driver.hpp"
+#include "ksp_plugin/flight_plan_optimizer.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
