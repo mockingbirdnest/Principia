@@ -1,6 +1,8 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Ephemeris                                                                     // NOLINT(whitespace/line_length)
 
 #include <cmath>
+#include <cstdint>
+#include <future>
 #include <limits>
 #include <list>
 #include <memory>
@@ -10,6 +12,7 @@
 #include "astronomy/frames.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "base/thread_pool.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"

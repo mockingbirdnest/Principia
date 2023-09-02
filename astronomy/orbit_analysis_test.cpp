@@ -1,6 +1,5 @@
 #include <string>
 #include <tuple>
-#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -34,7 +33,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
@@ -73,7 +72,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {

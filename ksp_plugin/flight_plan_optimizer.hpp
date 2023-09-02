@@ -1,6 +1,10 @@
 #pragma once
 
+#include <functional>
+#include <memory>
+
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -30,9 +34,69 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// A class to optimize a flight to go through or near a celestial.
+// A class to optimize a flight to go through or near a celestial.  This class
+// is *not* thread-safe.
 class FlightPlanOptimizer {
  public:
+  // A point in the phase space on which optimization happens.  It represents a
+  // change in a burn, with respect to the pre-optimization value of that burn.
+  struct Argument {
+    Time Δinitial_time;
+    Velocity<Frenet<Navigation>> ΔΔv;
+  };
+
+  // For the gradient descent algorithm, |Argument| is transformed into a
+  // homogeneous array of numbers.
+  using HomogeneousArgument = FixedVector<double, 4>;
+
+  // These functions convert between the two representations of |Argument|.
+  static HomogeneousArgument Homogeneize(Argument const& argument);
+  static Argument Dehomogeneize(
+      HomogeneousArgument const& homogeneous_argument);
+
+  // A metric is an algorithm used to evaluate the quality of a solution to the
+  // minimization problem.
+  class Metric {
+   public:
+    virtual ~Metric() = default;
+
+    virtual double Evaluate(
+        HomogeneousArgument const& homogeneous_argument) const = 0;
+    virtual Gradient<double, HomogeneousArgument> EvaluateGradient(
+        HomogeneousArgument const& homogeneous_argument) const = 0;
+    virtual double EvaluateGateauxDerivative(
+        HomogeneousArgument const& homogeneous_argument,
+        Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+        const = 0;
+
+   protected:
+    Metric(not_null<FlightPlanOptimizer*> optimizer,
+           NavigationManœuvre manœuvre,
+           int index);
+
+    FlightPlanOptimizer& optimizer() const;
+    NavigationManœuvre const& manœuvre() const;
+    int index() const;
+
+   private:
+    not_null<FlightPlanOptimizer*> const optimizer_;
+    NavigationManœuvre const manœuvre_;
+    int const index_;
+  };
+
+  // A metric factory is passed at construction of the optimizer and then used
+  // to construct actual metric objects during optimization.
+  using MetricFactory = std::function<not_null<std::unique_ptr<Metric>>(
+      not_null<FlightPlanOptimizer*> optimizer,
+      NavigationManœuvre manœuvre,
+      int index)>;
+
+  static MetricFactory ForCelestialCentre(
+      not_null<Celestial const*> celestial);
+  static MetricFactory ForCelestialDistance(
+      not_null<Celestial const*> celestial,
+      Length const& target_distance);
+
   // Called throughout the optimization to let the client know the tentative
   // state of the flight plan.
   using ProgressCallback = std::function<void(FlightPlan const&)>;
@@ -40,37 +104,20 @@ class FlightPlanOptimizer {
   // Constructs an optimizer for |flight_plan|.  |flight_plan| must outlive this
   // object.
   FlightPlanOptimizer(not_null<FlightPlan*> flight_plan,
+                      MetricFactory metric_factory,
                       ProgressCallback progress_callback = nullptr);
 
-  // Optimizes the manœuvre at the given |index| to go through (or close to)
-  // |celestial|.  The |Δv_tolerance| is used for the initial choice of the step
-  // and for deciding when to stop, and must be small enough to not miss
+  // Optimizes the manœuvre at the given |index| to minimize the metric passed
+  // at construction.  The |Δv_tolerance| is used for the initial choice of the
+  // step and for deciding when to stop, and must be small enough to not miss
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
   absl::Status Optimize(int index,
-                        Celestial const& celestial,
-                        Speed const& Δv_tolerance);
-
-  // Optimizes the manœuvre at the given |index| to have a periapsis at the
-  // specified |target_distance| of the |celestial|.  The |Δv_tolerance| is used
-  // for the initial choice of the step and for deciding when to stop, and must
-  // be small enough to not miss interesting features of the trajectory, and
-  // large enough to avoid costly startup steps.  Changes the flight plan passed
-  // at construction.
-  absl::Status Optimize(int index,
-                        Celestial const& celestial,
-                        Length const& target_distance,
                         Speed const& Δv_tolerance);
 
  private:
-  // The |Argument| is relative to the current properties of the burn.
-  struct Argument {
-    Time Δinitial_time;
-    Velocity<Frenet<Navigation>> ΔΔv;
-  };
-
-  // The data structure passed to the gradient descent algorithm.
-  using HomogeneousArgument = FixedVector<Speed, 4>;
+  class MetricForCelestialCentre;
+  class MetricForCelestialDistance;
 
   // Function evaluations are very expensive, as they require integrating a
   // flight plan and finding periapsides.  We don't want do to them
@@ -78,18 +125,12 @@ class FlightPlanOptimizer {
   // where it's kosher.
   using EvaluationCache = absl::flat_hash_map<HomogeneousArgument, Length>;
 
-  using LengthField = Field<Length, HomogeneousArgument>;
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
-
-  static HomogeneousArgument Homogeneize(Argument const& argument);
-  static Argument Dehomogeneize(
-      HomogeneousArgument const& homogeneous_argument);
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
   // |celestial|, occurring after |begin_time|.
   Length EvaluateDistanceToCelestial(Celestial const& celestial,
-                                     Instant const& begin_time,
-                                     FlightPlan const& flight_plan);
+                                     Instant const& begin_time) const;
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the closest periapis.  Leaves the |flight_plan| unchanged.
@@ -97,9 +138,7 @@ class FlightPlanOptimizer {
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
-      int index,
-      FlightPlan& flight_plan,
-      EvaluationCache& cache);
+      int index);
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the gradient of the closest periapis with respect to the
@@ -108,18 +147,14 @@ class FlightPlanOptimizer {
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,
-      int index,
-      FlightPlan& flight_plan,
-      EvaluationCache& cache);
+      int index);
 
   Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       Difference<HomogeneousArgument> const& direction_homogeneous_argument,
       NavigationManœuvre const& manœuvre,
-      int index,
-      FlightPlan& flight_plan,
-      EvaluationCache& cache);
+      int index);
 
   // Replaces the burn at the given |index| based on the |argument|.
   static absl::Status ReplaceBurn(Argument const& argument,
@@ -129,11 +164,10 @@ class FlightPlanOptimizer {
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
+  MetricFactory const metric_factory_;
   ProgressCallback const progress_callback_;
 
-  friend bool operator==(Argument const& left, Argument const& right);
-  template<typename H>
-  friend H AbslHashValue(H h, Argument const& argument);
+  EvaluationCache cache_;
 };
 
 }  // namespace internal

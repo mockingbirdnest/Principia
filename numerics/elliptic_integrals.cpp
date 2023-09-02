@@ -1,10 +1,14 @@
 #include "numerics/elliptic_integrals.hpp"
 
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "base/tags.hpp"
+#include "glog/logging.h"
 #include "numerics/combinatorics.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"

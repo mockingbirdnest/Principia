@@ -1,10 +1,13 @@
 #include "base/thread_pool.hpp"
 
+#include <cstdint>
+#include <future>
+#include <thread>
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
 #include "glog/logging.h"
-#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace principia {
 namespace base {

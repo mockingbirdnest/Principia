@@ -1,12 +1,16 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Apsides --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <limits>
+#include <memory>
 
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
+#include "glog/logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -74,7 +78,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
     StandardProduct3::SatelliteIdentifier const lageos2_id{
         StandardProduct3::SatelliteGroup::General, 52};
 
-    auto const ilrsa_lageos2_trajectory_itrs =
+    auto const& ilrsa_lageos2_trajectory_itrs =
         ilrsa_lageos2_sp3.orbit(lageos2_id).front();
     auto const begin = ilrsa_lageos2_trajectory_itrs->begin();
     CHECK_OK(ephemeris_->Prolong(begin->time));

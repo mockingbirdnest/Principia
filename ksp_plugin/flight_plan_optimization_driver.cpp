@@ -1,14 +1,22 @@
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
 
+#include <functional>
+
+#include "absl/status/status.h"
+
 namespace principia {
 namespace ksp_plugin {
 namespace _flight_plan_optimization_driver {
 namespace internal {
 
+using std::placeholders::_1;
+
 FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
-    FlightPlan const& flight_plan)
+    FlightPlan const& flight_plan,
+    FlightPlanOptimizer::MetricFactory metric_factory)
     : flight_plan_under_optimization_(flight_plan),
       flight_plan_optimizer_(&flight_plan_under_optimization_,
+                             std::move(metric_factory),
                              [this](FlightPlan const& flight_plan) {
                                UpdateLastFlightPlan(flight_plan);
                              }),
@@ -45,19 +53,8 @@ void FlightPlanOptimizationDriver::RequestOptimization(
   if (optimizer_idle_) {
     optimizer_idle_ = false;
     optimizer_ = MakeStoppableThread([this, parameters]() {
-      absl::Status optimization_status;
-      if (parameters.target_distance == Length{}) {
-        optimization_status =
-            flight_plan_optimizer_.Optimize(parameters.index,
-                                            *parameters.celestial,
-                                            parameters.Δv_tolerance);
-      } else {
-        optimization_status =
-            flight_plan_optimizer_.Optimize(parameters.index,
-                                            *parameters.celestial,
-                                            parameters.target_distance,
-                                            parameters.Δv_tolerance);
-      }
+      const absl::Status optimization_status = flight_plan_optimizer_.Optimize(
+          parameters.index, parameters.Δv_tolerance);
 
       absl::MutexLock l(&lock_);
       if (optimization_status.ok()) {

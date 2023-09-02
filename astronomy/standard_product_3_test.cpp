@@ -1,7 +1,7 @@
 #include "astronomy/standard_product_3.hpp"
 
-#include <algorithm>
 #include <limits>
+#include <ostream>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,7 +22,6 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 
@@ -54,7 +53,6 @@ using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_numerics;
 
 class StandardProduct3Test : public ::testing::Test {

@@ -1,10 +1,11 @@
 #include "base/hexadecimal.hpp"
 
+#include <cstdint>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/array.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

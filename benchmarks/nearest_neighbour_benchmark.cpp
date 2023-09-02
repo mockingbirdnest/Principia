@@ -1,5 +1,6 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=PCP --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <random>
 #include <vector>
 

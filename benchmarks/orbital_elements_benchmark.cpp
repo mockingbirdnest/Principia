@@ -1,11 +1,12 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=OrbitalElements --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
-#include <limits>
+#include <memory>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
 #include "integrators/methods.hpp"
@@ -16,7 +17,6 @@
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
-#include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/solar_system.hpp"
@@ -39,7 +39,6 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
-using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_solar_system;

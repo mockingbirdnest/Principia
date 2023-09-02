@@ -3,6 +3,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_UNICODE_PATH.
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "glog/logging.h"

@@ -30,7 +30,6 @@
 #include "physics/oblate_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -40,7 +39,6 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
-#include "testing_utilities/statistics.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -69,7 +67,6 @@ using namespace principia::physics::_massless_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -78,7 +75,6 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
-using namespace principia::testing_utilities::_statistics;
 
 // A minimum bounding rectangle for a set of values of the eccentricity vector.
 struct EccentricityVectorRange {

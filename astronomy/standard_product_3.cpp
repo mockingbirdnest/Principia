@@ -1,7 +1,8 @@
 #include "astronomy/standard_product_3.hpp"
 
-#include <algorithm>
+#include <array>
 #include <fstream>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -10,6 +11,7 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "glog/logging.h"
 #include "numerics/finite_difference.hpp"
 #include "quantities/named_quantities.hpp"

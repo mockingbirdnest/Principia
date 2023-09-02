@@ -1,5 +1,4 @@
 #include <cstdint>
-#include <string>
 
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
@@ -9,7 +8,6 @@
 #include "gtest/gtest.h"
 #include "physics/solar_system.hpp"
 #include "serialization/geometry.pb.h"
-#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace astronomy {
