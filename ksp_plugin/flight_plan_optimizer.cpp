@@ -292,26 +292,26 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     Celestial const& celestial,
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int const index,
-    FlightPlan& flight_plan,
-    EvaluationCache& cache) {
-  if (auto const it = cache.find(homogeneous_argument); it != cache.end()) {
+    int const index) {
+  if (auto const it = cache_.find(homogeneous_argument); it != cache_.end()) {
     return it->second;
   }
 
   Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
-  if (ReplaceBurn(argument, manœuvre, index, flight_plan).ok()) {
-    distance = EvaluateDistanceToCelestial(
-        celestial, manœuvre.initial_time(), flight_plan);
+  if (ReplaceBurn(argument, manœuvre, index, *flight_plan_).ok()) {
+    if (progress_callback_ != nullptr) {
+      progress_callback_(*flight_plan_);
+    }
+    distance = EvaluateDistanceToCelestial(celestial, manœuvre.initial_time());
   } else {
     // If the updated burn cannot replace the existing one (e.g., because it
     // overlaps with the next burn) return an infinite length to move the
     // optimizer away from this place.
     distance = Infinity<Length>;
   }
-  flight_plan.Replace(manœuvre.burn(), index).IgnoreError();
-  cache.emplace(homogeneous_argument, distance);
+  flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
+  cache_.emplace(homogeneous_argument, distance);
   return distance;
 }
 

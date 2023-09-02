@@ -18,6 +18,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
+#include "ksp_plugin/flight_plan_optimizer.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/manœuvre.hpp"
@@ -52,6 +53,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
+using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_manœuvre;
@@ -184,7 +186,8 @@ class Vessel {
   // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
 
-  virtual void MakeFlightPlanOptimizationDriver();
+  virtual void MakeFlightPlanOptimizationDriver(
+      FlightPlanOptimizer::MetricFactory metric_factory);
 
   virtual bool UpdateFlightPlanFromOptimization();
 
