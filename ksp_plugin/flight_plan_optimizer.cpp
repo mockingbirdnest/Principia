@@ -337,10 +337,10 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
 
   Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
+  if (progress_callback_ != nullptr) {
+    progress_callback_(*flight_plan_);
+  }
   if (ReplaceBurn(argument, manœuvre, index).ok()) {
-    if (progress_callback_ != nullptr) {
-      progress_callback_(*flight_plan_);
-    }
     distance = EvaluateDistanceToCelestial(celestial, manœuvre.initial_time());
   } else {
     // If the updated burn cannot replace the existing one (e.g., because it
@@ -404,7 +404,8 @@ absl::Status FlightPlanOptimizer::ReplaceBurn(
                      manœuvre.initial_time() + argument.Δinitial_time};
   for (;;) {
     auto status = flight_plan_->Replace(burn, index);
-    if (status.code() != integrators::_ordinary_differential_equations::
+    if (true ||
+        status.code() != integrators::_ordinary_differential_equations::
                              termination_condition::ReachedMaximalStepCount) {
       return status;
     }
