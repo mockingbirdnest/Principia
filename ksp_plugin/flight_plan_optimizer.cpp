@@ -16,10 +16,14 @@ namespace internal {
 using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
+
+// Keep this consistent with |max_steps_| in |flight_planner.cs|.
+constexpr std::int64_t max_steps_in_flight_plan = 1 << 20;
 
 // Conversion factors between |Argument| and |HomogeneousArgument|.
 constexpr Time time_homogeneization_factor = 1 * Second;
@@ -260,8 +264,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
           Δv_tolerance / speed_homogeneization_factor);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
-    auto const replace_status = ReplaceBurn(
-        Dehomogeneize(solution), manœuvre, index, *flight_plan_);
+    auto const replace_status =
+        ReplaceBurn(Dehomogeneize(solution), manœuvre, index);
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return replace_status;
   } else {
@@ -333,7 +337,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
 
   Length distance;
   Argument const argument = Dehomogeneize(homogeneous_argument);
-  if (ReplaceBurn(argument, manœuvre, index, *flight_plan_).ok()) {
+  if (ReplaceBurn(argument, manœuvre, index).ok()) {
     if (progress_callback_ != nullptr) {
       progress_callback_(*flight_plan_);
     }
@@ -393,13 +397,40 @@ EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
 absl::Status FlightPlanOptimizer::ReplaceBurn(
     Argument const& argument,
     NavigationManœuvre const& manœuvre,
-    int const index,
-    FlightPlan& flight_plan) {
+    int const index) {
   NavigationManœuvre::Burn burn = manœuvre.burn();
   burn.intensity = {.Δv = manœuvre.Δv() + argument.ΔΔv};
   burn.timing = {.initial_time =
                      manœuvre.initial_time() + argument.Δinitial_time};
-  return flight_plan.Replace(burn, index);
+  for (;;) {
+    auto status = flight_plan_->Replace(burn, index);
+    if (status.code() != integrators::_ordinary_differential_equations::
+                             termination_condition::ReachedMaximalStepCount) {
+      return status;
+    }
+
+    // If the flight plan integrator reached the maximum step count, increase it
+    // if possible.  Keep doing this until we get a different error (or we
+    // succeed).
+    do {
+      auto adaptive_step_parameters = flight_plan_->adaptive_step_parameters();
+      auto generalized_adaptive_step_parameters =
+          flight_plan_->generalized_adaptive_step_parameters();
+      if (adaptive_step_parameters.max_steps() == max_steps_in_flight_plan ||
+          generalized_adaptive_step_parameters.max_steps() ==
+              max_steps_in_flight_plan) {
+        return status;
+      }
+      adaptive_step_parameters.set_max_steps(
+          adaptive_step_parameters.max_steps() * 4);
+      generalized_adaptive_step_parameters.set_max_steps(
+          generalized_adaptive_step_parameters.max_steps() * 4);
+      status = flight_plan_->SetAdaptiveStepParameters(
+          adaptive_step_parameters, generalized_adaptive_step_parameters);
+    } while (status.code() ==
+             integrators::_ordinary_differential_equations::
+                 termination_condition::ReachedMaximalStepCount);
+  }
 }
 
 }  // namespace internal

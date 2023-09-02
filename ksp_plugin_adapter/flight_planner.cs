@@ -784,6 +784,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       "1 µm", "10 µm", "100 µm", "1 mm", "1 cm", "10 cm", "1 m", "10 m",
       "100 m", "1 km", "10 km", "100 km", "1000 km"
   };
+  // Keep this consistent with |adaptive_step_parameters| in
+  // |flight_plan_optimizer.cpp|.
   private static readonly long[] max_steps_ = {
       1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16, 1 << 18, 1 << 20
   };

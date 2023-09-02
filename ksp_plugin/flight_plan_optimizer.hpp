@@ -157,10 +157,9 @@ class FlightPlanOptimizer {
       int index);
 
   // Replaces the burn at the given |index| based on the |argument|.
-  static absl::Status ReplaceBurn(Argument const& argument,
-                                  NavigationManœuvre const& manœuvre,
-                                  int index,
-                                  FlightPlan& flight_plan);
+  absl::Status ReplaceBurn(Argument const& argument,
+                           NavigationManœuvre const& manœuvre,
+                           int index);
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;

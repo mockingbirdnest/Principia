@@ -291,10 +291,14 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     auto const sₖyₖ = InnerProduct(sₖ, yₖ);
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
-    if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {  // NOLINT
+    if (!satisfies_strong_wolfe_condition) {
+      // REMOVE BEFORE FLIGHT
+      LOG(WARNING) << "Doesn't satisfy the strong Wolfe condition at: " << xₖ₊₁;
+      return xₖ₊₁;
+    } else if (sₖyₖ == Scalar{}) {  // NOLINT
       // REMOVE BEFORE FLIGHT
       LOG(WARNING) << "No progress at: " << xₖ₊₁ << " " << sₖyₖ << " " << sₖ
-                   << " " << yₖ << satisfies_strong_wolfe_condition;
+                   << " " << yₖ;
       return xₖ₊₁;
     }
 
