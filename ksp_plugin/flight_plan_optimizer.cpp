@@ -14,6 +14,7 @@ namespace internal {
 
 using std::placeholders::_1;
 using std::placeholders::_2;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
@@ -25,6 +26,10 @@ constexpr Speed speed_homogeneization_factor = 1 * Metre / Second;
 
 // The displacement in |HomogeneousArgument| used to compute the derivatives.
 constexpr double δ_homogeneous_argument = 1e-3;
+
+// By how much we extend the flight plan when it is too short to find
+// periapsides.
+constexpr double flight_plan_extension_factor = 1.05;
 
 constexpr int max_apsides = 20;
 
@@ -269,23 +274,51 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestial(
     Instant const& begin_time) const {
   auto const& celestial_trajectory = celestial.trajectory();
   auto const& vessel_trajectory = flight_plan_->GetAllSegments();
-  DiscreteTrajectory<Barycentric> apoapsides;
-  DiscreteTrajectory<Barycentric> periapsides;
-  ComputeApsides(celestial_trajectory,
-                 vessel_trajectory,
-                 vessel_trajectory.lower_bound(begin_time),
-                 vessel_trajectory.end(),
-                 max_apsides,
-                 apoapsides,
-                 periapsides);
-  Length distance = Infinity<Length>;
-  for (const auto& [time, degrees_of_freedom] : periapsides) {
-    distance = std::min(distance,
-                        (degrees_of_freedom.position() -
-                         celestial_trajectory.EvaluatePosition(time))
-                            .Norm());
+
+  Length distance_at_closest_periapsis;
+  for (;;) {
+    DiscreteTrajectory<Barycentric> apoapsides;
+    DiscreteTrajectory<Barycentric> periapsides;
+    ComputeApsides(celestial_trajectory,
+                   vessel_trajectory,
+                   vessel_trajectory.lower_bound(begin_time),
+                   vessel_trajectory.end(),
+                   max_apsides,
+                   apoapsides,
+                   periapsides);
+    distance_at_closest_periapsis = Infinity<Length>;
+    for (const auto& [time, degrees_of_freedom] : periapsides) {
+      distance_at_closest_periapsis =
+          std::min(distance_at_closest_periapsis,
+                   (degrees_of_freedom.position() -
+                    celestial_trajectory.EvaluatePosition(time))
+                       .Norm());
+    }
+
+    // Evaluate the distance at the end of the trajectory.  If it is smaller
+    // than all the periapsides, increase the length of the flight plan until it
+    // isn't.
+    auto const distance_at_end =
+        (vessel_trajectory.rbegin()->degrees_of_freedom.position() -
+         celestial_trajectory.EvaluatePosition(celestial_trajectory.t_max()))
+            .Norm();
+    if (distance_at_end >= distance_at_closest_periapsis) {
+      break;
+    }
+
+    // Try to nudge the desired final time.  This may not succeed, in which case
+    // we give up.
+    auto const previous_actual_final_time = flight_plan_->actual_final_time();
+    auto const new_desired_final_time = Barycentre<Instant, double>(
+        {flight_plan_->initial_time(), flight_plan_->desired_final_time()},
+        {1 - flight_plan_extension_factor, flight_plan_extension_factor});
+    flight_plan_->SetDesiredFinalTime(new_desired_final_time).IgnoreError();
+    if (flight_plan_->actual_final_time() <= previous_actual_final_time) {
+      break;
+    }
   }
-  return distance;
+
+  return distance_at_closest_periapsis;
 }
 
 Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
