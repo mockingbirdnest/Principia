@@ -130,6 +130,9 @@ double Zoom(double α_lo,
     // return, even though the value of αⱼ may not satisfy the strong Wolfe
     // condition (it probably doesn't, otherwise we would have exited earlier).
     if (previous_ϕ_αⱼ.has_value() && previous_ϕ_αⱼ.value() == ϕ_αⱼ) {
+      // REMOVE BEFORE FLIGHT
+      LOG(WARNING) << "Numerically constant: " << previous_ϕ_αⱼ.value() << " "
+                   << ϕ_αⱼ << " " << αⱼ;
       satisfies_strong_wolfe_condition = false;
       return αⱼ;
     }
@@ -232,7 +235,11 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto const x₀ = start_argument;
   auto const grad_f_x₀ = grad_f(x₀);
 
+  // REMOVE BEFORE FLIGHT
+  LOG(WARNING) << "Starting from: " << x₀;
   if (grad_f_x₀ == Gradient<Scalar, Argument>{}) {
+    // REMOVE BEFORE FLIGHT
+    LOG(WARNING) << "No gradient at: " << x₀;
     return x₀;
   }
 
@@ -246,6 +253,8 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
                                satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
   if (!satisfies_strong_wolfe_condition) {
+    // REMOVE BEFORE FLIGHT
+    LOG(WARNING) << "Doesn't satisfy the strong Wolfe condition at: " << x₁;
     return x₁;
   }
 
@@ -263,10 +272,14 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   for (;;) {
     RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
+      // REMOVE BEFORE FLIGHT
+      LOG(WARNING) << "No minimum at: " << xₖ << " " << x₀;
       return absl::Status(termination_condition::NoMinimum, "No minimum found");
     }
     Difference<Argument> const pₖ = -Hₖ * grad_f_xₖ;
     if (pₖ.Norm() <= tolerance) {
+      // REMOVE BEFORE FLIGHT
+      LOG(WARNING) << "Below tolerance at: " << xₖ << " " << pₖ.Norm();
       return xₖ;
     }
     double const αₖ = LineSearch(xₖ, pₖ, grad_f_xₖ, f, gateaux_derivative_f,
@@ -279,6 +292,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
 
     // If we can't make progress, e.g., because αₖ is too small, give up.
     if (sₖyₖ == Scalar{} || !satisfies_strong_wolfe_condition) {  // NOLINT
+      // REMOVE BEFORE FLIGHT
+      LOG(WARNING) << "No progress at: " << xₖ₊₁ << " " << sₖyₖ << " " << sₖ
+                   << " " << yₖ << satisfies_strong_wolfe_condition;
       return xₖ₊₁;
     }
 
@@ -293,6 +309,8 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     grad_f_xₖ = grad_f_xₖ₊₁;
     Hₖ = Hₖ₊₁;
   }
+  // REMOVE BEFORE FLIGHT
+  LOG(WARNING) << "How do we even get here? " << xₖ;
   return xₖ;
 }
 
