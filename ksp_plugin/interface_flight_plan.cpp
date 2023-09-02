@@ -605,10 +605,12 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
   }
   vessel.MakeFlightPlanOptimizationDriver(
       FlightPlanOptimizer::ForCelestialDistance(
-          &plugin->GetCelestial(celestial_index), distance * Metre));
+          /*celestial=*/&plugin->GetCelestial(celestial_index),
+          /*target_distance=*/distance * Metre));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
-      .index = manœuvre_index, .Δv_tolerance = 1 * Micro(Metre) / Second};
+      .index = manœuvre_index,
+      .Δv_tolerance = 1 * Micro(Metre) / Second};
   vessel.flight_plan_optimization_driver()->RequestOptimization(parameters);
   return m.Return();
 }
