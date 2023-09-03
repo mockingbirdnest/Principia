@@ -302,8 +302,8 @@ double FlightPlanOptimizer::MetricForΔv::EvaluateGateauxDerivative(
     Difference<HomogeneousArgument> const& homogeneous_argument_direction)
     const {
   auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
-  auto const argument = Dehomogeneize(homogeneous_argument);
-  return 2 * InnerProduct(updated_Δv, argument.ΔΔv) / scale_;
+  auto const argument_direction = Dehomogeneize(homogeneous_argument_direction);
+  return 2 * InnerProduct(updated_Δv, argument_direction.ΔΔv) / scale_;
 }
 
 NavigationManœuvre FlightPlanOptimizer::MetricForΔv::UpdatedManœuvre(
