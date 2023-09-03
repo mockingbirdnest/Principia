@@ -96,6 +96,7 @@ class FlightPlanOptimizer {
   static MetricFactory ForCelestialDistance(
       not_null<Celestial const*> celestial,
       Length const& target_distance);
+  static MetricFactory ForΔv();
 
   // Called throughout the optimization to let the client know the tentative
   // state of the flight plan.
@@ -118,6 +119,7 @@ class FlightPlanOptimizer {
  private:
   class MetricForCelestialCentre;
   class MetricForCelestialDistance;
+  class MetricForΔv;
 
   // Function evaluations are very expensive, as they require integrating a
   // flight plan and finding periapsides.  We don't want do to them
@@ -159,11 +161,11 @@ class FlightPlanOptimizer {
       NavigationManœuvre const& manœuvre,
       int index);
 
-  // Replaces the burn at the given |index| based on the |argument|.
-  static absl::Status ReplaceBurn(Argument const& argument,
-                                  NavigationManœuvre const& manœuvre,
-                                  int index,
-                                  FlightPlan& flight_plan);
+  // Returns a burn obtained by applying the changes in |homogeneous_argument|
+  // to the |manœuvre|.
+  static NavigationManœuvre::Burn UpdateBurn(
+      HomogeneousArgument const& homogeneous_argument,
+      NavigationManœuvre const& manœuvre);
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
