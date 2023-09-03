@@ -329,10 +329,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
 
   LOG(INFO) << "Optimizing manœuvre 5";
   auto const manœuvre5 = flight_plan_->GetManœuvre(5);
-LOG(WARNING)<<manœuvre5.Δv()<<" "<<manœuvre5.Δv().Norm();
   EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
-LOG(WARNING)<< flight_plan_->GetManœuvre(5).Δv()<<" "<<
-flight_plan_->GetManœuvre(5).Δv().Norm();
 
   EXPECT_THAT(
       manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
