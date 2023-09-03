@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <vector>
 
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
@@ -40,6 +41,29 @@ constexpr double δ_homogeneous_argument = 1e-3;
 constexpr double flight_plan_extension_factor = 1.05;
 
 constexpr int max_apsides = 20;
+
+class FlightPlanOptimizer::LinearCombinationOfMetrics
+    : public FlightPlanOptimizer::Metric {
+ public:
+  LinearCombinationOfMetrics(not_null<FlightPlanOptimizer*> optimizer,
+                             NavigationManœuvre const& manœuvre,
+                             int index,
+                             std::vector<MetricFactory> const& factories,
+                             std::vector<double> const& weights);
+
+  double Evaluate(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  Gradient<double, HomogeneousArgument> EvaluateGradient(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  double EvaluateGateauxDerivative(
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+      const override;
+
+ private:
+  std::vector<std::unique_ptr<Metric>> metrics_;
+  std::vector<double> const weights_;
+};
 
 class FlightPlanOptimizer::MetricForCelestialCentre
     : public FlightPlanOptimizer::Metric {
@@ -113,6 +137,56 @@ class FlightPlanOptimizer::MetricForΔv : public FlightPlanOptimizer::Metric {
   // Has no effect because this metric doesn't mix multiple quantities.
   static constexpr Square<Speed> scale_ = 1 * Pow<2>(Metre / Second);
 };
+
+FlightPlanOptimizer::LinearCombinationOfMetrics::LinearCombinationOfMetrics(
+    not_null<FlightPlanOptimizer*> optimizer,
+    NavigationManœuvre const& manœuvre,
+    int const index,
+    std::vector<MetricFactory> const& factories,
+    std::vector<double> const& weights)
+    : Metric(optimizer, manœuvre, index),
+      weights_(weights) {
+  CHECK_EQ(factories.size(), weights.size());
+  for (int i = 0; i < factories.size(); ++i) {
+    metrics_.push_back(factories[i](optimizer, manœuvre, index));
+  }
+}
+
+double FlightPlanOptimizer::LinearCombinationOfMetrics::Evaluate(
+    HomogeneousArgument const& homogeneous_argument) const {
+  double combined_metric = 0.0;
+  for (int i = 0; i < metrics_.size(); ++i) {
+    combined_metric +=
+        metrics_[i]->Evaluate(homogeneous_argument) * weights_[i];
+  }
+  return combined_metric;
+}
+
+Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
+FlightPlanOptimizer::LinearCombinationOfMetrics::EvaluateGradient(
+    HomogeneousArgument const& homogeneous_argument) const {
+  Gradient<double, HomogeneousArgument> combined_gradient{};
+  for (int i = 0; i < metrics_.size(); ++i) {
+    combined_gradient +=
+        metrics_[i]->EvaluateGradient(homogeneous_argument) * weights_[i];
+  }
+  return combined_gradient;
+}
+
+double FlightPlanOptimizer::LinearCombinationOfMetrics::
+EvaluateGateauxDerivative(
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+    const {
+  double combined_derivative = 0.0;
+  for (int i = 0; i < metrics_.size(); ++i) {
+    combined_derivative +=
+        metrics_[i]->EvaluateGateauxDerivative(homogeneous_argument,
+                                               homogeneous_argument_direction) *
+        weights_[i];
+  }
+  return combined_derivative;
+}
 
 FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
     not_null<FlightPlanOptimizer*> const optimizer,
@@ -228,8 +302,8 @@ double FlightPlanOptimizer::MetricForΔv::EvaluateGateauxDerivative(
     Difference<HomogeneousArgument> const& homogeneous_argument_direction)
     const {
   auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
-  auto const argument = Dehomogeneize(homogeneous_argument);
-  return 2 * InnerProduct(updated_Δv, argument.ΔΔv) / scale_;
+  auto const argument_direction = Dehomogeneize(homogeneous_argument_direction);
+  return 2 * InnerProduct(updated_Δv, argument_direction.ΔΔv) / scale_;
 }
 
 NavigationManœuvre FlightPlanOptimizer::MetricForΔv::UpdatedManœuvre(
@@ -279,6 +353,17 @@ NavigationManœuvre const& FlightPlanOptimizer::Metric::manœuvre() const {
 
 int FlightPlanOptimizer::Metric::index() const {
   return index_;
+}
+
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::LinearCombination(
+    std::vector<MetricFactory> const& factories,
+    std::vector<double> const& weights) {
+  return [factories, weights](not_null<FlightPlanOptimizer*> const optimizer,
+                              NavigationManœuvre manœuvre,
+                              int const index) {
+    return make_not_null_unique<LinearCombinationOfMetrics>(
+        optimizer, std::move(manœuvre), index, factories, weights);
+  };
 }
 
 FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(

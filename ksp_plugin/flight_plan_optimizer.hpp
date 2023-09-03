@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
@@ -91,6 +92,10 @@ class FlightPlanOptimizer {
       NavigationManœuvre manœuvre,
       int index)>;
 
+  static MetricFactory LinearCombination(
+      std::vector<MetricFactory> const& factories,
+      std::vector<double> const& weights);
+
   static MetricFactory ForCelestialCentre(
       not_null<Celestial const*> celestial);
   static MetricFactory ForCelestialDistance(
@@ -117,6 +122,7 @@ class FlightPlanOptimizer {
                         Speed const& Δv_tolerance);
 
  private:
+  class LinearCombinationOfMetrics;
   class MetricForCelestialCentre;
   class MetricForCelestialDistance;
   class MetricForΔv;
