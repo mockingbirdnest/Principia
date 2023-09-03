@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <vector>
 
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
