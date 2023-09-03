@@ -586,7 +586,8 @@ Angle FlightPlanOptimizer::EvaluateRelativeInclinationlWithReplacement(
       frame.ToThisFrameAtTime(time)(barycentric_degrees_of_freedom);
   auto const r = navigation_degrees_of_freedom.position() - Navigation::origin;
   auto const v = navigation_degrees_of_freedom.velocity();
-  Angle const i = AngleBetween(Wedge(r, v), Bivector<double, Navigation>({0, 0, 1}));
+  Angle const i =
+      AngleBetween(Wedge(r, v), Bivector<double, Navigation>({0, 0, 1}));
   Angle const signed_relative_inclination = [](Angle const α) {
     return α > 2 * π * Radian ? α - π * Radian : α;
   }(Mod(i - target_inclination, 2 * π * Radian));
