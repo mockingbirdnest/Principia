@@ -226,8 +226,9 @@ double FlightPlanOptimizer::MetricForΔv::EvaluateGateauxDerivative(
     HomogeneousArgument const& homogeneous_argument,
     Difference<HomogeneousArgument> const& homogeneous_argument_direction)
     const {
+  auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
   auto const argument = Dehomogeneize(homogeneous_argument);
-  return 2 * InnerProduct(manœuvre().Δv(), argument.ΔΔv) / scale_;
+  return 2 * InnerProduct(updated_Δv, argument.ΔΔv) / scale_;
 }
 
 NavigationManœuvre FlightPlanOptimizer::MetricForΔv::UpdatedManœuvre(
@@ -285,7 +286,7 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(
                      NavigationManœuvre manœuvre,
                      int const index) {
     return make_not_null_unique<MetricForCelestialCentre>(
-        optimizer, manœuvre, index, celestial);
+        optimizer, std::move(manœuvre), index, celestial);
   };
 }
 
@@ -297,7 +298,16 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialDistance(
              NavigationManœuvre manœuvre,
              int const index) {
     return make_not_null_unique<MetricForCelestialDistance>(
-        optimizer, manœuvre, index, celestial, target_distance);
+        optimizer, std::move(manœuvre), index, celestial, target_distance);
+  };
+}
+
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForΔv() {
+  return [](not_null<FlightPlanOptimizer*> const optimizer,
+            NavigationManœuvre manœuvre,
+            int const index) {
+    return make_not_null_unique<MetricForΔv>(
+        optimizer, std::move(manœuvre), index);
   };
 }
 
