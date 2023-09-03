@@ -6,6 +6,7 @@
 
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"

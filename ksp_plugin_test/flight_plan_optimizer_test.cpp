@@ -8,6 +8,7 @@
 #include "base/not_null.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -18,6 +19,7 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
