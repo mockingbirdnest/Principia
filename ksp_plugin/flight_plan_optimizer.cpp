@@ -151,6 +151,42 @@ FlightPlanOptimizer::LinearCombinationOfMetrics::LinearCombinationOfMetrics(
   }
 }
 
+double FlightPlanOptimizer::LinearCombinationOfMetrics::Evaluate(
+    HomogeneousArgument const& homogeneous_argument) const {
+  double combined_metric = 0.0;
+  for (int i = 0; i < metrics_.size(); ++i) {
+    combined_metric +=
+        metrics_[i]->Evaluate(homogeneous_argument) * weights_[i];
+  }
+  return combined_metric;
+}
+
+Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
+FlightPlanOptimizer::LinearCombinationOfMetrics::EvaluateGradient(
+    HomogeneousArgument const& homogeneous_argument) const {
+  Gradient<double, HomogeneousArgument> combined_gradient{};
+  for (int i = 0; i < metrics_.size(); ++i) {
+    combined_gradient +=
+        metrics_[i]->EvaluateGradient(homogeneous_argument) * weights_[i];
+  }
+  return combined_gradient;
+}
+
+double FlightPlanOptimizer::LinearCombinationOfMetrics::
+EvaluateGateauxDerivative(
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+    const {
+  double combined_derivative = 0.0;
+  for (int i = 0; i < metrics_.size(); ++i) {
+    combined_derivative +=
+        metrics_[i]->EvaluateGateauxDerivative(homogeneous_argument,
+                                               homogeneous_argument_direction) *
+        weights_[i];
+  }
+  return combined_derivative;
+}
+
 FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
     not_null<FlightPlanOptimizer*> const optimizer,
     NavigationManœuvre manœuvre,
