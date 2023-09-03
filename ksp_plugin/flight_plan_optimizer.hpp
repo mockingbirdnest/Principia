@@ -163,7 +163,7 @@ class FlightPlanOptimizer {
 
   // Returns a burn obtained by applying the changes in |homogeneous_argument|
   // to the |manœuvre|.
-  static NavigationManœuvre::Burn UpdateBurn(
+  static NavigationManœuvre::Burn UpdatedBurn(
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre);
 
