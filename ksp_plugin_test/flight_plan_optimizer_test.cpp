@@ -306,5 +306,46 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrindsToAHalt) {
   EXPECT_EQ(0, number_of_evaluations);
 }
 
+TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
+  ReadReachFlightPlan();
+
+  Celestial const& moon = FindCelestialByName("Moon", *plugin_);
+  Instant flyby_time;
+  Length flyby_distance;
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
+
+  std::int64_t number_of_evaluations = 0;
+  FlightPlanOptimizer optimizer(
+      flight_plan_,
+      FlightPlanOptimizer::LinearCombination(
+          {FlightPlanOptimizer::ForCelestialDistance(
+               /*celestial=*/&moon,
+               /*target_distance=*/2000 * Kilo(Metre)),
+           FlightPlanOptimizer::ForΔv()},
+          {1, 1e14}),
+      [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
+
+  LOG(INFO) << "Optimizing manœuvre 5";
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
+LOG(WARNING)<<manœuvre5.Δv()<<" "<<manœuvre5.Δv().Norm();
+  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
+LOG(WARNING)<< flight_plan_->GetManœuvre(5).Δv()<<" "<<
+flight_plan_->GetManœuvre(5).Δv().Norm();
+
+  EXPECT_THAT(
+      manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
+      IsNear(21.1_(1) * Micro(Second)));
+  EXPECT_THAT(
+      (manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
+      IsNear(1.073_(1) * Metre / Second));
+
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:24:05"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(1917.7_(1) * Kilo(Metre)));
+  EXPECT_EQ(111, number_of_evaluations);
+}
+
 }  // namespace ksp_plugin
 }  // namespace principia

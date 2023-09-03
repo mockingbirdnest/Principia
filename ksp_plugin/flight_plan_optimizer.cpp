@@ -354,6 +354,17 @@ int FlightPlanOptimizer::Metric::index() const {
   return index_;
 }
 
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::LinearCombination(
+    std::vector<MetricFactory> const& factories,
+    std::vector<double> const& weights) {
+  return [factories, weights](not_null<FlightPlanOptimizer*> const optimizer,
+                              NavigationManœuvre manœuvre,
+                              int const index) {
+    return make_not_null_unique<LinearCombinationOfMetrics>(
+        optimizer, std::move(manœuvre), index, factories, weights);
+  };
+}
+
 FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(
     not_null<Celestial const*> const celestial) {
   return [celestial](not_null<FlightPlanOptimizer*> const optimizer,
