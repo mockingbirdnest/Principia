@@ -41,6 +41,29 @@ constexpr double flight_plan_extension_factor = 1.05;
 
 constexpr int max_apsides = 20;
 
+class FlightPlanOptimizer::LinearCombinationOfMetrics
+    : public FlightPlanOptimizer::Metric {
+ public:
+  LinearCombinationOfMetrics(not_null<FlightPlanOptimizer*> optimizer,
+                             NavigationManœuvre const& manœuvre,
+                             int index,
+                             std::vector<MetricFactory> const& factories,
+                             std::vector<double> const& weights);
+
+  double Evaluate(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  Gradient<double, HomogeneousArgument> EvaluateGradient(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  double EvaluateGateauxDerivative(
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+      const override;
+
+ private:
+  std::vector<std::unique_ptr<Metric>> metrics_;
+  std::vector<double> const weights_;
+};
+
 class FlightPlanOptimizer::MetricForCelestialCentre
     : public FlightPlanOptimizer::Metric {
  public:
@@ -113,6 +136,20 @@ class FlightPlanOptimizer::MetricForΔv : public FlightPlanOptimizer::Metric {
   // Has no effect because this metric doesn't mix multiple quantities.
   static constexpr Square<Speed> scale_ = 1 * Pow<2>(Metre / Second);
 };
+
+FlightPlanOptimizer::LinearCombinationOfMetrics::LinearCombinationOfMetrics(
+    not_null<FlightPlanOptimizer*> optimizer,
+    NavigationManœuvre const& manœuvre,
+    int const index,
+    std::vector<MetricFactory> const& factories,
+    std::vector<double> const& weights)
+    : Metric(optimizer, manœuvre, index),
+      weights_(weights) {
+  CHECK_EQ(factories.size(), weights.size());
+  for (int i = 0; i < factories.size(); ++i) {
+    metrics_.push_back(factories[i](optimizer, manœuvre, index));
+  }
+}
 
 FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
     not_null<FlightPlanOptimizer*> const optimizer,
