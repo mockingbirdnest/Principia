@@ -6,6 +6,7 @@
 
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -20,6 +21,7 @@ namespace internal {
 using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
@@ -89,6 +91,29 @@ class FlightPlanOptimizer::MetricForCelestialDistance
   Length const target_distance_;
 };
 
+class FlightPlanOptimizer::MetricForΔv : public FlightPlanOptimizer::Metric {
+ public:
+  MetricForΔv(not_null<FlightPlanOptimizer*> optimizer,
+              NavigationManœuvre manœuvre,
+              int index);
+
+  double Evaluate(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  Gradient<double, HomogeneousArgument> EvaluateGradient(
+      HomogeneousArgument const& homogeneous_argument) const override;
+  double EvaluateGateauxDerivative(
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+      const override;
+
+ private:
+  NavigationManœuvre UpdatedManœuvre(
+      HomogeneousArgument const& homogeneous_argument) const;
+
+  // Has no effect because this metric doesn't mix multiple quantities.
+  static constexpr Square<Speed> scale_ = 1 * Pow<2>(Metre / Second);
+};
+
 FlightPlanOptimizer::MetricForCelestialCentre::MetricForCelestialCentre(
     not_null<FlightPlanOptimizer*> const optimizer,
     NavigationManœuvre manœuvre,
@@ -129,7 +154,7 @@ FlightPlanOptimizer::MetricForCelestialDistance::MetricForCelestialDistance(
     int const index,
     not_null<Celestial const*> const celestial,
     Length const& target_distance)
-    : Metric(optimizer, manœuvre, index),
+    : Metric(optimizer, std::move(manœuvre), index),
       celestial_(celestial),
       target_distance_(target_distance) {}
 
@@ -171,6 +196,50 @@ FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
   return 2 * (actual_distance - target_distance_) * actual_gateaux_derivative /
          scale_;
 }
+
+FlightPlanOptimizer::MetricForΔv::MetricForΔv(
+    not_null<FlightPlanOptimizer*> const optimizer,
+    NavigationManœuvre manœuvre,
+    int const index)
+    : Metric(optimizer, std::move(manœuvre), index) {}
+
+double FlightPlanOptimizer::MetricForΔv::Evaluate(
+    HomogeneousArgument const& homogeneous_argument) const {
+  return UpdatedManœuvre(homogeneous_argument).Δv().Norm²() / scale_;
+}
+
+Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
+FlightPlanOptimizer::MetricForΔv::EvaluateGradient(
+    HomogeneousArgument const& homogeneous_argument) const {
+  auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
+  Time const Δinitial_time_component_of_grad;
+  Vector<double, Frenet<Navigation>> const ΔΔv_component_of_grad =
+      2 * speed_homogeneization_factor * updated_Δv / scale_;
+  auto const& ΔΔv_component_of_grad_coordinates =
+      ΔΔv_component_of_grad.coordinates();
+  return HomogeneousArgument({0,
+                              ΔΔv_component_of_grad_coordinates.x,
+                              ΔΔv_component_of_grad_coordinates.y,
+                              ΔΔv_component_of_grad_coordinates.z});
+}
+
+double FlightPlanOptimizer::MetricForΔv::EvaluateGateauxDerivative(
+    HomogeneousArgument const& homogeneous_argument,
+    Difference<HomogeneousArgument> const& homogeneous_argument_direction)
+    const {
+  auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
+  auto const argument = Dehomogeneize(homogeneous_argument);
+  return 2 * InnerProduct(updated_Δv, argument.ΔΔv) / scale_;
+}
+
+NavigationManœuvre FlightPlanOptimizer::MetricForΔv::UpdatedManœuvre(
+    HomogeneousArgument const& homogeneous_argument) const {
+  auto const& original_manœuvre = manœuvre();
+  return NavigationManœuvre(
+      original_manœuvre.initial_mass(),
+      UpdatedBurn(homogeneous_argument, original_manœuvre));
+}
+
 
 FlightPlanOptimizer::HomogeneousArgument FlightPlanOptimizer::Homogeneize(
     Argument const& argument) {
@@ -218,7 +287,7 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialCentre(
                      NavigationManœuvre manœuvre,
                      int const index) {
     return make_not_null_unique<MetricForCelestialCentre>(
-        optimizer, manœuvre, index, celestial);
+        optimizer, std::move(manœuvre), index, celestial);
   };
 }
 
@@ -230,7 +299,16 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialDistance(
              NavigationManœuvre manœuvre,
              int const index) {
     return make_not_null_unique<MetricForCelestialDistance>(
-        optimizer, manœuvre, index, celestial, target_distance);
+        optimizer, std::move(manœuvre), index, celestial, target_distance);
+  };
+}
+
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForΔv() {
+  return [](not_null<FlightPlanOptimizer*> const optimizer,
+            NavigationManœuvre manœuvre,
+            int const index) {
+    return make_not_null_unique<MetricForΔv>(
+        optimizer, std::move(manœuvre), index);
   };
 }
 
@@ -266,7 +344,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
     auto const replace_status =
-        ReplaceBurn(Dehomogeneize(solution), manœuvre, index, *flight_plan_);
+        flight_plan_->Replace(UpdatedBurn(solution, manœuvre), index);
     flight_plan_->EnableAnalysis(/*enabled=*/true);
     return replace_status;
   } else {
@@ -339,9 +417,8 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     return it->second;
   }
 
-  Argument const argument = Dehomogeneize(homogeneous_argument);
   auto const replace_status =
-      ReplaceBurn(argument, manœuvre, index, *flight_plan_);
+      flight_plan_->Replace(UpdatedBurn(homogeneous_argument, manœuvre), index);
   if (progress_callback_ != nullptr) {
     progress_callback_(*flight_plan_);
   }
@@ -402,16 +479,15 @@ EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
   return (distance_δh - distance) / h;
 }
 
-absl::Status FlightPlanOptimizer::ReplaceBurn(
-    Argument const& argument,
-    NavigationManœuvre const& manœuvre,
-    int const index,
-    FlightPlan& flight_plan) {
+NavigationManœuvre::Burn FlightPlanOptimizer::UpdatedBurn(
+    HomogeneousArgument const& homogeneous_argument,
+    NavigationManœuvre const& manœuvre) {
+  auto const argument = Dehomogeneize(homogeneous_argument);
   NavigationManœuvre::Burn burn = manœuvre.burn();
   burn.intensity = {.Δv = manœuvre.Δv() + argument.ΔΔv};
   burn.timing = {.initial_time =
                      manœuvre.initial_time() + argument.Δinitial_time};
-  return flight_plan.Replace(burn, index);
+  return burn;
 }
 
 }  // namespace internal

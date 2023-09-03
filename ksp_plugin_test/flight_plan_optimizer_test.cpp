@@ -8,6 +8,7 @@
 #include "base/not_null.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -18,6 +19,7 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -34,6 +36,7 @@ using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
@@ -43,6 +46,7 @@ using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -98,47 +102,57 @@ class FlightPlanOptimizerTest : public testing::Test {
       }
     }
   }
+
+  void ReadReachFlightPlan() {
+    plugin_ = ReadPluginFromFile(
+        SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
+        /*compressor=*/"gipfeli",
+        /*decoder=*/"base64");
+
+    auto const ifnity =
+        plugin_->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
+    EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
+    EXPECT_THAT(TTSecond(ifnity->trajectory().front().time),
+                Eq("1970-08-14T08:03:46"_DateTime));
+    EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
+                Eq("1970-08-14T08:47:05"_DateTime));
+    ASSERT_TRUE(ifnity->has_flight_plan());
+    ifnity->ReadFlightPlanFromMessage();
+    flight_plan_ = &ifnity->flight_plan();
+    EXPECT_THAT(
+        flight_plan_->adaptive_step_parameters().length_integration_tolerance(),
+        Eq(1 * Metre));
+    EXPECT_THAT(flight_plan_->adaptive_step_parameters().max_steps(),
+                Eq(16'000));
+    EXPECT_THAT(flight_plan_->number_of_manœuvres(), Eq(16));
+    std::vector<std::pair<DateTime, Speed>>
+        manœuvre_ignition_tt_seconds_and_Δvs;
+    for (int i = 0; i < flight_plan_->number_of_manœuvres(); ++i) {
+      manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
+          TTSecond(flight_plan_->GetManœuvre(i).initial_time()),
+          flight_plan_->GetManœuvre(i).Δv().Norm());
+    }
+  }
+
+  std::unique_ptr<Plugin const> plugin_;
+  FlightPlan* flight_plan_;
 };
 
 // This test tweaks the burns of the flight plan that precede the Moon flyby, in
 // order to collide head on with the Moon.  This test takes about 10 minutes.
 TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
-      /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+  ReadReachFlightPlan();
 
-  auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
-  EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
-  EXPECT_THAT(TTSecond(ifnity->trajectory().front().time),
-              Eq("1970-08-14T08:03:46"_DateTime));
-  EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
-              Eq("1970-08-14T08:47:05"_DateTime));
-  ASSERT_TRUE(ifnity->has_flight_plan());
-  ifnity->ReadFlightPlanFromMessage();
-  FlightPlan& flight_plan = ifnity->flight_plan();
-  EXPECT_THAT(
-      flight_plan.adaptive_step_parameters().length_integration_tolerance(),
-      Eq(1 * Metre));
-  EXPECT_THAT(flight_plan.adaptive_step_parameters().max_steps(), Eq(16'000));
-  EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
-  std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
-  for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
-    manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
-        TTSecond(flight_plan.GetManœuvre(i).initial_time()),
-        flight_plan.GetManœuvre(i).Δv().Norm());
-  }
-
-  Celestial const& moon = FindCelestialByName("Moon", *plugin);
+  Celestial const& moon = FindCelestialByName("Moon", *plugin_);
   Instant flyby_time;
   Length flyby_distance;
-  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
 
   std::int64_t number_of_evaluations = 0;
   FlightPlanOptimizer optimizer(
-      &flight_plan,
+      flight_plan_,
       FlightPlanOptimizer::ForCelestialCentre(&moon),
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
@@ -146,153 +160,150 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   // basically goes through the centre of the Moon.
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const manœuvre5 = flight_plan.GetManœuvre(5);
-  EXPECT_THAT(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second),
-              StatusIs(termination_condition::VanishingStepSize));
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
+  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
 
-  EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
   EXPECT_THAT(
-      manœuvre5.initial_time() - flight_plan.GetManœuvre(5).initial_time(),
-      IsNear(7.4_(1) * Micro(Second)));
+      manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
+      IsNear(7.51_(1) * Micro(Second)));
   EXPECT_THAT(
-      (manœuvre5.Δv() - flight_plan.GetManœuvre(5).Δv()).Norm(),
-      IsNear(1.053_(1) * Metre / Second));
-  EXPECT_EQ(88, number_of_evaluations);
+      (manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
+      IsNear(1.054_(1) * Metre / Second));
+  EXPECT_EQ(119, number_of_evaluations);
   number_of_evaluations = 0;
 
-  CHECK_OK(flight_plan.Replace(manœuvre5.burn(), /*index=*/5));
+  CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
 
   LOG(INFO) << "Optimizing manœuvre 6";
-  auto const manœuvre6 = flight_plan.GetManœuvre(6);
+  auto const manœuvre6 = flight_plan_->GetManœuvre(6);
   EXPECT_THAT(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
-  EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  EXPECT_EQ(8, flight_plan_->number_of_anomalous_manœuvres());
   EXPECT_EQ(manœuvre6.initial_time(),
-            flight_plan.GetManœuvre(6).initial_time());
-  EXPECT_THAT((manœuvre6.Δv() - flight_plan.GetManœuvre(6).Δv()).Norm(),
-              IsNear(1.279_(1) * Metre / Second));
-  EXPECT_EQ(57, number_of_evaluations);
+            flight_plan_->GetManœuvre(6).initial_time());
+  EXPECT_THAT((manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
+              IsNear(1.281_(1) * Metre / Second));
+  EXPECT_EQ(143, number_of_evaluations);
   number_of_evaluations = 0;
 
-  CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
+  CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
 
   LOG(INFO) << "Optimizing manœuvre 7";
-  auto const manœuvre7 = flight_plan.GetManœuvre(7);
+  auto const manœuvre7 = flight_plan_->GetManœuvre(7);
   EXPECT_THAT(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
-  EXPECT_EQ(8, flight_plan.number_of_anomalous_manœuvres());
+  EXPECT_EQ(8, flight_plan_->number_of_anomalous_manœuvres());
   EXPECT_THAT(
-      manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
+      manœuvre7.initial_time() - flight_plan_->GetManœuvre(7).initial_time(),
       IsNear(-4.9_(1) * Milli(Second)));
   EXPECT_THAT(
-      (manœuvre7.Δv() - flight_plan.GetManœuvre(7).Δv()).Norm(),
+      (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
       IsNear(62.3_(1) * Metre / Second));
-  EXPECT_EQ(47, number_of_evaluations);
+  EXPECT_EQ(111, number_of_evaluations);
   number_of_evaluations = 0;
 
-  CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
+  CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
 }
 
 // This test tweaks the burns of the flight plan that precede the Moon flyby, in
 // order to fly at (approximately) 2000 km from the centre of the Moon.  This
 // test takes about 10 minutes.
 TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
-      /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+  ReadReachFlightPlan();
 
-  auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
-  EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
-  EXPECT_THAT(TTSecond(ifnity->trajectory().front().time),
-              Eq("1970-08-14T08:03:46"_DateTime));
-  EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
-              Eq("1970-08-14T08:47:05"_DateTime));
-  ASSERT_TRUE(ifnity->has_flight_plan());
-  ifnity->ReadFlightPlanFromMessage();
-  FlightPlan& flight_plan = ifnity->flight_plan();
-  EXPECT_THAT(
-      flight_plan.adaptive_step_parameters().length_integration_tolerance(),
-      Eq(1 * Metre));
-  EXPECT_THAT(flight_plan.adaptive_step_parameters().max_steps(), Eq(16'000));
-  EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
-  std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
-  for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
-    manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
-        TTSecond(flight_plan.GetManœuvre(i).initial_time()),
-        flight_plan.GetManœuvre(i).Δv().Norm());
-  }
-
-  Celestial const& moon = FindCelestialByName("Moon", *plugin);
+  Celestial const& moon = FindCelestialByName("Moon", *plugin_);
   Instant flyby_time;
   Length flyby_distance;
-  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(58591.4_(1) * Kilo(Metre)));
 
   std::int64_t number_of_evaluations = 0;
   FlightPlanOptimizer optimizer(
-      &flight_plan,
+      flight_plan_,
       FlightPlanOptimizer::ForCelestialDistance(&moon, 2000 * Kilo(Metre)),
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const manœuvre5 = flight_plan.GetManœuvre(5);
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
   EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
-      manœuvre5.initial_time() - flight_plan.GetManœuvre(5).initial_time(),
+      manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
       IsNear(34.2_(1) * Micro(Second)));
   EXPECT_THAT(
-      (manœuvre5.Δv() - flight_plan.GetManœuvre(5).Δv()).Norm(),
+      (manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
       IsNear(1.116_(1) * Metre / Second));
 
-  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:24:00"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(2255.3_(1) * Kilo(Metre)));
   EXPECT_EQ(79, number_of_evaluations);
   number_of_evaluations = 0;
 
-  CHECK_OK(flight_plan.Replace(manœuvre5.burn(), /*index=*/5));
+  CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
 
   LOG(INFO) << "Optimizing manœuvre 6";
-  auto const manœuvre6 = flight_plan.GetManœuvre(6);
+  auto const manœuvre6 = flight_plan_->GetManœuvre(6);
   EXPECT_OK(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
-      manœuvre6.initial_time() - flight_plan.GetManœuvre(6).initial_time(),
+      manœuvre6.initial_time() - flight_plan_->GetManœuvre(6).initial_time(),
       IsNear(0.954_(1) * Micro(Second)));
-  EXPECT_THAT((manœuvre6.Δv() - flight_plan.GetManœuvre(6).Δv()).Norm(),
+  EXPECT_THAT((manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
               IsNear(1.312_(1) * Metre / Second));
 
-  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:16:41"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(2001.4_(1) * Kilo(Metre)));
   EXPECT_EQ(72, number_of_evaluations);
   number_of_evaluations = 0;
 
-  CHECK_OK(flight_plan.Replace(manœuvre6.burn(), /*index=*/6));
+  CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
 
   LOG(INFO) << "Optimizing manœuvre 7";
-  auto const manœuvre7 = flight_plan.GetManœuvre(7);
+  auto const manœuvre7 = flight_plan_->GetManœuvre(7);
   EXPECT_OK(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
-      manœuvre7.initial_time() - flight_plan.GetManœuvre(7).initial_time(),
+      manœuvre7.initial_time() - flight_plan_->GetManœuvre(7).initial_time(),
       IsNear(3.3_(1) * Milli(Second)));
   EXPECT_THAT(
-      (manœuvre7.Δv() - flight_plan.GetManœuvre(7).Δv()).Norm(),
+      (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
       IsNear(62.3_(1) * Metre / Second));
 
-  ComputeFlyby(flight_plan, moon, flyby_time, flyby_distance);
+  ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:15:12"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(1999.6_(1) * Kilo(Metre)));
   EXPECT_EQ(74, number_of_evaluations);
   number_of_evaluations = 0;
 
-  CHECK_OK(flight_plan.Replace(manœuvre7.burn(), /*index=*/7));
+  CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
+}
+
+TEST_F(FlightPlanOptimizerTest, DISABLED_GrindsToAHalt) {
+  ReadReachFlightPlan();
+
+  std::int64_t number_of_evaluations = 0;
+  FlightPlanOptimizer optimizer(
+      flight_plan_,
+      FlightPlanOptimizer::ForΔv(),
+      [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
+
+  LOG(INFO) << "Optimizing manœuvre 5";
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
+  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Nano(Metre) / Second));
+
+  // The initial time doesn't change.
+  EXPECT_THAT(
+      manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
+      Eq(0 * Second));
+  EXPECT_THAT(flight_plan_->GetManœuvre(5).Δv().Norm(),
+              IsNear(0.122_(1) * Nano(Metre) / Second));
+  EXPECT_EQ(0, number_of_evaluations);
 }
 
 }  // namespace ksp_plugin
