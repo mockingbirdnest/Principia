@@ -20,6 +20,7 @@ namespace internal {
 using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
@@ -209,14 +210,24 @@ double FlightPlanOptimizer::MetricForΔv::Evaluate(
 Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
 FlightPlanOptimizer::MetricForΔv::EvaluateGradient(
     HomogeneousArgument const& homogeneous_argument) const {
-  return Gradient<double, HomogeneousArgument>();
+  auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
+  Time const Δinitial_time_component_of_grad;
+  Vector<double, Frenet<Navigation>> const ΔΔv_component_of_grad =
+      2 * speed_homogeneization_factor * updated_Δv / scale_;
+  auto const& ΔΔv_component_of_grad_coordinates =
+      ΔΔv_component_of_grad.coordinates();
+  return HomogeneousArgument({0,
+                              ΔΔv_component_of_grad_coordinates.x,
+                              ΔΔv_component_of_grad_coordinates.y,
+                              ΔΔv_component_of_grad_coordinates.z});
 }
 
 double FlightPlanOptimizer::MetricForΔv::EvaluateGateauxDerivative(
     HomogeneousArgument const& homogeneous_argument,
     Difference<HomogeneousArgument> const& homogeneous_argument_direction)
     const {
-  return 0.0;
+  auto const argument = Dehomogeneize(homogeneous_argument);
+  return 2 * InnerProduct(manœuvre().Δv(), argument.ΔΔv) / scale_;
 }
 
 NavigationManœuvre FlightPlanOptimizer::MetricForΔv::UpdatedManœuvre(
