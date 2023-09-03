@@ -119,8 +119,8 @@ class FlightPlanOptimizer::MetricForInclination
   MetricForInclination(not_null<FlightPlanOptimizer*> optimizer,
                        NavigationManœuvre manœuvre,
                        int index,
-                       not_null<Celestial const*> const celestial,
-                       not_null<NavigationFrame const*> const frame,
+                       not_null<Celestial const*> celestial,
+                       not_null<std::unique_ptr<NavigationFrame const>> frame,
                        Angle const& target_inclination);
 
   double Evaluate(
@@ -137,7 +137,7 @@ class FlightPlanOptimizer::MetricForInclination
   static constexpr Angle scale_ = 1 * Degree;
 
   not_null<Celestial const*> const celestial_;
-  not_null<NavigationFrame const*> const frame_;
+  not_null<std::unique_ptr<NavigationFrame const>> const frame_;
   Angle const target_inclination_;
 };
 
@@ -301,12 +301,12 @@ FlightPlanOptimizer::MetricForInclination::MetricForInclination(
     not_null<FlightPlanOptimizer*> optimizer,
     NavigationManœuvre manœuvre,
     int index,
-    not_null<Celestial const*> const celestial,
-    not_null<NavigationFrame const*> const frame,
+    not_null<Celestial const*> celestial,
+    not_null<std::unique_ptr<NavigationFrame const>> frame,
     Angle const& target_inclination)
     : Metric(optimizer, manœuvre, index),
       celestial_(celestial),
-      frame_(frame),
+      frame_(std::move(frame)),
       target_inclination_(target_inclination) {}
 
 double FlightPlanOptimizer::MetricForInclination::Evaluate(
@@ -461,6 +461,23 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForCelestialDistance(
              int const index) {
     return make_not_null_unique<MetricForCelestialDistance>(
         optimizer, std::move(manœuvre), index, celestial, target_distance);
+  };
+}
+
+FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForInclination(
+    not_null<Celestial const*> const celestial,
+    std::function<not_null<std::unique_ptr<NavigationFrame>>()> frame_factory,
+    Angle const& target_inclination) {
+  return [celestial, frame_factory, target_inclination](
+             not_null<FlightPlanOptimizer*> const optimizer,
+             NavigationManœuvre manœuvre,
+             int const index) {
+    return make_not_null_unique<MetricForInclination>(optimizer,
+                                                      std::move(manœuvre),
+                                                      index,
+                                                      celestial,
+                                                      frame_factory(),
+                                                      target_inclination);
   };
 }
 

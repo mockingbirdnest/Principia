@@ -14,6 +14,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/gradient_descent.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
@@ -33,6 +34,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -103,6 +105,10 @@ class FlightPlanOptimizer {
   static MetricFactory ForCelestialDistance(
       not_null<Celestial const*> celestial,
       Length const& target_distance);
+  static MetricFactory ForInclination(
+      not_null<Celestial const*> celestial,
+      std::function<not_null<std::unique_ptr<NavigationFrame>>()> frame,
+      Angle const& target_inclination);
   static MetricFactory ForΔv();
 
   // Called throughout the optimization to let the client know the tentative

@@ -993,6 +993,8 @@ message FlightPlanOptimizeManoeuvre {
     required int32 manoeuvre_index = 3;
     required int32 celestial_index = 4;
     required double distance = 5;
+    required double inclination_in_degrees = 6;
+    required NavigationFrameParameters navigation_frame_parameters = 7;
   }
   optional In in = 1;
 }

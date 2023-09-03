@@ -391,6 +391,26 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         ScheduleShrink();
       }
 
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label("Target flyby altitude (m):");
+        string text = UnityEngine.GUILayout.TextField(optimization_altitude.FormatN(0), GUILayoutWidth(3));
+        if (double.TryParse(text, System.Globalization.NumberStyles.Any, Culture.culture, out double candidate)) {
+          if (candidate >= 0 && candidate < double.PositiveInfinity) {
+            optimization_altitude = candidate;
+          }
+        }
+      }
+
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label("Target flyby inclination wrt plotting reference plane (°):");
+        string text = UnityEngine.GUILayout.TextField(optimization_inclination_in_degrees.FormatN(0), GUILayoutWidth(3));
+        if (double.TryParse(text, System.Globalization.NumberStyles.Any, Culture.culture, out double candidate)) {
+          if (candidate >= -180 && candidate <= 180) {
+            optimization_inclination_in_degrees = candidate;
+          }
+        }
+      }
+
         // Compute the final times for each manœuvre before displaying them.
         var final_times = new List<double>();
         for (int i = 0; i < burn_editors_.Count - 1; ++i) {
@@ -410,7 +430,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             if (plugin.FlightPlanOptimizationInProgress(vessel_guid)) {
               UnityEngine.GUILayout.Button("Optimizing…");
             } else if (UnityEngine.GUILayout.Button($"Optimize {centre.Name()} flyby")) {
-              plugin.FlightPlanOptimizeManoeuvre(vessel_guid, i, centre.flightGlobalsIndex, centre.Radius + 10e3);
+              plugin.FlightPlanOptimizeManoeuvre(
+                  vessel_guid, i,
+                  centre.flightGlobalsIndex,
+                  centre.Radius + optimization_altitude,
+                  optimization_inclination_in_degrees,
+                  (NavigationFrameParameters)adapter_.plotting_frame_selector_.FrameParameters());
             }
           } else {
             UnityEngine.GUILayout.Button("Change plotting frame to optimize");
@@ -817,6 +842,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private const double log10_time_upper_rate = 7.0;
 
   private const int max_flight_plans = 10;
+
+  private double optimization_altitude = 10e3;
+  private double optimization_inclination_in_degrees = 0;
 }
 
 }  // namespace ksp_plugin_adapter
