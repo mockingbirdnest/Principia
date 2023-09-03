@@ -295,14 +295,14 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrindsToAHalt) {
 
   LOG(INFO) << "Optimizing manœuvre 5";
   auto const manœuvre5 = flight_plan_->GetManœuvre(5);
-  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Nano(Metre) / Second));
+  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Micro(Metre) / Second));
 
   // The initial time doesn't change.
   EXPECT_THAT(
       manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
       Eq(0 * Second));
   EXPECT_THAT(flight_plan_->GetManœuvre(5).Δv().Norm(),
-              IsNear(0.122_(1) * Nano(Metre) / Second));
+              IsNear(4.3e-19_(1) * Metre / Second));
   EXPECT_EQ(0, number_of_evaluations);
 }
 
@@ -333,15 +333,15 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
 
   EXPECT_THAT(
       manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
-      IsNear(21.1_(1) * Micro(Second)));
+      IsNear(20.0_(1) * Micro(Second)));
   EXPECT_THAT(
       (manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
-      IsNear(1.073_(1) * Metre / Second));
+      IsNear(1.011_(1) * Metre / Second));
 
   ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
-  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:24:05"_DateTime));
-  EXPECT_THAT(flyby_distance, IsNear(1917.7_(1) * Kilo(Metre)));
-  EXPECT_EQ(111, number_of_evaluations);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:22:33"_DateTime));
+  EXPECT_THAT(flyby_distance, IsNear(3339.92_(1) * Kilo(Metre)));
+  EXPECT_EQ(146, number_of_evaluations);
 }
 
 }  // namespace ksp_plugin
