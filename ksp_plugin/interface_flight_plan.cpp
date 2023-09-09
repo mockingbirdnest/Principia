@@ -624,7 +624,7 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
                },
                inclination_in_degrees * Degree),
            FlightPlanOptimizer::ForΔv()},
-          {1, 1, 1}));
+          {1, 1000, 1}));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
       .index = manœuvre_index, .Δv_tolerance = 1 * Micro(Metre) / Second};

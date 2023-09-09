@@ -134,7 +134,7 @@ class FlightPlanOptimizer::MetricForInclination
 
  private:
   // Has no effect because this metric doesn't mix multiple quantities.
-  static constexpr Angle scale_ = 1 * Degree;
+  static constexpr Square<Angle> scale_ = 1 * Pow<2>(Degree);
 
   not_null<Celestial const*> const celestial_;
   not_null<std::unique_ptr<NavigationFrame const>> const frame_;
@@ -311,40 +311,59 @@ FlightPlanOptimizer::MetricForInclination::MetricForInclination(
 
 double FlightPlanOptimizer::MetricForInclination::Evaluate(
     HomogeneousArgument const& homogeneous_argument) const {
-  return optimizer().EvaluateRelativeInclinationlWithReplacement(
+  return Pow<2>(optimizer().EvaluateRelativeInclinationlWithReplacement(
       *celestial_,
       *frame_,
       target_inclination_,
       homogeneous_argument,
       manœuvre(),
-      index()) / scale_;
+      index())) / scale_;
 }
 
 Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
 FlightPlanOptimizer::MetricForInclination::EvaluateGradient(
     HomogeneousArgument const& homogeneous_argument) const {
-  return optimizer().Evaluate𝛁RelativeInclinationWithReplacement(
-             *celestial_,
-             *frame_,
-             target_inclination_,
-             homogeneous_argument,
-             manœuvre(),
-             index()) / scale_;
+  Angle const relative_inclination =
+      optimizer().EvaluateRelativeInclinationlWithReplacement(
+          *celestial_,
+          *frame_,
+          target_inclination_,
+          homogeneous_argument,
+          manœuvre(),
+          index());
+  AngleGradient const gradient =
+      optimizer().Evaluate𝛁RelativeInclinationWithReplacement(
+          *celestial_,
+          *frame_,
+          target_inclination_,
+          homogeneous_argument,
+          manœuvre(),
+          index());
+  return 2 * relative_inclination * gradient / scale_;
 }
 
 double FlightPlanOptimizer::MetricForInclination::EvaluateGateauxDerivative(
     HomogeneousArgument const& homogeneous_argument,
     Difference<HomogeneousArgument> const& homogeneous_argument_direction)
     const {
-  return optimizer()
-             .EvaluateGateauxDerivativeOfRelativeInclinationWithReplacement(
-                 *celestial_,
-                 *frame_,
-                 target_inclination_,
-                 homogeneous_argument,
-                 homogeneous_argument_direction,
-                 manœuvre(),
-                 index()) / scale_;
+  Angle const relative_inclination =
+      optimizer().EvaluateRelativeInclinationlWithReplacement(
+          *celestial_,
+          *frame_,
+          target_inclination_,
+          homogeneous_argument,
+          manœuvre(),
+          index());
+  Angle const derivative =
+      optimizer().EvaluateGateauxDerivativeOfRelativeInclinationWithReplacement(
+          *celestial_,
+          *frame_,
+          target_inclination_,
+          homogeneous_argument,
+          homogeneous_argument_direction,
+          manœuvre(),
+          index());
+  return 2 * relative_inclination * derivative / scale_;
 }
 
 FlightPlanOptimizer::MetricForΔv::MetricForΔv(
@@ -693,7 +712,7 @@ Angle FlightPlanOptimizer::EvaluateRelativeInclinationlWithReplacement(
   Angle const signed_relative_inclination = [](Angle const α) {
     return α > π * Radian ? α - 2 * π * Radian : α;
   }(Mod(i - target_inclination, 2 * π * Radian));
-  return Abs(signed_relative_inclination);
+  return signed_relative_inclination;
 }
 
 FlightPlanOptimizer::AngleGradient
