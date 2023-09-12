@@ -57,6 +57,7 @@ using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
@@ -356,6 +357,30 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_EQ(146, number_of_evaluations);
 }
 
+// All these variables are static and public to be usable by
+// INSTANTIATE_TEST_SUITE_P.
+SolarSystem<Barycentric> const solar_system_1950_(
+    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+    SOLUTION_DIR / "astronomy" /
+        "sol_initial_state_jd_2433282_500000000.proto.txt",
+    /*ignore_frame=*/true);
+not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_(
+    solar_system_1950_.MakeEphemeris(
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
+        Ephemeris<Barycentric>::FixedStepParameters(
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*step=*/10 * Minute)));
+not_null<RotatingBody<Barycentric> const*> const earth_body_(
+    solar_system_1950_.rotating_body(*ephemeris_, "Earth"));
+not_null<std::unique_ptr<Celestial>> const earth_celestial_ = []() {
+  auto celestial = std::make_unique<Celestial>(earth_body_);
+  celestial->set_trajectory(ephemeris_->trajectory(earth_body_));
+  return celestial;
+}();
+
 class MetricTest
     : public ::testing::TestWithParam<FlightPlanOptimizer::MetricFactory> {
  protected:
@@ -363,21 +388,8 @@ class MetricTest
       BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
 
   MetricTest()
-      : solar_system_1950_(
-            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-            SOLUTION_DIR / "astronomy" /
-                "sol_initial_state_jd_2433282_500000000.proto.txt",
-            /*ignore_frame=*/true),
-        epoch_(solar_system_1950_.epoch()),
-        ephemeris_(solar_system_1950_.MakeEphemeris(
-            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
-                                     /*geopotential_tolerance=*/0x1p-24},
-            Ephemeris<Barycentric>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<
-                    QuinlanTremaine1990Order12,
-                    Ephemeris<Barycentric>::NewtonianMotionEquation>(),
-                /*step=*/10 * Minute))),
-        navigation_frame_(ephemeris_.get(), ephemeris_->bodies().back()),
+      : epoch_(solar_system_1950_.epoch()),
+        navigation_frame_(ephemeris_.get(), earth_body_),
         burn_(MakeBurn()) {
     Instant const desired_final_time = epoch_ + 1 * Hour;
     EXPECT_OK(ephemeris_->Prolong(desired_final_time));
@@ -428,9 +440,7 @@ class MetricTest
             /*is_inertially_fixed=*/true};
   }
 
-  SolarSystem<Barycentric> const solar_system_1950_;
   Instant const epoch_;
-  not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
   TestNavigationFrame const navigation_frame_;
   NavigationManœuvre::Burn const burn_;
 
@@ -452,9 +462,14 @@ TEST_P(MetricTest, Positive) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(AllMetricTests,
-                         MetricTest,
-                         ::testing::Values(FlightPlanOptimizer::ForΔv()));
+INSTANTIATE_TEST_SUITE_P(
+    AllMetricTests,
+    MetricTest,
+    ::testing::Values(
+        FlightPlanOptimizer::ForCelestialCentre(earth_celestial_.get()),
+        FlightPlanOptimizer::ForCelestialDistance(earth_celestial_.get(),
+                                                  1000 * Kilo(Metre)),
+        FlightPlanOptimizer::ForΔv()));
 
 }  // namespace ksp_plugin
 }  // namespace principia
