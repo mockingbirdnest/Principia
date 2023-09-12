@@ -107,7 +107,7 @@ class FlightPlanTest : public testing::Test {
         t0_ - 2 * π * Second,
         {Barycentric::origin + Displacement<Barycentric>(
                                   {1 * Metre, 0 * Metre, 0 * Metre}),
-        Velocity<Barycentric>({0 * Metre / Second,
+         Velocity<Barycentric>({0 * Metre / Second,
                                 1 * Metre / Second,
                                 0 * Metre / Second})}));
     EXPECT_OK(root_.Append(

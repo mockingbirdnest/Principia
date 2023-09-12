@@ -20,12 +20,14 @@
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "astronomy/frames.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -33,11 +35,17 @@ namespace ksp_plugin {
 using ::testing::Eq;
 using ::testing::ResultOf;
 using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
@@ -45,8 +53,12 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_apsides;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -343,6 +355,106 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_THAT(flyby_distance, IsNear(3339.92_(1) * Kilo(Metre)));
   EXPECT_EQ(146, number_of_evaluations);
 }
+
+class MetricTest
+    : public ::testing::TestWithParam<FlightPlanOptimizer::MetricFactory> {
+ protected:
+  using TestNavigationFrame =
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
+
+  MetricTest()
+      : solar_system_1950_(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2433282_500000000.proto.txt",
+            /*ignore_frame=*/true),
+        epoch_(solar_system_1950_.epoch()),
+        ephemeris_(solar_system_1950_.MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            Ephemeris<Barycentric>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<
+                    QuinlanTremaine1990Order12,
+                    Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+                /*step=*/10 * Minute))),
+        navigation_frame_(ephemeris_.get(), ephemeris_->bodies().back()),
+        burn_(MakeBurn()) {
+    Instant const desired_final_time = epoch_ + 1 * Hour;
+    EXPECT_OK(ephemeris_->Prolong(desired_final_time));
+    auto const earth_dof = solar_system_1950_.degrees_of_freedom("Earth");
+    auto const mars_dof = solar_system_1950_.degrees_of_freedom("Mars");
+    auto const midway = Barycentre<DegreesOfFreedom<Barycentric>, double>(
+        {earth_dof, mars_dof}, {1, 1});
+    EXPECT_OK(root_.Append(epoch_, midway));
+    flight_plan_ = std::make_unique<FlightPlan>(
+        /*initial_mass=*/1 * Kilogram,
+        /*initial_time=*/epoch_,
+        /*initial_degrees_of_freedom=*/midway,
+        desired_final_time,
+        ephemeris_.get(),
+        Ephemeris<Barycentric>::AdaptiveStepParameters(
+            EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                DormandالمكاوىPrince1986RKN434FM,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*max_steps=*/1000,
+            /*length_integration_tolerance=*/1 * Milli(Metre),
+            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
+                Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
+            /*max_steps=*/1,
+            /*length_integration_tolerance=*/1 * Metre,
+            /*speed_integration_tolerance=*/1 * Metre / Second));
+    EXPECT_OK(flight_plan_->Insert(burn_, /*index=*/0));
+    optimizer_ =
+        std::make_unique<FlightPlanOptimizer>(flight_plan_.get(), GetParam());
+    metric_ = GetParam()(optimizer_.get(),
+                         NavigationManœuvre(10 * Kilo(Gram), burn_),
+                         /*index=*/0);
+  }
+
+  NavigationManœuvre::Burn MakeBurn() {
+    NavigationManœuvre::Intensity intensity;
+    intensity.Δv = Velocity<Frenet<Navigation>>(
+        {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = epoch_ + 1 * Minute;
+    return {intensity,
+            timing,
+            /*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(navigation_frame_),
+            /*is_inertially_fixed=*/true};
+  }
+
+  SolarSystem<Barycentric> const solar_system_1950_;
+  Instant const epoch_;
+  not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
+  TestNavigationFrame const navigation_frame_;
+  NavigationManœuvre::Burn const burn_;
+
+  DiscreteTrajectory<Barycentric> root_;
+  std::unique_ptr<FlightPlan> flight_plan_;
+  std::unique_ptr<FlightPlanOptimizer> optimizer_;
+  std::unique_ptr<FlightPlanOptimizer::Metric> metric_;
+};
+
+TEST_P(MetricTest, Positive) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> distribution(-100, 100);
+  for (int i = 0; i < 100; ++i) {
+    EXPECT_LE(0,
+              metric_->Evaluate(std::array{distribution(random),
+                                           distribution(random),
+                                           distribution(random),
+                                           distribution(random)}));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(AllMetricTests,
+                         MetricTest,
+                         ::testing::Values(FlightPlanOptimizer::ForΔv()));
 
 }  // namespace ksp_plugin
 }  // namespace principia
