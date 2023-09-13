@@ -528,7 +528,13 @@ INSTANTIATE_TEST_SUITE_P(
         FlightPlanOptimizer::ForCelestialCentre(earth_celestial_.get()),
         FlightPlanOptimizer::ForCelestialDistance(earth_celestial_.get(),
                                                   1000 * Kilo(Metre)),
-        FlightPlanOptimizer::ForΔv()));
+        FlightPlanOptimizer::ForΔv(),
+        FlightPlanOptimizer::LinearCombination(
+            {FlightPlanOptimizer::ForCelestialCentre(earth_celestial_.get()),
+             FlightPlanOptimizer::ForCelestialDistance(earth_celestial_.get(),
+                                                       1000 * Kilo(Metre)),
+             FlightPlanOptimizer::ForΔv()},
+            {2, 3, 5})));
 
 }  // namespace ksp_plugin
 }  // namespace principia
