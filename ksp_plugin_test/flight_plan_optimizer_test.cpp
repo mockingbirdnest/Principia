@@ -373,32 +373,13 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_EQ(146, number_of_evaluations);
 }
 
-// All these variables are static and public to be usable by
-// INSTANTIATE_TEST_SUITE_P.
-SolarSystem<Barycentric> const solar_system_1950_(
-    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-    SOLUTION_DIR / "astronomy" /
-        "sol_initial_state_jd_2433282_500000000.proto.txt",
-    /*ignore_frame=*/true);
-not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_(
-    solar_system_1950_.MakeEphemeris(
-        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
-                                 /*geopotential_tolerance=*/0x1p-24},
-        Ephemeris<Barycentric>::FixedStepParameters(
-            SymmetricLinearMultistepIntegrator<
-                QuinlanTremaine1990Order12,
-                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
-            /*step=*/10 * Minute)));
-not_null<RotatingBody<Barycentric> const*> const earth_body_(
-    solar_system_1950_.rotating_body(*ephemeris_, "Earth"));
-not_null<std::unique_ptr<Celestial>> const earth_celestial_ = []() {
-  auto celestial = std::make_unique<Celestial>(earth_body_);
-  celestial->set_trajectory(ephemeris_->trajectory(earth_body_));
-  return celestial;
-}();
-
 class MetricTest
     : public ::testing::TestWithParam<FlightPlanOptimizer::MetricFactory> {
+ public:
+  static Celestial const* earth_celestial() {
+    return earth_celestial_.get();
+  }
+
  protected:
   using TestNavigationFrame =
       BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
@@ -456,6 +437,11 @@ class MetricTest
             /*is_inertially_fixed=*/true};
   }
 
+  static SolarSystem<Barycentric> const solar_system_1950_;
+  static not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
+  static not_null<RotatingBody<Barycentric> const*> const earth_body_;
+  static not_null<std::unique_ptr<Celestial>> const earth_celestial_;
+
   Instant const epoch_;
   TestNavigationFrame const navigation_frame_;
   NavigationManœuvre::Burn const burn_;
@@ -465,6 +451,31 @@ class MetricTest
   std::unique_ptr<FlightPlanOptimizer> optimizer_;
   std::unique_ptr<FlightPlanOptimizer::Metric> metric_;
 };
+
+SolarSystem<Barycentric> const MetricTest::solar_system_1950_(
+    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+    SOLUTION_DIR / "astronomy" /
+        "sol_initial_state_jd_2433282_500000000.proto.txt",
+    /*ignore_frame=*/true);
+
+not_null<std::unique_ptr<Ephemeris<Barycentric>>> const MetricTest::ephemeris_(
+    solar_system_1950_.MakeEphemeris(
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
+        Ephemeris<Barycentric>::FixedStepParameters(
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*step=*/10 * Minute)));
+
+not_null<RotatingBody<Barycentric> const*> const MetricTest::earth_body_(
+    solar_system_1950_.rotating_body(*ephemeris_, "Earth"));
+
+not_null<std::unique_ptr<Celestial>> const MetricTest::earth_celestial_ = []() {
+  auto celestial = std::make_unique<Celestial>(earth_body_);
+  celestial->set_trajectory(ephemeris_->trajectory(earth_body_));
+  return celestial;
+}();
 
 TEST_P(MetricTest, Positive) {
   std::mt19937_64 random(42);
@@ -535,14 +546,16 @@ INSTANTIATE_TEST_SUITE_P(
     AllMetricTests,
     MetricTest,
     ::testing::Values(
-        FlightPlanOptimizer::ForCelestialCentre(earth_celestial_.get()),
-        FlightPlanOptimizer::ForCelestialDistance(earth_celestial_.get(),
+        FlightPlanOptimizer::ForCelestialCentre(MetricTest::earth_celestial()),
+        FlightPlanOptimizer::ForCelestialDistance(MetricTest::earth_celestial(),
                                                   1000 * Kilo(Metre)),
         FlightPlanOptimizer::ForΔv(),
         FlightPlanOptimizer::LinearCombination(
-            {FlightPlanOptimizer::ForCelestialCentre(earth_celestial_.get()),
-             FlightPlanOptimizer::ForCelestialDistance(earth_celestial_.get(),
-                                                       1000 * Kilo(Metre)),
+            {FlightPlanOptimizer::ForCelestialCentre(
+                 MetricTest::earth_celestial()),
+             FlightPlanOptimizer::ForCelestialDistance(
+                 MetricTest::earth_celestial(),
+                 1000 * Kilo(Metre)),
              FlightPlanOptimizer::ForΔv()},
             {2, 3, 5})));
 
