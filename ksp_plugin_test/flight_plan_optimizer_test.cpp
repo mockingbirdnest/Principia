@@ -373,8 +373,20 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_EQ(146, number_of_evaluations);
 }
 
+struct MetricTestParam {
+  MetricTestParam(FlightPlanOptimizer::MetricFactory const& metric_factory,
+                  ApproximateQuantity<double> const& max_gradient_relative_error,
+                  ApproximateQuantity<double> const& max_gateaux_relative_error)
+      : metric_factory(metric_factory),
+        max_gradient_relative_error(max_gradient_relative_error),
+        max_gateaux_relative_error(max_gateaux_relative_error) {}
+  FlightPlanOptimizer::MetricFactory const metric_factory;
+  ApproximateQuantity<double> const max_gradient_relative_error;
+  ApproximateQuantity<double> const max_gateaux_relative_error;
+};
+
 class MetricTest
-    : public ::testing::TestWithParam<FlightPlanOptimizer::MetricFactory> {
+    : public ::testing::TestWithParam<MetricTestParam> {
  public:
   static Celestial const* earth_celestial() {
     return earth_celestial_.get();
@@ -416,11 +428,12 @@ class MetricTest
             /*length_integration_tolerance=*/1 * Metre,
             /*speed_integration_tolerance=*/1 * Metre / Second));
     EXPECT_OK(flight_plan_->Insert(burn_, /*index=*/0));
-    optimizer_ =
-        std::make_unique<FlightPlanOptimizer>(flight_plan_.get(), GetParam());
-    metric_ = GetParam()(optimizer_.get(),
-                         NavigationManœuvre(10 * Kilo(Gram), burn_),
-                         /*index=*/0);
+    optimizer_ = std::make_unique<FlightPlanOptimizer>(
+        flight_plan_.get(), GetParam().metric_factory);
+    metric_ =
+        GetParam().metric_factory(optimizer_.get(),
+                                  NavigationManœuvre(10 * Kilo(Gram), burn_),
+                                  /*index=*/0);
   }
 
   NavigationManœuvre::Burn MakeBurn() {
@@ -494,6 +507,7 @@ TEST_P(MetricTest, Gradient) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> coordinate(-100, 100);
   std::uniform_real_distribution<double> displacement(-1, 1);
+  double max_relative_error = 0.0;
   for (int i = 0; i < 100; ++i) {
     FlightPlanOptimizer::HomogeneousArgument const argument(
         std::array{coordinate(random),
@@ -506,20 +520,24 @@ TEST_P(MetricTest, Gradient) {
                      displacement(random),
                      displacement(random),
                      displacement(random)});
-      EXPECT_THAT(metric_->Evaluate(argument + Δargument),
-                  RelativeErrorFrom(
-                      metric_->Evaluate(argument) +
-                          TransposedView(metric_->EvaluateGradient(argument)) *
-                              Δargument,
-                      AllOf(Ge(0.0), Le(0.0027))));
+      max_relative_error =
+          std::max(max_relative_error,
+                   RelativeError(
+                       metric_->Evaluate(argument + Δargument),
+                       metric_->Evaluate(argument) +
+                           TransposedView(metric_->EvaluateGradient(argument)) *
+                               Δargument));
     }
   }
+  EXPECT_THAT(max_relative_error,
+              IsNear(GetParam().max_gradient_relative_error));
 }
 
 TEST_P(MetricTest, Gateaux) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> coordinate(-100, 100);
   std::uniform_real_distribution<double> displacement(-1, 1);
+  double max_relative_error = 0.0;
   for (int i = 0; i < 100; ++i) {
     FlightPlanOptimizer::HomogeneousArgument const argument(
         std::array{coordinate(random),
@@ -532,32 +550,44 @@ TEST_P(MetricTest, Gateaux) {
                      displacement(random),
                      displacement(random),
                      displacement(random)});
-      EXPECT_THAT(metric_->Evaluate(argument + Δargument),
-                  RelativeErrorFrom(
-                      metric_->Evaluate(argument) +
-                          metric_->EvaluateGateauxDerivative(
-                              argument, Δargument),
-                      AllOf(Ge(0.0), Le(0.0027))));
+      max_relative_error = std::max(
+          max_relative_error,
+          RelativeError(
+              metric_->Evaluate(argument + Δargument),
+              metric_->Evaluate(argument) +
+                  metric_->EvaluateGateauxDerivative(argument, Δargument)));
     }
   }
+  EXPECT_THAT(max_relative_error,
+              IsNear(GetParam().max_gateaux_relative_error));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     AllMetricTests,
     MetricTest,
     ::testing::Values(
-        FlightPlanOptimizer::ForCelestialCentre(MetricTest::earth_celestial()),
-        FlightPlanOptimizer::ForCelestialDistance(MetricTest::earth_celestial(),
-                                                  1000 * Kilo(Metre)),
-        FlightPlanOptimizer::ForΔv(),
-        FlightPlanOptimizer::LinearCombination(
-            {FlightPlanOptimizer::ForCelestialCentre(
-                 MetricTest::earth_celestial()),
-             FlightPlanOptimizer::ForCelestialDistance(
-                 MetricTest::earth_celestial(),
-                 1000 * Kilo(Metre)),
-             FlightPlanOptimizer::ForΔv()},
-            {2, 3, 5})));
+        MetricTestParam(FlightPlanOptimizer::ForCelestialCentre(
+                            MetricTest::earth_celestial()),
+                        1.8e-11_(1),
+                        3.3e-11_(1)),
+        MetricTestParam(FlightPlanOptimizer::ForCelestialDistance(
+                            MetricTest::earth_celestial(),
+                            1000 * Kilo(Metre)),
+                        3.6e-11_(1),
+                        6.6e-11_(1)),
+        MetricTestParam(FlightPlanOptimizer::ForΔv(),
+                        2.6e-3_(1),
+                        2.6e-3_(1)),
+        MetricTestParam(FlightPlanOptimizer::LinearCombination(
+                            {FlightPlanOptimizer::ForCelestialCentre(
+                                 MetricTest::earth_celestial()),
+                             FlightPlanOptimizer::ForCelestialDistance(
+                                 MetricTest::earth_celestial(),
+                                 1000 * Kilo(Metre)),
+                             FlightPlanOptimizer::ForΔv()},
+                            {2, 3, 5}),
+                        3.6e-11_(1),
+                        6.6e-11_(1))));
 
 }  // namespace ksp_plugin
 }  // namespace principia
