@@ -26,16 +26,19 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "astronomy/frames.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
+using ::testing::AllOf;
 using ::testing::Eq;
+using ::testing::Ge;
+using ::testing::Le;
 using ::testing::ResultOf;
 using namespace principia::astronomy::_date_time;
-using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
@@ -52,6 +55,7 @@ using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
@@ -65,6 +69,8 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_matchers;
 
 class FlightPlanOptimizerTest : public testing::Test {
@@ -452,13 +458,40 @@ class MetricTest
 
 TEST_P(MetricTest, Positive) {
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<double> distribution(-100, 100);
+  std::uniform_real_distribution<double> coordinate(-100, 100);
   for (int i = 0; i < 100; ++i) {
-    EXPECT_LE(0,
-              metric_->Evaluate(std::array{distribution(random),
-                                           distribution(random),
-                                           distribution(random),
-                                           distribution(random)}));
+    FlightPlanOptimizer::HomogeneousArgument const argument(
+        std::array{coordinate(random),
+                   coordinate(random),
+                   coordinate(random),
+                   coordinate(random)});
+    EXPECT_LE(0, metric_->Evaluate(argument));
+  }
+}
+
+TEST_P(MetricTest, Gradient) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate(-100, 100);
+  std::uniform_real_distribution<double> displacement(-1, 1);
+  for (int i = 0; i < 100; ++i) {
+    FlightPlanOptimizer::HomogeneousArgument const argument(
+        std::array{coordinate(random),
+                   coordinate(random),
+                   coordinate(random),
+                   coordinate(random)});
+    for (int j = 0; j < 10; ++j) {
+      FlightPlanOptimizer::HomogeneousArgument const Δargument(
+          std::array{displacement(random),
+                     displacement(random),
+                     displacement(random),
+                     displacement(random)});
+      EXPECT_THAT(metric_->Evaluate(argument + Δargument),
+                  RelativeErrorFrom(
+                      metric_->Evaluate(argument) +
+                          TransposedView(metric_->EvaluateGradient(argument)) *
+                              Δargument,
+                      AllOf(Ge(0.0), Le(0.0027))));
+    }
   }
 }
 
