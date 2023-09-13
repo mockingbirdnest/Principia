@@ -495,6 +495,32 @@ TEST_P(MetricTest, Gradient) {
   }
 }
 
+TEST_P(MetricTest, Gateaux) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate(-100, 100);
+  std::uniform_real_distribution<double> displacement(-1, 1);
+  for (int i = 0; i < 100; ++i) {
+    FlightPlanOptimizer::HomogeneousArgument const argument(
+        std::array{coordinate(random),
+                   coordinate(random),
+                   coordinate(random),
+                   coordinate(random)});
+    for (int j = 0; j < 10; ++j) {
+      FlightPlanOptimizer::HomogeneousArgument const Δargument(
+          std::array{displacement(random),
+                     displacement(random),
+                     displacement(random),
+                     displacement(random)});
+      EXPECT_THAT(metric_->Evaluate(argument + Δargument),
+                  RelativeErrorFrom(
+                      metric_->Evaluate(argument) +
+                          metric_->EvaluateGateauxDerivative(
+                              argument, Δargument),
+                      AllOf(Ge(0.0), Le(0.0027))));
+    }
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     AllMetricTests,
     MetricTest,
