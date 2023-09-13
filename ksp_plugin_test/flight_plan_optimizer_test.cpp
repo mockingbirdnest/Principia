@@ -1,5 +1,6 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -374,9 +375,10 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
 }
 
 struct MetricTestParam {
-  MetricTestParam(FlightPlanOptimizer::MetricFactory const& metric_factory,
-                  ApproximateQuantity<double> const& max_gradient_relative_error,
-                  ApproximateQuantity<double> const& max_gateaux_relative_error)
+  MetricTestParam(
+      FlightPlanOptimizer::MetricFactory const& metric_factory,
+      ApproximateQuantity<double> const& max_gradient_relative_error,
+      ApproximateQuantity<double> const& max_gateaux_relative_error)
       : metric_factory(metric_factory),
         max_gradient_relative_error(max_gradient_relative_error),
         max_gateaux_relative_error(max_gateaux_relative_error) {}
