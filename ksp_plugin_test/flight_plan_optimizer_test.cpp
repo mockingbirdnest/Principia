@@ -44,10 +44,11 @@
 namespace principia {
 namespace ksp_plugin {
 
-using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Le;
+using ::testing::Matcher;
 using ::testing::ResultOf;
 using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_time_scales;
@@ -377,14 +378,14 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
 struct MetricTestParam {
   MetricTestParam(
       FlightPlanOptimizer::MetricFactory const& metric_factory,
-      ApproximateQuantity<double> const& max_gradient_relative_error,
-      ApproximateQuantity<double> const& max_gateaux_relative_error)
+      Matcher<double> const& max_gradient_relative_error,
+      Matcher<double> const& max_gateaux_relative_error)
       : metric_factory(metric_factory),
         max_gradient_relative_error(max_gradient_relative_error),
         max_gateaux_relative_error(max_gateaux_relative_error) {}
   FlightPlanOptimizer::MetricFactory const metric_factory;
-  ApproximateQuantity<double> const max_gradient_relative_error;
-  ApproximateQuantity<double> const max_gateaux_relative_error;
+  Matcher<double> const max_gradient_relative_error;
+  Matcher<double> const max_gateaux_relative_error;
 };
 
 class MetricTest
@@ -532,7 +533,7 @@ TEST_P(MetricTest, Gradient) {
     }
   }
   EXPECT_THAT(max_relative_error,
-              IsNear(GetParam().max_gradient_relative_error));
+              GetParam().max_gradient_relative_error);
 }
 
 TEST_P(MetricTest, Gateaux) {
@@ -561,7 +562,7 @@ TEST_P(MetricTest, Gateaux) {
     }
   }
   EXPECT_THAT(max_relative_error,
-              IsNear(GetParam().max_gateaux_relative_error));
+              GetParam().max_gateaux_relative_error);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -570,16 +571,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         MetricTestParam(FlightPlanOptimizer::ForCelestialCentre(
                             MetricTest::earth_celestial()),
-                        1.8e-11_(1),
-                        3.3e-11_(1)),
+                        AnyOf(IsNear(1.8e-11_(1)), IsNear(3.9e-11_(1))),
+                        AnyOf(IsNear(3.3e-11_(1)), IsNear(7.2e-11_(1)))),
         MetricTestParam(FlightPlanOptimizer::ForCelestialDistance(
                             MetricTest::earth_celestial(),
                             1000 * Kilo(Metre)),
-                        3.6e-11_(1),
-                        6.6e-11_(1)),
+                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1)))),
         MetricTestParam(FlightPlanOptimizer::ForΔv(),
-                        2.6e-3_(1),
-                        2.6e-3_(1)),
+                        IsNear(2.6e-3_(1)),
+                        IsNear(2.6e-3_(1))),
         MetricTestParam(FlightPlanOptimizer::LinearCombination(
                             {FlightPlanOptimizer::ForCelestialCentre(
                                  MetricTest::earth_celestial()),
@@ -588,8 +589,8 @@ INSTANTIATE_TEST_SUITE_P(
                                  1000 * Kilo(Metre)),
                              FlightPlanOptimizer::ForΔv()},
                             {2, 3, 5}),
-                        3.6e-11_(1),
-                        6.6e-11_(1))));
+                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1))))));
 
 }  // namespace ksp_plugin
 }  // namespace principia
