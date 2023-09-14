@@ -1,5 +1,6 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -7,51 +8,81 @@
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "numerics/transposed_view.hpp"
 #include "physics/apsides.hpp"
+#include "physics/body_centred_non_rotating_reference_frame.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
+#include "physics/rotating_body.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
+using ::testing::AnyOf;
 using ::testing::Eq;
+using ::testing::Ge;
+using ::testing::Le;
+using ::testing::Matcher;
 using ::testing::ResultOf;
 using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::physics::_apsides;
+using namespace principia::physics::_body_centred_non_rotating_reference_frame;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_matchers;
 
 class FlightPlanOptimizerTest : public testing::Test {
@@ -343,6 +374,223 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_THAT(flyby_distance, IsNear(3339.92_(1) * Kilo(Metre)));
   EXPECT_EQ(146, number_of_evaluations);
 }
+
+struct MetricTestParam {
+  MetricTestParam(
+      FlightPlanOptimizer::MetricFactory const& metric_factory,
+      Matcher<double> const& max_gradient_relative_error,
+      Matcher<double> const& max_gateaux_relative_error)
+      : metric_factory(metric_factory),
+        max_gradient_relative_error(max_gradient_relative_error),
+        max_gateaux_relative_error(max_gateaux_relative_error) {}
+  FlightPlanOptimizer::MetricFactory const metric_factory;
+  Matcher<double> const max_gradient_relative_error;
+  Matcher<double> const max_gateaux_relative_error;
+};
+
+class MetricTest
+    : public ::testing::TestWithParam<MetricTestParam> {
+ public:
+  static Celestial const* earth_celestial() {
+    return earth_celestial_.get();
+  }
+
+ protected:
+  using TestNavigationFrame =
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
+
+  MetricTest()
+      : epoch_(solar_system_1950_.epoch()),
+        navigation_frame_(ephemeris_.get(), earth_body_),
+        burn_(MakeBurn()) {
+    Instant const desired_final_time = epoch_ + 1 * Hour;
+    EXPECT_OK(ephemeris_->Prolong(desired_final_time));
+    auto const earth_dof = solar_system_1950_.degrees_of_freedom("Earth");
+    auto const mars_dof = solar_system_1950_.degrees_of_freedom("Mars");
+    auto const midway = Barycentre<DegreesOfFreedom<Barycentric>, double>(
+        {earth_dof, mars_dof}, {1, 1});
+    EXPECT_OK(root_.Append(epoch_, midway));
+    flight_plan_ = std::make_unique<FlightPlan>(
+        /*initial_mass=*/1 * Kilogram,
+        /*initial_time=*/epoch_,
+        /*initial_degrees_of_freedom=*/midway,
+        desired_final_time,
+        ephemeris_.get(),
+        Ephemeris<Barycentric>::AdaptiveStepParameters(
+            EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                DormandالمكاوىPrince1986RKN434FM,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*max_steps=*/1000,
+            /*length_integration_tolerance=*/1 * Milli(Metre),
+            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
+                Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
+            /*max_steps=*/1,
+            /*length_integration_tolerance=*/1 * Metre,
+            /*speed_integration_tolerance=*/1 * Metre / Second));
+    EXPECT_OK(flight_plan_->Insert(burn_, /*index=*/0));
+    optimizer_ = std::make_unique<FlightPlanOptimizer>(
+        flight_plan_.get(), GetParam().metric_factory);
+    metric_ =
+        GetParam().metric_factory(optimizer_.get(),
+                                  NavigationManœuvre(10 * Kilo(Gram), burn_),
+                                  /*index=*/0);
+  }
+
+  NavigationManœuvre::Burn MakeBurn() {
+    NavigationManœuvre::Intensity intensity;
+    intensity.Δv = Velocity<Frenet<Navigation>>(
+        {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = epoch_ + 1 * Minute;
+    return {intensity,
+            timing,
+            /*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(navigation_frame_),
+            /*is_inertially_fixed=*/true};
+  }
+
+  static SolarSystem<Barycentric> const solar_system_1950_;
+  static not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
+  static not_null<RotatingBody<Barycentric> const*> const earth_body_;
+  static not_null<std::unique_ptr<Celestial>> const earth_celestial_;
+
+  Instant const epoch_;
+  TestNavigationFrame const navigation_frame_;
+  NavigationManœuvre::Burn const burn_;
+
+  DiscreteTrajectory<Barycentric> root_;
+  std::unique_ptr<FlightPlan> flight_plan_;
+  std::unique_ptr<FlightPlanOptimizer> optimizer_;
+  std::unique_ptr<FlightPlanOptimizer::Metric> metric_;
+};
+
+SolarSystem<Barycentric> const MetricTest::solar_system_1950_(
+    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+    SOLUTION_DIR / "astronomy" /
+        "sol_initial_state_jd_2433282_500000000.proto.txt",
+    /*ignore_frame=*/true);
+
+not_null<std::unique_ptr<Ephemeris<Barycentric>>> const MetricTest::ephemeris_(
+    solar_system_1950_.MakeEphemeris(
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
+        Ephemeris<Barycentric>::FixedStepParameters(
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*step=*/10 * Minute)));
+
+not_null<RotatingBody<Barycentric> const*> const MetricTest::earth_body_(
+    solar_system_1950_.rotating_body(*ephemeris_, "Earth"));
+
+not_null<std::unique_ptr<Celestial>> const MetricTest::earth_celestial_ = []() {
+  auto celestial = std::make_unique<Celestial>(earth_body_);
+  celestial->set_trajectory(ephemeris_->trajectory(earth_body_));
+  return celestial;
+}();
+
+TEST_P(MetricTest, Positive) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate(-100, 100);
+  for (int i = 0; i < 100; ++i) {
+    FlightPlanOptimizer::HomogeneousArgument const argument(
+        std::array{coordinate(random),
+                   coordinate(random),
+                   coordinate(random),
+                   coordinate(random)});
+    EXPECT_LE(0, metric_->Evaluate(argument));
+  }
+}
+
+TEST_P(MetricTest, Gradient) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate(-100, 100);
+  std::uniform_real_distribution<double> displacement(-1, 1);
+  double max_relative_error = 0.0;
+  for (int i = 0; i < 100; ++i) {
+    FlightPlanOptimizer::HomogeneousArgument const argument(
+        std::array{coordinate(random),
+                   coordinate(random),
+                   coordinate(random),
+                   coordinate(random)});
+    for (int j = 0; j < 10; ++j) {
+      FlightPlanOptimizer::HomogeneousArgument const Δargument(
+          std::array{displacement(random),
+                     displacement(random),
+                     displacement(random),
+                     displacement(random)});
+      max_relative_error =
+          std::max(max_relative_error,
+                   RelativeError(
+                       metric_->Evaluate(argument + Δargument),
+                       metric_->Evaluate(argument) +
+                           TransposedView(metric_->EvaluateGradient(argument)) *
+                               Δargument));
+    }
+  }
+  EXPECT_THAT(max_relative_error,
+              GetParam().max_gradient_relative_error);
+}
+
+TEST_P(MetricTest, Gateaux) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate(-100, 100);
+  std::uniform_real_distribution<double> displacement(-1, 1);
+  double max_relative_error = 0.0;
+  for (int i = 0; i < 100; ++i) {
+    FlightPlanOptimizer::HomogeneousArgument const argument(
+        std::array{coordinate(random),
+                   coordinate(random),
+                   coordinate(random),
+                   coordinate(random)});
+    for (int j = 0; j < 10; ++j) {
+      FlightPlanOptimizer::HomogeneousArgument const Δargument(
+          std::array{displacement(random),
+                     displacement(random),
+                     displacement(random),
+                     displacement(random)});
+      max_relative_error = std::max(
+          max_relative_error,
+          RelativeError(
+              metric_->Evaluate(argument + Δargument),
+              metric_->Evaluate(argument) +
+                  metric_->EvaluateGateauxDerivative(argument, Δargument)));
+    }
+  }
+  EXPECT_THAT(max_relative_error,
+              GetParam().max_gateaux_relative_error);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllMetricTests,
+    MetricTest,
+    ::testing::Values(
+        MetricTestParam(FlightPlanOptimizer::ForCelestialCentre(
+                            MetricTest::earth_celestial()),
+                        AnyOf(IsNear(1.8e-11_(1)), IsNear(3.9e-11_(1))),
+                        AnyOf(IsNear(3.3e-11_(1)), IsNear(7.2e-11_(1)))),
+        MetricTestParam(FlightPlanOptimizer::ForCelestialDistance(
+                            MetricTest::earth_celestial(),
+                            1000 * Kilo(Metre)),
+                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1)))),
+        MetricTestParam(FlightPlanOptimizer::ForΔv(),
+                        IsNear(2.6e-3_(1)),
+                        IsNear(2.6e-3_(1))),
+        MetricTestParam(FlightPlanOptimizer::LinearCombination(
+                            {FlightPlanOptimizer::ForCelestialCentre(
+                                 MetricTest::earth_celestial()),
+                             FlightPlanOptimizer::ForCelestialDistance(
+                                 MetricTest::earth_celestial(),
+                                 1000 * Kilo(Metre)),
+                             FlightPlanOptimizer::ForΔv()},
+                            {2, 3, 5}),
+                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1))))));
 
 }  // namespace ksp_plugin
 }  // namespace principia
