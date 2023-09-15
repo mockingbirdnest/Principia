@@ -14,6 +14,8 @@
 #include "ksp_plugin/frames.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/gradient_descent.hpp"
+#include "physics/ephemeris.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -31,6 +33,8 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
+using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -101,6 +105,10 @@ class FlightPlanOptimizer {
   static MetricFactory ForCelestialDistance(
       not_null<Celestial const*> celestial,
       Length const& target_distance);
+  static MetricFactory ForInclination(
+      not_null<Celestial const*> celestial,
+      std::function<not_null<std::unique_ptr<NavigationFrame>>()> frame,
+      Angle const& target_inclination);
   static MetricFactory ForΔv();
 
   // Called throughout the optimization to let the client know the tentative
@@ -125,26 +133,38 @@ class FlightPlanOptimizer {
   class LinearCombinationOfMetrics;
   class MetricForCelestialCentre;
   class MetricForCelestialDistance;
+  class MetricForInclination;
   class MetricForΔv;
 
   // Function evaluations are very expensive, as they require integrating a
   // flight plan and finding periapsides.  We don't want do to them
   // unnecessarily.  You generally don't want to hash floats, but it's a case
   // where it's kosher.
-  using EvaluationCache = absl::flat_hash_map<HomogeneousArgument, Length>;
+  using EvaluationCache =
+      absl::flat_hash_map<HomogeneousArgument,
+                          DiscreteTrajectory<Barycentric>::value_type>;
 
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
+
+  using AngleGradient = Gradient<Angle, HomogeneousArgument>;
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
   // |celestial|, occurring after |begin_time|.  If |extend_if_needed| is true,
   // the flight plan is extended until its end is not the point that minimizes
   // the metric.
-  Length EvaluateDistanceToCelestial(Celestial const& celestial,
-                                     Instant const& begin_time,
-                                     bool extend_if_needed) const;
+  DiscreteTrajectory<Barycentric>::value_type EvaluateLowestPeriapsis(
+      Celestial const& celestial,
+      Instant const& begin_time,
+      bool extend_if_needed) const;
 
   // Replaces the manœuvre at the given |index| based on the |argument|, and
   // computes the closest periapis.  Leaves the |flight_plan| unchanged.
+  DiscreteTrajectory<Barycentric>::value_type EvaluatePeriapsisWithReplacement(
+      Celestial const& celestial,
+      HomogeneousArgument const& homogeneous_argument,
+      NavigationManœuvre const& manœuvre,
+      int index);
+
   Length EvaluateDistanceToCelestialWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
@@ -162,6 +182,31 @@ class FlightPlanOptimizer {
 
   Length EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
       Celestial const& celestial,
+      HomogeneousArgument const& homogeneous_argument,
+      Difference<HomogeneousArgument> const& direction_homogeneous_argument,
+      NavigationManœuvre const& manœuvre,
+      int index);
+
+  Angle EvaluateRelativeInclinationlWithReplacement(
+      Celestial const& celestial,
+      NavigationFrame const& frame,
+      Angle const& target_inclination,
+      HomogeneousArgument const& homogeneous_argument,
+      NavigationManœuvre const& manœuvre,
+      int index);
+
+  AngleGradient Evaluate𝛁RelativeInclinationWithReplacement(
+      Celestial const& celestial,
+      NavigationFrame const& frame,
+      Angle const& target_inclination,
+      HomogeneousArgument const& homogeneous_argument,
+      NavigationManœuvre const& manœuvre,
+      int index);
+
+  Angle EvaluateGateauxDerivativeOfRelativeInclinationWithReplacement(
+      Celestial const& celestial,
+      NavigationFrame const& frame,
+      Angle const& target_inclination,
       HomogeneousArgument const& homogeneous_argument,
       Difference<HomogeneousArgument> const& direction_homogeneous_argument,
       NavigationManœuvre const& manœuvre,

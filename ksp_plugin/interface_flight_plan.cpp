@@ -592,9 +592,17 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
     char const* const vessel_guid,
     int const manœuvre_index,
     int const celestial_index,
-    double const distance) {
+    double const distance,
+    double const inclination_in_degrees,
+    NavigationFrameParameters const navigation_frame_parameters) {
   journal::Method<journal::FlightPlanOptimizeManoeuvre> m(
-      {plugin, vessel_guid});
+      {plugin,
+       vessel_guid,
+       manœuvre_index,
+       celestial_index,
+       distance,
+       inclination_in_degrees,
+       navigation_frame_parameters});
   CHECK_NOTNULL(plugin);
   auto& vessel = *plugin->GetVessel(vessel_guid);
   {
@@ -608,12 +616,18 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
           {FlightPlanOptimizer::ForCelestialDistance(
                /*celestial=*/&plugin->GetCelestial(celestial_index),
                /*target_distance=*/distance * Metre),
+           FlightPlanOptimizer::ForInclination(
+               &plugin->GetCelestial(celestial_index),
+               [plugin, navigation_frame_parameters]() {
+                 return NewNavigationFrame(*plugin,
+                                           navigation_frame_parameters);
+               },
+               inclination_in_degrees * Degree),
            FlightPlanOptimizer::ForΔv()},
-          {1, 1}));
+          {1, 1000, 1}));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
-      .index = manœuvre_index,
-      .Δv_tolerance = 1 * Micro(Metre) / Second};
+      .index = manœuvre_index, .Δv_tolerance = 1 * Micro(Metre) / Second};
   vessel.flight_plan_optimization_driver()->RequestOptimization(parameters);
   return m.Return();
 }
