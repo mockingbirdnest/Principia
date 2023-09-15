@@ -54,6 +54,7 @@ using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
@@ -106,10 +107,11 @@ class FlightPlanOptimizerTest : public testing::Test {
     LOG(FATAL) << "No celestial named " << name;
   }
 
-  static void ComputeFlyby(FlightPlan const& flight_plan,
-                           Celestial const& celestial,
-                           Instant& flyby_time,
-                           Length& flyby_distance) {
+  static void ComputeFlyby(
+      FlightPlan const& flight_plan,
+      Celestial const& celestial,
+      Instant& flyby_time,
+      DegreesOfFreedom<Barycentric>& flyby_degrees_of_freedom) {
     auto const& celestial_trajectory = celestial.trajectory();
     auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
     DiscreteTrajectory<Barycentric> apoapsides;
@@ -122,16 +124,46 @@ class FlightPlanOptimizerTest : public testing::Test {
                    apoapsides,
                    periapsides);
     auto const radius = celestial.body()->mean_radius();
-    for (const auto [time, _] : periapsides) {
+    for (const auto [time, degrees_of_freedom] : periapsides) {
       Length const periapsis_distance =
           (celestial_trajectory.EvaluatePosition(time) -
-           flight_plan_trajectory.EvaluatePosition(time))
+           degrees_of_freedom.position())
               .Norm();
       if (periapsis_distance < 50 * radius) {
         flyby_time = time;
-        flyby_distance = periapsis_distance;
+        flyby_degrees_of_freedom = degrees_of_freedom;
       }
     }
+  }
+
+  static void ComputeFlyby(FlightPlan const& flight_plan,
+                           Celestial const& celestial,
+                           Instant& flyby_time,
+                           Length& flyby_distance) {
+    auto const& celestial_trajectory = celestial.trajectory();
+    DegreesOfFreedom<Barycentric> flyby_degrees_of_freedom(
+        Barycentric::origin, Barycentric::unmoving);
+    ComputeFlyby(flight_plan, celestial, flyby_time, flyby_degrees_of_freedom);
+    flyby_distance = (celestial_trajectory.EvaluatePosition(flyby_time) -
+                      flyby_degrees_of_freedom.position())
+                         .Norm();
+  }
+
+  static void ComputeFlyby(FlightPlan const& flight_plan,
+                           Celestial const& celestial,
+                           NavigationFrame const& frame,
+                           Instant& flyby_time,
+                           Angle& flyby_inclination) {
+    auto const& celestial_trajectory = celestial.trajectory();
+    DegreesOfFreedom<Barycentric> flyby_degrees_of_freedom(
+        Barycentric::origin, Barycentric::unmoving);
+    ComputeFlyby(flight_plan, celestial, flyby_time, flyby_degrees_of_freedom);
+    auto const navigation_degrees_of_freedom =
+        frame.ToThisFrameAtTime(flyby_time)(flyby_degrees_of_freedom);
+    auto const r = navigation_degrees_of_freedom.position() - Navigation::origin;
+    auto const v = navigation_degrees_of_freedom.velocity();
+    flyby_inclination =
+        AngleBetween(Wedge(r, v), Bivector<double, Navigation>({0, 0, 1}));
   }
 
   void ReadReachFlightPlan() {
@@ -335,6 +367,88 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrindsToAHalt) {
   EXPECT_THAT(flight_plan_->GetManœuvre(5).Δv().Norm(),
               IsNear(4.3e-19_(1) * Metre / Second));
   EXPECT_EQ(0, number_of_evaluations);
+}
+
+TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
+  ReadReachFlightPlan();
+
+  Celestial const& moon = FindCelestialByName("Moon", *plugin_);
+  auto const moon_index = plugin_->CelestialIndexOfBody(*moon.body());
+  auto const moon_frame =
+      plugin_->NewBodyCentredNonRotatingNavigationFrame(moon_index);
+  Instant flyby_time;
+  Angle flyby_inclination;
+  ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime));
+  EXPECT_THAT(flyby_inclination, IsNear(76.32_(1) * Degree));
+
+  std::int64_t number_of_evaluations = 0;
+  FlightPlanOptimizer optimizer(
+      flight_plan_,
+      FlightPlanOptimizer::ForInclination(
+          &moon,
+          [this, moon_index]() {
+            return plugin_->NewBodyCentredNonRotatingNavigationFrame(
+                moon_index);
+          },
+          90 * Degree),
+      [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
+
+  LOG(INFO) << "Optimizing manœuvre 5";
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
+  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
+
+  EXPECT_THAT(
+      manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
+      IsNear(0.715_(1) * Micro(Second)));
+  EXPECT_THAT(
+      (manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
+      IsNear(1.615_(1) * Centi(Metre) / Second));
+
+  ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:09:20"_DateTime));
+  EXPECT_THAT(flyby_inclination, IsNear(90.23_(1) * Degree));
+  EXPECT_EQ(25, number_of_evaluations);
+  number_of_evaluations = 0;
+
+  CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
+
+  LOG(INFO) << "Optimizing manœuvre 6";
+  auto const manœuvre6 = flight_plan_->GetManœuvre(6);
+  EXPECT_OK(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second));
+
+  EXPECT_THAT(
+      manœuvre6.initial_time() - flight_plan_->GetManœuvre(6).initial_time(),
+      Eq(0 * Second));
+  EXPECT_THAT((manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
+              IsNear(0.257_(1) * Metre / Second));
+
+  ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:09:47"_DateTime));
+  EXPECT_THAT(flyby_inclination, IsNear(89.98_(1) * Degree));
+  EXPECT_EQ(35, number_of_evaluations);
+  number_of_evaluations = 0;
+
+  CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
+
+  LOG(INFO) << "Optimizing manœuvre 7";
+  auto const manœuvre7 = flight_plan_->GetManœuvre(7);
+  EXPECT_OK(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second));
+
+  EXPECT_THAT(
+      manœuvre7.initial_time() - flight_plan_->GetManœuvre(7).initial_time(),
+      IsNear(0.61_(1) * Milli(Second)));
+  EXPECT_THAT(
+      (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
+      IsNear(12.7_(1) * Metre / Second));
+
+  ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:08:39"_DateTime));
+  EXPECT_THAT(flyby_inclination, IsNear(90.00_(1) * Degree));
+  EXPECT_EQ(60, number_of_evaluations);
+  number_of_evaluations = 0;
+
+  CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
 }
 
 TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
