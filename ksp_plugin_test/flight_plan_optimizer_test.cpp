@@ -391,17 +391,25 @@ struct MetricTestParam {
 class MetricTest
     : public ::testing::TestWithParam<MetricTestParam> {
  public:
+  using TestNavigationFrame =
+      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
+
   static Celestial const* earth_celestial() {
     return earth_celestial_.get();
   }
 
- protected:
-  using TestNavigationFrame =
-      BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>;
+  static std::function<not_null<std::unique_ptr<TestNavigationFrame>>()>
+  frame() {
+    return []() {
+      return make_not_null_unique<TestNavigationFrame>(ephemeris_.get(),
+                                                       earth_body_);
+    };
+  }
 
+ protected:
   MetricTest()
       : epoch_(solar_system_1950_.epoch()),
-        navigation_frame_(ephemeris_.get(), earth_body_),
+        navigation_frame_(*frame()()),
         burn_(MakeBurn()) {
     Instant const desired_final_time = epoch_ + 1 * Hour;
     EXPECT_OK(ephemeris_->Prolong(desired_final_time));
@@ -576,6 +584,12 @@ INSTANTIATE_TEST_SUITE_P(
         MetricTestParam(FlightPlanOptimizer::ForCelestialDistance(
                             MetricTest::earth_celestial(),
                             1000 * Kilo(Metre)),
+                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1)))),
+        MetricTestParam(FlightPlanOptimizer::ForInclination(
+                            MetricTest::earth_celestial(),
+                            MetricTest::frame(),
+                            45 * Degree),
                         AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
                         AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1)))),
         MetricTestParam(FlightPlanOptimizer::ForΔv(),
