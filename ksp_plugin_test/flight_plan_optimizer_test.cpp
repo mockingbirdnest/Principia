@@ -693,19 +693,19 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         MetricTestParam(FlightPlanOptimizer::ForCelestialCentre(
                             MetricTest::earth_celestial()),
-                        AnyOf(IsNear(1.8e-11_(1)), IsNear(3.9e-11_(1))),
-                        AnyOf(IsNear(3.3e-11_(1)), IsNear(7.2e-11_(1)))),
+                        AnyOf(IsNear(1.5e-11_(1)), IsNear(3.9e-11_(1))),
+                        AnyOf(IsNear(2.8e-11_(1)), IsNear(7.2e-11_(1)))),
         MetricTestParam(FlightPlanOptimizer::ForCelestialDistance(
                             MetricTest::earth_celestial(),
                             1000 * Kilo(Metre)),
-                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
-                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1)))),
+                        AnyOf(IsNear(3.1e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(5.6e-11_(1)), IsNear(1.4e-10_(1)))),
         MetricTestParam(FlightPlanOptimizer::ForInclination(
                             MetricTest::earth_celestial(),
                             MetricTest::frame(),
                             45 * Degree),
-                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
-                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1)))),
+                        AnyOf(IsNear(1.6e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(3.0e-11_(1)), IsNear(1.4e-10_(1)))),
         MetricTestParam(FlightPlanOptimizer::ForΔv(),
                         IsNear(2.6e-3_(1)),
                         IsNear(2.6e-3_(1))),
@@ -717,8 +717,8 @@ INSTANTIATE_TEST_SUITE_P(
                                  1000 * Kilo(Metre)),
                              FlightPlanOptimizer::ForΔv()},
                             {2, 3, 5}),
-                        AnyOf(IsNear(3.6e-11_(1)), IsNear(7.8e-11_(1))),
-                        AnyOf(IsNear(6.6e-11_(1)), IsNear(1.4e-10_(1))))));
+                        AnyOf(IsNear(3.1e-11_(1)), IsNear(7.8e-11_(1))),
+                        AnyOf(IsNear(5.6e-11_(1)), IsNear(1.4e-10_(1))))));
 
 }  // namespace ksp_plugin
 }  // namespace principia

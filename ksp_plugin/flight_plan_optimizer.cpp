@@ -603,7 +603,7 @@ FlightPlanOptimizer::EvaluateLowestPeriapsis(
         {1 - flight_plan_extension_factor, flight_plan_extension_factor});
     flight_plan_->SetDesiredFinalTime(new_desired_final_time).IgnoreError();
     if (flight_plan_->actual_final_time() <= previous_actual_final_time) {
-      break;
+      return vessel_trajectory.back();
     }
   }
 
