@@ -487,17 +487,18 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForInclination(
     not_null<Celestial const*> const celestial,
     std::function<not_null<std::unique_ptr<NavigationFrame>>()> frame_factory,
     Angle const& target_inclination) {
-  return [celestial, frame_factory = std::move(frame_factory), target_inclination](
-             not_null<FlightPlanOptimizer*> const optimizer,
-             NavigationManœuvre manœuvre,
-             int const index) {
-    return make_not_null_unique<MetricForInclination>(optimizer,
-                                                      std::move(manœuvre),
-                                                      index,
-                                                      celestial,
-                                                      frame_factory(),
-                                                      target_inclination);
-  };
+  return
+      [celestial, frame_factory = std::move(frame_factory), target_inclination](
+          not_null<FlightPlanOptimizer*> const optimizer,
+          NavigationManœuvre manœuvre,
+          int const index) {
+        return make_not_null_unique<MetricForInclination>(optimizer,
+                                                          std::move(manœuvre),
+                                                          index,
+                                                          celestial,
+                                                          frame_factory(),
+                                                          target_inclination);
+      };
 }
 
 FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForΔv() {
