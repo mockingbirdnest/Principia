@@ -10,6 +10,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -22,6 +23,8 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
@@ -101,6 +104,14 @@ double Zoom(double α_lo,
             Field<Scalar, Argument> const& f,
             GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
             bool& satisfies_strong_wolfe_condition) {
+  Logger logger(TEMP_DIR / "zoom.wl");
+  logger.Set("params", std::tuple(α_lo, α_hi, x, p), ExpressInSIUnits);
+  constexpr int steps = 100;
+  for (int i = 0; i <= steps; ++i) {
+    auto const α = α_lo + i * (α_hi - α_lo) / steps;
+    logger.Append("phi", f(x + α * p), ExpressInSIUnits);
+    logger.Append("dPhi", gateaux_derivative_f(x + α * p, p), ExpressInSIUnits);
+  }
   std::optional<Scalar> previous_ϕ_αⱼ;
   satisfies_strong_wolfe_condition = true;
   LOG(INFO) << "Zoom over: [" << α_lo << " (" << ϕ_α_lo << "), "

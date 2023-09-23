@@ -515,7 +515,8 @@ FlightPlanOptimizer::FlightPlanOptimizer(
     ProgressCallback progress_callback)
     : flight_plan_(flight_plan),
       metric_factory_(std::move(metric_factory)),
-      progress_callback_(std::move(progress_callback)) {}
+      progress_callback_(std::move(progress_callback)),
+      logger_(TEMP_DIR / "optimizer.wl") {}
 
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
@@ -634,6 +635,18 @@ FlightPlanOptimizer::EvaluatePeriapsisWithReplacement(
       EvaluateLowestPeriapsis(celestial,
                               manœuvre.initial_time(),
                               /*extend_if_needed=*/replace_status.ok());
+  const auto& [time, _] = periapsis;
+  logger_.Append("periapsis",
+                 std::tuple(homogeneous_argument,
+                            periapsis,
+                            celestial.trajectory().EvaluatePosition(time),
+                            flight_plan_->actual_final_time(),
+                            flight_plan_->desired_final_time(),
+                            flight_plan_->GetAllSegments().EvaluatePosition(
+                                flight_plan_->actual_final_time()),
+                            celestial.trajectory().EvaluatePosition(
+                                flight_plan_->actual_final_time())),
+                 ExpressInSIUnits);
 
   flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
   cache_.emplace(homogeneous_argument, periapsis);
