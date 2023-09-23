@@ -586,10 +586,10 @@ FlightPlanOptimizer::EvaluateLowestPeriapsis(
     // Evaluate the distance at the end of the trajectory.  If it is smaller
     // than all the periapsides, increase the length of the flight plan until it
     // isn't.
+    auto const& end_point = vessel_trajectory.back();
     auto const distance_at_end =
-        (vessel_trajectory.back().degrees_of_freedom.position() -
-         celestial_trajectory.EvaluatePosition(celestial_trajectory.t_max()))
-            .Norm();
+        (end_point.degrees_of_freedom.position() -
+         celestial_trajectory.EvaluatePosition(end_point.time)).Norm();
     if (distance_at_end >= distance_at_closest_periapsis) {
       break;
     } else if (!extend_if_needed) {
