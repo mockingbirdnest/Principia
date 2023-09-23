@@ -15,7 +15,6 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -34,7 +33,6 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -152,7 +150,7 @@ class FlightPlanOptimizer {
   // |celestial|, occurring after |begin_time|.  If |extend_if_needed| is true,
   // the flight plan is extended until its end is not the point that minimizes
   // the metric.
-  DiscreteTrajectory<Barycentric>::value_type EvaluateLowestPeriapsis(
+  DiscreteTrajectory<Barycentric>::value_type EvaluateClosestPeriapsis(
       Celestial const& celestial,
       Instant const& begin_time,
       bool extend_if_needed) const;

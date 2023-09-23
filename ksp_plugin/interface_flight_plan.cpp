@@ -627,7 +627,8 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
           {1, 1000, 1}));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
-      .index = manœuvre_index, .Δv_tolerance = 1 * Micro(Metre) / Second};
+      .index = manœuvre_index,
+      .Δv_tolerance = 1 * Micro(Metre) / Second};
   vessel.flight_plan_optimization_driver()->RequestOptimization(parameters);
   return m.Return();
 }

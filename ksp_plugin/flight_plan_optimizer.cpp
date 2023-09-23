@@ -298,10 +298,10 @@ FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
 }
 
 FlightPlanOptimizer::MetricForInclination::MetricForInclination(
-    not_null<FlightPlanOptimizer*> optimizer,
-    NavigationManœuvre manœuvre,
-    int index,
-    not_null<Celestial const*> celestial,
+    not_null<FlightPlanOptimizer*> const optimizer,
+    NavigationManœuvre const manœuvre,
+    int const index,
+    not_null<Celestial const*> const celestial,
     not_null<std::unique_ptr<NavigationFrame const>> frame,
     Angle const& target_inclination)
     : Metric(optimizer, manœuvre, index),
@@ -487,7 +487,7 @@ FlightPlanOptimizer::MetricFactory FlightPlanOptimizer::ForInclination(
     not_null<Celestial const*> const celestial,
     std::function<not_null<std::unique_ptr<NavigationFrame>>()> frame_factory,
     Angle const& target_inclination) {
-  return [celestial, frame_factory, target_inclination](
+  return [celestial, frame_factory = std::move(frame_factory), target_inclination](
              not_null<FlightPlanOptimizer*> const optimizer,
              NavigationManœuvre manœuvre,
              int const index) {
@@ -551,7 +551,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
 }
 
 DiscreteTrajectory<Barycentric>::value_type
-FlightPlanOptimizer::EvaluateLowestPeriapsis(
+FlightPlanOptimizer::EvaluateClosestPeriapsis(
     Celestial const& celestial,
     Instant const& begin_time,
     bool const extend_if_needed) const {
@@ -631,9 +631,9 @@ FlightPlanOptimizer::EvaluatePeriapsisWithReplacement(
   // better than the alternative of returning an infinity, which introduces
   // discontinuities.
   auto const periapsis =
-      EvaluateLowestPeriapsis(celestial,
-                              manœuvre.initial_time(),
-                              /*extend_if_needed=*/replace_status.ok());
+      EvaluateClosestPeriapsis(celestial,
+                               manœuvre.initial_time(),
+                               /*extend_if_needed=*/replace_status.ok());
 
   flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
   cache_.emplace(homogeneous_argument, periapsis);
@@ -645,7 +645,7 @@ Length FlightPlanOptimizer::EvaluateDistanceToCelestialWithReplacement(
     Celestial const& celestial,
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int index) {
+    int const index) {
   auto const [time, degrees_of_freedom] = EvaluatePeriapsisWithReplacement(
       celestial, homogeneous_argument, manœuvre, index);
   return (degrees_of_freedom.position() -
@@ -699,7 +699,7 @@ Angle FlightPlanOptimizer::EvaluateRelativeInclinationlWithReplacement(
     Angle const& target_inclination,
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int index) {
+    int const index) {
   auto const [time, barycentric_degrees_of_freedom] =
       EvaluatePeriapsisWithReplacement(
           celestial, homogeneous_argument, manœuvre, index);
@@ -722,7 +722,7 @@ FlightPlanOptimizer::Evaluate𝛁RelativeInclinationWithReplacement(
     Angle const& target_inclination,
     HomogeneousArgument const& homogeneous_argument,
     NavigationManœuvre const& manœuvre,
-    int index) {
+    int const index) {
   auto const angle =
       EvaluateRelativeInclinationlWithReplacement(celestial,
                                                   frame,
@@ -755,7 +755,7 @@ Angle FlightPlanOptimizer::
         HomogeneousArgument const& homogeneous_argument,
         Difference<HomogeneousArgument> const& direction_homogeneous_argument,
         NavigationManœuvre const& manœuvre,
-        int index) {
+        int const index) {
   auto const angle =
       EvaluateRelativeInclinationlWithReplacement(celestial,
                                                   frame,
