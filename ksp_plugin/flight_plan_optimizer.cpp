@@ -311,7 +311,7 @@ FlightPlanOptimizer::MetricForInclination::MetricForInclination(
 
 double FlightPlanOptimizer::MetricForInclination::Evaluate(
     HomogeneousArgument const& homogeneous_argument) const {
-  return Pow<2>(optimizer().EvaluateRelativeInclinationlWithReplacement(
+  return Pow<2>(optimizer().EvaluateRelativeInclinationWithReplacement(
       *celestial_,
       *frame_,
       target_inclination_,
@@ -324,7 +324,7 @@ Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
 FlightPlanOptimizer::MetricForInclination::EvaluateGradient(
     HomogeneousArgument const& homogeneous_argument) const {
   Angle const relative_inclination =
-      optimizer().EvaluateRelativeInclinationlWithReplacement(
+      optimizer().EvaluateRelativeInclinationWithReplacement(
           *celestial_,
           *frame_,
           target_inclination_,
@@ -347,7 +347,7 @@ double FlightPlanOptimizer::MetricForInclination::EvaluateGateauxDerivative(
     Difference<HomogeneousArgument> const& homogeneous_argument_direction)
     const {
   Angle const relative_inclination =
-      optimizer().EvaluateRelativeInclinationlWithReplacement(
+      optimizer().EvaluateRelativeInclinationWithReplacement(
           *celestial_,
           *frame_,
           target_inclination_,
@@ -593,7 +593,7 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
     if (distance_at_end >= distance_at_closest_periapsis) {
       break;
     } else if (!extend_if_needed) {
-      return vessel_trajectory.back();
+      return end_point;
     }
 
     // Try to nudge the desired final time.  This may not succeed, in which case
@@ -604,7 +604,7 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
         {1 - flight_plan_extension_factor, flight_plan_extension_factor});
     flight_plan_->SetDesiredFinalTime(new_desired_final_time).IgnoreError();
     if (flight_plan_->actual_final_time() <= previous_actual_final_time) {
-      return vessel_trajectory.back();
+      return end_point;
     }
   }
 
@@ -620,6 +620,7 @@ FlightPlanOptimizer::EvaluatePeriapsisWithReplacement(
   if (auto const it = cache_.find(homogeneous_argument); it != cache_.end()) {
     return it->second;
   }
+
   auto const replace_status =
       flight_plan_->Replace(UpdatedBurn(homogeneous_argument, manœuvre), index);
   if (progress_callback_ != nullptr) {
@@ -638,7 +639,6 @@ FlightPlanOptimizer::EvaluatePeriapsisWithReplacement(
 
   flight_plan_->Replace(manœuvre.burn(), index).IgnoreError();
   cache_.emplace(homogeneous_argument, periapsis);
-
   return periapsis;
 }
 
@@ -694,7 +694,7 @@ EvaluateGateauxDerivativeOfDistanceToCelestialWithReplacement(
   return (distance_δh - distance) / h;
 }
 
-Angle FlightPlanOptimizer::EvaluateRelativeInclinationlWithReplacement(
+Angle FlightPlanOptimizer::EvaluateRelativeInclinationWithReplacement(
     Celestial const& celestial,
     NavigationFrame const& frame,
     Angle const& target_inclination,
@@ -725,25 +725,25 @@ FlightPlanOptimizer::Evaluate𝛁RelativeInclinationWithReplacement(
     NavigationManœuvre const& manœuvre,
     int const index) {
   auto const angle =
-      EvaluateRelativeInclinationlWithReplacement(celestial,
-                                                  frame,
-                                                  target_inclination,
-                                                  homogeneous_argument,
-                                                  manœuvre,
-                                                  index);
+      EvaluateRelativeInclinationWithReplacement(celestial,
+                                                 frame,
+                                                 target_inclination,
+                                                 homogeneous_argument,
+                                                 manœuvre,
+                                                 index);
 
   AngleGradient gradient;
-  for (int i = 0; i < HomogeneousArgument::dimension; ++i) {
-    HomogeneousArgument homogeneous_argument_δi = homogeneous_argument;
-    homogeneous_argument_δi[i] += δ_homogeneous_argument;
-    auto const angle_δi =
-        EvaluateRelativeInclinationlWithReplacement(celestial,
-                                                    frame,
-                                                    target_inclination,
-                                                    homogeneous_argument_δi,
-                                                    manœuvre,
-                                                    index);
-    gradient[i] = (angle_δi - angle) / δ_homogeneous_argument;
+  for (int k = 0; k < HomogeneousArgument::dimension; ++k) {
+    HomogeneousArgument homogeneous_argument_δk = homogeneous_argument;
+    homogeneous_argument_δk[k] += δ_homogeneous_argument;
+    auto const angle_δk =
+        EvaluateRelativeInclinationWithReplacement(celestial,
+                                                   frame,
+                                                   target_inclination,
+                                                   homogeneous_argument_δk,
+                                                   manœuvre,
+                                                   index);
+    gradient[k] = (angle_δk - angle) / δ_homogeneous_argument;
   }
   return gradient;
 }
@@ -758,7 +758,7 @@ Angle FlightPlanOptimizer::
         NavigationManœuvre const& manœuvre,
         int const index) {
   auto const angle =
-      EvaluateRelativeInclinationlWithReplacement(celestial,
+      EvaluateRelativeInclinationWithReplacement(celestial,
                                                   frame,
                                                   target_inclination,
                                                   homogeneous_argument,
@@ -769,12 +769,12 @@ Angle FlightPlanOptimizer::
   auto const homogeneous_argument_h =
       homogeneous_argument + h * direction_homogeneous_argument;
   auto const angle_δh =
-      EvaluateRelativeInclinationlWithReplacement(celestial,
-                                                  frame,
-                                                  target_inclination,
-                                                  homogeneous_argument_h,
-                                                  manœuvre,
-                                                  index);
+      EvaluateRelativeInclinationWithReplacement(celestial,
+                                                 frame,
+                                                 target_inclination,
+                                                 homogeneous_argument_h,
+                                                 manœuvre,
+                                                 index);
   return (angle_δh - angle) / h;
 }
 

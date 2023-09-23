@@ -143,7 +143,6 @@ class FlightPlanOptimizer {
                           DiscreteTrajectory<Barycentric>::value_type>;
 
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
-
   using AngleGradient = Gradient<Angle, HomogeneousArgument>;
 
   // Compute the closest periapsis of the |flight_plan| with respect to the
@@ -185,7 +184,7 @@ class FlightPlanOptimizer {
       NavigationManœuvre const& manœuvre,
       int index);
 
-  Angle EvaluateRelativeInclinationlWithReplacement(
+  Angle EvaluateRelativeInclinationWithReplacement(
       Celestial const& celestial,
       NavigationFrame const& frame,
       Angle const& target_inclination,
