@@ -14,7 +14,6 @@
 #include "ksp_plugin/frames.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/gradient_descent.hpp"
-#include "mathematica/logger.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
@@ -32,8 +31,6 @@ using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::physics::_discrete_trajectory;
@@ -227,8 +224,6 @@ class FlightPlanOptimizer {
   ProgressCallback const progress_callback_;
 
   EvaluationCache cache_;
-
-  Logger logger_;
 };
 
 }  // namespace internal
