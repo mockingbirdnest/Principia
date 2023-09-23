@@ -9,6 +9,7 @@
 #include "base/not_null.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
@@ -160,8 +161,9 @@ class FlightPlanOptimizerTest : public testing::Test {
     ComputeFlyby(flight_plan, celestial, flyby_time, flyby_degrees_of_freedom);
     auto const navigation_degrees_of_freedom =
         frame.ToThisFrameAtTime(flyby_time)(flyby_degrees_of_freedom);
-    auto const r = navigation_degrees_of_freedom.position() - Navigation::origin;
-    auto const v = navigation_degrees_of_freedom.velocity();
+    auto const r =
+        navigation_degrees_of_freedom.position() - Navigation::origin;
+    auto const& v = navigation_degrees_of_freedom.velocity();
     flyby_inclination =
         AngleBetween(Wedge(r, v), Bivector<double, Navigation>({0, 0, 1}));
   }
