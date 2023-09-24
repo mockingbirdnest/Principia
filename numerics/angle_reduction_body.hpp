@@ -1,7 +1,8 @@
 #pragma once
 
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "numerics/angle_reduction.hpp"
+
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 
 namespace principia {
 namespace numerics {
@@ -9,9 +10,6 @@ namespace _angle_reduction {
 namespace internal {
 
 using namespace principia::quantities::_si;
-
-template<typename Angle>
-static constexpr Angle one_π;
 
 template<>
 static constexpr Angle one_π<Angle> = π * Radian;
@@ -23,9 +21,6 @@ static constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
   result.error = 0x1.1A62633145C07p-53 * Radian;
   return result;
 }();
-
-template<typename Angle>
-static constexpr Angle two_π;
 
 template<>
 static constexpr Angle two_π<Angle> = 2 * π * Radian;
@@ -51,9 +46,6 @@ std::int64_t StaticCastToInt64<DoublePrecision<double>>(
     DoublePrecision<double> const& t) {
   return static_cast<std::int64_t>(t.value + t.error);
 }
-
-template<typename T>
-std::int64_t StaticCastToInt64(T const& t);
 
 template<typename Angle,
          double fractional_part_lower_bound,

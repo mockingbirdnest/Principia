@@ -4,10 +4,13 @@
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
 
+// The test is in the |internal| namespace to get visibility to |one_π| and
+// |two_π|.
 namespace principia {
 namespace numerics {
+namespace _angle_reduction {
+namespace internal {
 
-using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -18,6 +21,8 @@ class AngleReductionTest : public testing::Test {};
 
 TYPED_TEST_SUITE_P(AngleReductionTest);
 
+// This test is not type-parameterized because the reduction algorithm only
+// works for |Angle|.
 TEST(AngleReductionTest, SingleMinusπOver2ToπOver2) {
   Angle fractional_part;
   std::int64_t integer_part;
@@ -59,11 +64,13 @@ TYPED_TEST_P(AngleReductionTest, SingleMinusπToπ) {
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-π, π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle((4 - 2 * π) * Radian), 0));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(4 * Radian) - two_π<Angle>, 0));
   EXPECT_EQ(1, integer_part);
 
   ReduceAngle<-π, π>(Angle(-4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 4) * Radian), 0));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(two_π<Angle> + Angle(-4 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<-π, π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
@@ -77,8 +84,8 @@ TYPED_TEST_P(AngleReductionTest, Single0To2π) {
   Angle fractional_part;
   std::int64_t integer_part;
 
-  ReduceAngle<0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
+  ReduceAngle<0, 2 * π>(Angle(1 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
@@ -86,11 +93,13 @@ TYPED_TEST_P(AngleReductionTest, Single0To2π) {
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(-1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 1) * Radian), 0));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(two_π<Angle> + Angle(-1 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle((7 - 2 * π) * Radian), 0));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(7 * Radian) - two_π<Angle>, 0));
   EXPECT_EQ(1, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
@@ -113,11 +122,13 @@ TYPED_TEST_P(AngleReductionTest, SingleMinus2πTo2π) {
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle((7 - 2 * π) * Radian), 0));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(7 * Radian) - two_π<Angle>, 0));
   EXPECT_EQ(1, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(Angle(-7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 7) * Radian), 0));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(two_π<Angle> + Angle(-7 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(
@@ -137,5 +148,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(AllAngleReductionTests,
                                AngleReductionTest,
                                AngleTypes);
 
+}  // namespace internal
+}  // namespace _angle_reduction
 }  // namespace numerics
 }  // namespace principia

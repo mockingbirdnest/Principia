@@ -11,6 +11,13 @@ namespace internal {
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
 
+// Do not export these declarations, they are only exposed for tests.
+template<typename Angle>
+static constexpr Angle one_π;
+
+template<typename Angle>
+static constexpr Angle two_π;
+
 template<double fractional_part_lower_bound,
          double fractional_part_upper_bound,
          typename Angle>
