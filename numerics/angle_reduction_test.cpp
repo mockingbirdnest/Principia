@@ -39,7 +39,8 @@ TEST(AngleReductionTest, SingleMinusπOver2ToπOver2) {
   EXPECT_EQ(-1, integer_part);
 
   // 355/113 is hard, let's go shopping.
-  ReduceAngle<-π / 2, π / 2>(Angle(355 * Radian), fractional_part, integer_part);
+  ReduceAngle<-π / 2, π / 2>(
+      Angle(355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals((355 - 113 * π) * Radian, 9451283));
   EXPECT_EQ(113, integer_part);
 }
@@ -119,7 +120,8 @@ TYPED_TEST_P(AngleReductionTest, SingleMinus2πTo2π) {
   EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 7) * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
-  ReduceAngle<-2 * π, 2 * π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
+  ReduceAngle<-2 * π, 2 * π>(
+      Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
               AlmostEquals(Angle((2 * 355 - 2 * 113 * π) * Radian), 0));
   EXPECT_EQ(113, integer_part);

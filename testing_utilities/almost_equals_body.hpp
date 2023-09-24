@@ -305,14 +305,25 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  return AlmostEqualsMatcher<S>(expected_.value,
-                                /*min_ulps=*/0,
-                                /*max_ulps=*/0)
-             .MatchAndExplain(actual.value, listener) &&
-         AlmostEqualsMatcher<S>(expected_.error,
-                                min_ulps_,
-                                max_ulps_)
-             .MatchAndExplain(actual.error, listener);
+  std::int64_t const value_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.value),
+                               DoubleValue(expected_.value));
+  if (value_distance != 0) {
+    *listener << "the values differ by the following number of ULPs: "
+              << value_distance;
+    return false;
+  }
+  std::int64_t const error_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.error),
+                               DoubleValue(expected_.error));
+  bool const matches =
+      min_ulps_ <= error_distance && error_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the error is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by the following numbers of ULPs: "
+              << error_distance;
+  }
+  return matches;
 }
 
 template<typename T>
