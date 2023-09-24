@@ -17,20 +17,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
 template<typename T>
-class AngleReductionTest : public testing::Test {
- protected:
-  static inline T const four_π = two_π<T> + two_π<T>;
-  static inline T const eight_π = four_π + four_π;
-  static inline T const sixteen_π = eight_π + eight_π;
-  static inline T const thirtytwo_π = sixteen_π + sixteen_π;
-  static inline T const sixtyfour_π = thirtytwo_π + thirtytwo_π;
-  static inline T const hundredandtwelve_π =
-      sixtyfour_π + thirtytwo_π + sixteen_π;
-  static inline T const hundredandfourteen_π =
-      sixtyfour_π + thirtytwo_π + sixteen_π + two_π<T>;
-  static inline T const twohundredandtwentysix_π =
-      hundredandtwelve_π + hundredandfourteen_π;
-};
+class AngleReductionTest : public testing::Test {};
 
 TYPED_TEST_SUITE_P(AngleReductionTest);
 
@@ -59,7 +46,10 @@ TEST(AngleReductionTest, SingleMinusπOver2ToπOver2) {
   // 355/113 is hard, let's go shopping.
   ReduceAngle<-π / 2, π / 2>(
       Angle(355 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((355 - 113 * π) * Radian, 9451283));
+  EXPECT_THAT(
+      fractional_part,
+      AlmostEquals(0.000030144353364053721297689416174085720 * Radian,
+                   2221148));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -86,12 +76,13 @@ TYPED_TEST_P(AngleReductionTest, SingleMinusπToπ) {
               AlmostEquals(two_π<Angle> + Angle(-4 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
-  ReduceAngle<-π, π>(Angle(355 * Radian), fractional_part, integer_part);
+  ReduceAngle<-π, π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(
       fractional_part,
-      AlmostEquals(
-          Angle(355 * Radian) - TestFixture::hundredandfourteen_π, 14, 48));
-  EXPECT_EQ(57, integer_part);
+      AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
+                       Angle(0x1.BA01B07B5D1EBp-71 * Radian),
+                   4861461, 7230135));
+  EXPECT_EQ(113, integer_part);
 }
 
 TYPED_TEST_P(AngleReductionTest, Single0To2π) {
@@ -121,8 +112,9 @@ TYPED_TEST_P(AngleReductionTest, Single0To2π) {
       Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(
       fractional_part,
-      AlmostEquals(
-          Angle(2 * 355 * Radian) - TestFixture::twohundredandtwentysix_π, 0));
+      AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
+                       Angle(0x1.BA01B07B5D1EBp-71 * Radian),
+                   4861461, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -153,8 +145,9 @@ TYPED_TEST_P(AngleReductionTest, SingleMinus2πTo2π) {
       Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(
       fractional_part,
-      AlmostEquals(
-          Angle(2 * 355 * Radian) - TestFixture::twohundredandtwentysix_π, 0));
+      AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
+                       Angle(0x1.BA01B07B5D1EBp-71 * Radian),
+                   4861461, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
