@@ -19,6 +19,18 @@ void Reduce(Angle const& angle,
 
 DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ);
 
+template<double fractional_part_lower_bound,
+         double fractional_part_upper_bound,
+         typename Angle>
+void ReduceAngle(Angle const& θ,
+                 Angle& fractional_part,
+                 std::int64_t& integer_part);
+
+template<double fractional_part_lower_bound,
+         double fractional_part_upper_bound,
+         typename Angle>
+Angle ReduceAngle(Angle const& θ);
+
 }  // namespace internal
 }  // namespace _angle_reduction
 }  // namespace numerics
