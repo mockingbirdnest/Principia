@@ -44,6 +44,21 @@ class AngleReduction<Angle, -π / 2, π / 2> {
 };
 
 template<>
+class AngleReduction<Angle, -π, π> {
+ public:
+  static void Reduce(Angle const& θ,
+                     Angle& fractional_part,
+                     std::int64_t& integer_part) {
+    AngleReduction<Angle, 0.0, 2 * π>::Reduce(
+        θ, fractional_part, integer_part);
+    if (fractional_part > π * Radian) {
+      fractional_part -= two_π;
+      ++integer_part;
+    }
+  }
+};
+
+template<>
 class AngleReduction<Angle, 0.0, 2 * π> {
  public:
   static void Reduce(Angle const& θ,
@@ -77,8 +92,10 @@ class AngleReduction<DoublePrecision<Angle>, -2 * π, 2 * π> {
                      DoublePrecision<Angle>& fractional_part,
                      std::int64_t& integer_part) {
     static DoublePrecision<Angle> const two_π = []() {
-      return QuickTwoSum(0x1.921FB54442D18p2 * Radian,
-                         0x1.1A62633145C07p-52 * Radian);
+      DoublePrecision<Angle> result;
+      result.value = 0x1.921FB54442D18p2 * Radian;
+      result.error = 0x1.1A62633145C07p-52 * Radian;
+      return result;
     }();
     DoublePrecision<double> const θ_over_2π = θ / two_π;
     integer_part = static_cast<int>(θ_over_2π.value);
