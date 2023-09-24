@@ -24,6 +24,9 @@ template<double fractional_part_lower_bound,
 Angle ReduceAngle(Angle const& θ);
 
 }  // namespace internal
+
+using internal::ReduceAngle;
+
 }  // namespace _angle_reduction
 }  // namespace numerics
 }  // namespace principia

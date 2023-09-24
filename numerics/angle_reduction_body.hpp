@@ -102,9 +102,11 @@ template<double fractional_part_lower_bound,
 void ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
                  std::int64_t& integer_part) {
-  AngleReduction::
-      Reduce<Angle, fractional_part_lower_bound, fractional_part_upper_bound>(
-          θ, fractional_part, integer_part);
+  AngleReduction<Angle,
+                 fractional_part_lower_bound,
+                 fractional_part_upper_bound>::Reduce(θ,
+                                                      fractional_part,
+                                                      integer_part);
 }
 
 template<double fractional_part_lower_bound,
@@ -113,10 +115,12 @@ template<double fractional_part_lower_bound,
 Angle ReduceAngle(Angle const& θ) {
   Angle fractional_part;
   std::int64_t integer_part;
-  AngleReduction::
-      Reduce<Angle, fractional_part_lower_bound, fractional_part_upper_bound>(
-          θ, fractional_part, integer_part);
-  return fractional_part
+  AngleReduction<Angle,
+                 fractional_part_lower_bound,
+                 fractional_part_upper_bound>::Reduce(θ,
+                                                      fractional_part,
+                                                      integer_part);
+  return fractional_part;
 }
 
 }  // namespace internal
