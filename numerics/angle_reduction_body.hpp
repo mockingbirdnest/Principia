@@ -91,8 +91,8 @@ class AngleReduction<Angle, -2 * π, 2 * π> {
                      Angle& fractional_part,
                      std::int64_t& integer_part) {
     // This has the same semantics as fmod.
-    double const θ_over_2π = θ / two_π<Angle>;
-    integer_part = static_cast<int>(θ_over_2π);
+    auto const θ_over_2π = θ / two_π<Angle>;
+    integer_part = static_cast<std::int64_t>(θ_over_2π);
     fractional_part = θ - two_π<Angle> * integer_part;
   }
 };
