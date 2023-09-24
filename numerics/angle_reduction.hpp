@@ -18,6 +18,10 @@ constexpr Angle one_π;
 template<typename Angle>
 constexpr Angle two_π;
 
+// If [fractional_part_lower_bound, fractional_part_upper_bound] covers 2π or
+// more, the reduction is modulo 2π.  If it covers only π, the reduction is
+// modulo π.
+
 template<double fractional_part_lower_bound,
          double fractional_part_upper_bound,
          typename Angle>
