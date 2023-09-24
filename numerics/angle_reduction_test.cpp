@@ -2,6 +2,9 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/double_precision.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 // The test is in the |internal| namespace to get visibility to |one_π| and

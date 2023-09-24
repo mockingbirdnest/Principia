@@ -3,6 +3,7 @@
 #include "numerics/angle_reduction.hpp"
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
