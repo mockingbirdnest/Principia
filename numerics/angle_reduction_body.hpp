@@ -11,6 +11,20 @@ namespace internal {
 using namespace principia::quantities::_si;
 
 template<typename Angle>
+static constexpr Angle one_π;
+
+template<>
+static constexpr Angle one_π<Angle> = π * Radian;
+
+template<>
+static constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
+  DoublePrecision<Angle> result;
+  result.value = 0x1.921FB54442D18p1 * Radian;
+  result.error = 0x1.1A62633145C07p-53 * Radian;
+  return result;
+}();
+
+template<typename Angle>
 static constexpr Angle two_π;
 
 template<>
@@ -23,6 +37,23 @@ static constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
   result.error = 0x1.1A62633145C07p-52 * Radian;
   return result;
 }();
+
+template<typename T>
+std::int64_t StaticCastToInt64(T const& t);
+
+template<>
+std::int64_t StaticCastToInt64<double>(double const& t) {
+  return static_cast<std::int64_t>(t);
+}
+
+template<>
+std::int64_t StaticCastToInt64<DoublePrecision<double>>(
+    DoublePrecision<double> const& t) {
+  return static_cast<std::int64_t>(t.value + t.error);
+}
+
+template<typename T>
+std::int64_t StaticCastToInt64(T const& t);
 
 template<typename Angle,
          double fractional_part_lower_bound,
@@ -62,7 +93,7 @@ class AngleReduction<Angle, -π, π> {
                      Angle& fractional_part,
                      std::int64_t& integer_part) {
     AngleReduction<Angle, 0.0, 2 * π>::Reduce(θ, fractional_part, integer_part);
-    if (fractional_part > π * Radian) {
+    if (fractional_part > one_π<Angle>) {
       fractional_part -= two_π<Angle>;
       ++integer_part;
     }
@@ -77,7 +108,7 @@ class AngleReduction<Angle, 0.0, 2 * π> {
                      std::int64_t& integer_part) {
     AngleReduction<Angle, -2 * π, 2 * π>::Reduce(
         θ, fractional_part, integer_part);
-    if (fractional_part < 0.0 * Radian) {
+    if (fractional_part < Angle{}) {
       fractional_part += two_π<Angle>;
       --integer_part;
     }
@@ -92,8 +123,9 @@ class AngleReduction<Angle, -2 * π, 2 * π> {
                      std::int64_t& integer_part) {
     // This has the same semantics as fmod.
     auto const θ_over_2π = θ / two_π<Angle>;
-    integer_part = static_cast<std::int64_t>(θ_over_2π);
-    fractional_part = θ - two_π<Angle> * integer_part;
+    integer_part = StaticCastToInt64(θ_over_2π);
+    fractional_part =
+        θ - two_π<Angle> * static_cast<decltype(θ_over_2π)>(integer_part);
   }
 };
 

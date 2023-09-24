@@ -50,24 +50,24 @@ TYPED_TEST_P(AngleReductionTest, SingleMinusπToπ) {
   std::int64_t integer_part;
 
   ReduceAngle<-π, π>(Angle(1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(1 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-π, π>(Angle(-1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(-1 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(-1 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-π, π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((4 - 2 * π) * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle((4 - 2 * π) * Radian), 0));
   EXPECT_EQ(1, integer_part);
 
   ReduceAngle<-π, π>(Angle(-4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((2 * π - 4) * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 4) * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<-π, π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
-              AlmostEquals((2 * 355 - 2 * 113 * π) * Radian, 0));
+              AlmostEquals(Angle((2 * 355 - 2 * 113 * π) * Radian), 0));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -77,24 +77,24 @@ TYPED_TEST_P(AngleReductionTest, Single0To2π) {
   std::int64_t integer_part;
 
   ReduceAngle<0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(4 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(4 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(-1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((2 * π - 1) * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 1) * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((7 - 2 * π) * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle((7 - 2 * π) * Radian), 0));
   EXPECT_EQ(1, integer_part);
 
   ReduceAngle<0, 2 * π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
-              AlmostEquals((2 * 355 - 2 * 113 * π) * Radian, 0));
+              AlmostEquals(Angle((2 * 355 - 2 * 113 * π) * Radian), 0));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -104,24 +104,24 @@ TYPED_TEST_P(AngleReductionTest, SingleMinus2πTo2π) {
   std::int64_t integer_part;
 
   ReduceAngle<-2 * π, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(4 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(Angle(-4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(-4 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(-4 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((7 - 2 * π) * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle((7 - 2 * π) * Radian), 0));
   EXPECT_EQ(1, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(Angle(-7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals((2 * π - 7) * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle((2 * π - 7) * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<-2 * π, 2 * π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
-              AlmostEquals((2 * 355 - 2 * 113 * π) * Radian, 0));
+              AlmostEquals(Angle((2 * 355 - 2 * 113 * π) * Radian), 0));
   EXPECT_EQ(113, integer_part);
 }
 

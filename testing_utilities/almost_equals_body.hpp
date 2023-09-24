@@ -297,6 +297,25 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename S>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    DoublePrecision<S> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  return AlmostEqualsMatcher<S>(expected_.value,
+                                /*min_ulps=*/0,
+                                /*max_ulps=*/0)
+             .MatchAndExplain(actual.value, listener) &&
+         AlmostEqualsMatcher<S>(expected_.error,
+                                min_ulps_,
+                                max_ulps_)
+             .MatchAndExplain(actual.error, listener);
+}
+
+template<typename T>
 template<typename Scalar, int size>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     FixedVector<Scalar, size> const& actual,

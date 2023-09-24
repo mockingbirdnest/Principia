@@ -14,6 +14,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
+#include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/quantities.hpp"
@@ -30,6 +31,7 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
@@ -90,6 +92,9 @@ class AlmostEqualsMatcher final {
                        testing::MatchResultListener* listener) const;
   template<typename Vector>
   bool MatchAndExplain(Point<Vector> const& actual,
+                       testing::MatchResultListener* listener) const;
+  template<typename S>
+  bool MatchAndExplain(DoublePrecision<S> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, int size>
   bool MatchAndExplain(FixedVector<Scalar, size> const& actual,
