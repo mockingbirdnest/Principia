@@ -12,10 +12,10 @@ namespace internal {
 using namespace principia::quantities::_si;
 
 template<>
-static constexpr Angle one_π<Angle> = π * Radian;
+constexpr Angle one_π<Angle> = π * Radian;
 
 template<>
-static constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
+constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
   DoublePrecision<Angle> result;
   result.value = 0x1.921FB54442D18p1 * Radian;
   result.error = 0x1.1A62633145C07p-53 * Radian;
@@ -23,10 +23,10 @@ static constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
 }();
 
 template<>
-static constexpr Angle two_π<Angle> = 2 * π * Radian;
+constexpr Angle two_π<Angle> = 2 * π * Radian;
 
 template<>
-static constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
+constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
   DoublePrecision<Angle> result;
   result.value = 0x1.921FB54442D18p2 * Radian;
   result.error = 0x1.1A62633145C07p-52 * Radian;
