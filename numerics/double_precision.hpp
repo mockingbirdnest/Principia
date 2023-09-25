@@ -88,8 +88,6 @@ template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b);
 
-DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ);
-
 template<typename T>
 bool operator==(DoublePrecision<T> const& left,
                 DoublePrecision<T> const& right);
@@ -144,7 +142,6 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal
 
 using internal::DoublePrecision;
-using internal::Mod2π;
 using internal::TwoDifference;
 using internal::TwoProduct;
 using internal::TwoSum;
