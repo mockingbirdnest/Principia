@@ -93,10 +93,22 @@ DoublePrecision<Angle> Mod2π(DoublePrecision<Angle> const& θ);
 template<typename T>
 bool operator==(DoublePrecision<T> const& left,
                 DoublePrecision<T> const& right);
-
 template<typename T>
 bool operator!=(DoublePrecision<T> const& left,
                 DoublePrecision<T> const& right);
+
+template<typename T>
+bool operator<(DoublePrecision<T> const& left,
+               DoublePrecision<T> const& right);
+template<typename T>
+bool operator<=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
+template<typename T>
+bool operator>=(DoublePrecision<T> const& left,
+                DoublePrecision<T> const& right);
+template<typename T>
+bool operator>(DoublePrecision<T> const& left,
+               DoublePrecision<T> const& right);
 
 // |T| must be a vector.
 template<typename T>

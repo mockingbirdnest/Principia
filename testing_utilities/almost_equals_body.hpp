@@ -297,6 +297,36 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
+template<typename S>
+bool AlmostEqualsMatcher<T>::MatchAndExplain(
+    DoublePrecision<S> const& actual,
+    testing::MatchResultListener* listener) const {
+  // Check that the types are equality-comparable up to implicit casts.
+  if (actual == expected_) {
+    return MatchAndExplainIdentical(listener);
+  }
+  std::int64_t const value_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.value),
+                               DoubleValue(expected_.value));
+  if (value_distance != 0) {
+    *listener << "the values differ by the following number of ULPs: "
+              << value_distance;
+    return false;
+  }
+  std::int64_t const error_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.error),
+                               DoubleValue(expected_.error));
+  bool const matches =
+      min_ulps_ <= error_distance && error_distance <= max_ulps_;
+  if (!matches) {
+    *listener << "the error is not within " << min_ulps_ << " to " << max_ulps_
+              << " ULPs: it differs by the following numbers of ULPs: "
+              << error_distance;
+  }
+  return matches;
+}
+
+template<typename T>
 template<typename Scalar, int size>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     FixedVector<Scalar, size> const& actual,
