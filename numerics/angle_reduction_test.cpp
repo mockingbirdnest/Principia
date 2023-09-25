@@ -155,9 +155,9 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
 }
 
 REGISTER_TYPED_TEST_SUITE_P(AngleReductionTest,
-                            SingleMinusπToπ,
-                            Single0To2π,
-                            SingleMinus2πTo2π);
+                            ReduceMinusπToπ,
+                            Reduce0To2π,
+                            ReduceMinus2πTo2π);
 
 using AngleTypes = ::testing::Types<Angle, DoublePrecision<Angle>>;
 INSTANTIATE_TYPED_TEST_SUITE_P(AllAngleReductionTests,
