@@ -208,7 +208,7 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "  @body[" << name << "] {\n";
     if (!is_star) {
       kopernicus_cfg << "      @reference_angle = "
-                     << ReduceAngle<-π / 2, π / 2>(
+                     << ReduceAngle<0, 2 * π>(
                             FindOrDie(body_angle, name) +
                             ParseQuantity<Angle>(
                                 elements.argument_of_periapsis()) +

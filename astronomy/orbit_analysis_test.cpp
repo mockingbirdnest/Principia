@@ -423,7 +423,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               IsNear(00.01_(1) * Degree));
 
   EXPECT_THAT(
-      (ReduceAngle<-π / 2, π / 2>(
+      (ReduceAngle<0, 2 * π>(
           elements.mean_longitude_of_ascending_node_interval().midpoint() -
           nominal_nodal_precession * (mean_time - reference_epoch))),
       AbsoluteErrorFrom(317.632 * Degree, IsNear(0.082_(1) * Degree)));
@@ -440,7 +440,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   // anomaly is actually the mean argument of latitude; in order to get numbers
   // consistent with theirs, we must look at ω + M.
   EXPECT_THAT(
-      (ReduceAngle<-π / 2, π / 2>(
+      (ReduceAngle<0, 2 * π>>(
           elements.mean_elements().front().argument_of_periapsis +
           elements.mean_elements().front().mean_anomaly -
           nominal_anomalistic_mean_motion * (initial_time - reference_epoch))),
@@ -498,17 +498,17 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
               IsNear(00.0044_(1) * Degree));
 
   EXPECT_THAT(
-      (ReduceAngle<-π / 2, π / 2>(
+      (ReduceAngle<0, 2 * π>(
           elements.mean_longitude_of_ascending_node_interval().midpoint() -
           nominal_nodal_precession * (mean_time - reference_epoch))),
       AbsoluteErrorFrom(52.521 * Degree, IsNear(0.29_(1) * Degree)));
-  EXPECT_THAT((ReduceAngle<-π / 2, π / 2>(
+  EXPECT_THAT((ReduceAngle<0, 2 * π>(
                   elements.mean_argument_of_periapsis_interval().midpoint() -
                   nominal_apsidal_precession * (mean_time - reference_epoch))),
               AbsoluteErrorFrom(56.198 * Degree, IsNear(0.48_(1) * Degree)));
 
   EXPECT_THAT(
-      (ReduceAngle<-π / 2, π / 2>(
+      (ReduceAngle<0, 2 * π>(
           elements.mean_elements().front().mean_anomaly -
           nominal_anomalistic_mean_motion * (initial_time - reference_epoch))),
       AbsoluteErrorFrom(136.069 * Degree, IsNear(2.5_(1) * Degree)));

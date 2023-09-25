@@ -384,7 +384,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
     if (best_genome_) {
       file_ << "old L = "
             << absl::StrCat(
-                   ReduceAngle<-π / 2, π / 2>(
+                   ReduceAngle<0, 2 * π>(
                        best_genome_->elements()[j].longitude_of_ascending_node +
                        *best_genome_->elements()[j].argument_of_periapsis +
                        *best_genome_->elements()[j].mean_anomaly) /
@@ -402,7 +402,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
             << "°\n";
     }
     file_ << "new L = "
-          << absl::StrCat(ReduceAngle<-π / 2, π / 2>(
+          << absl::StrCat(ReduceAngle<0, 2 * π>(
                               genome.elements()[j].longitude_of_ascending_node +
                               *genome.elements()[j].argument_of_periapsis +
                               *genome.elements()[j].mean_anomaly) /
