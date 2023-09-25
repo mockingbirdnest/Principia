@@ -168,15 +168,15 @@ KeplerOrbit<Frame>::KeplerOrbit(
   // Inclination (above the xy plane).
   Angle const i = AngleBetween(x_wedge_y, h);
   // Argument of periapsis.
-  Angle const ω =
-      Reduce<-π / 2, π / 2>(OrientedAngleBetween(ascending_node, periapsis, h));
+  Angle const ω = ReduceAngle<-π / 2, π / 2>(
+      OrientedAngleBetween(ascending_node, periapsis, h));
   // Longitude of ascending node.
   // This is equivalent to |OrientedAngleBetween(x, ascending_node, x_wedge_y)|
   // since |ascending_node| lies in the xy plane.
-  Angle const Ω = Reduce<-π / 2, π / 2>(
+  Angle const Ω = ReduceAngle<-π / 2, π / 2>(
       ArcTan(ascending_node.coordinates().y, ascending_node.coordinates().x));
   Angle const true_anomaly =
-      Reduce<-π / 2, π / 2>(OrientedAngleBetween(periapsis, r, h));
+      ReduceAngle<-π / 2, π / 2>(OrientedAngleBetween(periapsis, r, h));
 
   SpecificEnergy const ε = v.Norm²() / 2 - μ / r.Norm();
   double const e = eccentricity_vector.Norm();

@@ -6,6 +6,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/map_util.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
@@ -22,6 +23,7 @@ namespace internal {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_map_util;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_constants;
@@ -206,11 +208,11 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "  @body[" << name << "] {\n";
     if (!is_star) {
       kopernicus_cfg << "      @reference_angle = "
-                     << Mod(FindOrDie(body_angle, name) +
-                                ParseQuantity<Angle>(
-                                    elements.argument_of_periapsis()) +
-                                ParseQuantity<Angle>(elements.mean_anomaly()),
-                            2 * π * Radian)
+                     << ReduceAngle<-π / 2, π / 2>(
+                            FindOrDie(body_angle, name) +
+                            ParseQuantity<Angle>(
+                                elements.argument_of_periapsis()) +
+                            ParseQuantity<Angle>(elements.mean_anomaly()))
                      << "\n";
     }
     kopernicus_cfg << "  }\n";

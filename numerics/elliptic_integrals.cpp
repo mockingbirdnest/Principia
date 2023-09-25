@@ -1812,7 +1812,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
     // better algorithm (Payne-Hanek?).
     Angle φ_reduced{uninitialized};
     std::int64_t j;
-    Reduce<-π / 2, π / 2>(φ, φ_reduced, j);
+    ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j);
     Angle const abs_φ_reduced = Abs(φ_reduced);
 
     FukushimaEllipticBDJ(abs_φ_reduced, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);

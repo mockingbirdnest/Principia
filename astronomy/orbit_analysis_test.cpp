@@ -18,6 +18,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
@@ -57,6 +58,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
@@ -421,9 +423,9 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               IsNear(00.01_(1) * Degree));
 
   EXPECT_THAT(
-      Mod(elements.mean_longitude_of_ascending_node_interval().midpoint() -
-              nominal_nodal_precession * (mean_time - reference_epoch),
-          2 * π * Radian),
+      (ReduceAngle<-π / 2, π / 2>(
+          elements.mean_longitude_of_ascending_node_interval().midpoint() -
+          nominal_nodal_precession * (mean_time - reference_epoch))),
       AbsoluteErrorFrom(317.632 * Degree, IsNear(0.082_(1) * Degree)));
 
   // Note that the reference parameters have e = 0, and therefore conventionally
@@ -437,12 +439,12 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   // Since the reference parameters conventionally set ω = 0, the given mean
   // anomaly is actually the mean argument of latitude; in order to get numbers
   // consistent with theirs, we must look at ω + M.
-  EXPECT_THAT(Mod(elements.mean_elements().front().argument_of_periapsis +
-                      elements.mean_elements().front().mean_anomaly -
-                      nominal_anomalistic_mean_motion *
-                          (initial_time - reference_epoch),
-                  2 * π * Radian),
-              AbsoluteErrorFrom(225.153 * Degree, IsNear(0.53_(1) * Degree)));
+  EXPECT_THAT(
+      (ReduceAngle<-π / 2, π / 2>(
+          elements.mean_elements().front().argument_of_periapsis +
+          elements.mean_elements().front().mean_anomaly -
+          nominal_anomalistic_mean_motion * (initial_time - reference_epoch))),
+      AbsoluteErrorFrom(225.153 * Degree, IsNear(0.53_(1) * Degree)));
 }
 
 // COSPAR ID 2014-050B, SVN E202
@@ -496,21 +498,20 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
               IsNear(00.0044_(1) * Degree));
 
   EXPECT_THAT(
-      Mod(elements.mean_longitude_of_ascending_node_interval().midpoint() -
-              nominal_nodal_precession * (mean_time - reference_epoch),
-          2 * π * Radian),
+      (ReduceAngle<-π / 2, π / 2>(
+          elements.mean_longitude_of_ascending_node_interval().midpoint() -
+          nominal_nodal_precession * (mean_time - reference_epoch))),
       AbsoluteErrorFrom(52.521 * Degree, IsNear(0.29_(1) * Degree)));
-  EXPECT_THAT(
-      Mod(elements.mean_argument_of_periapsis_interval().midpoint() -
-              nominal_apsidal_precession * (mean_time - reference_epoch),
-          2 * π * Radian),
-      AbsoluteErrorFrom(56.198 * Degree, IsNear(0.48_(1) * Degree)));
+  EXPECT_THAT((ReduceAngle<-π / 2, π / 2>(
+                  elements.mean_argument_of_periapsis_interval().midpoint() -
+                  nominal_apsidal_precession * (mean_time - reference_epoch))),
+              AbsoluteErrorFrom(56.198 * Degree, IsNear(0.48_(1) * Degree)));
 
-  EXPECT_THAT(Mod(elements.mean_elements().front().mean_anomaly -
-                      nominal_anomalistic_mean_motion *
-                          (initial_time - reference_epoch),
-                  2 * π * Radian),
-              AbsoluteErrorFrom(136.069 * Degree, IsNear(2.5_(1) * Degree)));
+  EXPECT_THAT(
+      (ReduceAngle<-π / 2, π / 2>(
+          elements.mean_elements().front().mean_anomaly -
+          nominal_anomalistic_mean_motion * (initial_time - reference_epoch))),
+      AbsoluteErrorFrom(136.069 * Degree, IsNear(2.5_(1) * Degree)));
 }
 
 // COSPAR ID 2009-070A, SVN R730.

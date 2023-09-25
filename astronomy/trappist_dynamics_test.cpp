@@ -382,14 +382,14 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
   for (int j = 0; j < genome.elements().size(); ++j) {
     file_ << std::string({planet++, ':', '\n'});
     if (best_genome_) {
-      file_
-          << "old L = "
-          << absl::StrCat(
-                 Mod((best_genome_->elements()[j].longitude_of_ascending_node +
-                      *best_genome_->elements()[j].argument_of_periapsis +
-                      *best_genome_->elements()[j].mean_anomaly),
-                     2 * π * Radian) / Degree)
-          << "°\n";
+      file_ << "old L = "
+            << absl::StrCat(
+                   ReduceAngle<-π / 2, π / 2>(
+                       best_genome_->elements()[j].longitude_of_ascending_node +
+                       *best_genome_->elements()[j].argument_of_periapsis +
+                       *best_genome_->elements()[j].mean_anomaly) /
+                   Degree)
+            << "°\n";
 
       file_ << "   ΔL = "
             << absl::StrCat(
@@ -402,11 +402,11 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
             << "°\n";
     }
     file_ << "new L = "
-          << absl::StrCat(
-                 Mod((genome.elements()[j].longitude_of_ascending_node +
-                      *genome.elements()[j].argument_of_periapsis +
-                      *genome.elements()[j].mean_anomaly),
-                     2 * π * Radian) / Degree)
+          << absl::StrCat(ReduceAngle<-π / 2, π / 2>(
+                              genome.elements()[j].longitude_of_ascending_node +
+                              *genome.elements()[j].argument_of_periapsis +
+                              *genome.elements()[j].mean_anomaly) /
+                          Degree)
           << "°\n";
     if (best_genome_) {
       file_ << "old e = "
