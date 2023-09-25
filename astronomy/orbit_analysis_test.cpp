@@ -440,7 +440,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   // anomaly is actually the mean argument of latitude; in order to get numbers
   // consistent with theirs, we must look at ω + M.
   EXPECT_THAT(
-      (ReduceAngle<0, 2 * π>>(
+      (ReduceAngle<0, 2 * π>(
           elements.mean_elements().front().argument_of_periapsis +
           elements.mean_elements().front().mean_anomaly -
           nominal_anomalistic_mean_motion * (initial_time - reference_epoch))),
