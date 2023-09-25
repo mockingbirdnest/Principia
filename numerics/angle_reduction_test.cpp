@@ -26,7 +26,7 @@ TYPED_TEST_SUITE_P(AngleReductionTest);
 
 // This test is not type-parameterized because the reduction algorithm only
 // works for |Angle|.
-TEST(AngleReductionTest, SingleMinusπOver2ToπOver2) {
+TEST(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
   Angle fractional_part;
   std::int64_t integer_part;
 
@@ -56,7 +56,7 @@ TEST(AngleReductionTest, SingleMinusπOver2ToπOver2) {
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, SingleMinusπToπ) {
+TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
   using Angle = TypeParam;
   Angle fractional_part;
   std::int64_t integer_part;
@@ -88,7 +88,7 @@ TYPED_TEST_P(AngleReductionTest, SingleMinusπToπ) {
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, Single0To2π) {
+TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
   using Angle = TypeParam;
   Angle fractional_part;
   std::int64_t integer_part;
@@ -121,7 +121,7 @@ TYPED_TEST_P(AngleReductionTest, Single0To2π) {
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, SingleMinus2πTo2π) {
+TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
   using Angle = TypeParam;
   Angle fractional_part;
   std::int64_t integer_part;
