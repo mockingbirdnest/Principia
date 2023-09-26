@@ -16,6 +16,7 @@ using namespace principia::quantities::_quantities;
 #if PRINCIPIA_COMPILER_CLANG && __clang_major__ <= 17
 struct DoubleWrapper {
   constexpr DoubleWrapper(double d) : d(d) {}
+  constexpr DoubleWrapper(int i) : d(i) {}
   double d;
 };
 #else
