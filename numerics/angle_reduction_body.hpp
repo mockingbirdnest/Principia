@@ -38,12 +38,12 @@ template<typename T>
 std::int64_t StaticCastToInt64(T const& t);
 
 template<>
-std::int64_t StaticCastToInt64<double>(double const& t) {
+inline std::int64_t StaticCastToInt64<double>(double const& t) {
   return static_cast<std::int64_t>(t);
 }
 
 template<>
-std::int64_t StaticCastToInt64<DoublePrecision<double>>(
+inline std::int64_t StaticCastToInt64<DoublePrecision<double>>(
     DoublePrecision<double> const& t) {
   return static_cast<std::int64_t>(t.value + t.error);
 }

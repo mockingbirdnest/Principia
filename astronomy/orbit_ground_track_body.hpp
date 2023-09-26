@@ -7,6 +7,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "physics/apsides.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -18,6 +19,7 @@ namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::physics::_apsides;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -68,7 +70,7 @@ Interval<Angle> MeanSolarTimesOfNodes(
       mean_solar_time =
           UnwindFrom(*mean_solar_time, MeanSolarTime(node, mean_sun));
     } else {
-      mean_solar_time = Mod(MeanSolarTime(node, mean_sun), 2 * π * Radian);
+      mean_solar_time = ReduceAngle<0, 2 * π>(MeanSolarTime(node, mean_sun));
     }
     mean_solar_times.Include(*mean_solar_time);
   }
@@ -91,7 +93,7 @@ inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
         longitude - initial_offset - n * nominal_recurrence.equatorial_shift();
     reduced_longitude = reduced_longitude.has_value()
                             ? UnwindFrom(*reduced_longitude, offset_longitude)
-                            : Mod(offset_longitude, 2 * π * Radian);
+                            : ReduceAngle<0, 2 * π>(offset_longitude);
     reduced_longitudes.Include(*reduced_longitude);
   }
   return reduced_longitudes;
