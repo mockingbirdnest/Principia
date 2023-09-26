@@ -49,8 +49,8 @@ inline std::int64_t StaticCastToInt64<DoublePrecision<double>>(
 }
 
 template<typename Angle,
-         double fractional_part_lower_bound,
-         double fractional_part_upper_bound>
+         DoubleWrapper fractional_part_lower_bound,
+         DoubleWrapper fractional_part_upper_bound>
 class AngleReduction;
 
 // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
@@ -122,8 +122,8 @@ class AngleReduction<Angle, -2 * π, 2 * π> {
   }
 };
 
-template<double fractional_part_lower_bound,
-         double fractional_part_upper_bound,
+template<DoubleWrapper fractional_part_lower_bound,
+         DoubleWrapper fractional_part_upper_bound,
          typename Angle>
 void ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
@@ -135,8 +135,8 @@ void ReduceAngle(Angle const& θ,
                                                       integer_part);
 }
 
-template<double fractional_part_lower_bound,
-         double fractional_part_upper_bound,
+template<DoubleWrapper fractional_part_lower_bound,
+         DoubleWrapper fractional_part_upper_bound,
          typename Angle>
 Angle ReduceAngle(Angle const& θ) {
   Angle fractional_part;
