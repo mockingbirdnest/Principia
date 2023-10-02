@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <memory>
 #include <random>
 #include <string>
 #include <thread>

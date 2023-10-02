@@ -1,5 +1,6 @@
 #include "astronomy/orbital_elements.hpp"
 
+#include <memory>
 #include <string>
 #include <vector>
 
