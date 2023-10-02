@@ -3,7 +3,6 @@
 #include "astronomy/orbital_elements.hpp"
 
 #include <algorithm>
-#include <tuple>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -13,6 +12,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/quadrature.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -29,6 +29,7 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_integrato
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_kepler_orbit;
@@ -454,14 +455,14 @@ OrbitalElements::ToClassicalElements(
          .eccentricity = e,
          .inclination = i,
          .longitude_of_ascending_node = classical_elements.empty()
-             ? Mod(Ω, 2 * π * Radian)
+             ? ReduceAngle<0, 2 * π>(Ω)
              : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
                           Ω),
          .argument_of_periapsis = classical_elements.empty()
-             ? Mod(ω, 2 * π * Radian)
+             ? ReduceAngle<0, 2 * π>(ω)
              : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
          .mean_anomaly = classical_elements.empty()
-             ? Mod(M, 2 * π * Radian)
+             ? ReduceAngle<0, 2 * π>(M)
              : UnwindFrom(classical_elements.back().mean_anomaly, M),
          .periapsis_distance = (1 - e) * equinoctial.a,
          .apoapsis_distance = (1 + e) * equinoctial.a});

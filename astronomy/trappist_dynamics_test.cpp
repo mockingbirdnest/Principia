@@ -29,6 +29,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
@@ -63,6 +64,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -179,7 +181,7 @@ void Genome::Mutate(std::mt19937_64& engine,
         *element.argument_of_periapsis +
         distribution(engine) * 10 * Degree * multiplicator;
     mutated_element.argument_of_periapsis =
-        Mod(*mutated_element.argument_of_periapsis, 2 * π * Radian);
+        ReduceAngle<0, 2 * π>(*mutated_element.argument_of_periapsis);
     mutated_element.period =
         *element.period +
         distribution(engine) * 5 * Second * Sqrt(multiplicator);
@@ -199,7 +201,7 @@ void Genome::Mutate(std::mt19937_64& engine,
         *element.mean_anomaly +
         distribution(engine) * 10 * Degree * multiplicator;
     mutated_element.mean_anomaly =
-        Mod(*mutated_element.mean_anomaly, 2 * π * Radian);
+        ReduceAngle<0, 2 * π>(*mutated_element.mean_anomaly);
 
     element = mutated_element;
   }
@@ -380,14 +382,14 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
   for (int j = 0; j < genome.elements().size(); ++j) {
     file_ << std::string({planet++, ':', '\n'});
     if (best_genome_) {
-      file_
-          << "old L = "
-          << absl::StrCat(
-                 Mod((best_genome_->elements()[j].longitude_of_ascending_node +
-                      *best_genome_->elements()[j].argument_of_periapsis +
-                      *best_genome_->elements()[j].mean_anomaly),
-                     2 * π * Radian) / Degree)
-          << "°\n";
+      file_ << "old L = "
+            << absl::StrCat(
+                   ReduceAngle<0, 2 * π>(
+                       best_genome_->elements()[j].longitude_of_ascending_node +
+                       *best_genome_->elements()[j].argument_of_periapsis +
+                       *best_genome_->elements()[j].mean_anomaly) /
+                   Degree)
+            << "°\n";
 
       file_ << "   ΔL = "
             << absl::StrCat(
@@ -400,11 +402,11 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
             << "°\n";
     }
     file_ << "new L = "
-          << absl::StrCat(
-                 Mod((genome.elements()[j].longitude_of_ascending_node +
-                      *genome.elements()[j].argument_of_periapsis +
-                      *genome.elements()[j].mean_anomaly),
-                     2 * π * Radian) / Degree)
+          << absl::StrCat(ReduceAngle<0, 2 * π>(
+                              genome.elements()[j].longitude_of_ascending_node +
+                              *genome.elements()[j].argument_of_periapsis +
+                              *genome.elements()[j].mean_anomaly) /
+                          Degree)
           << "°\n";
     if (best_genome_) {
       file_ << "old e = "
@@ -1450,12 +1452,12 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
                  << *elements.period / Day << " d\"";
       LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        argument_of_periapsis       : \""
-                 << Mod(*elements.argument_of_periapsis, 2 * π * Radian) /
+                 << ReduceAngle<0, 2 * π>(*elements.argument_of_periapsis) /
                         Degree
                  << " deg\"";
       LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        mean_anomaly                : \""
-                 << Mod(*elements.mean_anomaly, 2 * π * Radian) / Degree
+                 << ReduceAngle<0, 2 * π>(*elements.mean_anomaly) / Degree
                  << " deg\"";
     }
   }

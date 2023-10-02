@@ -15,6 +15,8 @@
     <Import Project="..\third_party_zfp.props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="angle_reduction.hpp" />
+    <ClInclude Include="angle_reduction_body.hpp" />
     <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
     <ClInclude Include="finite_difference_coefficients.mathematica.h" />
@@ -92,6 +94,7 @@
     <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="..\geometry\instant.cpp" />
     <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp" />
+    <ClCompile Include="angle_reduction_test.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />

@@ -9,6 +9,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -22,6 +23,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -163,23 +165,18 @@ KeplerOrbit<Frame>::KeplerOrbit(
   auto const& periapsis = eccentricity_vector;
   Vector<SpecificAngularMomentum, Frame> const ascending_node = z * h;
 
-  // Maps [-π, π] to [0, 2π].
-  auto const positive_angle = [](Angle const& α) -> Angle {
-    return α > 0 * Radian ? α : α + 2 * π * Radian;
-  };
-
   // Inclination (above the xy plane).
   Angle const i = AngleBetween(x_wedge_y, h);
   // Argument of periapsis.
   Angle const ω =
-      positive_angle(OrientedAngleBetween(ascending_node, periapsis, h));
+      ReduceAngle<0, 2 * π>(OrientedAngleBetween(ascending_node, periapsis, h));
   // Longitude of ascending node.
   // This is equivalent to |OrientedAngleBetween(x, ascending_node, x_wedge_y)|
   // since |ascending_node| lies in the xy plane.
-  Angle const Ω = positive_angle(
+  Angle const Ω = ReduceAngle<0, 2 * π>(
       ArcTan(ascending_node.coordinates().y, ascending_node.coordinates().x));
   Angle const true_anomaly =
-      positive_angle(OrientedAngleBetween(periapsis, r, h));
+      ReduceAngle<0, 2 * π>(OrientedAngleBetween(periapsis, r, h));
 
   SpecificEnergy const ε = v.Norm²() / 2 - μ / r.Norm();
   double const e = eccentricity_vector.Norm();
