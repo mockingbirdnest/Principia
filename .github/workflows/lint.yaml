@@ -84,7 +84,7 @@ jobs:
             $file_errors = $output[0..($output.Length-3)]
             $errors += $file_errors
             foreach ($e in $file_errors) {
-              $e -match '^(.*)\((\d+)\):\s*(.*)\s*\[([^\]]+)\]\s*\[\d+\]$'
+              $e -match '^(.*)\((\d+)\):\s*\[([^\]]+)\]\s*(.*)\s*\[\d+\]$'
               $file = $Matches[1]
               $line = $Matches[2]
               $message = $Matches[3]
