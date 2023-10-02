@@ -87,8 +87,8 @@ jobs:
               $e -match '^(.*)\((\d+)\):.*\[([^\]]+)\]\s*(.*)\s*\[\d+\]$'
               $file = $Matches[1]
               $line = $Matches[2]
-              $message = $Matches[3]
-              $title = $Matches[4]
+              $title = $Matches[3]
+              $message = $Matches[4]
               # See https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message.
               echo "::warning file=$file,line=$line,title=$title::$message"
             }
