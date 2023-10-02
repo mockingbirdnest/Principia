@@ -30,7 +30,7 @@ jobs:
     - name: Download cpplint
       shell: pwsh
       run: |
-        Invoke-WebRequest https://raw.githubusercontent.com/mockingbirdnest/styleguide/casanova-2023-04-25/cpplint/cpplint.py -OutFile cpplint.py
+        Invoke-WebRequest https://raw.githubusercontent.com/mockingbirdnest/styleguide/mockingbirdnest-2023-10-02/cpplint/cpplint.py -OutFile cpplint.py
     - name: Run cpplint
       shell: pwsh
       env:
