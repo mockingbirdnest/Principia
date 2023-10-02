@@ -17,7 +17,7 @@ class Iteration {
                 "Parallel iteration must apply to containers of equal size");
 
  public:
-  constexpr Iteration(Tuple&&... tuple);
+  constexpr Iteration(Tuple&&... tuple);  // NOLINT(runtime/explicit)
 
   template<std::size_t i = 0, typename F>
   constexpr void loop(F const& f);

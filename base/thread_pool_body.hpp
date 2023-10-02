@@ -2,6 +2,8 @@
 
 #include "base/thread_pool.hpp"
 
+#include <utility>
+
 namespace principia {
 namespace base {
 namespace _thread_pool {

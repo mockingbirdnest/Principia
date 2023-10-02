@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <memory>
+#include <utility>
 
 #include "base/sink_source.hpp"
 #include "glog/logging.h"

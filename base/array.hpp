@@ -33,7 +33,7 @@ struct Array final {
           std::is_convertible<decltype(std::declval<Container>().data()),
                               Element*>::value &&
           std::is_integral<decltype(std ::declval<Container>().size())>::value>>
-  constexpr Array(Container& container);
+  constexpr Array(Container& container);  // NOLINT(runtime/explicit)
 
   template<
       typename Container,
@@ -42,7 +42,7 @@ struct Array final {
                               Element*>::value &&
           std::is_integral<
               decltype(std ::declval<Container const>().size())>::value>>
-  constexpr Array(Container const& container);
+  constexpr Array(Container const& container);  // NOLINT(runtime/explicit)
 
   // Construction from a string literal if |Element| is a character type or some
   // flavour of byte.
@@ -106,7 +106,7 @@ class BoundedArray final {
   using value_type = Element;
 
   template<typename... Args>
-  constexpr BoundedArray(Args&&... args);
+  constexpr BoundedArray(Args&&... args);  // NOLINT(runtime/explicit)
 
   void push_back(const Element& value);
   void push_back(Element&& value);

@@ -3,8 +3,10 @@
 #include "base/zfp_compressor.hpp"
 
 #include <functional>
-#include <vector>
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace principia {
 namespace base {
