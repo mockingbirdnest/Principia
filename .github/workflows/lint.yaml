@@ -97,7 +97,8 @@ jobs:
             echo $output
           }
         }
-        $errors | write-error
+        # TODO(egg): Try to resurrect the synopsis.
+        # $errors | write-error
         exit $errors.Length
 
   check-iwyu:
