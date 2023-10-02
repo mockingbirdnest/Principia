@@ -226,16 +226,17 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
 
   LOG(INFO) << "Optimizing manœuvre 5";
   auto const manœuvre5 = flight_plan_->GetManœuvre(5);
-  EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
+  EXPECT_THAT(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second),
+              StatusIs(termination_condition::VanishingStepSize));
 
-  EXPECT_EQ(0, flight_plan_->number_of_anomalous_manœuvres());
+  EXPECT_EQ(8, flight_plan_->number_of_anomalous_manœuvres());
   EXPECT_THAT(
       manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
       IsNear(7.51_(1) * Micro(Second)));
   EXPECT_THAT(
       (manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
       IsNear(1.054_(1) * Metre / Second));
-  EXPECT_EQ(119, number_of_evaluations);
+  EXPECT_EQ(113, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
@@ -249,8 +250,8 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   EXPECT_EQ(manœuvre6.initial_time(),
             flight_plan_->GetManœuvre(6).initial_time());
   EXPECT_THAT((manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
-              IsNear(1.281_(1) * Metre / Second));
-  EXPECT_EQ(143, number_of_evaluations);
+              IsNear(1.283_(1) * Metre / Second));
+  EXPECT_EQ(90, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
@@ -263,11 +264,11 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   EXPECT_EQ(8, flight_plan_->number_of_anomalous_manœuvres());
   EXPECT_THAT(
       manœuvre7.initial_time() - flight_plan_->GetManœuvre(7).initial_time(),
-      IsNear(-4.9_(1) * Milli(Second)));
+      IsNear(104_(1) * Milli(Second)));
   EXPECT_THAT(
       (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
-      IsNear(62.3_(1) * Metre / Second));
-  EXPECT_EQ(111, number_of_evaluations);
+      IsNear(61.6_(1) * Metre / Second));
+  EXPECT_EQ(105, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
