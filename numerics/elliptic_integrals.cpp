@@ -9,6 +9,7 @@
 
 #include "base/tags.hpp"
 #include "glog/logging.h"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -25,6 +26,7 @@ namespace _elliptic_integrals {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
@@ -112,12 +114,6 @@ Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 
 // Fukushima's T function [Fuk12b].
 Angle FukushimaT(double t, double h);
-
-// Argument reduction: angle = fractional_part + integer_part * π where
-// fractional_part is in [-π/2, π/2].
-void Reduce(Angle const& angle,
-            Angle& fractional_part,
-            std::int64_t& integer_part);
 
 // The common implementation underlying the functions |FukushimaEllipticBDJ| and
 // |FukushimaEllipticBD| declared in the header file.
@@ -1718,27 +1714,6 @@ Angle FukushimaT(double const t, double const h) {
   }
 }
 
-// TODO(phl): This is extremely imprecise near large multiples of π.  Use a
-// better algorithm (Payne-Hanek?).
-void Reduce(Angle const& angle,
-            Angle& fractional_part,
-            std::int64_t& integer_part) {
-  double const angle_in_half_cycles = angle / (π * Radian);
-  double reduced_in_half_cycles;
-#if PRINCIPIA_USE_SSE3_INTRINSICS
-  auto const& x = angle_in_half_cycles;
-  __m128d const x_128d = _mm_set_sd(x);
-  integer_part = _mm_cvtsd_si64(x_128d);
-  reduced_in_half_cycles = _mm_cvtsd_f64(
-      _mm_sub_sd(x_128d,
-                 _mm_cvtsi64_sd(__m128d{}, integer_part)));
-#else
-  integer_part = std::nearbyint(angle_in_half_cycles);
-  reduced_in_half_cycles = angle_in_half_cycles - integer_part;
-#endif
-  fractional_part = reduced_in_half_cycles * π * Radian;
-}
-
 template<typename ThirdKind, typename>
 void FukushimaEllipticBDJReduced(Angle const& φ,
                                  double const n,
@@ -1837,7 +1812,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
     // better algorithm (Payne-Hanek?).
     Angle φ_reduced{uninitialized};
     std::int64_t j;
-    Reduce(φ, φ_reduced, j);
+    ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j);
     Angle const abs_φ_reduced = Abs(φ_reduced);
 
     FukushimaEllipticBDJ(abs_φ_reduced, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
