@@ -1,6 +1,7 @@
 #include "physics/protector.hpp"
 
 #include <optional>
+#include <utility>
 #include <vector>
 
 namespace principia {

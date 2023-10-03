@@ -2,6 +2,8 @@
 
 #include "physics/massless_body.hpp"
 
+#include <memory>
+
 namespace principia {
 namespace physics {
 namespace _massless_body {

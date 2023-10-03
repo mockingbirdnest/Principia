@@ -3,6 +3,7 @@
 #include "physics/oblate_body.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <vector>
 

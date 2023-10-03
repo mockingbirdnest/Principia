@@ -2,6 +2,8 @@
 
 #include "physics/reference_frame.hpp"
 
+#include <memory>
+
 #include "geometry/r3x3_matrix.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"

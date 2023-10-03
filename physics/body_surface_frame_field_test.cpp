@@ -1,5 +1,7 @@
 #include "physics/body_surface_frame_field.hpp"
 
+#include <memory>
+
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"

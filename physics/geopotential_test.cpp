@@ -1,5 +1,6 @@
 #include "physics/geopotential.hpp"
 
+#include <memory>
 #include <random>
 #include <vector>
 

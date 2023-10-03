@@ -6,6 +6,7 @@
 #ifndef PRINCIPIA_PHYSICS_MASSLESS_BODY_HPP_
 #define PRINCIPIA_PHYSICS_MASSLESS_BODY_HPP_
 
+#include <memory>
 #include <vector>
 
 #include "base/not_null.hpp"

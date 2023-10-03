@@ -1,6 +1,6 @@
 #pragma once
 
-#include <atomic>
+#include <memory>
 #include <optional>
 #include <utility>
 #include <vector>
