@@ -79,23 +79,8 @@ jobs:
                 $file 2>&1 `
           ).Exception.Message
           if ($LastExitCode -ne 0) {
-            # Drop the the line that says “Done processing” and the one that
-            # gives the total number of errors.
-            Write-Output $output
-            Write-Output '====='
-            Write-Output ($output.Length)
-            Write-Output ($output.GetType())
-            Write-Output ($output[0].GetType())
-            Write-Output '====='
-            $file_errors = $output[0..($output.Length-3)]
-            Write-Output $file_errors
-            Write-Output '====='
-            Write-Output ($file_errors.Length)
-            Write-Output ($file_errors.GetType())
-            Write-Output '====='
-            $errors += $file_errors
-            foreach ($e in $file_errors) {
-              Write-Output ([uri]::EscapeDataString($e))
+            $errors += $output
+            foreach ($e in (@() + $output)) {
               $e -match '^(.*)\((\d+)\):.*\[([^\]]+)\]\s*(.*)\s*\[\d+\]'
               $file = $Matches[1]
               $line = $Matches[2]
@@ -109,8 +94,7 @@ jobs:
             echo $output
           }
         }
-        # TODO(egg): Try to resurrect the synopsis.
-        # $errors | write-error
+        $errors | write-error
         exit $errors.Length
 
   check-iwyu:
