@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.

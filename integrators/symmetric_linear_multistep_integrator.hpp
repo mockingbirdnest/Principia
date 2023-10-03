@@ -8,7 +8,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMMETRIC_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 
-#include <list>
+#include <memory>
 #include <vector>
 
 #include "absl/status/status.h"

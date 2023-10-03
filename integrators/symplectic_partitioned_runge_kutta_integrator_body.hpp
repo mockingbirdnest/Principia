@@ -2,6 +2,8 @@
 
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 
+#include <memory>
+
 #include "base/mod.hpp"
 
 namespace principia {

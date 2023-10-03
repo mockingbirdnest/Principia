@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"

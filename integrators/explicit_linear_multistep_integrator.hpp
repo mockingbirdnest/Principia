@@ -8,8 +8,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_EXPLICIT_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_EXPLICIT_LINEAR_MULTISTEP_INTEGRATOR_HPP_
 
-#include <list>
-#include <vector>
+#include <memory>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"

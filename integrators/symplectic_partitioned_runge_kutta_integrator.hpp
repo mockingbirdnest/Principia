@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <type_traits>
 
 #include "absl/status/status.h"
