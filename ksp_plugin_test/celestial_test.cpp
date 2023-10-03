@@ -1,5 +1,7 @@
 #include "ksp_plugin/celestial.hpp"
 
+#include <memory>
+
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
