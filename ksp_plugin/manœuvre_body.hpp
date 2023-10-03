@@ -3,6 +3,7 @@
 #include "ksp_plugin/manœuvre.hpp"
 
 #include <functional>
+#include <memory>
 
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rigid_motion.hpp"

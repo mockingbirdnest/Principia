@@ -1,6 +1,8 @@
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
 
 #include <functional>
+#include <memory>
+#include <utility>
 
 #include "absl/status/status.h"
 

@@ -1,6 +1,7 @@
 #include "ksp_plugin/flight_plan.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 

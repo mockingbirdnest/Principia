@@ -2,6 +2,7 @@
 
 #include <list>
 #include <memory>
+#include <utility>
 
 #include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
