@@ -84,6 +84,7 @@ jobs:
             $file_errors = $output[0..($output.Length-3)]
             $errors += $file_errors
             foreach ($e in $file_errors) {
+              Write-Output [uri]::EscapeDataString($e)
               $e -match '^(.*)\((\d+)\):.*\[([^\]]+)\]\s*(.*)\s*\[\d+\]'
               $file = $Matches[1]
               $line = $Matches[2]
