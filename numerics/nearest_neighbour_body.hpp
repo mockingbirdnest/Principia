@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
+#include <utility>
 #include <vector>
 #include <type_traits>
 
