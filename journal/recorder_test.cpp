@@ -1,7 +1,7 @@
 #include "journal/recorder.hpp"
 
 #include <filesystem>
-#include <list>
+#include <memory>
 #include <string>
 #include <vector>
 

@@ -1,6 +1,8 @@
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #define PRINCIPIA_PHYSICS_BODY_HPP_
 
+#include <memory>
+
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "serialization/physics.pb.h"

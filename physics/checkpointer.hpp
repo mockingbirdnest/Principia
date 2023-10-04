@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"

@@ -1,5 +1,7 @@
 #include "geometry/rotation.hpp"
 
+#include <utility>
+
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"

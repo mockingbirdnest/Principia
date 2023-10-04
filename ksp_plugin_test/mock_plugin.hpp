@@ -1,8 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 #include "gmock/gmock.h"
 #include "ksp_plugin/plugin.hpp"  // 🧙 For Plugin.

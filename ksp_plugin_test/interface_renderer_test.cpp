@@ -1,5 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"

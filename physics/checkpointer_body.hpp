@@ -2,8 +2,7 @@
 
 #include "physics/checkpointer.hpp"
 
-#include <map>
-#include <vector>
+#include <memory>
 #include <utility>
 
 #include "absl/container/btree_set.h"

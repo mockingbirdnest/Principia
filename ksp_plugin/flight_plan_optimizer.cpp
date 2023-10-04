@@ -1,6 +1,7 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
 #include <algorithm>
+#include <utility>
 
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"

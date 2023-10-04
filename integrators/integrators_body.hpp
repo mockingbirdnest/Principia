@@ -3,9 +3,9 @@
 #include "integrators/integrators.hpp"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <algorithm>
-#include <vector>
 #include <functional>
+#include <utility>
+#include <vector>
 
 #include "physics/lagrange_equipotentials.hpp"
 #include "geometry/barycentre_calculator.hpp"

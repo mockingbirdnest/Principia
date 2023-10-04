@@ -2,6 +2,7 @@
 
 #include "physics/body_surface_reference_frame.hpp"
 
+#include <memory>
 #include <utility>
 
 #include "geometry/orthogonal_map.hpp"

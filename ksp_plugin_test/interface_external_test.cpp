@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <string>
+#include <utility>
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"

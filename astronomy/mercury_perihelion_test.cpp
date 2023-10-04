@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"

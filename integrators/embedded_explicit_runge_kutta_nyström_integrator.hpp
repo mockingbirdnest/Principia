@@ -9,7 +9,7 @@
 #define PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
 
 #include <functional>
-#include <vector>
+#include <memory>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"

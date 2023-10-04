@@ -3,6 +3,7 @@
 #include "base/not_null.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "glog/logging.h"

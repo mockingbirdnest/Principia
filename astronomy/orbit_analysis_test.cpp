@@ -1,5 +1,7 @@
+#include <memory>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"

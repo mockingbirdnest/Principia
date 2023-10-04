@@ -2,6 +2,7 @@
 
 #include "base/get_line.hpp"
 
+#include <memory>
 #include <string>
 
 namespace principia {

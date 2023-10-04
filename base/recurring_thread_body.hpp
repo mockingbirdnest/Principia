@@ -3,6 +3,7 @@
 #include "base/recurring_thread.hpp"
 
 #include <algorithm>
+#include <utility>
 
 namespace principia {
 namespace base {

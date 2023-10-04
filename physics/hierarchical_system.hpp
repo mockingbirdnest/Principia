@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/not_null.hpp"

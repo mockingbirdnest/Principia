@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 

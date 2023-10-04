@@ -3,8 +3,8 @@
 #include "geometry/perspective.hpp"
 
 #include <algorithm>
-#include <deque>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"

@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <memory>
+#include <utility>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"

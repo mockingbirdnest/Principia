@@ -1,5 +1,6 @@
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 
+#include <memory>
 #include <string>
 
 #include "astronomy/frames.hpp"

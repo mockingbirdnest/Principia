@@ -3,6 +3,8 @@
 #include "mathematica/local_error_analysis.hpp"
 
 #include <filesystem>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "astronomy/solar_system_fingerprints.hpp"
