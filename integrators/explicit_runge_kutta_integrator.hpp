@@ -9,7 +9,7 @@
 #define PRINCIPIA_INTEGRATORS_EXPLICIT_RUNGE_KUTTA_INTEGRATOR_HPP_
 
 #include <functional>
-#include <vector>
+#include <memory>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"

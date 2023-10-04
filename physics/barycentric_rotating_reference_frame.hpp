@@ -8,6 +8,7 @@
 #ifndef PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_BARYCENTRIC_ROTATING_REFERENCE_FRAME_HPP_
 
+#include <memory>
 #include <vector>
 
 #include "base/not_null.hpp"

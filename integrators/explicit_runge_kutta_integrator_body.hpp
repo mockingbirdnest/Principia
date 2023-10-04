@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <optional>
+#include <memory>
 #include <vector>
 
 #include "base/for_all_of.hpp"

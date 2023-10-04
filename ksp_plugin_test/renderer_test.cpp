@@ -1,5 +1,7 @@
 #include "ksp_plugin/renderer.hpp"
 
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"

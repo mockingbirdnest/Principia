@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -82,8 +84,8 @@ namespace {
 
 PartId const part_id = 789;
 GUID const vessel_guid = "123-456";
-std::string const part_name = "Picard's desk";
-std::string const vessel_name = "NCC-1701-D";
+char const part_name[] = "Picard's desk";
+char const vessel_name[] = "NCC-1701-D";
 
 }  // namespace
 

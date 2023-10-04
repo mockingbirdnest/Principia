@@ -1,6 +1,6 @@
 #include "ksp_plugin/part.hpp"
 
-#include <list>
+#include <memory>
 #include <string>
 #include <utility>
 

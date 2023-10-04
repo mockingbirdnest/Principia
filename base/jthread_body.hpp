@@ -2,7 +2,9 @@
 
 #include "base/jthread.hpp"
 
+#include <memory>
 #include <set>
+#include <utility>
 
 namespace principia {
 namespace base {

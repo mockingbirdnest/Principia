@@ -1,5 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <utility>
+
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"

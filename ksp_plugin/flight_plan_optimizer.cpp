@@ -3,12 +3,15 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "physics/apsides.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -23,6 +26,7 @@ using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::physics::_apsides;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -710,10 +714,7 @@ Angle FlightPlanOptimizer::EvaluateRelativeInclinationWithReplacement(
   auto const v = navigation_degrees_of_freedom.velocity();
   Angle const i =
       AngleBetween(Wedge(r, v), Bivector<double, Navigation>({0, 0, 1}));
-  Angle const signed_relative_inclination = [](Angle const α) {
-    return α > π * Radian ? α - 2 * π * Radian : α;
-  }(Mod(i - target_inclination, 2 * π * Radian));
-  return signed_relative_inclination;
+  return ReduceAngle<-π, π>(i - target_inclination);
 }
 
 FlightPlanOptimizer::AngleGradient

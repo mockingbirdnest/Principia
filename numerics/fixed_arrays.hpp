@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <utility>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -31,8 +32,10 @@ class FixedVector final {
 
   // TODO(egg): Figure out why we have a move-conversion for |FixedVector| but
   // not the matrices.
-  constexpr FixedVector(std::array<Scalar, size_> const& data);
-  constexpr FixedVector(std::array<Scalar, size_>&& data);
+  constexpr FixedVector(
+      std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
+  constexpr FixedVector(
+      std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
   TransposedView<FixedVector> Transpose() const;
 
@@ -83,7 +86,8 @@ class FixedMatrix final {
   explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
-  constexpr FixedMatrix(std::array<Scalar, size()> const& data);
+  constexpr FixedMatrix(
+      std::array<Scalar, size()> const& data);  // NOLINT(runtime/explicit)
 
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
   // |a(i, j)|.  if i and j do not satisfy these conditions, the expression

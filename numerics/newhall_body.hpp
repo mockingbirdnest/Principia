@@ -2,6 +2,7 @@
 
 #include "numerics/newhall.hpp"
 
+#include <memory>
 #include <vector>
 
 #include "geometry/barycentre_calculator.hpp"

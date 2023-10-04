@@ -3,10 +3,11 @@
 #include "physics/barycentric_rotating_reference_frame.hpp"
 
 #include <algorithm>
-#include <utility>
-#include <vector>
+#include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"

@@ -1,6 +1,7 @@
 #include "numerics/fast_fourier_transform.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <random>
 #include <vector>
 

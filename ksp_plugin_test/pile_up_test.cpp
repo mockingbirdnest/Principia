@@ -2,7 +2,8 @@
 
 #include <limits>
 #include <map>
-#include <string>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "absl/status/status.h"

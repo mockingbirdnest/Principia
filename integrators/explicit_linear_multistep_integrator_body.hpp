@@ -3,9 +3,8 @@
 #include "integrators/explicit_linear_multistep_integrator.hpp"
 
 #include <algorithm>
-#include <list>
+#include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/for_all_of.hpp"
 #include "geometry/serialization.hpp"

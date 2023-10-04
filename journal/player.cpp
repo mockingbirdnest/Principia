@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <filesystem>
+#include <memory>
 #include <string>
 
 #include "absl/strings/match.h"

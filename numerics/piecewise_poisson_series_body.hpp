@@ -3,6 +3,7 @@
 #include "numerics/piecewise_poisson_series.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "quantities/elementary_functions.hpp"

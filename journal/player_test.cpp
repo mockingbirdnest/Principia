@@ -1,10 +1,9 @@
 #include "journal/player.hpp"
 
 #include <chrono>
-#include <list>
+#include <memory>
 #include <string>
 #include <thread>
-#include <vector>
 
 #include "benchmark/benchmark.h"
 #include "glog/logging.h"

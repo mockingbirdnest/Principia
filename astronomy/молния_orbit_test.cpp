@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <memory>
 #include <vector>
 
 #include "astronomy/epoch.hpp"

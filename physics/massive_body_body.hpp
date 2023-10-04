@@ -2,6 +2,7 @@
 
 #include "physics/massive_body.hpp"
 
+#include <memory>
 #include <string>
 #include <utility>
 

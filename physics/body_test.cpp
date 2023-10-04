@@ -1,5 +1,7 @@
 #include "physics/body.hpp"
 
+#include <memory>
+
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"

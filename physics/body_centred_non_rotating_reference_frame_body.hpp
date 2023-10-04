@@ -2,6 +2,7 @@
 
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 
+#include <memory>
 #include <utility>
 
 #include "geometry/identity.hpp"

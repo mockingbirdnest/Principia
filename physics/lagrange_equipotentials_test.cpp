@@ -1,5 +1,6 @@
 #include "physics/lagrange_equipotentials.hpp"
 
+#include <memory>
 #include <vector>
 
 #include "base/not_null.hpp"

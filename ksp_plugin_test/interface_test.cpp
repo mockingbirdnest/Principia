@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>

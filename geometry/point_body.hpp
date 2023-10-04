@@ -3,7 +3,7 @@
 #include "geometry/point.hpp"
 
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
