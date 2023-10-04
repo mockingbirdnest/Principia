@@ -84,8 +84,8 @@ namespace {
 
 PartId const part_id = 789;
 GUID const vessel_guid = "123-456";
-std::string_view const part_name = "Picard's desk";
-std::string_view const vessel_name = "NCC-1701-D";
+char const part_name[] = "Picard's desk";
+char const vessel_name[] = "NCC-1701-D";
 
 }  // namespace
 
