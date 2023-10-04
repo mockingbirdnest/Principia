@@ -8,6 +8,8 @@
 #ifndef PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
+#include <memory>
+
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"

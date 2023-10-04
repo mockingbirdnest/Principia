@@ -1,6 +1,8 @@
 #include "ksp_plugin/flight_plan.hpp"
 
 #include <limits>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "astronomy/epoch.hpp"

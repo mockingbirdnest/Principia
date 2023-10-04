@@ -2,6 +2,8 @@
 
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "geometry/sign.hpp"

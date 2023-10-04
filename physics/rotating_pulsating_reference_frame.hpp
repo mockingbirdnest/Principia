@@ -8,6 +8,7 @@
 #ifndef PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_ROTATING_PULSATING_REFERENCE_FRAME_HPP_
 
+#include <memory>
 #include <vector>
 
 #include "base/not_null.hpp"

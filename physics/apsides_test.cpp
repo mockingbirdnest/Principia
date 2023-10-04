@@ -2,7 +2,9 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 #include "base/not_null.hpp"

@@ -3,6 +3,7 @@
 #include "physics/rotating_body.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <optional>
 #include <vector>
 

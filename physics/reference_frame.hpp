@@ -1,6 +1,8 @@
 #ifndef PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"

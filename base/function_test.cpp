@@ -1,6 +1,7 @@
 #include "base/function.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

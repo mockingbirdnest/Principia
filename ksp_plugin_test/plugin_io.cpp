@@ -1,6 +1,8 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/file.hpp"

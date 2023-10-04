@@ -2,6 +2,8 @@
 
 #include "base/graveyard.hpp"
 
+#include <memory>
+
 namespace principia {
 namespace base {
 namespace _graveyard {

@@ -41,7 +41,7 @@ namespace {
 // |Angle| performs the computation.
 
 struct UnusedResult {
-  constexpr UnusedResult(uninitialized_t) {}
+  constexpr UnusedResult(uninitialized_t) {}  // NOLINT(runtime/explicit)
 };
 
 inline constexpr UnusedResult unused{uninitialized};

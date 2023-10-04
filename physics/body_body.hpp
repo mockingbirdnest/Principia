@@ -2,6 +2,8 @@
 
 #include "physics/body.hpp"
 
+#include <memory>
+
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"

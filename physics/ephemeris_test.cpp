@@ -1,10 +1,12 @@
 #include "physics/ephemeris.hpp"
 
 #include <limits>
+#include <memory>
 #include <optional>
 #include <random>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "astronomy/frames.hpp"

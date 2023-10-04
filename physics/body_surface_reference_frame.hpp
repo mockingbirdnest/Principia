@@ -8,6 +8,8 @@
 #ifndef PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
 #define PRINCIPIA_PHYSICS_BODY_SURFACE_REFERENCE_FRAME_HPP_
 
+#include <memory>
+
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"

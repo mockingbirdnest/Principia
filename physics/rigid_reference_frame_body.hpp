@@ -2,6 +2,9 @@
 
 #include "physics/rigid_reference_frame.hpp"
 
+#include <memory>
+#include <utility>
+
 #include "geometry/r3x3_matrix.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"

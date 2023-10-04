@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include "geometry/frame.hpp"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cctype>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>

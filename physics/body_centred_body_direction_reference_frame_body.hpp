@@ -3,6 +3,7 @@
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "geometry/orthogonal_map.hpp"

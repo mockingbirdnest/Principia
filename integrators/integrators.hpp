@@ -2,6 +2,7 @@
 #define PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 
 #include <functional>
+#include <memory>
 #include <string>
 
 #include "absl/status/status.h"

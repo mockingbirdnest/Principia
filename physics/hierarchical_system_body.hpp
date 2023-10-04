@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "geometry/identity.hpp"

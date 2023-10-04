@@ -1,6 +1,7 @@
 #include "astronomy/standard_product_3.hpp"
 
 #include <limits>
+#include <memory>
 #include <ostream>
 #include <set>
 #include <string>
