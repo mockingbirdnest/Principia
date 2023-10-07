@@ -119,13 +119,17 @@ class FlightPlanOptimizer {
                       MetricFactory metric_factory,
                       ProgressCallback progress_callback = nullptr);
 
+  FlightPlanOptimizer(not_null<FlightPlan*> flight_plan,
+                      MetricFactory metric_factory,
+                      MetricFactory quadratic_penalty_factory,
+                      ProgressCallback progress_callback = nullptr);
+
   // Optimizes the manœuvre at the given |index| to minimize the metric passed
   // at construction.  The |Δv_tolerance| is used for the initial choice of the
   // step and for deciding when to stop, and must be small enough to not miss
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
-  absl::Status Optimize(int index,
-                        Speed const& Δv_tolerance);
+  absl::Status Optimize(int index, Speed const& Δv_tolerance);
 
  private:
   class LinearCombinationOfMetrics;
@@ -217,6 +221,7 @@ class FlightPlanOptimizer {
 
   static constexpr Argument start_argument_{};
   not_null<FlightPlan*> const flight_plan_;
+  std::optional<MetricFactory> const quadratic_penalty_factory_;
   MetricFactory const metric_factory_;
   ProgressCallback const progress_callback_;
 

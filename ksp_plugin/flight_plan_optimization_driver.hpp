@@ -31,6 +31,11 @@ class FlightPlanOptimizationDriver {
       FlightPlan const& flight_plan,
       FlightPlanOptimizer::MetricFactory metric_factory);
 
+  FlightPlanOptimizationDriver(
+      FlightPlan const& flight_plan,
+      FlightPlanOptimizer::MetricFactory metric_factory,
+      FlightPlanOptimizer::MetricFactory quadratic_penalty_factory);
+
   virtual ~FlightPlanOptimizationDriver();
 
   // Returns the last flight plan evaluated by the optimizer.
