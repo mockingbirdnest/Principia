@@ -626,7 +626,7 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
                                            navigation_frame_parameters);
                },
                inclination_in_degrees * Degree)},
-          {1, 1}));
+          {1, 1000}));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
       .index = manœuvre_index,

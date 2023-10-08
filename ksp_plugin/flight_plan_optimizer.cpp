@@ -536,7 +536,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
   std::vector<MetricFactory> metric_factories;
   if (quadratic_penalty_factory_.has_value()) {
-    for (double μ = 1000; μ <= 1'000'000; μ *= 10) {
+    for (double μ = 1; μ <= 1'000'000; μ *= 10) {
       metric_factories.push_back(LinearCombination(
           {metric_factory_, *quadratic_penalty_factory_}, {1, μ}));
     }
@@ -551,7 +551,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   cache_.clear();
 
   auto step_start_argument = start_argument_;
-  int i = 3;
+  int i = 0;
   for (auto const& metric_factory : metric_factories) {
     // The following is a copy, and is not affected by changes to the
     // |flight_plan_|.  It is moved into the metric.
