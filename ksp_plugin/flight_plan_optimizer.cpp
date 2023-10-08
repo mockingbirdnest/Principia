@@ -186,6 +186,9 @@ double FlightPlanOptimizer::LinearCombinationOfMetrics::Evaluate(
     HomogeneousArgument const& homogeneous_argument) const {
   double combined_metric = 0.0;
   for (int i = 0; i < metrics_.size(); ++i) {
+    LOG(INFO) << "Metrics: " << i << " "
+              << metrics_[i]->Evaluate(homogeneous_argument) << " "
+              << weights_[i];
     combined_metric +=
         metrics_[i]->Evaluate(homogeneous_argument) * weights_[i];
   }
@@ -197,6 +200,9 @@ FlightPlanOptimizer::LinearCombinationOfMetrics::EvaluateGradient(
     HomogeneousArgument const& homogeneous_argument) const {
   Gradient<double, HomogeneousArgument> combined_gradient{};
   for (int i = 0; i < metrics_.size(); ++i) {
+    LOG(INFO) << "Gradient: " << i << " "
+              << metrics_[i]->EvaluateGradient(homogeneous_argument) << " "
+              << weights_[i];
     combined_gradient +=
         metrics_[i]->EvaluateGradient(homogeneous_argument) * weights_[i];
   }
@@ -210,6 +216,10 @@ EvaluateGateauxDerivative(
     const {
   double combined_derivative = 0.0;
   for (int i = 0; i < metrics_.size(); ++i) {
+    LOG(INFO) << "Gateaux: " << i << " "
+              << metrics_[i]->EvaluateGateauxDerivative(
+                     homogeneous_argument, homogeneous_argument_direction)
+              << " " << weights_[i];
     combined_derivative +=
         metrics_[i]->EvaluateGateauxDerivative(homogeneous_argument,
                                                homogeneous_argument_direction) *
@@ -536,10 +546,9 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
   std::vector<MetricFactory> metric_factories;
   if (quadratic_penalty_factory_.has_value()) {
-    for (double μ = 1; μ <= 1'000'000; μ *= 10) {
-      metric_factories.push_back(LinearCombination(
-          {metric_factory_, *quadratic_penalty_factory_}, {1, μ}));
-    }
+    metric_factories.push_back(*quadratic_penalty_factory_);
+    //metric_factories.push_back(LinearCombination(
+    //    {metric_factory_, *quadratic_penalty_factory_}, {1, 1}));
   } else {
     metric_factories.push_back(metric_factory_);
   }
@@ -550,31 +559,31 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   // Don't reuse the computations from the previous optimization.
   cache_.clear();
 
-  auto step_start_argument = start_argument_;
   int i = 0;
   for (auto const& metric_factory : metric_factories) {
     // The following is a copy, and is not affected by changes to the
     // |flight_plan_|.  It is moved into the metric.
     NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
-    
+
     auto const metric = metric_factory(this, std::move(manœuvre), index);
 
     LOG(INFO) << "Optimizing with μ=10^" << (i++);
 
     auto const status_or_solution =
         BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
-            Homogeneize(step_start_argument),
+            Homogeneize(start_argument_),
             std::bind(&Metric::Evaluate, metric.get(), _1),
             std::bind(&Metric::EvaluateGradient, metric.get(), _1),
             std::bind(&Metric::EvaluateGateauxDerivative, metric.get(), _1, _2),
-            Δv_tolerance / speed_homogeneization_factor);
+            Δv_tolerance / speed_homogeneization_factor,
+            /*radius=*/Infinity<double>,
+            /*first_step=*/1);
     if (status_or_solution.ok()) {
       auto const& solution = status_or_solution.value();
       auto const replace_status =
           flight_plan_->Replace(UpdatedBurn(solution, manœuvre), index);
       flight_plan_->EnableAnalysis(/*enabled=*/true);
       RETURN_IF_ERROR(replace_status);
-      step_start_argument = Dehomogeneize(solution);
     } else {
       flight_plan_->EnableAnalysis(/*enabled=*/true);
       return status_or_solution.status();

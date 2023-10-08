@@ -211,14 +211,21 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius) {
+    typename Hilbert<Difference<Argument>>::NormType const& radius,
+    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+        first_step) {
   GateauxDerivative<Scalar, Argument> const gateaux_derivative_f =
       [&grad_f](Argument const& argument,
                 Difference<Argument> const& direction) {
         return InnerProduct(grad_f(argument), direction);
       };
-  return BroydenFletcherGoldfarbShanno(
-      start_argument, f, grad_f, gateaux_derivative_f, tolerance, radius);
+  return BroydenFletcherGoldfarbShanno(start_argument,
+                                       f,
+                                       grad_f,
+                                       gateaux_derivative_f,
+                                       tolerance,
+                                       radius,
+                                       first_step);
 }
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
@@ -229,7 +236,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius) {
+    typename Hilbert<Difference<Argument>>::NormType const& radius,
+    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+        first_step) {
   bool satisfies_strong_wolfe_condition;
 
   // The first step uses vanilla steepest descent.
@@ -246,11 +255,14 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   // is that, if the caller provides a reasonable value then (1) we won't miss
   // "interesting features" of f; (2) the finite differences won't underflow or
   // have other unpleasant properties.
-  Difference<Argument> const p₀ = -Normalize(grad_f_x₀) * tolerance;
+  //TODO(phl)comment
+  Difference<Argument> const p₀ =
+      -Normalize(grad_f_x₀) * first_step.value_or(tolerance);
 
   double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, gateaux_derivative_f,
                                satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
+LOG(INFO)<<x₁;
   if (!satisfies_strong_wolfe_condition) {
     LOG(INFO) << "Doesn't satisfy the strong Wolfe condition at: " << x₁;
     return x₁;
@@ -269,6 +281,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto Hₖ = H₀;
   for (;;) {
     LOG(INFO) << "Iterating from: " << xₖ;
+    LOG(INFO) << Hₖ;
     RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
       LOG(INFO) << "No minimum within search radius at: " << xₖ;
