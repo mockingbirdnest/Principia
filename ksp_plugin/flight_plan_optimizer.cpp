@@ -186,9 +186,9 @@ double FlightPlanOptimizer::LinearCombinationOfMetrics::Evaluate(
     HomogeneousArgument const& homogeneous_argument) const {
   double combined_metric = 0.0;
   for (int i = 0; i < metrics_.size(); ++i) {
-    LOG(INFO) << "Metrics: " << i << " "
-              << metrics_[i]->Evaluate(homogeneous_argument) << " "
-              << weights_[i];
+    //LOG(INFO) << "Metrics: " << i << " "
+    //          << metrics_[i]->Evaluate(homogeneous_argument) << " "
+    //          << weights_[i];
     combined_metric +=
         metrics_[i]->Evaluate(homogeneous_argument) * weights_[i];
   }
@@ -200,9 +200,9 @@ FlightPlanOptimizer::LinearCombinationOfMetrics::EvaluateGradient(
     HomogeneousArgument const& homogeneous_argument) const {
   Gradient<double, HomogeneousArgument> combined_gradient{};
   for (int i = 0; i < metrics_.size(); ++i) {
-    LOG(INFO) << "Gradient: " << i << " "
-              << metrics_[i]->EvaluateGradient(homogeneous_argument) << " "
-              << weights_[i];
+    //LOG(INFO) << "Gradient: " << i << " "
+    //          << metrics_[i]->EvaluateGradient(homogeneous_argument) << " "
+    //          << weights_[i];
     combined_gradient +=
         metrics_[i]->EvaluateGradient(homogeneous_argument) * weights_[i];
   }
@@ -216,10 +216,10 @@ EvaluateGateauxDerivative(
     const {
   double combined_derivative = 0.0;
   for (int i = 0; i < metrics_.size(); ++i) {
-    LOG(INFO) << "Gateaux: " << i << " "
-              << metrics_[i]->EvaluateGateauxDerivative(
-                     homogeneous_argument, homogeneous_argument_direction)
-              << " " << weights_[i];
+    //LOG(INFO) << "Gateaux: " << i << " "
+    //          << metrics_[i]->EvaluateGateauxDerivative(
+    //                 homogeneous_argument, homogeneous_argument_direction)
+    //          << " " << weights_[i];
     combined_derivative +=
         metrics_[i]->EvaluateGateauxDerivative(homogeneous_argument,
                                                homogeneous_argument_direction) *
@@ -530,7 +530,8 @@ FlightPlanOptimizer::FlightPlanOptimizer(
     ProgressCallback progress_callback)
     : flight_plan_(flight_plan),
       metric_factory_(std::move(metric_factory)),
-      progress_callback_(std::move(progress_callback)) {}
+      progress_callback_(std::move(progress_callback)),
+      logger_(TEMP_DIR / "fpo.wl") {}
 
 FlightPlanOptimizer::FlightPlanOptimizer(
     not_null<FlightPlan*> flight_plan,
@@ -540,7 +541,8 @@ FlightPlanOptimizer::FlightPlanOptimizer(
     : flight_plan_(flight_plan),
       quadratic_penalty_factory_(std::move(quadratic_penalty_factory)),
       metric_factory_(std::move(metric_factory)),
-      progress_callback_(std::move(progress_callback)) {}
+      progress_callback_(std::move(progress_callback)),
+      logger_(TEMP_DIR / "fpo.wl") {}
 
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
@@ -566,6 +568,21 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
     NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
 
     auto const metric = metric_factory(this, std::move(manœuvre), index);
+    for (double i = -2; i <= 2; ++i) {
+      for (double j = -2; j <= 2; ++j) {
+        for (double k = -2; k <= 2; ++k) {
+          for (double l = -2; l <= 2; ++l) {
+            HomogeneousArgument ha({i, j, k, l});
+            logger_.Append("metric",
+                           std::tuple(ha, metric->Evaluate(ha)),
+                           ExpressInSIUnits);
+            logger_.Append("gradient",
+                           std::tuple(ha, metric->EvaluateGradient(ha)),
+                           ExpressInSIUnits);
+          }
+        }
+      }
+    }
 
     LOG(INFO) << "Optimizing with μ=10^" << (i++);
 
@@ -589,6 +606,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
       return status_or_solution.status();
     }
   }
+  logger_.Flush();
   return absl::OkStatus();
 }
 

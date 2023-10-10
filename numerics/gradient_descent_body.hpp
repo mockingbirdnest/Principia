@@ -10,6 +10,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -22,6 +23,8 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
@@ -105,6 +108,26 @@ double Zoom(double α_lo,
   satisfies_strong_wolfe_condition = true;
   LOG(INFO) << "Zoom over: [" << α_lo << " (" << ϕ_α_lo << "), "
                             << α_hi << " (" << ϕ_α_hi << ")]";
+  {
+    Logger logger(TEMP_DIR / "zoom.wl");
+    static constexpr int steps = 100;
+    auto const α1 = std::min(α_lo, α_hi);
+    auto const α2 = std::max(α_lo, α_hi);
+    for (int i = 0; i < steps; ++i) {
+      auto const α = α1 + 10 * i * (α2 - α1) / (steps - 1);
+      auto const f_α = f(x + α * p);
+      logger.Append("phi", std::tuple(α, f_α), ExpressInSIUnits);
+    }
+    logger.Set("alphaLo", α_lo, ExpressInSIUnits);
+    logger.Set("alphaHi", α_hi, ExpressInSIUnits);
+    logger.Set("phiAlphaLo", ϕ_α_lo, ExpressInSIUnits);
+    logger.Set("phiAlphaHi", ϕ_α_hi, ExpressInSIUnits);
+    logger.Set("phiPrimeAlphaLo", ϕʹ_α_lo, ExpressInSIUnits);
+    logger.Set("phi0", ϕ_0, ExpressInSIUnits);
+    logger.Set("phiPrime0", ϕʹ_0, ExpressInSIUnits);
+    logger.Set("x", x, ExpressInSIUnits);
+    logger.Set("p", p, ExpressInSIUnits);
+  }
   for (;;) {
     // Note that there is no guarantee here that α_lo < α_hi.
     DCHECK_NE(α_lo, α_hi);
@@ -262,7 +285,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, gateaux_derivative_f,
                                satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
-LOG(INFO)<<x₁;
+LOG(INFO)<<p₀<<" "<<grad_f_x₀<<" "<<x₁;
   if (!satisfies_strong_wolfe_condition) {
     LOG(INFO) << "Doesn't satisfy the strong Wolfe condition at: " << x₁;
     return x₁;

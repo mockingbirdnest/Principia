@@ -113,10 +113,13 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // |method_out_return| protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20230506-192603)";  // NOLINT
+      R"(C:\Program Files\Kerbal Space Program\1.12.4\glog\Principia\JOURNAL.20231008-194952)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
+    if (count == 1454923) {
+      break;
+    }
     ++count;
     // Reset logging after each method so as to output all messages irrespective
     // of what the game did.
