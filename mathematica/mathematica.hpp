@@ -163,6 +163,11 @@ template<typename T, int size, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
                           OptionalExpressIn express_in = std::nullopt);
 
+template<typename T, int rows, int columns,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(FixedMatrix<T, rows, columns> const& fixed_matrix,
+                          OptionalExpressIn express_in = std::nullopt);
+
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3Element<T> const& r3_element,
                           OptionalExpressIn express_in = std::nullopt);
