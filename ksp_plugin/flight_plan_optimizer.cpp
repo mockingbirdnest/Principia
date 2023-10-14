@@ -522,27 +522,8 @@ FlightPlanOptimizer::FlightPlanOptimizer(
       metric_factory_(std::move(metric_factory)),
       progress_callback_(std::move(progress_callback)) {}
 
-FlightPlanOptimizer::FlightPlanOptimizer(
-    not_null<FlightPlan*> flight_plan,
-    MetricFactory metric_factory,
-    MetricFactory quadratic_penalty_factory,
-    ProgressCallback progress_callback)
-    : flight_plan_(flight_plan),
-      quadratic_penalty_factory_(std::move(quadratic_penalty_factory)),
-      metric_factory_(std::move(metric_factory)),
-      progress_callback_(std::move(progress_callback)) {}
-
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
-  std::vector<MetricFactory> metric_factories;
-  if (quadratic_penalty_factory_.has_value()) {
-    for (double μ = 1; μ <= 1'024; μ *= 2) {
-      metric_factories.push_back(LinearCombination(
-          {metric_factory_, *quadratic_penalty_factory_}, {1, μ}));
-    }
-  } else {
-    metric_factories.push_back(metric_factory_);
-  }
   // We are going to repeatedly tweak the |flight_plan_|, no point in running
   // the orbit analysers.
   flight_plan_->EnableAnalysis(/*enabled=*/false);
@@ -550,38 +531,28 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   // Don't reuse the computations from the previous optimization.
   cache_.clear();
 
-  int i = 0;
-  for (auto const& metric_factory : metric_factories) {
-    // The following is a copy, and is not affected by changes to the
-    // |flight_plan_|.  It is moved into the metric.
-    NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
+  // The following is a copy, and is not affected by changes to the
+  // |flight_plan_|.  It is moved into the metric.
+  NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
+  auto const metric = metric_factory_(this, std::move(manœuvre), index);
 
-    auto const metric = metric_factory(this, std::move(manœuvre), index);
-    LOG(INFO) << "Optimizing with μ=2^" << (i++);
-
-    auto const status_or_solution =
-        BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
-            Homogeneize(start_argument_),
-            std::bind(&Metric::Evaluate, metric.get(), _1),
-            std::bind(&Metric::EvaluateGradient, metric.get(), _1),
-            std::bind(&Metric::EvaluateGateauxDerivative, metric.get(), _1, _2),
-            Δv_tolerance / speed_homogeneization_factor,
-            /*radius=*/Infinity<double>,
-            /*first_step=*/1);
-    if (status_or_solution.ok()) {
-      auto const& solution = status_or_solution.value();
-      auto const replace_status =
-          flight_plan_->Replace(UpdatedBurn(solution, manœuvre), index);
-      if (!replace_status.ok()) {
-        flight_plan_->EnableAnalysis(/*enabled=*/true);
-        return replace_status;
-      }
-    } else {
-      flight_plan_->EnableAnalysis(/*enabled=*/true);
-      return status_or_solution.status();
-    }
+  auto const status_or_solution =
+      BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(
+          Homogeneize(start_argument_),
+          std::bind(&Metric::Evaluate, metric.get(), _1),
+          std::bind(&Metric::EvaluateGradient, metric.get(), _1),
+          std::bind(&Metric::EvaluateGateauxDerivative, metric.get(), _1, _2),
+          Δv_tolerance / speed_homogeneization_factor);
+  if (status_or_solution.ok()) {
+    auto const& solution = status_or_solution.value();
+    auto const replace_status =
+        flight_plan_->Replace(UpdatedBurn(solution, manœuvre), index);
+    flight_plan_->EnableAnalysis(/*enabled=*/true);
+    return replace_status;
+  } else {
+    flight_plan_->EnableAnalysis(/*enabled=*/true);
+    return status_or_solution.status();
   }
-  return absl::OkStatus();
 }
 
 DiscreteTrajectory<Barycentric>::value_type

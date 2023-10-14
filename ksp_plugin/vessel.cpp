@@ -347,15 +347,12 @@ FlightPlan& Vessel::flight_plan() const {
 }
 
 void Vessel::MakeFlightPlanOptimizationDriver(
-    FlightPlanOptimizer::MetricFactory metric_factory,
-    FlightPlanOptimizer::MetricFactory quadratic_penalty_factory) {
+    FlightPlanOptimizer::MetricFactory metric_factory) {
   CHECK(has_deserialized_flight_plan());
   auto& [flight_plan, optimization_driver] =
       std::get<OptimizableFlightPlan>(selected_flight_plan());
   optimization_driver = make_not_null_unique<FlightPlanOptimizationDriver>(
-      *flight_plan,
-      std::move(metric_factory),
-      std::move(quadratic_penalty_factory));
+      *flight_plan, std::move(metric_factory));
 }
 
 bool Vessel::UpdateFlightPlanFromOptimization() {

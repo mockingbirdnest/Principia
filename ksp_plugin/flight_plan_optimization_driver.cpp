@@ -27,20 +27,6 @@ FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
       last_flight_plan_(
           make_not_null_shared<FlightPlan>(flight_plan_under_optimization_)) {}
 
-FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
-    FlightPlan const& flight_plan,
-    FlightPlanOptimizer::MetricFactory metric_factory,
-    FlightPlanOptimizer::MetricFactory quadratic_penalty_factory)
-    : flight_plan_under_optimization_(flight_plan),
-      flight_plan_optimizer_(&flight_plan_under_optimization_,
-                             std::move(metric_factory),
-                             std::move(quadratic_penalty_factory),
-                             [this](FlightPlan const& flight_plan) {
-                               UpdateLastFlightPlan(flight_plan);
-                             }),
-      last_flight_plan_(
-          make_not_null_shared<FlightPlan>(flight_plan_under_optimization_)) {}
-
 FlightPlanOptimizationDriver::~FlightPlanOptimizationDriver() {
   // Ensure that we do not have a thread still running with references to the
   // members of this class when those are destroyed.

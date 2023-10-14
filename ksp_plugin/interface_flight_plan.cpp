@@ -614,7 +614,6 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
     }
   }
   vessel.MakeFlightPlanOptimizationDriver(
-      FlightPlanOptimizer::ForΔv(),
       FlightPlanOptimizer::LinearCombination(
           {FlightPlanOptimizer::ForCelestialDistance(
                /*celestial=*/&plugin->GetCelestial(celestial_index),
@@ -625,8 +624,9 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
                  return NewNavigationFrame(*plugin,
                                            navigation_frame_parameters);
                },
-               inclination_in_degrees * Degree)},
-          {1, 1e6}));
+               inclination_in_degrees * Degree),
+           FlightPlanOptimizer::ForΔv()},
+          {1, 1e6, 1e3}));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
       .index = manœuvre_index,

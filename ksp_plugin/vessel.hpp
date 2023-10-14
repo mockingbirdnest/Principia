@@ -187,8 +187,7 @@ class Vessel {
   virtual FlightPlan& flight_plan() const;
 
   virtual void MakeFlightPlanOptimizationDriver(
-      FlightPlanOptimizer::MetricFactory metric_factory,
-      FlightPlanOptimizer::MetricFactory quadratic_penalty_factory);
+      FlightPlanOptimizer::MetricFactory metric_factory);
 
   virtual bool UpdateFlightPlanFromOptimization();
 
