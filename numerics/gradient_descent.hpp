@@ -47,7 +47,10 @@ constexpr absl::StatusCode NoMinimum = absl::StatusCode::kNotFound;
 
 // Stops when the search displacement is smaller than |tolerance|.  Returns
 // |NoMinimum| if no minimum is found within distance |radius| of
-// |start_argument|.
+// |start_argument|.  The first step size defaults to the tolerance.  The
+// assumption is that, if the caller provides a reasonable value then (1) we
+// won't miss "interesting features" of f; (2) the finite differences won't
+// underflow or have other unpleasant properties.
 template<typename Scalar, typename Argument>
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,

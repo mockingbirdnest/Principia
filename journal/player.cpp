@@ -13,7 +13,7 @@
 #include "glog/logging.h"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
-#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 1
+#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
 
 namespace principia {
 namespace journal {
@@ -93,11 +93,11 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
         << "if this is intended.";
   }
 
-#if 1
+#if 0
   LOG_IF(
       ERROR,
-      method_in->HasExtension(serialization::FlightPlanOptimizeManoeuvre::extension) ||
-      method_in->HasExtension(serialization::FlightPlanOptimizeManoeuvre::extension))
+      method_in->HasExtension(serialization::VesselGetAnalysis::extension) ||
+      method_in->HasExtension(serialization::DeleteInterchange::extension))
       << "index: " << index << "\n"
       << method_in->ShortDebugString() << "\n"
       << method_out_return->ShortDebugString();

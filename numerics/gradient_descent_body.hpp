@@ -10,7 +10,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "mathematica/logger.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -23,8 +22,6 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
 using namespace principia::quantities::_elementary_functions;
@@ -108,6 +105,8 @@ double Zoom(double α_lo,
   satisfies_strong_wolfe_condition = true;
   LOG(INFO) << "Zoom over: [" << α_lo << " (" << ϕ_α_lo << "), "
                             << α_hi << " (" << ϕ_α_hi << ")]";
+
+#if PRINCIPIA_LOG_ZOOM
   {
     Logger logger(TEMP_DIR / "zoom.wl");
     static constexpr int steps = 100;
@@ -128,6 +127,8 @@ double Zoom(double α_lo,
     logger.Set("x", x, ExpressInSIUnits);
     logger.Set("p", p, ExpressInSIUnits);
   }
+#endif
+
   for (;;) {
     // Note that there is no guarantee here that α_lo < α_hi.
     DCHECK_NE(α_lo, α_hi);
@@ -274,18 +275,12 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     return x₀;
   }
 
-  // We (ab)use the tolerance to determine the first step size.  The assumption
-  // is that, if the caller provides a reasonable value then (1) we won't miss
-  // "interesting features" of f; (2) the finite differences won't underflow or
-  // have other unpleasant properties.
-  //TODO(phl)comment
   Difference<Argument> const p₀ =
       -Normalize(grad_f_x₀) * first_step.value_or(tolerance);
 
   double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, gateaux_derivative_f,
                                satisfies_strong_wolfe_condition);
   auto const x₁ = x₀+ α₀ * p₀;
-LOG(INFO)<<p₀<<" "<<grad_f_x₀<<" "<<x₁;
   if (!satisfies_strong_wolfe_condition) {
     LOG(INFO) << "Doesn't satisfy the strong Wolfe condition at: " << x₁;
     return x₁;
@@ -304,7 +299,6 @@ LOG(INFO)<<p₀<<" "<<grad_f_x₀<<" "<<x₁;
   auto Hₖ = H₀;
   for (;;) {
     LOG(INFO) << "Iterating from: " << xₖ;
-    LOG(INFO) << Hₖ;
     RETURN_IF_STOPPED;
     if ((xₖ - x₀).Norm() > radius) {
       LOG(INFO) << "No minimum within search radius at: " << xₖ;
