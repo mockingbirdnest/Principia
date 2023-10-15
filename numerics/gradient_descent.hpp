@@ -47,7 +47,10 @@ constexpr absl::StatusCode NoMinimum = absl::StatusCode::kNotFound;
 
 // Stops when the search displacement is smaller than |tolerance|.  Returns
 // |NoMinimum| if no minimum is found within distance |radius| of
-// |start_argument|.
+// |start_argument|.  The first step size defaults to the tolerance.  The
+// assumption is that, if the caller provides a reasonable value then (1) we
+// won't miss "interesting features" of f; (2) the finite differences won't
+// underflow or have other unpleasant properties.
 template<typename Scalar, typename Argument>
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
@@ -55,7 +58,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
     typename Hilbert<Difference<Argument>>::NormType const& radius =
-        Infinity<typename Hilbert<Difference<Argument>>::NormType>);
+        Infinity<typename Hilbert<Difference<Argument>>::NormType>,
+    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+        first_step = std::nullopt);
 
 // Same as above, but the Gateaux derivative of f is passed in addition to its
 // gradient.  Useful when the Gateaux derivative is significantly less expensive
@@ -68,7 +73,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
     typename Hilbert<Difference<Argument>>::NormType const& radius =
-        Infinity<typename Hilbert<Difference<Argument>>::NormType>);
+        Infinity<typename Hilbert<Difference<Argument>>::NormType>,
+    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+        first_step = std::nullopt);
 
 }  // namespace internal
 

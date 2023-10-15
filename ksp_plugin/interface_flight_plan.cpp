@@ -626,7 +626,7 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
                },
                inclination_in_degrees * Degree),
            FlightPlanOptimizer::ForΔv()},
-          {1, 1000, 1}));
+          {1, 1e6, 1e3}));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
       .index = manœuvre_index,

@@ -105,6 +105,30 @@ double Zoom(double α_lo,
   satisfies_strong_wolfe_condition = true;
   LOG(INFO) << "Zoom over: [" << α_lo << " (" << ϕ_α_lo << "), "
                             << α_hi << " (" << ϕ_α_hi << ")]";
+
+#if PRINCIPIA_LOG_ZOOM
+  {
+    Logger logger(TEMP_DIR / "zoom.wl");
+    static constexpr int steps = 100;
+    auto const α1 = std::min(α_lo, α_hi);
+    auto const α2 = std::max(α_lo, α_hi);
+    for (int i = 0; i < steps; ++i) {
+      auto const α = α1 + 10 * i * (α2 - α1) / (steps - 1);
+      auto const f_α = f(x + α * p);
+      logger.Append("phi", std::tuple(α, f_α), ExpressInSIUnits);
+    }
+    logger.Set("alphaLo", α_lo, ExpressInSIUnits);
+    logger.Set("alphaHi", α_hi, ExpressInSIUnits);
+    logger.Set("phiAlphaLo", ϕ_α_lo, ExpressInSIUnits);
+    logger.Set("phiAlphaHi", ϕ_α_hi, ExpressInSIUnits);
+    logger.Set("phiPrimeAlphaLo", ϕʹ_α_lo, ExpressInSIUnits);
+    logger.Set("phi0", ϕ_0, ExpressInSIUnits);
+    logger.Set("phiPrime0", ϕʹ_0, ExpressInSIUnits);
+    logger.Set("x", x, ExpressInSIUnits);
+    logger.Set("p", p, ExpressInSIUnits);
+  }
+#endif
+
   for (;;) {
     // Note that there is no guarantee here that α_lo < α_hi.
     DCHECK_NE(α_lo, α_hi);
@@ -211,14 +235,21 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius) {
+    typename Hilbert<Difference<Argument>>::NormType const& radius,
+    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+        first_step) {
   GateauxDerivative<Scalar, Argument> const gateaux_derivative_f =
       [&grad_f](Argument const& argument,
                 Difference<Argument> const& direction) {
         return InnerProduct(grad_f(argument), direction);
       };
-  return BroydenFletcherGoldfarbShanno(
-      start_argument, f, grad_f, gateaux_derivative_f, tolerance, radius);
+  return BroydenFletcherGoldfarbShanno(start_argument,
+                                       f,
+                                       grad_f,
+                                       gateaux_derivative_f,
+                                       tolerance,
+                                       radius,
+                                       first_step);
 }
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
@@ -229,7 +260,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius) {
+    typename Hilbert<Difference<Argument>>::NormType const& radius,
+    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+        first_step) {
   bool satisfies_strong_wolfe_condition;
 
   // The first step uses vanilla steepest descent.
@@ -242,11 +275,8 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     return x₀;
   }
 
-  // We (ab)use the tolerance to determine the first step size.  The assumption
-  // is that, if the caller provides a reasonable value then (1) we won't miss
-  // "interesting features" of f; (2) the finite differences won't underflow or
-  // have other unpleasant properties.
-  Difference<Argument> const p₀ = -Normalize(grad_f_x₀) * tolerance;
+  Difference<Argument> const p₀ =
+      -Normalize(grad_f_x₀) * first_step.value_or(tolerance);
 
   double const α₀ = LineSearch(x₀, p₀, grad_f_x₀, f, gateaux_derivative_f,
                                satisfies_strong_wolfe_condition);

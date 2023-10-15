@@ -314,6 +314,21 @@ std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
   return RawApply("List", expressions);
 }
 
+template<typename T, int rows, int columns, typename OptionalExpressIn>
+std::string ToMathematica(FixedMatrix<T, rows, columns> const& fixed_matrix,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> expressions;
+  for (int i = 0; i < rows; ++i) {
+    std::vector<std::string> row_expressions;
+    for (int j = 0; j < columns; ++j) {
+      row_expressions.emplace_back(
+          ToMathematica(fixed_matrix(i, j), express_in));
+    }
+    expressions.emplace_back(RawApply("List", row_expressions));
+  }
+  return RawApply("List", expressions);
+}
+
 template<typename T, typename OptionalExpressIn>
 std::string ToMathematica(R3Element<T> const& r3_element,
                           OptionalExpressIn express_in) {
