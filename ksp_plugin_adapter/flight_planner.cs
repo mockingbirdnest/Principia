@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Steamworks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -380,51 +381,74 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         }
 
         Style.HorizontalLine();
-        using (new UnityEngine.GUILayout.VerticalScope()) {
-          UnityEngine.GUILayout.TextArea(
-              L10N.CacheFormat("#Principia_FlightPlan_Optimization"));
-
+        // There is no Layout/Repaint trouble here because the frame is selected
+        // in another window.
+        if (adapter_.plotting_frame_selector_.
+                Centre() is CelestialBody centre) {
           using (new UnityEngine.GUILayout.HorizontalScope()) {
+            ////valign
             UnityEngine.GUILayout.Label(
-                L10N.CacheFormat("#Principia_FlightPlan_TargetAltitude"));
-            string text = UnityEngine.GUILayout.TextField(
-                optimization_altitude_.FormatN(0),
-                GUILayoutWidth(3));
-            UnityEngine.GUILayout.Label(
-                text    : L10N.CacheFormat("#Principia_FlightPlan_LengthUnit"),
-                options : GUILayoutWidth(2));
-            if (double.TryParse(text,
-                                System.Globalization.NumberStyles.Any,
-                                Culture.culture,
-                                out double candidate)) {
-              if (candidate >= 0 && candidate < double.PositiveInfinity) {
-                optimization_altitude_ = candidate;
+                L10N.CelestialString("#Principia_FlightPlan_Optimization",
+                                     new[]{centre}),
+                style : Style.Aligned(UnityEngine.TextAnchor.LowerLeft,
+                                      UnityEngine.GUI.skin.label));
+            using (new UnityEngine.GUILayout.VerticalScope()) {
+              using (new UnityEngine.GUILayout.HorizontalScope()) {
+                UnityEngine.GUILayout.Label(
+                    L10N.CacheFormat("#Principia_FlightPlan_TargetAltitude"),
+                    style : Style.RightAligned(UnityEngine.GUI.skin.label));
+                string text = UnityEngine.GUILayout.TextField(
+                    optimization_altitude_.FormatN(0),
+                    GUILayoutWidth(3));
+                UnityEngine.GUILayout.Label(
+                    text    : L10N.CacheFormat(
+                        "#Principia_FlightPlan_AltitudeUnit"),
+                    options : GUILayoutWidth(2));
+                if (double.TryParse(text,
+                                    System.Globalization.NumberStyles.Any,
+                                    Culture.culture,
+                                    out double candidate)) {
+                  if (candidate >= 0 && candidate < double.PositiveInfinity) {
+                    optimization_altitude_ = candidate;
+                  }
+                }
               }
-            }
-          }
 
-          using (new UnityEngine.GUILayout.HorizontalScope()) {
-            UnityEngine.GUILayout.Label(
-                L10N.CacheFormat("#Principia_FlightPlan_TargetInclination"));
-            bool optimize_inclination = UnityEngine.GUILayout.Toggle(
-                optimization_inclination_in_degrees_.HasValue,
-                L10N.CacheFormat("#Principia_FlightPlan_OptimizeInclination"));
-            string text = UnityEngine.GUILayout.TextField(
-                optimize_inclination
-                    ? optimization_inclination_in_degrees_.Value.FormatN(0)
-                    : "",
-                GUILayoutWidth(3));
-            UnityEngine.GUILayout.Label(
-                text: L10N.CacheFormat("#Principia_FlightPlan_AngleUnit"),
-                options: GUILayoutWidth(2));
-            if (!optimize_inclination) {
-              optimization_inclination_in_degrees_ = null;
-            } else if (double.TryParse(text,
-                                       System.Globalization.NumberStyles.Any,
-                                       Culture.culture,
-                                       out double candidate)) {
-              optimization_inclination_in_degrees_ =
-                  Math.Max(Math.Min(180, candidate), -180);
+              using (new UnityEngine.GUILayout.HorizontalScope()) {
+                UnityEngine.GUILayout.Label(
+                    L10N.CacheFormat("#Principia_FlightPlan_TargetInclination"),
+                    style : Style.RightAligned(UnityEngine.GUI.skin.label));
+                bool optimize_inclination = UnityEngine.GUILayout.Toggle(
+                    optimization_inclination_in_degrees_.HasValue,
+                    L10N.CacheFormat(
+                        "#Principia_FlightPlan_OptimizeInclination",
+                    GUILayoutWidth(1)),
+                    style : Style.RightAligned(UnityEngine.GUI.skin.toggle));
+                string text = UnityEngine.GUILayout.TextField(
+                    optimization_inclination_in_degrees_.HasValue
+                        ? optimization_inclination_in_degrees_.Value.FormatN(0)
+                        : L10N.CacheFormat(
+                            "#Principia_FlightPlan_DontOptimizeInclination"),
+                    GUILayoutWidth(3));
+                UnityEngine.GUILayout.Label(
+                    text: L10N.CacheFormat(
+                        "#Principia_FlightPlan_InclinationUnit"),
+                    options: GUILayoutWidth(2));
+                if (!optimize_inclination) {
+                  optimization_inclination_in_degrees_ = null;
+                } else if (text ==
+                           L10N.CacheFormat(
+                               "#Principia_FlightPlan_DontOptimizeInclination")) {
+                  optimization_inclination_in_degrees_ = 0;
+                } else if (double.TryParse(text,
+                                           System.Globalization.NumberStyles.
+                                               Any,
+                                           Culture.culture,
+                                           out double candidate)) {
+                  optimization_inclination_in_degrees_ =
+                      Math.Max(Math.Min(180, candidate), -180);
+                }
+              }
             }
           }
         }
@@ -456,24 +480,24 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             return;
           }
           Style.HorizontalLine();
-          if (adapter_.plotting_frame_selector_.
-                  Centre() is CelestialBody centre) {
-            if (plugin.FlightPlanOptimizationInProgress(vessel_guid)) {
-              UnityEngine.GUILayout.Button("Optimizing…");
-            } else if (UnityEngine.GUILayout.Button(
-                           $"Optimize {centre.Name()} flyby")) {
-              plugin.FlightPlanOptimizeManoeuvre(
-                  vessel_guid,
-                  i,
-                  centre.flightGlobalsIndex,
-                  centre.Radius + optimization_altitude_,
-                  optimization_inclination_in_degrees_,
-                  (NavigationFrameParameters)adapter_.plotting_frame_selector_.
-                      FrameParameters());
-            }
-          } else {
-            UnityEngine.GUILayout.Button("Change plotting frame to optimize");
-          }
+          //if (adapter_.plotting_frame_selector_.
+          //        Centre() is CelestialBody centre) {
+          //  if (plugin.FlightPlanOptimizationInProgress(vessel_guid)) {
+          //    UnityEngine.GUILayout.Button("Optimizing…");
+          //  } else if (UnityEngine.GUILayout.Button(
+          //                 $"Optimize {centre.Name()} flyby")) {
+          //    plugin.FlightPlanOptimizeManoeuvre(
+          //        vessel_guid,
+          //        i,
+          //        centre.flightGlobalsIndex,
+          //        centre.Radius + optimization_altitude_,
+          //        optimization_inclination_in_degrees_,
+          //        (NavigationFrameParameters)adapter_.plotting_frame_selector_.
+          //            FrameParameters());
+          //  }
+          //} else {
+          //  UnityEngine.GUILayout.Button("Change plotting frame to optimize");
+          //}
           BurnEditor burn = burn_editors_[i];
           switch (burn.Render(
               header          :
