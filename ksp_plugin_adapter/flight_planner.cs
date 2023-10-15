@@ -1,5 +1,4 @@
-﻿using Steamworks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -386,7 +385,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 Centre() is CelestialBody centre) {
           Style.HorizontalLine();
           using (new UnityEngine.GUILayout.HorizontalScope()) {
-            ////valign
             UnityEngine.GUILayout.Label(
                 L10N.CelestialString("#Principia_FlightPlan_Optimization",
                                      new[]{ centre }),
@@ -458,7 +456,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               }
 
               // If any of the parameters changed (that includes a change of
-              // plotting frame in another window) recreated the optimization
+              // plotting frame in another window), recreate the optimization
               // driver.  This interrupts any optimization that might be
               // running, to avoid confusing results.
               if (optimization_altitude_ != optimization_altitude ||

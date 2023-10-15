@@ -186,7 +186,7 @@ class Vessel {
   // flight plan or the flight plan has not been deserialized.
   virtual FlightPlan& flight_plan() const;
 
-  // Construct a new driver for the given metric (but doesn't start it).  If
+  // Constructs a new driver for the given metric (but doesn't start it).  If
   // there is a driver currently running it is interrupted and destroyed.
   virtual void MakeFlightPlanOptimizationDriver(
       FlightPlanOptimizer::MetricFactory metric_factory);
