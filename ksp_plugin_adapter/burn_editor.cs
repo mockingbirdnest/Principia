@@ -266,7 +266,6 @@ class BurnEditor : ScalingRenderer {
           string vessel_guid = vessel_.id.ToString();
           int optimized_index =
               plugin.FlightPlanOptimizationDriverInProgress(vessel_guid);
-          UnityEngine.Debug.LogError(optimized_index + " " + index);
           if (optimized_index == index) {
             UnityEngine.GUILayout.Label(
                 L10N.CacheFormat("#Principia_BurnEditor_OptimizingThis"));
