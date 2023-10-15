@@ -245,8 +245,9 @@ class BurnEditor : ScalingRenderer {
             index == 0
                 ? L10N.CacheFormat(
                     "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-                : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
-                                   index),
+                : L10N.CacheFormat(
+                    "#Principia_BurnEditor_TimeBase_EndOfManœuvre",
+                    index),
             style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
                 alignment = UnityEngine.TextAnchor.UpperLeft
             });

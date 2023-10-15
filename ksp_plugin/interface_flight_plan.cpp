@@ -595,7 +595,7 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
     int const manœuvre_index,
     int const celestial_index,
     double const distance,
-    double const inclination_in_degrees,
+    double const* const inclination_in_degrees,
     NavigationFrameParameters const navigation_frame_parameters) {
   journal::Method<journal::FlightPlanOptimizeManoeuvre> m(
       {plugin,
@@ -613,20 +613,25 @@ void __cdecl principia__FlightPlanOptimizeManoeuvre(
       old_driver->Interrupt();
     }
   }
+
+  std::vector<FlightPlanOptimizer::MetricFactory> factories = {
+      FlightPlanOptimizer::ForCelestialDistance(
+          /*celestial=*/&plugin->GetCelestial(celestial_index),
+          /*target_distance=*/distance * Metre),
+      FlightPlanOptimizer::ForΔv()};
+  std::vector<double> weights = {1, 1e3};
+  if (inclination_in_degrees != nullptr) {
+    factories.push_back(FlightPlanOptimizer::ForInclination(
+        &plugin->GetCelestial(celestial_index),
+        [plugin, navigation_frame_parameters]() {
+          return NewNavigationFrame(*plugin, navigation_frame_parameters);
+        },
+        *inclination_in_degrees * Degree));
+    weights.push_back(1e6);
+  }
+
   vessel.MakeFlightPlanOptimizationDriver(
-      FlightPlanOptimizer::LinearCombination(
-          {FlightPlanOptimizer::ForCelestialDistance(
-               /*celestial=*/&plugin->GetCelestial(celestial_index),
-               /*target_distance=*/distance * Metre),
-           FlightPlanOptimizer::ForInclination(
-               &plugin->GetCelestial(celestial_index),
-               [plugin, navigation_frame_parameters]() {
-                 return NewNavigationFrame(*plugin,
-                                           navigation_frame_parameters);
-               },
-               inclination_in_degrees * Degree),
-           FlightPlanOptimizer::ForΔv()},
-          {1, 1e6, 1e3}));
+      FlightPlanOptimizer::LinearCombination(factories, weights));
 
   const FlightPlanOptimizationDriver::Parameters parameters{
       .index = manœuvre_index,
