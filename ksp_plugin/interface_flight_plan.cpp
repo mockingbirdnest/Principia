@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <vector>
 #include <utility>
 
 #include "base/not_null.hpp"
