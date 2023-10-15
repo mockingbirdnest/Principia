@@ -393,6 +393,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 style : Style.Aligned(UnityEngine.TextAnchor.LowerLeft,
                                       UnityEngine.GUI.skin.label));
             using (new UnityEngine.GUILayout.VerticalScope()) {
+              double optimization_altitude = optimization_altitude_;
+              double? optimization_inclination_in_degrees =
+                  optimization_inclination_in_degrees_;
+              IReferenceFrameParameters
+                  optimization_reference_frame_parameters =
+                      optimization_reference_frame_parameters_;
+
               using (new UnityEngine.GUILayout.HorizontalScope()) {
                 UnityEngine.GUILayout.Label(
                     L10N.CacheFormat("#Principia_FlightPlan_TargetAltitude"),
@@ -448,6 +455,27 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                   optimization_inclination_in_degrees_ =
                       Math.Max(Math.Min(180, candidate), -180);
                 }
+              }
+
+              if (optimization_altitude_ != optimization_altitude ||
+                  optimization_inclination_in_degrees_ !=
+                  optimization_inclination_in_degrees ||
+                  optimization_reference_frame_parameters_ !=
+                  (NavigationFrameParameters)adapter_.plotting_frame_selector_.
+                      FrameParameters()) {
+                plugin.FlightPlanOptimizationDriverMake(
+                    vessel_guid,
+                    centre.Radius + optimization_altitude_,
+                    optimization_inclination_in_degrees_,
+                    centre.flightGlobalsIndex,
+                    (NavigationFrameParameters)adapter_.
+                        plotting_frame_selector_.FrameParameters());
+                optimization_altitude_ = optimization_altitude;
+                optimization_inclination_in_degrees_ =
+                    optimization_inclination_in_degrees;
+                optimization_reference_frame_parameters_ =
+                    (NavigationFrameParameters)adapter_.
+                        plotting_frame_selector_.FrameParameters();
               }
             }
           }
@@ -903,6 +931,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private double optimization_altitude_ = 10e3;
   private double? optimization_inclination_in_degrees_ = 0;
+  private NavigationFrameParameters optimization_reference_frame_parameters_ =
+      null;
 }
 
 }  // namespace ksp_plugin_adapter

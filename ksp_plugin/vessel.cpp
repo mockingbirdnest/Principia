@@ -351,8 +351,26 @@ void Vessel::MakeFlightPlanOptimizationDriver(
   CHECK(has_deserialized_flight_plan());
   auto& [flight_plan, optimization_driver] =
       std::get<OptimizableFlightPlan>(selected_flight_plan());
+  if (optimization_driver != nullptr) {
+    optimization_driver->Interrupt();
+  }
   optimization_driver = make_not_null_unique<FlightPlanOptimizationDriver>(
       *flight_plan, std::move(metric_factory));
+}
+
+void Vessel::StartFlightPlanOptimizationDriver(
+    FlightPlanOptimizationDriver::Parameters const& parameters) {
+  CHECK(has_deserialized_flight_plan());
+  auto const& driver = std::get<OptimizableFlightPlan>(selected_flight_plan())
+                           .optimization_driver;
+  CHECK_NOTNULL(driver);
+  driver->RequestOptimization(parameters);
+}
+
+bool Vessel::FlightPlanOptimizationDriverInProgress() const {
+  auto const& driver = std::get<OptimizableFlightPlan>(selected_flight_plan())
+                           .optimization_driver;
+  return driver != nullptr && !driver->done();
 }
 
 bool Vessel::UpdateFlightPlanFromOptimization() {
@@ -369,12 +387,6 @@ bool Vessel::UpdateFlightPlanFromOptimization() {
     return true;
   }
   return false;
-}
-
-FlightPlanOptimizationDriver* Vessel::flight_plan_optimization_driver() {
-  CHECK(has_deserialized_flight_plan());
-  return std::get<OptimizableFlightPlan>(selected_flight_plan())
-      .optimization_driver.get();
 }
 
 void Vessel::ReadFlightPlanFromMessage() {
