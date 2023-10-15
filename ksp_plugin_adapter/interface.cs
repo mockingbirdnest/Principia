@@ -113,10 +113,16 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters {
 
   public static bool operator ==(PlottingFrameParameters left,
                                  IReferenceFrameParameters right) {
-    return left.Extension == right.Extension &&
-           left.centre_index == right.CentreIndex &&
-           left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
-           left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
+    if ((object)left == null && (object)right == null) {
+      return true;
+    } else if ((object)left == null || (object)right == null) {
+      return false;
+    } else {
+      return left.Extension == right.Extension &&
+             left.centre_index == right.CentreIndex &&
+             left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
+             left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
+    }
   }
 
   public static bool operator !=(PlottingFrameParameters left,
@@ -165,10 +171,16 @@ internal partial class NavigationFrameParameters : IReferenceFrameParameters {
 
   public static bool operator ==(NavigationFrameParameters left,
                                  IReferenceFrameParameters right) {
-    return left.Extension == right.Extension &&
-           left.CentreIndex == right.CentreIndex &&
-           left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
-           left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
+    if ((object)left == null && (object)right == null) {
+      return true;
+    } else if ((object)left == null || (object)right == null) {
+      return false;
+    } else {
+      return left.Extension == right.Extension &&
+             left.CentreIndex == right.CentreIndex &&
+             left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
+             left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
+    }
   }
 
   public static bool operator !=(NavigationFrameParameters left,

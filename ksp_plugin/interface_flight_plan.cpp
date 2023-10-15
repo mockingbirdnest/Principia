@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <vector>
 #include <utility>
 
 #include "base/not_null.hpp"
@@ -220,6 +221,16 @@ bool __cdecl principia__FlightPlanExists(
   return m.Return(plugin->GetVessel(vessel_guid)->has_flight_plan());
 }
 
+double __cdecl principia__FlightPlanGetActualFinalTime(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetActualFinalTime> m(
+      {plugin, vessel_guid});
+  return m.Return(
+      ToGameTime(*plugin,
+                 GetFlightPlan(*plugin, vessel_guid).actual_final_time()));
+}
+
 FlightPlanAdaptiveStepParameters __cdecl
 principia__FlightPlanGetAdaptiveStepParameters(
     Plugin const* const plugin,
@@ -231,16 +242,6 @@ principia__FlightPlanGetAdaptiveStepParameters(
   return m.Return(ToFlightPlanAdaptiveStepParameters(
                       flight_plan.adaptive_step_parameters(),
                       flight_plan.generalized_adaptive_step_parameters()));
-}
-
-double __cdecl principia__FlightPlanGetActualFinalTime(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanGetActualFinalTime> m(
-      {plugin, vessel_guid});
-  return m.Return(
-      ToGameTime(*plugin,
-                 GetFlightPlan(*plugin, vessel_guid).actual_final_time()));
 }
 
 OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
@@ -407,6 +408,79 @@ int __cdecl principia__FlightPlanNumberOfSegments(
   journal::Method<journal::FlightPlanNumberOfSegments> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
+}
+
+int __cdecl principia__FlightPlanOptimizationDriverInProgress(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanOptimizationDriverInProgress> m(
+      {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  auto& vessel = *plugin->GetVessel(vessel_guid);
+  auto const maybe_parameters = vessel.FlightPlanOptimizationDriverInProgress();
+  if (maybe_parameters.has_value()) {
+    return m.Return(maybe_parameters->index);
+  } else {
+    return m.Return(-1);
+  }
+}
+
+void __cdecl principia__FlightPlanOptimizationDriverMake(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    double const distance,
+    double const* const inclination_in_degrees,
+    int const celestial_index,
+    NavigationFrameParameters const navigation_frame_parameters) {
+  journal::Method<journal::FlightPlanOptimizationDriverMake> m(
+      {plugin,
+       vessel_guid,
+       distance,
+       inclination_in_degrees,
+       celestial_index,
+       navigation_frame_parameters});
+  CHECK_NOTNULL(plugin);
+  auto& vessel = *plugin->GetVessel(vessel_guid);
+  const auto& celestial = plugin->GetCelestial(celestial_index);
+
+  std::vector<FlightPlanOptimizer::MetricFactory> factories = {
+      FlightPlanOptimizer::ForCelestialDistance(
+          /*celestial=*/&celestial,
+          /*target_distance=*/distance * Metre),
+      FlightPlanOptimizer::ForΔv()};
+  std::vector<double> weights = {1, 1e3};
+  if (inclination_in_degrees != nullptr) {
+    factories.push_back(FlightPlanOptimizer::ForInclination(
+        &celestial,
+        [plugin, navigation_frame_parameters]() {
+          return NewNavigationFrame(*plugin, navigation_frame_parameters);
+        },
+        *inclination_in_degrees * Degree));
+    weights.push_back(1e6);
+  }
+
+  vessel.MakeFlightPlanOptimizationDriver(
+      FlightPlanOptimizer::LinearCombination(factories, weights));
+
+  return m.Return();
+}
+
+void __cdecl principia__FlightPlanOptimizationDriverStart(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const manœuvre_index) {
+  journal::Method<journal::FlightPlanOptimizationDriverStart> m(
+      {plugin,
+       vessel_guid,
+       manœuvre_index});
+  CHECK_NOTNULL(plugin);
+  auto& vessel = *plugin->GetVessel(vessel_guid);
+
+  vessel.StartFlightPlanOptimizationDriver(
+      {.index = manœuvre_index,
+       .Δv_tolerance = 1 * Micro(Metre) / Second});
+
+  return m.Return();
 }
 
 Status* __cdecl principia__FlightPlanRebase(Plugin const* const plugin,
@@ -576,63 +650,6 @@ int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
   journal::Method<journal::FlightPlanSelected> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
-}
-
-bool __cdecl principia__FlightPlanOptimizationInProgress(
-    Plugin const* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanOptimizationInProgress> m(
-      {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  auto const* driver =
-      plugin->GetVessel(vessel_guid)->flight_plan_optimization_driver();
-  return m.Return(driver != nullptr && !driver->done());
-}
-
-void __cdecl principia__FlightPlanOptimizeManoeuvre(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const manœuvre_index,
-    int const celestial_index,
-    double const distance,
-    double const inclination_in_degrees,
-    NavigationFrameParameters const navigation_frame_parameters) {
-  journal::Method<journal::FlightPlanOptimizeManoeuvre> m(
-      {plugin,
-       vessel_guid,
-       manœuvre_index,
-       celestial_index,
-       distance,
-       inclination_in_degrees,
-       navigation_frame_parameters});
-  CHECK_NOTNULL(plugin);
-  auto& vessel = *plugin->GetVessel(vessel_guid);
-  {
-    auto* const old_driver = vessel.flight_plan_optimization_driver();
-    if (old_driver != nullptr) {
-      old_driver->Interrupt();
-    }
-  }
-  vessel.MakeFlightPlanOptimizationDriver(
-      FlightPlanOptimizer::LinearCombination(
-          {FlightPlanOptimizer::ForCelestialDistance(
-               /*celestial=*/&plugin->GetCelestial(celestial_index),
-               /*target_distance=*/distance * Metre),
-           FlightPlanOptimizer::ForInclination(
-               &plugin->GetCelestial(celestial_index),
-               [plugin, navigation_frame_parameters]() {
-                 return NewNavigationFrame(*plugin,
-                                           navigation_frame_parameters);
-               },
-               inclination_in_degrees * Degree),
-           FlightPlanOptimizer::ForΔv()},
-          {1, 1e6, 1e3}));
-
-  const FlightPlanOptimizationDriver::Parameters parameters{
-      .index = manœuvre_index,
-      .Δv_tolerance = 1 * Micro(Metre) / Second};
-  vessel.flight_plan_optimization_driver()->RequestOptimization(parameters);
-  return m.Return();
 }
 
 Status* __cdecl principia__FlightPlanSetAdaptiveStepParameters(

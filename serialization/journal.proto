@@ -238,7 +238,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5187.
+  extensions 5000 to 5999;  // Last used: 5191.
 }
 
 message AdvanceTime {
@@ -982,24 +982,6 @@ message FlightPlanInsert {
   optional Return return = 3;
 }
 
-message FlightPlanOptimizeManoeuvre {
-  extend Method {
-    optional FlightPlanOptimizeManoeuvre extension = 5189;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required int32 manoeuvre_index = 3;
-    required int32 celestial_index = 4;
-    required double distance = 5;
-    required double inclination_in_degrees = 6;
-    required NavigationFrameParameters navigation_frame_parameters = 7;
-  }
-  optional In in = 1;
-}
-
-
 message FlightPlanNumberOfAnomalousManoeuvres {
   extend Method {
     optional FlightPlanNumberOfAnomalousManoeuvres extension = 5159;
@@ -1046,6 +1028,51 @@ message FlightPlanNumberOfSegments {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message FlightPlanOptimizationDriverInProgress {
+  extend Method {
+    optional FlightPlanOptimizationDriverInProgress extension = 5188;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required int32 manoeuvre_index = 2;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanOptimizationDriverMake {
+  extend Method {
+    optional FlightPlanOptimizationDriverMake extension = 5191;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required double distance = 3;
+    optional double inclination_in_degrees = 4;
+    required int32 celestial_index = 5;
+    required NavigationFrameParameters navigation_frame_parameters = 6;
+  }
+  optional In in = 1;
+}
+
+message FlightPlanOptimizationDriverStart {
+  extend Method {
+    optional FlightPlanOptimizationDriverStart extension = 5189;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 manoeuvre_index = 3;
+  }
+  optional In in = 1;
 }
 
 message FlightPlanRebase {
@@ -1215,22 +1242,6 @@ message FlightPlanSelected {
   }
   message Return {
     required int32 result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message FlightPlanOptimizationInProgress {
-  extend Method {
-    optional FlightPlanOptimizationInProgress extension = 5188;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

@@ -245,8 +245,9 @@ class BurnEditor : ScalingRenderer {
             index == 0
                 ? L10N.CacheFormat(
                     "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-                : L10N.CacheFormat("#Principia_BurnEditor_TimeBase_EndOfManœuvre",
-                                   index),
+                : L10N.CacheFormat(
+                    "#Principia_BurnEditor_TimeBase_EndOfManœuvre",
+                    index),
             style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
                 alignment = UnityEngine.TextAnchor.UpperLeft
             });
@@ -259,6 +260,23 @@ class BurnEditor : ScalingRenderer {
         UnityEngine.GUILayout.Label(L10N.CacheFormat(
                                         "#Principia_BurnEditor_Duration",
                                         duration_.ToString("0.0")));
+
+        if (adapter_.plotting_frame_selector_.
+                Centre() is CelestialBody centre) {
+          string vessel_guid = vessel_.id.ToString();
+          int optimized_index =
+              plugin.FlightPlanOptimizationDriverInProgress(vessel_guid);
+          if (optimized_index == index) {
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat("#Principia_BurnEditor_OptimizingThis"));
+          } else if (optimized_index != -1) {
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat("#Principia_BurnEditor_OptimizingOther"));
+          } else if (UnityEngine.GUILayout.Button(
+                         L10N.CacheFormat("#Principia_BurnEditor_Optimize"))) {
+            plugin.FlightPlanOptimizationDriverStart(vessel_guid, index);
+          }
+        }
       }
       UnityEngine.GUILayout.Label(engine_warning_,
                                   Style.Warning(UnityEngine.GUI.skin.label));
