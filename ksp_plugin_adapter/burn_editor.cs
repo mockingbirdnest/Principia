@@ -264,9 +264,15 @@ class BurnEditor : ScalingRenderer {
         if (adapter_.plotting_frame_selector_.
                 Centre() is CelestialBody centre) {
           string vessel_guid = vessel_.id.ToString();
-          if (plugin.FlightPlanOptimizationDriverInProgress(vessel_guid)) {
+          int optimized_index =
+              plugin.FlightPlanOptimizationDriverInProgress(vessel_guid);
+          UnityEngine.Debug.LogError(optimized_index + " " + index);
+          if (optimized_index == index) {
             UnityEngine.GUILayout.Label(
-                L10N.CacheFormat("#Principia_BurnEditor_Optimizing"));
+                L10N.CacheFormat("#Principia_BurnEditor_OptimizingThis"));
+          } else if (optimized_index != -1) {
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat("#Principia_BurnEditor_OptimizingOther"));
           } else if (UnityEngine.GUILayout.Button(
                          L10N.CacheFormat("#Principia_BurnEditor_Optimize"))) {
             plugin.FlightPlanOptimizationDriverStart(vessel_guid, index);

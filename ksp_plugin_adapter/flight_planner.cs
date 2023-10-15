@@ -407,6 +407,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 UnityEngine.GUILayout.Label(
                     text    : L10N.CacheFormat(
                         "#Principia_FlightPlan_AltitudeUnit"),
+                    options : GUILayoutWidth(1));
+                UnityEngine.GUILayout.Label(
+                    text    : "",
                     options : GUILayoutWidth(2));
                 UnityEngine.Debug.LogError("2");
                 if (double.TryParse(text,
@@ -425,28 +428,30 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 UnityEngine.Debug.LogError("4");
                 UnityEngine.GUILayout.Label(
                     L10N.CacheFormat("#Principia_FlightPlan_TargetInclination"));
-                bool optimize_inclination = UnityEngine.GUILayout.Toggle(
-                    optimization_inclination_in_degrees.HasValue,
-                    L10N.CacheFormat(
-                        "#Principia_FlightPlan_OptimizeInclination",
-                    GUILayoutWidth(0.2f)),
-                    style : Style.RightAligned(UnityEngine.GUI.skin.toggle));
                 string text = UnityEngine.GUILayout.TextField(
                     optimization_inclination_in_degrees.HasValue
                         ? optimization_inclination_in_degrees.Value.FormatN(0)
                         : L10N.CacheFormat(
-                            "#Principia_FlightPlan_DontOptimizeInclination"),
+                            "#Principia_FlightPlan_OptimizeInclinationNoText"),
                     GUILayoutWidth(3));
                 UnityEngine.GUILayout.Label(
                     text: L10N.CacheFormat(
                         "#Principia_FlightPlan_InclinationUnit"),
-                    options: GUILayoutWidth(2));
+                    options: GUILayoutWidth(1));
+                bool optimize_inclination = UnityEngine.GUILayout.Toggle(
+                        optimization_inclination_in_degrees.HasValue,
+                        optimization_inclination_in_degrees.HasValue
+                            ? L10N.CacheFormat(
+                                "#Principia_FlightPlan_OptimizeInclinationOn")
+                            : L10N.CacheFormat(
+                                "#Principia_FlightPlan_OptimizeInclinationOff"),
+                        GUILayoutWidth(2));
                 UnityEngine.Debug.LogError("5");
                 if (!optimize_inclination) {
                   optimization_inclination_in_degrees = null;
                 } else if (text ==
                            L10N.CacheFormat(
-                               "#Principia_FlightPlan_DontOptimizeInclination")) {
+                               "#Principia_FlightPlan_OptimizeInclinationNoText")) {
                   optimization_inclination_in_degrees = 0;
                 } else if (double.TryParse(text,
                                            System.Globalization.NumberStyles.

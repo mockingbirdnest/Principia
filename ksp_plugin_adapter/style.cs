@@ -96,8 +96,8 @@ internal static class Style {
       float height) {
     return new UnityEngine.GUIStyle(style){
         alignment = UnityEngine.TextAnchor.MiddleLeft,
-        fixedHeight = height;
-    }
+        fixedHeight = height
+    };
   }
 
   public static UnityEngine.GUIStyle RightAligned(UnityEngine.GUIStyle style) {

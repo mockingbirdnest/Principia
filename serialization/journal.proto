@@ -1040,7 +1040,7 @@ message FlightPlanOptimizationDriverInProgress {
     required string vessel_guid = 2;
   }
   message Return {
-    required bool result = 1;
+    required int32 manoeuvre_index = 2;
   }
   optional In in = 1;
   optional Return return = 3;

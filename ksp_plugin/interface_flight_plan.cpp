@@ -578,14 +578,19 @@ int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
   return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
 }
 
-bool __cdecl principia__FlightPlanOptimizationDriverInProgress(
+int __cdecl principia__FlightPlanOptimizationDriverInProgress(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanOptimizationDriverInProgress> m(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   auto& vessel = *plugin->GetVessel(vessel_guid);
-  return m.Return(vessel.FlightPlanOptimizationDriverInProgress());
+  auto const maybe_parameters = vessel.FlightPlanOptimizationDriverInProgress();
+  if (maybe_parameters.has_value()) {
+    return m.Return(maybe_parameters->index);
+  } else {
+    return m.Return(-1);
+  }
 }
 
 void __cdecl principia__FlightPlanOptimizationDriverMake(

@@ -195,7 +195,10 @@ class Vessel {
   virtual void StartFlightPlanOptimizationDriver(
       FlightPlanOptimizationDriver::Parameters const& parameters);
 
-  virtual bool FlightPlanOptimizationDriverInProgress() const;
+  // If an optimization is in progress, returns the parameters of the
+  // optimization.
+  virtual std::optional<FlightPlanOptimizationDriver::Parameters>
+  FlightPlanOptimizationDriverInProgress() const;
 
   virtual bool UpdateFlightPlanFromOptimization();
 
@@ -439,6 +442,8 @@ class Vessel {
 
   std::vector<LazilyDeserializedFlightPlan> flight_plans_;
   int selected_flight_plan_index_ = -1;
+  std::optional<FlightPlanOptimizationDriver::Parameters>
+      last_optimization_parameters_;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
