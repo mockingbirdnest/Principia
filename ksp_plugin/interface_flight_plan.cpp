@@ -581,7 +581,7 @@ int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
 bool __cdecl principia__FlightPlanOptimizationDriverInProgress(
     Plugin const* const plugin,
     char const* const vessel_guid) {
-  journal::Method<journal::FlightPlanOptimizationInProgress> m(
+  journal::Method<journal::FlightPlanOptimizationDriverInProgress> m(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   auto& vessel = *plugin->GetVessel(vessel_guid);
@@ -591,9 +591,9 @@ bool __cdecl principia__FlightPlanOptimizationDriverInProgress(
 void __cdecl principia__FlightPlanOptimizationDriverMake(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    int const celestial_index,
     double const distance,
     double const* const inclination_in_degrees,
+    int const celestial_index,
     NavigationFrameParameters const navigation_frame_parameters) {
   journal::Method<journal::FlightPlanOptimizationDriverMake> m(
       {plugin,

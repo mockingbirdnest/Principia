@@ -380,60 +380,60 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
         }
 
-        Style.HorizontalLine();
         // There is no Layout/Repaint trouble here because the frame is selected
         // in another window.
         if (adapter_.plotting_frame_selector_.
                 Centre() is CelestialBody centre) {
+          Style.HorizontalLine();
           using (new UnityEngine.GUILayout.HorizontalScope()) {
             ////valign
             UnityEngine.GUILayout.Label(
                 L10N.CelestialString("#Principia_FlightPlan_Optimization",
-                                     new[]{centre}),
-                style : Style.Aligned(UnityEngine.TextAnchor.LowerLeft,
-                                      UnityEngine.GUI.skin.label));
+                                     new[]{ centre }),
+                style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
+                                               Height(2)));
             using (new UnityEngine.GUILayout.VerticalScope()) {
               double optimization_altitude = optimization_altitude_;
               double? optimization_inclination_in_degrees =
                   optimization_inclination_in_degrees_;
-              IReferenceFrameParameters
-                  optimization_reference_frame_parameters =
-                      optimization_reference_frame_parameters_;
+              UnityEngine.Debug.LogError("1");
 
               using (new UnityEngine.GUILayout.HorizontalScope()) {
                 UnityEngine.GUILayout.Label(
-                    L10N.CacheFormat("#Principia_FlightPlan_TargetAltitude"),
-                    style : Style.RightAligned(UnityEngine.GUI.skin.label));
+                    L10N.CacheFormat("#Principia_FlightPlan_TargetAltitude"));
                 string text = UnityEngine.GUILayout.TextField(
-                    optimization_altitude_.FormatN(0),
+                    optimization_altitude.FormatN(0),
                     GUILayoutWidth(3));
                 UnityEngine.GUILayout.Label(
                     text    : L10N.CacheFormat(
                         "#Principia_FlightPlan_AltitudeUnit"),
                     options : GUILayoutWidth(2));
+                UnityEngine.Debug.LogError("2");
                 if (double.TryParse(text,
                                     System.Globalization.NumberStyles.Any,
                                     Culture.culture,
                                     out double candidate)) {
                   if (candidate >= 0 && candidate < double.PositiveInfinity) {
-                    optimization_altitude_ = candidate;
+                    optimization_altitude = candidate;
                   }
+                  UnityEngine.Debug.LogError("3 " + text + " " +
+                                             optimization_altitude);
                 }
               }
 
               using (new UnityEngine.GUILayout.HorizontalScope()) {
+                UnityEngine.Debug.LogError("4");
                 UnityEngine.GUILayout.Label(
-                    L10N.CacheFormat("#Principia_FlightPlan_TargetInclination"),
-                    style : Style.RightAligned(UnityEngine.GUI.skin.label));
+                    L10N.CacheFormat("#Principia_FlightPlan_TargetInclination"));
                 bool optimize_inclination = UnityEngine.GUILayout.Toggle(
-                    optimization_inclination_in_degrees_.HasValue,
+                    optimization_inclination_in_degrees.HasValue,
                     L10N.CacheFormat(
                         "#Principia_FlightPlan_OptimizeInclination",
-                    GUILayoutWidth(1)),
+                    GUILayoutWidth(0.2f)),
                     style : Style.RightAligned(UnityEngine.GUI.skin.toggle));
                 string text = UnityEngine.GUILayout.TextField(
-                    optimization_inclination_in_degrees_.HasValue
-                        ? optimization_inclination_in_degrees_.Value.FormatN(0)
+                    optimization_inclination_in_degrees.HasValue
+                        ? optimization_inclination_in_degrees.Value.FormatN(0)
                         : L10N.CacheFormat(
                             "#Principia_FlightPlan_DontOptimizeInclination"),
                     GUILayoutWidth(3));
@@ -441,42 +441,50 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                     text: L10N.CacheFormat(
                         "#Principia_FlightPlan_InclinationUnit"),
                     options: GUILayoutWidth(2));
+                UnityEngine.Debug.LogError("5");
                 if (!optimize_inclination) {
-                  optimization_inclination_in_degrees_ = null;
+                  optimization_inclination_in_degrees = null;
                 } else if (text ==
                            L10N.CacheFormat(
                                "#Principia_FlightPlan_DontOptimizeInclination")) {
-                  optimization_inclination_in_degrees_ = 0;
+                  optimization_inclination_in_degrees = 0;
                 } else if (double.TryParse(text,
                                            System.Globalization.NumberStyles.
                                                Any,
                                            Culture.culture,
                                            out double candidate)) {
-                  optimization_inclination_in_degrees_ =
+                  optimization_inclination_in_degrees =
                       Math.Max(Math.Min(180, candidate), -180);
                 }
+                UnityEngine.Debug.LogError("6");
               }
 
+              // If any of the parameters changed (that includes a change of
+              // plotting frame in another window) recreated the optimization
+              // driver.  This interrupts any optimization that might be
+              // running, to avoid confusing results.
               if (optimization_altitude_ != optimization_altitude ||
                   optimization_inclination_in_degrees_ !=
                   optimization_inclination_in_degrees ||
                   optimization_reference_frame_parameters_ !=
                   (NavigationFrameParameters)adapter_.plotting_frame_selector_.
                       FrameParameters()) {
-                plugin.FlightPlanOptimizationDriverMake(
-                    vessel_guid,
-                    centre.Radius + optimization_altitude_,
-                    optimization_inclination_in_degrees_,
-                    centre.flightGlobalsIndex,
-                    (NavigationFrameParameters)adapter_.
-                        plotting_frame_selector_.FrameParameters());
+                UnityEngine.Debug.LogError("7");
                 optimization_altitude_ = optimization_altitude;
                 optimization_inclination_in_degrees_ =
                     optimization_inclination_in_degrees;
                 optimization_reference_frame_parameters_ =
                     (NavigationFrameParameters)adapter_.
                         plotting_frame_selector_.FrameParameters();
+                plugin.FlightPlanOptimizationDriverMake(
+                    vessel_guid,
+                    centre.Radius + optimization_altitude_,
+                    optimization_inclination_in_degrees_,
+                    centre.flightGlobalsIndex,
+                    optimization_reference_frame_parameters_);
+                UnityEngine.Debug.LogError("8");
               }
+              UnityEngine.Debug.LogError("8a");
             }
           }
         }
@@ -527,6 +535,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           //  UnityEngine.GUILayout.Button("Change plotting frame to optimize");
           //}
           BurnEditor burn = burn_editors_[i];
+          UnityEngine.Debug.LogError("9");
           switch (burn.Render(
               header          :
               L10N.CacheFormat("#Principia_FlightPlan_ManœuvreHeader", i + 1),
@@ -558,6 +567,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             }
           }
         }
+        UnityEngine.Debug.LogError("10");
         Style.HorizontalLine();
         if (RenderCoast(burn_editors_.Count, orbital_period: out _)) {
           return;
