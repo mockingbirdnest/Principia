@@ -198,7 +198,23 @@ absl::Status FlightPlan::SetDesiredFinalTime(
   if (desired_final_time < start_of_last_coast()) {
     return BadDesiredFinalTime();
   }
+
+  // Start a thread to prolong the ephemeris if needed.
   desired_final_time_ = desired_final_time;
+  if (desired_final_time_ < last_prolongation_time_) {
+    // The desired prolongation became shorter, just kill the prolongator
+    // thread.  We may recreate it below, but shorter.
+    prolongator_ = jthread();
+  }
+  if (ephemeris_->t_max() < desired_final_time_) {
+    // The ephemeris is too short, start a thread to prolong it.
+    last_prolongation_time_ = desired_final_time_;
+    prolongator_ = MakeStoppableThread(
+        [this, last_prolongation_time = last_prolongation_time_]() {
+          ephemeris_->Prolong(last_prolongation_time).IgnoreError();
+        });
+  }
+
   // Reset the last coast and recompute it.
   ResetLastSegment();
   return ComputeSegments(manœuvres_.end(), manœuvres_.end());
@@ -229,13 +245,17 @@ int FlightPlan::number_of_segments() const {
 }
 
 DiscreteTrajectorySegmentIterator<Barycentric> FlightPlan::GetSegment(
-    int const index) const {
+    int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
+  auto const status = RecomputeSegmentsAfterDeadlineIfNeeded();
+  LOG_IF(INFO, !status.ok()) << "Unable to handle deadline: " << status;
   return segments_[index];
 }
 
-DiscreteTrajectory<Barycentric> const& FlightPlan::GetAllSegments() const {
+DiscreteTrajectory<Barycentric> const& FlightPlan::GetAllSegments() {
+  auto const status = RecomputeSegmentsAfterDeadlineIfNeeded();
+  LOG_IF(INFO, !status.ok()) << "Unable to handle deadline: " << status;
   return trajectory_;
 }
 
@@ -387,6 +407,22 @@ absl::Status FlightPlan::RecomputeAllSegments() {
   }
   ResetLastSegment();
   return ComputeSegments(manœuvres_.begin(), manœuvres_.end());
+}
+
+absl::Status FlightPlan::RecomputeSegmentsAfterDeadlineIfNeeded() {
+  if (anomalous_segments_ == 0 ||
+      !absl::IsDeadlineExceeded(anomalous_status_)) {
+    return absl::OkStatus();
+  }
+
+  auto it = manœuvres_.end();
+  for (int i = 0; i < anomalous_segments_; ++i) {
+    PopLastSegment();
+    if (i % 2 == 1) {
+      --it;
+    }
+  }
+  return ComputeSegments(it, manœuvres_.end());
 }
 
 absl::Status FlightPlan::BurnSegment(

@@ -21,6 +21,7 @@ namespace ksp_plugin {
 namespace _flight_plan {
 namespace internal {
 
+using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
@@ -113,10 +114,11 @@ class FlightPlan {
   // Returns the number of trajectories in this object.
   virtual int number_of_segments() const;
 
-  // |index| must be in [0, number_of_segments()[.
+  // |index| must be in [0, number_of_segments()[.  These functions may try to
+  // recompute the end of the flight plan to get rid of a deadline.
   virtual DiscreteTrajectorySegmentIterator<Barycentric>
-  GetSegment(int index) const;
-  virtual DiscreteTrajectory<Barycentric> const& GetAllSegments() const;
+  GetSegment(int index);
+  virtual DiscreteTrajectory<Barycentric> const& GetAllSegments();
 
   // Orbit analysis is enabled at construction, and may be enabled/disabled
   // dynamically.
@@ -150,6 +152,11 @@ class FlightPlan {
  private:
   // Clears and recomputes all trajectories in |segments_|.
   absl::Status RecomputeAllSegments();
+
+  // If the flight plan is anomalous because of an integration deadline, try to
+  // recompute it from the first anomalous segment.  This might work better if
+  // the ephemeris has been prolonged.
+  absl::Status RecomputeSegmentsAfterDeadlineIfNeeded();
 
   // Flows the given |segment| for the duration of |manœuvre| using its
   // intrinsic acceleration.
@@ -206,6 +213,8 @@ class FlightPlan {
   Mass const initial_mass_;
   Instant const initial_time_;
   DegreesOfFreedom<Barycentric> const initial_degrees_of_freedom_;
+  not_null<Ephemeris<Barycentric>*> const ephemeris_;
+
   Instant desired_final_time_;
 
   // The trajectory of the part, composed of any number of segments,
@@ -215,8 +224,8 @@ class FlightPlan {
   // Never empty; Starts and ends with a coast; coasts and burns alternate.
   std::vector<DiscreteTrajectorySegmentIterator<Barycentric>> segments_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e., they
-  // either end prematurely or follow an anomalous trajectory; in the latter
-  // case they are empty.
+  // either end prematurely or follow an anomalous segemnt; in the latter case
+  // they are empty.
   int anomalous_segments_ = 0;
   // The status of the first anomalous segment.  Set and used exclusively by
   // |ComputeSegments|.
@@ -229,7 +238,10 @@ class FlightPlan {
   std::vector<not_null<std::unique_ptr<OrbitAnalyser>>> coast_analysers_;
   bool analysis_is_enabled_ = true;
 
-  not_null<Ephemeris<Barycentric>*> ephemeris_;
+  // These members are only accessed by the main thread.
+  jthread prolongator_;
+  Instant last_prolongation_time_;
+
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
       generalized_adaptive_step_parameters_;
