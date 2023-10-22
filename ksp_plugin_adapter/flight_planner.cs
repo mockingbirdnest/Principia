@@ -194,16 +194,25 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           break;
         }
       }
+
       // Must be computed during layout as it affects the layout of some of the
-      // differential sliders.
-      number_of_anomalous_manœuvres_ =
+      // differential sliders.  Also detect if the number of anomalous manœuvres
+      // has changed asynchronously because of the prolongator.
+      int number_of_anomalous_manœuvres =
           plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
+      number_of_anomalous_manœuvres_has_changed_ =
+          number_of_anomalous_manœuvres != number_of_anomalous_manœuvres_;
+      number_of_anomalous_manœuvres_ = number_of_anomalous_manœuvres;
     }
   }
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (final_time_.Render(enabled : true)) {
+      // A change of the number of anomalous manœuvres "tickles" the flight
+      // plan.
+      if (number_of_anomalous_manœuvres_has_changed_ ||
+          final_time_.Render(enabled : true)) {
+        number_of_anomalous_manœuvres_has_changed_ = false;
         var status =
             plugin.FlightPlanSetDesiredFinalTime(
                 vessel_guid,
@@ -779,6 +788,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
   private int number_of_anomalous_manœuvres_ = 0;
+  private bool number_of_anomalous_manœuvres_has_changed_ = false;
 
   private int length_integration_tolerance_index_;
   private int speed_integration_tolerance_index_;

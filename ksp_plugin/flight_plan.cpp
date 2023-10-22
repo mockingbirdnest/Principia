@@ -1,7 +1,9 @@
 #include "ksp_plugin/flight_plan.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <memory>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -24,6 +26,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
+using namespace std::chrono_literals;
 
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,
@@ -211,7 +214,15 @@ absl::Status FlightPlan::SetDesiredFinalTime(
     last_prolongation_time_ = desired_final_time_;
     prolongator_ = MakeStoppableThread(
         [this, last_prolongation_time = last_prolongation_time_]() {
-          ephemeris_->Prolong(last_prolongation_time).IgnoreError();
+          // The loop makes sure that we give the main thread a chance to call
+          // methods of the ephemeris.  The call to |Prolong| below is expected
+          // to take about 40 ms.
+          do {
+            std::this_thread::sleep_for(20ms);
+            ephemeris_
+                ->Prolong(last_prolongation_time, max_ephemeris_steps_per_frame)
+                .IgnoreError();
+          } while (ephemeris_->t_max() < last_prolongation_time);
         });
   }
 
@@ -245,18 +256,28 @@ int FlightPlan::number_of_segments() const {
 }
 
 DiscreteTrajectorySegmentIterator<Barycentric> FlightPlan::GetSegment(
-    int const index) {
+    int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_segments());
-  auto const status = RecomputeSegmentsAfterDeadlineIfNeeded();
-  LOG_IF(INFO, !status.ok()) << "Unable to handle deadline: " << status;
   return segments_[index];
 }
 
-DiscreteTrajectory<Barycentric> const& FlightPlan::GetAllSegments() {
-  auto const status = RecomputeSegmentsAfterDeadlineIfNeeded();
-  LOG_IF(INFO, !status.ok()) << "Unable to handle deadline: " << status;
+DiscreteTrajectory<Barycentric> const& FlightPlan::GetAllSegments() const {
   return trajectory_;
+}
+
+DiscreteTrajectorySegmentIterator<Barycentric>
+FlightPlan::GetSegmentAvoidingDeadlines(int index) {
+  auto const status = RecomputeSegmentsAvoidingDeadlineIfNeeded();
+  LOG_IF(INFO, !status.ok()) << "Unable to avoid deadline: " << status;
+  return GetSegment(index);
+}
+
+DiscreteTrajectory<Barycentric> const&
+FlightPlan::GetAllSegmentsAvoidingDeadlines() {
+  auto const status = RecomputeSegmentsAvoidingDeadlineIfNeeded();
+  LOG_IF(INFO, !status.ok()) << "Unable to avoid deadline: " << status;
+  return GetAllSegments();
 }
 
 OrbitAnalyser::Analysis* FlightPlan::analysis(int coast_index) {
@@ -409,7 +430,7 @@ absl::Status FlightPlan::RecomputeAllSegments() {
   return ComputeSegments(manœuvres_.begin(), manœuvres_.end());
 }
 
-absl::Status FlightPlan::RecomputeSegmentsAfterDeadlineIfNeeded() {
+absl::Status FlightPlan::RecomputeSegmentsAvoidingDeadlineIfNeeded() {
   if (anomalous_segments_ == 0 ||
       !absl::IsDeadlineExceeded(anomalous_status_)) {
     return absl::OkStatus();
@@ -443,14 +464,14 @@ absl::Status FlightPlan::BurnSegment(
                              manœuvre.InertialIntrinsicAcceleration(),
                              final_time,
                              adaptive_step_parameters_,
-                             max_ephemeris_steps_per_frame);
+                             /*max_ephemeris_steps=*/0);
     } else {
       return ephemeris_->FlowWithAdaptiveStep(
                              &trajectory_,
                              manœuvre.FrenetIntrinsicAcceleration(),
                              final_time,
                              generalized_adaptive_step_parameters_,
-                             max_ephemeris_steps_per_frame);
+                             /*max_ephemeris_steps=*/0);
     }
   } else {
     return absl::OkStatus();
@@ -472,7 +493,7 @@ absl::Status FlightPlan::CoastSegment(
                          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                          desired_final_time,
                          adaptive_step_parameters_,
-                         max_ephemeris_steps_per_frame);
+                         /*max_ephemeris_steps=*/0);
 }
 
 absl::Status FlightPlan::ComputeSegments(

@@ -117,8 +117,16 @@ class FlightPlan {
   // |index| must be in [0, number_of_segments()[.  These functions may try to
   // recompute the end of the flight plan to get rid of a deadline.
   virtual DiscreteTrajectorySegmentIterator<Barycentric>
-  GetSegment(int index);
-  virtual DiscreteTrajectory<Barycentric> const& GetAllSegments();
+  GetSegment(int index) const;
+  virtual DiscreteTrajectory<Barycentric> const& GetAllSegments() const;
+
+  // Same as above, but if the flight plan is anomalous because of a deadline,
+  // tries to recompute it in case the ephemeris is long enough.  This can still
+  // run into a deadline.
+  virtual DiscreteTrajectorySegmentIterator<Barycentric>
+  GetSegmentAvoidingDeadlines(int index);
+  virtual DiscreteTrajectory<Barycentric> const&
+  GetAllSegmentsAvoidingDeadlines();
 
   // Orbit analysis is enabled at construction, and may be enabled/disabled
   // dynamically.
@@ -155,8 +163,8 @@ class FlightPlan {
 
   // If the flight plan is anomalous because of an integration deadline, try to
   // recompute it from the first anomalous segment.  This might work better if
-  // the ephemeris has been prolonged.
-  absl::Status RecomputeSegmentsAfterDeadlineIfNeeded();
+  // the ephemeris has been prolonged enough.
+  absl::Status RecomputeSegmentsAvoidingDeadlineIfNeeded();
 
   // Flows the given |segment| for the duration of |manœuvre| using its
   // intrinsic acceleration.

@@ -522,7 +522,13 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
                                                          sun_world_position,
                                                          index});
   CHECK_NOTNULL(plugin);
-  auto const segment = GetFlightPlan(*plugin, vessel_guid).GetSegment(index);
+
+  // This might force a (partial) recomputation of the flight plan to avoid a
+  // deadline, and a change in the number of anomalous manœuvres that will be
+  // noticed by the flight planner.
+  auto const segment =
+      GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
+
   auto rendered_trajectory =
       plugin->renderer().RenderBarycentricTrajectoryInWorld(
           plugin->CurrentTime(),
