@@ -125,6 +125,10 @@ int FlightPlan::number_of_anomalous_manœuvres() const {
   return (anomalous_segments_ - 1) / 2;
 }
 
+absl::Status const& FlightPlan::anomalous_status() const {
+  return anomalous_status_;
+}
+
 NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
@@ -546,6 +550,7 @@ absl::Status FlightPlan::ComputeSegments(
       overall_status.Update(status);
       anomalous_segments_ = 1;
       anomalous_status_ = status;
+LOG(WARNING)<<status<<" "<<overall_status<<" "<<anomalous_segments_;
     }
   }
   return overall_status;

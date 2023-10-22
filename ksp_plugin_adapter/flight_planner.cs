@@ -196,27 +196,38 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       }
 
       // Must be computed during layout as it affects the layout of some of the
-      // differential sliders.  Also detect if the number of anomalous manœuvres
-      // has changed asynchronously because of the prolongator.
-      int number_of_anomalous_manœuvres =
+      // differential sliders.
+      number_of_anomalous_manœuvres_ =
           plugin.FlightPlanNumberOfAnomalousManoeuvres(vessel_guid);
-      number_of_anomalous_manœuvres_has_changed_ =
-          number_of_anomalous_manœuvres != number_of_anomalous_manœuvres_;
-      number_of_anomalous_manœuvres_ = number_of_anomalous_manœuvres;
+
+      // Detect if the anomalous status has changed asynchronously because of
+      // the prolongator.  If so, we will "tickle", i.e., pretend that the
+      // desired final time changed.
+      bool reached_deadline = plugin.FlightPlanGetAnomalousStatus(vessel_guid).
+          is_deadline_exceeded();
+      must_tickle_ = reached_deadline != reached_deadline_;
+      UnityEngine.Debug.LogError("Prev " +
+                                 reached_deadline_ +
+                                 " Now " +
+                                 reached_deadline);
     }
   }
 
   private void RenderFlightPlan(string vessel_guid) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      // A change of the number of anomalous manœuvres "tickles" the flight
-      // plan.
-      if (number_of_anomalous_manœuvres_has_changed_ ||
-          final_time_.Render(enabled : true)) {
-        number_of_anomalous_manœuvres_has_changed_ = false;
+      // A change of anomalous status "tickles" the flight plan.  Note that the
+      // order of the terms in the || below matters, we always want to render
+      // the |final_time_|.
+      UnityEngine.Debug.LogError("Status has changed: " +
+                                 must_tickle_);
+      if (final_time_.Render(enabled : true) || must_tickle_) {
+        must_tickle_ = false;
         var status =
             plugin.FlightPlanSetDesiredFinalTime(
                 vessel_guid,
                 final_time_.value);
+        reached_deadline_ = status.is_deadline_exceeded();
+        UnityEngine.Debug.LogError(status.error + status.message);
         UpdateStatus(status, null);
       }
       // Always refresh the final time from C++ as it may have changed because
@@ -319,8 +330,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         }
       }
 
-      double Δv = (from burn_editor in burn_editors_
-                   select burn_editor.Δv()).Sum();
+      double Δv = (from burn_editor in burn_editors_ select burn_editor.Δv()).
+          Sum();
       UnityEngine.GUILayout.Label(L10N.CacheFormat(
                                       "#Principia_FlightPlan_TotalΔv",
                                       Δv.ToString("0.000")));
@@ -355,7 +366,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_FlightPlan_Rebase"))) {
+                  L10N.CacheFormat("#Principia_FlightPlan_Rebase"))) {
             var status = plugin.FlightPlanRebase(
                 vessel_guid,
                 predicted_vessel.GetTotalMass());
@@ -371,7 +382,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           }
           if (plugin.FlightPlanCount(vessel_guid) < max_flight_plans &&
               UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_FlightPlan_Duplicate"))) {
+                  L10N.CacheFormat("#Principia_FlightPlan_Duplicate"))) {
             plugin.FlightPlanDuplicate(vessel_guid);
           }
         }
@@ -380,13 +391,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           RenderUpcomingEvents();
         }
 
-      if (requested_editor_focus_index_ is int requested_focus) {
-        requested_editor_focus_index_ = null;
-        for (int i = 0; i < burn_editors_.Count; ++i) {
-          burn_editors_[i].minimized = requested_focus != i;
+        if (requested_editor_focus_index_ is int requested_focus) {
+          requested_editor_focus_index_ = null;
+          for (int i = 0; i < burn_editors_.Count; ++i) {
+            burn_editors_[i].minimized = requested_focus != i;
+          }
+          ScheduleShrink();
         }
-        ScheduleShrink();
-      }
 
         // Compute the final times for each manœuvre before displaying them.
         var final_times = new List<double>();
@@ -405,13 +416,14 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           Style.HorizontalLine();
           BurnEditor burn = burn_editors_[i];
           switch (burn.Render(
-              header          :
-              L10N.CacheFormat("#Principia_FlightPlan_ManœuvreHeader", i + 1),
-              anomalous       : i >=
-                                burn_editors_.Count -
-                                number_of_anomalous_manœuvres_,
-              burn_final_time : final_times[i],
-              orbital_period  : orbital_period)) {
+                      header          :
+                      L10N.CacheFormat("#Principia_FlightPlan_ManœuvreHeader",
+                                       i + 1),
+                      anomalous       : i >=
+                                        burn_editors_.Count -
+                                        number_of_anomalous_manœuvres_,
+                      burn_final_time : final_times[i],
+                      orbital_period  : orbital_period)) {
             case BurnEditor.Event.Deleted: {
               var status = plugin.FlightPlanRemove(vessel_guid, i);
               UpdateStatus(status, null);
@@ -788,7 +800,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private readonly DifferentialSlider final_time_;
   private int? first_future_manœuvre_;
   private int number_of_anomalous_manœuvres_ = 0;
-  private bool number_of_anomalous_manœuvres_has_changed_ = false;
+  private bool reached_deadline_ = false;
+  private bool must_tickle_ = false;
 
   private int length_integration_tolerance_index_;
   private int speed_integration_tolerance_index_;

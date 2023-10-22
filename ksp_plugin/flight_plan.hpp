@@ -72,6 +72,13 @@ class FlightPlan {
   // of anomalous manœuvres.
   virtual int number_of_anomalous_manœuvres() const;
 
+  // Returns the status associated with the first anomalous segment.  Note that
+  // this may be non-OK even if |number_of_anomalous_manœuvres()| is 0, in the
+  // case where only the final coast is anomalous.  The functions that change
+  // manœuvres as well as the function that "avoid deadlines" may change this
+  // status.
+  virtual absl::Status const& anomalous_status() const;
+
   // Returns the specified manœuvre.  |index| must be in
   // [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int index) const;

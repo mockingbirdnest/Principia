@@ -239,6 +239,16 @@ double __cdecl principia__FlightPlanGetActualFinalTime(
                  GetFlightPlan(*plugin, vessel_guid).actual_final_time()));
 }
 
+Status* __cdecl principia__FlightPlanGetAnomalousStatus(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetAnomalousStatus> m(
+      {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(
+      ToNewStatus(GetFlightPlan(*plugin, vessel_guid).anomalous_status()));
+}
+
 OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
