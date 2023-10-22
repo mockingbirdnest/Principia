@@ -59,6 +59,7 @@ FlightPlan::FlightPlan(
       generalized_adaptive_step_parameters_(
           std::move(generalized_adaptive_step_parameters)) {
   CHECK(desired_final_time_ >= initial_time_);
+  MakeProlongator(desired_final_time_);
 
   // Set the first point of the first coasting trajectory.
   trajectory_.Append(initial_time_, initial_degrees_of_freedom_).IgnoreError();
@@ -83,6 +84,7 @@ FlightPlan::FlightPlan(FlightPlan const& other)
       adaptive_step_parameters_(other.adaptive_step_parameters_),
       generalized_adaptive_step_parameters_(
           other.generalized_adaptive_step_parameters_) {
+  MakeProlongator(desired_final_time_);
   bool first = true;
   for (auto const& other_segment : other.trajectory_.segments()) {
     if (!first) {
@@ -202,29 +204,8 @@ absl::Status FlightPlan::SetDesiredFinalTime(
     return BadDesiredFinalTime();
   }
 
-  // Start a thread to prolong the ephemeris if needed.
   desired_final_time_ = desired_final_time;
-  if (desired_final_time_ < last_prolongation_time_) {
-    // The desired prolongation became shorter, just kill the prolongator
-    // thread.  We may recreate it below, but shorter.
-    prolongator_ = jthread();
-  }
-  if (ephemeris_->t_max() < desired_final_time_) {
-    // The ephemeris is too short, start a thread to prolong it.
-    last_prolongation_time_ = desired_final_time_;
-    prolongator_ = MakeStoppableThread(
-        [this, last_prolongation_time = last_prolongation_time_]() {
-          // The loop makes sure that we give the main thread a chance to call
-          // methods of the ephemeris.  The call to |Prolong| below is expected
-          // to take about 40 ms.
-          do {
-            std::this_thread::sleep_for(20ms);
-            ephemeris_
-                ->Prolong(last_prolongation_time, max_ephemeris_steps_per_frame)
-                .IgnoreError();
-          } while (ephemeris_->t_max() < last_prolongation_time);
-        });
-  }
+  MakeProlongator(desired_final_time_);
 
   // Reset the last coast and recompute it.
   ResetLastSegment();
@@ -464,14 +445,14 @@ absl::Status FlightPlan::BurnSegment(
                              manœuvre.InertialIntrinsicAcceleration(),
                              final_time,
                              adaptive_step_parameters_,
-                             /*max_ephemeris_steps=*/0);
+                             max_ephemeris_steps_per_frame);
     } else {
       return ephemeris_->FlowWithAdaptiveStep(
                              &trajectory_,
                              manœuvre.FrenetIntrinsicAcceleration(),
                              final_time,
                              generalized_adaptive_step_parameters_,
-                             /*max_ephemeris_steps=*/0);
+                             max_ephemeris_steps_per_frame);
     }
   } else {
     return absl::OkStatus();
@@ -493,7 +474,7 @@ absl::Status FlightPlan::CoastSegment(
                          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                          desired_final_time,
                          adaptive_step_parameters_,
-                         /*max_ephemeris_steps=*/0);
+                         max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::ComputeSegments(
@@ -610,6 +591,30 @@ void FlightPlan::UpdateInitialMassOfManœuvresAfter(int const index) {
   for (int i = index + 1; i < manœuvres_.size(); ++i) {
     manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
     initial_mass = manœuvres_[i].final_mass();
+  }
+}
+
+void FlightPlan::MakeProlongator(Instant const& prolongation_time) {
+  if (prolongation_time < last_prolongation_time_) {
+    // The desired prolongation became shorter, just kill the prolongator
+    // thread.  We may recreate it below, but shorter.
+    prolongator_ = jthread();
+  }
+  if (ephemeris_->t_max() < prolongation_time) {
+    // The ephemeris is too short, start a thread to prolong it.
+    last_prolongation_time_ = prolongation_time;
+    prolongator_ = MakeStoppableThread(
+        [this, prolongation_time]() {
+          // The loop makes sure that we give the main thread a chance to call
+          // methods of the ephemeris.  The call to |Prolong| below is expected
+          // to take about 40 ms.
+          do {
+            std::this_thread::sleep_for(20ms);
+            ephemeris_
+                ->Prolong(prolongation_time, max_ephemeris_steps_per_frame)
+                .IgnoreError();
+          } while (ephemeris_->t_max() < prolongation_time);
+        });
   }
 }
 

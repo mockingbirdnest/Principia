@@ -211,6 +211,9 @@ class FlightPlan {
   // initial masses from |manœuvres_[index].final_mass()|.
   void UpdateInitialMassOfManœuvresAfter(int index);
 
+  // Starts a thread to prolong the ephemeris if needed.
+  void MakeProlongator(Instant const& prolongation_time);
+
   Instant start_of_last_coast() const;
 
   // In the following functions, |index| refers to the index of a manœuvre.
@@ -248,7 +251,7 @@ class FlightPlan {
 
   // These members are only accessed by the main thread.
   jthread prolongator_;
-  Instant last_prolongation_time_;
+  Instant last_prolongation_time_ = InfinitePast;
 
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
