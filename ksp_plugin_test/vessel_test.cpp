@@ -828,7 +828,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_TRUE(message.has_history());
   EXPECT_FALSE(message.flight_plans().empty());
 
-  EXPECT_CALL(ephemeris_, Prolong(_)).Times(2);
+  EXPECT_CALL(ephemeris_, Prolong(_, _)).Times(2);
   auto const v = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->has_flight_plan());

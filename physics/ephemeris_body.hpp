@@ -264,28 +264,31 @@ void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
 }
 
 template<typename Frame>
-absl::Status Ephemeris<Frame>::Prolong(Instant const& t) {
-  // Short-circuit without locking.
-  if (t <= t_max()) {
-    return absl::OkStatus();
-  }
-
-  // Note that |t| may be before the last time that we integrated and still
-  // after |t_max()|.  In this case we want to make sure that the integrator
-  // makes progress.
-  Instant t_final;
+absl::Status Ephemeris<Frame>::Prolong(Instant const& t,
+                                       std::int64_t const max_ephemeris_steps) {
   Instant const instance_time = this->instance_time();
-  if (t <= instance_time) {
+
+  // We want |t_max()| to reach at least this point when this function
+  // terminates normally.
+  Instant const desired_t_max = std::min(
+      t,
+      instance_time + max_ephemeris_steps * fixed_step_parameters_.step());
+
+  Instant t_final;  // Final time to integrate.
+  if (desired_t_max <= instance_time) {
+    // Note that |desired_t_max| may be before the last time that we integrated
+    // and still after |t_max()|.  In this case we want to make sure that the
+    // integrator makes progress.
     t_final = instance_time + fixed_step_parameters_.step();
   } else {
-    t_final = t;
+    t_final = desired_t_max;
   }
 
   // Perform the integration.  Note that we may have to iterate until |t_max()|
-  // actually reaches |t| because the last series may not be fully determined
-  // after the first integration.
+  // actually reaches |desired_t_max| because the last series may not be fully
+  // determined after the first integration.
   absl::MutexLock l(&lock_);
-  while (t_max_locked() < t) {
+  while (t_max_locked() < desired_t_max) {
     instance_->Solve(t_final).IgnoreError();
     RETURN_IF_STOPPED;
     t_final += fixed_step_parameters_.step();
@@ -1529,17 +1532,9 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
 
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
       {trajectory};
-  // The |min| is here to prevent us from spending too much time computing the
-  // ephemeris.  The |max| is here to ensure that we always try to integrate
-  // forward.  We use |last_state_.time.value| because this is always finite,
-  // contrary to |t_max()|, which is -∞ when |empty()|.
-  Instant const t_final =
-      std::min(std::max(instance_time() +
-                            max_ephemeris_steps * fixed_step_parameters_.step(),
-                        trajectory_last_time + fixed_step_parameters_.step()),
-               t);
-  Prolong(t_final).IgnoreError();
+  Prolong(t, max_ephemeris_steps).IgnoreError();
   RETURN_IF_STOPPED;
+  Instant const t_final = std::min(t, t_max());
 
   InitialValueProblem<ODE> problem;
   problem.equation.compute_acceleration = std::move(compute_acceleration);

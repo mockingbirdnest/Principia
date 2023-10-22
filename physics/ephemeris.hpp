@@ -139,8 +139,12 @@ class Ephemeris {
   virtual absl::Status last_severe_integration_status() const;
 
   // Prolongs the ephemeris up to at least |t|.  Returns an error iff the thread
-  // is stopped.  After a successful call, |t_max() >= t|.
-  virtual absl::Status Prolong(Instant const& t) EXCLUDES(lock_);
+  // is stopped.  After a successful call with the second parameter defaulted,
+  // |t_max() >= t|.
+  virtual absl::Status Prolong(
+      Instant const& t,
+      std::int64_t max_ephemeris_steps = unlimited_max_ephemeris_steps)
+      EXCLUDES(lock_);
 
   // Asks the reanimator thread to asynchronously reconstruct the past so that
   // the |t_min()| of the ephemeris ultimately ends up at or before

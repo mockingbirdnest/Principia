@@ -44,7 +44,10 @@ class MockEphemeris : public Ephemeris<Frame> {
               (),
               (const, override));
 
-  MOCK_METHOD(absl::Status, Prolong, (Instant const& t), (override));
+  MOCK_METHOD(absl::Status,
+              Prolong,
+              (Instant const& t, std::int64_t max_ephemeris_steps),
+              (override));
   MOCK_METHOD(
       not_null<std::unique_ptr<
           typename Integrator<NewtonianMotionEquation>::Instance>>,
