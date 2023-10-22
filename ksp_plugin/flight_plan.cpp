@@ -417,13 +417,15 @@ absl::Status FlightPlan::RecomputeSegmentsAvoidingDeadlineIfNeeded() {
     return absl::OkStatus();
   }
 
+  int const anomalous_manœuvres = anomalous_segments_ / 2;
   auto it = manœuvres_.end();
-  for (int i = 0; i < anomalous_segments_; ++i) {
+  for (int i = 0; i < anomalous_manœuvres; ++i) {
     PopLastSegment();
-    if (i % 2 == 1) {
-      --it;
-    }
+    PopLastSegment();
+    --it;
   }
+  ResetLastSegment();
+
   return ComputeSegments(it, manœuvres_.end());
 }
 
