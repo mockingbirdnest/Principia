@@ -60,8 +60,7 @@ using namespace principia::quantities::_quantities;
 
 // Note on thread-safety: the integration functions (Prolong, FlowWithFixedStep,
 // FlowWithAdaptiveStep) can be called concurrently as long as their parameters
-// designated distinct objects.  No guarantee is offered for the other
-// functions.
+// designate distinct objects.  No guarantee is offered for the other functions.
 template<typename Frame>
 class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
@@ -132,7 +131,7 @@ class Ephemeris {
   // The maximum of the |t_min|s of the trajectories.
   virtual Instant t_min() const EXCLUDES(lock_);
   // The mimimum of the |t_max|s of the trajectories.
-  virtual Instant t_max() const;
+  virtual Instant t_max() const EXCLUDES(lock_);
 
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
@@ -180,7 +179,8 @@ class Ephemeris {
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
-      std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
+      std::int64_t max_ephemeris_steps = unlimited_max_ephemeris_steps)
+      EXCLUDES(lock_);
 
   // Same as above, but uses a generalized integrator.
   virtual absl::Status FlowWithAdaptiveStep(
@@ -188,7 +188,8 @@ class Ephemeris {
       GeneralizedIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       GeneralizedAdaptiveStepParameters const& parameters,
-      std::int64_t max_ephemeris_steps) EXCLUDES(lock_);
+      std::int64_t max_ephemeris_steps = unlimited_max_ephemeris_steps)
+      EXCLUDES(lock_);
 
   // Integrates, until at most |t|, the trajectories followed by massless
   // bodies in the gravitational potential described by |*this|.  If

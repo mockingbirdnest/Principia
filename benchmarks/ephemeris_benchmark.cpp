@@ -543,8 +543,7 @@ void FlowEphemerisWithAdaptiveStep(
               Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
           /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second),
-      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
+          /*speed_integration_tolerance=*/1 * Metre / Second)));
 }
 
 void FlowEphemerisWithFixedStepSLMS(

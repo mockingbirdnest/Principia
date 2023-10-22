@@ -98,8 +98,7 @@ class ApsidesBenchmark : public benchmark::Fixture {
                 Ephemeris<ICRS>::NewtonianMotionEquation>(),
             std::numeric_limits<std::int64_t>::max(),
             /*length_integration_tolerance=*/1 * Milli(Metre),
-            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-        /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max()));
+            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
 
     BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs(ephemeris_,
                                                                 earth_);
