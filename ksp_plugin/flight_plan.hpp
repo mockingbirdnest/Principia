@@ -177,13 +177,15 @@ class FlightPlan {
   // intrinsic acceleration.
   absl::Status BurnSegment(
       NavigationManœuvre const& manœuvre,
-      DiscreteTrajectorySegmentIterator<Barycentric> segment);
+      DiscreteTrajectorySegmentIterator<Barycentric> segment,
+      std::int64_t max_ephemeris_steps);
 
   // Flows the given |segment| until |desired_final_time| with no intrinsic
   // acceleration.
   absl::Status CoastSegment(
       Instant const& desired_final_time,
-      DiscreteTrajectorySegmentIterator<Barycentric> segment);
+      DiscreteTrajectorySegmentIterator<Barycentric> segment,
+      std::int64_t max_ephemeris_steps);
 
   // Computes new trajectories and appends them to |segments_|.  This updates
   // the last coast of |segments_| and then appends one coast and one burn for
@@ -193,7 +195,8 @@ class FlightPlan {
   // TODO(phl): The argument should really be an std::span, but then Apple has
   // invented the Macintosh.
   absl::Status ComputeSegments(std::vector<NavigationManœuvre>::iterator begin,
-                               std::vector<NavigationManœuvre>::iterator end);
+                               std::vector<NavigationManœuvre>::iterator end,
+                               std::int64_t max_ephemeris_steps);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.  If
   // there are already anomalous trajectories, the newly created trajectory is

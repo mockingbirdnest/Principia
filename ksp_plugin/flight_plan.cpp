@@ -68,7 +68,9 @@ FlightPlan::FlightPlan(
   coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
       ephemeris_, DefaultHistoryParameters()));
   CHECK(manœuvres_.empty());
-  ComputeSegments(manœuvres_.begin(), manœuvres_.end()).IgnoreError();
+  ComputeSegments(manœuvres_.begin(),
+                  manœuvres_.end(),
+                  max_ephemeris_steps_per_frame).IgnoreError();
 }
 
 FlightPlan::FlightPlan(FlightPlan const& other)
@@ -155,7 +157,9 @@ absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
                               ephemeris_, DefaultHistoryParameters()));
   UpdateInitialMassOfManœuvresAfter(index);
   PopSegmentsAffectedByManœuvre(index);
-  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
+  return ComputeSegments(manœuvres_.begin() + index,
+                         manœuvres_.end(),
+                         max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::Remove(int index) {
@@ -165,7 +169,9 @@ absl::Status FlightPlan::Remove(int index) {
   coast_analysers_.erase(coast_analysers_.begin() + index + 1);
   UpdateInitialMassOfManœuvresAfter(index);
   PopSegmentsAffectedByManœuvre(index);
-  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
+  return ComputeSegments(manœuvres_.begin() + index,
+                         manœuvres_.end(),
+                         max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
@@ -199,7 +205,9 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
 
   // TODO(phl): Recompute as late as possible.
   PopSegmentsAffectedByManœuvre(index);
-  return ComputeSegments(manœuvres_.begin() + index, manœuvres_.end());
+  return ComputeSegments(manœuvres_.begin() + index,
+                         manœuvres_.end(),
+                         max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::SetDesiredFinalTime(
@@ -213,7 +221,9 @@ absl::Status FlightPlan::SetDesiredFinalTime(
 
   // Reset the last coast and recompute it.
   ResetLastSegment();
-  return ComputeSegments(manœuvres_.end(), manœuvres_.end());
+  return ComputeSegments(manœuvres_.end(),
+                         manœuvres_.end(),
+                         max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::SetAdaptiveStepParameters(
@@ -412,7 +422,8 @@ absl::Status FlightPlan::RecomputeAllSegments() {
     PopLastSegment();
   }
   ResetLastSegment();
-  return ComputeSegments(manœuvres_.begin(), manœuvres_.end());
+  return ComputeSegments(
+      manœuvres_.begin(), manœuvres_.end(), max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::RecomputeSegmentsAvoidingDeadlineIfNeeded() {
@@ -430,12 +441,14 @@ absl::Status FlightPlan::RecomputeSegmentsAvoidingDeadlineIfNeeded() {
   }
   ResetLastSegment();
 
-  return ComputeSegments(it, manœuvres_.end());
+  // Ask for 0 steps because is this called often on the UI thread.
+  return ComputeSegments(it, manœuvres_.end(), /*max_ephemeris_steps*/0);
 }
 
 absl::Status FlightPlan::BurnSegment(
     NavigationManœuvre const& manœuvre,
-    DiscreteTrajectorySegmentIterator<Barycentric> const segment) {
+    DiscreteTrajectorySegmentIterator<Barycentric> const segment,
+    std::int64_t const max_ephemeris_steps) {
   Instant const final_time = manœuvre.final_time();
   if (manœuvre.initial_time() < final_time) {
     // Make sure that the ephemeris covers the entire segment, reanimating and
@@ -451,14 +464,14 @@ absl::Status FlightPlan::BurnSegment(
                              manœuvre.InertialIntrinsicAcceleration(),
                              final_time,
                              adaptive_step_parameters_,
-                             max_ephemeris_steps_per_frame);
+                             max_ephemeris_steps);
     } else {
       return ephemeris_->FlowWithAdaptiveStep(
                              &trajectory_,
                              manœuvre.FrenetIntrinsicAcceleration(),
                              final_time,
                              generalized_adaptive_step_parameters_,
-                             max_ephemeris_steps_per_frame);
+                             max_ephemeris_steps);
     }
   } else {
     return absl::OkStatus();
@@ -467,7 +480,8 @@ absl::Status FlightPlan::BurnSegment(
 
 absl::Status FlightPlan::CoastSegment(
     Instant const& desired_final_time,
-    DiscreteTrajectorySegmentIterator<Barycentric> const segment) {
+    DiscreteTrajectorySegmentIterator<Barycentric> const segment,
+    std::int64_t const max_ephemeris_steps) {
   // Make sure that the ephemeris covers the entire segment, reanimating and
   // waiting if necessary.
   Instant const starting_time = segment->back().time;
@@ -480,12 +494,13 @@ absl::Status FlightPlan::CoastSegment(
                          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                          desired_final_time,
                          adaptive_step_parameters_,
-                         max_ephemeris_steps_per_frame);
+                         max_ephemeris_steps);
 }
 
 absl::Status FlightPlan::ComputeSegments(
     std::vector<NavigationManœuvre>::iterator const begin,
-    std::vector<NavigationManœuvre>::iterator const end) {
+    std::vector<NavigationManœuvre>::iterator const end,
+    std::int64_t const max_ephemeris_steps) {
   CHECK(!segments_.empty());
   if (anomalous_segments_ == 0) {
     anomalous_status_ = absl::OkStatus();
@@ -497,7 +512,9 @@ absl::Status FlightPlan::ComputeSegments(
     manœuvre.clear_coasting_trajectory();
 
     if (anomalous_segments_ == 0) {
-      absl::Status const status = CoastSegment(manœuvre.initial_time(), coast);
+      absl::Status const status = CoastSegment(manœuvre.initial_time(),
+                                               coast,
+                                               max_ephemeris_steps);
       if (status.ok()) {
         manœuvre.set_coasting_trajectory(coast);
       } else {
@@ -519,7 +536,9 @@ absl::Status FlightPlan::ComputeSegments(
 
     if (anomalous_segments_ == 0) {
       auto& burn = segments_.back();
-      absl::Status const status = BurnSegment(manœuvre, burn);
+      absl::Status const status = BurnSegment(manœuvre,
+                                              burn,
+                                              max_ephemeris_steps);
       if (!status.ok()) {
         overall_status.Update(status);
         anomalous_segments_ = 1;
@@ -544,13 +563,13 @@ absl::Status FlightPlan::ComputeSegments(
            .first_degrees_of_freedom = first_degrees_of_freedom,
            .mission_duration = desired_final_time_ - first_time});
     }
-    absl::Status const status =
-        CoastSegment(desired_final_time_, segments_.back());
+    absl::Status const status = CoastSegment(desired_final_time_,
+                                             segments_.back(),
+                                             max_ephemeris_steps);
     if (!status.ok()) {
       overall_status.Update(status);
       anomalous_segments_ = 1;
       anomalous_status_ = status;
-LOG(WARNING)<<status<<" "<<overall_status<<" "<<anomalous_segments_;
     }
   }
   return overall_status;
@@ -602,25 +621,34 @@ void FlightPlan::UpdateInitialMassOfManœuvresAfter(int const index) {
 }
 
 void FlightPlan::MakeProlongator(Instant const& prolongation_time) {
+  // A helper lambda to swallow the status of RETURN_IF_STOPPED.
+  auto const prolong_with_status = [this](Instant const& prolongation_time) {
+    // The loop makes sure that we give the main thread a chance to call
+    // methods of the ephemeris.  The call to |Prolong| below is expected
+    // to take about 40 ms.
+    do {
+      RETURN_IF_STOPPED;
+      std::this_thread::sleep_for(20ms);
+      RETURN_IF_STOPPED;
+      // Do not return on an error here because it could be a deadline exceeded.
+      ephemeris_->Prolong(prolongation_time, max_ephemeris_steps_per_frame)
+          .IgnoreError();
+    } while (ephemeris_->t_max() < prolongation_time);
+    return absl::OkStatus();
+  };
+
   if (prolongation_time < last_prolongation_time_) {
     // The desired prolongation became shorter, just kill the prolongator
     // thread.  We may recreate it below, but shorter.
     prolongator_ = jthread();
   }
   if (ephemeris_->t_max() < prolongation_time) {
-    // The ephemeris is too short, start a thread to prolong it.
+    // The ephemeris is too short, start a thread to prolong it.  Note that we
+    // must copy `prolong_with_status` since it's called on another thread.
     last_prolongation_time_ = prolongation_time;
-    prolongator_ = MakeStoppableThread(
-        [this, prolongation_time]() {
-          // The loop makes sure that we give the main thread a chance to call
-          // methods of the ephemeris.  The call to |Prolong| below is expected
-          // to take about 40 ms.
-          do {
-            std::this_thread::sleep_for(20ms);
-            ephemeris_
-                ->Prolong(prolongation_time, max_ephemeris_steps_per_frame)
-                .IgnoreError();
-          } while (ephemeris_->t_max() < prolongation_time);
+    prolongator_ =
+        MakeStoppableThread([prolong_with_status, prolongation_time]() {
+          prolong_with_status(prolongation_time).IgnoreError();
         });
   }
 }
