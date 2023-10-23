@@ -122,8 +122,7 @@ class FlightPlan {
   // Returns the number of trajectories in this object.
   virtual int number_of_segments() const;
 
-  // |index| must be in [0, number_of_segments()[.  These functions may try to
-  // recompute the end of the flight plan to get rid of a deadline.
+  // |index| must be in [0, number_of_segments()[.
   virtual DiscreteTrajectorySegmentIterator<Barycentric>
   GetSegment(int index) const;
   virtual DiscreteTrajectory<Barycentric> const& GetAllSegments() const;
@@ -246,7 +245,7 @@ class FlightPlan {
   // Never empty; Starts and ends with a coast; coasts and burns alternate.
   std::vector<DiscreteTrajectorySegmentIterator<Barycentric>> segments_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e., they
-  // either end prematurely or follow an anomalous segemnt; in the latter case
+  // either end prematurely or follow an anomalous segment; in the latter case
   // they are empty.
   int anomalous_segments_ = 0;
   // The status of the first anomalous segment.  Set and used exclusively by

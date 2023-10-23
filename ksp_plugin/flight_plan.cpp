@@ -422,8 +422,9 @@ absl::Status FlightPlan::RecomputeAllSegments() {
     PopLastSegment();
   }
   ResetLastSegment();
-  return ComputeSegments(
-      manœuvres_.begin(), manœuvres_.end(), max_ephemeris_steps_per_frame);
+  return ComputeSegments(manœuvres_.begin(),
+                         manœuvres_.end(),
+                         max_ephemeris_steps_per_frame);
 }
 
 absl::Status FlightPlan::RecomputeSegmentsAvoidingDeadlineIfNeeded() {

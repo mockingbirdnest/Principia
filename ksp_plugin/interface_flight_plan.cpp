@@ -534,8 +534,8 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
   CHECK_NOTNULL(plugin);
 
   // This might force a (partial) recomputation of the flight plan to avoid a
-  // deadline, and a change in the number of anomalous manœuvres that will be
-  // noticed by the flight planner.
+  // deadline, and a change of the anomalous status that will be noticed by the
+  // flight planner.
   auto const segment =
       GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
 

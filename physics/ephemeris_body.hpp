@@ -1401,8 +1401,8 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationBetweenAllMassiveBodies(
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
-  // Do not RETURN_IF_STOPPED here, it's too hard to undo the state changeds
-  // made half way through the loop of the integrator.
+  // Do not RETURN_IF_STOPPED here, it's too hard to undo the state changes made
+  // half way through the loop of the integrator.
 
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
