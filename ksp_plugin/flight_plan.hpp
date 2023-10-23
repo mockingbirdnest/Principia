@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
