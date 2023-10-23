@@ -206,10 +206,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       bool reached_deadline = plugin.FlightPlanGetAnomalousStatus(vessel_guid).
           is_deadline_exceeded();
       must_tickle_ = reached_deadline != reached_deadline_;
-      UnityEngine.Debug.LogError("Prev " +
-                                 reached_deadline_ +
-                                 " Now " +
-                                 reached_deadline);
     }
   }
 
@@ -218,8 +214,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       // A change of anomalous status "tickles" the flight plan.  Note that the
       // order of the terms in the || below matters, we always want to render
       // the |final_time_|.
-      UnityEngine.Debug.LogError("Status has changed: " +
-                                 must_tickle_);
       if (final_time_.Render(enabled : true) || must_tickle_) {
         must_tickle_ = false;
         var status =
@@ -227,7 +221,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 vessel_guid,
                 final_time_.value);
         reached_deadline_ = status.is_deadline_exceeded();
-        UnityEngine.Debug.LogError(status.error + status.message);
         UpdateStatus(status, null);
       }
       // Always refresh the final time from C++ as it may have changed because
