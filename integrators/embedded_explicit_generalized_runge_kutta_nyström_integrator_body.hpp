@@ -245,8 +245,8 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
       q̂[k].Increment(Δq̂[k]);
       v̂[k].Increment(Δv̂[k]);
     }
-    RETURN_IF_STOPPED;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     ++step_count;
     if (absl::IsAborted(step_status)) {
       return step_status;

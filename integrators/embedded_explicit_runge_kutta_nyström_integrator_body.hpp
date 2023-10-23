@@ -236,8 +236,8 @@ Instance::Solve(Instant const& t_final) {
       q̂[k].Increment(Δq̂[k]);
       v̂[k].Increment(Δv̂[k]);
     }
-    RETURN_IF_STOPPED;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     ++step_count;
     if (step_count == parameters.max_steps && !at_end) {
       return absl::Status(termination_condition::ReachedMaximalStepCount,

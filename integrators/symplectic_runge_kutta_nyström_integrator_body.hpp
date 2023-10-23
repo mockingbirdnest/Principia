@@ -134,8 +134,8 @@ Instance::Solve(Instant const& t_final) {
       q[k].Increment(Δq[k]);
       v[k].Increment(Δv[k]);
     }
-    RETURN_IF_STOPPED;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     if (absl::IsAborted(status)) {
       return status;
     }

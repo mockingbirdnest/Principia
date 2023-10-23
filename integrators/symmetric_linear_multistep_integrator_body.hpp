@@ -141,9 +141,9 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     ComputeVelocityUsingCohenHubbardOesterwinter();
 
     // Inform the caller of the new state.
-    RETURN_IF_STOPPED;
     current_state.time = t;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     if (absl::IsAborted(status)) {
       return status;
     }

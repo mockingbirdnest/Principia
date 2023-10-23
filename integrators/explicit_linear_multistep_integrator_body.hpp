@@ -120,9 +120,9 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
     starter_.Push(std::move(current_step));
 
     // Inform the caller of the new state.
-    RETURN_IF_STOPPED;
     current_state.s = s;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     if (absl::IsAborted(status)) {
       return status;
     }

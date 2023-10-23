@@ -158,8 +158,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       y.Increment(Δy);
     });
 
-    RETURN_IF_STOPPED;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     if (absl::IsAborted(status)) {
       return status;
     }
