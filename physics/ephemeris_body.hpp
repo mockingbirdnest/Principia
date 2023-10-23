@@ -266,7 +266,8 @@ void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
 template<typename Frame>
 absl::Status Ephemeris<Frame>::Prolong(Instant const& t,
                                        std::int64_t const max_ephemeris_steps) {
-  Instant const instance_time = this->instance_time();
+  absl::MutexLock l(&lock_);
+  Instant const instance_time = this->instance_time_locked();
 
   // We want |t_max()| to reach at least this point when this function
   // terminates normally.
@@ -287,7 +288,6 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t,
   // Perform the integration.  Note that we may have to iterate until |t_max()|
   // actually reaches |desired_t_max| because the last series may not be fully
   // determined after the first integration.
-  absl::MutexLock l(&lock_);
   while (t_max_locked() < desired_t_max) {
     instance_->Solve(t_final).IgnoreError();
     RETURN_IF_STOPPED;
@@ -1135,8 +1135,7 @@ Ephemeris<Frame>::MakeMassiveBodiesNewtonianMotionEquation() {
 }
 
 template<typename Frame>
-Instant Ephemeris<Frame>::instance_time() const {
-  absl::ReaderMutexLock l(&lock_);
+Instant Ephemeris<Frame>::instance_time_locked() const {
   return instance_->time().value;
 }
 

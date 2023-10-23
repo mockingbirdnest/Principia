@@ -322,9 +322,7 @@ class Ephemeris {
   // ephemeris.
   NewtonianMotionEquation MakeMassiveBodiesNewtonianMotionEquation();
 
-  // Note the return by copy: the returned value is usable even if the
-  // |instance_| is being integrated.
-  Instant instance_time() const EXCLUDES(lock_);
+  Instant instance_time_locked() const REQUIRES_SHARED(lock_);
 
   virtual Instant t_min_locked() const REQUIRES_SHARED(lock_);
   virtual Instant t_max_locked() const REQUIRES_SHARED(lock_);
