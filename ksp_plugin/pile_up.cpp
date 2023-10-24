@@ -598,13 +598,11 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     if (history_->back().time < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
-      status.Update(
-          ephemeris_->FlowWithAdaptiveStep(
-              &trajectory_,
-              Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-              t,
-              adaptive_step_parameters_,
-              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps));
+      status.Update(ephemeris_->FlowWithAdaptiveStep(
+          &trajectory_,
+          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+          t,
+          adaptive_step_parameters_));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -625,12 +623,10 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
 
     auto const intrinsic_acceleration =
         [a = intrinsic_force_ / mass_](Instant const& t) { return a; };
-    status = ephemeris_->FlowWithAdaptiveStep(
-                 &trajectory_,
-                 intrinsic_acceleration,
-                 t,
-                 adaptive_step_parameters_,
-                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps);
+    status = ephemeris_->FlowWithAdaptiveStep(&trajectory_,
+                                              intrinsic_acceleration,
+                                              t,
+                                              adaptive_step_parameters_);
     psychohistory_ = trajectory_.NewSegment();
   }
 

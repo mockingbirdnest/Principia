@@ -441,7 +441,6 @@ TEST_F(PluginCompatibilityTest, 3273) {
   auto const Ωʹᴛ = analysis.primary()->angular_frequency();
   auto const nd = 2 * π * Radian / analysis.elements()->nodal_period();
   double const κ = nd / (Ωʹᴛ - Ωʹ);
-  LOG(ERROR) << κ;
   EXPECT_THAT(vessel->flight_plan().analysis(2)->recurrence(),
               Eq(std::nullopt));
 }

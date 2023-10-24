@@ -458,7 +458,7 @@ TEST_F(PluginTest, Serialization) {
 TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_, _)).Times(AnyNumber());
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
@@ -596,7 +596,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       initial_state);
 
   plugin_->EndInitialization();
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_, _)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
               AlmostEquals(3 * Kilo(Metre), 1, 7));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
@@ -696,7 +696,7 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
                                 /*loaded=*/false,
                                 inserted);
     Instant const initial_time = ParseTT(initial_time_);
-    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time));
+    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time, _));
     plugin_->InsertUnloadedPart(
         part_id,
         "part",
@@ -775,7 +775,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                               inserted);
   EXPECT_TRUE(inserted);
   Instant const initial_time = ParseTT(initial_time_);
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time))
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time, _))
       .Times(AnyNumber());
   plugin_->InsertUnloadedPart(
       part_id,
@@ -794,7 +794,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
 TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_, _)).Times(AnyNumber());
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
