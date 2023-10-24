@@ -193,7 +193,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                 y_stage = ŷ.value + Σⱼ_aᵢⱼ_kⱼ;
               });
 
-          step_satus.Update(equation.compute_derivative(s_stage, y_stage, f));
+          step_status.Update(equation.compute_derivative(s_stage, y_stage, f));
         }
         for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
           kᵢ = h * f;
