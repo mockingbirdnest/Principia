@@ -101,7 +101,7 @@ FlightPlan::FlightPlan(FlightPlan const& other)
        ++it) {
     segments_.push_back(it);
   }
-  for (int i = 0; i < coast_analysers_.size(); ++i) {
+  for (int i = 0; i < other.coast_analysers_.size(); ++i) {
     coast_analysers_.push_back(make_not_null_unique<OrbitAnalyser>(
         ephemeris_, DefaultHistoryParameters()));
   }
