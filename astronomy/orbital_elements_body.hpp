@@ -368,7 +368,7 @@ OrbitalElements::MeanEquinoctialElements(
     // step of |period / 2|, the reduction is e^-3.
     double braking_factor = 1.0;
     if (3 * step >= period) {
-      braking_factor = std::exp(6 - 18 * step / period );
+      braking_factor = std::exp(6 - 18 * step / period);
     }
 
     auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
