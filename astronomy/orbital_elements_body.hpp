@@ -561,7 +561,7 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   // The periods are 2π over the mean rate of the relevant element; the nodal
   // precession is the mean rate of Ω.
 
-  anomalistic_period_ = 2 * π * Radian * Δt³ / (12 * );
+  anomalistic_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_Mt_dt);
   nodal_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_ut_dt);
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
 
