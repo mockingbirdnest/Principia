@@ -371,8 +371,11 @@ OrbitalElements::MeanEquinoctialElements(
       braking_factor = std::exp(6 - 18 * step / period);
     }
 
+    // The braking factor can be very small (even 0) for large steps.  In that
+    // case we want to reject the step, but not drive it all the way to 0,
+    // hence the |std::max|.
     auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
-    return braking_factor * eerk_a_tolerance / Abs(Δa);
+    return std::max(0.5, braking_factor * eerk_a_tolerance / Abs(Δa));
   };
 
   auto const initial_integration =

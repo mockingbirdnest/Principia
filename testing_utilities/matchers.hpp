@@ -21,6 +21,15 @@ namespace internal {
 #define EXPECT_OK(value) \
   EXPECT_THAT((value), ::principia::testing_utilities::_matchers::IsOk());
 
+inline absl::Status StatusOf(absl::Status const& s) {
+  return s;
+}
+
+template<typename T>
+absl::Status StatusOf(absl::StatusOr<T> const& s) {
+  return s.status();
+}
+
 MATCHER_P(EqualsProto,
           expected,
           std::string(negation ? "is not" : "is") + " equal to:\n" +
@@ -37,7 +46,11 @@ MATCHER_P(EqualsProto,
 
 MATCHER(IsOk,
         std::string(negation ? "is not" : "is") + " ok") {
-  return arg.ok();
+  if (!arg.ok()) {
+    *result_listener << "Status is " << StatusOf(arg);
+    return false;
+  }
+  return true;
 }
 
 MATCHER_P(IsOkAndHolds,
