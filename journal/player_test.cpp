@@ -113,7 +113,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // |method_out_return| protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Issues\3782\JOURNAL.20231025-212010)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Issues\3569\JOURNAL.20231026-191142)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
