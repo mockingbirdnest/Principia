@@ -357,11 +357,25 @@ OrbitalElements::MeanEquinoctialElements(
   };
 
   auto const tolerance_to_error_ratio =
-      [](Time const& step,
+      [period](Time const& step,
          ODE::State const& state,
          ODE::State::Error const& error) -> double {
+    // When the trajectory is very regular, the integrator is "too good" at
+    // approximating it, which causes the output of the integration to be very
+    // sparse, to the point where it confuses unwinding (because we have more
+    // than half a revolution between points).  To avoid this we reduce the
+    // tolerance-to-error ratio exponentially above 1/3 of the period.  For a
+    // step of |period / 2|, the reduction is e^-3.
+    double braking_factor = 1.0;
+    if (3 * step >= period) {
+      braking_factor = std::exp(6 - 18 * step / period);
+    }
+
+    // The braking factor can be very small (even 0) for large steps.  In that
+    // case we want to reject the step, but not drive it all the way to 0,
+    // hence the |std::max|.
     auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
-    return eerk_a_tolerance / Abs(Δa);
+    return std::max(0.5, braking_factor * eerk_a_tolerance / Abs(Δa));
   };
 
   auto const initial_integration =
@@ -550,6 +564,10 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   anomalistic_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_Mt_dt);
   nodal_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_ut_dt);
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
+
+  CHECK_LT(0 * Second, anomalistic_period_);
+  CHECK_LT(0 * Second, nodal_period_);
+
   return absl::OkStatus();
 }
 
