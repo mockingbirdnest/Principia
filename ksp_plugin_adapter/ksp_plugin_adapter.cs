@@ -1707,7 +1707,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           // up with uncontrolled oscillations.  Therefore, we must create that
           // torque out of thin air here.  Note that in FAR
           // |part.rb.angularDrag| is 0 and we are properly given the torque
-          // through |Part.AddTorque| so this code has no effect.  See #3697.
+          // through |Part.AddTorque| so this code has no effect.  See #3697 and
+          // https://documentation.help/NVIDIA-PhysX-SDK-Guide/RigidDynamics.html#damping.
           var drag_torque = -part.rb.angularDrag * part.rb.angularVelocity;
           if (drag_torque != UnityEngine.Vector3.zero) {
             if (part_id_to_intrinsic_torque_.ContainsKey(
