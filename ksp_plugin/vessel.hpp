@@ -187,7 +187,9 @@ class Vessel {
   virtual FlightPlan& flight_plan() const;
 
   // Constructs a new driver for the given metric (but doesn't start it).  If
-  // there is a driver currently running it is interrupted and destroyed.
+  // there is a driver currently running it is interrupted and destroyed.  Note
+  // that the optimizer holds a copy of the flight plan, so it must be re-made
+  // when the flight plan changes substantially.
   virtual void MakeFlightPlanOptimizationDriver(
       FlightPlanOptimizer::MetricFactory metric_factory);
 

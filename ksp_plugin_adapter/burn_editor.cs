@@ -10,12 +10,10 @@ class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
                     Vessel vessel,
                     double initial_time,
-                    int index,
                     Func<int, BurnEditor> get_burn_at_index) {
     adapter_ = adapter;
     vessel_ = vessel;
     initial_time_ = initial_time;
-    this.index = index;
     get_burn_at_index_ = get_burn_at_index;
     Δv_tangent_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTangent"),
