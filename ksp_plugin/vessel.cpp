@@ -348,7 +348,7 @@ FlightPlan& Vessel::flight_plan() const {
 
 void Vessel::MakeFlightPlanOptimizationDriver(
     FlightPlanOptimizer::MetricFactory metric_factory) {
-  CHECK(has_deserialized_flight_plan());
+  ReadFlightPlanFromMessage();
   auto& [flight_plan, optimization_driver] =
       std::get<OptimizableFlightPlan>(selected_flight_plan());
   if (optimization_driver != nullptr) {
@@ -360,6 +360,8 @@ void Vessel::MakeFlightPlanOptimizationDriver(
 
 void Vessel::StartFlightPlanOptimizationDriver(
     FlightPlanOptimizationDriver::Parameters const& parameters) {
+  // No need to deserialize here, we have surely called
+  // |MakeFlightPlanOptimizationDriver|, otherwise the driver would be null.
   CHECK(has_deserialized_flight_plan());
   auto const& driver = std::get<OptimizableFlightPlan>(selected_flight_plan())
                            .optimization_driver;
@@ -381,7 +383,7 @@ Vessel::FlightPlanOptimizationDriverInProgress() const {
 }
 
 bool Vessel::UpdateFlightPlanFromOptimization() {
-  CHECK(has_deserialized_flight_plan());
+  ReadFlightPlanFromMessage();
   auto& [flight_plan, optimization_driver] =
       std::get<OptimizableFlightPlan>(selected_flight_plan());
   if (optimization_driver == nullptr) {
