@@ -74,7 +74,7 @@ void FlightPlanOptimizationDriver::RequestOptimization(
 
 std::optional<FlightPlanOptimizationDriver::Parameters> const&
 FlightPlanOptimizationDriver::last_parameters() const {
-  absl::MutexLock l(&lock_);
+  absl::ReaderMutexLock l(&lock_);
   return last_parameters_;
 }
 
