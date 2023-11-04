@@ -185,12 +185,12 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           burn_editors_.Add(new BurnEditor(adapter_,
                                            predicted_vessel,
                                            initial_time      : 0,
-                                           index             : i,
                                            get_burn_at_index : burn_editors_.
                                                ElementAtOrDefault));
           burn_editors_.Last().Reset(
               plugin.FlightPlanGetManoeuvre(vessel_guid, i));
         }
+        UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
       }
     }
 
@@ -465,18 +465,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                   optimization_reference_frame_parameters_ !=
                   (NavigationFrameParameters)adapter_.plotting_frame_selector_.
                       FrameParameters()) {
-                optimization_altitude_ = optimization_altitude;
-                optimization_inclination_in_degrees_ =
-                    optimization_inclination_in_degrees;
-                optimization_reference_frame_parameters_ =
-                    (NavigationFrameParameters)adapter_.
-                        plotting_frame_selector_.FrameParameters();
-                plugin.FlightPlanOptimizationDriverMake(
-                    vessel_guid,
-                    centre.Radius + optimization_altitude_,
-                    optimization_inclination_in_degrees_,
-                    centre.flightGlobalsIndex,
-                    optimization_reference_frame_parameters_);
+                ResetOptimizer(vessel_guid,
+                               centre,
+                               optimization_altitude,
+                               optimization_inclination_in_degrees);
               }
             }
           }
@@ -523,7 +515,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               UpdateStatus(status, null);
               burn_editors_[i].Close();
               burn_editors_.RemoveAt(i);
-              UpdateBurnEditorIndices();
+              UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
               ScheduleShrink();
               return;
             }
@@ -667,7 +659,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         var editor = new BurnEditor(adapter_,
                                     predicted_vessel,
                                     initial_time,
-                                    index,
                                     get_burn_at_index : burn_editors_.
                                         ElementAtOrDefault){
             minimized = false
@@ -685,7 +676,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         if (number_of_manœuvres > burn_editors_.Count) {
           editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, index));
           burn_editors_.Insert(index, editor);
-          UpdateBurnEditorIndices();
+          UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
           UpdateStatus(status, index);
           ScheduleShrink();
           return true;
@@ -728,6 +719,23 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     value = ts.total_seconds +
             plugin.FlightPlanGetInitialTime(predicted_vessel.id.ToString());
     return true;
+  }
+
+  private void ResetOptimizer(string vessel_guid,
+                              CelestialBody centre,
+                              double optimization_altitude,
+                              double? optimization_inclination_in_degrees) {
+    optimization_altitude_ = optimization_altitude;
+    optimization_inclination_in_degrees_ = optimization_inclination_in_degrees;
+    optimization_reference_frame_parameters_ =
+        (NavigationFrameParameters)adapter_.plotting_frame_selector_.
+            FrameParameters();
+    plugin.FlightPlanOptimizationDriverMake(vessel_guid,
+                                            centre.Radius +
+                                            optimization_altitude_,
+                                            optimization_inclination_in_degrees_,
+                                            centre.flightGlobalsIndex,
+                                            optimization_reference_frame_parameters_);
   }
 
   private void ResetStatus() {
@@ -855,9 +863,18 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     return message;
   }
 
-  private void UpdateBurnEditorIndices() {
+  private void UpdateAfterBurnEditorInsertionDeletion(string vessel_guid) {
+    // Adjust the indices of the current burn editors.
     for (int j = 0; j < burn_editors_.Count; ++j) {
       burn_editors_[j].index = j;
+    }
+    // Rebuild the optimizer as whatever it was doing is now irrelevant.
+    if (adapter_.plotting_frame_selector_.
+            Centre() is CelestialBody centre) {
+      ResetOptimizer(vessel_guid,
+                     centre,
+                     default_optimization_altitude,
+                     default_optimization_inclination_in_degrees);
     }
   }
 
@@ -912,10 +929,13 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
 
   private const int max_flight_plans = 10;
 
-  private double optimization_altitude_ = 10e3;
-  private double? optimization_inclination_in_degrees_ = 0;
-  private NavigationFrameParameters optimization_reference_frame_parameters_ =
-      null;
+  private const double default_optimization_altitude = 10e3;
+  private const double default_optimization_inclination_in_degrees = 0;
+
+  // Initialized at flight plan creation by |ResetOptimizer|.
+  private double optimization_altitude_;
+  private double? optimization_inclination_in_degrees_;
+  private NavigationFrameParameters optimization_reference_frame_parameters_;
 }
 
 }  // namespace ksp_plugin_adapter
