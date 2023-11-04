@@ -193,9 +193,8 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σⱼ_aᵢⱼ_gⱼₖ;
           v_stage[k] = v̂[k].value + h * Σⱼ_aʹᵢⱼ_gⱼₖ;
         }
-        termination_condition::UpdateWithAbort(
-            equation.compute_acceleration(t_stage, q_stage, v_stage, g[i]),
-            step_status);
+        step_status.Update(
+            equation.compute_acceleration(t_stage, q_stage, v_stage, g[i]));
       }
 
       // Increment computation and step size control.
@@ -245,8 +244,8 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
       q̂[k].Increment(Δq̂[k]);
       v̂[k].Increment(Δv̂[k]);
     }
-    RETURN_IF_STOPPED;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     ++step_count;
     if (absl::IsAborted(step_status)) {
       return step_status;

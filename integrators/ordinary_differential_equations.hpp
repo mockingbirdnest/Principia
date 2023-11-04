@@ -24,8 +24,12 @@ using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
+
 // The |Solve| function of the |AdaptiveStepSizeIntegrator| exclusively returns
 // one of the following statuses.
+// Beware!  Do not RETURN_IF_STOPPED from the right-hand side computation, it's
+// too hard to undo the state changes made half way through the loop of the
+// integrator.
 namespace termination_condition {
 
 constexpr absl::StatusCode Done = absl::StatusCode::kOk;
@@ -35,9 +39,6 @@ constexpr absl::StatusCode ReachedMaximalStepCount = absl::StatusCode::kAborted;
 // A singularity.
 constexpr absl::StatusCode VanishingStepSize =
     absl::StatusCode::kFailedPrecondition;
-
-// Same as absl::Status::Update, but prefers kAbort.
-void UpdateWithAbort(absl::Status const& updater, absl::Status& updated);
 
 }  // namespace termination_condition
 

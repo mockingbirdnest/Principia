@@ -1701,6 +1701,25 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                     part.CoPOffset)
                   });
           }
+
+          // KSP sets |part.rb.angularDrag| and lets Unity/PhysX compute a
+          // dampening torque.  However, it doesn't tell us about it so we end
+          // up with uncontrolled oscillations.  Therefore, we must create that
+          // torque out of thin air here.  Note that in FAR
+          // |part.rb.angularDrag| is 0 and we are properly given the torque
+          // through |Part.AddTorque| so this code has no effect.  See #3697 and
+          // https://documentation.help/NVIDIA-PhysX-SDK-Guide/RigidDynamics.html#damping.
+          var drag_torque = -part.rb.angularDrag * part.rb.angularVelocity;
+          if (drag_torque != UnityEngine.Vector3.zero) {
+            if (part_id_to_intrinsic_torque_.ContainsKey(
+                    physical_parent.flightID)) {
+              part_id_to_intrinsic_torque_[physical_parent.flightID] +=
+                  drag_torque;
+            } else {
+              part_id_to_intrinsic_torque_.Add(physical_parent.flightID,
+                                               drag_torque);
+            }
+          }
         }
       }
     }

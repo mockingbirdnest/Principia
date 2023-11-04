@@ -114,15 +114,14 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
           y = yₙ₊₁;
         });
     current_step.y = std::move(yₙ₊₁);
-    termination_condition::UpdateWithAbort(
-        equation.compute_derivative(s.value, y_stage, current_step.yʹ),
-        status);
+    status.Update(
+        equation.compute_derivative(s.value, y_stage, current_step.yʹ));
     starter_.Push(std::move(current_step));
 
     // Inform the caller of the new state.
-    RETURN_IF_STOPPED;
     current_state.s = s;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     if (absl::IsAborted(status)) {
       return status;
     }

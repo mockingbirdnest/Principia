@@ -244,6 +244,16 @@ principia__FlightPlanGetAdaptiveStepParameters(
                       flight_plan.generalized_adaptive_step_parameters()));
 }
 
+Status* __cdecl principia__FlightPlanGetAnomalousStatus(
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FlightPlanGetAnomalousStatus> m(
+      {plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(
+      ToNewStatus(GetFlightPlan(*plugin, vessel_guid).anomalous_status()));
+}
+
 OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
     Plugin const* const plugin,
     char const* const vessel_guid,
@@ -600,7 +610,13 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
                                                          sun_world_position,
                                                          index});
   CHECK_NOTNULL(plugin);
-  auto const segment = GetFlightPlan(*plugin, vessel_guid).GetSegment(index);
+
+  // This might force a (partial) recomputation of the flight plan to avoid a
+  // deadline, and a change of the anomalous status that will be noticed by the
+  // flight planner.
+  auto const segment =
+      GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
+
   auto rendered_trajectory =
       plugin->renderer().RenderBarycentricTrajectoryInWorld(
           plugin->CurrentTime(),

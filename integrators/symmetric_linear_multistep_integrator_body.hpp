@@ -131,19 +131,18 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
       positions[d] = current_position.value;
       current_state.positions[d] = current_position;
     }
-    termination_condition::UpdateWithAbort(
+    status.Update(
         equation.compute_acceleration(t.value,
                                       positions,
-                                      current_step.accelerations),
-        status);
+                                      current_step.accelerations));
     starter_.Push(std::move(current_step));
 
     ComputeVelocityUsingCohenHubbardOesterwinter();
 
     // Inform the caller of the new state.
-    RETURN_IF_STOPPED;
     current_state.time = t;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     if (absl::IsAborted(status)) {
       return status;
     }

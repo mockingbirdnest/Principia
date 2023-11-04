@@ -382,8 +382,10 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
 }
 
 TEST_F(VesselTest, FlightPlan) {
+  EXPECT_CALL(ephemeris_, t_min())
+      .WillRepeatedly(Return(t0_));
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(t0_ + 2 * Second));
+      .WillRepeatedly(Return(t0_ + 4 * Second));
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
@@ -392,6 +394,9 @@ TEST_F(VesselTest, FlightPlan) {
       .Times(AnyNumber());
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
+      .Times(AnyNumber());
+  EXPECT_CALL(ephemeris_,
+              Prolong(_, _))
       .Times(AnyNumber());
   std::vector<not_null<MassiveBody const*>> const bodies;
   ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
@@ -801,7 +806,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
 
   EXPECT_CALL(ephemeris_, t_max())
-      .WillRepeatedly(Return(t0_ + 2 * Second));
+      .WillRepeatedly(Return(t0_ + 4 * Second));
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
       .Times(AnyNumber());
@@ -812,6 +817,9 @@ TEST_F(VesselTest, SerializationSuccess) {
 
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 3 * Second, _, _))
+      .WillRepeatedly(Return(absl::OkStatus()));
+  EXPECT_CALL(ephemeris_,
+              Prolong(_, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
   std::vector<not_null<MassiveBody const*>> const bodies;
@@ -828,7 +836,7 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_TRUE(message.has_history());
   EXPECT_FALSE(message.flight_plans().empty());
 
-  EXPECT_CALL(ephemeris_, Prolong(_)).Times(2);
+  EXPECT_CALL(ephemeris_, Prolong(_, _)).Times(2);
   auto const v = Vessel::ReadFromMessage(
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->has_flight_plan());

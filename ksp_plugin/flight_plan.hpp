@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -21,6 +22,7 @@ namespace ksp_plugin {
 namespace _flight_plan {
 namespace internal {
 
+using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
@@ -71,6 +73,13 @@ class FlightPlan {
   // of anomalous manœuvres.
   virtual int number_of_anomalous_manœuvres() const;
 
+  // Returns the status associated with the first anomalous segment.  Note that
+  // this may be non-OK even if |number_of_anomalous_manœuvres()| is 0, in the
+  // case where only the final coast is anomalous.  The functions that change
+  // manœuvres as well as the function that "avoid deadlines" may change this
+  // status.
+  virtual absl::Status const& anomalous_status() const;
+
   // Returns the specified manœuvre.  |index| must be in
   // [0, number_of_manœuvres()[.
   virtual NavigationManœuvre const& GetManœuvre(int index) const;
@@ -118,6 +127,14 @@ class FlightPlan {
   GetSegment(int index) const;
   virtual DiscreteTrajectory<Barycentric> const& GetAllSegments() const;
 
+  // Same as above, but if the flight plan is anomalous because of a deadline,
+  // tries to recompute it in case the ephemeris is long enough.  This can still
+  // run into a deadline.
+  virtual DiscreteTrajectorySegmentIterator<Barycentric>
+  GetSegmentAvoidingDeadlines(int index);
+  virtual DiscreteTrajectory<Barycentric> const&
+  GetAllSegmentsAvoidingDeadlines();
+
   // Orbit analysis is enabled at construction, and may be enabled/disabled
   // dynamically.
   void EnableAnalysis(bool enabled);
@@ -151,17 +168,24 @@ class FlightPlan {
   // Clears and recomputes all trajectories in |segments_|.
   absl::Status RecomputeAllSegments();
 
+  // If the flight plan is anomalous because of an integration deadline, try to
+  // recompute it from the first anomalous segment.  This might work better if
+  // the ephemeris has been prolonged enough.
+  absl::Status RecomputeSegmentsAvoidingDeadlineIfNeeded();
+
   // Flows the given |segment| for the duration of |manœuvre| using its
   // intrinsic acceleration.
   absl::Status BurnSegment(
       NavigationManœuvre const& manœuvre,
-      DiscreteTrajectorySegmentIterator<Barycentric> segment);
+      DiscreteTrajectorySegmentIterator<Barycentric> segment,
+      std::int64_t max_ephemeris_steps);
 
   // Flows the given |segment| until |desired_final_time| with no intrinsic
   // acceleration.
   absl::Status CoastSegment(
       Instant const& desired_final_time,
-      DiscreteTrajectorySegmentIterator<Barycentric> segment);
+      DiscreteTrajectorySegmentIterator<Barycentric> segment,
+      std::int64_t max_ephemeris_steps);
 
   // Computes new trajectories and appends them to |segments_|.  This updates
   // the last coast of |segments_| and then appends one coast and one burn for
@@ -171,7 +195,8 @@ class FlightPlan {
   // TODO(phl): The argument should really be an std::span, but then Apple has
   // invented the Macintosh.
   absl::Status ComputeSegments(std::vector<NavigationManœuvre>::iterator begin,
-                               std::vector<NavigationManœuvre>::iterator end);
+                               std::vector<NavigationManœuvre>::iterator end,
+                               std::int64_t max_ephemeris_steps);
 
   // Adds a trajectory to |segments_|, forked at the end of the last one.  If
   // there are already anomalous trajectories, the newly created trajectory is
@@ -196,6 +221,9 @@ class FlightPlan {
   // initial masses from |manœuvres_[index].final_mass()|.
   void UpdateInitialMassOfManœuvresAfter(int index);
 
+  // Starts a thread to prolong the ephemeris if needed.
+  void MakeProlongator(Instant const& prolongation_time);
+
   Instant start_of_last_coast() const;
 
   // In the following functions, |index| refers to the index of a manœuvre.
@@ -206,6 +234,8 @@ class FlightPlan {
   Mass const initial_mass_;
   Instant const initial_time_;
   DegreesOfFreedom<Barycentric> const initial_degrees_of_freedom_;
+  not_null<Ephemeris<Barycentric>*> const ephemeris_;
+
   Instant desired_final_time_;
 
   // The trajectory of the part, composed of any number of segments,
@@ -215,8 +245,8 @@ class FlightPlan {
   // Never empty; Starts and ends with a coast; coasts and burns alternate.
   std::vector<DiscreteTrajectorySegmentIterator<Barycentric>> segments_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e., they
-  // either end prematurely or follow an anomalous trajectory; in the latter
-  // case they are empty.
+  // either end prematurely or follow an anomalous segment; in the latter case
+  // they are empty.
   int anomalous_segments_ = 0;
   // The status of the first anomalous segment.  Set and used exclusively by
   // |ComputeSegments|.
@@ -229,7 +259,10 @@ class FlightPlan {
   std::vector<not_null<std::unique_ptr<OrbitAnalyser>>> coast_analysers_;
   bool analysis_is_enabled_ = true;
 
-  not_null<Ephemeris<Barycentric>*> ephemeris_;
+  // These members are only accessed by the main thread.
+  jthread prolongator_;
+  Instant last_prolongation_time_ = InfinitePast;
+
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
   Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
       generalized_adaptive_step_parameters_;

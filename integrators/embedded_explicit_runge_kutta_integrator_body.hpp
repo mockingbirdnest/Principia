@@ -193,8 +193,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                 y_stage = ŷ.value + Σⱼ_aᵢⱼ_kⱼ;
               });
 
-          termination_condition::UpdateWithAbort(
-              equation.compute_derivative(s_stage, y_stage, f), step_status);
+          step_status.Update(equation.compute_derivative(s_stage, y_stage, f));
         }
         for_all_of(f, k[i]).loop([h](auto const& f, auto& kᵢ) {
           kᵢ = h * f;
@@ -241,8 +240,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       ŷ.Increment(Δŷ);
     });
 
-    RETURN_IF_STOPPED;
     append_state(current_state);
+    RETURN_IF_STOPPED;  // After the state has been updated.
     ++step_count;
     if (absl::IsAborted(step_status)) {
       return step_status;

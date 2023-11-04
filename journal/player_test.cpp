@@ -113,7 +113,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // |method_out_return| protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20230506-192603)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Issues\3569\JOURNAL.20231026-191142)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -135,17 +135,20 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::DeletePlugin::extension);
+        serialization::FlightPlanGetCoastAnalysis::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(2734566559920);
+    in->set_plugin(1813489403728);
+    in->set_vessel_guid("5f7e35b7-645a-4985-9734-7bdeb31b2336");
+    in->set_ground_track_revolution(0);
+    in->set_index(0);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::DeletePlugin::extension);
+        serialization::FlightPlanGetCoastAnalysis::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<DeletePlugin>(
+  CHECK(RunIfAppropriate<FlightPlanGetCoastAnalysis>(
       method_in, method_out_return, player));
 #endif
 #if 0
