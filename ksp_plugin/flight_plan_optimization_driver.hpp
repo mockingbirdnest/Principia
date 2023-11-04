@@ -46,6 +46,10 @@ class FlightPlanOptimizationDriver {
   // optimization is already happening.
   void RequestOptimization(Parameters const& parameters);
 
+  // Returns the last parameters passed to |RequestOptimization|, or nullopt if
+  // |RequestOptimization| was not called.
+  std::optional<Parameters> const& last_parameters() const;
+
   // Waits for the current optimization (if any) to complete.
   void Wait() const;
 
@@ -59,6 +63,7 @@ class FlightPlanOptimizationDriver {
   mutable absl::Mutex lock_;
   jthread optimizer_;
   bool optimizer_idle_ GUARDED_BY(lock_) = true;
+  std::optional<Parameters> last_parameters_ GUARDED_BY(lock_);
 
   // The last flight plan evaluated by the optimizer.
   not_null<std::shared_ptr<FlightPlan>> last_flight_plan_ GUARDED_BY(lock_);

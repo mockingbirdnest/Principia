@@ -72,6 +72,12 @@ void FlightPlanOptimizationDriver::RequestOptimization(
   }
 }
 
+std::optional<FlightPlanOptimizationDriver::Parameters> const&
+FlightPlanOptimizationDriver::last_parameters() const {
+  absl::MutexLock l(&lock_);
+  return last_parameters_;
+}
+
 void FlightPlanOptimizationDriver::Wait() const {
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&optimizer_idle_));

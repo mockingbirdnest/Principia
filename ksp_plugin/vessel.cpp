@@ -366,7 +366,6 @@ void Vessel::StartFlightPlanOptimizationDriver(
   auto const& driver = std::get<OptimizableFlightPlan>(selected_flight_plan())
                            .optimization_driver;
   CHECK_NOTNULL(driver);
-  last_optimization_parameters_ = parameters;
   driver->RequestOptimization(parameters);
 }
 
@@ -374,11 +373,10 @@ std::optional<FlightPlanOptimizationDriver::Parameters>
 Vessel::FlightPlanOptimizationDriverInProgress() const {
   auto const& driver = std::get<OptimizableFlightPlan>(selected_flight_plan())
                            .optimization_driver;
-  if (driver != nullptr && !driver->done()) {
-    CHECK(last_optimization_parameters_.has_value());
-    return last_optimization_parameters_;
-  } else {
+  if (driver == nullptr || driver->done()) {
     return std::nullopt;
+  } else {
+    return driver->last_parameters();
   }
 }
 
