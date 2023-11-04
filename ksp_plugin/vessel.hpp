@@ -325,6 +325,9 @@ class Vessel {
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::iterator (Part::*)();
 
+  // The optimization driver cannot be a member of the flight plan because it
+  // effectively acts as a factory for flight plans, and the flight plan gets
+  // replaced multiple times as the driver progresses in its optimization.
   struct OptimizableFlightPlan {
     not_null<std::shared_ptr<FlightPlan>> flight_plan;
     std::unique_ptr<FlightPlanOptimizationDriver> optimization_driver;
@@ -444,8 +447,6 @@ class Vessel {
 
   std::vector<LazilyDeserializedFlightPlan> flight_plans_;
   int selected_flight_plan_index_ = -1;
-  std::optional<FlightPlanOptimizationDriver::Parameters>
-      last_optimization_parameters_;
 
   std::optional<OrbitAnalyser> orbit_analyser_;
 
