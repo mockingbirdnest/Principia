@@ -257,6 +257,26 @@ constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right);
 
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator+=(
+    FixedVector<Scalar, size>& left,
+    FixedVector<Scalar, size> const& right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator+=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    FixedMatrix<Scalar, rows, columns> const& right);
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator-=(
+    FixedVector<Scalar, size>& left,
+    FixedVector<Scalar, size> const& right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    FixedMatrix<Scalar, rows, columns> const& right);
+
 // Vector spaces.
 
 template<typename LScalar, typename RScalar, int size>

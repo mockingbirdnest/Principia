@@ -5,6 +5,8 @@
 #include <utility>
 
 #include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
+#include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
@@ -17,12 +19,11 @@ FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
     FlightPlan const& flight_plan,
     FlightPlanOptimizer::MetricFactory metric_factory)
     : flight_plan_under_optimization_(flight_plan),
-      flight_plan_optimizer_(
-          &flight_plan_under_optimization_,
-          std::move(metric_factory),
-          std::bind(&FlightPlanOptimizationDriver::UpdateLastFlightPlan,
-                    this,
-                    _1)),
+      flight_plan_optimizer_(&flight_plan_under_optimization_,
+                             std::move(metric_factory),
+                             [this](FlightPlan const& flight_plan) {
+                               UpdateLastFlightPlan(flight_plan);
+                             }),
       last_flight_plan_(
           make_not_null_shared<FlightPlan>(flight_plan_under_optimization_)) {}
 
@@ -63,10 +64,18 @@ void FlightPlanOptimizationDriver::RequestOptimization(
       if (optimization_status.ok()) {
         last_flight_plan_ =
             make_not_null_shared<FlightPlan>(flight_plan_under_optimization_);
+      } else {
+        LOG(WARNING) << "Optimization returned " << optimization_status;
       }
       optimizer_idle_ = true;
     });
   }
+}
+
+std::optional<FlightPlanOptimizationDriver::Parameters> const&
+FlightPlanOptimizationDriver::last_parameters() const {
+  absl::ReaderMutexLock l(&lock_);
+  return last_parameters_;
 }
 
 void FlightPlanOptimizationDriver::Wait() const {

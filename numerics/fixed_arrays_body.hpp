@@ -487,6 +487,38 @@ constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
   return result;
 }
 
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator+=(
+    FixedVector<Scalar, size>& left,
+    FixedVector<Scalar, size> const& right) {
+  left = left + right;
+  return left;
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator+=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    FixedMatrix<Scalar, rows, columns> const& right) {
+  left = left + right;
+  return left;
+}
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator-=(
+    FixedVector<Scalar, size>& left,
+    FixedVector<Scalar, size> const& right) {
+  left = left - right;
+  return left;
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    FixedMatrix<Scalar, rows, columns> const& right) {
+  left = left - right;
+  return left;
+}
+
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     LScalar const left,
