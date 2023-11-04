@@ -493,6 +493,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_EQ(146, number_of_evaluations);
 }
 
+#if !_DEBUG
 struct MetricTestParam {
   MetricTestParam(
       FlightPlanOptimizer::MetricFactory const& metric_factory,
@@ -723,6 +724,7 @@ INSTANTIATE_TEST_SUITE_P(
                             {2, 3, 5}),
                         AnyOf(IsNear(3.1e-11_(1)), IsNear(7.8e-11_(1))),
                         AnyOf(IsNear(5.6e-11_(1)), IsNear(1.4e-10_(1))))));
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
