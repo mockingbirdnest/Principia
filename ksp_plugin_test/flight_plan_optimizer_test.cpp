@@ -654,8 +654,8 @@ TEST_P(MetricTest, Gradient) {
           RelativeError(
               metric_->Evaluate(argument + Δargument),
               metric_->Evaluate(argument) +
-                  TransposedView<FlightPlanOptimizer::HomogeneousArgument>(
-                      metric_->EvaluateGradient(argument)) *
+                  TransposedView<FlightPlanOptimizer::HomogeneousArgument>{
+                      .transpose = metric_->EvaluateGradient(argument)} *
                       Δargument));
     }
   }
