@@ -301,9 +301,6 @@
     <ClCompile Include="apsides_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\cbrt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="geopotential_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -319,26 +316,11 @@
     <ClCompile Include="euler_solver_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\elliptic_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\numerics\elliptic_integrals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mechanical_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\zfp_compressor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\flags.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="analytical_series_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_segment_range_test.cpp">
       <Filter>Test Files</Filter>
@@ -363,9 +345,6 @@
     </ClCompile>
     <ClCompile Include="clientele_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="similar_motion_test.cpp">
       <Filter>Test Files</Filter>

@@ -500,6 +500,9 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		shared\base .vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
 		shared\journal .vcxitems*{388cbea7-7bc1-4146-8813-66b951e63a96}*SharedItemsImports = 9
+		shared\base .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
+		shared\geometry .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
+		shared\numerics .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{4687c5da-576f-4d9c-b024-9f2f9cd76f48}*SharedItemsImports = 9
 		shared\base .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
@@ -513,6 +516,8 @@ Global
 		shared\base .vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
 		shared\base .vcxitems*{972e4e09-3b2c-4a23-9338-74d97d589207}*SharedItemsImports = 4
+		shared\base .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
+		shared\geometry .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
 		shared\base .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\journal .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
