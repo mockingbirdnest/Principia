@@ -509,6 +509,7 @@ Global
 		shared\numerics .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\base .vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
+		shared\base .vcxitems*{972e4e09-3b2c-4a23-9338-74d97d589207}*SharedItemsImports = 4
 		shared\base .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\journal .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
