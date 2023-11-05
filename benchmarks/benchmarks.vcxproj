@@ -13,7 +13,6 @@
   <ItemGroup>
     <ClCompile Include="..\astronomy\standard_product_3.cpp" />
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
-    <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
     <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp" />
     <ClCompile Include="apsides_benchmark.cpp" />
     <ClCompile Include="checkpointer_benchmark.cpp" />
