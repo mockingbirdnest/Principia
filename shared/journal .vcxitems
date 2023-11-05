@@ -14,7 +14,6 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\journal\profiles.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\journal\recorder.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\journal\.cpp" />
   </ItemGroup>
 </Project>

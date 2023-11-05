@@ -13,9 +13,4 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\cbrt.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\elliptic_functions.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\elliptic_integrals.cpp" />
-  </ItemGroup>
 </Project>
