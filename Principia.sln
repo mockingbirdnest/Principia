@@ -172,17 +172,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 		.github\workflows\remove-before-flight.yml = .github\workflows\remove-before-flight.yml
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base ", "shared\base .vcxitems", "{A82CB04C-42E1-4EBE-9816-6FC033A9C2B5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared Items Projects", "Shared Items Projects", "{6722AD00-0A85-4156-B912-38E99A12AE75}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry ", "shared\geometry .vcxitems", "{4687C5DA-576F-4D9C-B024-9F2F9CD76F48}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy", "shared\astronomy.vcxitems", "{582350F1-F2A6-4663-BB67-AD9EE13B3464}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal ", "shared\journal .vcxitems", "{388CBEA7-7BC1-4146-8813-66B951E63A96}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base", "shared\base.vcxitems", "{A82CB04C-42E1-4EBE-9816-6FC033A9C2B5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics ", "shared\numerics .vcxitems", "{C59F84DA-2F82-43DD-BBA4-5A469B32557C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry", "shared\geometry.vcxitems", "{4687C5DA-576F-4D9C-B024-9F2F9CD76F48}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy ", "shared\astronomy .vcxitems", "{582350F1-F2A6-4663-BB67-AD9EE13B3464}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal", "shared\journal.vcxitems", "{388CBEA7-7BC1-4146-8813-66B951E63A96}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities ", "shared\testing_utilities .vcxitems", "{2E39517A-4713-455F-8C78-610DDFD8EA99}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics", "shared\numerics.vcxitems", "{C59F84DA-2F82-43DD-BBA4-5A469B32557C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "shared\testing_utilities.vcxitems", "{2E39517A-4713-455F-8C78-610DDFD8EA99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -497,53 +499,59 @@ Global
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{28F20764-FBF8-40CF-A930-1562D1562B83} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{3B6E70E8-9FC3-4DC3-97B6-1A51B6DEB009} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+		{582350F1-F2A6-4663-BB67-AD9EE13B3464} = {6722AD00-0A85-4156-B912-38E99A12AE75}
+		{A82CB04C-42E1-4EBE-9816-6FC033A9C2B5} = {6722AD00-0A85-4156-B912-38E99A12AE75}
+		{4687C5DA-576F-4D9C-B024-9F2F9CD76F48} = {6722AD00-0A85-4156-B912-38E99A12AE75}
+		{388CBEA7-7BC1-4146-8813-66B951E63A96} = {6722AD00-0A85-4156-B912-38E99A12AE75}
+		{C59F84DA-2F82-43DD-BBA4-5A469B32557C} = {6722AD00-0A85-4156-B912-38E99A12AE75}
+		{2E39517A-4713-455F-8C78-610DDFD8EA99} = {6722AD00-0A85-4156-B912-38E99A12AE75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {332981CB-A6C7-4BD0-9EE0-8E8C6FB4E01A}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		shared\base .vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
-		shared\base .vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
-		shared\base .vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
-		shared\testing_utilities .vcxitems*{2e39517a-4713-455f-8c78-610ddfd8ea99}*SharedItemsImports = 9
-		shared\journal .vcxitems*{388cbea7-7bc1-4146-8813-66b951e63a96}*SharedItemsImports = 9
-		shared\base .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{4687c5da-576f-4d9c-b024-9f2f9cd76f48}*SharedItemsImports = 9
-		shared\astronomy .vcxitems*{582350f1-f2a6-4663-bb67-ad9ee13b3464}*SharedItemsImports = 9
-		shared\base .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
-		shared\astronomy .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
-		shared\base .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
-		shared\testing_utilities .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
-		shared\base .vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
-		shared\base .vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
-		shared\base .vcxitems*{873680b3-2406-4a30-9ee7-569e9b9da661}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{873680b3-2406-4a30-9ee7-569e9b9da661}*SharedItemsImports = 4
-		shared\base .vcxitems*{972e4e09-3b2c-4a23-9338-74d97d589207}*SharedItemsImports = 4
-		shared\base .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
-		shared\testing_utilities .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
-		shared\base .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
-		shared\journal .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
-		shared\base .vcxitems*{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}*SharedItemsImports = 9
-		shared\astronomy .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
-		shared\base .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
-		shared\geometry .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
-		shared\journal .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
-		shared\numerics .vcxitems*{c59f84da-2f82-43dd-bba4-5a469b32557c}*SharedItemsImports = 9
+		shared\base.vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
+		shared\base.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
+		shared\base.vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
+		shared\testing_utilities.vcxitems*{2e39517a-4713-455f-8c78-610ddfd8ea99}*SharedItemsImports = 9
+		shared\journal.vcxitems*{388cbea7-7bc1-4146-8813-66b951e63a96}*SharedItemsImports = 9
+		shared\base.vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{4687c5da-576f-4d9c-b024-9f2f9cd76f48}*SharedItemsImports = 9
+		shared\astronomy.vcxitems*{582350f1-f2a6-4663-bb67-ad9ee13b3464}*SharedItemsImports = 9
+		shared\base.vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\astronomy.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\base.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\testing_utilities.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\base.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
+		shared\base.vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{86aff67d-38cd-487e-b4c1-b93984a9ed0d}*SharedItemsImports = 4
+		shared\base.vcxitems*{873680b3-2406-4a30-9ee7-569e9b9da661}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{873680b3-2406-4a30-9ee7-569e9b9da661}*SharedItemsImports = 4
+		shared\base.vcxitems*{972e4e09-3b2c-4a23-9338-74d97d589207}*SharedItemsImports = 4
+		shared\base.vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
+		shared\testing_utilities.vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
+		shared\base.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
+		shared\journal.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
+		shared\base.vcxitems*{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}*SharedItemsImports = 9
+		shared\astronomy.vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\base.vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\journal.vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{c59f84da-2f82-43dd-bba4-5a469b32557c}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal

@@ -6,7 +6,7 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="Shared">
-    <Import Project="..\shared\base .vcxitems" Label="Shared" />
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="method.hpp" />

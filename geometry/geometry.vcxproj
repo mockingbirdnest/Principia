@@ -4,7 +4,7 @@
     <ProjectGuid>{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}</ProjectGuid>
     <RootNamespace>geometry</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\shared\base .vcxitems" Label="Shared" />
+  <Import Project="..\shared\base.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClInclude Include="affine_map.hpp" />

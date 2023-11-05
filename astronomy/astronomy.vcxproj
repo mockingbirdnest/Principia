@@ -6,9 +6,9 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="Shared">
-    <Import Project="..\shared\base .vcxitems" Label="Shared" />
-    <Import Project="..\shared\numerics .vcxitems" Label="Shared" />
-    <Import Project="..\shared\geometry .vcxitems" Label="Shared" />
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+    <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <None Include="eop_c04.awk" />

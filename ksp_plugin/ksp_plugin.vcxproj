@@ -6,10 +6,10 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="Shared">
-    <Import Project="..\shared\base .vcxitems" Label="Shared" />
-    <Import Project="..\shared\geometry .vcxitems" Label="Shared" />
-    <Import Project="..\shared\journal .vcxitems" Label="Shared" />
-    <Import Project="..\shared\numerics .vcxitems" Label="Shared" />
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
+    <Import Project="..\shared\journal.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

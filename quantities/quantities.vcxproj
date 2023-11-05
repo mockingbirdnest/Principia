@@ -5,8 +5,8 @@
     <RootNamespace>quantities</RootNamespace>
     <ProjectName>quantities</ProjectName>
   </PropertyGroup>
-  <Import Project="..\shared\base .vcxitems" Label="Shared" />
-  <Import Project="..\shared\numerics .vcxitems" Label="Shared" />
+  <Import Project="..\shared\base.vcxitems" Label="Shared" />
+  <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClInclude Include="astronomy.hpp" />
