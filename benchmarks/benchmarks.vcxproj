@@ -10,10 +10,10 @@
     <Import Project="..\shared\geometry .vcxitems" Label="Shared" />
     <Import Project="..\shared\numerics .vcxitems" Label="Shared" />
     <Import Project="..\shared\astronomy .vcxitems" Label="Shared" />
+    <Import Project="..\shared\testing_utilities .vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
-    <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp" />
     <ClCompile Include="apsides_benchmark.cpp" />
     <ClCompile Include="checkpointer_benchmark.cpp" />
     <ClCompile Include="discrete_trajectory_benchmark.cpp" />

@@ -358,9 +358,6 @@
     <ClCompile Include="global_optimization_test.cc">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="angle_reduction_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>

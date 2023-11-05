@@ -80,9 +80,6 @@
     <ClCompile Include="global_optimization_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="orbital_elements_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

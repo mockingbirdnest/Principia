@@ -182,6 +182,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics ", "shared\numeric
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy ", "shared\astronomy .vcxitems", "{582350F1-F2A6-4663-BB67-AD9EE13B3464}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities ", "shared\testing_utilities .vcxitems", "{2E39517A-4713-455F-8C78-610DDFD8EA99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -506,6 +508,7 @@ Global
 		shared\base .vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
+		shared\testing_utilities .vcxitems*{2e39517a-4713-455f-8c78-610ddfd8ea99}*SharedItemsImports = 9
 		shared\journal .vcxitems*{388cbea7-7bc1-4146-8813-66b951e63a96}*SharedItemsImports = 9
 		shared\base .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
@@ -519,6 +522,7 @@ Global
 		shared\base .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\testing_utilities .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\base .vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
@@ -529,6 +533,7 @@ Global
 		shared\base .vcxitems*{972e4e09-3b2c-4a23-9338-74d97d589207}*SharedItemsImports = 4
 		shared\base .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
+		shared\testing_utilities .vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
 		shared\base .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\journal .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4

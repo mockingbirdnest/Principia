@@ -8,6 +8,7 @@
   <ImportGroup Label="Shared">
     <Import Project="..\shared\base .vcxitems" Label="Shared" />
     <Import Project="..\shared\geometry .vcxitems" Label="Shared" />
+    <Import Project="..\shared\testing_utilities .vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="angle_reduction.hpp" />
@@ -86,7 +87,6 @@
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp" />
     <ClCompile Include="angle_reduction_test.cpp" />
     <ClCompile Include="apodization_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
