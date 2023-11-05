@@ -87,6 +87,7 @@
     <ClCompile Include="pile_up.cpp" />
     <ClCompile Include="planetarium.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="renderer.cpp" />
     <ClCompile Include="vessel.cpp" />
   </ItemGroup>
   <ItemGroup>
