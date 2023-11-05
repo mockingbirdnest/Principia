@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\geometry\instant.cpp" />
+  </ItemGroup>
 </Project>

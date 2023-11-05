@@ -24,5 +24,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\base\bundle.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\cpuid.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\version.generated.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\zfp_compressor.cpp" />
   </ItemGroup>
 </Project>
