@@ -136,14 +136,8 @@
     <ClCompile Include="is_near_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\cbrt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="approximate_quantity_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_factories_test.cpp">
       <Filter>Test Files</Filter>
@@ -153,9 +147,6 @@
     </ClCompile>
     <ClCompile Include="optimization_test_functions_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
