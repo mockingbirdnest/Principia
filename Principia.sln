@@ -172,6 +172,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workflows", "Workflows", "{
 		.github\workflows\remove-before-flight.yml = .github\workflows\remove-before-flight.yml
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "base ", "shared\base .vcxitems", "{A82CB04C-42E1-4EBE-9816-6FC033A9C2B5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "geometry ", "shared\geometry .vcxitems", "{4687C5DA-576F-4D9C-B024-9F2F9CD76F48}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal ", "shared\journal .vcxitems", "{388CBEA7-7BC1-4146-8813-66B951E63A96}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics ", "shared\numerics .vcxitems", "{C59F84DA-2F82-43DD-BBA4-5A469B32557C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -488,5 +496,18 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {332981CB-A6C7-4BD0-9EE0-8E8C6FB4E01A}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		shared\base .vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
+		shared\journal .vcxitems*{388cbea7-7bc1-4146-8813-66b951e63a96}*SharedItemsImports = 9
+		shared\geometry .vcxitems*{4687c5da-576f-4d9c-b024-9f2f9cd76f48}*SharedItemsImports = 9
+		shared\base .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\geometry .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\numerics .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\base .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\geometry .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\numerics .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\base .vcxitems*{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}*SharedItemsImports = 9
+		shared\numerics .vcxitems*{c59f84da-2f82-43dd-bba4-5a469b32557c}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal

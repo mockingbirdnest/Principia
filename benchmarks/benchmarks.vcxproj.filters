@@ -47,9 +47,6 @@
     <ClCompile Include="planetarium_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\cbrt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fast_sin_cos_2π_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,25 +62,16 @@
     <ClCompile Include="encoder_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\elliptic_integrals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="elliptic_integrals_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="elliptic_functions_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\elliptic_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="apsides_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\astronomy\standard_product_3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_benchmark.cpp">
@@ -102,9 +90,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="orbital_elements_benchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lagrange_equipotentials_benchmark.cpp">

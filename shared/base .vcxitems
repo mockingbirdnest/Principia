@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="..\third_party_zfp.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\bundle.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\cpuid.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\flags.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\version.generated.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\zfp_compressor.cpp" />
+  </ItemGroup>
+</Project>

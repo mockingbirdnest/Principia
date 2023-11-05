@@ -259,9 +259,6 @@
     <ClCompile Include="traits_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="plane_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
