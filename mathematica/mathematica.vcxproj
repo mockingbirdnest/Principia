@@ -11,7 +11,6 @@
     <Import Project="..\shared\numerics .vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
-    <ClCompile Include="..\physics\protector.cpp" />
     <ClCompile Include="error_analysis_test.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
     <ClCompile Include="logger_test.cpp" />

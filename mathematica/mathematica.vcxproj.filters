@@ -23,9 +23,6 @@
     <ClCompile Include="retrobop_dynamical_stability.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\physics\protector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mathematica_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
