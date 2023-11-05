@@ -56,8 +56,8 @@ FlightPlan::FlightPlan(
     : initial_mass_(initial_mass),
       initial_time_(initial_time),
       initial_degrees_of_freedom_(std::move(initial_degrees_of_freedom)),
-      desired_final_time_(desired_final_time),
       ephemeris_(ephemeris),
+      desired_final_time_(desired_final_time),
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
       generalized_adaptive_step_parameters_(
           std::move(generalized_adaptive_step_parameters)) {
@@ -84,8 +84,8 @@ FlightPlan::FlightPlan(FlightPlan const& other)
       anomalous_segments_(other.anomalous_segments_),
       manœuvres_(other.manœuvres_),
       coast_analysers_(),
-      analysis_is_enabled_(other.analysis_is_enabled_),
       ephemeris_(other.ephemeris_),
+      analysis_is_enabled_(other.analysis_is_enabled_),
       adaptive_step_parameters_(other.adaptive_step_parameters_),
       generalized_adaptive_step_parameters_(
           other.generalized_adaptive_step_parameters_) {

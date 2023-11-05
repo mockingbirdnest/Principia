@@ -385,7 +385,6 @@ Gradient<double, FlightPlanOptimizer::HomogeneousArgument>
 FlightPlanOptimizer::MetricForΔv::EvaluateGradient(
     HomogeneousArgument const& homogeneous_argument) const {
   auto const updated_Δv = UpdatedManœuvre(homogeneous_argument).Δv();
-  Time const Δinitial_time_component_of_grad;
   Vector<double, Frenet<Navigation>> const ΔΔv_component_of_grad =
       2 * speed_homogeneization_factor * updated_Δv / scale_;
   auto const& ΔΔv_component_of_grad_coordinates =

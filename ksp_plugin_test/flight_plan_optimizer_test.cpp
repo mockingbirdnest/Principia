@@ -126,7 +126,7 @@ class FlightPlanOptimizerTest : public testing::Test {
                    apoapsides,
                    periapsides);
     auto const radius = celestial.body()->mean_radius();
-    for (const auto [time, degrees_of_freedom] : periapsides) {
+    for (auto const& [time, degrees_of_freedom] : periapsides) {
       Length const periapsis_distance =
           (celestial_trajectory.EvaluatePosition(time) -
            degrees_of_freedom.position())
@@ -156,7 +156,6 @@ class FlightPlanOptimizerTest : public testing::Test {
                            NavigationFrame const& frame,
                            Instant& flyby_time,
                            Angle& flyby_inclination) {
-    auto const& celestial_trajectory = celestial.trajectory();
     DegreesOfFreedom<Barycentric> flyby_degrees_of_freedom(
         Barycentric::origin, Barycentric::unmoving);
     ComputeFlyby(flight_plan, celestial, flyby_time, flyby_degrees_of_freedom);
@@ -650,13 +649,14 @@ TEST_P(MetricTest, Gradient) {
                      displacement(random),
                      displacement(random),
                      displacement(random)});
-      max_relative_error =
-          std::max(max_relative_error,
-                   RelativeError(
-                       metric_->Evaluate(argument + Δargument),
-                       metric_->Evaluate(argument) +
-                           TransposedView(metric_->EvaluateGradient(argument)) *
-                               Δargument));
+      max_relative_error = std::max(
+          max_relative_error,
+          RelativeError(
+              metric_->Evaluate(argument + Δargument),
+              metric_->Evaluate(argument) +
+                  TransposedView<FlightPlanOptimizer::HomogeneousArgument>(
+                      metric_->EvaluateGradient(argument)) *
+                      Δargument));
     }
   }
   EXPECT_THAT(max_relative_error,
