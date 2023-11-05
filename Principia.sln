@@ -515,6 +515,10 @@ Global
 		shared\journal .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\base .vcxitems*{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}*SharedItemsImports = 9
+		shared\base .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\geometry .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\journal .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
+		shared\numerics .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{c59f84da-2f82-43dd-bba4-5a469b32557c}*SharedItemsImports = 9
 	EndGlobalSection
 EndGlobal
