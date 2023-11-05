@@ -180,6 +180,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "journal ", "shared\journal 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "numerics ", "shared\numerics .vcxitems", "{C59F84DA-2F82-43DD-BBA4-5A469B32557C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "astronomy ", "shared\astronomy .vcxitems", "{582350F1-F2A6-4663-BB67-AD9EE13B3464}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -509,9 +511,11 @@ Global
 		shared\geometry .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{41332e9a-729c-45c4-bde1-a567608dadf2}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{4687c5da-576f-4d9c-b024-9f2f9cd76f48}*SharedItemsImports = 9
+		shared\astronomy .vcxitems*{582350f1-f2a6-4663-bb67-ad9ee13b3464}*SharedItemsImports = 9
 		shared\base .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
+		shared\astronomy .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\base .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
@@ -530,6 +534,7 @@ Global
 		shared\journal .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\numerics .vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\base .vcxitems*{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}*SharedItemsImports = 9
+		shared\astronomy .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
 		shared\base .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
 		shared\geometry .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
 		shared\journal .vcxitems*{a942adf0-62f4-435c-85b2-934d5b666db8}*SharedItemsImports = 4
