@@ -417,6 +417,17 @@ std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
           ToMathematica(degrees_of_freedom.velocity(), express_in)});
 }
 
+template<typename F, typename OptionalExpressIn>
+std::string ToMathematica(
+    RelativeDegreesOfFreedom<F> const& relative_degrees_of_freedom,
+    OptionalExpressIn express_in) {
+  return RawApply(
+      "List",
+      std::vector<std::string>{
+          ToMathematica(relative_degrees_of_freedom.displacement(), express_in),
+          ToMathematica(relative_degrees_of_freedom.velocity(), express_in)});
+}
+
 template<typename Tuple, typename, typename OptionalExpressIn>
 std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
@@ -509,20 +520,20 @@ std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
   return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }
 
-template<typename OptionalExpressIn>
-std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
-                          OptionalExpressIn express_in) {
-  return ToMathematica(std::make_tuple((elements.t - J2000),
-                                       elements.a,
-                                       elements.h,
-                                       elements.k,
-                                       elements.λ,
-                                       elements.p,
-                                       elements.q,
-                                       elements.pʹ,
-                                       elements.qʹ),
-                       express_in);
-}
+//template<typename OptionalExpressIn>
+//std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
+//                          OptionalExpressIn express_in) {
+//  return ToMathematica(std::make_tuple((elements.t - J2000),
+//                                       elements.a,
+//                                       elements.h,
+//                                       elements.k,
+//                                       elements.λ,
+//                                       elements.p,
+//                                       elements.q,
+//                                       elements.pʹ,
+//                                       elements.qʹ),
+//                       express_in);
+//}
 
 template<typename T, typename OptionalExpressIn>
 std::string ToMathematica(std::optional<T> const& opt,
