@@ -1,9 +1,11 @@
 #include "ksp_plugin/flight_plan.hpp"
 
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
+#include <thread>
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
@@ -70,6 +72,7 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
+using namespace std::chrono_literals;
 
 class FlightPlanTest : public testing::Test {
  protected:
@@ -562,6 +565,10 @@ TEST_F(FlightPlanTest, Serialization) {
   EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->desired_final_time());
   EXPECT_EQ(2, flight_plan_read->number_of_manœuvres());
   EXPECT_EQ(5, flight_plan_read->number_of_segments());
+
+  // This sleep causes the analyzer to continue running and produce an
+  // anomalistic period of -1.42708553168389347e+01 s.
+  std::this_thread::sleep_for(5s);
 }
 
 TEST_F(FlightPlanTest, Copy) {
