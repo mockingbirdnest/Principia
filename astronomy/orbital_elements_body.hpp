@@ -488,6 +488,8 @@ OrbitalElements::ToClassicalElements(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   std::vector<ClassicalElements> classical_elements;
   classical_elements.reserve(equinoctial_elements.size());
+  std::optional<Angle> previous_Ω;
+  std::optional<Angle> previous_ϖ;
   for (auto const& equinoctial : equinoctial_elements) {
     RETURN_IF_STOPPED;
     double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
@@ -495,10 +497,20 @@ OrbitalElements::ToClassicalElements(
         Sqrt(Pow<2>(equinoctial.pʹ) + Pow<2>(equinoctial.qʹ));
     Angle const i =
         cotg_½i > tg_½i ? 2 * ArcTan(tg_½i) : 2 * ArcTan(1 / cotg_½i);
-    Angle const Ω = cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
-                                    : ArcTan(equinoctial.pʹ, equinoctial.qʹ);
+    Angle Ω = cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
+                              : ArcTan(equinoctial.pʹ, equinoctial.qʹ);
+    if (previous_Ω.has_value()) {
+      Ω = UnwindFrom(previous_Ω.value(), Ω);
+    } else {
+      Ω = ReduceAngle<0, 2 * π>(Ω);
+    }
     double const e = Sqrt(Pow<2>(equinoctial.h) + Pow<2>(equinoctial.k));
-    Angle const ϖ = ArcTan(equinoctial.h, equinoctial.k);
+    Angle ϖ = ArcTan(equinoctial.h, equinoctial.k);
+    if (previous_ϖ.has_value()) {
+      ϖ = UnwindFrom(previous_ϖ.value(), ϖ);
+    } else {
+      ϖ = ReduceAngle<0, 2 * π>(ϖ);
+    }
     Angle const ω = ϖ - Ω;
     Angle const M = equinoctial.λ - ϖ;
     classical_elements.push_back(
@@ -506,16 +518,9 @@ OrbitalElements::ToClassicalElements(
          .semimajor_axis = equinoctial.a,
          .eccentricity = e,
          .inclination = i,
-         .longitude_of_ascending_node = classical_elements.empty()
-             ? ReduceAngle<0, 2 * π>(Ω)
-             : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
-                          Ω),
-         .argument_of_periapsis = classical_elements.empty()
-             ? ReduceAngle<0, 2 * π>(ω)
-             : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
-         .mean_anomaly = classical_elements.empty()
-             ? ReduceAngle<0, 2 * π>(M)
-             : UnwindFrom(classical_elements.back().mean_anomaly, M),
+         .longitude_of_ascending_node = Ω,
+         .argument_of_periapsis = ω,
+         .mean_anomaly =  M,
          .periapsis_distance = (1 - e) * equinoctial.a,
          .apoapsis_distance = (1 + e) * equinoctial.a});
     logger_.Append(
@@ -523,6 +528,8 @@ OrbitalElements::ToClassicalElements(
         std::tuple(
             equinoctial.t, equinoctial.λ, ϖ, M, equinoctial.h, equinoctial.k),
         ExpressInSIUnits);
+    previous_Ω = Ω;
+    previous_ϖ = ϖ;
   }
   return classical_elements;
 }
