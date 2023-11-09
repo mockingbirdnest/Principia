@@ -5,7 +5,6 @@
 #include "absl/status/statusor.h"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "mathematica/logger.hpp"
 #include "physics/body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_reference_frame.hpp"
@@ -20,8 +19,6 @@ namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_body;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_reference_frame;
@@ -207,8 +204,6 @@ class OrbitalElements {
   Time nodal_period_;
   AngularFrequency nodal_precession_;
 
-  static Logger logger_;
-
   Interval<Length> mean_semimajor_axis_interval_;
   Interval<Length> mean_periapsis_distance_interval_;
   Interval<Length> mean_apoapsis_distance_interval_;
@@ -217,8 +212,6 @@ class OrbitalElements {
   Interval<Angle> mean_longitude_of_ascending_node_interval_;
   Interval<Angle> mean_argument_of_periapsis_interval_;
 };
-
-inline Logger OrbitalElements::logger_(TEMP_DIR / "orbital_elements.wl");
 
 }  // namespace internal
 

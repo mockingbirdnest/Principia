@@ -142,7 +142,6 @@ class FlightPlanTest : public testing::Test {
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
-    google::LogToStderr();
   }
 
   NavigationManœuvre::Burn MakeTangentBurn(

@@ -167,43 +167,26 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
   }
 
   auto const osculating_elements =
-      [&](Instant const& time) -> KeplerianElements<Frame> {
-    auto elt = KeplerOrbit<Frame>(primary,
-                                  secondary,
-                                  relative_degrees_of_freedom_at_time(time),
-                                  time).elements_at_epoch();
-    RelativeDegreesOfFreedom<Frame> const rdof =
-        relative_degrees_of_freedom_at_time(time);
-    logger_.Append("rdof",
-                   std::tuple(time, rdof),
-                   ExpressInSIUnits);
-    logger_.Append("osculatingElements",
-                   std::tuple(time,
-                              *elt.longitude_of_periapsis,
-                              *elt.mean_anomaly,
-                              *elt.true_anomaly),
-                   ExpressInSIUnits);
-    return elt;
+      [&primary, &secondary, &relative_degrees_of_freedom_at_time](
+          Instant const& time) -> KeplerianElements<Frame> {
+    return KeplerOrbit<Frame>(primary,
+                              secondary,
+                              relative_degrees_of_freedom_at_time(time),
+                              time)
+        .elements_at_epoch();
   };
 
   auto const wound_osculating_λ =
-      [&](Instant const& time) -> Angle {
+      [&osculating_elements](Instant const& time) -> Angle {
     auto const elements = osculating_elements(time);
     Angle const& ϖ = *elements.longitude_of_periapsis;
     Angle const& M = *elements.mean_anomaly;
-    logger_.Append(
-        "woundOsculating", std::tuple(time, ϖ, M), ExpressInSIUnits);
-    //LOG(WARNING) << "t=" << time - (t_min + (t_max - t_min) / 2) << " ϖ=" << ϖ
-    //             << " M=" << M;
     return ϖ + M;
   };
 
   KeplerianElements<Frame> const initial_osculating_elements =
       osculating_elements(t_min);
   Time const estimated_period = *initial_osculating_elements.period;
-  LOG(WARNING) << "e=" << *initial_osculating_elements.eccentricity
-               << " a="
-               << *initial_osculating_elements.semimajor_axis;
   if (!IsFinite(estimated_period) || estimated_period <= Time{}) {
     return absl::OutOfRangeError("estimated period is " +
                                  DebugString(estimated_period));
@@ -216,14 +199,9 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
                      1);
   for (Instant t = t_min; t <= t_max; t += third_of_estimated_period) {
     Angle const λ = wound_osculating_λ(t);
-    LOG(WARNING) << "t=" << t - (t_min + (t_max - t_min) / 2) << " λ=" << λ;
     unwound_λs.push_back(unwound_λs.empty() ? λ
                                             : UnwindFrom(unwound_λs.back(), λ));
-    logger_.Append(
-        "unwound", std::tuple(t, unwound_λs.back()), ExpressInSIUnits);
   }
-  LOG(WARNING) << "toep=" << third_of_estimated_period
-               << " ep=" << estimated_period;
 
   auto const osculating_equinoctial_elements =
       [&osculating_elements, t_min, third_of_estimated_period, &unwound_λs](
@@ -250,8 +228,6 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
             .qʹ = cotg_½i * cos_Ω};
   };
 
-  logger_.Set("tMin", t_min, ExpressInSIUnits);
-  logger_.Set("tMax", t_max, ExpressInSIUnits);
   auto const sidereal_period =
       SiderealPeriod(osculating_equinoctial_elements, t_min, t_max);
   RETURN_IF_ERROR(sidereal_period);
@@ -306,13 +282,10 @@ absl::StatusOr<Time> OrbitalElements::SiderealPeriod(
     Instant const& t_max) {
   Time const Δt = t_max - t_min;
   Instant const t0 = t_min + Δt / 2;
-  logger_.Set("tMid", t0, ExpressInSIUnits);
   Product<Angle, Square<Time>> const ʃ_λt_dt = AutomaticClenshawCurtis(
-      [&](Instant const& t) -> Product<Angle, Time> {
+      [&equinoctial_elements, &t0](
+          Instant const& t) -> Product<Angle, Time> {
         // TODO(egg): Consider computing only λ.
-        logger_.Append("integrand",
-                       std::tuple(t, equinoctial_elements(t).λ),
-                       ExpressInSIUnits);
         return equinoctial_elements(t).λ * (t - t0);
       },
       t_min,
@@ -369,14 +342,9 @@ OrbitalElements::MeanEquinoctialElements(
       }};
 
   std::vector<EquinoctialElements> mean_elements;
-  auto const append_state = [&](ODE::State const& state) {
+  auto const append_state = [&mean_elements](ODE::State const& state) {
     Instant const& t = state.s.value;
     auto const& [a, h, k, λ, p, q, pʹ, qʹ] = state.y;
-    LOG(WARNING) << "  λ=" << λ << " ϖ=" << ArcTan(h.value, k.value)
-                 << " M=" << λ.value - ArcTan(h.value, k.value);
-    logger_.Append("appendState",
-                    std::tuple(t, λ.value, h.value, k.value),
-                    ExpressInSIUnits);
     mean_elements.push_back(EquinoctialElements{.t = t,
                                                 .a = a.value,
                                                 .h = h.value,
@@ -407,10 +375,6 @@ OrbitalElements::MeanEquinoctialElements(
     // case we want to reject the step, but not drive it all the way to 0,
     // hence the |std::max|.
     auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
-
-    LOG(WARNING) << "step=" << step << " period=" << period
-                 << " braking=" << braking_factor << " toltoerr="
-                 << std::max(0.5, braking_factor * eerk_a_tolerance / Abs(Δa));
     return std::max(0.5, braking_factor * eerk_a_tolerance / Abs(Δa));
   };
 
@@ -479,7 +443,6 @@ OrbitalElements::MeanEquinoctialElements(
                            /*safety_factor=*/0.9));
   RETURN_IF_ERROR(instance->Solve(t₂));
 
-  LOG(WARNING) << mean_elements.size();
   return mean_elements;
 }
 
@@ -523,11 +486,6 @@ OrbitalElements::ToClassicalElements(
          .mean_anomaly =  M,
          .periapsis_distance = (1 - e) * equinoctial.a,
          .apoapsis_distance = (1 + e) * equinoctial.a});
-    logger_.Append(
-        "classical",
-        std::tuple(
-            equinoctial.t, equinoctial.λ, ϖ, M, equinoctial.h, equinoctial.k),
-        ExpressInSIUnits);
     previous_Ω = Ω;
     previous_ϖ = ϖ;
   }
@@ -573,8 +531,6 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
       [&interpolate_function_of_mean_classical_element, &t̄](Instant const& t) {
         return interpolate_function_of_mean_classical_element(
             [&t, &t̄](ClassicalElements const& elements) {
-              //LOG(WARNING) << "mean anomaly=" << elements.mean_anomaly
-              //             << " t=" << (t - t̄);
               return elements.mean_anomaly * (t - t̄);
             },
             t);

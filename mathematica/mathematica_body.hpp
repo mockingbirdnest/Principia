@@ -520,20 +520,20 @@ std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
   return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }
 
-//template<typename OptionalExpressIn>
-//std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
-//                          OptionalExpressIn express_in) {
-//  return ToMathematica(std::make_tuple((elements.t - J2000),
-//                                       elements.a,
-//                                       elements.h,
-//                                       elements.k,
-//                                       elements.λ,
-//                                       elements.p,
-//                                       elements.q,
-//                                       elements.pʹ,
-//                                       elements.qʹ),
-//                       express_in);
-//}
+template<typename OptionalExpressIn>
+std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
+                          OptionalExpressIn express_in) {
+  return ToMathematica(std::make_tuple((elements.t - J2000),
+                                       elements.a,
+                                       elements.h,
+                                       elements.k,
+                                       elements.λ,
+                                       elements.p,
+                                       elements.q,
+                                       elements.pʹ,
+                                       elements.qʹ),
+                       express_in);
+}
 
 template<typename T, typename OptionalExpressIn>
 std::string ToMathematica(std::optional<T> const& opt,
