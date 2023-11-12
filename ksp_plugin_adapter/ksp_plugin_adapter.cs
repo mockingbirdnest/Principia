@@ -386,6 +386,24 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
+  // If there is a target vessel, and that vessel is known to the plugin,
+  // returns it.  Otherwise returns null.
+  private Vessel TargetVessel() {
+    Vessel target = FlightGlobals.fetch.VesselTarget?.GetVessel();
+    string target_id = target?.id.ToString();
+    if (target_id != null && plugin_.HasVessel(target_id)) {
+      return target;
+    } else {
+      return null;
+    }
+  }
+
+  // Same as above but returns the GUID.
+  private string TargetVesselGuid() {
+    return TargetVessel().id.ToString();
+  }
+
+
   private delegate void BodyProcessor(CelestialBody body);
 
   private delegate void VesselProcessor(Vessel vessel);
@@ -457,11 +475,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         main_vessel != null && MapView.MapIsEnabled;
 
     if (ready_to_draw_active_vessel_trajectory) {
-      string target_id =
-          FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (!plotting_frame_selector_.target_frame_selected &&
-          target_id != null &&
-          plugin_.HasVessel(target_id)) {
+          TargetVesselGuid() is var target_id &&
+          target_id != null) {
         // TODO(phl): It's not nice that we are overriding the target vessel
         // parameters.
         AdaptiveStepParameters adaptive_step_parameters =
@@ -1774,12 +1790,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (MapView.MapIsEnabled && main_vessel_guid != null) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-      string target_id =
-          FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
       if (FlightGlobals.ActiveVessel != null &&
           !plotting_frame_selector_.target_frame_selected &&
-          target_id != null &&
-          plugin_.HasVessel(target_id)) {
+          TargetVesselGuid() is var target_id &&
+          target_id != null) {
         RenderPredictionMarkers(target_id, sun_world_position);
       }
       if (plugin_.FlightPlanExists(main_vessel_guid)) {
@@ -1923,10 +1937,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       return;
     }
 
-    var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-    if (target_vessel != null && !plugin_.HasVessel(target_vessel.id.ToString())) {
-      target_vessel = null;
-    }
+    var target_vessel = TargetVessel();
     if (plotting_frame_selector_.target != target_vessel) {
        plotting_frame_selector_.target = target_vessel;
        if (plotting_frame_selector_.target_frame_selected &&
@@ -2260,7 +2271,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void RenderPredictionMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.target_frame_selected) {
+    if (plotting_frame_selector_.target_frame_selected &&
+        TargetVessel() != null) {
       plugin_.RenderedPredictionNodes(vessel_guid,
                                       sun_world_position,
                                       MapNodePool.MaxNodesPerProvenance,
@@ -2339,7 +2351,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void RenderFlightPlanMarkers(string vessel_guid,
                                        XYZ sun_world_position) {
-    if (plotting_frame_selector_.target_frame_selected) {
+    if (plotting_frame_selector_.target_frame_selected &&
+        TargetVessel() != null) {
       plugin_.FlightPlanRenderedNodes(vessel_guid,
                                       sun_world_position,
                                       MapNodePool.MaxNodesPerProvenance,
