@@ -176,9 +176,6 @@
     <ClInclude Include="homothecy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="conformal_map.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -192,6 +189,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="space_transformations.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="homothecy_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -258,9 +258,6 @@
     </ClCompile>
     <ClCompile Include="traits_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="plane_test.cpp">
       <Filter>Test Files</Filter>

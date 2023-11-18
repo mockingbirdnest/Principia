@@ -5,7 +5,10 @@
     <RootNamespace>tools</RootNamespace>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
-  <Import Project="..\third_party_zfp.props" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+  </ImportGroup>
   <ItemDefinitionGroup>
     <CustomBuildStep>
       <Command>$(PrincipiaGenerateProfilesCommand)</Command>
@@ -15,8 +18,6 @@
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="generate_configuration.cpp" />
     <ClCompile Include="generate_kopernicus.cpp" />
     <ClCompile Include="generate_profiles.cpp" />

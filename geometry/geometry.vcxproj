@@ -4,6 +4,7 @@
     <ProjectGuid>{0FD08CDF-228C-48C6-8690-CF0A72CF6C69}</ProjectGuid>
     <RootNamespace>geometry</RootNamespace>
   </PropertyGroup>
+  <Import Project="..\shared\base.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClInclude Include="affine_map.hpp" />
@@ -65,10 +66,9 @@
     <ClInclude Include="symmetric_bilinear_form.hpp" />
     <ClInclude Include="symmetric_bilinear_form_body.hpp" />
     <ClInclude Include="traits.hpp" />
-    <ClInclude Include="\\Carpaccio\c$\Users\phl\Projects\GitHub\Principia\Principia\geometry\homothecy_body.hpp" />
+    <ClInclude Include="homothecy_body.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\cpuid.cpp" />
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="complexification_test.cpp" />
     <ClCompile Include="conformal_map_test.cpp" />

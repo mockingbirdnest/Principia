@@ -5,6 +5,8 @@
     <RootNamespace>quantities</RootNamespace>
     <ProjectName>quantities</ProjectName>
   </PropertyGroup>
+  <Import Project="..\shared\base.vcxitems" Label="Shared" />
+  <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClInclude Include="astronomy.hpp" />
@@ -33,8 +35,6 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />

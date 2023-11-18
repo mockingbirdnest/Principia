@@ -41,12 +41,6 @@
     <ClCompile Include="plugin_integration_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\journal\recorder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\journal\profiles.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -101,9 +95,6 @@
     <ClCompile Include="renderer_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\version.generated.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="interface_renderer_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -152,9 +143,6 @@
     <ClCompile Include="fake_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\numerics\cbrt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="equator_relevance_threshold_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -167,34 +155,13 @@
     <ClCompile Include="..\ksp_plugin\orbit_analyser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\astronomy\standard_product_3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_part.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\flags.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\zfp_compressor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\numerics\elliptic_functions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\numerics\elliptic_integrals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="plugin_compatibility_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="plugin_io.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\geometric_potential_plotter.cpp">

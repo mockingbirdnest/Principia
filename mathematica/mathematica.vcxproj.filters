@@ -20,16 +20,7 @@
     <ClCompile Include="integrator_plots.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\bundle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="retrobop_dynamical_stability.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\numerics\cbrt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\physics\protector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mathematica_test.cpp">
@@ -38,14 +29,8 @@
     <ClCompile Include="error_analysis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="logger_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

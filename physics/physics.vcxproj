@@ -4,16 +4,10 @@
     <ProjectGuid>{41332E9A-729C-45C4-BDE1-A567608DADF2}</ProjectGuid>
     <RootNamespace>physics</RootNamespace>
   </PropertyGroup>
+  <Import Project="..\shared\base.vcxitems" Label="Shared" />
+  <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
+  <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="..\third_party_zfp.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="..\third_party_zfp.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
-    <Import Project="..\third_party_zfp.props" />
-  </ImportGroup>
   <ItemGroup>
     <ClInclude Include="apsides.hpp" />
     <ClInclude Include="apsides_body.hpp" />
@@ -101,13 +95,6 @@
     <ClInclude Include="clientele.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\base\cpuid.cpp" />
-    <ClCompile Include="..\base\flags.cpp" />
-    <ClCompile Include="..\base\zfp_compressor.cpp" />
-    <ClCompile Include="..\geometry\instant.cpp" />
-    <ClCompile Include="..\numerics\cbrt.cpp" />
-    <ClCompile Include="..\numerics\elliptic_functions.cpp" />
-    <ClCompile Include="..\numerics\elliptic_integrals.cpp" />
     <ClCompile Include="analytical_series_test.cpp" />
     <ClCompile Include="apsides_test.cpp" />
     <ClCompile Include="barycentric_rotating_reference_frame_test.cpp" />

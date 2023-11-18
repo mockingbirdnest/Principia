@@ -112,9 +112,6 @@
     <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="embedded_explicit_runge_kutta_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -123,9 +120,6 @@
     </ClCompile>
     <ClCompile Include="explicit_linear_multistep_integrator_test.cpp">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

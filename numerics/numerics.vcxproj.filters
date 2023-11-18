@@ -331,9 +331,6 @@
     <ClCompile Include="piecewise_poisson_series_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\base\cpuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="fma_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -360,12 +357,6 @@
     </ClCompile>
     <ClCompile Include="global_optimization_test.cc">
       <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\testing_utilities\optimization_test_functions.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\geometry\instant.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="angle_reduction_test.cpp">
       <Filter>Test Files</Filter>
