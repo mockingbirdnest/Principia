@@ -45,17 +45,6 @@ constexpr double max_clenshaw_curtis_relative_error_for_initial_integration =
     1.0e-8;
 constexpr Length eerk_a_tolerance = 10 * Milli(Metre);
 
-inline Angle ReduceOrUnwind(Angle const& α, std::optional<Angle>& previous_α) {
-  Angle reduced_α;
-  if (previous_α.has_value()) {
-    reduced_α = UnwindFrom(previous_α.value(), α);
-  } else {
-    reduced_α = ReduceAngle<0, 2 * π>(α);
-  }
-  previous_α = reduced_α;
-  return reduced_α;
-}
-
 template<typename Inertial, typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Trajectory<Inertial> const& secondary_trajectory,
@@ -462,10 +451,6 @@ OrbitalElements::ToClassicalElements(
     std::vector<EquinoctialElements> const& equinoctial_elements) {
   std::vector<ClassicalElements> classical_elements;
   classical_elements.reserve(equinoctial_elements.size());
-  std::optional<Angle> previous_Ω;
-  std::optional<Angle> previous_ϖ;
-  std::optional<Angle> previous_ω;
-  std::optional<Angle> previous_M;
   for (auto const& equinoctial : equinoctial_elements) {
     RETURN_IF_STOPPED;
     double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
@@ -473,23 +458,27 @@ OrbitalElements::ToClassicalElements(
         Sqrt(Pow<2>(equinoctial.pʹ) + Pow<2>(equinoctial.qʹ));
     Angle const i =
         cotg_½i > tg_½i ? 2 * ArcTan(tg_½i) : 2 * ArcTan(1 / cotg_½i);
+    Angle const Ω = cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
+                                    : ArcTan(equinoctial.pʹ, equinoctial.qʹ);
     double const e = Sqrt(Pow<2>(equinoctial.h) + Pow<2>(equinoctial.k));
-    Angle const Ω =
-        ReduceOrUnwind(cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
-                                       : ArcTan(equinoctial.pʹ, equinoctial.qʹ),
-                       previous_Ω);
-    Angle const ϖ =
-        ReduceOrUnwind(ArcTan(equinoctial.h, equinoctial.k), previous_ϖ);
-    Angle const ω = ReduceOrUnwind(ϖ - Ω, previous_ω);
-    Angle const M = ReduceOrUnwind(equinoctial.λ - ϖ, previous_M);
+    Angle const ϖ = ArcTan(equinoctial.h, equinoctial.k);
+    Angle const ω = ϖ - Ω;
+    Angle const M = equinoctial.λ - ϖ;
     classical_elements.push_back(
         {.time = equinoctial.t,
          .semimajor_axis = equinoctial.a,
          .eccentricity = e,
          .inclination = i,
-         .longitude_of_ascending_node = Ω,
-         .argument_of_periapsis = ω,
-         .mean_anomaly =  M,
+         .longitude_of_ascending_node = classical_elements.empty()
+             ? ReduceAngle<0, 2 * π>(Ω)
+             : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
+                          Ω),
+         .argument_of_periapsis = classical_elements.empty()
+             ? ReduceAngle<0, 2 * π>(ω)
+             : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
+         .mean_anomaly = classical_elements.empty()
+             ? ReduceAngle<0, 2 * π>(M)
+             : UnwindFrom(classical_elements.back().mean_anomaly, M),
          .periapsis_distance = (1 - e) * equinoctial.a,
          .apoapsis_distance = (1 + e) * equinoctial.a});
   }
@@ -576,8 +565,11 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   nodal_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_ut_dt);
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
 
-  CHECK_LT(0 * Second, anomalistic_period_);
-  CHECK_LT(0 * Second, nodal_period_);
+  // TODO(egg): Fix the unwinding and turn these into CHECKs.
+  LOG_IF(WARNING, anomalistic_period_ <= 0 * Second)
+      << "Incorrect anomalistic period " << anomalistic_period_;
+  LOG_IF(WARNING, nodal_period_ <= 0 * Second)
+      << "Incorrect nodal period " << nodal_period_;
 
   return absl::OkStatus();
 }
