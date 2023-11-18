@@ -565,10 +565,9 @@ inline absl::Status OrbitalElements::ComputePeriodsAndPrecession() {
   nodal_period_ = 2 * π * Radian * Δt³ / (12 * ʃ_ut_dt);
   nodal_precession_ = 12 * ʃ_Ωt_dt / Δt³;
 
-  // TODO(egg): Fix the unwinding and turn these into CHECKs.
-  LOG_IF(WARNING, anomalistic_period_ <= 0 * Second)
+  LOG_IF(ERROR, anomalistic_period_ <= 0 * Second)
       << "Incorrect anomalistic period " << anomalistic_period_;
-  LOG_IF(WARNING, nodal_period_ <= 0 * Second)
+  LOG_IF(ERROR, nodal_period_ <= 0 * Second)
       << "Incorrect nodal period " << nodal_period_;
 
   return absl::OkStatus();
