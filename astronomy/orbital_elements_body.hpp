@@ -45,6 +45,17 @@ constexpr double max_clenshaw_curtis_relative_error_for_initial_integration =
     1.0e-8;
 constexpr Length eerk_a_tolerance = 10 * Milli(Metre);
 
+inline Angle ReduceOrUnwind(Angle const& α, std::optional<Angle>& previous_α) {
+  Angle reduced_α;
+  if (previous_α.has_value()) {
+    reduced_α = UnwindFrom(previous_α.value(), α);
+  } else {
+    reduced_α = ReduceAngle<0, 2 * π>(α);
+  }
+  previous_α = reduced_α;
+  return reduced_α;
+}
+
 template<typename Inertial, typename PrimaryCentred>
 absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
     Trajectory<Inertial> const& secondary_trajectory,
@@ -453,6 +464,8 @@ OrbitalElements::ToClassicalElements(
   classical_elements.reserve(equinoctial_elements.size());
   std::optional<Angle> previous_Ω;
   std::optional<Angle> previous_ϖ;
+  std::optional<Angle> previous_ω;
+  std::optional<Angle> previous_M;
   for (auto const& equinoctial : equinoctial_elements) {
     RETURN_IF_STOPPED;
     double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
@@ -460,22 +473,15 @@ OrbitalElements::ToClassicalElements(
         Sqrt(Pow<2>(equinoctial.pʹ) + Pow<2>(equinoctial.qʹ));
     Angle const i =
         cotg_½i > tg_½i ? 2 * ArcTan(tg_½i) : 2 * ArcTan(1 / cotg_½i);
-    Angle Ω = cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
-                              : ArcTan(equinoctial.pʹ, equinoctial.qʹ);
-    if (previous_Ω.has_value()) {
-      Ω = UnwindFrom(previous_Ω.value(), Ω);
-    } else {
-      Ω = ReduceAngle<0, 2 * π>(Ω);
-    }
     double const e = Sqrt(Pow<2>(equinoctial.h) + Pow<2>(equinoctial.k));
-    Angle ϖ = ArcTan(equinoctial.h, equinoctial.k);
-    if (previous_ϖ.has_value()) {
-      ϖ = UnwindFrom(previous_ϖ.value(), ϖ);
-    } else {
-      ϖ = ReduceAngle<0, 2 * π>(ϖ);
-    }
-    Angle const ω = ϖ - Ω;
-    Angle const M = equinoctial.λ - ϖ;
+    Angle const Ω =
+        ReduceOrUnwind(cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
+                                       : ArcTan(equinoctial.pʹ, equinoctial.qʹ),
+                       previous_Ω);
+    Angle const ϖ =
+        ReduceOrUnwind(ArcTan(equinoctial.h, equinoctial.k), previous_ϖ);
+    Angle const ω = ReduceOrUnwind(ϖ - Ω, previous_ω);
+    Angle const M = ReduceOrUnwind(equinoctial.λ - ϖ, previous_M);
     classical_elements.push_back(
         {.time = equinoctial.t,
          .semimajor_axis = equinoctial.a,
@@ -486,8 +492,6 @@ OrbitalElements::ToClassicalElements(
          .mean_anomaly =  M,
          .periapsis_distance = (1 - e) * equinoctial.a,
          .apoapsis_distance = (1 + e) * equinoctial.a});
-    previous_Ω = Ω;
-    previous_ϖ = ϖ;
   }
   return classical_elements;
 }
