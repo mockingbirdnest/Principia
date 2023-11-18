@@ -400,7 +400,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   // Same as above but returns the GUID.
   private string TargetVesselGuid() {
-    return TargetVessel().id.ToString();
+    return TargetVessel()?.id.ToString();
   }
 
 
