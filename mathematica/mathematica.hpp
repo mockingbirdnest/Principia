@@ -218,6 +218,11 @@ template<typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(DegreesOfFreedom<F> const& degrees_of_freedom,
                           OptionalExpressIn express_in = std::nullopt);
 
+template<typename F, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(
+    RelativeDegreesOfFreedom<F> const& relative_degrees_of_freedom,
+    OptionalExpressIn express_in = std::nullopt);
+
 template<typename Tuple,
          typename = std::enable_if_t<is_tuple_v<Tuple>>,
          typename OptionalExpressIn = std::nullopt_t>
