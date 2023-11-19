@@ -68,7 +68,7 @@ class RigidMotion final {
   DegreesOfFreedom<ToFrame> operator()(
       DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const;
 
-  RigidMotion<ToFrame, FromFrame> Inverse() const;
+  RigidMotion<ToFrame, FromFrame> const& Inverse() const;
 
   template<template<typename, typename> typename SimilarMotion>
   SimilarMotion<FromFrame, ToFrame> Forget() const;
@@ -102,6 +102,13 @@ class RigidMotion final {
   AngularVelocity<FromFrame> angular_velocity_of_to_frame_;
   // d/dt rigid_transformation⁻¹(ToFrame::origin).
   Velocity<FromFrame> velocity_of_to_frame_origin_;
+
+  // Cache the inverse as it is used often and is fairly expensive to compute.
+  // We must use a pointer because the class |RigidMotion| is not completely
+  // defined at this place.  We want |RigidMotion| to be copyable, hence the use
+  // of a |shared_ptr| which has the right semantics (the inverse is computed
+  // once and shared among copies).
+  mutable std::shared_ptr<RigidMotion<ToFrame, FromFrame>> inverse_;
 
   template<typename, typename>
   friend class RigidMotion;
