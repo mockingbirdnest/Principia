@@ -1,10 +1,9 @@
 #pragma once
 
-#include <limits>
-#include <map>
 #include <set>
 #include <string>
 
+#include "absl/container/btree_map.h"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 
@@ -20,7 +19,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 
 // The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
-// key in an |std::map|.
+// key in a map.
 using GUID = std::string;
 
 // Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|
@@ -44,9 +43,9 @@ struct VesselByGUIDComparator {
 };
 
 template<typename T>
-using PartTo = std::map<not_null<Part*>,
-                        T,
-                        PartByPartIdComparator>;
+using PartTo = absl::btree_map<not_null<Part*>,
+                               T,
+                               PartByPartIdComparator>;
 using VesselSet = std::set<not_null<Vessel*>,
                            VesselByGUIDComparator>;
 using VesselConstSet = std::set<not_null<Vessel const*>,
