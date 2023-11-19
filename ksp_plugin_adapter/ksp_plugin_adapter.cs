@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEngine;
 using static principia.ksp_plugin_adapter.FrameType;
 
 namespace principia {
@@ -426,13 +425,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void ApplyToVesselsOnRails(VesselProcessor process_vessel) {
     // |process_vessels| may touch |Transform|s, so disable syncing.
-    Physics.autoSyncTransforms = false;
+    UnityEngine.Physics.autoSyncTransforms = false;
     foreach (Vessel vessel in FlightGlobals.Vessels.Where(
         is_manageable_on_rails)) {
       process_vessel(vessel);
     }
-    Physics.SyncTransforms();
-    Physics.autoSyncTransforms = true;
+    UnityEngine.Physics.SyncTransforms();
+    UnityEngine.Physics.autoSyncTransforms = true;
   }
 
   private void UpdateBody(CelestialBody body, double universal_time) {
@@ -508,7 +507,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                           UT : universal_time);
       if (vessel.loaded) {
         Part root_part = vessel.rootPart;
-        Rigidbody root_part_rb = root_part.rb;
+        UnityEngine.Rigidbody root_part_rb = root_part.rb;
         var origin = new Origin{
             reference_part_is_at_origin = true,
             reference_part_is_unmoving = true,
@@ -519,7 +518,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         foreach (Part part in vessel.parts.Where(part => part.rb != null &&
                                                    plugin_.PartIsTruthful(
                                                        part.flightID))) {
-          Rigidbody part_rb = part.rb;
+          UnityEngine.Rigidbody part_rb = part.rb;
           // TODO(egg): What if the plugin doesn't have the part? this seems
           // brittle.
           // NOTE(egg): I am not sure what the origin is here, as we are
@@ -1184,7 +1183,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                    out bool inserted);
         if (!vessel.packed) {
           foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
-            Rigidbody part_rb = part.rb;
+            UnityEngine.Rigidbody part_rb = part.rb;
             QP degrees_of_freedom;
             if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
               degrees_of_freedom =
@@ -1392,7 +1391,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           if (main_body_change_countdown_ == 0 &&
               last_main_body_ == FlightGlobals.ActiveVessel?.mainBody) {
-            Rigidbody part_rb = part.rb;
+            UnityEngine.Rigidbody part_rb = part.rb;
             plugin_.PartSetApparentRigidMotion(
                 part.flightID,
                 // TODO(egg): use the centre of mass.
@@ -1427,7 +1426,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
         // We are going to touch plenty of |Transform|s, so we will prevent
         // Unity from syncing with the physics system all the time.
-        Physics.autoSyncTransforms = false;
+        UnityEngine.Physics.autoSyncTransforms = false;
 
         Vector3d q_correction_at_root_part = Vector3d.zero;
         Vector3d v_correction_at_root_part = Vector3d.zero;
@@ -1450,7 +1449,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           }
 
           foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
-            Rigidbody part_rb = part.rb;
+            UnityEngine.Rigidbody part_rb = part.rb;
             QPRW part_actual_motion =
                 plugin_.PartGetActualRigidMotion(part.flightID, origin);
             QP part_actual_degrees_of_freedom = part_actual_motion.qp;
@@ -1482,7 +1481,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         foreach (physicalObject physical_object in FlightGlobals.
             physicalObjects.Where(o => o != null && o.rb != null)) {
           // TODO(egg): This is no longer sensible.
-          Rigidbody physical_object_rb = physical_object.rb;
+          UnityEngine.Rigidbody physical_object_rb = physical_object.rb;
           physical_object_rb.position += q_correction_at_root_part;
           physical_object_rb.transform.position += q_correction_at_root_part;
           physical_object_rb.velocity += v_correction_at_root_part;
@@ -1508,8 +1507,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // them at the previous instant, and will propagate them at the beginning
         // of the next frame...
       }
-      Physics.SyncTransforms();
-      Physics.autoSyncTransforms = true;
+      UnityEngine.Physics.SyncTransforms();
+      UnityEngine.Physics.autoSyncTransforms = true;
 
       if (last_main_body_ != FlightGlobals.ActiveVessel?.mainBody) {
         main_body_change_countdown_ = 1;
