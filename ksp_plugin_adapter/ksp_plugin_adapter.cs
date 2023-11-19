@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using KSP.Localization;
-
+using UnityEngine;
 using static principia.ksp_plugin_adapter.FrameType;
 
 namespace principia {
@@ -426,10 +425,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void ApplyToVesselsOnRails(VesselProcessor process_vessel) {
+    // |process_vessels| may touch |Transform|s, so disable syncing.
+    Physics.autoSyncTransforms = false;
     foreach (Vessel vessel in FlightGlobals.Vessels.Where(
         is_manageable_on_rails)) {
       process_vessel(vessel);
     }
+    Physics.SyncTransforms();
+    Physics.autoSyncTransforms = true;
   }
 
   private void UpdateBody(CelestialBody body, double universal_time) {
@@ -504,9 +507,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                           refBody : vessel.orbit.referenceBody,
                                           UT : universal_time);
       if (vessel.loaded) {
+        Part root_part = vessel.rootPart;
+        Rigidbody root_part_rb = root_part.rb;
+        var origin = new Origin{
+            reference_part_is_at_origin = true,
+            reference_part_is_unmoving = true,
+            main_body_centre_in_world =
+                (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+            reference_part_id = root_part.flightID
+        };
         foreach (Part part in vessel.parts.Where(part => part.rb != null &&
                                                    plugin_.PartIsTruthful(
                                                        part.flightID))) {
+          Rigidbody part_rb = part.rb;
           // TODO(egg): What if the plugin doesn't have the part? this seems
           // brittle.
           // NOTE(egg): I am not sure what the origin is here, as we are
@@ -516,25 +529,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           // TODO(egg): check that the vessel is moved *after* this.  Shouldn't
           // we be calling vessel.orbitDriver.updateFromParameters() after
           // setting the orbit anyway?
-          QPRW part_actual_motion = plugin_.PartGetActualRigidMotion(
-              part.flightID,
-              new Origin{
-                  reference_part_is_at_origin = true,
-                  reference_part_is_unmoving = true,
-                  main_body_centre_in_world =
-                      (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
-                  reference_part_id = vessel.rootPart.flightID
-              });
-          part.rb.position = vessel.rootPart.rb.position +
-                             (Vector3d)part_actual_motion.qp.q;
-          part.rb.transform.position = vessel.rootPart.rb.position +
-                                       (Vector3d)part_actual_motion.qp.q;
-          part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
-          part.rb.transform.rotation =
-              (UnityEngine.QuaternionD)part_actual_motion.r;
-          part.rb.velocity = vessel.rootPart.rb.velocity +
-                             (Vector3d)part_actual_motion.qp.p;
-          part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
+          QPRW part_actual_motion =
+              plugin_.PartGetActualRigidMotion(part.flightID, origin);
+          QP part_actual_degrees_of_freedom = part_actual_motion.qp;
+          var part_position = (Vector3d)part_actual_degrees_of_freedom.q;
+          var part_velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+          var part_rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+          var part_angular_velocity = (Vector3d)part_actual_motion.w;
+          part_rb.position = root_part_rb.position + part_position;
+          part_rb.transform.position = root_part_rb.position + part_position;
+          part_rb.rotation = part_rotation;
+          part_rb.transform.rotation = part_rotation;
+          part_rb.velocity = root_part_rb.velocity + part_velocity;
+          part_rb.angularVelocity = part_angular_velocity;
         }
       }
     }
@@ -1177,6 +1184,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                    out bool inserted);
         if (!vessel.packed) {
           foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
+            Rigidbody part_rb = part.rb;
             QP degrees_of_freedom;
             if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
               degrees_of_freedom =
@@ -1190,9 +1198,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                         "WaitForFixedUpdate.  Linearly extrapolating its " +
                         "position at the previous frame.");
               degrees_of_freedom = new QP{
-                  q = (XYZ)((Vector3d)part.rb.position -
-                            Δt * (Vector3d)part.rb.velocity),
-                  p = (XYZ)(Vector3d)part.rb.velocity
+                  q = (XYZ)((Vector3d)part_rb.position -
+                            Δt * (Vector3d)part_rb.velocity),
+                  p = (XYZ)(Vector3d)part_rb.velocity
               };
             }
             // In the first few frames after spawning a Kerbal, its physicsMass is
@@ -1203,18 +1211,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             plugin_.InsertOrKeepLoadedPart(
                 part.flightID,
                 part.name,
-                part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
-                (XYZ)(Vector3d)part.rb.centerOfMass,
-                (XYZ)(Vector3d)part.rb.inertiaTensor,
-                (WXYZ)(UnityEngine.QuaternionD)part.rb.inertiaTensorRotation,
+                part.physicsMass == 0 ? part_rb.mass : part.physicsMass,
+                (XYZ)(Vector3d)part_rb.centerOfMass,
+                (XYZ)(Vector3d)part_rb.inertiaTensor,
+                (WXYZ)(UnityEngine.QuaternionD)part_rb.inertiaTensorRotation,
                 (from PartModule module in part.Modules
                  select module as ModuleEngines).Any(is_lit_solid_booster),
                 vessel.id.ToString(),
                 vessel.mainBody.flightGlobalsIndex,
                 main_body_degrees_of_freedom,
                 degrees_of_freedom,
-                (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-                (XYZ)(Vector3d)part.rb.angularVelocity,
+                (WXYZ)(UnityEngine.QuaternionD)part_rb.rotation,
+                (XYZ)(Vector3d)part_rb.angularVelocity,
                 Δt);
             if (part_id_to_intrinsic_torque_.ContainsKey(part.flightID)) {
               plugin_.PartApplyIntrinsicTorque(part.flightID,
@@ -1279,7 +1287,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       // Here, the |CollisionReporter.collisions| are the collisions that occurred
       // in the physics simulation.
       foreach (Vessel vessel1 in FlightGlobals.Vessels.Where(
-          v => !v.packed && is_manageable(v))) {
+                   v => !v.packed && is_manageable(v))) {
         if (plugin_.HasVessel(vessel1.id.ToString())) {
           if (vessel1.isEVA &&
               (vessel1.evaController.OnALadder ||
@@ -1384,13 +1392,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           if (main_body_change_countdown_ == 0 &&
               last_main_body_ == FlightGlobals.ActiveVessel?.mainBody) {
+            Rigidbody part_rb = part.rb;
             plugin_.PartSetApparentRigidMotion(
                 part.flightID,
                 // TODO(egg): use the centre of mass.
-                new QP{q = (XYZ)(Vector3d)part.rb.position,
-                    p = (XYZ)(Vector3d)part.rb.velocity},
-                (WXYZ)(UnityEngine.QuaternionD)part.rb.rotation,
-                (XYZ)(Vector3d)part.rb.angularVelocity);
+                new QP{q = (XYZ)(Vector3d)part_rb.position,
+                    p = (XYZ)(Vector3d)part_rb.velocity},
+                (WXYZ)(UnityEngine.QuaternionD)part_rb.rotation,
+                (XYZ)(Vector3d)part_rb.angularVelocity);
           }
         }
       }
@@ -1416,8 +1425,22 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (has_active_manageable_vessel() &&
           !FlightGlobals.ActiveVessel.packed &&
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+        // We are going to touch plenty of |Transform|s, so we will prevent
+        // Unity from syncing with the physics system all the time.
+        Physics.autoSyncTransforms = false;
+
         Vector3d q_correction_at_root_part = Vector3d.zero;
         Vector3d v_correction_at_root_part = Vector3d.zero;
+        CelestialBody main_body = FlightGlobals.ActiveVessel.mainBody;
+        Part root_part = FlightGlobals.ActiveVessel.rootPart;
+        Origin origin = new Origin{
+            reference_part_is_at_origin  = FloatingOrigin.fetch.continuous,
+            reference_part_is_unmoving =
+                krakensbane_.FrameVel != Vector3d.zero,
+            main_body_centre_in_world = (XYZ)main_body.position,
+            reference_part_id = root_part.flightID
+        };
+
         foreach (Vessel vessel in FlightGlobals.Vessels.Where(v => !v.packed)) {
           // TODO(egg): if I understand anything, there should probably be a
           // special treatment for loaded packed vessels.  I don't understand
@@ -1425,25 +1448,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           if (!plugin_.HasVessel(vessel.id.ToString())) {
             continue;
           }
+
           foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
-            QPRW part_actual_motion = plugin_.PartGetActualRigidMotion(
-                part.flightID,
-                new Origin{
-                    reference_part_is_at_origin  =
-                        FloatingOrigin.fetch.continuous,
-                    reference_part_is_unmoving =
-                        krakensbane_.FrameVel != Vector3d.zero,
-                    main_body_centre_in_world = (XYZ)FlightGlobals.ActiveVessel.
-                        mainBody.position,
-                    reference_part_id =
-                        FlightGlobals.ActiveVessel.rootPart.flightID
-                });
-            if (part == FlightGlobals.ActiveVessel.rootPart) {
-              QP part_actual_degrees_of_freedom = part_actual_motion.qp;
-              q_correction_at_root_part =
-                  (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
-              v_correction_at_root_part =
-                  (Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity;
+            Rigidbody part_rb = part.rb;
+            QPRW part_actual_motion =
+                plugin_.PartGetActualRigidMotion(part.flightID, origin);
+            QP part_actual_degrees_of_freedom = part_actual_motion.qp;
+            var part_position = (Vector3d)part_actual_degrees_of_freedom.q;
+            var part_velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+            var part_rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
+            var part_angular_velocity = (Vector3d)part_actual_motion.w;
+            if (part == root_part) {
+              q_correction_at_root_part = part_position - part_rb.position;
+              v_correction_at_root_part = part_velocity - part_rb.velocity;
             }
 
             // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
@@ -1453,37 +1470,29 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             // performing this correction after the physics step.
             // See https://github.com/mockingbirdnest/Principia/pull/1427,
             // https://github.com/mockingbirdnest/Principia/issues/1307#issuecomment-478337241.
-            part.rb.position = (Vector3d)part_actual_motion.qp.q;
-            part.rb.transform.position = (Vector3d)part_actual_motion.qp.q;
-            part.rb.rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
-            part.rb.transform.rotation =
-                (UnityEngine.QuaternionD)part_actual_motion.r;
+            part_rb.position = part_position;
+            part_rb.transform.position = part_position;
+            part_rb.rotation = part_rotation;
+            part_rb.transform.rotation = part_rotation;
 
-            part.rb.velocity = (Vector3d)part_actual_motion.qp.p;
-            part.rb.angularVelocity = (Vector3d)part_actual_motion.w;
+            part_rb.velocity = part_velocity;
+            part_rb.angularVelocity = part_angular_velocity;
           }
         }
         foreach (physicalObject physical_object in FlightGlobals.
             physicalObjects.Where(o => o != null && o.rb != null)) {
           // TODO(egg): This is no longer sensible.
-          physical_object.rb.position += q_correction_at_root_part;
-          physical_object.rb.transform.position += q_correction_at_root_part;
-          physical_object.rb.velocity += v_correction_at_root_part;
+          Rigidbody physical_object_rb = physical_object.rb;
+          physical_object_rb.position += q_correction_at_root_part;
+          physical_object_rb.transform.position += q_correction_at_root_part;
+          physical_object_rb.velocity += v_correction_at_root_part;
         }
         QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
-            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-            new Origin{
-                reference_part_is_at_origin  = FloatingOrigin.fetch.continuous,
-                reference_part_is_unmoving =
-                    krakensbane_.FrameVel != Vector3d.zero,
-                main_body_centre_in_world =
-                    (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
-                reference_part_id = FlightGlobals.ActiveVessel.rootPart.flightID
-            },
+            main_body.flightGlobalsIndex,
+            origin,
             plugin_.CurrentTime());
         krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
-        Vector3d offset = (Vector3d)main_body_dof.q -
-                          FlightGlobals.ActiveVessel.mainBody.position;
+        Vector3d offset = (Vector3d)main_body_dof.q - main_body.position;
         // We cannot use FloatingOrigin.SetOffset to move the world here, because
         // as far as I can tell, that does not move the bubble relative to the
         // rest of the universe.
@@ -1499,6 +1508,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // them at the previous instant, and will propagate them at the beginning
         // of the next frame...
       }
+      Physics.SyncTransforms();
+      Physics.autoSyncTransforms = true;
 
       if (last_main_body_ != FlightGlobals.ActiveVessel?.mainBody) {
         main_body_change_countdown_ = 1;

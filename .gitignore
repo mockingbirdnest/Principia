@@ -115,6 +115,9 @@ temp/
 # Generated files
 *.generated.*
 
+# Unity
+unity/
+
 # Vagrant
 .vagrant/
 
