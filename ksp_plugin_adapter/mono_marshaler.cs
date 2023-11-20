@@ -29,15 +29,12 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
   void ICustomMarshaler.CleanUpManagedData(object managed_object) {}
 
   void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {
-    IntPtr actual_native_data = IntPtr.Zero;
+    bool found;
     lock (allocated_intptrs_) {
-      if (allocated_intptrs_.Contains(native_data)) {
-        actual_native_data = native_data;
-        allocated_intptrs_.Remove(native_data);
-      }
+      found = allocated_intptrs_.Remove(native_data);
     }
-    if (actual_native_data != IntPtr.Zero) {
-      CleanUpNativeDataImplementation(actual_native_data);
+    if (found) {
+      CleanUpNativeDataImplementation(native_data);
     }
   }
 
@@ -51,8 +48,8 @@ internal abstract class MonoMarshaler : ICustomMarshaler {
       return IntPtr.Zero;
     }
     IntPtr result = MarshalManagedToNativeImplementation(managed_object);
-    lock (allocated_intptrs_) {
-      if (result != IntPtr.Zero) {
+    if (result != IntPtr.Zero) {
+      lock (allocated_intptrs_) {
         allocated_intptrs_.Add(result);
       }
     }
