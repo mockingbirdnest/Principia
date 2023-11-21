@@ -45,8 +45,16 @@ internal partial class Status {
 }
 
 public partial struct XYZ {
-  public static explicit operator XYZ(Vector3d v) {
+  public static explicit operator XYZ(UnityEngine.Vector3 v) {
     return new XYZ{ x = v.x, y = v.y, z = v.z };
+  }
+
+  public static explicit operator XYZ(Vector3d v) {
+    return new XYZ { x = v.x, y = v.y, z = v.z };
+  }
+
+  public static explicit operator UnityEngine.Vector3(XYZ v) {
+    return new UnityEngine.Vector3((float)v.x, (float)v.y, (float)v.z);
   }
 
   public static explicit operator Vector3d(XYZ v) {
@@ -55,6 +63,10 @@ public partial struct XYZ {
 }
 
 internal partial struct WXYZ {
+  public static explicit operator WXYZ(UnityEngine.Quaternion q) {
+    return new WXYZ{ w = q.w, x = q.x, y = q.y, z = q.z };
+  }
+
   public static explicit operator WXYZ(UnityEngine.QuaternionD q) {
     return new WXYZ{ w = q.w, x = q.x, y = q.y, z = q.z };
   }
