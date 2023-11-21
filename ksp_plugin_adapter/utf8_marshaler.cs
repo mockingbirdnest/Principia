@@ -68,10 +68,12 @@ internal class NoOwnershipTransferUTF8Marshaler : UTF8Marshaler {
     }
     int size = utf8_.GetByteCount(value);
     IntPtr buffer = Marshal.AllocHGlobal(size + 1);
-    byte[] bytes = new byte[size + 1];
-    utf8_.GetBytes(value, 0, value.Length, bytes, 0);
-    bytes[size] = 0;
-    Marshal.Copy(bytes, 0, buffer, size + 1);
+    unsafe {
+      fixed (char* p = value) {
+        utf8_.GetBytes(p, value.Length, (byte*)buffer.ToPointer(), size);
+      }
+    }
+    Marshal.WriteByte(buffer, size, 0);
     return buffer;
   }
 
