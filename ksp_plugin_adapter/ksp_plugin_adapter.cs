@@ -537,9 +537,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           var part_rotation = (UnityEngine.QuaternionD)part_actual_motion.r;
           var part_angular_velocity = (Vector3d)part_actual_motion.w;
           part_rb.position = root_part_rb.position + part_position;
-          part_rb.transform.position = root_part_rb.position + part_position;
           part_rb.rotation = part_rotation;
-          part_rb.transform.rotation = part_rotation;
+          part_rb.transform.SetPositionAndRotation(
+              root_part_rb.position + part_position,
+              part_rotation);
           part_rb.velocity = root_part_rb.velocity + part_velocity;
           part_rb.angularVelocity = part_angular_velocity;
         }
@@ -587,10 +588,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     return UnmanageabilityReasons(vessel) == null;
   }
 
-  public static bool is_lit_solid_booster(ModuleEngines module) {
-    return module != null &&
-           module.EngineIgnited &&
-           module.engineType == EngineType.SolidBooster;
+  public static bool is_lit_solid_booster(Part part) {
+    foreach (PartModule module in part.Modules) {
+      var module_engines = module as ModuleEngines;
+      if (module_engines != null &&
+          module_engines.EngineIgnited &&
+          module_engines.engineType == EngineType.SolidBooster) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private string UnmanageabilityReasons(Vessel vessel) {
@@ -1152,8 +1159,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         yield break;
       }
 
-      // We are going to touch plenty of |Transform|s, so we will prevent
-      // Unity from syncing with the physics system all the time.
+      // We are not changing the |Transform|s, but if we don't disable auto-
+      // sync the profiles show |SyncColliderTransform|.
       UnityEngine.Physics.autoSyncTransforms = false;
 
       double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
@@ -1169,6 +1176,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
       // the physics step.  See also #1281.
       foreach (Vessel vessel in FlightGlobals.Vessels) {
+        int main_body_index = vessel.mainBody.flightGlobalsIndex;
         string vessel_guid = vessel.id.ToString();
         string unmanageability_reasons = UnmanageabilityReasons(vessel);
         if (unmanageability_reasons != null) {
@@ -1181,7 +1189,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
         plugin_.InsertOrKeepVessel(vessel_guid,
                                    vessel.vesselName,
-                                   vessel.mainBody.flightGlobalsIndex,
+                                   main_body_index,
                                    !vessel.packed,
                                    out bool inserted);
         if (!vessel.packed) {
@@ -1189,11 +1197,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
             UnityEngine.Rigidbody part_rb = part.rb;
             uint part_id = part.flightID;
-            QP degrees_of_freedom;
-            if (part_id_to_degrees_of_freedom_.ContainsKey(part_id)) {
-              degrees_of_freedom =
-                  part_id_to_degrees_of_freedom_[part_id];
-            } else {
+            if (!part_id_to_degrees_of_freedom_.TryGetValue(
+                    part_id,
+                    out QP degrees_of_freedom)) {
               // Assumptions about the invariants of KSP will invariably fail.
               // This is a graceful fallback.
               Log.Error("Unpacked part " + part.name + " (" +
@@ -1219,35 +1225,33 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 (XYZ)part_rb.centerOfMass,
                 (XYZ)part_rb.inertiaTensor,
                 (WXYZ)part_rb.inertiaTensorRotation,
-                (from PartModule module in part.Modules
-                 select module as ModuleEngines).Any(is_lit_solid_booster),
+                is_lit_solid_booster(part),
                 vessel_guid,
-                vessel.mainBody.flightGlobalsIndex,
+                main_body_index,
                 main_body_degrees_of_freedom,
                 degrees_of_freedom,
                 (WXYZ)part_rb.rotation,
                 (XYZ)part_rb.angularVelocity,
                 Δt);
-            if (part_id_to_intrinsic_torque_.ContainsKey(part_id)) {
-              plugin_.PartApplyIntrinsicTorque(part_id,
-                                               (XYZ)part_id_to_intrinsic_torque_
-                                                   [part_id]);
+            if (part_id_to_intrinsic_torque_.TryGetValue(
+                    part_id,
+                    out Vector3d intrinsic_torque)) {
+              plugin_.PartApplyIntrinsicTorque(part_id, (XYZ)intrinsic_torque);
             }
-            if (part_id_to_intrinsic_force_.ContainsKey(part_id)) {
+            if (part_id_to_intrinsic_force_.TryGetValue(part_id,
+                  out Vector3d intrinsic_force)) {
               // When a Kerbal is doing an EVA and holding on to a ladder, the
               // ladder imbues them with their weight at the location of the
               // vessel to which the ladder is attached.  This leads to fantastic
               // effects where doing an EVA accelerates the vessel, see #1415.
               // Just say no to stupidity.
               if (!(vessel.isEVA && vessel.evaController.OnALadder)) {
-                plugin_.PartApplyIntrinsicForce(
-                    part_id,
-                    (XYZ)part_id_to_intrinsic_force_[part_id]);
+                plugin_.PartApplyIntrinsicForce(part_id, (XYZ)intrinsic_force);
               }
             }
-            if (part_id_to_intrinsic_forces_.ContainsKey(part_id)) {
-              foreach (var part_centred_force in part_id_to_intrinsic_forces_[
-                  part_id]) {
+            if (part_id_to_intrinsic_forces_.TryGetValue(part_id,
+                    out PartCentredForceHolder[] intrinsic_forces)) {
+              foreach (var part_centred_force in intrinsic_forces) {
                 plugin_.PartApplyIntrinsicForceAtPosition(
                     part_id,
                     (XYZ)part_centred_force.force,
@@ -1437,6 +1441,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (has_active_manageable_vessel() &&
           !FlightGlobals.ActiveVessel.packed &&
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+        // We are going to touch plenty of |Transform|s, so we will prevent
+        // Unity from syncing with the physics system all the time.
+        UnityEngine.Physics.autoSyncTransforms = false;
+
         Vector3d q_correction_at_root_part = Vector3d.zero;
         Vector3d v_correction_at_root_part = Vector3d.zero;
         CelestialBody main_body = FlightGlobals.ActiveVessel.mainBody;
@@ -1480,9 +1488,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             // See https://github.com/mockingbirdnest/Principia/pull/1427,
             // https://github.com/mockingbirdnest/Principia/issues/1307#issuecomment-478337241.
             part_rb.position = part_position;
-            part_rb.transform.position = part_position;
             part_rb.rotation = part_rotation;
-            part_rb.transform.rotation = part_rotation;
+            part_rb.transform.SetPositionAndRotation(
+                part_position,
+                part_rotation);
 
             part_rb.velocity = part_velocity;
             part_rb.angularVelocity = part_angular_velocity;
@@ -1704,10 +1713,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           Part physical_parent = closest_physical_parent(part);
           if (part.bodyLiftLocalVector != UnityEngine.Vector3.zero ||
               part.dragVector != UnityEngine.Vector3.zero) {
-            if (part_id_to_intrinsic_forces_.ContainsKey(
-                physical_parent.flightID)) {
-              var previous_holder =
-                  part_id_to_intrinsic_forces_[physical_parent.flightID];
+            if (part_id_to_intrinsic_forces_.TryGetValue(
+                    physical_parent.flightID,
+                    out PartCentredForceHolder[] previous_holder)) {
               part_id_to_intrinsic_forces_[physical_parent.flightID] =
                   new PartCentredForceHolder[previous_holder.Length + 2];
               previous_holder.CopyTo(
