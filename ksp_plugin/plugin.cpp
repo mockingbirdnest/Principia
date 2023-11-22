@@ -1693,10 +1693,11 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
                      Args... args) {
-  auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
+  auto const [_, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
-  auto deletion_callback = [it = it, &map = part_id_to_vessel_] {
-    map.erase(it);
+  auto deletion_callback = [part_id, &map = part_id_to_vessel_] {
+    // This entails a lookup, but iterators are not stable in |flat_hash_map|.
+    map.erase(part_id);
   };
   auto part = make_not_null_unique<Part>(part_id,
                                          name,
