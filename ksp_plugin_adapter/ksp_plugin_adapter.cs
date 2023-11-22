@@ -1159,8 +1159,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         yield break;
       }
 
-      // We are not changing the |Transform|s, but if we don't disable auto-
-      // sync the profiles show |SyncColliderTransform|.
+      // We are going to touch plenty of |Transform|s, so we will prevent
+      // Unity from syncing with the physics system all the time.
       UnityEngine.Physics.autoSyncTransforms = false;
 
       double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
@@ -1441,10 +1441,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (has_active_manageable_vessel() &&
           !FlightGlobals.ActiveVessel.packed &&
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
-        // We are going to touch plenty of |Transform|s, so we will prevent
-        // Unity from syncing with the physics system all the time.
-        UnityEngine.Physics.autoSyncTransforms = false;
-
         Vector3d q_correction_at_root_part = Vector3d.zero;
         Vector3d v_correction_at_root_part = Vector3d.zero;
         CelestialBody main_body = FlightGlobals.ActiveVessel.mainBody;

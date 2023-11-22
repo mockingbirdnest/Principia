@@ -92,15 +92,12 @@ DegreesOfFreedom<ToFrame> RigidMotion<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-RigidMotion<ToFrame, FromFrame> const&
+RigidMotion<ToFrame, FromFrame>
 RigidMotion<FromFrame, ToFrame>::Inverse() const {
-  if (inverse_ == nullptr) {
-    inverse_ = std::make_shared<RigidMotion<ToFrame, FromFrame>>(
-        rigid_transformation_.Inverse(),
-        -orthogonal_map()(angular_velocity_of_to_frame_),
-        (*this)({FromFrame::origin, FromFrame::unmoving}).velocity());
-  }
-  return *inverse_;
+  return RigidMotion<ToFrame, FromFrame>(
+      rigid_transformation_.Inverse(),
+      -orthogonal_map()(angular_velocity_of_to_frame_),
+      (*this)({FromFrame::origin, FromFrame::unmoving}).velocity());
 }
 
 template<typename FromFrame, typename ToFrame>
