@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "base/disjoint_sets.hpp"
 #include "base/monostable.hpp"
@@ -99,7 +100,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 // The index of a body in |FlightGlobals.Bodies|, obtained by
-// |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
+// |b.flightGlobalsIndex| in C#. We use this as a key in a map.
 using Index = int;
 
 class Plugin {
@@ -536,7 +537,7 @@ class Plugin {
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
   // to be in the parts() map of the vessel, and owned by it.
-  std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
+  absl::flat_hash_map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
   // Not null after initialization.

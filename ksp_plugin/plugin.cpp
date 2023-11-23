@@ -360,9 +360,9 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   if (vit == vessels_.end()) {
     // Restore the zombie parameters if we have some, otherwise use the default.
     auto prediction_parameters = DefaultPredictionParameters();
-    auto const pit =
-        zombie_prediction_adaptive_step_parameters_.find(vessel_guid);
-    if (pit != zombie_prediction_adaptive_step_parameters_.end()) {
+    if (auto const pit =
+            zombie_prediction_adaptive_step_parameters_.find(vessel_guid);
+        pit != zombie_prediction_adaptive_step_parameters_.end()) {
       prediction_parameters = pit->second;
       zombie_prediction_adaptive_step_parameters_.erase(pit);
     }
@@ -447,9 +447,8 @@ void Plugin::InsertOrKeepLoadedPart(
       main_body_frame.FromThisFrameAtTime(previous_time) *
       world_to_main_body_centred;
 
-  auto it = part_id_to_vessel_.find(part_id);
-  bool const part_found = it != part_id_to_vessel_.end();
-  if (part_found) {
+  if (auto const it = part_id_to_vessel_.find(part_id);
+      it != part_id_to_vessel_.end()) {
     not_null<Vessel*>& associated_vessel = it->second;
     not_null<Vessel*> const current_vessel = associated_vessel;
     if (vessel == current_vessel) {
@@ -509,11 +508,12 @@ void Plugin::ApplyPartIntrinsicTorque(
 }
 
 bool Plugin::PartIsTruthful(PartId const part_id) const {
-  auto const it = part_id_to_vessel_.find(part_id);
-  if (it == part_id_to_vessel_.end()) {
+  if (auto const it = part_id_to_vessel_.find(part_id);
+      it == part_id_to_vessel_.end()) {
     return false;
+  } else {
+    return it->second->part(part_id)->truthful();
   }
-  return it->second->part(part_id)->truthful();
 }
 
 void Plugin::PrepareToReportCollisions() {
@@ -662,7 +662,7 @@ void Plugin::SetPartApparentRigidMotion(
       Identity<Barycentric, Apparent>()(angular_velocity_of_world_),
       Apparent::unmoving};
 
-  not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
+  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
@@ -1693,10 +1693,11 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
                      Args... args) {
-  auto const [it, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
+  auto const [_, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
-  auto deletion_callback = [it = it, &map = part_id_to_vessel_] {
-    map.erase(it);
+  auto deletion_callback = [part_id, &map = part_id_to_vessel_] {
+    // This entails a lookup, but iterators are not stable in |flat_hash_map|.
+    map.erase(part_id);
   };
   auto part = make_not_null_unique<Part>(part_id,
                                          name,

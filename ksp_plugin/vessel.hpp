@@ -1,14 +1,13 @@
 #pragma once
 
-#include <list>
-#include <map>
 #include <memory>
 #include <queue>
-#include <set>
 #include <string>
 #include <variant>
 #include <vector>
 
+#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
@@ -405,8 +404,10 @@ class Vessel {
   // non-collapsible as we don't know anything about it.
   bool is_collapsible_ = false;
 
-  std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
-  std::set<PartId> kept_parts_;
+  // Use an ordered map for consistent order of iteration (e.g., when computing
+  // the barycentre).
+  absl::btree_map<PartId, not_null<std::unique_ptr<Part>>> parts_;
+  absl::flat_hash_set<PartId> kept_parts_;
 
   // The vessel trajectory is made of a number of history segments ending at the
   // backstory and (most of the time) the psychohistory and prediction.  The
