@@ -382,6 +382,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               // recomputed.
               final_time_.ResetValue(
                   plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
+              UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
               return;
             }
           }
