@@ -23,9 +23,9 @@ namespace internal {
 template<typename Result, typename... Arguments>
 class PushPullCallback {
  public:
-  // The managed API, called to extract the arguments to the function being
-  // computed and return its result.  |Pull| returns false if there are no more
-  // arguments to be processed and the managed code should stop its iteration.
+  // The managed API, called to extract the arguments for the unmanaged callback
+  // and return its result.  |Pull| returns false if there are no more arguments
+  // to be processed and the managed code should stop its iteration.
   bool Pull(Arguments&... arguments);
   void Push(Result result);
 
