@@ -63,6 +63,8 @@
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
+    <ClInclude Include="push_pull_callback.hpp" />
+    <ClInclude Include="push_pull_callback_body.hpp" />
     <ClInclude Include="ranges.hpp" />
     <ClInclude Include="ranges_body.hpp" />
     <ClInclude Include="recurring_thread.hpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
+    <ClCompile Include="push_pull_callback_test.cpp" />
     <ClCompile Include="recurring_thread_test.cpp" />
     <ClCompile Include="thread_pool_test.cpp" />
     <ClCompile Include="version.generated.cc" />
