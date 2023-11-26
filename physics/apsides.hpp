@@ -5,8 +5,11 @@
 #include "absl/status/status.h"
 #include "base/constant_function.hpp"
 #include "geometry/grassmann.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -15,8 +18,11 @@ namespace internal {
 
 using namespace principia::base::_constant_function;
 using namespace principia::geometry::_grassmann;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_quantities;
 
 // Computes the apsides with respect to |reference| for the section given by
 // |begin| and |end| of |trajectory|.  Appends to the given output trajectories
@@ -29,6 +35,16 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     int max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
+
+//TODO(phl)comment
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator begin,
+    typename DiscreteTrajectory<Frame>::iterator end,
+    std::function<Length(DegreesOfFreedom<Frame> const&)> const& altitude);
 
 // Computes the crossings of the section given by |begin| and |end| of
 // |trajectory| with the xy plane.  Appends the crossings that go towards the

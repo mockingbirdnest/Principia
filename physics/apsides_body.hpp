@@ -134,6 +134,48 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   }
 }
 
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator const begin,
+    typename DiscreteTrajectory<Frame>::iterator const end,
+    std::function<Length(DegreesOfFreedom<Frame> const&)> const& altitude) {
+  auto const last = std::prev(end);
+  DCHECK_LE(altitude(last->time), Length{});
+  DCHECK_LE(Length{}, altitude(begin->time));
+
+  Square<Length> max_radius² = Pow<2>(reference_body.max_radius());
+
+  std::optional<typename DiscreteTrajectory<Frame>::iterator>
+      last_above_max_radius;
+  for (auto it = begin; it != end; ++it) {
+    auto const& [time, degrees_of_freedom] = *it;
+    DegreesOfFreedom<Frame> const body_degrees_of_freedom =
+        reference.EvaluateDegreesOfFreedom(time);
+    RelativeDegreesOfFreedom<Frame> const relative =
+        degrees_of_freedom - body_degrees_of_freedom;
+    Square<Length> const squared_distance = relative.displacement().Norm²();
+    if (squared_distance <= max_radius²) {
+      break;
+    } else {
+      last_above_max_radius = it;
+    }
+  }
+
+  Instant const collision_time = Brent(
+      [&altitude, &trajectory](Instant const& t) {
+        return altitude(trajectory.EvaluateDegreesOfFreedom(t));
+      },
+      last_above_max_radius.value_or(begin)->time,
+      last->time);
+
+  return {.time = collision_time,
+          .degrees_of_freedom =
+              trajectory.EvaluateDegreesOfFreedom(collision_time)};
+}
+
 template<typename Frame, typename Predicate>
 absl::Status ComputeNodes(
     Trajectory<Frame> const& trajectory,
