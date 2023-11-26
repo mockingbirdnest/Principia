@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <optional>
+#include <thread>
 #include <tuple>
 
 #include "absl/synchronization/mutex.h"
