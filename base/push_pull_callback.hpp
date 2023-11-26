@@ -68,9 +68,8 @@ class PushPullExecutor {
   // code to pull arguments and push results.
   PushPullCallback<Result, Arguments...>& callback();
 
-  // Returns the value returned bythe task passed at construction.  Must only be
-  // called once |PushPullCallback::Pull| has indicated that the task has
-  // finished.
+  // Returns the result of the task passed at construction.  Must only be called
+  // once |PushPullCallback::Pull| has indicated that the task has finished.
   T get();
 
  private:
