@@ -1,5 +1,7 @@
 #include "base/push_pull_callback.hpp"
 
+#include <utility>
+
 #include "gtest/gtest.h"
 
 namespace principia {

@@ -2,6 +2,8 @@
 
 #include "base/push_pull_callback.hpp"
 
+#include <utility>
+
 namespace principia {
 namespace base {
 namespace _push_pull_callback {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <tuple>
 
 #include "absl/synchronization/mutex.h"
 #include "base/macros.hpp"  // 🧙 For GUARDED_BY.
