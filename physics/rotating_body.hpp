@@ -139,9 +139,6 @@ class RotatingBody : public MassiveBody {
   template<typename CelestialFrame>
   Rotation<Frame, CelestialFrame> ToCelestialFrame() const;
 
-  // Returns the rotation at time |t|.
-  Rotation<Frame, Frame> RotationAt(Instant const& t) const;
-
   // Returns false.
   bool is_massless() const override;
 
