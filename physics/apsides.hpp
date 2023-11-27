@@ -5,7 +5,6 @@
 #include "absl/status/status.h"
 #include "base/constant_function.hpp"
 #include "geometry/grassmann.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
@@ -18,7 +17,6 @@ namespace internal {
 
 using namespace principia::base::_constant_function;
 using namespace principia::geometry::_grassmann;
-using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
@@ -44,7 +42,8 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     Trajectory<Frame> const& trajectory,
     typename DiscreteTrajectory<Frame>::iterator begin,
     typename DiscreteTrajectory<Frame>::iterator end,
-    std::function<Length(DegreesOfFreedom<Frame> const&)> const& altitude);
+    std::function<Length(Angle const& latitude,
+                         Angle const& longitude)> const& altitude);
 
 // Computes the crossings of the section given by |begin| and |end| of
 // |trajectory| with the xy plane.  Appends the crossings that go towards the

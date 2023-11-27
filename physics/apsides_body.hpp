@@ -3,12 +3,14 @@
 #include "physics/apsides.hpp"
 
 #include <optional>
-#include <vector>
 
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -23,7 +25,9 @@ namespace internal {
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
@@ -141,7 +145,11 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     Trajectory<Frame> const& trajectory,
     typename DiscreteTrajectory<Frame>::iterator const begin,
     typename DiscreteTrajectory<Frame>::iterator const end,
-    std::function<Length(DegreesOfFreedom<Frame> const&)> const& altitude) {
+    std::function<Length(Angle const& latitude,
+                         Angle const& longitude)> const& altitude) {
+  // The frame of the surface of the celestial.
+  using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
+
   auto const last = std::prev(end);
   DCHECK_LE(altitude(last->time), Length{});
   DCHECK_LE(Length{}, altitude(begin->time));
@@ -164,12 +172,30 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     }
   }
 
-  Instant const collision_time = Brent(
-      [&altitude, &trajectory](Instant const& t) {
-        return altitude(trajectory.EvaluateDegreesOfFreedom(t));
-      },
-      last_above_max_radius.value_or(begin)->time,
-      last->time);
+  auto altitude_at_time = [&altitude,
+                           &reference,
+                           &reference_body,
+                           &trajectory](Instant const& t) {
+    auto const reference_position = reference.EvaluatePosition(t);
+    auto const trajectory_position = trajectory.EvaluatePosition(t);
+    Displacement<Frame> const displacement_in_frame =
+        trajectory_position - reference_position;
+
+    auto const to_surface_frame = reference_body.ToSurfaceFrame(t);
+    Displacement<SurfaceFrame> const displacement_in_surface =
+        to_surface_frame(displacement_in_frame);
+
+    SphericalCoordinates<Length> const spherical_coordinates =
+        displacement_in_surface.coordinates().ToSpherical();
+
+    return altitude(spherical_coordinates.latitude,
+                    spherical_coordinates.longitude);
+  };
+
+  Instant const collision_time =
+      Brent(altitude_at_time,
+            last_above_max_radius.value_or(begin)->time,
+            last->time);
 
   return {.time = collision_time,
           .degrees_of_freedom =
