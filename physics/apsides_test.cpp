@@ -23,12 +23,14 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
@@ -51,12 +53,14 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_discrete_trajectory_factories;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -160,6 +164,63 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     previous_time = time;
     previous_position = position;
   }
+}
+
+TEST_F(ApsidesTest, ComputeCollision) {
+  Instant const t0;
+  DiscreteTrajectory<World> reference_trajectory;
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({0 * Metre, -1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0,
+          /*t1=*/t0 - 10 * Second,
+          /*t2=*/t0 + 10 * Second),
+      reference_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({1 * Metre, -1 * Metre, 0 * Metre}),
+              Velocity<World>({0 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0,
+          /*t1=*/t0 - 10 * Second,
+          /*t2=*/t0 + 1 * Second),
+      vessel_trajectory);
+
+  RotatingBody<World> const body(
+      1 * Kilogram,
+      RotatingBody<World>::Parameters(
+          /*min_radius=*/1 * Metre,
+          /*mean_radius=*/2 * Metre,
+          /*max_radius=*/3 * Metre,
+          /*reference_angle=*/0 * Radian,
+          /*reference_instant=*/t0,
+          /*angular_frequency=*/2 * π * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Radian,
+          /*declination_of_pole=*/π / 2 * Radian));
+
+  auto radius = [](Angle const& latitude, Angle const& longitude) {
+    return (Cos(4 * longitude) + 2) * Metre;
+  };
+
+  auto const collision = ComputeCollision(body,
+                                          reference_trajectory,
+                                          vessel_trajectory,
+                                          vessel_trajectory.begin(),
+                                          vessel_trajectory.end(),
+                                          radius);
+
+  LOG(ERROR)<<collision.time<<" "<<collision.degrees_of_freedom;
 }
 
 TEST_F(ApsidesTest, ComputeNodes) {

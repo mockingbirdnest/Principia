@@ -207,6 +207,16 @@ SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
 }
 
 template<typename Scalar>
+std::ostream& operator<<(
+    std::ostream& out,
+    SphericalCoordinates<Scalar> const& spherical_coordinates) {
+  out << spherical_coordinates.radius
+      << ", " << spherical_coordinates.latitude
+      << ", " << spherical_coordinates.longitude;
+  return out;
+}
+
+template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }

@@ -146,14 +146,11 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     typename DiscreteTrajectory<Frame>::iterator const begin,
     typename DiscreteTrajectory<Frame>::iterator const end,
     std::function<Length(Angle const& latitude,
-                         Angle const& longitude)> const& altitude) {
+                         Angle const& longitude)> const& radius) {
   // The frame of the surface of the celestial.
   using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
 
   auto const last = std::prev(end);
-  DCHECK_LE(altitude(last->time), Length{});
-  DCHECK_LE(Length{}, altitude(begin->time));
-
   Square<Length> max_radius² = Pow<2>(reference_body.max_radius());
 
   std::optional<typename DiscreteTrajectory<Frame>::iterator>
@@ -172,34 +169,45 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     }
   }
 
-  auto altitude_at_time = [&altitude,
-                           &reference,
-                           &reference_body,
-                           &trajectory](Instant const& t) {
+  auto radius_at_time = [&radius,
+                         &reference,
+                         &reference_body,
+                         &trajectory](Instant const& t) {
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
+    LOG(ERROR)<<t;
+    LOG(ERROR)<<reference_position;
+    LOG(ERROR)<<trajectory_position;
     Displacement<Frame> const displacement_in_frame =
         trajectory_position - reference_position;
+    LOG(ERROR)<<displacement_in_frame;
 
-    auto const to_surface_frame = reference_body.ToSurfaceFrame(t);
+    auto const to_surface_frame =
+        reference_body.ToSurfaceFrame<SurfaceFrame>(t);
     Displacement<SurfaceFrame> const displacement_in_surface =
         to_surface_frame(displacement_in_frame);
+    LOG(ERROR)<<displacement_in_surface;
 
     SphericalCoordinates<Length> const spherical_coordinates =
         displacement_in_surface.coordinates().ToSpherical();
 
-    return altitude(spherical_coordinates.latitude,
-                    spherical_coordinates.longitude);
+    LOG(ERROR)<<spherical_coordinates;
+    return spherical_coordinates.radius -
+           radius(spherical_coordinates.latitude,
+                  spherical_coordinates.longitude);
   };
 
+  CHECK_LT(Length{}, radius_at_time(begin->time));
+  CHECK_LT(radius_at_time(last->time), Length{});
+
   Instant const collision_time =
-      Brent(altitude_at_time,
+      Brent(radius_at_time,
             last_above_max_radius.value_or(begin)->time,
             last->time);
 
-  return {.time = collision_time,
-          .degrees_of_freedom =
-              trajectory.EvaluateDegreesOfFreedom(collision_time)};
+  return typename DiscreteTrajectory<Frame>::value_type(
+      collision_time,
+      trajectory.EvaluateDegreesOfFreedom(collision_time));
 }
 
 template<typename Frame, typename Predicate>

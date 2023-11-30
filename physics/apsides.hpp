@@ -43,7 +43,7 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     typename DiscreteTrajectory<Frame>::iterator begin,
     typename DiscreteTrajectory<Frame>::iterator end,
     std::function<Length(Angle const& latitude,
-                         Angle const& longitude)> const& altitude);
+                         Angle const& longitude)> const& radius);
 
 // Computes the crossings of the section given by |begin| and |end| of
 // |trajectory| with the xy plane.  Appends the crossings that go towards the
@@ -75,6 +75,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 }  // namespace internal
 
 using internal::ComputeApsides;
+using internal::ComputeCollision;
 using internal::ComputeNodes;
 
 }  // namespace _apsides
