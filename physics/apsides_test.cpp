@@ -30,7 +30,10 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
@@ -59,8 +62,11 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_is_near;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -170,6 +176,9 @@ TEST_F(ApsidesTest, ComputeCollision) {
   Instant const t0;
   DiscreteTrajectory<World> reference_trajectory;
   DiscreteTrajectory<World> vessel_trajectory;
+
+  // At |t0| the vessel is inside the celestial, so we expect the collision at a
+  // negative time.
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
           DegreesOfFreedom<World>(
@@ -209,6 +218,8 @@ TEST_F(ApsidesTest, ComputeCollision) {
           /*right_ascension_of_pole=*/0 * Radian,
           /*declination_of_pole=*/π / 2 * Radian));
 
+  // The celestial is infinite in the z direction and has four lobes in the x-y
+  // plane.  Think of a LEGO® axle.
   auto radius = [](Angle const& latitude, Angle const& longitude) {
     return (Cos(4 * longitude) + 2) * Metre;
   };
@@ -220,7 +231,17 @@ TEST_F(ApsidesTest, ComputeCollision) {
                                           vessel_trajectory.end(),
                                           radius);
 
-  LOG(ERROR)<<collision.time<<" "<<collision.degrees_of_freedom;
+  // The collision was verified with Mathematica to the given accuracy.
+  EXPECT_THAT(collision.time - t0, IsNear(-1.43861971643135_(1) * Second));
+  EXPECT_THAT(collision.degrees_of_freedom.position() - World::origin,
+              Componentwise(1 * Metre,
+                            IsNear(0.43861971643135_(1) * Metre),
+                            0 * Metre));
+  EXPECT_THAT(
+      collision.degrees_of_freedom.velocity(),
+      AlmostEquals(Velocity<World>({0 * Metre / Second,
+                                    -1 * Metre / Second,
+                                    0 * Metre / Second}), 0));
 }
 
 TEST_F(ApsidesTest, ComputeNodes) {
