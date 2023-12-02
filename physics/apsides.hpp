@@ -34,7 +34,10 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
 
-//TODO(phl)comment
+// Computes a collision between a vessel and a rotating body.  |begin| and |end|
+// must be on opposite sides of the surface of the body (that is, a collision
+// must exist).  |radius| gives the radius of the celestial at a particular
+// position given by its latitude and longitude.
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     RotatingBody<Frame> const& reference_body,
