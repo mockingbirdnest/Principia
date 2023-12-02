@@ -6,7 +6,6 @@
 
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
@@ -15,7 +14,6 @@
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -32,7 +30,6 @@ using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
