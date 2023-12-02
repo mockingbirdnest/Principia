@@ -172,23 +172,17 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
                          &trajectory](Instant const& t) {
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
-    LOG(ERROR)<<t;
-    LOG(ERROR)<<reference_position;
-    LOG(ERROR)<<trajectory_position;
     Displacement<Frame> const displacement_in_frame =
         trajectory_position - reference_position;
-    LOG(ERROR)<<displacement_in_frame;
 
     auto const to_surface_frame =
         reference_body.ToSurfaceFrame<SurfaceFrame>(t);
     Displacement<SurfaceFrame> const displacement_in_surface =
         to_surface_frame(displacement_in_frame);
-    LOG(ERROR)<<displacement_in_surface;
 
     SphericalCoordinates<Length> const spherical_coordinates =
         displacement_in_surface.coordinates().ToSpherical();
 
-    LOG(ERROR)<<spherical_coordinates;
     return spherical_coordinates.radius -
            radius(spherical_coordinates.latitude,
                   spherical_coordinates.longitude);
