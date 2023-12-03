@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "base/push_pull_callback.hpp"
 #include "journal/method.hpp"
@@ -18,11 +19,8 @@ namespace interface {
 
 using namespace principia::base::_push_pull_callback;
 using namespace principia::journal::_method;
-using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_frames;
-using namespace principia::physics::_apsides;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
@@ -31,13 +29,12 @@ namespace {
 template<typename TrajectoryLike>
 not_null<std::unique_ptr<
     PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>>>
-NewExecutor(
-    Plugin const* const plugin,
-    int const celestial_index,
-    XYZ const sun_world_position,
-    TrajectoryLike const& vessel_trajectory,
-    double const apoapside_time,
-    double const periapside_time) {
+NewExecutor(Plugin const* const plugin,
+            int const celestial_index,
+            XYZ const sun_world_position,
+            TrajectoryLike const& vessel_trajectory,
+            double const apoapside_time,
+            double const periapside_time) {
   CHECK_NOTNULL(plugin);
   auto const begin =
       vessel_trajectory.lower_bound(FromGameTime(*plugin, apoapside_time));

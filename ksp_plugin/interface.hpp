@@ -196,7 +196,7 @@ not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters);
 
- not_null<OrbitAnalysis*> NewOrbitAnalysis(
+not_null<OrbitAnalysis*> NewOrbitAnalysis(
     OrbitAnalyser::Analysis* const vessel_analysis,
     Plugin const& plugin,
     int const* const revolutions_per_cycle,
