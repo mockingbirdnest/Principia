@@ -6,11 +6,8 @@
 #include "base/push_pull_callback.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
-#include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "physics/apsides.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
