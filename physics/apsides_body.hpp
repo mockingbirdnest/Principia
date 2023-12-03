@@ -3,17 +3,17 @@
 #include "physics/apsides.hpp"
 
 #include <optional>
-#include <vector>
 
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -23,12 +23,13 @@ namespace internal {
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -132,6 +133,72 @@ void ComputeApsides(Trajectory<Frame> const& reference,
     previous_squared_distance = squared_distance;
     previous_squared_distance_derivative = squared_distance_derivative;
   }
+}
+
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator const begin,
+    typename DiscreteTrajectory<Frame>::iterator const end,
+    std::function<Length(Angle const& latitude,
+                         Angle const& longitude)> const& radius) {
+  // The frame of the surface of the celestial.
+  using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
+
+  auto const last = std::prev(end);
+  Square<Length> max_radius² = Pow<2>(reference_body.max_radius());
+
+  std::optional<typename DiscreteTrajectory<Frame>::iterator>
+      last_above_max_radius;
+  for (auto it = begin; it != end; ++it) {
+    auto const& [time, degrees_of_freedom] = *it;
+    DegreesOfFreedom<Frame> const body_degrees_of_freedom =
+        reference.EvaluateDegreesOfFreedom(time);
+    RelativeDegreesOfFreedom<Frame> const relative =
+        degrees_of_freedom - body_degrees_of_freedom;
+    Square<Length> const squared_distance = relative.displacement().Norm²();
+    if (squared_distance <= max_radius²) {
+      break;
+    } else {
+      last_above_max_radius = it;
+    }
+  }
+
+  auto radius_at_time = [&radius,
+                         &reference,
+                         &reference_body,
+                         &trajectory](Instant const& t) {
+    auto const reference_position = reference.EvaluatePosition(t);
+    auto const trajectory_position = trajectory.EvaluatePosition(t);
+    Displacement<Frame> const displacement_in_frame =
+        trajectory_position - reference_position;
+
+    auto const to_surface_frame =
+        reference_body.ToSurfaceFrame<SurfaceFrame>(t);
+    Displacement<SurfaceFrame> const displacement_in_surface =
+        to_surface_frame(displacement_in_frame);
+
+    SphericalCoordinates<Length> const spherical_coordinates =
+        displacement_in_surface.coordinates().ToSpherical();
+
+    return spherical_coordinates.radius -
+           radius(spherical_coordinates.latitude,
+                  spherical_coordinates.longitude);
+  };
+
+  CHECK_LT(Length{}, radius_at_time(begin->time));
+  CHECK_LT(radius_at_time(last->time), Length{});
+
+  Instant const collision_time =
+      Brent(radius_at_time,
+            last_above_max_radius.value_or(begin)->time,
+            last->time);
+
+  return typename DiscreteTrajectory<Frame>::value_type(
+      collision_time,
+      trajectory.EvaluateDegreesOfFreedom(collision_time));
 }
 
 template<typename Frame, typename Predicate>

@@ -144,11 +144,6 @@ Angle RotatingBody<Frame>::AngleAt(Instant const& t) const {
 }
 
 template<typename Frame>
-Rotation<Frame, Frame> RotatingBody<Frame>::RotationAt(Instant const& t) const {
-  return Exp((t - parameters_.reference_instant_) * angular_velocity_);
-}
-
-template<typename Frame>
 bool RotatingBody<Frame>::is_massless() const {
   return false;
 }

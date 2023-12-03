@@ -6,7 +6,9 @@
 #include "base/constant_function.hpp"
 #include "geometry/grassmann.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace physics {
@@ -16,7 +18,9 @@ namespace internal {
 using namespace principia::base::_constant_function;
 using namespace principia::geometry::_grassmann;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_quantities;
 
 // Computes the apsides with respect to |reference| for the section given by
 // |begin| and |end| of |trajectory|.  Appends to the given output trajectories
@@ -29,6 +33,21 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     int max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
+
+// Computes a collision between a vessel and a rotating body.  |begin| and |end|
+// must be on opposite sides of the surface of the body (in particular, a
+// collision must exist).  |radius| gives the radius of the celestial at a
+// particular position given by its latitude and longitude.  It must never
+// exceed the |max_radius| of the body.
+template<typename Frame>
+typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator begin,
+    typename DiscreteTrajectory<Frame>::iterator end,
+    std::function<Length(Angle const& latitude,
+                         Angle const& longitude)> const& radius);
 
 // Computes the crossings of the section given by |begin| and |end| of
 // |trajectory| with the xy plane.  Appends the crossings that go towards the
@@ -60,6 +79,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 }  // namespace internal
 
 using internal::ComputeApsides;
+using internal::ComputeCollision;
 using internal::ComputeNodes;
 
 }  // namespace _apsides
