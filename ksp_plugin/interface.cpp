@@ -498,8 +498,8 @@ void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
 // |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
 // ownership of |**plugin|.
 void __cdecl principia__DeletePlugin(Plugin const** const plugin) {
-  journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   CHECK_NOTNULL(plugin);
+  journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
   // significant event, so we take ownership inside a block.
