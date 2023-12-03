@@ -238,7 +238,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5191.
+  extensions 5000 to 5999;  // Last used: 5195.
 }
 
 message AdvanceTime {
@@ -409,6 +409,61 @@ message CelestialWorldDegreesOfFreedom {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message CollisionNewExecutor {
+  extend Method {
+    optional CollisionNewExecutor extension = 5192;
+  }
+  message In {
+
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "PushPullExecutor<>",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CollisionDeleteExecutor {
+  extend Method {
+    optional CollisionDeleteExecutor extension = 5193;
+  }
+  message In {
+    required fixed64 executor = 1 [(pointer_to) = "PushPullExecutor<> const",
+                                 (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 executor = 1 [(pointer_to) = "PushPullExecutor<> const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message CollisionGetLatitudeLongitude {
+  extend Method {
+    optional CollisionGetLatitudeLongitude extension = 5194;
+  }
+  message Out {
+    required double latitude = 1;
+    required double longitude = 2;
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message CollisionSetRadius {
+  extend Method {
+    optional CollisionSetRadius extension = 5195;
+  }
+  message In {
+    required double radius = 1;
+  }
+  optional In in = 1;
 }
 
 message ClearFlags {
