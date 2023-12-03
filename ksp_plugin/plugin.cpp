@@ -1001,8 +1001,8 @@ void Plugin::ComputeAndRenderApsides(
 DegreesOfFreedom<World> Plugin::ComputeAndRenderCollision(
     Index const celestial_index,
     Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
+    Instant const& first_time,
+    Instant const& last_time,
     Position<World> const& sun_world_position,
     std::function<Length(Angle const& latitude,
                          Angle const& longitude)> const& radius) const {
@@ -1010,7 +1010,7 @@ DegreesOfFreedom<World> Plugin::ComputeAndRenderCollision(
   auto const collision = ComputeCollision<Barycentric>(*celestial->body(),
                                                        celestial->trajectory(),
                                                        trajectory,
-                                                       begin, end,
+                                                       first_time, last_time,
                                                        radius);
 
   // We create a trajectory with a single point to simplify rendering.

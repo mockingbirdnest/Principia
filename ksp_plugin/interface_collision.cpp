@@ -33,14 +33,12 @@ NewExecutor(Plugin const* const plugin,
             double const apoapside_time,
             double const periapside_time) {
   CHECK_NOTNULL(plugin);
-  auto const begin =
-      vessel_trajectory.lower_bound(FromGameTime(*plugin, apoapside_time));
-  auto const end =
-      vessel_trajectory.lower_bound(FromGameTime(*plugin, periapside_time));
+  Instant const first_time = FromGameTime(*plugin, apoapside_time);
+  Instant const last_time = FromGameTime(*plugin, periapside_time);
 
-  auto task = [begin,
-               celestial_index,
-               end,
+  auto task = [celestial_index,
+               first_time,
+               last_time,
                plugin,
                sun_world_position =
                    FromXYZ<Position<World>>(sun_world_position),
@@ -49,8 +47,7 @@ NewExecutor(Plugin const* const plugin,
                                        Angle const& longitude)> const& radius) {
     return plugin->ComputeAndRenderCollision(celestial_index,
                                              vessel_trajectory,
-                                             begin,
-                                             end,
+                                             first_time, last_time,
                                              sun_world_position,
                                              radius);
   };

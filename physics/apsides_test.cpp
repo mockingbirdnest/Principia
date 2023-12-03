@@ -227,15 +227,16 @@ TEST_F(ApsidesTest, ComputeCollision) {
   auto const collision = ComputeCollision(body,
                                           reference_trajectory,
                                           vessel_trajectory,
-                                          vessel_trajectory.begin(),
-                                          vessel_trajectory.end(),
+                                          vessel_trajectory.front().time,
+                                          vessel_trajectory.back().time,
                                           radius);
 
   // The collision was verified with Mathematica to the given accuracy.
-  EXPECT_THAT(collision.time - t0, IsNear(-1.43861971643135_(1) * Second));
+  EXPECT_THAT(collision.time - t0,
+              IsNear(-0.5254924180437539_(1) * Second));
   EXPECT_THAT(collision.degrees_of_freedom.position() - World::origin,
               Componentwise(1 * Metre,
-                            IsNear(0.43861971643135_(1) * Metre),
+                            IsNear(-0.4745075819562462_(1) * Metre),
                             0 * Metre));
   EXPECT_THAT(
       collision.degrees_of_freedom.velocity(),

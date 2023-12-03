@@ -6,7 +6,6 @@
 
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/instant.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
@@ -23,7 +22,6 @@ namespace internal {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
@@ -142,36 +140,60 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
-    typename DiscreteTrajectory<Frame>::iterator const begin,
-    typename DiscreteTrajectory<Frame>::iterator const end,
+    Instant const& first_time,
+    Instant const& last_time,
     std::function<Length(Angle const& latitude,
                          Angle const& longitude)> const& radius) {
   // The frame of the surface of the celestial.
   using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
 
-  auto const last = std::prev(end);
-  Square<Length> max_radius² = Pow<2>(reference_body.max_radius());
+  auto squared_distance_from_centre = [&reference,
+                                       &trajectory](Instant const& time) {
+    Position<Frame> const body_position =
+        reference.EvaluatePosition(time);
+    Position<Frame> const trajectory_position =
+        trajectory.EvaluatePosition(time);
+    Displacement<Frame> const displacement =
+        trajectory_position - body_position;
+    return displacement.Norm²();
+  };
 
-  std::optional<typename DiscreteTrajectory<Frame>::iterator>
-      last_above_max_radius;
-  for (auto it = begin; it != end; ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
-    DegreesOfFreedom<Frame> const body_degrees_of_freedom =
-        reference.EvaluateDegreesOfFreedom(time);
-    RelativeDegreesOfFreedom<Frame> const relative =
-        degrees_of_freedom - body_degrees_of_freedom;
-    Square<Length> const squared_distance = relative.displacement().Norm²();
-    if (squared_distance <= max_radius²) {
-      break;
-    } else {
-      last_above_max_radius = it;
-    }
+  auto const max_radius² = Pow<2>(reference_body.max_radius());
+  auto const min_radius² = Pow<2>(reference_body.min_radius());
+
+  // Find the time at which the |trajectory| crosses |max_radius|, if any.
+  // We'll start the search from there.  This is cheap because it doesn't call
+  // C#.
+  Instant max_radius_time;
+  if (squared_distance_from_centre(first_time) > max_radius²) {
+    max_radius_time = Brent(
+        [max_radius², &squared_distance_from_centre](Instant const& time) {
+          return squared_distance_from_centre(time) - max_radius²;
+        },
+        first_time,
+        last_time);
+  } else {
+    max_radius_time = first_time;
   }
 
-  auto radius_at_time = [&radius,
-                         &reference,
-                         &reference_body,
-                         &trajectory](Instant const& t) {
+  // Similarly, find the time at which the |trajectory| crosses |min_radius|, if
+  // any.
+  Instant min_radius_time;
+  if (squared_distance_from_centre(last_time) < min_radius²) {
+    min_radius_time = Brent(
+        [min_radius², &squared_distance_from_centre](Instant const& time) {
+          return squared_distance_from_centre(time) - min_radius²;
+        },
+        max_radius_time,
+        last_time);
+  } else {
+    min_radius_time = last_time;
+  }
+
+  auto altitude_at_time = [&radius,
+                           &reference,
+                           &reference_body,
+                           &trajectory](Instant const& t) {
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
     Displacement<Frame> const displacement_in_frame =
@@ -190,13 +212,12 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
                   spherical_coordinates.longitude);
   };
 
-  CHECK_LT(Length{}, radius_at_time(begin->time));
-  CHECK_LT(radius_at_time(last->time), Length{});
+  CHECK_LE(Length{}, altitude_at_time(max_radius_time));
+  CHECK_LE(altitude_at_time(min_radius_time), Length{});
 
-  Instant const collision_time =
-      Brent(radius_at_time,
-            last_above_max_radius.value_or(begin)->time,
-            last->time);
+  Instant const collision_time = Brent(altitude_at_time,
+                                       max_radius_time,
+                                       min_radius_time);
 
   return typename DiscreteTrajectory<Frame>::value_type(
       collision_time,
