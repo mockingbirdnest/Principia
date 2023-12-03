@@ -69,7 +69,8 @@ class PushPullExecutor {
 
   // Returns the internal |PushPullCallback| object that is used by the managed
   // code to pull arguments and push results.
-  PushPullCallback<Result, Arguments...>& callback() const;
+  PushPullCallback<Result, Arguments...>& callback();
+  PushPullCallback<Result, Arguments...> const& callback() const;
 
   // Returns the result of the task passed at construction.  Must only be called
   // once |PushPullCallback::Pull| has indicated that the task has finished.
