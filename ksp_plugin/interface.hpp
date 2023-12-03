@@ -48,8 +48,10 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
@@ -174,6 +176,9 @@ XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
 XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum);
 
+template<typename T>
+Interval ToInterval(geometry::_interval::Interval<T> const& interval);
+
 // Conversions between interchange data and typed data that depend on the state
 // of the plugin.
 Instant FromGameTime(Plugin const& plugin, double t);
@@ -188,6 +193,15 @@ not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters);
+
+ not_null<OrbitAnalysis*> NewOrbitAnalysis(
+    OrbitAnalyser::Analysis* const vessel_analysis,
+    Plugin const& plugin,
+    int const* const revolutions_per_cycle,
+    int const* const days_per_cycle,
+    int const ground_track_revolution);
+
+FlightPlan& GetFlightPlan(Plugin const& plugin, char const* vessel_guid);
 
 }  // namespace interface
 }  // namespace principia

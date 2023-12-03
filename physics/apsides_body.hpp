@@ -29,6 +29,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Frame>
@@ -176,7 +177,7 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
         trajectory_position - reference_position;
 
     auto const to_surface_frame =
-        reference_body.ToSurfaceFrame<SurfaceFrame>(t);
+        reference_body.template ToSurfaceFrame<SurfaceFrame>(t);
     Displacement<SurfaceFrame> const displacement_in_surface =
         to_surface_frame(displacement_in_frame);
 

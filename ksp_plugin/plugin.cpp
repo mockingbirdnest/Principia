@@ -1015,7 +1015,8 @@ DegreesOfFreedom<World> Plugin::ComputeAndRenderCollision(
 
   // We create a trajectory with a single point to simplify rendering.
   DiscreteTrajectory<Barycentric> trajectory_to_render;
-  trajectory_to_render.Append(collision.time, collision.degrees_of_freedom);
+  CHECK_OK(trajectory_to_render.Append(collision.time,
+                                       collision.degrees_of_freedom));
   DiscreteTrajectory<World> rendered_trajectory =
       renderer_->RenderBarycentricTrajectoryInWorld(
           current_time_,

@@ -238,7 +238,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5195.
+  extensions 5000 to 5999;  // Last used: 5196.
 }
 
 message AdvanceTime {
@@ -451,13 +451,37 @@ message CollisionGetLatitudeLongitude {
   message Return {
     required bool result = 1;
   }
+  optional In in = 1;
   optional Out out = 2;
   optional Return return = 3;
 }
 
-message CollisionNewExecutor {
+message CollisionNewFlightPlanExecutor {
   extend Method {
-    optional CollisionNewExecutor extension = 5192;
+    optional CollisionNewFlightPlanExecutor extension = 5196;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 celestial_index = 2;
+    required XYZ sun_world_position = 3;
+    required string vessel_guid = 4;
+    required double apoapside_time = 5;
+    required double periapside_time = 6;
+  }
+  message Return {
+    required fixed64 result = 1
+    [(pointer_to) =
+    "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
+    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CollisionNewPredictionExecutor {
+  extend Method {
+    optional CollisionNewPredictionExecutor extension = 5192;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
