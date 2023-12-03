@@ -368,6 +368,17 @@ class Plugin {
       DiscreteTrajectory<World>& apoapsides,
       DiscreteTrajectory<World>& periapsides) const;
 
+  // Computes the collision between the trajectory defined by |begin| and |end|
+  // and the celestial with index |celestial_index|.
+  virtual DegreesOfFreedom<World> ComputeAndRenderCollision(
+      Index celestial_index,
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
+      Position<World> const& sun_world_position,
+      std::function<Length(Angle const& latitude,
+                           Angle const& longitude)> const& radius) const;
+
   // Computes the closest approaches of the trajectory defined by |begin| and
   // |end| with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
