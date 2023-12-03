@@ -463,9 +463,10 @@ message CollisionNewExecutor {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required int32 celestial_index = 2;
-    required string vessel_guid = 3;
-    required double apoapside_time = 4;
-    required double periapside_time = 5;
+    required XYZ sun_world_position = 3;
+    required string vessel_guid = 4;
+    required double apoapside_time = 5;
+    required double periapside_time = 6;
   }
   message Return {
     required fixed64 result = 1

@@ -52,34 +52,40 @@ PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>*
 __cdecl principia__CollisionNewExecutor(
     Plugin const* const plugin,
     int const celestial_index,
+    XYZ const sun_world_position,
     char const* const vessel_guid,
     double const apoapside_time,
     double const periapside_time) {
   journal::Method<journal::CollisionNewExecutor> m{
       {plugin,
        celestial_index,
+       sun_world_position,
        vessel_guid,
        apoapside_time,
        periapside_time}};
   CHECK_NOTNULL(plugin);
   not_null<Vessel*> const vessel = plugin->GetVessel(vessel_guid);
   auto const vessel_prediction = vessel->prediction();
-  //TODO(phl)lower_bound
   auto const begin =
-      vessel_prediction->find(FromGameTime(*plugin, apoapside_time));
+      vessel_prediction->lower_bound(FromGameTime(*plugin, apoapside_time));
   auto const end =
-      vessel_prediction->find(FromGameTime(*plugin, periapside_time));
+      vessel_prediction->lower_bound(FromGameTime(*plugin, periapside_time));
 
-  auto task = [begin, celestial_index, end, plugin, vessel_prediction](
+  auto task = [begin,
+               celestial_index,
+               end,
+               plugin,
+               sun_world_position =
+                   FromXYZ<Position<World>>(sun_world_position),
+               vessel_prediction](
                   std::function<Length(Angle const& latitude,
                                        Angle const& longitude)> const& radius) {
-    return plugin->ComputeAndRenderCollision(
-        celestial_index,
-        *vessel_prediction,
-        begin,
-        end,
-        /*sun_world_position=*/Position<World>(),//TODO(phl)nonono
-        radius);
+    return plugin->ComputeAndRenderCollision(celestial_index,
+                                             *vessel_prediction,
+                                             begin,
+                                             end,
+                                             sun_world_position,
+                                             radius);
   };
 
   return m.Return(
