@@ -3,6 +3,12 @@
 #include "base/push_pull_callback.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
+#include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "physics/apsides.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
