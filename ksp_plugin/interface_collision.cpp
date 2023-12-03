@@ -17,11 +17,19 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 QP __cdecl principia__CollisionDeleteExecutor(
-    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const**
-       const executor) {}
+    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>** const
+        executor) {
+  journal::Method<journal::CollisionDeleteExecutor> m{{executor}, {executor}};
+  CHECK_NOTNULL(executor);
+  auto const collision_degrees_of_freedom = (*executor)->get();
+  {
+    TakeOwnership(executor);
+  }
+  return ToQP(collision_degrees_of_freedom);
+}
 
 bool __cdecl principia__CollisionGetLatitudeLongitude(
-    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const* const
+    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>* const
         executor,
     double* const latitude_in_degrees,
     double* const longitude_in_degrees) {
@@ -29,6 +37,7 @@ bool __cdecl principia__CollisionGetLatitudeLongitude(
       {executor},
       {latitude_in_degrees,
        longitude_in_degrees}};
+  CHECK_NOTNULL(executor);
 
   Angle latitude;
   Angle longitude;
@@ -79,12 +88,13 @@ __cdecl principia__CollisionNewExecutor(
 }
 
 void __cdecl principia__CollisionSetRadius(
-    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const* const
+    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>* const
         executor,
     double const radius) {
   journal::Method<journal::CollisionSetRadius> m{
       {executor,
        radius}};
+  CHECK_NOTNULL(executor);
   executor->callback().Push(radius * Metre);
 }
 

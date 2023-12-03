@@ -418,16 +418,16 @@ message CollisionDeleteExecutor {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const",
+        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
         (is_consumed) = true];
   }
   message Out {
     required fixed64 executor = 1
         [(pointer_to) =
-        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const"
-        ];
+        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>"];
   }
   message Return {
+    // Deleting the executor returns the degrees of freedom of the collision.
     required QP collision = 1;
   }
   optional In in = 1;
@@ -442,8 +442,7 @@ message CollisionGetLatitudeLongitude {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const"
-        ];
+        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>"];
   }
   message Out {
     required double latitude_in_degrees = 1;
@@ -485,8 +484,7 @@ message CollisionSetRadius {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const"
-        ];
+        "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>"];
     required double radius = 2;
   }
   optional In in = 1;
