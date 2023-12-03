@@ -66,15 +66,6 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
           burn.is_inertially_fixed};
 }
 
-FlightPlan& GetFlightPlan(Plugin const& plugin,
-                          char const* const vessel_guid) {
-  Vessel& vessel = *plugin.GetVessel(vessel_guid);
-  CHECK(vessel.has_flight_plan()) << vessel_guid;
-  // Force deserialization of the flight plan, now that we actually need it.
-  vessel.ReadFlightPlanFromMessage();
-  return vessel.flight_plan();
-}
-
 Burn GetBurn(Plugin const& plugin,
              NavigationManœuvre const& manœuvre) {
   // When building the parameters, make sure that the "optional" fields get a

@@ -4,6 +4,7 @@
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/push_pull_callback.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
@@ -11,6 +12,8 @@
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/degrees_of_freedom.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -50,12 +53,15 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
+using namespace principia::base::_push_pull_callback;
 using namespace principia::journal::_player;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::quantities::_quantities;
 
 #include "journal/profiles.generated.h"
 

@@ -10,14 +10,17 @@
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/push_pull_callback.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
+#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
+#include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/plugin.hpp"
@@ -40,14 +43,17 @@ namespace interface {
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
+using namespace principia::base::_push_pull_callback;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
+using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
@@ -172,6 +178,9 @@ XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
 XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum);
 
+template<typename T>
+Interval ToInterval(geometry::_interval::Interval<T> const& interval);
+
 // Conversions between interchange data and typed data that depend on the state
 // of the plugin.
 Instant FromGameTime(Plugin const& plugin, double t);
@@ -186,6 +195,15 @@ not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters);
+
+not_null<OrbitAnalysis*> NewOrbitAnalysis(
+    OrbitAnalyser::Analysis* const vessel_analysis,
+    Plugin const& plugin,
+    int const* const revolutions_per_cycle,
+    int const* const days_per_cycle,
+    int const ground_track_revolution);
+
+FlightPlan& GetFlightPlan(Plugin const& plugin, char const* vessel_guid);
 
 }  // namespace interface
 }  // namespace principia

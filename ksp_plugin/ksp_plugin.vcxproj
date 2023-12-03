@@ -72,6 +72,7 @@
     <ClCompile Include="identification.cpp" />
     <ClCompile Include="integrators.cpp" />
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="interface_collision.cpp" />
     <ClCompile Include="interface_external.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_future.cpp" />
