@@ -14,6 +14,30 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
+
+QP __cdecl principia__CollisionDeleteExecutor(
+    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const**
+       const executor) {}
+
+bool __cdecl principia__CollisionGetLatitudeLongitude(
+    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const* const
+        executor,
+    double* const latitude_in_degrees,
+    double* const longitude_in_degrees) {
+  journal::Method<journal::CollisionGetLatitudeLongitude> m{
+      {executor},
+      {latitude_in_degrees,
+       longitude_in_degrees}};
+
+  Angle latitude;
+  Angle longitude;
+  bool const more = executor->callback().Pull(latitude, longitude);
+  *latitude_in_degrees = latitude / Degree;
+  *longitude_in_degrees = longitude / Degree;
+
+  return m.Return(more);
+}
 
 PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>*
 __cdecl principia__CollisionNewExecutor(
@@ -54,15 +78,15 @@ __cdecl principia__CollisionNewExecutor(
           std::move(task)));
 }
 
-void __cdecl principia__CollisionDeleteExecutor(
-    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>
-        const** const executor) {}
-
-bool __cdecl principia__CollisionGetLatitudeLongitude(double* const latitude,
-                                                      double* const longitude) {
+void __cdecl principia__CollisionSetRadius(
+    PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle> const* const
+        executor,
+    double const radius) {
+  journal::Method<journal::CollisionSetRadius> m{
+      {executor,
+       radius}};
+  executor->callback().Push(radius * Metre);
 }
-
-void __cdecl principia__CollisionSetRadius(double const radius) {}
 
 }  // namespace interface
 }  // namespace principia

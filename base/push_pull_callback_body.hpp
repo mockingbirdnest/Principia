@@ -98,7 +98,7 @@ PushPullExecutor<T, Result, Arguments...>::~PushPullExecutor() {
 
 template<typename T, typename Result, typename... Arguments>
 PushPullCallback<Result, Arguments...>&
-PushPullExecutor<T, Result, Arguments...>::callback() {
+PushPullExecutor<T, Result, Arguments...>::callback() const {
   absl::MutexLock l(&lock_);
   return callback_;
 }
