@@ -55,7 +55,9 @@ internal class MapNodePool {
         new List<KSP.UI.Screens.Mapview.MapNode>(MaxNodesPerProvenance);
   }
 
-  public MapNodePool(Func<VisibilityModifiers> visibility_modifiers) {
+  public MapNodePool(PrincipiaPluginAdapter adapter,
+                     Func<VisibilityModifiers> visibility_modifiers) {
+    adapter_ = adapter;
     nodes_ = new Dictionary<Provenance, SingleProvenancePool>();
     properties_ =
         new Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>();
@@ -168,11 +170,39 @@ internal class MapNodePool {
           time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
           associated_map_object = associated_map_object,
       };
-      if (provenance.type == MapObject.ObjectType.Periapsis &&
-          reference_frame.Centre().GetAltitude(
-              node_properties.world_position) < 0) {
-        node_properties.object_type = MapObject.ObjectType.PatchTransition;
-        node_properties.colour = XKCDColors.Orange;
+      if (provenance.type == MapObject.ObjectType.Periapsis) {
+        var centre = reference_frame.Centre();
+        if (provenance.source == NodeSource.FlightPlan) {
+          // For the flight plan, preserve the old behaviour for now.
+          if (centre.GetAltitude(node_properties.world_position) < 0) {
+            node_properties.object_type = MapObject.ObjectType.PatchTransition;
+            node_properties.colour = XKCDColors.Orange;
+          }
+        } else {
+          centre.GetLatLonAlt(node_properties.world_position,
+                              out double latitude,
+                              out double longitude,
+                              out double altitude);
+          var terrain_altitude = centre.TerrainAltitude(
+              latitude,
+              latitude,
+              allowNegative: !centre.ocean);
+          if (altitude < terrain_altitude) {
+
+            if (provenance.source == NodeSource.Prediction) {
+              QP collision =
+                  ComputeCollision(centre,
+                                   provenance.vessel_guid,
+                                   node_properties.time);
+              node_properties.object_type =
+                  MapObject.ObjectType.PatchTransition;
+              node_properties.colour = XKCDColors.Orange;
+              node_properties.world_position = (Vector3d)collision.q;
+              node_properties.velocity = (Vector3d)collision.p;
+              // TODO(phl): Set node_properties.time.
+            }
+          }
+        }
       }
 
       if (pool.nodes_used == pool.nodes.Count) {
@@ -323,6 +353,31 @@ internal class MapNodePool {
     return new_node;
   }
 
+  private QP ComputeCollision(CelestialBody centre,
+                              string vessel_guid,
+                              double subterranean_time) {
+    var executor = Plugin.CollisionNewPredictionExecutor(
+        celestial_index: centre.flightGlobalsIndex,
+        sun_world_position: (XYZ)Planetarium.fetch.Sun.position,
+        vessel_guid: vessel_guid,
+        Planetarium.GetUniversalTime(),
+        subterranean_time);
+
+    for (;;) {
+      bool more = executor.CollisionGetLatitudeLongitude(
+          out double trial_latitude,
+          out double trial_longitude);
+      if (!more) {
+        return Interface.CollisionDeleteExecutor(ref executor);
+      }
+      executor.CollisionSetRadius(centre.TerrainAltitude(
+                                      trial_latitude,
+                                      trial_longitude,
+                                      allowNegative: !centre.ocean) +
+                                  centre.Radius);
+    }
+  }
+
   private class MapNodeProperties {
     public bool visible;
     public MapObject.ObjectType object_type;
@@ -338,6 +393,9 @@ internal class MapNodePool {
     public double time;
   }
 
+  private IntPtr Plugin => adapter_.Plugin();
+
+  private readonly PrincipiaPluginAdapter adapter_;
   private Dictionary<Provenance, SingleProvenancePool> nodes_;
   private Dictionary<KSP.UI.Screens.Mapview.MapNode, MapNodeProperties>
       properties_;
