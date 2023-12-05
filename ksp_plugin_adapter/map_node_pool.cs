@@ -172,13 +172,16 @@ internal class MapNodePool {
       };
       if (provenance.type == MapObject.ObjectType.Periapsis) {
         var centre = reference_frame.Centre();
-        if (provenance.source == NodeSource.FlightPlan) {
-          // For the flight plan, preserve the old behaviour for now.
+        if (provenance.source == NodeSource.FlightPlan ||
+            !reference_frame.IsSurfaceFrame()) {
+          // For the flight plan, preserve the old behaviour for now.  Also, the
+          // terrain-based markers only make sense for the surface frame.
           if (centre.GetAltitude(node_properties.world_position) < 0) {
             node_properties.object_type = MapObject.ObjectType.PatchTransition;
             node_properties.colour = XKCDColors.Orange;
           }
         } else {
+          // Prediction in the surface frame.
           centre.GetLatLonAlt(node_properties.world_position,
                               out double latitude,
                               out double longitude,
@@ -188,7 +191,6 @@ internal class MapNodePool {
               latitude,
               allowNegative: !centre.ocean);
           if (altitude < terrain_altitude) {
-
             if (provenance.source == NodeSource.Prediction) {
               QP collision =
                   ComputeCollision(centre,
