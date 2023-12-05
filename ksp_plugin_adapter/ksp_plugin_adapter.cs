@@ -343,6 +343,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     map_node_pool_ = new MapNodePool(
+        this,
         visibility_modifiers: () => new MapNodePool.VisibilityModifiers(
             show_unpinned: main_window_.show_unpinned_markers,
             can_hover: !ManœuvreMarker.has_interacting_marker)

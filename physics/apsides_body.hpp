@@ -190,10 +190,10 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     min_radius_time = last_time;
   }
 
-  auto altitude_at_time = [&radius,
-                           &reference,
-                           &reference_body,
-                           &trajectory](Instant const& t) {
+  auto height_above_terrain_at_time = [&radius,
+                                       &reference,
+                                       &reference_body,
+                                       &trajectory](Instant const& t) {
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
     Displacement<Frame> const displacement_in_frame =
@@ -212,10 +212,10 @@ typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
                   spherical_coordinates.longitude);
   };
 
-  CHECK_LE(Length{}, altitude_at_time(max_radius_time));
-  CHECK_LE(altitude_at_time(min_radius_time), Length{});
+  CHECK_LE(Length{}, height_above_terrain_at_time(max_radius_time));
+  CHECK_LE(height_above_terrain_at_time(min_radius_time), Length{});
 
-  Instant const collision_time = Brent(altitude_at_time,
+  Instant const collision_time = Brent(height_above_terrain_at_time,
                                        max_radius_time,
                                        min_radius_time);
 

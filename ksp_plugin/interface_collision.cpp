@@ -69,7 +69,7 @@ QP __cdecl principia__CollisionDeleteExecutor(
   {
     TakeOwnership(executor);
   }
-  return ToQP(collision_degrees_of_freedom);
+  return m.Return(ToQP(collision_degrees_of_freedom));
 }
 
 bool __cdecl principia__CollisionGetLatitudeLongitude(
@@ -153,6 +153,7 @@ void __cdecl principia__CollisionSetRadius(
        radius}};
   CHECK_NOTNULL(executor);
   executor->callback().Push(radius * Metre);
+  return m.Return();
 }
 
 }  // namespace interface
