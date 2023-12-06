@@ -63,6 +63,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     }
     var status = plugin.FlightPlanReplace(vessel_guid, burn, i);
     UpdateStatus(status, i);
+    ResetOptimizer(vessel_guid);
     if (burn_editors_?.Count > i && burn_editors_[i] is BurnEditor editor) {
       editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, i));
     }
@@ -105,6 +106,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                          GUILayoutWidth(1)) &&
             i != selected_flight_plan) {
           plugin.FlightPlanSelect(vessel_guid, i);
+          ResetOptimizer(vessel_guid);
           final_time_.value_if_different =
               plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
           ClearBurnEditors();
@@ -123,6 +125,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         plugin.FlightPlanCreate(vessel_guid,
                                 plugin.CurrentTime() + 3600,
                                 predicted_vessel.GetTotalMass());
+        ResetOptimizer(vessel_guid);
         final_time_.value_if_different =
             plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
         ClearBurnEditors();
@@ -190,7 +193,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
           burn_editors_.Last().Reset(
               plugin.FlightPlanGetManoeuvre(vessel_guid, i));
         }
-        UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
+        UpdateBurnEditorIndices(vessel_guid);
       }
     }
 
@@ -234,6 +237,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 final_time_.value);
         reached_deadline_ = status.is_deadline_exceeded();
         UpdateStatus(status, null);
+        ResetOptimizer(vessel_guid);
       }
       // Always refresh the final time from C++ as it may have changed because
       // the last burn changed.
@@ -276,6 +280,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                     vessel_guid,
                     parameters);
             UpdateStatus(status, null);
+            ResetOptimizer(vessel_guid);
           }
           UnityEngine.GUILayout.TextArea(
               max_steps_[max_steps_index_].ToString(),
@@ -291,6 +296,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                     vessel_guid,
                     parameters);
             UpdateStatus(status, null);
+            ResetOptimizer(vessel_guid);
           }
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -311,6 +317,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                     vessel_guid,
                     parameters);
             UpdateStatus(status, null);
+            ResetOptimizer(vessel_guid);
           }
           UnityEngine.GUILayout.TextArea(
               length_integration_tolerances_names_[
@@ -331,6 +338,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                     vessel_guid,
                     parameters);
             UpdateStatus(status, null);
+            ResetOptimizer(vessel_guid);
           }
         }
       }
@@ -366,6 +374,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             new PlannedOrbitAnalyser(adapter_, predicted_vessel_);
         plugin.FlightPlanDelete(vessel_guid);
         ResetStatus();
+        ResetOptimizer(vessel_guid);
         ScheduleShrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
@@ -376,13 +385,14 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                 vessel_guid,
                 predicted_vessel.GetTotalMass());
             UpdateStatus(status, null);
+            ResetOptimizer(vessel_guid);
             if (status.ok()) {
               // The final time does not change, but since it is displayed with
               // respect to the beginning of the flight plan, the text must be
               // recomputed.
               final_time_.ResetValue(
                   plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
-              UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
+              UpdateBurnEditorIndices(vessel_guid);
               return;
             }
           }
@@ -528,9 +538,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             case BurnEditor.Event.Deleted: {
               var status = plugin.FlightPlanRemove(vessel_guid, i);
               UpdateStatus(status, null);
+              ResetOptimizer(vessel_guid);
               burn_editors_[i].Close();
               burn_editors_.RemoveAt(i);
-              UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
+              UpdateBurnEditorIndices(vessel_guid);
               ScheduleShrink();
               return;
             }
@@ -679,10 +690,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             minimized = false
         };
         Burn candidate_burn = editor.Burn();
-        var status = plugin.FlightPlanInsert(
-            vessel_guid,
-            candidate_burn,
-            index);
+        var status = plugin.FlightPlanInsert(vessel_guid,
+                                             candidate_burn,
+                                             index);
+        ResetOptimizer(vessel_guid);
 
         // The previous call did not necessarily create a manœuvre.  Check if
         // we need to add an editor.
@@ -691,7 +702,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         if (number_of_manœuvres > burn_editors_.Count) {
           editor.Reset(plugin.FlightPlanGetManoeuvre(vessel_guid, index));
           burn_editors_.Insert(index, editor);
-          UpdateAfterBurnEditorInsertionDeletion(vessel_guid);
+          UpdateBurnEditorIndices(vessel_guid);
           UpdateStatus(status, index);
           ScheduleShrink();
           return true;
@@ -736,6 +747,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     return true;
   }
 
+  // Called to rebuild the optimizer based on the current state of the flight
+  // plan and the given optimization parameters.
   private void ResetOptimizer(string vessel_guid,
                               CelestialBody centre,
                               double optimization_altitude,
@@ -751,6 +764,20 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                             optimization_inclination_in_degrees_,
                                             centre.flightGlobalsIndex,
                                             optimization_reference_frame_parameters_);
+  }
+
+  // Must be called each time the flight plan is changed by the user: the
+  // optimizer holds a copy of the flight plan, so proceeding with it would be
+  // wrong or confusing.
+  private void ResetOptimizer(string vessel_guid) {
+    // Rebuild the optimizer as whatever it was doing is now irrelevant.
+    if (adapter_.plotting_frame_selector_.
+            Centre() is CelestialBody centre) {
+      ResetOptimizer(vessel_guid,
+                     centre,
+                     optimization_altitude_,
+                     optimization_inclination_in_degrees_);
+    }
   }
 
   private void ResetStatus() {
@@ -878,18 +905,10 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     return message;
   }
 
-  private void UpdateAfterBurnEditorInsertionDeletion(string vessel_guid) {
+  private void UpdateBurnEditorIndices(string vessel_guid) {
     // Adjust the indices of the current burn editors.
     for (int j = 0; j < burn_editors_.Count; ++j) {
       burn_editors_[j].index = j;
-    }
-    // Rebuild the optimizer as whatever it was doing is now irrelevant.
-    if (adapter_.plotting_frame_selector_.
-            Centre() is CelestialBody centre) {
-      ResetOptimizer(vessel_guid,
-                     centre,
-                     default_optimization_altitude,
-                     default_optimization_inclination_in_degrees);
     }
   }
 
@@ -949,9 +968,9 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
   private const double default_optimization_altitude = 10e3;
   private const double default_optimization_inclination_in_degrees = 0;
 
-  // Initialized at flight plan creation by |ResetOptimizer|.
-  private double optimization_altitude_;
-  private double? optimization_inclination_in_degrees_;
+  private double optimization_altitude_ = default_optimization_altitude;
+  private double? optimization_inclination_in_degrees_ =
+      default_optimization_inclination_in_degrees;
   private NavigationFrameParameters optimization_reference_frame_parameters_;
 }
 
