@@ -96,8 +96,8 @@ class BurnEditor : ScalingRenderer {
     Maximized,
   }
 
-  // Renders the |BurnEditor|.  Returns true if and only if the settings were
-  // changed.
+  // Renders the |BurnEditor|.  Returns |Changed| if and only if the settings
+  // were changed.
   public Event Render(
       string header,
       bool anomalous,
