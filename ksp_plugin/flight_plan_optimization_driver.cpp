@@ -55,6 +55,7 @@ void FlightPlanOptimizationDriver::RequestOptimization(
   // Only process this request if there is no analysis in progress.
   absl::MutexLock l(&lock_);
   if (optimizer_idle_) {
+    last_parameters_ = parameters;
     optimizer_idle_ = false;
     optimizer_ = MakeStoppableThread([this, parameters]() {
       const absl::Status optimization_status = flight_plan_optimizer_.Optimize(
