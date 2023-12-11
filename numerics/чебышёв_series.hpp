@@ -25,34 +25,34 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // A helper class for implementing |Evaluate| that can be specialized for speed.
-template<typename Vector>
+template<typename Value>
 class EvaluationHelper final {
  public:
-  EvaluationHelper(std::vector<Vector> const& coefficients, int degree);
+  EvaluationHelper(std::vector<Value> const& coefficients, int degree);
   EvaluationHelper(EvaluationHelper&& other) = default;
   EvaluationHelper& operator=(EvaluationHelper&& other) = default;
 
-  Vector EvaluateImplementation(double scaled_t) const;
+  Value EvaluateImplementation(double scaled_t) const;
 
-  Vector coefficients(int index) const;
+  Value coefficients(int index) const;
   int degree() const;
 
  private:
-  std::vector<Vector> coefficients_;
+  std::vector<Value> coefficients_;
   int degree_;
 };
 
-// A Чебышёв series with values in the vector space |Vector|.  The argument is
+// A Чебышёв series with values in the vector space |Value|.  The argument is
 // an |Instant|.
-template<typename Vector>
+template<typename Value, typename Argument>
 class ЧебышёвSeries final {
  public:
   // The element at position i in |coefficients| is the coefficient of Tᵢ.  The
   // polynomials are scaled to the interval [t_min, t_max], which must be
   // nonempty.
-  ЧебышёвSeries(std::vector<Vector> const& coefficients,
-                Instant const& t_min,
-                Instant const& t_max);
+  ЧебышёвSeries(std::vector<Value> const& coefficients,
+                Argument const& lower_bound,
+                Argument const& upper_bound);
   ЧебышёвSeries(ЧебышёвSeries&& other) = default;
   ЧебышёвSeries& operator=(ЧебышёвSeries&& other) = default;
 
@@ -66,19 +66,21 @@ class ЧебышёвSeries final {
   // code.
   int degree() const;
 
-  // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
-  Vector Evaluate(Instant const& t) const;
-  Variation<Vector> EvaluateDerivative(Instant const& t) const;
+  // Uses the Clenshaw algorithm.  |argument| must be in the range
+  // [lower_bound, upper_bound].
+  Value Evaluate(Argument const& argument) const;
+  Derivative<Value, Argument> EvaluateDerivative(
+      Argument const& argument) const;
 
   void WriteToMessage(not_null<serialization::ЧебышёвSeries*> message) const;
   static ЧебышёвSeries ReadFromMessage(
       serialization::ЧебышёвSeries const& message);
 
  private:
-  Instant t_min_;
-  Instant t_max_;
-  Inverse<Time> one_over_duration_;
-  EvaluationHelper<Vector> helper_;
+  Argument lower_bound_;
+  Argument upper_bound_;
+  Inverse<Difference<Argument>> one_over_duration_;
+  EvaluationHelper<Value> helper_;
 };
 
 }  // namespace internal

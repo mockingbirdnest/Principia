@@ -40,16 +40,16 @@ class EvaluationHelper<Multivector<Scalar, Frame, rank>> final {
   int degree_;
 };
 
-template<typename Vector>
-EvaluationHelper<Vector>::EvaluationHelper(
-    std::vector<Vector> const& coefficients,
+template<typename Value>
+EvaluationHelper<Value>::EvaluationHelper(
+    std::vector<Value> const& coefficients,
     int const degree) : coefficients_(coefficients), degree_(degree) {}
 
-template<typename Vector>
-Vector EvaluationHelper<Vector>::EvaluateImplementation(
+template<typename Value>
+Value EvaluationHelper<Value>::EvaluateImplementation(
     double const scaled_t) const {
   double const two_scaled_t = scaled_t + scaled_t;
-  Vector const c_0 = coefficients_[0];
+  Value const c_0 = coefficients_[0];
   switch (degree_) {
     case 0:
       return c_0;
@@ -57,9 +57,9 @@ Vector EvaluationHelper<Vector>::EvaluateImplementation(
       return c_0 + scaled_t * coefficients_[1];
     default:
       // b_degree   = c_degree.
-      Vector b_i = coefficients_[degree_];
+      Value b_i = coefficients_[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
-      Vector b_j = coefficients_[degree_ - 1] + two_scaled_t * b_i;
+      Value b_j = coefficients_[degree_ - 1] + two_scaled_t * b_i;
       int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
@@ -79,13 +79,13 @@ Vector EvaluationHelper<Vector>::EvaluateImplementation(
   }
 }
 
-template<typename Vector>
-Vector EvaluationHelper<Vector>::coefficients(int const index) const {
+template<typename Value>
+Value EvaluationHelper<Value>::coefficients(int const index) const {
   return coefficients_[index];
 }
 
-template<typename Vector>
-int EvaluationHelper<Vector>::degree() const {
+template<typename Value>
+int EvaluationHelper<Value>::degree() const {
   return degree_;
 }
 
@@ -155,10 +155,11 @@ int EvaluationHelper<Multivector<Scalar, Frame, rank>>::degree() const {
   return degree_;
 }
 
-template<typename Vector>
-ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
-                                     Instant const& t_min,
-                                     Instant const& t_max)
+template<typename Value, typename Argument>
+ЧебышёвSeries<Value, Argument>::ЧебышёвSeries(
+    std::vector<Value> const& coefficients,
+    Argument const& lower_bound,
+    Argument const& upper_bound)
     : t_min_(t_min),
       t_max_(t_max),
       helper_(coefficients,
@@ -171,8 +172,9 @@ template<typename Vector>
 }
 
 
-template<typename Vector>
-bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right) const {
+template<typename Value, typename Argument>
+bool ЧебышёвSeries<Value, Argument>::operator==(
+    ЧебышёвSeries const& right) const {
   if (helper_.degree() != right.helper_.degree()) {
     return false;
   }
@@ -185,28 +187,29 @@ bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right)
          t_max_ == right.t_max_;
 }
 
-template<typename Vector>
-bool ЧебышёвSeries<Vector>::operator!=(ЧебышёвSeries const& right) const {
-  return !ЧебышёвSeries<Vector>::operator==(right);
+template<typename Value, typename Argument>
+bool ЧебышёвSeries<Value, Argument>::operator!=(
+    ЧебышёвSeries const& right) const {
+  return !ЧебышёвSeries<Value>::operator==(right);
 }
 
-template<typename Vector>
-Instant const& ЧебышёвSeries<Vector>::t_min() const {
+template<typename Value, typename Argument>
+Instant const& ЧебышёвSeries<Value, Argument>::t_min() const {
   return t_min_;
 }
 
-template<typename Vector>
-Instant const& ЧебышёвSeries<Vector>::t_max() const {
+template<typename Value, typename Argument>
+Instant const& ЧебышёвSeries<Value, Argument>::t_max() const {
   return t_max_;
 }
 
-template<typename Vector>
-int ЧебышёвSeries<Vector>::degree() const {
+template<typename Value, typename Argument>
+int ЧебышёвSeries<Value, Argument>::degree() const {
   return helper_.degree();
 }
 
-template<typename Vector>
-Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
+template<typename Value, typename Argument>
+Value ЧебышёвSeries<Value, Argument>::Evaluate(Argument const& argument) const {
   // This formula ensures continuity at the edges by producing -1 or +1 within
   // 2 ulps for |t_min_| and |t_max_|.
   double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
@@ -222,9 +225,9 @@ Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   return helper_.EvaluateImplementation(scaled_t);
 }
 
-template<typename Vector>
-Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
-    Instant const& t) const {
+template<typename Value, typename Argument>
+Derivative<Value, Argument> ЧебышёвSeries<Value, Argument>::EvaluateDerivative(
+    Argument const& argument) const {
   // See comments above.
   double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
   double const two_scaled_t = scaled_t + scaled_t;
@@ -233,15 +236,15 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
   CHECK_GE(scaled_t, -1.1);
 #endif
 
-  Vector b_kplus2_vector{};
-  Vector b_kplus1_vector{};
-  Vector* b_kplus2 = &b_kplus2_vector;
-  Vector* b_kplus1 = &b_kplus1_vector;
-  Vector* const& b_k = b_kplus2;  // An overlay.
+  Value b_kplus2_vector{};
+  Value b_kplus1_vector{};
+  Value* b_kplus2 = &b_kplus2_vector;
+  Value* b_kplus1 = &b_kplus1_vector;
+  Value* const& b_k = b_kplus2;  // An overlay.
   for (int k = helper_.degree() - 1; k >= 1; --k) {
     *b_k = helper_.coefficients(k + 1) * (k + 1) +
            two_scaled_t * *b_kplus1 - *b_kplus2;
-    Vector* const last_b_k = b_k;
+    Value* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
     b_kplus1 = last_b_k;
   }
@@ -249,11 +252,11 @@ Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
              (one_over_duration_ + one_over_duration_);
 }
 
-template<typename Vector>
-void ЧебышёвSeries<Vector>::WriteToMessage(
+template<typename Value, typename Argument>
+void ЧебышёвSeries<Value, Argument>::WriteToMessage(
     not_null<serialization::ЧебышёвSeries*> const message) const {
   using Serializer = DoubleOrQuantityOrMultivectorSerializer<
-                          Vector,
+                          Value,
                           serialization::ЧебышёвSeries::Coefficient>;
 
   for (int k = 0; k <= helper_.degree(); ++k) {
@@ -264,21 +267,21 @@ void ЧебышёвSeries<Vector>::WriteToMessage(
   t_max_.WriteToMessage(message->mutable_t_max());
 }
 
-template<typename Vector>
-ЧебышёвSeries<Vector> ЧебышёвSeries<Vector>::ReadFromMessage(
+template<typename Value, typename Argument>
+ЧебышёвSeries<Value, Argument> ЧебышёвSeries<Value, Argument>::ReadFromMessage(
     serialization::ЧебышёвSeries const& message) {
   using Serializer = DoubleOrQuantityOrMultivectorSerializer<
-                          Vector,
+                          Value,
                           serialization::ЧебышёвSeries::Coefficient>;
 
-  std::vector<Vector> coefficients;
+  std::vector<Value> coefficients;
   coefficients.reserve(message.coefficient_size());
   for (auto const& coefficient : message.coefficient()) {
     coefficients.push_back(Serializer::ReadFromMessage(coefficient));
   }
   return ЧебышёвSeries(coefficients,
-                       Instant::ReadFromMessage(message.t_min()),
-                       Instant::ReadFromMessage(message.t_max()));
+                       Argument::ReadFromMessage(message.t_min()),
+                       Argument::ReadFromMessage(message.t_max()));
 }
 
 }  // namespace internal
