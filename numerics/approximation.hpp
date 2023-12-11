@@ -13,7 +13,7 @@ namespace internal {
 using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 
-template<typename Argument, typename Function>
+template<typename Function, typename Argument>
 using Value = std::invoke_result_t<Function, Argument>;
 
 template<typename Argument, typename Function>

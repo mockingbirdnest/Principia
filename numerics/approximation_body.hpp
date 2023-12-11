@@ -16,7 +16,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-template<typename Argument, typename Function, int N>
+template<int N, typename Argument, typename Function>
 ЧебышёвSeries<Value<Function, Argument>>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
@@ -25,14 +25,14 @@ template<typename Argument, typename Function, int N>
     Difference<Value<Function, Argument>> const& max_error,
     FixedVector<Value<Function, Argument>, N / 2 + 1> const& previous_fₖ,
     FixedVector<Value<Function, Argument>, N / 2 + 1> const& previous_aⱼ) {
-  auto const midpoint = Barycentre({a, b}, {0.5, 0.5});
+  auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
 
-  auto чебышёв_lobato_point = [&a, &b](std::int64_t const k) -> Argument {
+  auto чебышёв_lobato_point =
+      [&a, &b, &midpoint](std::int64_t const k) -> Argument {
     return 0.5 * (b - a) * Cos(π * k * Radian / N) + midpoint;
   };
 
-  FixedVector<Value<Function, Argument>, N + 1>& fₖ;
-  FixedVector<Value<Function, Argument>, N + 1>& a;
+  FixedVector<Value<Function, Argument>, N + 1> fₖ;
 
   // Reuse the previous evaluations of |f|.
   for (std::int64_t k = 0; k <= N / 2; ++k) {
@@ -41,7 +41,7 @@ template<typename Argument, typename Function, int N>
 
   // Evaluate |f| for the new points.
   for (std::int64_t k = 1; k < N; k += 2) {
-    fₖ[k] = f(чебышёв_lobato_point(k, N));
+    fₖ[k] = f(чебышёв_lobato_point(k));
   }
 
   FixedMatrix<double, N + 1, N + 1> ℐⱼₖ;
@@ -69,7 +69,7 @@ template<typename Argument, typename Function, int N>
   if (error_estimate < max_error) {
     return ЧебышёвSeries(aⱼ, a, b);
   } else {
-    return ЧебышёвPolynomialInterpolantImplementation(
+    return ЧебышёвPolynomialInterpolantImplementation<2 * N>(
         f, a, b, max_error, fₖ, aⱼ);
   }
 }
@@ -87,9 +87,9 @@ template<typename Argument, typename Function>
   FixedVector<Value<Function, Argument>, 2> const fₖ({f_b, f_a});
   FixedVector<Value<Function, Argument>, 2> const aⱼ(
       {0.5 * (f_b + f_a), 0.5 * (f_b - f_a)});
-  return ЧебышёвPolynomialInterpolantImplementation<Argument,
-                                                    Function,
-                                                    /*N=*/2>(
+  return ЧебышёвPolynomialInterpolantImplementation</*N=*/2,
+                                                    Argument,
+                                                    Function>(
       f, a, b, max_error, fₖ, aⱼ);
 }
 

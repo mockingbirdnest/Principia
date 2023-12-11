@@ -16,13 +16,10 @@ TEST(ApproximationTest, SinInverse) {
   std::function<double(double)> const f = [](double const x) -> double {
     return Sin(1 * Radian / x);
   };
-//  using T1 = Difference<internal::Value<decltype(f), double>>;
-  using T2 = Difference<std::invoke_result_t<decltype(f), double>>;
-  // auto const approximation =
-  //     ЧебышёвPolynomialInterpolant<double>(f,
-  //                                          /*lower_bound=*/0.01,
-  //                                          /*upper_bound=*/10,
-  //                                          /*max_error=*/1e-6);
+  auto const approximation = ЧебышёвPolynomialInterpolant(f,
+                                                          /*lower_bound=*/0.01,
+                                                          /*upper_bound=*/10.0,
+                                                          /*max_error=*/1e-6);
 }
 
 }  // namespace _approximation
