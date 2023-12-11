@@ -239,6 +239,12 @@
     <ClInclude Include="angle_reduction_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="approximation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="approximation_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">

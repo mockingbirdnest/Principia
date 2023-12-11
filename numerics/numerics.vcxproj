@@ -14,6 +14,8 @@
     <ClInclude Include="angle_reduction.hpp" />
     <ClInclude Include="angle_reduction_body.hpp" />
     <ClInclude Include="apodization_body.hpp" />
+    <ClInclude Include="approximation.hpp" />
+    <ClInclude Include="approximation_body.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
     <ClInclude Include="finite_difference_coefficients.mathematica.h" />
     <ClInclude Include="global_optimization.hpp" />
