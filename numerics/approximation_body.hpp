@@ -17,14 +17,14 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<int N, typename Argument, typename Function>
-ЧебышёвSeries<Value<Function, Argument>>
+ЧебышёвSeries<Value<Argument, Function>>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
     Argument const& a,
     Argument const& b,
-    Difference<Value<Function, Argument>> const& max_error,
-    FixedVector<Value<Function, Argument>, N / 2 + 1> const& previous_fₖ,
-    FixedVector<Value<Function, Argument>, N / 2 + 1> const& previous_aⱼ) {
+    Difference<Value<Argument, Function>> const& max_error,
+    FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_fₖ,
+    FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_aⱼ) {
   auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
 
   auto чебышёв_lobato_point =
@@ -32,7 +32,7 @@ template<int N, typename Argument, typename Function>
     return 0.5 * (b - a) * Cos(π * k * Radian / N) + midpoint;
   };
 
-  FixedVector<Value<Function, Argument>, N + 1> fₖ;
+  FixedVector<Value<Argument, Function>, N + 1> fₖ;
 
   // Reuse the previous evaluations of |f|.
   for (std::int64_t k = 0; k <= N / 2; ++k) {
@@ -58,7 +58,7 @@ template<int N, typename Argument, typename Function>
 
   // Compute an upper bound for the error, based on the previous and new
   // polynomials.
-  Difference<Value<Function, Argument>> error_estimate;
+  Difference<Value<Argument, Function>> error_estimate;
   for (std::int64_t j = 0; j <= N / 2; ++j) {
     error_estimate += Abs(previous_aⱼ[j] - aⱼ[j]);
   }
@@ -75,17 +75,17 @@ template<int N, typename Argument, typename Function>
 }
 
 template<typename Argument, typename Function>
-ЧебышёвSeries<Value<Function, Argument>> ЧебышёвPolynomialInterpolant(
+ЧебышёвSeries<Value<Argument, Function>> ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    Difference<Value<Function, Argument>> const& max_error) {
+    Difference<Value<Argument, Function>> const& max_error) {
   auto const& a = lower_bound;
   auto const& b = upper_bound;
   auto const f_a = f(a);
   auto const f_b = f(b);
-  FixedVector<Value<Function, Argument>, 2> const fₖ({f_b, f_a});
-  FixedVector<Value<Function, Argument>, 2> const aⱼ(
+  FixedVector<Value<Argument, Function>, 2> const fₖ({f_b, f_a});
+  FixedVector<Value<Argument, Function>, 2> const aⱼ(
       {0.5 * (f_b + f_a), 0.5 * (f_b - f_a)});
   return ЧебышёвPolynomialInterpolantImplementation</*N=*/2,
                                                     Argument,
