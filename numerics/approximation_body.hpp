@@ -28,7 +28,7 @@ template<typename Argument, typename Function, int N>
   auto const midpoint = Barycentre({a, b}, {0.5, 0.5});
 
   auto чебышёв_lobato_point = [&a, &b](std::int64_t const k) -> Argument {
-    return 0.5 * (b - a) Cos(π * k * Radian / N) + midpoint;
+    return 0.5 * (b - a) * Cos(π * k * Radian / N) + midpoint;
   };
 
   FixedVector<Value<Function, Argument>, N + 1>& fₖ;
@@ -54,7 +54,7 @@ template<typename Argument, typename Function, int N>
   }
 
   // Compute the coefficients of the Чебышёв polynomial.
-  aⱼ = ℐⱼₖ * fₖ;
+  auto const aⱼ = ℐⱼₖ * fₖ;
 
   // Compute an upper bound for the error, based on the previous and new
   // polynomials.
@@ -91,7 +91,6 @@ template<typename Argument, typename Function>
                                                     Function,
                                                     /*N=*/2>(
       f, a, b, max_error, fₖ, aⱼ);
-);
 }
 
 }  // namespace internal

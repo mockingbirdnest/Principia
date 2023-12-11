@@ -91,6 +91,7 @@
   <ItemGroup>
     <ClCompile Include="angle_reduction_test.cpp" />
     <ClCompile Include="apodization_test.cpp" />
+    <ClCompile Include="approximation_test.cpp" />
     <ClCompile Include="cbrt.cpp" />
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="combinatorics_test.cpp" />
