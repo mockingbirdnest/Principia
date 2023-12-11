@@ -198,7 +198,7 @@ PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
     break
 
 template<typename Vector>
-ЧебышёвSeries<Vector>
+ЧебышёвSeries<Vector, Instant>
 NewhallApproximationInЧебышёвBasis(int degree,
                                    std::vector<Vector> const& q,
                                    std::vector<Variation<Vector>> const& v,
@@ -244,7 +244,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
   }
   CHECK_EQ(degree + 1, coefficients.size());
   error_estimate = coefficients[degree];
-  return ЧебышёвSeries<Vector>(coefficients, t_min, t_max);
+  return ЧебышёвSeries<Vector, Instant>(coefficients, t_min, t_max);
 }
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE

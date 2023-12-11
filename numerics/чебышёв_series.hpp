@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/instant.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -20,7 +19,6 @@ namespace _чебышёв_series {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -32,7 +30,7 @@ class EvaluationHelper final {
   EvaluationHelper(EvaluationHelper&& other) = default;
   EvaluationHelper& operator=(EvaluationHelper&& other) = default;
 
-  Value EvaluateImplementation(double scaled_t) const;
+  Value EvaluateImplementation(double scaled_argument) const;
 
   Value coefficients(int index) const;
   int degree() const;
@@ -43,13 +41,13 @@ class EvaluationHelper final {
 };
 
 // A Чебышёв series with values in the vector space |Value|.  The argument is
-// an |Instant|.
+// in the affine space |Argument|.
 template<typename Value, typename Argument>
 class ЧебышёвSeries final {
  public:
   // The element at position i in |coefficients| is the coefficient of Tᵢ.  The
-  // polynomials are scaled to the interval [t_min, t_max], which must be
-  // nonempty.
+  // polynomials are scaled to the interval [lower_bound, upper_bound], which
+  // must be nonempty.
   ЧебышёвSeries(std::vector<Value> const& coefficients,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
@@ -59,8 +57,8 @@ class ЧебышёвSeries final {
   bool operator==(ЧебышёвSeries const& right) const;
   bool operator!=(ЧебышёвSeries const& right) const;
 
-  Instant const& t_min() const;
-  Instant const& t_max() const;
+  Argument const& lower_bound() const;
+  Argument const& upper_bound() const;
 
   // Only useful for benchmarking or analyzing performance.  Do not use in real
   // code.
@@ -79,7 +77,7 @@ class ЧебышёвSeries final {
  private:
   Argument lower_bound_;
   Argument upper_bound_;
-  Inverse<Difference<Argument>> one_over_duration_;
+  Inverse<Difference<Argument>> one_over_width_;
   EvaluationHelper<Value> helper_;
 };
 

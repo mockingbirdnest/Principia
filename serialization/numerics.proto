@@ -18,8 +18,8 @@ message ChebyshevSeries {
     }
   }
   repeated Coefficient coefficient = 1;
-  required Point t_min = 2;
-  required Point t_max = 3;
+  required Point lower_bound = 2;  // Renamed in Julia.
+  required Point upper_bound = 3;  // Renamed in Julia.
 }
 
 message DoublePrecision {
@@ -79,7 +79,7 @@ message PolynomialInMonomialBasis {
     }
   }
   repeated Coefficient coefficient = 1;
-  // Added in Gröbner.
+  // Added in GrÃ¶bner.
   oneof origin {
     double double = 3;
     Quantity quantity = 4;

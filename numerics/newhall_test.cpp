@@ -56,9 +56,9 @@ class ЧебышёвAdapter {
   Variation<Value> EvaluateDerivative(Instant const& t) const;
 
  private:
-  explicit ЧебышёвAdapter(ЧебышёвSeries<Value> series);
+  explicit ЧебышёвAdapter(ЧебышёвSeries<Value, Instant> series);
 
-  ЧебышёвSeries<Value> series_;
+  ЧебышёвSeries<Value, Instant> series_;
 };
 
 template<typename Value, int degree>
@@ -108,7 +108,8 @@ Variation<Value>
 }
 
 template<typename Value, int degree>
-ЧебышёвAdapter<Value, degree>::ЧебышёвAdapter(ЧебышёвSeries<Value> series)
+ЧебышёвAdapter<Value, degree>::ЧебышёвAdapter(
+    ЧебышёвSeries<Value, Instant> series)
     : series_(std::move(series)) {}
 
 template<typename Value, int degree>
