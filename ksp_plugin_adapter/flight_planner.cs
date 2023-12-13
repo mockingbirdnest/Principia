@@ -106,7 +106,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                                          GUILayoutWidth(1)) &&
             i != selected_flight_plan) {
           plugin.FlightPlanSelect(vessel_guid, i);
-          ResetOptimizer(vessel_guid);
           final_time_.value_if_different =
               plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
           ClearBurnEditors();
@@ -125,7 +124,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         plugin.FlightPlanCreate(vessel_guid,
                                 plugin.CurrentTime() + 3600,
                                 predicted_vessel.GetTotalMass());
-        ResetOptimizer(vessel_guid);
         final_time_.value_if_different =
             plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
         ClearBurnEditors();
@@ -374,7 +372,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             new PlannedOrbitAnalyser(adapter_, predicted_vessel_);
         plugin.FlightPlanDelete(vessel_guid);
         ResetStatus();
-        ResetOptimizer(vessel_guid);
         ScheduleShrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
