@@ -374,7 +374,6 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
             new PlannedOrbitAnalyser(adapter_, predicted_vessel_);
         plugin.FlightPlanDelete(vessel_guid);
         ResetStatus();
-        ResetOptimizer(vessel_guid);
         ScheduleShrink();
         // The state change will happen the next time we go through OnGUI.
       } else {
