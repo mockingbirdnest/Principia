@@ -28,7 +28,7 @@ class FlightPlanOptimizationDriver {
   };
 
   FlightPlanOptimizationDriver(
-      FlightPlan const& flight_plan,
+      not_null<std::shared_ptr<FlightPlan>> const& flight_plan,
       FlightPlanOptimizer::MetricFactory metric_factory);
 
   virtual ~FlightPlanOptimizationDriver();
@@ -54,6 +54,7 @@ class FlightPlanOptimizationDriver {
   void Wait() const;
 
  private:
+  // The progress callback of the optimizer.
   void UpdateLastFlightPlan(FlightPlan const& flight_plan);
 
   // The flight plan being optimized, asynchronously modified by the optimizer.
