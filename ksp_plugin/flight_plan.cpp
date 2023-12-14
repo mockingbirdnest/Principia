@@ -306,9 +306,10 @@ double FlightPlan::progress_of_analysis(int coast_index) const {
 void FlightPlan::EnableAnalysis(bool const enabled) {
   if (enabled != analysis_is_enabled_) {
     if (enabled) {
-      // Request analysis of all the non-anomalous coasts.
+      // Request analysis of all non-anomalous coasts, and the first anomalous
+      // segment if it is a coast.
       for (int index = 0;
-           index < segments_.size() - anomalous_segments_;
+           index < segments_.size() - std::max(0, anomalous_segments_ - 1);
            ++index) {
         if (index % 2 == 0) {
           auto const& coast = segments_[index];

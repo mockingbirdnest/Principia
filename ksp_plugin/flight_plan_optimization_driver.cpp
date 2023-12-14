@@ -64,6 +64,7 @@ void FlightPlanOptimizationDriver::RequestOptimization(
       if (optimization_status.ok()) {
         last_flight_plan_ =
             make_not_null_shared<FlightPlan>(flight_plan_under_optimization_);
+        last_flight_plan_->EnableAnalysis(/*enabled=*/true);
       } else {
         LOG(WARNING) << "Optimization returned " << optimization_status;
       }
@@ -87,6 +88,9 @@ void FlightPlanOptimizationDriver::UpdateLastFlightPlan(
     FlightPlan const& flight_plan) {
   absl::MutexLock l(&lock_);
   last_flight_plan_ = make_not_null_shared<FlightPlan>(flight_plan);
+  // TODO(phl): This is wasteful, but otherwise, what happens if we interrupt
+  // optimization?
+  last_flight_plan_->EnableAnalysis(/*enabled=*/true);
 }
 
 }  // namespace internal

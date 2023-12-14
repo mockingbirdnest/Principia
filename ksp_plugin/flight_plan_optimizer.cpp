@@ -544,12 +544,8 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
           Δv_tolerance / speed_homogeneization_factor);
   if (status_or_solution.ok()) {
     auto const& solution = status_or_solution.value();
-    auto const replace_status =
-        flight_plan_->Replace(UpdatedBurn(solution, manœuvre), index);
-    flight_plan_->EnableAnalysis(/*enabled=*/true);
-    return replace_status;
+    return flight_plan_->Replace(UpdatedBurn(solution, manœuvre), index);
   } else {
-    flight_plan_->EnableAnalysis(/*enabled=*/true);
     return status_or_solution.status();
   }
 }
