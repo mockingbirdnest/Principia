@@ -1,6 +1,6 @@
 # Principia
 
-![⚠️](https://place-hold.it/10/f00000/000000&text=) _If you downloaded Jordan before December 14, 14:49 UTC, you probably have a buggy version (see [#3819](https://github.com/mockingbirdnest/Principia/issues/3819)). Please download it again. If you have the correct version, the version string in the Principia UI says `2023121300-Jordan-0-ge51928f832188fd4eeedd50e33d11218e1cd44eb`. We apologize for the inconvenience._ ![⚠️](https://place-hold.it/10/f00000/000000&text=)
+![⚠️](https://place-hold.it/10/f00000/000000&text=) _If you downloaded Jordan before December 14, 15:12 UTC, you probably have a buggy version (see [#3819](https://github.com/mockingbirdnest/Principia/issues/3819)). Please download it again. If you have the correct version, the version string in the Principia UI says `2023121300-Jordan-0-ge51928f832188fd4eeedd50e33d11218e1cd44eb`. We apologize for the inconvenience._ ![⚠️](https://place-hold.it/10/f00000/000000&text=)
 
 **&lrm;[Jordan](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#jordan), the December version of Principia, is available, with improvements and bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/j0rcl4n).**
 
