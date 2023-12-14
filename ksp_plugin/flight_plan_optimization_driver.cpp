@@ -16,16 +16,15 @@ namespace internal {
 using std::placeholders::_1;
 
 FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
-    FlightPlan const& flight_plan,
+    not_null<std::shared_ptr<FlightPlan>> const& flight_plan,
     FlightPlanOptimizer::MetricFactory metric_factory)
-    : flight_plan_under_optimization_(flight_plan),
+    : flight_plan_under_optimization_(*flight_plan),  // Copy.
       flight_plan_optimizer_(&flight_plan_under_optimization_,
                              std::move(metric_factory),
                              [this](FlightPlan const& flight_plan) {
                                UpdateLastFlightPlan(flight_plan);
                              }),
-      last_flight_plan_(
-          make_not_null_shared<FlightPlan>(flight_plan_under_optimization_)) {}
+      last_flight_plan_(flight_plan) {}
 
 FlightPlanOptimizationDriver::~FlightPlanOptimizationDriver() {
   // Ensure that we do not have a thread still running with references to the
