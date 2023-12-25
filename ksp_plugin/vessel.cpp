@@ -355,7 +355,7 @@ void Vessel::MakeFlightPlanOptimizationDriver(
     optimization_driver->Interrupt();
   }
   optimization_driver = make_not_null_unique<FlightPlanOptimizationDriver>(
-      *flight_plan, std::move(metric_factory));
+      flight_plan, std::move(metric_factory));
 }
 
 void Vessel::StartFlightPlanOptimizationDriver(
