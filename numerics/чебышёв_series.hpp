@@ -51,6 +51,10 @@ class ЧебышёвSeries final {
   ЧебышёвSeries(std::vector<Value> const& coefficients,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
+  template<int degree>
+  ЧебышёвSeries(FixedVector<Value, degree + 1> const& coefficients,
+                Argument const& lower_bound,
+                Argument const& upper_bound);
   ЧебышёвSeries(ЧебышёвSeries&& other) = default;
   ЧебышёвSeries& operator=(ЧебышёвSeries&& other) = default;
 

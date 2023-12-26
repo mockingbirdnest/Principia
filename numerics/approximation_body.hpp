@@ -1,7 +1,8 @@
 #pragma once
 
-#include "geometry/barycentre_calculator.hpp"
 #include "numerics/approximation.hpp"
+
+#include "geometry/barycentre_calculator.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
@@ -17,7 +18,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<int N, typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>, typename Argument>
+ЧебышёвSeries<Value<Argument, Function>, Argument>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
     Argument const& a,
@@ -67,7 +68,7 @@ template<int N, typename Argument, typename Function>
   }
 
   if (error_estimate < max_error) {
-    return ЧебышёвSeries(aⱼ, a, b);
+    return ЧебышёвSeries<Value<Argument, Function>, Argument>(aⱼ, a, b);
   } else {
     return ЧебышёвPolynomialInterpolantImplementation<2 * N>(
         f, a, b, max_error, fₖ, aⱼ);
@@ -75,7 +76,7 @@ template<int N, typename Argument, typename Function>
 }
 
 template<typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>, typename Argument>
+ЧебышёвSeries<Value<Argument, Function>, Argument>
 ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
