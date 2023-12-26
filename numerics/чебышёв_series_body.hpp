@@ -191,7 +191,7 @@ bool ЧебышёвSeries<Value, Argument>::operator==(
 template<typename Value, typename Argument>
 bool ЧебышёвSeries<Value, Argument>::operator!=(
     ЧебышёвSeries const& right) const {
-  return !ЧебышёвSeries<Value>::operator==(right);
+  return !ЧебышёвSeries::operator==(right);
 }
 
 template<typename Value, typename Argument>
