@@ -111,6 +111,15 @@ TEST_F(ЧебышёвSeriesTest, T2Dimension) {
   EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + 3 * Second));
 }
 
+TEST_F(ЧебышёвSeriesTest, T2Double) {
+  ЧебышёвSeries<Length, double> t2(
+      {0 * Metre, 0 * Metre, 1 * Metre},
+      -1, 2);
+  EXPECT_EQ(1 * Metre, t2.Evaluate(-1));
+  EXPECT_EQ(-7.0 / 9.0 * Metre, t2.Evaluate(1));
+  EXPECT_EQ(1 * Metre, t2.Evaluate(2));
+}
+
 TEST_F(ЧебышёвSeriesTest, X6Vector) {
   using V = Vector<Length, ICRS>;
   // {T3, X5, X6}
