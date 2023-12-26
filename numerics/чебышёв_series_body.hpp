@@ -114,7 +114,8 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
       // b_degree   = c_degree.
       R3Element<double> b_i = coefficients_[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
-      R3Element<double> b_j = coefficients_[degree_ - 1] + two_scaled_argument * b_i;
+      R3Element<double> b_j =
+          coefficients_[degree_ - 1] + two_scaled_argument * b_i;
       int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
@@ -248,8 +249,9 @@ Derivative<Value, Argument> ЧебышёвSeries<Value, Argument>::EvaluateDeriv
     b_kplus2 = b_kplus1;
     b_kplus1 = last_b_k;
   }
-  return (helper_.coefficients(1) + two_scaled_argument * *b_kplus1 - *b_kplus2) *
-             (one_over_width_ + one_over_width_);
+  return (helper_.coefficients(1) + two_scaled_argument * *b_kplus1 -
+          *b_kplus2) *
+         (one_over_width_ + one_over_width_);
 }
 
 template<typename Value, typename Argument>
