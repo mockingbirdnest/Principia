@@ -95,8 +95,8 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   }
 }
 
-using ResultЧебышёвDouble = ЧебышёвSeries<double>;
-using ResultЧебышёвDisplacement = ЧебышёвSeries<Displacement<ICRS>>;
+using ResultЧебышёвDouble = ЧебышёвSeries<double, Instant>;
+using ResultЧебышёвDisplacement = ЧебышёвSeries<Displacement<ICRS>, Instant>;
 using ResultMonomialDouble =
     not_null<std::unique_ptr<Polynomial<double, Instant>>>;
 using ResultMonomialDisplacement =

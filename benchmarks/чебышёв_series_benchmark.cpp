@@ -58,7 +58,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<double> const series(coefficients, t_min, t_max);
+  ЧебышёвSeries<double, Instant> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1e-9;
@@ -86,7 +86,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<Length> const series(coefficients, t_min, t_max);
+  ЧебышёвSeries<Length, Instant> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1e-9;
@@ -118,7 +118,8 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<R3Element<double>> const series(coefficients, t_min, t_max);
+  ЧебышёвSeries<R3Element<double>, Instant> const series(
+      coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1e-9;
@@ -151,7 +152,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<Multivector<double, ICRS, 1>> const series(
+  ЧебышёвSeries<Multivector<double, ICRS, 1>, Instant> const series(
       coefficients, t_min, t_max);
 
   Instant t = t_min;
@@ -185,7 +186,8 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<Displacement<ICRS>> const series(coefficients, t_min, t_max);
+  ЧебышёвSeries<Displacement<ICRS>, Instant> const series(
+      coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1e-9;

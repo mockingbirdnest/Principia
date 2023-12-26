@@ -389,9 +389,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       // Read the series, evaluate it and use the resulting values to build a
       // polynomial in the monomial basis.
       auto const series =
-          ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s);
-      Time const step = (series.t_max() - series.t_min()) / divisions;
-      Instant t = series.t_min();
+          ЧебышёвSeries<Displacement<Frame>, Instant>::ReadFromMessage(s);
+      Time const step =
+          (series.upper_bound() - series.lower_bound()) / divisions;
+      Instant t = series.lower_bound();
       std::vector<Position<Frame>> q;
       std::vector<Velocity<Frame>> v;
       for (int i = 0; i <= divisions; t += step, ++i) {
@@ -400,11 +401,11 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
       continuous_trajectory->polynomials_.emplace_back(
-          series.t_max(),
+          series.upper_bound(),
           continuous_trajectory->NewhallApproximationInMonomialBasis(
               series.degree(),
               q, v,
-              series.t_min(), series.t_max(),
+              series.lower_bound(), series.upper_bound(),
               error_estimate));
     }
   } else {
