@@ -217,12 +217,8 @@ Value ЧебышёвSeries<Value, Argument>::Evaluate(Argument const& argument) 
       one_over_width_;
   // We have to allow |scaled_argument| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): This should use DCHECK but these macros don't work because the
-  // Principia projects don't define NDEBUG.
-#ifdef _DEBUG
-  CHECK_LE(scaled_argument, 1.1);
-  CHECK_GE(scaled_argument, -1.1);
-#endif
+  DCHECK_LE(scaled_argument, 1.1);
+  DCHECK_GE(scaled_argument, -1.1);
 
   return helper_.EvaluateImplementation(scaled_argument);
 }
