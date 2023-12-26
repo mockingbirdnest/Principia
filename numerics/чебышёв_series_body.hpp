@@ -30,7 +30,7 @@ class EvaluationHelper<Multivector<Scalar, Frame, rank>> final {
   EvaluationHelper& operator=(EvaluationHelper&& other) = default;
 
   Multivector<Scalar, Frame, rank> EvaluateImplementation(
-      double scaled_t) const;
+      double scaled_argument) const;
 
   Multivector<Scalar, Frame, rank> coefficients(int index) const;
   int degree() const;
@@ -40,52 +40,52 @@ class EvaluationHelper<Multivector<Scalar, Frame, rank>> final {
   int degree_;
 };
 
-template<typename Vector>
-EvaluationHelper<Vector>::EvaluationHelper(
-    std::vector<Vector> const& coefficients,
+template<typename Value>
+EvaluationHelper<Value>::EvaluationHelper(
+    std::vector<Value> const& coefficients,
     int const degree) : coefficients_(coefficients), degree_(degree) {}
 
-template<typename Vector>
-Vector EvaluationHelper<Vector>::EvaluateImplementation(
-    double const scaled_t) const {
-  double const two_scaled_t = scaled_t + scaled_t;
-  Vector const c_0 = coefficients_[0];
+template<typename Value>
+Value EvaluationHelper<Value>::EvaluateImplementation(
+    double const scaled_argument) const {
+  double const two_scaled_argument = scaled_argument + scaled_argument;
+  Value const c_0 = coefficients_[0];
   switch (degree_) {
     case 0:
       return c_0;
     case 1:
-      return c_0 + scaled_t * coefficients_[1];
+      return c_0 + scaled_argument * coefficients_[1];
     default:
       // b_degree   = c_degree.
-      Vector b_i = coefficients_[degree_];
+      Value b_i = coefficients_[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
-      Vector b_j = coefficients_[degree_ - 1] + two_scaled_t * b_i;
+      Value b_j = coefficients_[degree_ - 1] + two_scaled_argument * b_i;
       int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
-        b_i = coefficients_[k + 1] + two_scaled_t * b_j - b_i;
+        b_i = coefficients_[k + 1] + two_scaled_argument * b_j - b_i;
         // b_k   = c_k   + 2 t b_k+1 - b_k+2.
-        b_j = coefficients_[k] + two_scaled_t * b_i - b_j;
+        b_j = coefficients_[k] + two_scaled_argument * b_i - b_j;
       }
       if (k == 0) {
         // b_1 = c_1 + 2 t b_2 - b_3.
-        b_i = coefficients_[1] + two_scaled_t * b_j - b_i;
+        b_i = coefficients_[1] + two_scaled_argument * b_j - b_i;
         // c_0 + t b_1 - b_2.
-        return c_0 + scaled_t * b_i - b_j;
+        return c_0 + scaled_argument * b_i - b_j;
       } else {
         // c_0 + t b_1 - b_2.
-        return c_0 + scaled_t * b_j - b_i;
+        return c_0 + scaled_argument * b_j - b_i;
       }
   }
 }
 
-template<typename Vector>
-Vector EvaluationHelper<Vector>::coefficients(int const index) const {
+template<typename Value>
+Value EvaluationHelper<Value>::coefficients(int const index) const {
   return coefficients_[index];
 }
 
-template<typename Vector>
-int EvaluationHelper<Vector>::degree() const {
+template<typename Value>
+int EvaluationHelper<Value>::degree() const {
   return degree_;
 }
 
@@ -101,43 +101,44 @@ EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluationHelper(
 template<typename Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank>
 EvaluationHelper<Multivector<Scalar, Frame, rank>>::EvaluateImplementation(
-    double const scaled_t) const {
-  double const two_scaled_t = scaled_t + scaled_t;
+    double const scaled_argument) const {
+  double const two_scaled_argument = scaled_argument + scaled_argument;
   R3Element<double> const c_0 = coefficients_[0];
   switch (degree_) {
     case 0:
       return Multivector<double, Frame, rank>(c_0) * si::Unit<Scalar>;
     case 1:
       return Multivector<double, Frame, rank>(
-                 c_0 + scaled_t * coefficients_[1]) * si::Unit<Scalar>;
+                 c_0 + scaled_argument * coefficients_[1]) * si::Unit<Scalar>;
     default:
       // b_degree   = c_degree.
       R3Element<double> b_i = coefficients_[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
-      R3Element<double> b_j = coefficients_[degree_ - 1] + two_scaled_t * b_i;
+      R3Element<double> b_j =
+          coefficients_[degree_ - 1] + two_scaled_argument * b_i;
       int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
         R3Element<double> const c_kplus1 = coefficients_[k + 1];
-        b_i.x = c_kplus1.x + two_scaled_t * b_j.x - b_i.x;
-        b_i.y = c_kplus1.y + two_scaled_t * b_j.y - b_i.y;
-        b_i.z = c_kplus1.z + two_scaled_t * b_j.z - b_i.z;
+        b_i.x = c_kplus1.x + two_scaled_argument * b_j.x - b_i.x;
+        b_i.y = c_kplus1.y + two_scaled_argument * b_j.y - b_i.y;
+        b_i.z = c_kplus1.z + two_scaled_argument * b_j.z - b_i.z;
         // b_k   = c_k   + 2 t b_k+1 - b_k+2.
         R3Element<double> const c_k = coefficients_[k];
-        b_j.x = c_k.x + two_scaled_t * b_i.x - b_j.x;
-        b_j.y = c_k.y + two_scaled_t * b_i.y - b_j.y;
-        b_j.z = c_k.z + two_scaled_t * b_i.z - b_j.z;
+        b_j.x = c_k.x + two_scaled_argument * b_i.x - b_j.x;
+        b_j.y = c_k.y + two_scaled_argument * b_i.y - b_j.y;
+        b_j.z = c_k.z + two_scaled_argument * b_i.z - b_j.z;
       }
       if (k == 0) {
         // b_1 = c_1 + 2 t b_2 - b_3.
-        b_i = coefficients_[1] + two_scaled_t * b_j - b_i;
+        b_i = coefficients_[1] + two_scaled_argument * b_j - b_i;
         // c_0 + t b_1 - b_2.
         return Multivector<double, Frame, rank>(
-                   c_0 + scaled_t * b_i - b_j) * si::Unit<Scalar>;
+                   c_0 + scaled_argument * b_i - b_j) * si::Unit<Scalar>;
       } else {
         // c_0 + t b_1 - b_2.
         return Multivector<double, Frame, rank>(
-                   c_0 + scaled_t * b_j - b_i) * si::Unit<Scalar>;
+                   c_0 + scaled_argument * b_j - b_i) * si::Unit<Scalar>;
       }
     }
 }
@@ -155,24 +156,26 @@ int EvaluationHelper<Multivector<Scalar, Frame, rank>>::degree() const {
   return degree_;
 }
 
-template<typename Vector>
-ЧебышёвSeries<Vector>::ЧебышёвSeries(std::vector<Vector> const& coefficients,
-                                     Instant const& t_min,
-                                     Instant const& t_max)
-    : t_min_(t_min),
-      t_max_(t_max),
+template<typename Value, typename Argument>
+ЧебышёвSeries<Value, Argument>::ЧебышёвSeries(
+    std::vector<Value> const& coefficients,
+    Argument const& lower_bound,
+    Argument const& upper_bound)
+    : lower_bound_(lower_bound),
+      upper_bound_(upper_bound),
       helper_(coefficients,
               /*degree=*/static_cast<int>(coefficients.size()) - 1) {
   CHECK_LE(0, helper_.degree()) << "Degree must be at least 0";
-  CHECK_LT(t_min_, t_max_) << "Time interval must not be empty";
+  CHECK_LT(lower_bound_, upper_bound_) << "Argument interval must not be empty";
   // Precomputed to save operations at the expense of some accuracy loss.
-  Time const duration = t_max_ - t_min_;
-  one_over_duration_ = 1 / duration;
+  auto const width = upper_bound_ - lower_bound_;
+  one_over_width_ = 1 / width;
 }
 
 
-template<typename Vector>
-bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right) const {
+template<typename Value, typename Argument>
+bool ЧебышёвSeries<Value, Argument>::operator==(
+    ЧебышёвSeries const& right) const {
   if (helper_.degree() != right.helper_.degree()) {
     return false;
   }
@@ -181,104 +184,106 @@ bool ЧебышёвSeries<Vector>::operator==(ЧебышёвSeries const& right)
       return false;
     }
   }
-  return t_min_ == right.t_min_ &&
-         t_max_ == right.t_max_;
+  return lower_bound_ == right.lower_bound_ &&
+         upper_bound_ == right.upper_bound_;
 }
 
-template<typename Vector>
-bool ЧебышёвSeries<Vector>::operator!=(ЧебышёвSeries const& right) const {
-  return !ЧебышёвSeries<Vector>::operator==(right);
+template<typename Value, typename Argument>
+bool ЧебышёвSeries<Value, Argument>::operator!=(
+    ЧебышёвSeries const& right) const {
+  return !ЧебышёвSeries<Value>::operator==(right);
 }
 
-template<typename Vector>
-Instant const& ЧебышёвSeries<Vector>::t_min() const {
-  return t_min_;
+template<typename Value, typename Argument>
+Argument const& ЧебышёвSeries<Value, Argument>::lower_bound() const {
+  return lower_bound_;
 }
 
-template<typename Vector>
-Instant const& ЧебышёвSeries<Vector>::t_max() const {
-  return t_max_;
+template<typename Value, typename Argument>
+Argument const& ЧебышёвSeries<Value, Argument>::upper_bound() const {
+  return upper_bound_;
 }
 
-template<typename Vector>
-int ЧебышёвSeries<Vector>::degree() const {
+template<typename Value, typename Argument>
+int ЧебышёвSeries<Value, Argument>::degree() const {
   return helper_.degree();
 }
 
-template<typename Vector>
-Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
+template<typename Value, typename Argument>
+Value ЧебышёвSeries<Value, Argument>::Evaluate(Argument const& argument) const {
   // This formula ensures continuity at the edges by producing -1 or +1 within
-  // 2 ulps for |t_min_| and |t_max_|.
-  double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
-  // We have to allow |scaled_t| to go slightly out of [-1, 1] because of
+  // 2 ulps for |lower_bound_| and |upper_bound_|.
+  double const scaled_argument =
+      ((argument - upper_bound_) + (argument - lower_bound_)) *
+      one_over_width_;
+  // We have to allow |scaled_argument| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
-  // TODO(phl): This should use DCHECK but these macros don't work because the
-  // Principia projects don't define NDEBUG.
-#ifdef _DEBUG
-  CHECK_LE(scaled_t, 1.1);
-  CHECK_GE(scaled_t, -1.1);
-#endif
+  DCHECK_LE(scaled_argument, 1.1);
+  DCHECK_GE(scaled_argument, -1.1);
 
-  return helper_.EvaluateImplementation(scaled_t);
+  return helper_.EvaluateImplementation(scaled_argument);
 }
 
-template<typename Vector>
-Variation<Vector> ЧебышёвSeries<Vector>::EvaluateDerivative(
-    Instant const& t) const {
+template<typename Value, typename Argument>
+Derivative<Value, Argument> ЧебышёвSeries<Value, Argument>::EvaluateDerivative(
+    Argument const& argument) const {
   // See comments above.
-  double const scaled_t = ((t - t_max_) + (t - t_min_)) * one_over_duration_;
-  double const two_scaled_t = scaled_t + scaled_t;
+  double const scaled_argument =
+      ((argument - upper_bound_) + (argument - lower_bound_)) *
+      one_over_width_;
+  double const two_scaled_argument = scaled_argument + scaled_argument;
 #ifdef _DEBUG
-  CHECK_LE(scaled_t, 1.1);
-  CHECK_GE(scaled_t, -1.1);
+  CHECK_LE(scaled_argument, 1.1);
+  CHECK_GE(scaled_argument, -1.1);
 #endif
 
-  Vector b_kplus2_vector{};
-  Vector b_kplus1_vector{};
-  Vector* b_kplus2 = &b_kplus2_vector;
-  Vector* b_kplus1 = &b_kplus1_vector;
-  Vector* const& b_k = b_kplus2;  // An overlay.
+  Value b_kplus2_vector{};
+  Value b_kplus1_vector{};
+  Value* b_kplus2 = &b_kplus2_vector;
+  Value* b_kplus1 = &b_kplus1_vector;
+  Value* const& b_k = b_kplus2;  // An overlay.
   for (int k = helper_.degree() - 1; k >= 1; --k) {
     *b_k = helper_.coefficients(k + 1) * (k + 1) +
-           two_scaled_t * *b_kplus1 - *b_kplus2;
-    Vector* const last_b_k = b_k;
+           two_scaled_argument * *b_kplus1 - *b_kplus2;
+    Value* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
     b_kplus1 = last_b_k;
   }
-  return (helper_.coefficients(1) + two_scaled_t * *b_kplus1 - *b_kplus2) *
-             (one_over_duration_ + one_over_duration_);
+  return (helper_.coefficients(1) + two_scaled_argument * *b_kplus1 -
+          *b_kplus2) *
+         (one_over_width_ + one_over_width_);
 }
 
-template<typename Vector>
-void ЧебышёвSeries<Vector>::WriteToMessage(
+template<typename Value, typename Argument>
+void ЧебышёвSeries<Value, Argument>::WriteToMessage(
     not_null<serialization::ЧебышёвSeries*> const message) const {
   using Serializer = DoubleOrQuantityOrMultivectorSerializer<
-                          Vector,
+                          Value,
                           serialization::ЧебышёвSeries::Coefficient>;
 
   for (int k = 0; k <= helper_.degree(); ++k) {
     Serializer::WriteToMessage(helper_.coefficients(k),
                                message->add_coefficient());
   }
-  t_min_.WriteToMessage(message->mutable_t_min());
-  t_max_.WriteToMessage(message->mutable_t_max());
+  lower_bound_.WriteToMessage(message->mutable_lower_bound());
+  upper_bound_.WriteToMessage(message->mutable_upper_bound());
 }
 
-template<typename Vector>
-ЧебышёвSeries<Vector> ЧебышёвSeries<Vector>::ReadFromMessage(
+template<typename Value, typename Argument>
+ЧебышёвSeries<Value, Argument> ЧебышёвSeries<Value, Argument>::ReadFromMessage(
     serialization::ЧебышёвSeries const& message) {
   using Serializer = DoubleOrQuantityOrMultivectorSerializer<
-                          Vector,
+                          Value,
                           serialization::ЧебышёвSeries::Coefficient>;
 
-  std::vector<Vector> coefficients;
+  std::vector<Value> coefficients;
   coefficients.reserve(message.coefficient_size());
   for (auto const& coefficient : message.coefficient()) {
     coefficients.push_back(Serializer::ReadFromMessage(coefficient));
   }
   return ЧебышёвSeries(coefficients,
-                       Instant::ReadFromMessage(message.t_min()),
-                       Instant::ReadFromMessage(message.t_max()));
+                       Argument::ReadFromMessage(message.lower_bound()),
+                       Argument::ReadFromMessage(message.upper_bound()));
 }
 
 }  // namespace internal

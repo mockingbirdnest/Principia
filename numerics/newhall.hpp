@@ -26,7 +26,7 @@ using namespace principia::quantities::_named_quantities;
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
 template<typename Vector>
-ЧебышёвSeries<Vector>
+ЧебышёвSeries<Vector, Instant>
 NewhallApproximationInЧебышёвBasis(int degree,
                                    std::vector<Vector> const& q,
                                    std::vector<Variation<Vector>> const& v,

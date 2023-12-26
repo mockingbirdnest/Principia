@@ -822,8 +822,8 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
   auto* const series = message.add_series();
   Instant t_min = Instant() - 1 * Second;
   Instant t_max = Instant() + 1 * Second;
-  t_min.WriteToMessage(series->mutable_t_min());
-  t_max.WriteToMessage(series->mutable_t_max());
+  t_min.WriteToMessage(series->mutable_lower_bound());
+  t_max.WriteToMessage(series->mutable_upper_bound());
   Displacement<World> const c0({1.0 * Metre, 1.0 * Metre, 1.0 * Metre});
   Displacement<World> const c1({-2.0 * Metre, -2.0 * Metre, -2.0 * Metre});
   Displacement<World> const c2({3.0 * Metre, 3.0 * Metre, 3.0 * Metre});
