@@ -17,7 +17,7 @@ template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;
 
 template<typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>> ЧебышёвPolynomialInterpolant(
+ЧебышёвSeries<Value<Argument, Function>, Argument> ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,

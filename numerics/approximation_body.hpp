@@ -17,7 +17,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<int N, typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>>
+ЧебышёвSeries<Value<Argument, Function>, typename Argument>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
     Argument const& a,
@@ -75,7 +75,8 @@ template<int N, typename Argument, typename Function>
 }
 
 template<typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>> ЧебышёвPolynomialInterpolant(
+ЧебышёвSeries<Value<Argument, Function>, typename Argument>
+ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
