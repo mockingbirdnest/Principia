@@ -2,6 +2,9 @@
 
 #include "numerics/approximation.hpp"
 
+#include <algorithm>
+#include <vector>
+
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"

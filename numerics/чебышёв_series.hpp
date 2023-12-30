@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/macros.hpp"  // 🧙 For forward declarations.
@@ -58,7 +59,7 @@ class EvaluationHelper final {
   std::vector<Value> coefficients_;
   int degree_;
 
-  template<typename V, typename A,typename O>
+  template<typename V, typename A, typename O>
   friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       ЧебышёвSeries<V, A> const& series,
       O express_in);
@@ -104,7 +105,7 @@ class ЧебышёвSeries final {
   Inverse<Difference<Argument>> one_over_width_;
   EvaluationHelper<Value> helper_;
 
-  template<typename V, typename A,typename O>
+  template<typename V, typename A, typename O>
   friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       ЧебышёвSeries<V, A> const& series,
       O express_in);
