@@ -17,6 +17,8 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
+constexpr int max_чебышёв_degree = 200;
+
 template<int N, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument>
 ЧебышёвPolynomialInterpolantImplementation(
@@ -59,7 +61,7 @@ template<int N, typename Argument, typename Function>
 
   // Compute an upper bound for the error, based on the previous and new
   // polynomials.
-  Difference<Value<Argument, Function>> error_estimate;
+  Difference<Value<Argument, Function>> error_estimate{};
   for (std::int64_t j = 0; j <= N / 2; ++j) {
     error_estimate += Abs(previous_aⱼ[j] - aⱼ[j]);
   }
@@ -67,12 +69,17 @@ template<int N, typename Argument, typename Function>
     error_estimate += previous_aⱼ[j];
   }
 
-  if (error_estimate < max_error) {
-    return ЧебышёвSeries<Value<Argument, Function>, Argument>(aⱼ, a, b);
-  } else {
-    return ЧебышёвPolynomialInterpolantImplementation<2 * N>(
-        f, a, b, max_error, fₖ, aⱼ);
+  LOG(ERROR)<<N<<" "<<error_estimate;
+  if constexpr (2 * N <= max_чебышёв_degree) {
+    if (error_estimate > max_error) {
+      return ЧебышёвPolynomialInterpolantImplementation<2 * N>(
+          f, a, b, max_error, fₖ, aⱼ);
+    }
   }
+  std::vector<Value<Argument, Function>> coefficients;
+  std::copy(aⱼ.begin(), aⱼ.end(), std::back_inserter(coefficients));
+  return ЧебышёвSeries<Value<Argument, Function>, Argument>(
+      coefficients, a, b);
 }
 
 template<typename Argument, typename Function>
