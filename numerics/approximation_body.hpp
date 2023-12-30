@@ -28,6 +28,7 @@ template<int N, typename Argument, typename Function>
     Difference<Value<Argument, Function>> const& max_error,
     FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_fₖ,
     FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_aⱼ) {
+  // This implementation follows [Boy13], section 4 and appendix A.
   auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
 
   auto чебышёв_lobato_point =
