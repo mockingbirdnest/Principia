@@ -262,9 +262,9 @@ TEST_F(MathematicaTest, ToMathematica) {
         {1 * Metre, -3 * Metre, 2 * Metre}, 2 * Second, 4 * Second);
     EXPECT_EQ(absl::StrReplaceAll(
                   R"(Function[Plus[
-                            Times[α,ChebyshevT[0,Divide[Minus[#,δ],ε]]],
-                            Times[β,ChebyshevT[1,Divide[Minus[#,δ],ε]]],
-                            Times[γ,ChebyshevT[2,Divide[Minus[#,δ],ε]]]]])",
+                            Times[α,ChebyshevT[0,Divide[Subtract[#,δ],ε]]],
+                            Times[β,ChebyshevT[1,Divide[Subtract[#,δ],ε]]],
+                            Times[γ,ChebyshevT[2,Divide[Subtract[#,δ],ε]]]]])",
                   {{"α", ToMathematica(1 * Metre, PreserveUnits)},
                    {"β", ToMathematica(-3 * Metre, PreserveUnits)},
                    {"γ", ToMathematica(2 * Metre, PreserveUnits)},

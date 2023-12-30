@@ -66,10 +66,9 @@ template<int N, typename Argument, typename Function>
     error_estimate += Abs(previous_aⱼ[j] - aⱼ[j]);
   }
   for (std::int64_t j = N / 2 + 1; j <= N; ++j) {
-    error_estimate -= aⱼ[j];
+    error_estimate += Abs(aⱼ[j]);
   }
 
-  LOG(ERROR)<<N<<" "<<error_estimate;
   if constexpr (2 * N <= max_чебышёв_degree) {
     if (error_estimate > max_error) {
       return ЧебышёвPolynomialInterpolantImplementation<2 * N>(

@@ -125,10 +125,10 @@ std::string ToMathematicaBody(ЧебышёвSeries<V, A> const& series,
   auto const& a = series.lower_bound_;
   auto const& b = series.upper_bound_;
   auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
-  std::string const argument =
-      RawApply("Divide",
-               {RawApply("Minus", {"#", ToMathematica(midpoint, express_in)}),
-                ToMathematica((b - a) / 2.0, express_in)});
+  std::string const argument = RawApply(
+      "Divide",
+      {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),
+       ToMathematica((b - a) / 2.0, express_in)});
   std::vector<std::string> terms;
   auto const& coefficients = series.helper_.coefficients_;
   for (int i = 0; i < coefficients.size(); ++i) {
