@@ -17,7 +17,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-constexpr int max_чебышёв_degree = 200;
+constexpr std::int64_t max_чебышёв_degree = 500;
 
 template<int N, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument>
@@ -66,7 +66,7 @@ template<int N, typename Argument, typename Function>
     error_estimate += Abs(previous_aⱼ[j] - aⱼ[j]);
   }
   for (std::int64_t j = N / 2 + 1; j <= N; ++j) {
-    error_estimate += previous_aⱼ[j];
+    error_estimate -= aⱼ[j];
   }
 
   LOG(ERROR)<<N<<" "<<error_estimate;

@@ -32,6 +32,20 @@ TEST(ApproximationTest, SinInverse) {
   }
 }
 
+TEST(ApproximationTest, Exp) {
+  auto const f = [](double const x) { return std::exp(x); };
+  auto const approximation =
+      ЧебышёвPolynomialInterpolant<double>(f,
+                                           /*lower_bound=*/0.01,
+                                           /*upper_bound=*/3,
+                                           /*max_error=*/1e-6);
+  EXPECT_EQ(32, approximation.degree());
+  for (double x = 0.01; x < 3; x += 0.01) {
+    EXPECT_THAT(approximation.Evaluate(x),
+                AbsoluteErrorFrom(f(x), AllOf(Lt(1.9), Gt(3.7e-14))));
+  }
+}
+
 }  // namespace _approximation
 }  // namespace numerics
 }  // namespace principia
