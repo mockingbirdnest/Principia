@@ -1,14 +1,34 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
 // Spelling: Чебышёв ЧЕБЫШЁВ чебышёв
+
 namespace principia {
+namespace numerics {
+FORWARD_DECLARE(
+    TEMPLATE(typename Value, typename Argument) class,
+    ЧебышёвSeries,
+    FROM(чебышёв_series));
+}  // namespace numerics
+
+namespace mathematica {
+FORWARD_DECLARE_FUNCTION(
+    TEMPLATE(typename Value,
+             typename Argument,
+             typename OptionalExpressIn) std::string,
+    ToMathematicaBody,
+    (numerics::_чебышёв_series::ЧебышёвSeries<Value, Argument> const& series,
+     OptionalExpressIn express_in),
+    FROM(mathematica));
+}  // namespace mathematica
 
 namespace serialization {
 using ЧебышёвSeries = ChebyshevSeries;
@@ -38,6 +58,11 @@ class EvaluationHelper final {
  private:
   std::vector<Value> coefficients_;
   int degree_;
+
+  template<typename V, typename A, typename O>
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
+      ЧебышёвSeries<V, A> const& series,
+      O express_in);
 };
 
 // A Чебышёв series with values in the vector space |Value|.  The argument is
@@ -79,6 +104,11 @@ class ЧебышёвSeries final {
   Argument upper_bound_;
   Inverse<Difference<Argument>> one_over_width_;
   EvaluationHelper<Value> helper_;
+
+  template<typename V, typename A, typename O>
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
+      ЧебышёвSeries<V, A> const& series,
+      O express_in);
 };
 
 }  // namespace internal

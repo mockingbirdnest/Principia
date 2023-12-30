@@ -14,6 +14,7 @@
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "geometry/barycentre_calculator.hpp"
 
 namespace principia {
 namespace mathematica {
@@ -24,6 +25,7 @@ using namespace principia::astronomy::_epoch;
 using namespace principia::base::_mod;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_barycentre_calculator;
 
 // Wraps the string in quotes and escapes things properly.
 inline std::string Escape(std::string_view const str) {
@@ -115,6 +117,27 @@ std::string ToMathematicaBody(
     }
   }
   return RawApply("Plus", monomials);
+}
+
+template<typename V, typename A, typename OptionalExpressIn>
+std::string ToMathematicaBody(ЧебышёвSeries<V, A> const& series,
+                              OptionalExpressIn express_in) {
+  auto const& a = series.lower_bound_;
+  auto const& b = series.upper_bound_;
+  auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
+  std::string const argument = RawApply(
+      "Divide",
+      {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),
+       ToMathematica((b - a) / 2.0, express_in)});
+  std::vector<std::string> terms;
+  auto const& coefficients = series.helper_.coefficients_;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    terms.push_back(RawApply(
+        "Times",
+        {ToMathematica(coefficients[i], express_in),
+         RawApply("ChebyshevT", {ToMathematica(i, express_in), argument})}));
+  }
+  return RawApply("Plus", terms);
 }
 
 template<typename V, int ad, int pd,
@@ -502,6 +525,12 @@ std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
   return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
+}
+
+template<typename V, typename A, typename OptionalExpressIn>
+std::string ToMathematica(ЧебышёвSeries<V, A> const& series,
+                          OptionalExpressIn express_in) {
+  return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename V, int ad, int pd,

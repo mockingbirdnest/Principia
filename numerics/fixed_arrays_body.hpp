@@ -103,6 +103,18 @@ constexpr Scalar const& FixedVector<Scalar, size_>::operator[](
 }
 
 template<typename Scalar, int size_>
+typename std::array<Scalar, size_>::const_iterator
+FixedVector<Scalar, size_>::begin() const {
+  return data_.cbegin();
+}
+
+template<typename Scalar, int size_>
+typename std::array<Scalar, size_>::const_iterator
+FixedVector<Scalar, size_>::end() const {
+  return data_.cend();
+}
+
+template<typename Scalar, int size_>
 bool FixedVector<Scalar, size_>::operator==(FixedVector const& right) const {
   return data_ == right.data_;
 }

@@ -47,6 +47,9 @@ class FixedVector final {
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
+  typename std::array<Scalar, size_>::const_iterator begin() const;
+  typename std::array<Scalar, size_>::const_iterator end() const;
+
   bool operator==(FixedVector const& right) const;
   bool operator!=(FixedVector const& right) const;
 
