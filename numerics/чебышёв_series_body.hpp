@@ -273,11 +273,7 @@ UnboundedMatrix<Value>
   for (int j = 2; j < N; ++j) {
     for (int k = 1; k <= N; ++k) {
       auto& Aⱼₖ = A(j - 1, k - 1);
-      if (j == 1) {
-      } else if (j == N) {
-      } else {
-        Aⱼₖ = 0.5 * (KroneckerDelta(j, k + 1) + KroneckerDelta(j, k - 1));
-      }
+      Aⱼₖ = 0.5 * (KroneckerDelta(j, k + 1) + KroneckerDelta(j, k - 1));
     }
   }
 
