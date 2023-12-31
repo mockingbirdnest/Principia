@@ -2,10 +2,12 @@
 
 #include <vector>
 
+#include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
+#include "numerics/combinatorics.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -13,9 +15,11 @@ namespace numerics {
 namespace _чебышёв_series {
 namespace internal {
 
+using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
+using namespace principia::numerics::_combinatorics;
 using namespace principia::quantities::_si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
@@ -252,6 +256,43 @@ Derivative<Value, Argument> ЧебышёвSeries<Value, Argument>::EvaluateDeriv
   return (helper_.coefficients(1) + two_scaled_argument * *b_kplus1 -
           *b_kplus2) *
          (one_over_width_ + one_over_width_);
+}
+
+template<typename Value, typename Argument>
+UnboundedMatrix<Value>
+ЧебышёвSeries<Value, Argument>::FrobeniusCompanionMatrix() const {
+  int const N = degree();
+  UnboundedMatrix<Value> A(N, N, uninitialized);
+
+  // j = 1.
+  for (int k = 1; k <= N; ++k) {
+    auto& Aⱼₖ = A(0, k - 1);
+    Aⱼₖ = KroneckerDelta(2, k);
+  }
+
+  for (int j = 2; j < N; ++j) {
+    for (int k = 1; k <= N; ++k) {
+      auto& Aⱼₖ = A(j - 1, k - 1);
+      if (j == 1) {
+      } else if (j == N) {
+      } else {
+        Aⱼₖ = 0.5 * (KroneckerDelta(j, k + 1) + KroneckerDelta(j, k - 1));
+      }
+    }
+  }
+
+  // j = N.
+  auto const two_aN = 2 * helper_.coefficients(N);
+  for (int k = 1; k <= N; ++k) {
+    auto& Aⱼₖ = A(N - 1, k - 1);
+    // Note that [Boy13] formula (B.2) has aⱼ₋₁ instead of aₖ₋₁ below, but
+    // that's probably a typo because it's immediately corrected in formula
+    // (B.3).
+    Aⱼₖ =
+        -helper_.coefficients(k - 1) / two_aN + 0.5 * KroneckerDelta(k, N - 1);
+  }
+
+  return A;
 }
 
 template<typename Value, typename Argument>
