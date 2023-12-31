@@ -267,7 +267,7 @@ std::string ToMathematica(
 template<typename V, typename A,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(ЧебышёвSeries<V, A> const& series,
-                              OptionalExpressIn express_in = std::nullopt);
+                              OptionalExpressIn express_in);
 
 template<typename V, typename A,
          typename OptionalExpressIn = std::nullopt_t>
