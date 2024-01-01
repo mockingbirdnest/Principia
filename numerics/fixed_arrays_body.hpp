@@ -83,7 +83,7 @@ Scalar FixedVector<Scalar, size_>::Norm() const {
 }
 
 template<typename Scalar, int size_>
-inline Square<Scalar> FixedVector<Scalar, size_>::Norm²() const {
+Square<Scalar> FixedVector<Scalar, size_>::Norm²() const {
   return DotProduct<Scalar, Scalar, size_>::Compute(data_, data_);
 }
 

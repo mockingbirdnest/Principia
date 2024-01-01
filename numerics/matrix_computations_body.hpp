@@ -25,6 +25,83 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
+template<typename Scalar, typename Matrix>
+struct ColumnView {
+  Matrix& matrix;
+  int first_row;
+  int last_row;
+  int column;
+
+  Square<Scalar> Norm²() const;
+  constexpr int size() const;
+
+  constexpr Scalar& operator[](int index);
+  constexpr Scalar const& operator[](int index) const;
+
+  template<typename RScalar>
+  ColumnView& operator/=(RScalar right);
+};
+
+template<typename Scalar, typename Matrix>
+Square<Scalar> ColumnView<Scalar, Matrix>::Norm²() const {
+  Square<Scalar> result{};
+  for (int i = first_row; i <= last_row; ++i) {
+    result += Pow<2>(matrix(i, column));
+  }
+  return result;
+}
+
+template<typename Scalar, typename Matrix>
+constexpr int ColumnView<Scalar, Matrix>::size() const {
+  return last_row - first_row + 1;
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar& ColumnView<Scalar, Matrix>::operator[](int const index) {
+  DCHECK_LE(index, last_row - first_row);
+  return matrix(first_row + index, column);
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar const& ColumnView<Scalar, Matrix>::operator[](
+    int const index) const {
+  DCHECK_LE(index, last_row - first_row);
+  return matrix(first_row + index, column);
+}
+
+template<typename Scalar, typename Matrix>
+template<typename RScalar>
+ColumnView<Scalar, Matrix>& ColumnView<Scalar, Matrix>::operator/=(
+    RScalar const right) {}
+
+template<typename Scalar, typename Matrix>
+struct BlockView {
+  Matrix& matrix;
+  int first_row;
+  int last_row;
+  int first_column;
+  int last_column;
+  constexpr Scalar& operator()(int row, int column);
+  constexpr Scalar const& operator()(int row, int column) const;
+};
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar& BlockView<Scalar, Matrix>::operator()(int const row,
+                                                        int const column) {
+  DCHECK_LE(row, last_row - first_row);
+  DCHECK_LE(column, last_column - first_column);
+  return matrix(first_row + row, first_column + column);
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
+    int const row,
+    int const column) const {
+  DCHECK_LE(row, last_row - first_row);
+  DCHECK_LE(column, last_column - first_column);
+  return matrix(first_row + row, first_column + column);
+}
+
 // |Vector| must be a vector of doubles.  As mentioned in [GV13] section 5.1.4,
 // "It is critical to exploit structure when applying [the Householder matrix]
 // to a matrix"
@@ -36,19 +113,16 @@ struct Householder {
 
 template<typename Vector>
 Householder<Vector> HouseholderVector(Vector const& x) {
-  Householder<Vector> result;
+  Householder<Vector> result{.v = x, .β = 0};
   int const m = x.size();
   double& v₁ = result.v[0];
-  double& x₁ = x[0];
+  double const& x₁ = x[0];
   Vector x₂ₘ = x;
   x₂ₘ[0] = 0;
   double const σ = x₂ₘ.Norm²();
-  result.v = x;
   v₁ = 1;
   if (σ == 0) {
-    if (x₁ >= 0) {
-      result.β = 0;
-    } else {
+    if (x₁ < 0) {
       result.β = -2;
     }
   } else {
@@ -77,7 +151,7 @@ void Premultiply(Householder<Vector> const& P, Matrix& A) {
 template<typename Matrix, typename Vector>
 void PostMultiply(Matrix& A, Householder<Vector> const& P) {
   auto const βᵗv = TransposedView{P.β * P.v};
-  auto const Av = A * v;
+  auto const Av = A * P.v;
   A -= Av * βᵗv;
 }
 
@@ -203,15 +277,19 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
-template<typename Scalar>
-struct HessenbergGenerator<UnboundedMatrix<Scalar>> {
+template<typename Scalar_>
+struct HessenbergGenerator<UnboundedMatrix<Scalar_>> {
+  using Scalar = Scalar_;
   using Vector = UnboundedVector<Scalar>;
+  using Result = UnboundedMatrix<Scalar>;
   static Vector Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar, int dimension>
-struct HessenbergGenerator<FixedMatrix<Scalar, dimension, dimension>> {
+template<typename Scalar_, int dimension>
+struct HessenbergGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
+  using Scalar = Scalar_;
   using Vector = FixedVector<Scalar, dimension>;
+  using Result = FixedMatrix<Scalar, dimension, dimension>;
   static Vector Uninitialized(
       FixedMatrix<Scalar, dimension, dimension> const& m);
 };
@@ -510,38 +588,29 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
   int const n = A.size();
   auto H = A;
 
-  auto slice = [&H](int const first_row, int const last_row, int const column) {
-    auto v = G::Unitialized(H);
-    for (int i = first_row; i <= last_row; ++i) {
-      v[i] = H(i, column);
-    }
-    return v;
-  };
-
-  auto set_slice = [&H](typename G::Vector const& v,
-                        int const first_row, int const last_row,
-                        int const column) {
-    for (int i = first_row; i <= last_row; ++i) {
-      H(i, column) = v[i];
-    }
-  };
-
-  auto slice = [&H](int const first_row, int const last_row,
-                    int const first_column, int const last_column) {
-    auto m = G::Unitialized(H);
-    for (int i = first_row; i <= last_row; ++i) {
-      for (int j = first_column; j <= last_column; ++j) {
-        m(i, j) = H(i, j);
-      }
-    }
-    return m;
-  };
-
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
-    auto const P = HouseholderVector(slice(k + 1, n, k));
-    auto const PA = Premultiply(P, slice(k + 1, n, k, n));
-    auto const AP = PostMultiply(slice(1, n, k + 1, n), P);
+    auto const P = HouseholderVector(ColumnView<typename G::Scalar, Matrix>{
+        .matrix = H,
+        .first_row = k + 1,
+        .last_row = n,
+        .column = k});
+    {
+      auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
+                                                         .first_row = k + 1,
+                                                         .last_row = n,
+                                                         .first_column = k,
+                                                         .last_column = n};
+      Premultiply(P, block);
+    }
+    {
+      auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
+                                                         .first_row = 1,
+                                                         .last_row = n,
+                                                         .first_column = k + 1,
+                                                         .last_column = n};
+      PostMultiply(block, P);
+    }
   }
 }
 

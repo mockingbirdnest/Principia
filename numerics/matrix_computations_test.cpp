@@ -102,6 +102,20 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
 }
 
+TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({2, 2, 1, 2,
+                   2, 3, 1, 4,
+                   1, 1, 3, 2,
+                   2, 4, 2, 1});
+  Matrix const h4_expected({2, -3,  0,  0,
+                           -3,  7,  1,  0,
+                            0,  1, -1, -2,
+                            0,  0, -2,  1});
+  auto const h4_actual = HessenbergForm(m4);
+  EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 0));
+}
+
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using Matrix = typename std::tuple_element<3, TypeParam>::type;

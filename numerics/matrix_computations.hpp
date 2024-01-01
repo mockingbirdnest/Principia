@@ -120,6 +120,7 @@ using internal::BackSubstitution;
 using internal::CholeskyDecomposition;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
+using internal::HessenbergForm;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::Solve;
