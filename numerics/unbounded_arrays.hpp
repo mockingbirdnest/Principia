@@ -196,25 +196,30 @@ class UnboundedUpperTriangularMatrix final {
   friend class Row;
 };
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedVector<Quotient<ScalarLeft, ScalarRight>> operator/(
-    UnboundedVector<ScalarLeft> const& left,
-    ScalarRight const& right);
+template<typename LScalar, typename RScalar>
+UnboundedVector<Quotient<LScalar, RScalar>> operator/(
+    UnboundedVector<LScalar> const& left,
+    RScalar const& right);
 
-template<typename ScalarLeft, typename ScalarRight>
-Product<ScalarLeft, ScalarRight> operator*(
-    TransposedView<UnboundedVector<ScalarLeft>> const& left,
-    UnboundedVector<ScalarRight> const& right);
+template<typename LScalar, typename RScalar>
+Product<LScalar, RScalar> operator*(
+    TransposedView<UnboundedVector<LScalar>> const& left,
+    UnboundedVector<RScalar> const& right);
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedMatrix<Product<ScalarLeft, ScalarRight>> operator*(
-    UnboundedMatrix<ScalarLeft> const& left,
-    UnboundedMatrix<ScalarRight> const& right);
+template<typename LScalar, typename RScalar>
+constexpr UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedVector<LScalar> const& left,
+    TransposedView<UnboundedVector<RScalar>> const& right);
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
-    UnboundedMatrix<ScalarLeft> const& left,
-    UnboundedVector<ScalarRight> const& right);
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,

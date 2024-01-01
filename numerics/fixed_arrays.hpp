@@ -221,10 +221,10 @@ template<typename Scalar, int size>
 constexpr FixedVector<double, size> Normalize(
     FixedVector<Scalar, size> const& vector);
 
-template<typename LScalar, typename RScalar, int lsize, int rsize>
-constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
-    FixedVector<LScalar, lsize> const& left,
-    FixedVector<RScalar, rsize> const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedMatrix<Product<LScalar, RScalar>, size, size> SymmetricProduct(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
 
 template<typename Scalar, int size>
 constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(

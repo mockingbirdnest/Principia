@@ -468,36 +468,51 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedVector<Quotient<ScalarLeft, ScalarRight>> operator/(
-    UnboundedVector<ScalarLeft> const& left,
-    ScalarRight const& right) {
-  UnboundedVector<Quotient<ScalarLeft, ScalarRight>> result(left.size(),
-                                                            uninitialized);
+template<typename LScalar, typename RScalar>
+UnboundedVector<Quotient<LScalar, RScalar>> operator/(
+    UnboundedVector<LScalar> const& left,
+    RScalar const& right) {
+  UnboundedVector<Quotient<LScalar, RScalar>> result(left.size(),
+                                                     uninitialized);
   for (int i = 0; i < left.size(); ++i) {
     result[i] = left[i] / right;
   }
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight>
-Product<ScalarLeft, ScalarRight> operator*(
-    TransposedView<UnboundedVector<ScalarLeft>> const& left,
-    UnboundedVector<ScalarRight> const& right) {
+template<typename LScalar, typename RScalar>
+Product<LScalar, RScalar> operator*(
+    TransposedView<UnboundedVector<LScalar>> const& left,
+    UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.transpose.size(), right.size());
-  Product<ScalarLeft, ScalarRight> result{};
+  Product<LScalar, RScalar> result{};
   for (int i = 0; i < left.transpose.size(); ++i) {
     result += left.transpose[i] * right[i];
   }
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedMatrix<Product<ScalarLeft, ScalarRight>> operator*(
-    UnboundedMatrix<ScalarLeft> const& left,
-    UnboundedMatrix<ScalarRight> const& right) {
+template<typename LScalar, typename RScalar>
+constexpr UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedVector<LScalar> const& left,
+    TransposedView<UnboundedVector<RScalar>> const& right) {
+  UnboundedMatrix<Product<LScalar, RScalar>> result(left.size(),
+                                                    right.transpose.size(),
+                                                    uninitialized);
+  for (int i = 0; i < result.rows(); ++i) {
+    for (int j = 0; j < result.columns(); ++j) {
+      result(i, j) = left[i] * right.transpose[j];
+    }
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right) {
   CHECK_EQ(left.columns(), right.rows());
-  UnboundedMatrix<Product<ScalarLeft, ScalarRight>> result(left.rows(),
+  UnboundedMatrix<Product<LScalar, RScalar>> result(left.rows(),
                                                            right.columns());
   for (int i = 0; i < left.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
@@ -509,12 +524,12 @@ UnboundedMatrix<Product<ScalarLeft, ScalarRight>> operator*(
   return result;
 }
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
-    UnboundedMatrix<ScalarLeft> const& left,
-    UnboundedVector<ScalarRight> const& right) {
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.columns(), right.size());
-  UnboundedVector<Product<ScalarLeft, ScalarRight>> result(left.rows());
+  UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
   for (int i = 0; i < left.rows(); ++i) {
     auto& result_i = result[i];
     for (int j = 0; j < left.columns(); ++j) {

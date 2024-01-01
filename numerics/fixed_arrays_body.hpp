@@ -397,12 +397,12 @@ constexpr FixedVector<double, size> Normalize(
   return vector / vector.Norm();
 }
 
-template<typename LScalar, typename RScalar, int lsize, int rsize>
-constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
-    FixedVector<LScalar, lsize> const& left,
-    FixedVector<RScalar, rsize> const& right) {
-  FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
-  for (int i = 0; i < lsize; ++i) {
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedMatrix<Product<LScalar, RScalar>, size, size> SymmetricProduct(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right) {
+  FixedMatrix<Product<LScalar, RScalar>, size, size> result(uninitialized);
+  for (int i = 0; i < size; ++i) {
     for (int j = 0; j < i; ++j) {
       auto const r = 0.5 * (left[i] * right[j] + left[j] * right[i]);
       result(i, j) = r;
