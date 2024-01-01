@@ -23,6 +23,57 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
+// |Vector| must be a vector of doubles.  As mentioned in [GV13] section 5.1.4,
+// "It is critical to exploit structure when applying [the Householder matrix]
+// to a matrix"
+template<typename Vector>
+struct Householder {
+  Vector v;
+  double β;
+};
+
+template<typename Vector>
+Householder<Vector> HouseholderVector(Vector const& x) {
+  Householder<Vector> result;
+  int const m = x.size();
+  double& v₁ = result.v[0];
+  double& x₁ = x[0];
+  Vector x₂ₘ = x;
+  x₂ₘ[0] = 0;
+  double const σ = x₂ₘ.Norm²();
+  result.v = x;
+  v₁ = 1;
+  if (σ == 0) {
+    if (x₁ >= 0) {
+      result.β = 0;
+    } else {
+      result.β = -2;
+    }
+  } else {
+    double const μ = Sqrt(Pow<2>(x₁) + σ);
+    if (x₁ <= 0) {
+      v₁ = x₁ - μ;
+    } else {
+      v₁ = -σ / (x₁ + μ);
+    }
+    double const v₁² = Pow<2>(v₁);
+    result.β = 2 * v₁² / (σ + v₁²);
+    result.v /= v₁;
+  }
+  return result;
+}
+
+// A becomes ᵗJ A.
+template<typename Matrix, typename Vector>
+void PremultiplyByTranspose(Householder<Vector> const& P, Matrix& A) {
+  auto const vA = P.v * A;
+  
+}
+
+// A becomes A J.
+template<typename Matrix, typename Vector>
+void PostMultiply(Matrix& A, Householder<Vector> const& P) {}
+
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
 // the special structure of a Givens rotation matrix be exploited".
@@ -143,6 +194,19 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
                              FixedVector<RScalar, dimension>> {
   using Result = FixedVector<Quotient<RScalar, LScalar>, dimension>;
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
+};
+
+template<typename Scalar>
+struct HessenbergGenerator<UnboundedMatrix<Scalar>> {
+  using Vector = UnboundedVector<Scalar>;
+  static Vector Uninitialized(UnboundedMatrix<Scalar> const& m);
+};
+
+template<typename Scalar, int dimension>
+struct HessenbergGenerator<FixedMatrix<Scalar, dimension, dimension>> {
+  using Vector = FixedVector<Scalar, dimension>;
+  static Vector Uninitialized(
+      FixedMatrix<Scalar, dimension, dimension> const& m);
 };
 
 template<typename Scalar_>
@@ -431,6 +495,26 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
     x[i] = s / L(i, i);
   }
   return x;
+}
+
+template<typename Matrix>
+typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
+  using G = HessenbergGenerator<Matrix>;
+  int const n = A.size();
+  auto H = A;
+
+  auto slice = [&H](int const first_row, int const last_row, int const column) {
+    auto v = G::Unitialized(H);
+    for (int i = first_row; i <= last_row; ++i) {
+      v[i] = H(i, column);
+    }
+    return v;
+  };
+
+  // [GV13], Algorithm 7.4.2.
+  for (int k = 0; k < n - 2; ++k) {
+    auto const householder = HouseholderVector(slice(k + 1, n, k));
+  }
 }
 
 template<typename Matrix>

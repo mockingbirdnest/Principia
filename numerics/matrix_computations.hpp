@@ -29,6 +29,10 @@ struct ᵗRDRDecompositionGenerator;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
+//TODO:Comment
+template<typename M>
+struct HessenbergGenerator;
+
 // Declares:
 //   struct Result {
 //     ⟨matrix⟩ rotation;
@@ -81,6 +85,10 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+template<typename Matrix>
+typename HessenbergGenerator<Matrix>::Result
+HessenbergForm(Matrix const& A);
+
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
 // when the matrix is nearly diagonal, though.
@@ -95,7 +103,8 @@ template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
 RayleighQuotient(Matrix const& A, Vector const& x);
 
-// Returns the eigenvector closest to x and its eigenvalue.
+// Returns the eigenvector closest to x and its eigenvalue.  A must be
+// symmetric.
 template<typename Matrix, typename Vector>
 typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
 RayleighQuotientIteration(Matrix const& A, Vector const& x);
