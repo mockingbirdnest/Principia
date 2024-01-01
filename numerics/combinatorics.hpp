@@ -16,12 +16,15 @@ constexpr std::int64_t Factorial(std::int64_t n);
 
 constexpr std::int64_t FallingFactorial(std::int64_t n, std::int64_t k);
 
+constexpr std::int64_t KroneckerDelta(std::int64_t i, std::int64_t j);
+
 }  // namespace internal
 
 using internal::Binomial;
 using internal::DoubleFactorial;
 using internal::Factorial;
 using internal::FallingFactorial;
+using internal::KroneckerDelta;
 
 }  // namespace _combinatorics
 }  // namespace numerics

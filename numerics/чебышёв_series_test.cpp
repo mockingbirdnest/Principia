@@ -5,9 +5,11 @@
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
@@ -15,10 +17,12 @@ namespace numerics {
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
@@ -118,6 +122,19 @@ TEST_F(ЧебышёвSeriesTest, T2Double) {
   EXPECT_EQ(1 * Metre, t2.Evaluate(-1));
   EXPECT_EQ(-7.0 / 9.0 * Metre, t2.Evaluate(1));
   EXPECT_EQ(1 * Metre, t2.Evaluate(2));
+}
+
+TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
+  ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
+  auto const matrix = series.FrobeniusCompanionMatrix();
+  // Checked with Mathematica that the eigenvalues of this matrix are the zeroes
+  // of the above series.
+  EXPECT_THAT(matrix,
+              AlmostEquals(UnboundedMatrix<double>(
+                  {0.0,             1.0,         0.0,
+                   1.0 / 2.0,       0.0,   1.0 / 2.0,
+                   1.0 / 6.0, 1.0 / 4.0, -5.0 / 12.0}),
+                  0));
 }
 
 TEST_F(ЧебышёвSeriesTest, X6Vector) {

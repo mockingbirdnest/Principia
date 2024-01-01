@@ -5,6 +5,7 @@
 
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -39,6 +40,7 @@ namespace _чебышёв_series {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -94,6 +96,9 @@ class ЧебышёвSeries final {
   Value Evaluate(Argument const& argument) const;
   Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const;
+
+  // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
+  UnboundedMatrix<Value> FrobeniusCompanionMatrix() const;
 
   void WriteToMessage(not_null<serialization::ЧебышёвSeries*> message) const;
   static ЧебышёвSeries ReadFromMessage(
