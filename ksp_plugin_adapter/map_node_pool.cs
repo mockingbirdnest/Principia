@@ -188,7 +188,7 @@ internal class MapNodePool {
                               out double altitude);
           var terrain_altitude = centre.TerrainAltitude(
               latitude,
-              latitude,
+              longitude,
               allowNegative: !centre.ocean);
           if (altitude < terrain_altitude) {
             if (provenance.source == NodeSource.Prediction) {
