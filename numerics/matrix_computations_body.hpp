@@ -8,6 +8,7 @@
 
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -19,6 +20,7 @@ namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -63,16 +65,21 @@ Householder<Vector> HouseholderVector(Vector const& x) {
   return result;
 }
 
-// A becomes ᵗJ A.
+// A becomes P A.
 template<typename Matrix, typename Vector>
-void PremultiplyByTranspose(Householder<Vector> const& P, Matrix& A) {
-  auto const vA = P.v * A;
-  
+void Premultiply(Householder<Vector> const& P, Matrix& A) {
+  auto const ᵗvA = TransposedView{P.v} * A;
+  auto const βv = P.β * P.v;
+  A -= βv * ᵗvA;
 }
 
-// A becomes A J.
+// A becomes A P.
 template<typename Matrix, typename Vector>
-void PostMultiply(Matrix& A, Householder<Vector> const& P) {}
+void PostMultiply(Matrix& A, Householder<Vector> const& P) {
+  auto const βᵗv = TransposedView{P.β * P.v};
+  auto const Av = A * v;
+  A -= Av * βᵗv;
+}
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
@@ -511,9 +518,30 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
     return v;
   };
 
+  auto set_slice = [&H](typename G::Vector const& v,
+                        int const first_row, int const last_row,
+                        int const column) {
+    for (int i = first_row; i <= last_row; ++i) {
+      H(i, column) = v[i];
+    }
+  };
+
+  auto slice = [&H](int const first_row, int const last_row,
+                    int const first_column, int const last_column) {
+    auto m = G::Unitialized(H);
+    for (int i = first_row; i <= last_row; ++i) {
+      for (int j = first_column; j <= last_column; ++j) {
+        m(i, j) = H(i, j);
+      }
+    }
+    return m;
+  };
+
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
-    auto const householder = HouseholderVector(slice(k + 1, n, k));
+    auto const P = HouseholderVector(slice(k + 1, n, k));
+    auto const PA = Premultiply(P, slice(k + 1, n, k, n));
+    auto const AP = PostMultiply(slice(1, n, k + 1, n), P);
   }
 }
 
