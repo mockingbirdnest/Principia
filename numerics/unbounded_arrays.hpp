@@ -59,6 +59,11 @@ class UnboundedVector final {
   bool operator==(UnboundedVector const& right) const;
   bool operator!=(UnboundedVector const& right) const;
 
+  UnboundedVector& operator+=(UnboundedVector<Scalar> const& right);
+  UnboundedVector& operator-=(UnboundedVector<Scalar> const& right);
+  UnboundedVector& operator*=(double right);
+  UnboundedVector& operator/=(double right);
+
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 };

@@ -53,6 +53,11 @@ class FixedVector final {
   bool operator==(FixedVector const& right) const;
   bool operator!=(FixedVector const& right) const;
 
+  FixedVector& operator+=(FixedVector<Scalar, size_> const& right);
+  FixedVector& operator-=(FixedVector<Scalar, size_> const& right);
+  FixedVector& operator*=(double right);
+  FixedVector& operator/=(double right);
+
   template<typename H>
   friend H AbslHashValue(H h, FixedVector const& vector) {
     for (int index = 0; index < size_; ++index) {
