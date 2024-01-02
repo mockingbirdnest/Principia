@@ -131,7 +131,7 @@ TEST_F(FixedArraysTest, Algebra) {
             m23_ * m34_);
   EXPECT_EQ(v3_, m34_ * v4_);
   EXPECT_EQ((FixedVector<double, 4>({-486, -229, 333, 198})),
-            TransposedView{m34_} * v3_);
+            TransposedView{m34_} * v3_);  // NOLINT
 }
 
 TEST_F(FixedArraysTest, VectorIndexing) {
