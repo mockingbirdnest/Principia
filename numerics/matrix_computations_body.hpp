@@ -113,6 +113,8 @@ struct BlockView {
 
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
+
+  BlockView& operator-=(UnboundedMatrix<Scalar> const& right);
 };
 
 template<typename Scalar, typename Matrix>
@@ -142,6 +144,35 @@ constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
   return matrix(first_row + row, first_column + column);
 }
 
+template<typename Scalar, typename Matrix>
+BlockView<Scalar, Matrix>& BlockView<Scalar, Matrix>::operator-=(
+    UnboundedMatrix<Scalar> const& right) {
+  CHECK_EQ(rows(), right.rows());
+  CHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      matrix(first_row + i, first_column + j) -= right(i, j);
+    }
+  }
+  return *this;
+}
+
+
+template<typename LScalar, typename RScalar, typename Matrix>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    BlockView<LScalar, Matrix> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
+    }
+  }
+  return result;
+}
+
 template<typename LScalar, typename RScalar, typename Matrix>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     TransposedView<BlockView<LScalar, Matrix>> const& left,
@@ -156,7 +187,6 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
   }
   return result;
 }
-
 
 // As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure
 // when applying [the Householder reflection] to a matrix"
@@ -203,17 +233,17 @@ void Premultiply(HouseholderReflection const& P, Matrix& A) {
   // ownership of the result is problematic.  Instead, we transpose twice.  That
   // costs essentially nothing.
   auto const ᵗAv = TransposedView{A} * P.v;
-  //auto const ᵗvA = TransposedView{ᵗAv};
-  //auto const βv = P.β * P.v;
-  //A -= βv * ᵗvA;
+  auto const ᵗvA = TransposedView{ᵗAv};
+  auto const βv = P.β * P.v;
+  A -= βv * ᵗvA;
 }
 
 // A becomes A P.
 template<typename Matrix>
 void PostMultiply(Matrix& A, HouseholderReflection const& P) {
   auto const βᵗv = TransposedView{P.β * P.v};
-  //auto const Av = A * P.v;
-  //A -= Av * βᵗv;
+  auto const Av = A * P.v;
+  A -= Av * βᵗv;
 }
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
@@ -643,7 +673,7 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 template<typename Matrix>
 typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
   using G = HessenbergGenerator<Matrix>;
-  int const n = A.size();
+  int const n = A.rows();
   auto H = A;
 
   // [GV13], Algorithm 7.4.2.
@@ -651,24 +681,26 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
     auto const P = ComputeHouseholderReflection(
         ColumnView<typename G::Scalar, Matrix>{.matrix = H,
                                                .first_row = k + 1,
-                                               .last_row = n,
+                                               .last_row = n - 1,
                                                .column = k});
+LOG(ERROR)<<P.v<<" "<<P.β;
     {
       auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
                                                          .first_row = k + 1,
-                                                         .last_row = n,
+                                                         .last_row = n - 1,
                                                          .first_column = k,
-                                                         .last_column = n};
+                                                         .last_column = n - 1};
       Premultiply(P, block);
     }
     {
       auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
-                                                         .first_row = 1,
-                                                         .last_row = n,
+                                                         .first_row = 0,
+                                                         .last_row = n - 1,
                                                          .first_column = k + 1,
-                                                         .last_column = n};
+                                                         .last_column = n - 1};
       PostMultiply(block, P);
     }
+LOG(ERROR)<<H;
   }
   return H;
 }

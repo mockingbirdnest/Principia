@@ -111,7 +111,7 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   Matrix const h4_expected({2, -3,  0,  0,
                            -3,  7,  1,  0,
                             0,  1, -1, -2,
-                            0,  0, -2,  1});
+                            0,  0, -2,  10});
   auto const h4_actual = HessenbergForm(m4);
   EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 0));
 }

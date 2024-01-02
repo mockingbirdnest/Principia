@@ -85,6 +85,7 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+//TODO comment
 template<typename Matrix>
 typename HessenbergGenerator<Matrix>::Result
 HessenbergForm(Matrix const& A);
