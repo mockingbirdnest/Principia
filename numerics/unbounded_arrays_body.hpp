@@ -492,6 +492,11 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   return result;
 }
 
+template<typename Scalar>
+UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector) {
+  return vector / vector.Norm();
+}
+
 template<typename LScalar, typename RScalar>
 UnboundedVector<Quotient<LScalar, RScalar>> operator/(
     UnboundedVector<LScalar> const& left,

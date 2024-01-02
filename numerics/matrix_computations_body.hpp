@@ -26,6 +26,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 //TODO Commnt
+// TODO(phl): Could we extract Scalar from Matrix?
 template<typename Scalar, typename Matrix>
 struct ColumnView {
   Matrix& matrix;
@@ -33,8 +34,11 @@ struct ColumnView {
   int last_row;
   int column;
 
+  Scalar Norm() const;
   Square<Scalar> Norm²() const;
   constexpr int size() const;
+
+  explicit operator UnboundedVector<Scalar>() const;
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
@@ -52,8 +56,22 @@ Square<Scalar> ColumnView<Scalar, Matrix>::Norm²() const {
 }
 
 template<typename Scalar, typename Matrix>
+Scalar ColumnView<Scalar, Matrix>::Norm() const {
+  return Sqrt(Norm²());
+}
+
+template<typename Scalar, typename Matrix>
 constexpr int ColumnView<Scalar, Matrix>::size() const {
   return last_row - first_row + 1;
+}
+
+template<typename Scalar, typename Matrix>
+ColumnView<Scalar, Matrix>::operator UnboundedVector<Scalar>() const {
+  UnboundedVector<Scalar> result(uninitialized, size());
+  for (int i = first_row; i <= last_row; ++i) {
+    result[i - first_row] = matrix(i, column);
+  }
+  return result;
 }
 
 template<typename Scalar, typename Matrix>
@@ -75,6 +93,11 @@ ColumnView<Scalar, Matrix>& ColumnView<Scalar, Matrix>::operator/=(
   for (int i = first_row; i < last_row; ++i) {
     matrix(i, column) /= right;
   }
+}
+
+template<typename Scalar, typename Matrix>
+UnboundedVector<double> Normalize(ColumnView<Scalar, Matrix> const& view) {
+  return UnboundedVector<Scalar>(view) / view.Norm();
 }
 
 template<typename Scalar, typename Matrix>
@@ -105,31 +128,47 @@ constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
   return matrix(first_row + row, first_column + column);
 }
 
-// |Vector| must be a vector of doubles.  As mentioned in [GV13] section 5.1.4,
-// "It is critical to exploit structure when applying [the Householder matrix]
-// to a matrix"
-template<typename Vector>
-struct Householder {
-  Vector v;
+//UnboundedVector<Product<LScalar, RScalar>> operator*(
+//    TransposedView<BlockView<Scalar, Matrix>> const& left,
+//    UnboundedVector<RScalar> const& right) {
+//  CHECK_EQ(left.rows(), right.size());
+//  UnboundedVector<Product<LScalar, RScalar>> result(left.columns());
+//  for (int j = 0; j < left.columns(); ++j) {
+//    auto& result_j = result[j];
+//    for (int i = 0; i < left.rows(); ++i) {
+//      result_j += left(i, j) * right[i];
+//    }
+//  }
+//  return result;
+//}
+
+
+// As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure
+// when applying [the Householder reflection] to a matrix"
+struct HouseholderReflection {
+  UnboundedVector<double> v;
   double β;
 };
 
 template<typename Vector>
-Householder<Vector> HouseholderVector(Vector const& x) {
-  Householder<Vector> result{.v = x, .β = 0};
+HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
   int const m = x.size();
+  // In order to avoid issues with quantities, we start by normalizing x.  This
+  // implies that μ is 1.
+  auto const normalized_x = Normalize(x);
+  HouseholderReflection result{.v = normalized_x, .β = 0};
+  double const& x₁ = normalized_x[0];
   double& v₁ = result.v[0];
-  double const& x₁ = x[0];
-  Vector x₂ₘ = x;
+  auto x₂ₘ = x;
   x₂ₘ[0] = 0;
-  double const σ = x₂ₘ.Norm²();
+  auto const σ = x₂ₘ.Norm²();
   v₁ = 1;
   if (σ == 0) {
     if (x₁ < 0) {
       result.β = -2;
     }
   } else {
-    double const μ = Sqrt(Pow<2>(x₁) + σ);
+    static constexpr double μ = 1;
     if (x₁ <= 0) {
       v₁ = x₁ - μ;
     } else {
@@ -143,8 +182,8 @@ Householder<Vector> HouseholderVector(Vector const& x) {
 }
 
 // A becomes P A.
-template<typename Matrix, typename Vector>
-void Premultiply(Householder<Vector> const& P, Matrix& A) {
+template<typename Matrix>
+void Premultiply(HouseholderReflection const& P, Matrix& A) {
   // We don't have a multiplication TransposedView<Vector> * Matrix because the
   // ownership of the result is problematic.  Instead, we transpose twice.  That
   // costs essentially nothing.
@@ -155,8 +194,8 @@ void Premultiply(Householder<Vector> const& P, Matrix& A) {
 }
 
 // A becomes A P.
-template<typename Matrix, typename Vector>
-void PostMultiply(Matrix& A, Householder<Vector> const& P) {
+template<typename Matrix>
+void PostMultiply(Matrix& A, HouseholderReflection const& P) {
   auto const βᵗv = TransposedView{P.β * P.v};
   auto const Av = A * P.v;
   A -= Av * βᵗv;
@@ -287,18 +326,15 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 template<typename Scalar_>
 struct HessenbergGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
-  using Vector = UnboundedVector<Scalar>;
+  using Reflector = UnboundedVector<double>;
   using Result = UnboundedMatrix<Scalar>;
-  static Vector Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
 template<typename Scalar_, int dimension>
 struct HessenbergGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
-  using Vector = FixedVector<Scalar, dimension>;
+  using Reflector = FixedVector<double, dimension>;
   using Result = FixedMatrix<Scalar, dimension, dimension>;
-  static Vector Uninitialized(
-      FixedMatrix<Scalar, dimension, dimension> const& m);
 };
 
 template<typename Scalar_>
@@ -597,11 +633,11 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
 
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
-    auto const P = HouseholderVector(ColumnView<typename G::Scalar, Matrix>{
-        .matrix = H,
-        .first_row = k + 1,
-        .last_row = n,
-        .column = k});
+    auto const P = HouseholderReflection<typename G::Reflector>(
+        ColumnView<typename G::Scalar, Matrix>{.matrix = H,
+                                               .first_row = k + 1,
+                                               .last_row = n,
+                                               .column = k});
     {
       auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
                                                          .first_row = k + 1,
