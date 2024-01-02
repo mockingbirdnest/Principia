@@ -251,8 +251,8 @@ void Premultiply(HouseholderReflection const& P, Matrix& A) {
   // We don't have a multiplication TransposedView<Vector> * Matrix because the
   // ownership of the result is problematic.  Instead, we transpose twice.  That
   // costs essentially nothing.
-  auto const ᵗAv = TransposedView{A} * P.v;
-  auto const ᵗvA = TransposedView{ᵗAv};
+  auto const ᵗAv = TransposedView{A} * P.v;  // NOLINT
+  auto const ᵗvA = TransposedView{ᵗAv};      // NOLINT
   auto const βv = P.β * P.v;
   A -= βv * ᵗvA;
 }
@@ -260,7 +260,7 @@ void Premultiply(HouseholderReflection const& P, Matrix& A) {
 // A becomes A P.
 template<typename Matrix>
 void PostMultiply(Matrix& A, HouseholderReflection const& P) {
-  auto const βᵗv = TransposedView{P.β * P.v};
+  auto const βᵗv = TransposedView{P.β * P.v};  // NOLINT
   auto const Av = A * P.v;
   A -= Av * βᵗv;
 }
