@@ -62,11 +62,6 @@ class UnboundedVector final {
   bool operator==(UnboundedVector const& right) const;
   bool operator!=(UnboundedVector const& right) const;
 
-  UnboundedVector& operator+=(UnboundedVector<Scalar> const& right);
-  UnboundedVector& operator-=(UnboundedVector<Scalar> const& right);
-  UnboundedVector& operator*=(double right);
-  UnboundedVector& operator/=(double right);
-
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 };
@@ -207,6 +202,28 @@ class UnboundedUpperTriangularMatrix final {
 template<typename Scalar>
 UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector);
 
+// Additive groups.
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator+=(
+    UnboundedVector<Scalar>& left,
+    UnboundedVector<Scalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator+=(
+    UnboundedMatrix<Scalar>& left,
+    UnboundedMatrix<Scalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator-=(
+    UnboundedVector<Scalar>& left,
+    UnboundedVector<Scalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator-=(
+    UnboundedMatrix<Scalar>& left,
+    UnboundedMatrix<Scalar> const& right);
+
 // Vector spaces.
 
 template<typename LScalar, typename RScalar>
@@ -238,6 +255,28 @@ template<typename LScalar, typename RScalar>
 constexpr UnboundedMatrix<Quotient<LScalar, RScalar>>
 operator/(UnboundedMatrix<LScalar> const& left,
           RScalar const& right);
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator*=(
+    UnboundedVector<Scalar>& left,
+    double right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator*=(
+    UnboundedMatrix<Scalar>& left,
+    double right);
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator/=(
+    UnboundedVector<Scalar>& left,
+    double right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator/=(
+    UnboundedMatrix<Scalar>& left,
+    double right);
+
+// Hilbert space and algebra.
 
 template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> operator*(

@@ -55,11 +55,6 @@ class FixedVector final {
   bool operator==(FixedVector const& right) const;
   bool operator!=(FixedVector const& right) const;
 
-  FixedVector& operator+=(FixedVector<Scalar, size_> const& right);
-  FixedVector& operator-=(FixedVector<Scalar, size_> const& right);
-  FixedVector& operator*=(double right);
-  FixedVector& operator/=(double right);
-
   template<typename H>
   friend H AbslHashValue(H h, FixedVector const& vector) {
     for (int index = 0; index < size_; ++index) {
@@ -318,6 +313,26 @@ template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
 operator/(FixedMatrix<LScalar, rows, columns> const& left,
           RScalar const& right);
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator*=(
+    FixedVector<Scalar, size>& left,
+    double right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator*=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    double right);
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator/=(
+    FixedVector<Scalar, size>& left,
+    double right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator/=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    double right);
 
 // Hilbert space and algebra.
 

@@ -105,30 +105,6 @@ bool UnboundedVector<Scalar>::operator!=(UnboundedVector const& right) const {
 }
 
 template<typename Scalar>
-UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator+=(
-    UnboundedVector<Scalar> const& right) {
-  return *this = *this + right;
-}
-
-template<typename Scalar>
-UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator-=(
-    UnboundedVector<Scalar> const& right) {
-  return *this = *this - right;
-}
-
-template<typename Scalar>
-UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator*=(
-    double const right) {
-  return *this = *this * right;
-}
-
-template<typename Scalar>
-UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator/=(
-    double const right) {
-  return *this = *this / right;
-}
-
-template<typename Scalar>
 UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns)
     : rows_(rows),
       columns_(columns),
@@ -502,6 +478,34 @@ UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector) {
   return vector / vector.Norm();
 }
 
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator+=(
+    UnboundedVector<Scalar>& left,
+    UnboundedVector<Scalar> const& right) {
+  return left = left + right;
+}
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator+=(
+    UnboundedMatrix<Scalar>& left,
+    UnboundedMatrix<Scalar> const& right) {
+  return left = left + right;
+}
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator-=(
+    UnboundedVector<Scalar>& left,
+    UnboundedVector<Scalar> const& right) {
+  return left = left - right;
+}
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator-=(
+    UnboundedMatrix<Scalar>& left,
+    UnboundedMatrix<Scalar> const& right) {
+  return left = left - right;
+}
+
 template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
@@ -581,6 +585,30 @@ UnboundedMatrix<Quotient<LScalar, RScalar>> operator/(
     }
   }
   return result;
+}
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator*=(UnboundedVector<Scalar>& left,
+                                              double const right) {
+  return left = left * right;
+}
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator*=(UnboundedMatrix<Scalar>& left,
+                                              double const right) {
+  return left = left * right;
+}
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator/=(UnboundedVector<Scalar>& left,
+                                              double const right) {
+  return left = left / right;
+}
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator/=(UnboundedMatrix<Scalar>& left,
+                                              double const right) {
+  return left = left / right;
 }
 
 template<typename LScalar, typename RScalar>

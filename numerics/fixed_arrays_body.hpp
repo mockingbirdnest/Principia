@@ -124,30 +124,6 @@ bool FixedVector<Scalar, size_>::operator!=(FixedVector const& right) const {
   return data_ != right.data_;
 }
 
-template<typename Scalar, int size_>
-FixedVector<Scalar, size_>& FixedVector<Scalar, size_>::operator+=(
-    FixedVector<Scalar, size_> const& right) {
-  data_ += right.data_;
-}
-
-template<typename Scalar, int size_>
-FixedVector<Scalar, size_>& FixedVector<Scalar, size_>::operator-=(
-    FixedVector<Scalar, size_> const& right) {
-  data_ -= right.data_;
-}
-
-template<typename Scalar, int size_>
-FixedVector<Scalar, size_>& FixedVector<Scalar, size_>::operator*=(
-    double const right) {
-  data_ *= right;
-}
-
-template<typename Scalar, int size_>
-FixedVector<Scalar, size_>& FixedVector<Scalar, size_>::operator/=(
-    double const right) {
-  data_ /= right;
-}
-
 template<typename H, typename Scalar, int size_>
 H AbslHashValue(H h, FixedVector<Scalar, size_> const& vector) {
 }
@@ -628,6 +604,32 @@ constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> operator/(
     }
   }
   return result;
+}
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator*=(FixedVector<Scalar, size>& left,
+                                                double const right) {
+  return left = left * right;
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator*=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    double const right) {
+  return left = left * right;
+}
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator/=(FixedVector<Scalar, size>& left,
+                                                double const right) {
+  return left = left / right;
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator/=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    double const right) {
+  return left = left / right;
 }
 
 template<typename LScalar, typename RScalar, int size>
