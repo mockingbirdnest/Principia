@@ -101,6 +101,18 @@ UnboundedVector<double> Normalize(ColumnView<Scalar, Matrix> const& view) {
 }
 
 template<typename Scalar, typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         ColumnView<Scalar, Matrix> const& view) {
+  std::stringstream s;
+  for (int i = 0; i < view.size(); ++i) {
+    s << (i == 0 ? "{" : "") << view[i]
+      << (i == view.size() - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
+}
+
+template<typename Scalar, typename Matrix>
 struct BlockView {
   Matrix& matrix;
   int first_row;
@@ -223,6 +235,7 @@ HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
     result.β = 2 * v₁² / (σ + v₁²);
     result.v /= v₁;
   }
+LOG(ERROR)<<x<<" "<<result.v<<" "<<result.β;
   return result;
 }
 
@@ -683,7 +696,6 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
                                                .first_row = k + 1,
                                                .last_row = n - 1,
                                                .column = k});
-LOG(ERROR)<<P.v<<" "<<P.β;
     {
       auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
                                                          .first_row = k + 1,

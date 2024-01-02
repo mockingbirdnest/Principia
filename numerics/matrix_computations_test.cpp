@@ -104,14 +104,29 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
 
 TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
-  Matrix const m4({2, 2, 1, 2,
-                   2, 3, 1, 4,
-                   1, 1, 3, 2,
-                   2, 4, 2, 1});
-  Matrix const h4_expected({2, -3,  0,  0,
-                           -3,  7,  1,  0,
-                            0,  1, -1, -2,
-                            0,  0, -2,  10});
+  Matrix const m4({1, 2, 3, -4,
+                   5, 6, 7, 8,
+                   9, 8, -7, 6,
+                   5, 4, 3, 2});
+  Matrix const h4_expected({1,
+                            -1.485296896323765,
+                            -0.6317762736251702,
+                            -5.137582298110200,
+
+                            -11.44552314225960,
+                            7.732824427480916,
+                            -10.84015303463464,
+                            -4.490856377374366,
+
+                            0,
+                            -10.02045574033354,
+                            -3.915807931898464,
+                            -0.1424448613699350,
+
+                            0,
+                            0,
+                            -2.414075408688634,
+                            -2.817016495582452});
   auto const h4_actual = HessenbergForm(m4);
   EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 0));
 }
