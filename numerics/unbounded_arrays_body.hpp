@@ -102,25 +102,25 @@ bool UnboundedVector<Scalar>::operator!=(UnboundedVector const& right) const {
 template<typename Scalar>
 UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator+=(
     UnboundedVector<Scalar> const& right) {
-  *this = *this + right;
+  return *this = *this + right;
 }
 
 template<typename Scalar>
 UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator-=(
     UnboundedVector<Scalar> const& right) {
-  *this = *this - right;
+  return *this = *this - right;
 }
 
 template<typename Scalar>
 UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator*=(
     double const right) {
-  *this = *this * right;
+  return *this = *this * right;
 }
 
 template<typename Scalar>
 UnboundedVector<Scalar>& UnboundedVector<Scalar>::operator/=(
     double const right) {
-  *this = *this / right;
+  return *this = *this / right;
 }
 
 template<typename Scalar>

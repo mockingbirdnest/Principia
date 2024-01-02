@@ -67,7 +67,7 @@ constexpr int ColumnView<Scalar, Matrix>::size() const {
 
 template<typename Scalar, typename Matrix>
 ColumnView<Scalar, Matrix>::operator UnboundedVector<Scalar>() const {
-  UnboundedVector<Scalar> result(uninitialized, size());
+  UnboundedVector<Scalar> result(size(), uninitialized);
   for (int i = first_row; i <= last_row; ++i) {
     result[i - first_row] = matrix(i, column);
   }
@@ -107,9 +107,23 @@ struct BlockView {
   int last_row;
   int first_column;
   int last_column;
+
+  constexpr int rows() const;
+  constexpr int columns() const;
+
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 };
+
+template<typename Scalar, typename Matrix>
+constexpr int BlockView<Scalar, Matrix>::rows() const {
+  return last_row - first_row + 1;
+}
+
+template<typename Scalar, typename Matrix>
+constexpr int BlockView<Scalar, Matrix>::columns() const {
+  return last_column - first_column + 1;
+}
 
 template<typename Scalar, typename Matrix>
 constexpr Scalar& BlockView<Scalar, Matrix>::operator()(int const row,
@@ -128,19 +142,20 @@ constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
   return matrix(first_row + row, first_column + column);
 }
 
-//UnboundedVector<Product<LScalar, RScalar>> operator*(
-//    TransposedView<BlockView<Scalar, Matrix>> const& left,
-//    UnboundedVector<RScalar> const& right) {
-//  CHECK_EQ(left.rows(), right.size());
-//  UnboundedVector<Product<LScalar, RScalar>> result(left.columns());
-//  for (int j = 0; j < left.columns(); ++j) {
-//    auto& result_j = result[j];
-//    for (int i = 0; i < left.rows(); ++i) {
-//      result_j += left(i, j) * right[i];
-//    }
-//  }
-//  return result;
-//}
+template<typename LScalar, typename RScalar, typename Matrix>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    TransposedView<BlockView<LScalar, Matrix>> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.transpose.rows(), right.size());
+  UnboundedVector<Product<LScalar, RScalar>> result(left.transpose.columns());
+  for (int j = 0; j < left.transpose.columns(); ++j) {
+    auto& result_j = result[j];
+    for (int i = 0; i < left.transpose.rows(); ++i) {
+      result_j += left.transpose(i, j) * right[i];
+    }
+  }
+  return result;
+}
 
 
 // As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure
@@ -188,17 +203,17 @@ void Premultiply(HouseholderReflection const& P, Matrix& A) {
   // ownership of the result is problematic.  Instead, we transpose twice.  That
   // costs essentially nothing.
   auto const ᵗAv = TransposedView{A} * P.v;
-  auto const ᵗvA = TransposedView{ᵗAv};
-  auto const βv = P.β * P.v;
-  A -= βv * ᵗvA;
+  //auto const ᵗvA = TransposedView{ᵗAv};
+  //auto const βv = P.β * P.v;
+  //A -= βv * ᵗvA;
 }
 
 // A becomes A P.
 template<typename Matrix>
 void PostMultiply(Matrix& A, HouseholderReflection const& P) {
   auto const βᵗv = TransposedView{P.β * P.v};
-  auto const Av = A * P.v;
-  A -= Av * βᵗv;
+  //auto const Av = A * P.v;
+  //A -= Av * βᵗv;
 }
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
@@ -633,7 +648,7 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
 
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
-    auto const P = HouseholderReflection<typename G::Reflector>(
+    auto const P = ComputeHouseholderReflection(
         ColumnView<typename G::Scalar, Matrix>{.matrix = H,
                                                .first_row = k + 1,
                                                .last_row = n,
@@ -655,6 +670,7 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
       PostMultiply(block, P);
     }
   }
+  return H;
 }
 
 template<typename Matrix>
