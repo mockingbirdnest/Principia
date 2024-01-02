@@ -25,6 +25,7 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
+//TODO Commnt
 template<typename Scalar, typename Matrix>
 struct ColumnView {
   Matrix& matrix;
@@ -38,8 +39,7 @@ struct ColumnView {
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
-  template<typename RScalar>
-  ColumnView& operator/=(RScalar right);
+  ColumnView& operator/=(double right);
 };
 
 template<typename Scalar, typename Matrix>
@@ -70,9 +70,12 @@ constexpr Scalar const& ColumnView<Scalar, Matrix>::operator[](
 }
 
 template<typename Scalar, typename Matrix>
-template<typename RScalar>
 ColumnView<Scalar, Matrix>& ColumnView<Scalar, Matrix>::operator/=(
-    RScalar const right) {}
+    double const right) {
+  for (int i = first_row; i < last_row; ++i) {
+    matrix(i, column) /= right;
+  }
+}
 
 template<typename Scalar, typename Matrix>
 struct BlockView {
@@ -142,7 +145,11 @@ Householder<Vector> HouseholderVector(Vector const& x) {
 // A becomes P A.
 template<typename Matrix, typename Vector>
 void Premultiply(Householder<Vector> const& P, Matrix& A) {
-  auto const ᵗvA = TransposedView{P.v} * A;
+  // We don't have a multiplication TransposedView<Vector> * Matrix because the
+  // ownership of the result is problematic.  Instead, we transpose twice.  That
+  // costs essentially nothing.
+  auto const ᵗAv = TransposedView{A} * P.v;
+  auto const ᵗvA = TransposedView{ᵗAv};
   auto const βv = P.β * P.v;
   A -= βv * ᵗvA;
 }
