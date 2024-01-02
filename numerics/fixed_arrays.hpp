@@ -289,23 +289,23 @@ constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
-    LScalar const left,
+    LScalar const& left,
     FixedVector<RScalar, size> const& right);
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     FixedVector<LScalar, size> const& left,
-    RScalar const right);
+    RScalar const& right);
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
-operator*(LScalar const left,
+operator*(LScalar const& left,
           FixedMatrix<RScalar, rows, columns> const& right);
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
 operator*(FixedMatrix<LScalar, rows, columns> const& left,
-          RScalar const right);
+          RScalar const& right);
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
@@ -315,7 +315,7 @@ constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
 operator/(FixedMatrix<LScalar, rows, columns> const& left,
-          RScalar const right);
+          RScalar const& right);
 
 // Hilbert space and algebra.
 

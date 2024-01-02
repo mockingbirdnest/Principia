@@ -557,7 +557,7 @@ constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
-    LScalar const left,
+    LScalar const& left,
     FixedVector<RScalar, size> const& right) {
   std::array<Product<LScalar, RScalar>, size> result;
   for (int i = 0; i < size; ++i) {
@@ -569,7 +569,7 @@ constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     FixedVector<LScalar, size> const& left,
-    RScalar const right) {
+    RScalar const& right) {
   std::array<Product<LScalar, RScalar>, size> result;
   for (int i = 0; i < size; ++i) {
     result[i] = left[i] * right;
@@ -579,7 +579,7 @@ constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
-    LScalar const left,
+    LScalar const& left,
     FixedMatrix<RScalar, rows, columns> const& right) {
   FixedMatrix<Product<LScalar, RScalar>, rows, columns> result(
       uninitialized);
@@ -594,7 +594,7 @@ constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
-    RScalar const right) {
+    RScalar const& right) {
   FixedMatrix<Product<LScalar, RScalar>, rows, columns> result(
       uninitialized);
   for (int i = 0; i < rows; ++i) {
@@ -619,7 +619,7 @@ constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> operator/(
     FixedMatrix<LScalar, rows, columns> const& left,
-    RScalar const right) {
+    RScalar const& right) {
   FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> result(
       uninitialized);
   for (int i = 0; i < rows; ++i) {

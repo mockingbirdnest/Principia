@@ -498,6 +498,60 @@ UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector) {
 }
 
 template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    UnboundedVector<RScalar> const& right) {
+  UnboundedVector<Product<LScalar, RScalar>> result(right.size(),
+                                                    uninitialized);
+  for (int i = 0; i < right.size(); ++i) {
+    result[i] = left * right[i];
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    UnboundedVector<LScalar> const& left,
+    RScalar const& right) {
+  UnboundedVector<Product<LScalar, RScalar>> result(left.size(),
+                                                    uninitialized);
+  for (int i = 0; i < left.size(); ++i) {
+    result[i] = left[i] * right;
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    UnboundedMatrix<RScalar> const& right) {
+  UnboundedMatrix<Product<LScalar, RScalar>> result(right.rows(),
+                                                    right.columns(),
+                                                    uninitialized);
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      result(i, j) = left * right(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    RScalar const& right) {
+  UnboundedMatrix<Product<LScalar, RScalar>> result(left.rows(),
+                                                    left.columns(),
+                                                    uninitialized);
+  for (int i = 0; i < left.rows(); ++i) {
+    for (int j = 0; j < left.columns(); ++j) {
+      result(i, j) = left(i, j) * right;
+    }
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
 UnboundedVector<Quotient<LScalar, RScalar>> operator/(
     UnboundedVector<LScalar> const& left,
     RScalar const& right) {
@@ -505,6 +559,21 @@ UnboundedVector<Quotient<LScalar, RScalar>> operator/(
                                                      uninitialized);
   for (int i = 0; i < left.size(); ++i) {
     result[i] = left[i] / right;
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Quotient<LScalar, RScalar>> operator/(
+    UnboundedMatrix<LScalar> const& left,
+    RScalar const right) {
+  UnboundedMatrix<Quotient<LScalar, RScalar>> result(left.rows(),
+                                                     left.columns(),
+                                                     uninitialized);
+  for (int i = 0; i < left.rows(); ++i) {
+    for (int j = 0; j < left.columns(); ++j) {
+      result(i, j) = left(i, j) / right;
+    }
   }
   return result;
 }
@@ -522,7 +591,7 @@ Product<LScalar, RScalar> operator*(
 }
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     UnboundedVector<LScalar> const& left,
     TransposedView<UnboundedVector<RScalar>> const& right) {
   UnboundedMatrix<Product<LScalar, RScalar>> result(left.size(),
