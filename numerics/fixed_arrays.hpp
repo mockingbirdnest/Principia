@@ -346,6 +346,12 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedVector<RScalar, columns> const& right);
 
+// Use this operator to multiply a row vector with a matrix.
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
+    TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
+    FixedVector<RScalar, rows> const& right);
+
 // Ouput.
 
 template<typename Scalar, int size>

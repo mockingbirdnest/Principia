@@ -563,6 +563,21 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
   return result;
 }
 
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    TransposedView<UnboundedMatrix<LScalar>> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.rows(), right.size());
+  UnboundedVector<Product<LScalar, RScalar>> result(left.columns());
+  for (int j = 0; j < left.columns(); ++j) {
+    auto& result_j = result[j];
+    for (int i = 0; i < left.rows(); ++i) {
+      result_j += left(i, j) * right[i];
+    }
+  }
+  return result;
+}
+
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector) {

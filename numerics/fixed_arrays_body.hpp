@@ -688,6 +688,20 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
   return FixedVector<Product<LScalar, RScalar>, rows>(std::move(result));
 }
 
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
+    TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
+    FixedVector<RScalar, rows> const& right) {
+  std::array<Product<LScalar, RScalar>, columns> result;
+  for (int j = 0; j < columns; ++j) {
+    auto& result_j = result[j];
+    for (int i = 0; i < rows; ++i) {
+      result_j += left(i, j) * right[i];
+    }
+  }
+  return FixedVector<Product<LScalar, RScalar>, columns>(std::move(result));
+}
+
 template<typename Scalar, int size>
 std::ostream& operator<<(std::ostream& out,
                          FixedVector<Scalar, size> const& vector) {

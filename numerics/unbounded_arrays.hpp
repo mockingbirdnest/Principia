@@ -226,6 +226,12 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<LScalar> const& left,
     UnboundedVector<RScalar> const& right);
 
+// Use this operator to multiply a row vector with a matrix.
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    TransposedView<UnboundedMatrix<LScalar>> const& left,
+    UnboundedVector<RScalar> const& right);
+
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,
                          UnboundedVector<Scalar> const& vector);
