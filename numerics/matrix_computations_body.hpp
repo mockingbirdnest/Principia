@@ -209,6 +209,7 @@ struct HouseholderReflection {
 
 template<typename Vector>
 HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
+LOG(ERROR)<<x;
   int const m = x.size();
   // In order to avoid issues with quantities, we start by normalizing x.  This
   // implies that μ is 1.
@@ -216,7 +217,7 @@ HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
   HouseholderReflection result{.v = normalized_x, .β = 0};
   double const& x₁ = normalized_x[0];
   double& v₁ = result.v[0];
-  auto x₂ₘ = x;
+  auto x₂ₘ = normalized_x;
   x₂ₘ[0] = 0;
   auto const σ = x₂ₘ.Norm²();
   v₁ = 1;
@@ -235,7 +236,7 @@ HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
     result.β = 2 * v₁² / (σ + v₁²);
     result.v /= v₁;
   }
-LOG(ERROR)<<x<<" "<<result.v<<" "<<result.β;
+LOG(ERROR)<<result.v<<" "<<result.β;
   return result;
 }
 
@@ -688,6 +689,7 @@ typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
   using G = HessenbergGenerator<Matrix>;
   int const n = A.rows();
   auto H = A;
+LOG(ERROR)<<H;
 
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {

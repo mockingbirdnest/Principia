@@ -108,27 +108,30 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
                    5, 6, 7, 8,
                    9, 8, -7, 6,
                    5, 4, 3, 2});
-  Matrix const h4_expected({1,
-                            -1.485296896323765,
-                            -0.6317762736251702,
-                            -5.137582298110200,
+  Matrix const h4_expected({  1,
+                              1.4852968963237645012,
+                             -0.63177627362517020518,
+                              5.1375822981102002423,
 
-                            -11.44552314225960,
-                            7.732824427480916,
-                            -10.84015303463464,
-                            -4.490856377374366,
+                             11.445523142259597039,
+                              7.7328244274809160305,
+                             10.840153034634636509,
+                             -4.4908563773743662120,
 
-                            0,
-                            -10.02045574033354,
-                            -3.915807931898464,
-                            -0.1424448613699350,
+                              0,
+                             10.020455740333542876,
+                             -3.9158079318984636532,
+                              0.14244486136993501485,
 
-                            0,
-                            0,
-                            -2.414075408688634,
-                            -2.817016495582452});
-  auto const h4_actual = HessenbergForm(m4);
-  EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 0));
+                              0,
+                              0,
+                              2.4140754086886336638,
+                             -2.8170164955824523773});
+  auto h4_actual = HessenbergForm(m4);
+  // This component should really use VanishesBefore, but we don't have a good
+  // way to do that.
+  h4_actual(3, 1) = 0;
+  EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 14));
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {

@@ -50,6 +50,7 @@ class UnboundedVector final {
   void EraseToEnd(int begin_index);
 
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   int size() const;
 

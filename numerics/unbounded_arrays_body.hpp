@@ -63,11 +63,16 @@ void UnboundedVector<Scalar>::EraseToEnd(int const begin_index) {
 
 template<typename Scalar>
 Scalar UnboundedVector<Scalar>::Norm() const {
+  return Sqrt(Norm²());
+}
+
+template<typename Scalar>
+Square<Scalar> UnboundedVector<Scalar>::Norm²() const {
   Square<Scalar> norm²{};
   for (auto const c : data_) {
     norm² += c * c;
   }
-  return Sqrt(norm²);
+  return norm²;
 }
 
 template<typename Scalar>
