@@ -33,7 +33,7 @@ class UnboundedMatrix;
 template<typename Scalar>
 class UnboundedUpperTriangularMatrix;
 
-// The following classes are similar to those in Unbounded_arrays.hpp, but they have
+// The following classes are similar to those in fixed_arrays.hpp, but they have
 // an Extend method to add more entries to the arrays.
 
 template<typename Scalar>

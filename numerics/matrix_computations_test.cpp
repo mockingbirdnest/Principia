@@ -127,7 +127,7 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
                               0,
                               2.4140754086886336638,
                              -2.8170164955824523773});
-  auto h4_actual = HessenbergForm(m4);
+  auto h4_actual = HessenbergDecomposition(m4).H;
   // This component should really use VanishesBefore, but we don't have a good
   // way to do that.
   h4_actual(3, 1) = 0;

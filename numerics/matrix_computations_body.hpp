@@ -393,7 +393,7 @@ struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar_>> {
   using Reflector = UnboundedVector<double>;
   struct Result {
     UnboundedMatrix<Scalar> H;
-  }
+  };
 };
 
 template<typename Scalar_, int dimension>
@@ -403,7 +403,7 @@ struct HessenbergDecompositionGenerator<
   using Reflector = FixedVector<double, dimension>;
   struct Result {
     FixedMatrix<Scalar, dimension, dimension> H;
-  }
+  };
 };
 
 template<typename Scalar_>
@@ -699,8 +699,9 @@ typename HessenbergDecompositionGenerator<Matrix>::Result
 HessenbergDecomposition(Matrix const& A) {
   using G = HessenbergDecompositionGenerator<Matrix>;
   using Scalar = typename G::Scalar;
+  typename HessenbergDecompositionGenerator<Matrix>::Result result{.H = A};
+  auto& H = result.H;
   int const n = A.rows();
-  auto H = A;
 
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
@@ -726,7 +727,7 @@ HessenbergDecomposition(Matrix const& A) {
       PostMultiply(block, P);
     }
   }
-  return H;
+  return result;
 }
 
 template<typename Matrix>
