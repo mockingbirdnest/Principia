@@ -29,9 +29,14 @@ struct ᵗRDRDecompositionGenerator;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
-//TODO:Comment
+// Declares:
+//   struct Result {
+//     (matrix) H;
+//     (matrix) U;
+//   }
+// TODO(phl): Add support for U.
 template<typename M>
-struct HessenbergGenerator;
+struct HessenbergDecompositionGenerator;
 
 // Declares:
 //   struct Result {
@@ -85,10 +90,12 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
-//TODO comment
+// If A is a square matrix, returns U and H so that A = ᵗU H U, where H is an
+// upper Hessenberg matrix.
+// TODO(phl): Add support for returning U.
 template<typename Matrix>
-typename HessenbergGenerator<Matrix>::Result
-HessenbergForm(Matrix const& A);
+typename HessenbergDecompositionGenerator<Matrix>::Result
+HessenbergDecomposition(Matrix const& A);
 
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
@@ -121,7 +128,7 @@ using internal::BackSubstitution;
 using internal::CholeskyDecomposition;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
-using internal::HessenbergForm;
+using internal::HessenbergDecomposition;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::Solve;

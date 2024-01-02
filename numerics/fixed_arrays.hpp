@@ -19,6 +19,8 @@ using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
+// TODO(phl): This should support the same operations as unbounded_arrays.hpp.
+
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
 

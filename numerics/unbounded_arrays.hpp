@@ -14,6 +14,8 @@ namespace numerics {
 namespace _unbounded_arrays {
 namespace internal {
 
+// TODO(phl): This should support the same operations as fixed_arrays.hpp.
+
 using namespace principia::base::_tags;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;

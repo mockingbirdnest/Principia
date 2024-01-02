@@ -25,7 +25,12 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-//TODO Commnt
+// TODO(phl): The view stuff should be (1) made completed, i.e., have all the
+// operations that exist for fixed/unbounded vectors/matrices; (2) moved to a
+// common place (probably together with TransposedView); (3) unified with
+// fixed/unbounded arrays so that we don't have to write each algorithm N times.
+
+// A view of a column of a matrix.
 // TODO(phl): Could we extract Scalar from Matrix?
 template<typename Scalar, typename Matrix>
 struct ColumnView {
@@ -38,6 +43,8 @@ struct ColumnView {
   Square<Scalar> Norm²() const;
   constexpr int size() const;
 
+  // Constructs an unbounded vector by copying data from the view.  Note that
+  // the result is unbounded even if the matrix being viewed is a FixedMatrix.
   explicit operator UnboundedVector<Scalar>() const;
 
   constexpr Scalar& operator[](int index);
@@ -209,7 +216,6 @@ struct HouseholderReflection {
 
 template<typename Vector>
 HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
-LOG(ERROR)<<x;
   int const m = x.size();
   // In order to avoid issues with quantities, we start by normalizing x.  This
   // implies that μ is 1.
@@ -236,7 +242,6 @@ LOG(ERROR)<<x;
     result.β = 2 * v₁² / (σ + v₁²);
     result.v /= v₁;
   }
-LOG(ERROR)<<result.v<<" "<<result.β;
   return result;
 }
 
@@ -383,17 +388,22 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 };
 
 template<typename Scalar_>
-struct HessenbergGenerator<UnboundedMatrix<Scalar_>> {
+struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
   using Reflector = UnboundedVector<double>;
-  using Result = UnboundedMatrix<Scalar>;
+  struct Result {
+    UnboundedMatrix<Scalar> H;
+  }
 };
 
 template<typename Scalar_, int dimension>
-struct HessenbergGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
+struct HessenbergDecompositionGenerator<
+    FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
   using Reflector = FixedVector<double, dimension>;
-  using Result = FixedMatrix<Scalar, dimension, dimension>;
+  struct Result {
+    FixedMatrix<Scalar, dimension, dimension> H;
+  }
 };
 
 template<typename Scalar_>
@@ -685,36 +695,36 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 }
 
 template<typename Matrix>
-typename HessenbergGenerator<Matrix>::Result HessenbergForm(Matrix const& A) {
-  using G = HessenbergGenerator<Matrix>;
+typename HessenbergDecompositionGenerator<Matrix>::Result
+HessenbergDecomposition(Matrix const& A) {
+  using G = HessenbergDecompositionGenerator<Matrix>;
+  using Scalar = typename G::Scalar;
   int const n = A.rows();
   auto H = A;
-LOG(ERROR)<<H;
 
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
     auto const P = ComputeHouseholderReflection(
-        ColumnView<typename G::Scalar, Matrix>{.matrix = H,
-                                               .first_row = k + 1,
-                                               .last_row = n - 1,
-                                               .column = k});
+        ColumnView<Scalar, Matrix>{.matrix = H,
+                                   .first_row = k + 1,
+                                   .last_row = n - 1,
+                                   .column = k});
     {
-      auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
-                                                         .first_row = k + 1,
-                                                         .last_row = n - 1,
-                                                         .first_column = k,
-                                                         .last_column = n - 1};
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = k + 1,
+                                             .last_row = n - 1,
+                                             .first_column = k,
+                                             .last_column = n - 1};
       Premultiply(P, block);
     }
     {
-      auto block = BlockView<typename G::Scalar, Matrix>{.matrix = H,
-                                                         .first_row = 0,
-                                                         .last_row = n - 1,
-                                                         .first_column = k + 1,
-                                                         .last_column = n - 1};
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = 0,
+                                             .last_row = n - 1,
+                                             .first_column = k + 1,
+                                             .last_column = n - 1};
       PostMultiply(block, P);
     }
-LOG(ERROR)<<H;
   }
   return H;
 }
