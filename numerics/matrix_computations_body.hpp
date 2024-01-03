@@ -83,14 +83,14 @@ ColumnView<Scalar, Matrix>::operator UnboundedVector<Scalar>() const {
 
 template<typename Scalar, typename Matrix>
 constexpr Scalar& ColumnView<Scalar, Matrix>::operator[](int const index) {
-  DCHECK_LE(index, last_row - first_row);
+  CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
 
 template<typename Scalar, typename Matrix>
 constexpr Scalar const& ColumnView<Scalar, Matrix>::operator[](
     int const index) const {
-  DCHECK_LE(index, last_row - first_row);
+  CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
 
@@ -149,8 +149,8 @@ constexpr int BlockView<Scalar, Matrix>::columns() const {
 template<typename Scalar, typename Matrix>
 constexpr Scalar& BlockView<Scalar, Matrix>::operator()(int const row,
                                                         int const column) {
-  DCHECK_LE(row, last_row - first_row);
-  DCHECK_LE(column, last_column - first_column);
+  CONSTEXPR_DCHECK(row <= last_row - first_row);
+  CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
 }
 
@@ -158,8 +158,8 @@ template<typename Scalar, typename Matrix>
 constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
     int const row,
     int const column) const {
-  DCHECK_LE(row, last_row - first_row);
-  DCHECK_LE(column, last_column - first_column);
+  CONSTEXPR_DCHECK(row <= last_row - first_row);
+  CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
 }
 
