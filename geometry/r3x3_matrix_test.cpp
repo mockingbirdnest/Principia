@@ -65,9 +65,9 @@ TEST_F(R3x3MatrixTest, QRDecomposition) {
   EXPECT_THAT(
       q,
       AlmostEquals(R3x3Matrix<double>(
-          {6.0 / 7.0, 3.0 / 7.0, 2.0 / 7.0},
-          {-30.0 / Sqrt(3577.0), 34.0 / Sqrt(3577.0), 39.0 / Sqrt(3577.0)},
-          {1.0 / Sqrt(73.0), -6.0 / Sqrt(73.0), 6.0 / Sqrt(73.0)}), 10));
+          {6.0 / 7.0, -30.0 / Sqrt(3577.0),  1.0 / Sqrt(73.0)},
+          {3.0 / 7.0,  34.0 / Sqrt(3577.0), -6.0 / Sqrt(73.0)},
+          {2.0 / 7.0,  39.0 / Sqrt(3577.0), 6.0 / Sqrt(73.0)}), 569));
   EXPECT_THAT(
       r,
       AlmostEquals(R3x3Matrix<Length>(
