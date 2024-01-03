@@ -216,7 +216,6 @@ struct HouseholderReflection {
 
 template<typename Vector>
 HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
-  int const m = x.size();
   // In order to avoid issues with quantities, we start by normalizing x.  This
   // implies that μ is 1.
   auto const normalized_x = Normalize(x);
