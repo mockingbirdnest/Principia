@@ -14,6 +14,8 @@ namespace numerics {
 namespace _unbounded_arrays {
 namespace internal {
 
+// TODO(phl): This should support the same operations as fixed_arrays.hpp.
+
 using namespace principia::base::_tags;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
@@ -50,6 +52,7 @@ class UnboundedVector final {
   void EraseToEnd(int begin_index);
 
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   int size() const;
 
@@ -196,25 +199,110 @@ class UnboundedUpperTriangularMatrix final {
   friend class Row;
 };
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedVector<Quotient<ScalarLeft, ScalarRight>> operator/(
-    UnboundedVector<ScalarLeft> const& left,
-    ScalarRight const& right);
+template<typename Scalar>
+UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector);
 
-template<typename ScalarLeft, typename ScalarRight>
-Product<ScalarLeft, ScalarRight> operator*(
-    TransposedView<UnboundedVector<ScalarLeft>> const& left,
-    UnboundedVector<ScalarRight> const& right);
+// Additive groups.
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedMatrix<Product<ScalarLeft, ScalarRight>> operator*(
-    UnboundedMatrix<ScalarLeft> const& left,
-    UnboundedMatrix<ScalarRight> const& right);
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator+=(
+    UnboundedVector<Scalar>& left,
+    UnboundedVector<Scalar> const& right);
 
-template<typename ScalarLeft, typename ScalarRight>
-UnboundedVector<Product<ScalarLeft, ScalarRight>> operator*(
-    UnboundedMatrix<ScalarLeft> const& left,
-    UnboundedVector<ScalarRight> const& right);
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator+=(
+    UnboundedMatrix<Scalar>& left,
+    UnboundedMatrix<Scalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator-=(
+    UnboundedVector<Scalar>& left,
+    UnboundedVector<Scalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator-=(
+    UnboundedMatrix<Scalar>& left,
+    UnboundedMatrix<Scalar> const& right);
+
+// Vector spaces.
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    UnboundedVector<LScalar> const& left,
+    RScalar const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>>
+operator*(LScalar const& left,
+          UnboundedMatrix<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>>
+operator*(UnboundedMatrix<LScalar> const& left,
+          RScalar const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Quotient<LScalar, RScalar>> operator/(
+    UnboundedVector<LScalar> const& left,
+    RScalar const& right);
+
+template<typename LScalar, typename RScalar>
+constexpr UnboundedMatrix<Quotient<LScalar, RScalar>>
+operator/(UnboundedMatrix<LScalar> const& left,
+          RScalar const& right);
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator*=(
+    UnboundedVector<Scalar>& left,
+    double right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator*=(
+    UnboundedMatrix<Scalar>& left,
+    double right);
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar>& operator/=(
+    UnboundedVector<Scalar>& left,
+    double right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar>& operator/=(
+    UnboundedMatrix<Scalar>& left,
+    double right);
+
+// Hilbert space and algebra.
+
+template<typename LScalar, typename RScalar>
+Product<LScalar, RScalar> operator*(
+    TransposedView<UnboundedVector<LScalar>> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedVector<LScalar> const& left,
+    TransposedView<UnboundedVector<RScalar>> const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
+
+// Use this operator to multiply a row vector with a matrix.
+template<typename LScalar, typename RScalar>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    TransposedView<UnboundedMatrix<LScalar>> const& left,
+    UnboundedVector<RScalar> const& right);
 
 template<typename Scalar>
 std::ostream& operator<<(std::ostream& out,

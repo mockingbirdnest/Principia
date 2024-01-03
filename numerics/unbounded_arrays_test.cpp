@@ -108,6 +108,10 @@ TEST_F(UnboundedArraysTest, MultiplicationDivision) {
                  661611, 1070697, 1732308, 2803005}), m4_ * m4_);
 }
 
+TEST_F(UnboundedArraysTest, Algebra) {
+  EXPECT_EQ(3270, v3_.Transpose() * v3_);
+}
+
 TEST_F(UnboundedArraysTest, VectorIndexing) {
   EXPECT_EQ(31, v3_[1]);
   v3_[2] = -666;

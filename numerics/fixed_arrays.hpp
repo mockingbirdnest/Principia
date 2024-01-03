@@ -19,6 +19,8 @@ using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
+// TODO(phl): This should support the same operations as unbounded_arrays.hpp.
+
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
 
@@ -221,10 +223,10 @@ template<typename Scalar, int size>
 constexpr FixedVector<double, size> Normalize(
     FixedVector<Scalar, size> const& vector);
 
-template<typename LScalar, typename RScalar, int lsize, int rsize>
-constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> SymmetricProduct(
-    FixedVector<LScalar, lsize> const& left,
-    FixedVector<RScalar, rsize> const& right);
+template<typename LScalar, typename RScalar, int size>
+constexpr FixedMatrix<Product<LScalar, RScalar>, size, size> SymmetricProduct(
+    FixedVector<LScalar, size> const& left,
+    FixedVector<RScalar, size> const& right);
 
 template<typename Scalar, int size>
 constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
@@ -284,23 +286,23 @@ constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
-    LScalar const left,
+    LScalar const& left,
     FixedVector<RScalar, size> const& right);
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     FixedVector<LScalar, size> const& left,
-    RScalar const right);
+    RScalar const& right);
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
-operator*(LScalar const left,
+operator*(LScalar const& left,
           FixedMatrix<RScalar, rows, columns> const& right);
 
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
 operator*(FixedMatrix<LScalar, rows, columns> const& left,
-          RScalar const right);
+          RScalar const& right);
 
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
@@ -310,7 +312,27 @@ constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
 operator/(FixedMatrix<LScalar, rows, columns> const& left,
-          RScalar const right);
+          RScalar const& right);
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator*=(
+    FixedVector<Scalar, size>& left,
+    double right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator*=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    double right);
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size>& operator/=(
+    FixedVector<Scalar, size>& left,
+    double right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>& operator/=(
+    FixedMatrix<Scalar, rows, columns>& left,
+    double right);
 
 // Hilbert space and algebra.
 
@@ -340,6 +362,12 @@ template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedVector<RScalar, columns> const& right);
+
+// Use this operator to multiply a row vector with a matrix.
+template<typename LScalar, typename RScalar, int rows, int columns>
+constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
+    TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
+    FixedVector<RScalar, rows> const& right);
 
 // Ouput.
 

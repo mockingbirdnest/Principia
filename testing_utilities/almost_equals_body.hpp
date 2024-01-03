@@ -166,7 +166,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
@@ -338,8 +338,8 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   std::int64_t max_distance = -1;
   int max_i = -1;
   for (int i = 0; i < expected_.size(); ++i) {
-    int const distance = NormalizedNaNULPDistance(DoubleValue(actual[i]),
-                                                  DoubleValue(expected_[i]));
+    std::int64_t const distance = NormalizedNaNULPDistance(
+        DoubleValue(actual[i]), DoubleValue(expected_[i]));
     if (distance > max_distance) {
       max_distance = distance;
       max_i = i;
@@ -368,7 +368,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < expected_.rows(); ++i) {
     for (int j = 0; j < expected_.columns(); ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
@@ -400,7 +400,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < expected_.rows(); ++i) {
     for (int j = 0; j <= i; ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
@@ -432,7 +432,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < expected_.columns(); ++i) {
     for (int j = i; j < expected_.columns(); ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
@@ -466,8 +466,8 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   std::int64_t max_distance = -1;
   int max_i = -1;
   for (int i = 0; i < expected_.size(); ++i) {
-    int const distance = NormalizedNaNULPDistance(DoubleValue(actual[i]),
-                                                  DoubleValue(expected_[i]));
+    std::int64_t const distance = NormalizedNaNULPDistance(
+        DoubleValue(actual[i]), DoubleValue(expected_[i]));
     if (distance > max_distance) {
       max_distance = distance;
       max_i = i;
@@ -500,7 +500,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < expected_.rows(); ++i) {
     for (int j = 0; j < expected_.columns(); ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
@@ -536,7 +536,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < expected_.rows(); ++i) {
     for (int j = 0; j <= i; ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;
@@ -573,7 +573,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   int max_j = -1;
   for (int i = 0; i < expected_.columns(); ++i) {
     for (int j = i; j < expected_.columns(); ++j) {
-      int const distance = NormalizedNaNULPDistance(
+      std::int64_t const distance = NormalizedNaNULPDistance(
           DoubleValue(actual(i, j)), DoubleValue(expected_(i, j)));
       if (distance > max_distance) {
         max_distance = distance;

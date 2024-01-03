@@ -31,6 +31,15 @@ struct SubstitutionGenerator;
 
 // Declares:
 //   struct Result {
+//     (matrix) H;
+//     (matrix) U;
+//   }
+// TODO(phl): Add support for U.
+template<typename M>
+struct HessenbergDecompositionGenerator;
+
+// Declares:
+//   struct Result {
 //     ⟨matrix⟩ rotation;
 //     ⟨vector⟩ eigenvalues;
 //   };
@@ -81,6 +90,13 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+// If A is a square matrix, returns U and H so that A = ᵗU H U, where H is an
+// upper Hessenberg matrix.
+// TODO(phl): Add support for returning U.
+template<typename Matrix>
+typename HessenbergDecompositionGenerator<Matrix>::Result
+HessenbergDecomposition(Matrix const& A);
+
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
 // when the matrix is nearly diagonal, though.
@@ -95,7 +111,8 @@ template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
 RayleighQuotient(Matrix const& A, Vector const& x);
 
-// Returns the eigenvector closest to x and its eigenvalue.
+// Returns the eigenvector closest to x and its eigenvalue.  A must be
+// symmetric.
 template<typename Matrix, typename Vector>
 typename RayleighQuotientIterationGenerator<Matrix, Vector>::Result
 RayleighQuotientIteration(Matrix const& A, Vector const& x);
@@ -111,6 +128,7 @@ using internal::BackSubstitution;
 using internal::CholeskyDecomposition;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
+using internal::HessenbergDecomposition;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::Solve;

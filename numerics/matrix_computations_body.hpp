@@ -8,6 +8,7 @@
 
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -19,9 +20,250 @@ namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
+
+// TODO(phl): The view stuff should be (1) made completed, i.e., have all the
+// operations that exist for fixed/unbounded vectors/matrices; (2) moved to a
+// common place (probably together with TransposedView); (3) unified with
+// fixed/unbounded arrays so that we don't have to write each algorithm N times.
+
+// A view of a column of a matrix.
+// TODO(phl): Could we extract Scalar from Matrix?
+template<typename Scalar, typename Matrix>
+struct ColumnView {
+  Matrix& matrix;
+  int first_row;
+  int last_row;
+  int column;
+
+  Scalar Norm() const;
+  Square<Scalar> Norm²() const;
+  constexpr int size() const;
+
+  // Constructs an unbounded vector by copying data from the view.  Note that
+  // the result is unbounded even if the matrix being viewed is a FixedMatrix.
+  explicit operator UnboundedVector<Scalar>() const;
+
+  constexpr Scalar& operator[](int index);
+  constexpr Scalar const& operator[](int index) const;
+
+  ColumnView& operator/=(double right);
+};
+
+template<typename Scalar, typename Matrix>
+Square<Scalar> ColumnView<Scalar, Matrix>::Norm²() const {
+  Square<Scalar> result{};
+  for (int i = first_row; i <= last_row; ++i) {
+    result += Pow<2>(matrix(i, column));
+  }
+  return result;
+}
+
+template<typename Scalar, typename Matrix>
+Scalar ColumnView<Scalar, Matrix>::Norm() const {
+  return Sqrt(Norm²());
+}
+
+template<typename Scalar, typename Matrix>
+constexpr int ColumnView<Scalar, Matrix>::size() const {
+  return last_row - first_row + 1;
+}
+
+template<typename Scalar, typename Matrix>
+ColumnView<Scalar, Matrix>::operator UnboundedVector<Scalar>() const {
+  UnboundedVector<Scalar> result(size(), uninitialized);
+  for (int i = first_row; i <= last_row; ++i) {
+    result[i - first_row] = matrix(i, column);
+  }
+  return result;
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar& ColumnView<Scalar, Matrix>::operator[](int const index) {
+  DCHECK_LE(index, last_row - first_row);
+  return matrix(first_row + index, column);
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar const& ColumnView<Scalar, Matrix>::operator[](
+    int const index) const {
+  DCHECK_LE(index, last_row - first_row);
+  return matrix(first_row + index, column);
+}
+
+template<typename Scalar, typename Matrix>
+ColumnView<Scalar, Matrix>& ColumnView<Scalar, Matrix>::operator/=(
+    double const right) {
+  for (int i = first_row; i < last_row; ++i) {
+    matrix(i, column) /= right;
+  }
+}
+
+template<typename Scalar, typename Matrix>
+UnboundedVector<double> Normalize(ColumnView<Scalar, Matrix> const& view) {
+  return UnboundedVector<Scalar>(view) / view.Norm();
+}
+
+template<typename Scalar, typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         ColumnView<Scalar, Matrix> const& view) {
+  std::stringstream s;
+  for (int i = 0; i < view.size(); ++i) {
+    s << (i == 0 ? "{" : "") << view[i]
+      << (i == view.size() - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
+}
+
+template<typename Scalar, typename Matrix>
+struct BlockView {
+  Matrix& matrix;
+  int first_row;
+  int last_row;
+  int first_column;
+  int last_column;
+
+  constexpr int rows() const;
+  constexpr int columns() const;
+
+  constexpr Scalar& operator()(int row, int column);
+  constexpr Scalar const& operator()(int row, int column) const;
+
+  BlockView& operator-=(UnboundedMatrix<Scalar> const& right);
+};
+
+template<typename Scalar, typename Matrix>
+constexpr int BlockView<Scalar, Matrix>::rows() const {
+  return last_row - first_row + 1;
+}
+
+template<typename Scalar, typename Matrix>
+constexpr int BlockView<Scalar, Matrix>::columns() const {
+  return last_column - first_column + 1;
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar& BlockView<Scalar, Matrix>::operator()(int const row,
+                                                        int const column) {
+  DCHECK_LE(row, last_row - first_row);
+  DCHECK_LE(column, last_column - first_column);
+  return matrix(first_row + row, first_column + column);
+}
+
+template<typename Scalar, typename Matrix>
+constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
+    int const row,
+    int const column) const {
+  DCHECK_LE(row, last_row - first_row);
+  DCHECK_LE(column, last_column - first_column);
+  return matrix(first_row + row, first_column + column);
+}
+
+template<typename Scalar, typename Matrix>
+BlockView<Scalar, Matrix>& BlockView<Scalar, Matrix>::operator-=(
+    UnboundedMatrix<Scalar> const& right) {
+  CHECK_EQ(rows(), right.rows());
+  CHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      matrix(first_row + i, first_column + j) -= right(i, j);
+    }
+  }
+  return *this;
+}
+
+
+template<typename LScalar, typename RScalar, typename Matrix>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    BlockView<LScalar, Matrix> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
+    }
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar, typename Matrix>
+UnboundedVector<Product<LScalar, RScalar>> operator*(
+    TransposedView<BlockView<LScalar, Matrix>> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.transpose.rows(), right.size());
+  UnboundedVector<Product<LScalar, RScalar>> result(left.transpose.columns());
+  for (int j = 0; j < left.transpose.columns(); ++j) {
+    auto& result_j = result[j];
+    for (int i = 0; i < left.transpose.rows(); ++i) {
+      result_j += left.transpose(i, j) * right[i];
+    }
+  }
+  return result;
+}
+
+// As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure
+// when applying [the Householder reflection] to a matrix".
+struct HouseholderReflection {
+  UnboundedVector<double> v;
+  double β;
+};
+
+template<typename Vector>
+HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
+  int const m = x.size();
+  // In order to avoid issues with quantities, we start by normalizing x.  This
+  // implies that μ is 1.
+  auto const normalized_x = Normalize(x);
+  HouseholderReflection result{.v = normalized_x, .β = 0};
+  double const& x₁ = normalized_x[0];
+  double& v₁ = result.v[0];
+  auto x₂ₘ = normalized_x;
+  x₂ₘ[0] = 0;
+  auto const σ = x₂ₘ.Norm²();
+  v₁ = 1;
+  if (σ == 0) {
+    if (x₁ < 0) {
+      result.β = -2;
+    }
+  } else {
+    static constexpr double μ = 1;
+    if (x₁ <= 0) {
+      v₁ = x₁ - μ;
+    } else {
+      v₁ = -σ / (x₁ + μ);
+    }
+    double const v₁² = Pow<2>(v₁);
+    result.β = 2 * v₁² / (σ + v₁²);
+    result.v /= v₁;
+  }
+  return result;
+}
+
+// A becomes P A.
+template<typename Matrix>
+void Premultiply(HouseholderReflection const& P, Matrix& A) {
+  // We don't have a multiplication TransposedView<Vector> * Matrix because the
+  // ownership of the result is problematic.  Instead, we transpose twice.  That
+  // costs essentially nothing.
+  auto const ᵗAv = TransposedView{A} * P.v;  // NOLINT
+  auto const ᵗvA = TransposedView{ᵗAv};      // NOLINT
+  auto const βv = P.β * P.v;
+  A -= βv * ᵗvA;
+}
+
+// A becomes A P.
+template<typename Matrix>
+void PostMultiply(Matrix& A, HouseholderReflection const& P) {
+  auto const βᵗv = TransposedView{P.β * P.v};  // NOLINT
+  auto const Av = A * P.v;
+  A -= Av * βᵗv;
+}
 
 // This is J(p, q, θ) in [GV13] section 8.5.1.  This matrix is also called a
 // Givens rotation.  As mentioned in [GV13] section 5.1.9, "It is critical that
@@ -143,6 +385,25 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
                              FixedVector<RScalar, dimension>> {
   using Result = FixedVector<Quotient<RScalar, LScalar>, dimension>;
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
+};
+
+template<typename Scalar_>
+struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  using Reflector = UnboundedVector<double>;
+  struct Result {
+    UnboundedMatrix<Scalar> H;
+  };
+};
+
+template<typename Scalar_, int dimension>
+struct HessenbergDecompositionGenerator<
+    FixedMatrix<Scalar_, dimension, dimension>> {
+  using Scalar = Scalar_;
+  using Reflector = FixedVector<double, dimension>;
+  struct Result {
+    FixedMatrix<Scalar, dimension, dimension> H;
+  };
 };
 
 template<typename Scalar_>
@@ -431,6 +692,42 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
     x[i] = s / L(i, i);
   }
   return x;
+}
+
+template<typename Matrix>
+typename HessenbergDecompositionGenerator<Matrix>::Result
+HessenbergDecomposition(Matrix const& A) {
+  using G = HessenbergDecompositionGenerator<Matrix>;
+  using Scalar = typename G::Scalar;
+  typename HessenbergDecompositionGenerator<Matrix>::Result result{.H = A};
+  auto& H = result.H;
+  int const n = A.rows();
+
+  // [GV13], Algorithm 7.4.2.
+  for (int k = 0; k < n - 2; ++k) {
+    auto const P = ComputeHouseholderReflection(
+        ColumnView<Scalar, Matrix>{.matrix = H,
+                                   .first_row = k + 1,
+                                   .last_row = n - 1,
+                                   .column = k});
+    {
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = k + 1,
+                                             .last_row = n - 1,
+                                             .first_column = k,
+                                             .last_column = n - 1};
+      Premultiply(P, block);
+    }
+    {
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = 0,
+                                             .last_row = n - 1,
+                                             .first_column = k + 1,
+                                             .last_column = n - 1};
+      PostMultiply(block, P);
+    }
+  }
+  return result;
 }
 
 template<typename Matrix>

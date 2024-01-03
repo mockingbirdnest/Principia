@@ -8,6 +8,7 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace numerics {
@@ -17,6 +18,7 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_vanishes_before;
 
 template<typename T>
 class MatrixComputationsTest : public ::testing::Test {
@@ -100,6 +102,39 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
 
   auto const x4_actual = ForwardSubstitution(m4, b4);
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
+}
+
+TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({1, 2, 3, -4,
+                   5, 6, 7, 8,
+                   9, 8, -7, 6,
+                   5, 4, 3, 2});
+  Matrix const h4_expected({  1,
+                              1.4852968963237645012,
+                             -0.63177627362517020518,
+                              5.1375822981102002423,
+
+                             11.445523142259597039,
+                              7.7328244274809160305,
+                             10.840153034634636509,
+                             -4.4908563773743662120,
+
+                              0,
+                             10.020455740333542876,
+                             -3.9158079318984636532,
+                              0.14244486136993501485,
+
+                              0,
+                              0,
+                              2.4140754086886336638,
+                             -2.8170164955824523773});
+  auto h4_actual = HessenbergDecomposition(m4).H;
+  // This component should really use VanishesBefore, but we don't have a good
+  // way to do that.
+  EXPECT_THAT(h4_actual(3, 1), VanishesBefore(1, 24));
+  h4_actual(3, 1) = 0;
+  EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 14));
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
