@@ -11,6 +11,9 @@ struct TransposedView {
   T const& transpose;
 };
 
+template<class T>
+TransposedView(T) -> TransposedView<T>;
+
 }  // namespace internal
 
 using internal::TransposedView;
