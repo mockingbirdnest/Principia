@@ -208,7 +208,7 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
 }
 
 // As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure
-// when applying [the Householder reflection] to a matrix"
+// when applying [the Householder reflection] to a matrix".
 struct HouseholderReflection {
   UnboundedVector<double> v;
   double β;

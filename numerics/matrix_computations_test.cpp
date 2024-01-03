@@ -8,6 +8,7 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace numerics {
@@ -17,6 +18,7 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_vanishes_before;
 
 template<typename T>
 class MatrixComputationsTest : public ::testing::Test {
@@ -130,6 +132,7 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   auto h4_actual = HessenbergDecomposition(m4).H;
   // This component should really use VanishesBefore, but we don't have a good
   // way to do that.
+  EXPECT_THAT(h4_actual(3, 1), VanishesBefore(1, 24));
   h4_actual(3, 1) = 0;
   EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 14));
 }
