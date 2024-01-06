@@ -259,7 +259,8 @@ void Premultiply(HouseholderReflection const& P, Matrix& A) {
 // A becomes A P.
 template<typename Matrix>
 void PostMultiply(Matrix& A, HouseholderReflection const& P) {
-  auto const βᵗv = TransposedView{P.β * P.v};  // NOLINT
+  auto const βv = P.β * P.v;
+  auto const βᵗv = TransposedView{βv};  // NOLINT
   auto const Av = A * P.v;
   A -= Av * βᵗv;
 }
