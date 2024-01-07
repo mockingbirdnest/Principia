@@ -817,8 +817,8 @@ QRDecomposition(Matrix const& A, double const ε) {
   auto& H = hessenberg.H;
   int const n = H.rows();
   for (;;){
-    for (int i = 1; i < n - 1; ++i) {
-      if (H(i, i - 1) <= ε * (H(i, i) + H(i - 1, i - 1))) {
+    for (int i = 1; i < n; ++i) {
+      if (Abs(H(i, i - 1)) <= ε * (Abs(H(i, i)) + Abs(H(i - 1, i - 1)))) {
         H(i, i - 1) = zero;
       }
     }
