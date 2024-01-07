@@ -144,9 +144,9 @@ using internal::CholeskyDecomposition;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
 using internal::HessenbergDecomposition;
-using internal::RealSchurDecomposition;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
+using internal::RealSchurDecomposition;
 using internal::Solve;
 using internal::ᵗRDRDecomposition;
 
