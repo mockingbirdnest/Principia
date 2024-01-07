@@ -330,6 +330,68 @@ void PostMultiply(Matrix& A, JacobiRotation const& J) {
   }
 }
 
+// [GV13] algorithm 7.5.1.
+template<typename Scalar, typename Matrix>
+void FrancisQRStep(Matrix& H) {
+  int const n = H.rows();
+  int const m = n - 1;
+  auto const s = H(m - 1, m - 1) + H(n - 1, n - 1);
+  auto const t = H(m - 1, m - 1) * H(n - 1, n - 1) -
+                 H(m - 1, n - 1) * H(n - 1, m - 1);
+  FixedVector<Scalar, 3> xyz(uninitialized);
+  auto& x = xyz[0];
+  auto& y = xyz[1];
+  auto& z = xyz[2];
+  x = Pow<2>(H(0, 0)) + H(0, 1) * H(1, 0) - s * H(0, 0) + t;
+  y = H(1, 0) * (H(0, 0) + H(1, 1) - s);
+  z = H(1, 0) * H(2, 1);
+  for (int k = 0; k < n - 2; ++k) {
+    auto const P = ComputeHouseholderReflection(xyz);
+    int const q = std::max(1, k);
+    {
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = k,
+                                             .last_row = k + 2,
+                                             .first_column = q - 1,
+                                             .last_column = n - 1};
+      Premultiply(P, block);
+    }
+    int const r = std::min(k + 4, n);
+    {
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = 0,
+                                             .last_row = r - 1,
+                                             .first_column = k,
+                                             .last_column = k + 2};
+      PostMultiply(block, P);
+    }
+    x = H(k + 1, k);
+    y = H(k + 2, k);
+    if (k < n - 3) {
+      z = H(k + 3, k);
+    }
+  }
+  FixedVector<Scalar, 2> xy({x, y});
+  auto const P = ComputeHouseholderReflection(xy);
+  {
+    auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                           .first_row = n - 2,
+                                           .last_row = n - 1,
+                                           .first_column = n - 3,
+                                           .last_column = n - 1};
+    Premultiply(P, block);
+  }
+  {
+    auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                           .first_row = 0,
+                                           .last_row = n - 1,
+                                           .first_column = n - 2,
+                                           .last_column = n - 1};
+    PostMultiply(block, P);
+  }
+  // TODO(phl): Accumulate Z.
+}
+
 
 template<typename Scalar_>
 struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
@@ -750,13 +812,13 @@ typename QRDecompositionGenerator<Matrix>::Result
 QRDecomposition(Matrix const& A, double const ε) {
   using G = QRDecompositionGenerator<Matrix>;
   using Scalar = typename G::Scalar;
-  static const zero = Scalar{};
+  static const auto zero = Scalar{};
   auto hessenberg = HessenbergDecomposition(A);
   auto& H = hessenberg.H;
   int const n = H.rows();
   for (;;){
     for (int i = 1; i < n - 1; ++i) {
-      if (H(i, i - 1) <= ε * (H(i, i) + H(i - 1, i - 1)) {
+      if (H(i, i - 1) <= ε * (H(i, i) + H(i - 1, i - 1))) {
         H(i, i - 1) = zero;
       }
     }
@@ -770,7 +832,6 @@ QRDecomposition(Matrix const& A, double const ε) {
         has_subdiagonal_element = false;
       } else {
         if (has_subdiagonal_element) {
-          --q;
           break;
         } else {
           has_subdiagonal_element = true;
@@ -782,32 +843,23 @@ QRDecomposition(Matrix const& A, double const ε) {
       break;
     }
 
-    int p = 1;
-    for (; p < n - q - 1; ++p) {
-      if (H(n - p - q, n - p - q - 1) == zero) {
-        --p;
+    int p = n - q;
+    for (; p > 0; --p) {
+      if (H(p, p - 1) == zero) {
         break;
       }
     }
 
-    // Francis
-
-    auto H₁₂ = BlockView<Scalar, Matrix>{.matrix = H,
-                                         .first_row = 1,
-                                         .last_row = p - 1,
-                                         .first_column = p,
-                                         .last_column = n - q - 1};
     auto H₂₂ = BlockView<Scalar, Matrix>{.matrix = H,
                                          .first_row = p,
                                          .last_row = n - q - 1,
                                          .first_column = p,
                                          .last_column = n - q - 1};
-    auto H₂₃ = BlockView<Scalar, Matrix>{.matrix = H,
-                                         .first_row = p,
-                                         .last_row = n - q - 1,
-                                         .first_column = n - q,
-                                         .last_column = n - 1};
+    FrancisQRStep<Scalar>(H₂₂);
   }
+  //TODO(phl)Diagonal blocks?
+  typename QRDecompositionGenerator<Matrix>::Result result{.R = H};
+  return result;
 }
 
 template<typename Matrix>

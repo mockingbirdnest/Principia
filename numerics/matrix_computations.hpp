@@ -103,7 +103,7 @@ HessenbergDecomposition(Matrix const& A);
 
 template<typename Matrix>
 typename QRDecompositionGenerator<Matrix>::Result
-QRDecomposition(Matrix const& A);
+QRDecomposition(Matrix const& A, double ε);
 
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
@@ -137,6 +137,7 @@ using internal::CholeskyDecomposition;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
 using internal::HessenbergDecomposition;
+using internal::QRDecomposition;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::Solve;

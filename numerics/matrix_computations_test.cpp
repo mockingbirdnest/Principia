@@ -137,6 +137,15 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 14));
 }
 
+TYPED_TEST(MatrixComputationsTest, QRDecomposition) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({ 5,  4, -1,  0,
+                    8, -1,  9,  8,
+                   -4, -7,  2, -7,
+                    8, -9, -2,  4});
+  LOG(INFO) << QRDecomposition(m4, 1e-6).R;
+}
+
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
   using Vector = typename std::tuple_element<0, TypeParam>::type;
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
