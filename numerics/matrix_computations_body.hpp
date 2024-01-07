@@ -390,7 +390,6 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 template<typename Scalar_>
 struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
-  using Reflector = UnboundedVector<double>;
   struct Result {
     UnboundedMatrix<Scalar> H;
   };
@@ -400,9 +399,25 @@ template<typename Scalar_, int dimension>
 struct HessenbergDecompositionGenerator<
     FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
-  using Reflector = FixedVector<double, dimension>;
   struct Result {
     FixedMatrix<Scalar, dimension, dimension> H;
+  };
+};
+
+template<typename Scalar_>
+struct QRDecompositionGenerator<UnboundedMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  struct Result {
+    UnboundedMatrix<Scalar> R;
+  };
+};
+
+template<typename Scalar_, int dimension>
+struct QRDecompositionGenerator<
+    FixedMatrix<Scalar_, dimension, dimension>> {
+  using Scalar = Scalar_;
+  struct Result {
+    FixedMatrix<Scalar, dimension, dimension> R;
   };
 };
 
@@ -731,8 +746,73 @@ HessenbergDecomposition(Matrix const& A) {
 }
 
 template<typename Matrix>
+typename QRDecompositionGenerator<Matrix>::Result
+QRDecomposition(Matrix const& A, double const ε) {
+  using G = QRDecompositionGenerator<Matrix>;
+  using Scalar = typename G::Scalar;
+  static const zero = Scalar{};
+  auto hessenberg = HessenbergDecomposition(A);
+  auto& H = hessenberg.H;
+  int const n = H.rows();
+  for (;;){
+    for (int i = 1; i < n - 1; ++i) {
+      if (H(i, i - 1) <= ε * (H(i, i) + H(i - 1, i - 1)) {
+        H(i, i - 1) = zero;
+      }
+    }
+
+    // Upper quasi-triangular means that we don't have consecutive nonzero
+    // subdiagonal elements.
+    bool has_subdiagonal_element = false;
+    int q = 1;
+    for (; q < n; ++q) {
+      if (H(n - q, n - q - 1) == zero) {
+        has_subdiagonal_element = false;
+      } else {
+        if (has_subdiagonal_element) {
+          --q;
+          break;
+        } else {
+          has_subdiagonal_element = true;
+        }
+      }
+    }
+
+    if (q == n) {
+      break;
+    }
+
+    int p = 1;
+    for (; p < n - q - 1; ++p) {
+      if (H(n - p - q, n - p - q - 1) == zero) {
+        --p;
+        break;
+      }
+    }
+
+    // Francis
+
+    auto H₁₂ = BlockView<Scalar, Matrix>{.matrix = H,
+                                         .first_row = 1,
+                                         .last_row = p - 1,
+                                         .first_column = p,
+                                         .last_column = n - q - 1};
+    auto H₂₂ = BlockView<Scalar, Matrix>{.matrix = H,
+                                         .first_row = p,
+                                         .last_row = n - q - 1,
+                                         .first_column = p,
+                                         .last_column = n - q - 1};
+    auto H₂₃ = BlockView<Scalar, Matrix>{.matrix = H,
+                                         .first_row = p,
+                                         .last_row = n - q - 1,
+                                         .first_column = n - q,
+                                         .last_column = n - 1};
+  }
+}
+
+template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
+ClassicalJacobi(Matrix const& A,  int max_iterations, double const ε) {
   using G = ClassicalJacobiGenerator<Matrix>;
   using Scalar = typename G::Scalar;
   auto result = G::Uninitialized(A);

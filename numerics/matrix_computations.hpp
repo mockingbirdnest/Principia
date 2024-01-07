@@ -38,6 +38,10 @@ struct SubstitutionGenerator;
 template<typename M>
 struct HessenbergDecompositionGenerator;
 
+//TODO(phl)comment
+template<typename M>
+struct QRDecompositionGenerator;
+
 // Declares:
 //   struct Result {
 //     ⟨matrix⟩ rotation;
@@ -96,6 +100,10 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 template<typename Matrix>
 typename HessenbergDecompositionGenerator<Matrix>::Result
 HessenbergDecomposition(Matrix const& A);
+
+template<typename Matrix>
+typename QRDecompositionGenerator<Matrix>::Result
+QRDecomposition(Matrix const& A);
 
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
