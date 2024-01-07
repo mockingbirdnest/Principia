@@ -467,19 +467,19 @@ struct HessenbergDecompositionGenerator<
 };
 
 template<typename Scalar_>
-struct QRDecompositionGenerator<UnboundedMatrix<Scalar_>> {
+struct RealSchurDecompositionGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
   struct Result {
-    UnboundedMatrix<Scalar> R;
+    UnboundedMatrix<Scalar> T;
   };
 };
 
 template<typename Scalar_, int dimension>
-struct QRDecompositionGenerator<
+struct RealSchurDecompositionGenerator<
     FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
   struct Result {
-    FixedMatrix<Scalar, dimension, dimension> R;
+    FixedMatrix<Scalar, dimension, dimension> T;
   };
 };
 
@@ -808,11 +808,13 @@ HessenbergDecomposition(Matrix const& A) {
 }
 
 template<typename Matrix>
-typename QRDecompositionGenerator<Matrix>::Result
-QRDecomposition(Matrix const& A, double const ε) {
-  using G = QRDecompositionGenerator<Matrix>;
+typename RealSchurDecompositionGenerator<Matrix>::Result
+RealSchurDecomposition(Matrix const& A, double const ε) {
+  using G = RealSchurDecompositionGenerator<Matrix>;
   using Scalar = typename G::Scalar;
   static const auto zero = Scalar{};
+
+  // [GV13] algorithm 7.5.2.
   auto hessenberg = HessenbergDecomposition(A);
   auto& H = hessenberg.H;
   int const n = H.rows();
@@ -858,8 +860,8 @@ QRDecomposition(Matrix const& A, double const ε) {
                                          .last_column = n - q - 1};
     FrancisQRStep<Scalar>(H₂₂);
   }
-  //TODO(phl)Diagonal blocks?
-  typename QRDecompositionGenerator<Matrix>::Result result{.R = H};
+
+  typename RealSchurDecompositionGenerator<Matrix>::Result result{.T = H};
   return result;
 }
 

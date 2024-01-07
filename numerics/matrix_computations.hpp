@@ -38,9 +38,14 @@ struct SubstitutionGenerator;
 template<typename M>
 struct HessenbergDecompositionGenerator;
 
-//TODO(phl)comment
+// Declares:
+//   struct Result {
+//     (matrix) T;
+//     (matrix) Q;
+//   };
+// TODO(phl): Add support for Q.
 template<typename M>
-struct QRDecompositionGenerator;
+struct RealSchurDecompositionGenerator;
 
 // Declares:
 //   struct Result {
@@ -101,9 +106,11 @@ template<typename Matrix>
 typename HessenbergDecompositionGenerator<Matrix>::Result
 HessenbergDecomposition(Matrix const& A);
 
+// If A is a square matrix, returns Q and T so that A = Q T ᵗQ, where T is upper
+// quasi-triangular.
 template<typename Matrix>
-typename QRDecompositionGenerator<Matrix>::Result
-QRDecomposition(Matrix const& A, double ε);
+typename RealSchurDecompositionGenerator<Matrix>::Result
+RealSchurDecomposition(Matrix const& A, double ε);
 
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
@@ -137,7 +144,7 @@ using internal::CholeskyDecomposition;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
 using internal::HessenbergDecomposition;
-using internal::QRDecomposition;
+using internal::RealSchurDecomposition;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::Solve;

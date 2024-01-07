@@ -143,17 +143,17 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 14));
 }
 
-TYPED_TEST(MatrixComputationsTest, QRDecomposition) {
+TYPED_TEST(MatrixComputationsTest, RealSchurDecomposition) {
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
   Matrix const m4({ 5,  4, -1,  0,
                     8, -1,  9,  8,
                    -4, -7,  2, -7,
                     8, -9, -2,  4});
-  auto qr4 = QRDecomposition(m4, 1e-6);
+  auto s4 = RealSchurDecomposition(m4, 1e-6);
   // Only check the real eigenvalues.
-  EXPECT_THAT(qr4.R(2, 2),
+  EXPECT_THAT(s4.T(2, 2),
               RelativeErrorFrom(8.8004352424313246181, IsNear(6.0e-7_(1))));
-  EXPECT_THAT(qr4.R(3, 3),
+  EXPECT_THAT(s4.T(3, 3),
               RelativeErrorFrom(6.2103405225078473234, IsNear(8.4e-7_(1))));
 }
 
