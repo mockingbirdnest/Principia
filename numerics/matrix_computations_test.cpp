@@ -143,7 +143,7 @@ TYPED_TEST(MatrixComputationsTest, QRDecomposition) {
                     8, -1,  9,  8,
                    -4, -7,  2, -7,
                     8, -9, -2,  4});
-  LOG(INFO) << QRDecomposition(m4, 1e-6).R;
+  LOG(ERROR) << QRDecomposition(m4, 1e-6).R;
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {

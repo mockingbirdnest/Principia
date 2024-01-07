@@ -824,18 +824,19 @@ QRDecomposition(Matrix const& A, double const ε) {
     }
 
     // Upper quasi-triangular means that we don't have consecutive nonzero
-    // subdiagonal elements.
+    // subdiagonal elements, and we end on a zero.
     bool has_subdiagonal_element = false;
-    int q = 1;
-    for (; q < n; ++q) {
-      if (H(n - q, n - q - 1) == zero) {
+    int q = 0;
+    for (int i = 1; i <= n; ++i) {
+      // The case i == n corresponds to a zero sentinel immediately to the left
+      // of the first element of the matrix.
+      if (i == n || H(n - i, n - i - 1) == zero) {
+        q = i;
         has_subdiagonal_element = false;
+      } else if (has_subdiagonal_element) {
+        break;
       } else {
-        if (has_subdiagonal_element) {
-          break;
-        } else {
-          has_subdiagonal_element = true;
-        }
+        has_subdiagonal_element = true;
       }
     }
 
@@ -843,7 +844,7 @@ QRDecomposition(Matrix const& A, double const ε) {
       break;
     }
 
-    int p = n - q;
+    int p = n - q - 1;
     for (; p > 0; --p) {
       if (H(p, p - 1) == zero) {
         break;
