@@ -818,7 +818,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
   auto hessenberg = HessenbergDecomposition(A);
   auto& H = hessenberg.H;
   int const n = H.rows();
-  for (;;){
+  for (;;) {
     for (int i = 1; i < n; ++i) {
       if (Abs(H(i, i - 1)) <= ε * (Abs(H(i, i)) + Abs(H(i - 1, i - 1)))) {
         H(i, i - 1) = zero;

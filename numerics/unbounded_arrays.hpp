@@ -45,7 +45,7 @@ class UnboundedVector final {
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
   template<int size_>
-  UnboundedVector(FixedVector<Scalar, size_> const& data);
+  explicit UnboundedVector(FixedVector<Scalar, size_> const& data);
 
   TransposedView<UnboundedVector> Transpose() const;
 
