@@ -168,24 +168,9 @@ Scalar const* FixedMatrix<Scalar, rows_, columns_>::row() const {
 }
 
 template<typename Scalar, int rows_, int columns_>
-template<typename LScalar, typename RScalar>
-Product<Scalar, Product<LScalar, RScalar>>
-FixedMatrix<Scalar, rows_, columns_>::operator()(
-    FixedVector<LScalar, columns_> const& left,
-    FixedVector<RScalar, rows_> const& right) const {
-  return left.Transpose() * (*this * right);
-}
-
-template<typename Scalar, int rows_, int columns_>
-FixedMatrix<Scalar, rows_, columns_>
+TransposedView<FixedMatrix<Scalar, rows_, columns_>>
 FixedMatrix<Scalar, rows_, columns_>::Transpose() const {
-  FixedMatrix<Scalar, rows(), columns()> m(uninitialized);
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
-      m(j, i) = (*this)(i, j);
-    }
-  }
-  return m;
+  return TransposedView{*this};
 }
 
 template<typename Scalar, int rows_, int columns_>
@@ -725,6 +710,24 @@ std::ostream& operator<<(std::ostream& out,
     for (int j = 0; j < columns; ++j) {
       out << matrix(i, j);
       if (j < columns - 1) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Scalar, int rows>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows> const& matrix) {
+  out << "rows: " << matrix.rows() << "\n";
+  for (int i = 0; i < matrix.rows(); ++i) {
+    out << "{";
+    for (int j = 0; j < i; ++j) {
+      out << matrix(i, j);
+      if (j < i - 1) {
         out << ", ";
       }
     }
