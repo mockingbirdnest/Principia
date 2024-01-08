@@ -40,6 +40,15 @@ struct HessenbergDecompositionGenerator;
 
 // Declares:
 //   struct Result {
+//     (matrix) T;
+//     (matrix) Q;
+//   };
+// TODO(phl): Add support for Q.
+template<typename M>
+struct RealSchurDecompositionGenerator;
+
+// Declares:
+//   struct Result {
 //     ⟨matrix⟩ rotation;
 //     ⟨vector⟩ eigenvalues;
 //   };
@@ -97,6 +106,12 @@ template<typename Matrix>
 typename HessenbergDecompositionGenerator<Matrix>::Result
 HessenbergDecomposition(Matrix const& A);
 
+// If A is a square matrix, returns Q and T so that A = Q T ᵗQ, where T is upper
+// quasi-triangular.
+template<typename Matrix>
+typename RealSchurDecompositionGenerator<Matrix>::Result
+RealSchurDecomposition(Matrix const& A, double ε);
+
 // Returns the eigensystem of A, which must be symmetric.
 // As a safety measure we limit the number of iterations.  We prefer to exit
 // when the matrix is nearly diagonal, though.
@@ -131,6 +146,7 @@ using internal::ForwardSubstitution;
 using internal::HessenbergDecomposition;
 using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
+using internal::RealSchurDecomposition;
 using internal::Solve;
 using internal::ᵗRDRDecomposition;
 

@@ -8,6 +8,9 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -18,6 +21,9 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
 template<typename T>
@@ -135,6 +141,20 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   EXPECT_THAT(h4_actual(3, 1), VanishesBefore(1, 24));
   h4_actual(3, 1) = 0;
   EXPECT_THAT(h4_actual, AlmostEquals(h4_expected, 14));
+}
+
+TYPED_TEST(MatrixComputationsTest, RealSchurDecomposition) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({ 5,  4, -1,  0,
+                    8, -1,  9,  8,
+                   -4, -7,  2, -7,
+                    8, -9, -2,  4});
+  auto s4 = RealSchurDecomposition(m4, 1e-6);
+  // Only check the real eigenvalues.
+  EXPECT_THAT(s4.T(2, 2),
+              RelativeErrorFrom(8.8004352424313246181, IsNear(6.0e-7_(1))));
+  EXPECT_THAT(s4.T(3, 3),
+              RelativeErrorFrom(6.2103405225078473234, IsNear(8.4e-7_(1))));
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
