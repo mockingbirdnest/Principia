@@ -51,6 +51,9 @@ class UnboundedVector final {
 
   void EraseToEnd(int begin_index);
 
+  // This object must outlive the result of Transpose.
+  TransposedView<UnboundedVector> Transpose() const;
+
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
@@ -96,6 +99,9 @@ class UnboundedMatrix final {
   // |a(i, j)| implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
+
+  // This object must outlive the result of Transpose.
+  TransposedView<UnboundedMatrix> Transpose() const;
 
   Scalar FrobeniusNorm() const;
 
@@ -210,7 +216,7 @@ class UnboundedUpperTriangularMatrix final {
 
 // Prefer using the operator* that takes a TransposedView.
 template<typename LScalar, typename RScalar>
-constexpr Product<LScalar, RScalar> InnerProduct(
+Product<LScalar, RScalar> InnerProduct(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right);
 
@@ -218,61 +224,61 @@ template<typename Scalar>
 UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector);
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedMatrix<Product<LScalar, RScalar>> SymmetricProduct(
+UnboundedMatrix<Product<LScalar, RScalar>> SymmetricProduct(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right);
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Square<Scalar>> SymmetricSquare(
+UnboundedMatrix<Square<Scalar>> SymmetricSquare(
     UnboundedVector<Scalar> const& vector);
 
 // Additive groups.
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar> operator-(
+UnboundedVector<Scalar> operator-(
     UnboundedVector<Scalar> const& right);
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar> operator-(
+UnboundedMatrix<Scalar> operator-(
     UnboundedMatrix<Scalar> const& right);
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedVector<Sum<LScalar, RScalar>> operator+(
+UnboundedVector<Sum<LScalar, RScalar>> operator+(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right);
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedMatrix<Sum<LScalar, RScalar>> operator+(
+UnboundedMatrix<Sum<LScalar, RScalar>> operator+(
     UnboundedMatrix<LScalar> const& left,
     UnboundedMatrix<RScalar> const& right);
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedVector<Difference<LScalar, RScalar>> operator-(
+UnboundedVector<Difference<LScalar, RScalar>> operator-(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right);
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
+UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
     UnboundedMatrix<LScalar> const& left,
     UnboundedMatrix<RScalar> const& right);
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator+=(
+UnboundedVector<Scalar>& operator+=(
     UnboundedVector<Scalar>& left,
     UnboundedVector<Scalar> const& right);
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator+=(
+UnboundedMatrix<Scalar>& operator+=(
     UnboundedMatrix<Scalar>& left,
     UnboundedMatrix<Scalar> const& right);
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator-=(
+UnboundedVector<Scalar>& operator-=(
     UnboundedVector<Scalar>& left,
     UnboundedVector<Scalar> const& right);
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator-=(
+UnboundedMatrix<Scalar>& operator-=(
     UnboundedMatrix<Scalar>& left,
     UnboundedMatrix<Scalar> const& right);
 
@@ -304,27 +310,27 @@ UnboundedVector<Quotient<LScalar, RScalar>> operator/(
     RScalar const& right);
 
 template<typename LScalar, typename RScalar>
-constexpr UnboundedMatrix<Quotient<LScalar, RScalar>>
+UnboundedMatrix<Quotient<LScalar, RScalar>>
 operator/(UnboundedMatrix<LScalar> const& left,
           RScalar const& right);
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator*=(
+UnboundedVector<Scalar>& operator*=(
     UnboundedVector<Scalar>& left,
     double right);
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator*=(
+UnboundedMatrix<Scalar>& operator*=(
     UnboundedMatrix<Scalar>& left,
     double right);
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator/=(
+UnboundedVector<Scalar>& operator/=(
     UnboundedVector<Scalar>& left,
     double right);
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator/=(
+UnboundedMatrix<Scalar>& operator/=(
     UnboundedMatrix<Scalar>& left,
     double right);
 

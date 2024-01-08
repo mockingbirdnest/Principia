@@ -34,12 +34,6 @@ UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
     : data_(std::move(data)) {}
 
 template<typename Scalar>
-TransposedView<UnboundedVector<Scalar>>
-UnboundedVector<Scalar>::Transpose() const {
-  return {.transpose = *this};
-}
-
-template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(int const extra_size) {
   DCHECK_LE(0, extra_size);
   data_.resize(data_.size() + extra_size, Scalar{});
@@ -62,6 +56,13 @@ void UnboundedVector<Scalar>::EraseToEnd(int const begin_index) {
 }
 
 template<typename Scalar>
+TransposedView<UnboundedVector<Scalar>>
+UnboundedVector<Scalar>::Transpose() const {
+  return TransposedView<UnboundedVector>{*this};
+}
+
+
+template<typename Scalar>
 Scalar UnboundedVector<Scalar>::Norm() const {
   return Sqrt(Norm²());
 }
@@ -78,6 +79,18 @@ Square<Scalar> UnboundedVector<Scalar>::Norm²() const {
 template<typename Scalar>
 int UnboundedVector<Scalar>::size() const {
   return data_.size();
+}
+
+template<typename Scalar>
+typename std::vector<Scalar>::const_iterator UnboundedVector<Scalar>::begin()
+    const {
+  return data_.cbegin();
+}
+
+template<typename Scalar>
+typename std::vector<Scalar>::const_iterator UnboundedVector<Scalar>::end()
+    const {
+  return data_.cend();
 }
 
 template<typename Scalar>
@@ -118,9 +131,10 @@ UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
 
 
 template<typename Scalar>
+template<int rows>
 UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
-    : rows_(Sqrt(data.size())),
-      columns_(Sqrt(data.size())),
+    : rows_(rows),
+      columns_(data.size() / rows),
       data_(std::move(data)) {
   CHECK_EQ(data.size(), rows_ * columns_);
 }
@@ -141,14 +155,9 @@ int UnboundedMatrix<Scalar>::size() const {
 }
 
 template<typename Scalar>
-UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
-  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < columns_; ++j) {
-      m(j, i) = (*this)(i, j);
-    }
-  }
-  return m;
+TransposedView<UnboundedMatrix<Scalar>>
+UnboundedMatrix<Scalar>::Transpose() const {
+  return TransposedView<UnboundedMatrix>{*this};
 }
 
 template<typename Scalar>
@@ -216,9 +225,10 @@ UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
       data_(rows_ * (rows_ + 1) / 2) {}
 
 template<typename Scalar>
+template<int rows>
 UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
     std::initializer_list<Scalar> data)
-    : rows_(static_cast<int>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5))),
+    : rows_(rows),
       data_(std::move(data)) {
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
@@ -237,10 +247,11 @@ void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const extra_rows,
 }
 
 template<typename Scalar>
+template<int rows>
 void UnboundedLowerTriangularMatrix<Scalar>::Extend(
     std::initializer_list<Scalar> data) {
   std::move(data.begin(), data.end(), std::back_inserter(data_));
-  rows_ = static_cast<int>(std::lround((-1 + Sqrt(8 * data_.size())) * 0.5));
+  rows_ += rows;
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
 
@@ -473,34 +484,74 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
   return result;
 }
 
+template<typename LScalar, typename RScalar>
+Product<LScalar, RScalar> InnerProduct(UnboundedVector<LScalar> const& left,
+                                       UnboundedVector<RScalar> const& right) {
+  return TransposedView{left} * right;
+}
+
 template<typename Scalar>
 UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector) {
   return vector / vector.Norm();
 }
 
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> SymmetricProduct(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.size(), right.size());
+  UnboundedMatrix<Product<LScalar, RScalar>> result(
+      left.size(), right.size(), uninitialized);
+  for (int i = 0; i < left.size(); ++i) {
+    for (int j = 0; j < i; ++j) {
+      auto const r = 0.5 * (left[i] * right[j] + left[j] * right[i]);
+      result(i, j) = r;
+      result(j, i) = r;
+    }
+    result(i, i) = left[i] * right[i];
+  }
+  return result;
+}
+
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator+=(
+UnboundedMatrix<Square<Scalar>> SymmetricSquare(
+    UnboundedVector<Scalar> const& vector) {
+  UnboundedMatrix<Product<LScalar, RScalar>> result(
+      vector.size(), vector.size(), uninitialized);
+  for (int i = 0; i < vector.size(); ++i) {
+    for (int j = 0; j < i; ++j) {
+      auto const r = vector[i] * vector[j];
+      result(i, j) = r;
+      result(j, i) = r;
+    }
+    result(i, i) = Pow<2>(vector[i]);
+  }
+  return result;
+}
+
+template<typename Scalar>
+UnboundedVector<Scalar>& operator+=(
     UnboundedVector<Scalar>& left,
     UnboundedVector<Scalar> const& right) {
   return left = left + right;
 }
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator+=(
+UnboundedMatrix<Scalar>& operator+=(
     UnboundedMatrix<Scalar>& left,
     UnboundedMatrix<Scalar> const& right) {
   return left = left + right;
 }
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator-=(
+UnboundedVector<Scalar>& operator-=(
     UnboundedVector<Scalar>& left,
     UnboundedVector<Scalar> const& right) {
   return left = left - right;
 }
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator-=(
+UnboundedMatrix<Scalar>& operator-=(
     UnboundedMatrix<Scalar>& left,
     UnboundedMatrix<Scalar> const& right) {
   return left = left - right;
@@ -588,26 +639,26 @@ UnboundedMatrix<Quotient<LScalar, RScalar>> operator/(
 }
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator*=(UnboundedVector<Scalar>& left,
-                                              double const right) {
+UnboundedVector<Scalar>& operator*=(UnboundedVector<Scalar>& left,
+                                    double const right) {
   return left = left * right;
 }
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator*=(UnboundedMatrix<Scalar>& left,
-                                              double const right) {
+UnboundedMatrix<Scalar>& operator*=(UnboundedMatrix<Scalar>& left,
+                                    double const right) {
   return left = left * right;
 }
 
 template<typename Scalar>
-constexpr UnboundedVector<Scalar>& operator/=(UnboundedVector<Scalar>& left,
-                                              double const right) {
+UnboundedVector<Scalar>& operator/=(UnboundedVector<Scalar>& left,
+                                    double const right) {
   return left = left / right;
 }
 
 template<typename Scalar>
-constexpr UnboundedMatrix<Scalar>& operator/=(UnboundedMatrix<Scalar>& left,
-                                              double const right) {
+UnboundedMatrix<Scalar>& operator/=(UnboundedMatrix<Scalar>& left,
+                                    double const right) {
   return left = left / right;
 }
 
