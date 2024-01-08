@@ -126,13 +126,13 @@ UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
 }
 
 template<typename Scalar>
-int UnboundedMatrix<Scalar>::columns() const {
-  return columns_;
+int UnboundedMatrix<Scalar>::rows() const {
+  return rows_;
 }
 
 template<typename Scalar>
-int UnboundedMatrix<Scalar>::rows() const {
-  return rows_;
+int UnboundedMatrix<Scalar>::columns() const {
+  return columns_;
 }
 
 template<typename Scalar>
@@ -253,13 +253,13 @@ void UnboundedLowerTriangularMatrix<Scalar>::EraseToEnd(
 }
 
 template<typename Scalar>
-int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
+int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
   return rows_;
 }
 
 template<typename Scalar>
-int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
-  return rows_;
+int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
+  return columns_;
 }
 
 template<typename Scalar>
@@ -370,12 +370,12 @@ void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
 }
 
 template<typename Scalar>
-int UnboundedUpperTriangularMatrix<Scalar>::columns() const {
-  return columns_;
+int UnboundedUpperTriangularMatrix<Scalar>::rows() const {
+  return rows_;
 }
 
 template<typename Scalar>
-int UnboundedUpperTriangularMatrix<Scalar>::rows() const {
+int UnboundedUpperTriangularMatrix<Scalar>::columns() const {
   return columns_;
 }
 

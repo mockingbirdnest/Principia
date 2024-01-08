@@ -103,16 +103,10 @@ class FixedMatrix final {
   template<int r>
   Scalar const* row() const;
 
-  FixedMatrix Transpose() const;
   Scalar FrobeniusNorm() const;
 
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
-
-  template<typename LScalar, typename RScalar>
-  Product<Scalar, Product<LScalar, RScalar>>
-      operator()(FixedVector<LScalar, columns_> const& left,
-                 FixedVector<RScalar, rows_> const& right) const;
 
   static FixedMatrix Identity();
 
@@ -214,6 +208,7 @@ class FixedUpperTriangularMatrix final {
   std::array<Scalar, size()> data_;
 };
 
+// Prefer using the operator* that takes a TransposedView.
 template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size> const& left,
@@ -363,7 +358,8 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedVector<RScalar, columns> const& right);
 
-// Use this operator to multiply a row vector with a matrix.
+// Use this operator to multiply a row vector with a matrix.  We don't have an
+// operator returning a TransposedView as that would cause dangling references.
 template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
     TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
@@ -383,6 +379,11 @@ template<typename Scalar, int rows>
 std::ostream& operator<<(
     std::ostream& out,
     FixedLowerTriangularMatrix<Scalar, rows> const& matrix);
+
+template<typename Scalar, int rows>
+std::ostream& operator<<(
+    std::ostream& out,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows> const& matrix);
 
 template<typename Scalar, int columns>
 std::ostream& operator<<(

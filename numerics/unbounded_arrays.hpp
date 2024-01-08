@@ -56,11 +56,22 @@ class UnboundedVector final {
 
   int size() const;
 
+  typename std::vector<Scalar>::const_iterator begin() const;
+  typename std::vector<Scalar>::const_iterator end() const;
+
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
 
   bool operator==(UnboundedVector const& right) const;
   bool operator!=(UnboundedVector const& right) const;
+
+  template<typename H>
+  friend H AbslHashValue(H h, UnboundedVector const& vector) {
+    for (auto const& scalar : vector) {
+      h = H::combine(std::move(h), scalar / si::Unit<Scalar>);
+    }
+    return h;
+  }
 
  private:
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
@@ -73,10 +84,11 @@ class UnboundedMatrix final {
   UnboundedMatrix(int rows, int columns, uninitialized_t);
 
   // The |data| must be in row-major format.
+  template<int rows>
   UnboundedMatrix(std::initializer_list<Scalar> data);
 
-  int columns() const;
   int rows() const;
+  int columns() const;
   int size() const;
 
   // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
@@ -85,7 +97,6 @@ class UnboundedMatrix final {
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
 
-  UnboundedMatrix Transpose() const;
   Scalar FrobeniusNorm() const;
 
   bool operator==(UnboundedMatrix const& right) const;
@@ -110,18 +121,20 @@ class UnboundedLowerTriangularMatrix final {
   UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
 
   // The |data| must be in row-major format.
+  template<int rows>
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
 
   // The |data| must be in row-major format.
+  template<int rows>
   void Extend(std::initializer_list<Scalar> data);
 
   void EraseToEnd(int begin_row_index);
 
-  int columns() const;
   int rows() const;
+  int columns() const;
   int size() const;
 
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
@@ -129,8 +142,6 @@ class UnboundedLowerTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
   bool operator!=(UnboundedLowerTriangularMatrix const& right) const;
@@ -162,8 +173,8 @@ class UnboundedUpperTriangularMatrix final {
 
   void EraseToEnd(int begin_column_index);
 
-  int columns() const;
   int rows() const;
+  int columns() const;
   int size() const;
 
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
@@ -171,8 +182,6 @@ class UnboundedUpperTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedUpperTriangularMatrix const& right) const;
   bool operator!=(UnboundedUpperTriangularMatrix const& right) const;
@@ -199,10 +208,53 @@ class UnboundedUpperTriangularMatrix final {
   friend class Row;
 };
 
+// Prefer using the operator* that takes a TransposedView.
+template<typename LScalar, typename RScalar>
+constexpr Product<LScalar, RScalar> InnerProduct(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
+
 template<typename Scalar>
 UnboundedVector<double> Normalize(UnboundedVector<Scalar> const& vector);
 
+template<typename LScalar, typename RScalar>
+constexpr UnboundedMatrix<Product<LScalar, RScalar>> SymmetricProduct(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Square<Scalar>> SymmetricSquare(
+    UnboundedVector<Scalar> const& vector);
+
 // Additive groups.
+
+template<typename Scalar>
+constexpr UnboundedVector<Scalar> operator-(
+    UnboundedVector<Scalar> const& right);
+
+template<typename Scalar>
+constexpr UnboundedMatrix<Scalar> operator-(
+    UnboundedMatrix<Scalar> const& right);
+
+template<typename LScalar, typename RScalar>
+constexpr UnboundedVector<Sum<LScalar, RScalar>> operator+(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+constexpr UnboundedMatrix<Sum<LScalar, RScalar>> operator+(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+constexpr UnboundedVector<Difference<LScalar, RScalar>> operator-(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LScalar, typename RScalar>
+constexpr UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right);
 
 template<typename Scalar>
 constexpr UnboundedVector<Scalar>& operator+=(
@@ -278,6 +330,8 @@ constexpr UnboundedMatrix<Scalar>& operator/=(
 
 // Hilbert space and algebra.
 
+// TODO(phl): fixed_arrays.hpp has an operator* that takes a row.
+
 template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> operator*(
     TransposedView<UnboundedVector<LScalar>> const& left,
@@ -298,7 +352,7 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<LScalar> const& left,
     UnboundedVector<RScalar> const& right);
 
-// Use this operator to multiply a row vector with a matrix.
+// Use this operator to multiply a row vector with a matrix.  We don't have an
 template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     TransposedView<UnboundedMatrix<LScalar>> const& left,
