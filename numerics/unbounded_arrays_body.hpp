@@ -530,6 +530,85 @@ UnboundedMatrix<Square<Scalar>> SymmetricSquare(
 }
 
 template<typename Scalar>
+UnboundedVector<Scalar> operator-(UnboundedVector<Scalar> const& right) {
+  std::vector<Scalar> result;
+  result.reserve(right.size());
+  for (int i = 0; i < right.size(); ++i) {
+    result[i] = -right[i];
+  }
+  return UnboundedVector<Scalar>(std::move(result));
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> operator-(UnboundedMatrix<Scalar> const& right) {
+  UnboundedMatrix<Scalar> result(right.rows(), right.columns(), uninitialized);
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      result(i, j) = -right(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Sum<LScalar, RScalar>> operator+(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.size(), right.size());
+  std::vector<Sum<LScalar, RScalar>> result;
+  result.resize(right.size());
+  for (int i = 0; i < right.size(); ++i) {
+    result[i] = left[i] + right[i];
+  }
+  return UnboundedVector<Sum<LScalar, RScalar>>(std::move(result));
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Sum<LScalar, RScalar>> operator+(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right) {
+  CHECK_EQ(left.rows(), right.rows());
+  CHECK_EQ(left.columns(), right.columns());
+  UnboundedMatrix<Sum<LScalar, RScalar>> result(
+      right.rows(), right.columns(), uninitialized);
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      result(i, j) = left(i, j) + right(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedVector<Difference<LScalar, RScalar>> operator-(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.size(), right.size());
+  std::vector<Sum<LScalar, RScalar>> result;
+  result.resize(right.size());
+  for (int i = 0; i < right.size(); ++i) {
+    result[i] = left[i] - right[i];
+  }
+  return UnboundedVector<Difference<LScalar, RScalar>>(std::move(result));
+}
+
+template<typename LScalar, typename RScalar>
+UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right) {
+  CHECK_EQ(left.rows(), right.rows());
+  CHECK_EQ(left.columns(), right.columns());
+  UnboundedMatrix<Sum<LScalar, RScalar>> result(
+      right.rows(), right.columns(), uninitialized);
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      result(i, j) = left(i, j) + right(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename Scalar>
 UnboundedVector<Scalar>& operator+=(
     UnboundedVector<Scalar>& left,
     UnboundedVector<Scalar> const& right) {
