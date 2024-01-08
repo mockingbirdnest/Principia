@@ -131,10 +131,18 @@ UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
 
 
 template<typename Scalar>
-template<int rows>
 UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
+    : rows_(Sqrt(data.size())),
+      columns_(Sqrt(data.size())),
+      data_(std::move(data)) {
+  CHECK_EQ(data.size(), rows_ * columns_);
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar>::UnboundedMatrix(int const rows, int const columns,
+                                         std::initializer_list<Scalar> data)
     : rows_(rows),
-      columns_(data.size() / rows),
+      columns_(columns),
       data_(std::move(data)) {
   CHECK_EQ(data.size(), rows_ * columns_);
 }
@@ -225,10 +233,9 @@ UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
       data_(rows_ * (rows_ + 1) / 2) {}
 
 template<typename Scalar>
-template<int rows>
 UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
     std::initializer_list<Scalar> data)
-    : rows_(rows),
+    : rows_(static_cast<int>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5))),
       data_(std::move(data)) {
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
@@ -247,11 +254,10 @@ void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const extra_rows,
 }
 
 template<typename Scalar>
-template<int rows>
 void UnboundedLowerTriangularMatrix<Scalar>::Extend(
     std::initializer_list<Scalar> data) {
   std::move(data.begin(), data.end(), std::back_inserter(data_));
-  rows_ += rows;
+  rows_ = static_cast<int>(std::lround((-1 + Sqrt(8 * data_.size())) * 0.5));
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
 

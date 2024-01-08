@@ -86,9 +86,10 @@ class UnboundedMatrix final {
   UnboundedMatrix(int rows, int columns);
   UnboundedMatrix(int rows, int columns, uninitialized_t);
 
-  // The |data| must be in row-major format.
-  template<int rows>
+  // The |data| must be in row-major format and must be for a square matrix.
   UnboundedMatrix(std::initializer_list<Scalar> data);
+
+  UnboundedMatrix(int rows, int columns, std::initializer_list<Scalar> data);
 
   int rows() const;
   int columns() const;
@@ -127,14 +128,12 @@ class UnboundedLowerTriangularMatrix final {
   UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
 
   // The |data| must be in row-major format.
-  template<int rows>
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
 
   // The |data| must be in row-major format.
-  template<int rows>
   void Extend(std::initializer_list<Scalar> data);
 
   void EraseToEnd(int begin_row_index);
