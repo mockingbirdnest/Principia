@@ -219,7 +219,8 @@ HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
   // In order to avoid issues with quantities, we start by normalizing x.  This
   // implies that μ is 1.
   auto const normalized_x = Normalize(x);
-  HouseholderReflection result{.v = normalized_x, .β = 0};
+  HouseholderReflection result{.v = UnboundedVector<double>(normalized_x),
+                               .β = 0};
   double const& x₁ = normalized_x[0];
   double& v₁ = result.v[0];
   auto x₂ₘ = normalized_x;
