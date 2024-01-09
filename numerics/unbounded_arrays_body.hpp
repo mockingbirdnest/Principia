@@ -276,7 +276,7 @@ int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
 
 template<typename Scalar>
 int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
-  return columns_;
+  return rows_;
 }
 
 template<typename Scalar>
@@ -388,7 +388,7 @@ void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
 
 template<typename Scalar>
 int UnboundedUpperTriangularMatrix<Scalar>::rows() const {
-  return rows_;
+  return columns_;
 }
 
 template<typename Scalar>
@@ -522,7 +522,7 @@ UnboundedMatrix<Product<LScalar, RScalar>> SymmetricProduct(
 template<typename Scalar>
 UnboundedMatrix<Square<Scalar>> SymmetricSquare(
     UnboundedVector<Scalar> const& vector) {
-  UnboundedMatrix<Product<LScalar, RScalar>> result(
+  UnboundedMatrix<Square<Scalar>> result(
       vector.size(), vector.size(), uninitialized);
   for (int i = 0; i < vector.size(); ++i) {
     for (int j = 0; j < i; ++j) {

@@ -230,9 +230,9 @@ TEST_F(UnboundedArraysTest, Erase) {
 TEST_F(UnboundedArraysTest, Transpose) {
   EXPECT_EQ(
       UnboundedMatrix<double>({1,  8,  55,  377,
-                                2, 13,  89,  610,
-                                3, 21, 144,  987,
-                                5, 34, 233, 1597}), m4_.Transpose());
+                               2, 13,  89,  610,
+                               3, 21, 144,  987,
+                               5, 34, 233, 1597}), m4_.Transpose());
   EXPECT_EQ(
       UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
                                                  3,  8, 34,

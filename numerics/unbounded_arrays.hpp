@@ -8,6 +8,7 @@
 #include "base/tags.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -19,6 +20,7 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 // An allocator that does not initialize the allocated objects.
 template<class T>
@@ -42,8 +44,6 @@ class UnboundedVector final {
   explicit UnboundedVector(int size);  // Zero-initialized.
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
-
-  TransposedView<UnboundedVector> Transpose() const;
 
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
@@ -148,6 +148,8 @@ class UnboundedLowerTriangularMatrix final {
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
 
+  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
+
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
   bool operator!=(UnboundedLowerTriangularMatrix const& right) const;
 
@@ -187,6 +189,8 @@ class UnboundedUpperTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
+
+  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedUpperTriangularMatrix const& right) const;
   bool operator!=(UnboundedUpperTriangularMatrix const& right) const;
