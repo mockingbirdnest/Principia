@@ -109,6 +109,13 @@ class UnboundedMatrix final {
   bool operator==(UnboundedMatrix const& right) const;
   bool operator!=(UnboundedMatrix const& right) const;
 
+  // Applies the matrix as a bilinear form.  Present for compatibility with
+  // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
+  template<typename LScalar, typename RScalar>
+  Product<Scalar, Product<LScalar, RScalar>>
+      operator()(UnboundedVector<LScalar> const& left,
+                 UnboundedVector<RScalar> const& right) const;
+
   static UnboundedMatrix Identity(int rows, int columns);
 
  private:

@@ -108,6 +108,13 @@ class FixedMatrix final {
   bool operator==(FixedMatrix const& right) const;
   bool operator!=(FixedMatrix const& right) const;
 
+  // Applies the matrix as a bilinear form.  Present for compatibility with
+  // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
+  template<typename LScalar, typename RScalar>
+  Product<Scalar, Product<LScalar, RScalar>>
+      operator()(FixedVector<LScalar, columns_> const& left,
+                 FixedVector<RScalar, rows_> const& right) const;
+
   static FixedMatrix Identity();
 
  private:

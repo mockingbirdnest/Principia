@@ -213,6 +213,15 @@ bool UnboundedMatrix<Scalar>::operator!=(UnboundedMatrix const& right) const {
 }
 
 template<typename Scalar>
+template<typename LScalar, typename RScalar>
+Product<Scalar, Product<LScalar, RScalar>>
+UnboundedMatrix<Scalar>::operator()(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right) const {
+  return TransposedView{left} * (*this * right);
+}
+
+template<typename Scalar>
 UnboundedMatrix<Scalar>
 UnboundedMatrix<Scalar>::Identity(int const rows, int const columns) {
   UnboundedMatrix<Scalar> m(rows, columns);

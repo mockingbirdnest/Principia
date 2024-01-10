@@ -197,6 +197,15 @@ bool FixedMatrix<Scalar, rows_, columns_>::operator!=(
 }
 
 template<typename Scalar, int rows_, int columns_>
+template<typename LScalar, typename RScalar>
+Product<Scalar, Product<LScalar, RScalar>>
+FixedMatrix<Scalar, rows_, columns_>::operator()(
+    FixedVector<LScalar, columns_> const& left,
+    FixedVector<RScalar, rows_> const& right) const {
+  return TransposedView{left} * (*this * right);
+}
+
+template<typename Scalar, int rows_, int columns_>
 FixedMatrix<Scalar, rows_, columns_>
 FixedMatrix<Scalar, rows_, columns_>::Identity() {
   FixedMatrix<Scalar, rows(), columns()> m;

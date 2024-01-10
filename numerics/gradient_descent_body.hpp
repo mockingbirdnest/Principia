@@ -12,7 +12,6 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
-#include "numerics/transposed_view.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -25,7 +24,6 @@ using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
-using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_elementary_functions;
 
 template<typename Scalar, typename S, int s>
@@ -333,9 +331,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     // The formula (6.17) from [NW06] is inconvenient because it uses external
     // products.  Elementary transformations yield the formula below.
     auto const ρ = 1 / sₖyₖ;
-    auto const Hₖ₊₁ = Hₖ + ρ * ((ρ * (TransposedView{yₖ} * (Hₖ * yₖ)) + 1) *
-                                    SymmetricSquare(sₖ) -
-                                2 * SymmetricProduct(Hₖ * yₖ, sₖ));
+    auto const Hₖ₊₁ =
+        Hₖ + ρ * ((ρ * Hₖ(yₖ, yₖ) + 1) * SymmetricSquare(sₖ) -
+                  2 * SymmetricProduct(Hₖ * yₖ, sₖ));
 
     xₖ = xₖ₊₁;
     grad_f_xₖ = grad_f_xₖ₊₁;
