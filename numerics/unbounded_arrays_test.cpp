@@ -2,12 +2,14 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/transposed_view.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
@@ -93,7 +95,7 @@ TEST_F(UnboundedArraysTest, Assignment) {
 }
 
 TEST_F(UnboundedArraysTest, Norm) {
-  EXPECT_EQ(35, v4_.Transpose() * v4_);
+  EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
   EXPECT_EQ(Sqrt(4'126'647.0), m4_.FrobeniusNorm());
 }
@@ -109,7 +111,7 @@ TEST_F(UnboundedArraysTest, MultiplicationDivision) {
 }
 
 TEST_F(UnboundedArraysTest, Algebra) {
-  EXPECT_EQ(3270, v3_.Transpose() * v3_);
+  EXPECT_EQ(3270, TransposedView{v3_} * v3_);  // NOLINT
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {
@@ -230,9 +232,9 @@ TEST_F(UnboundedArraysTest, Erase) {
 TEST_F(UnboundedArraysTest, Transpose) {
   EXPECT_EQ(
       UnboundedMatrix<double>({1,  8,  55,  377,
-                                2, 13,  89,  610,
-                                3, 21, 144,  987,
-                                5, 34, 233, 1597}), m4_.Transpose());
+                               2, 13,  89,  610,
+                               3, 21, 144,  987,
+                               5, 34, 233, 1597}), m4_.Transpose());
   EXPECT_EQ(
       UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
                                                  3,  8, 34,
