@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <memory>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -369,6 +370,7 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedVector<RScalar> const& right);
 
 // Use this operator to multiply a row vector with a matrix.  We don't have an
+// operator returning a TransposedView as that would cause dangling references.
 template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     TransposedView<UnboundedMatrix<LScalar>> const& left,

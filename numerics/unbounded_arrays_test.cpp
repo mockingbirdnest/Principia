@@ -95,7 +95,7 @@ TEST_F(UnboundedArraysTest, Assignment) {
 }
 
 TEST_F(UnboundedArraysTest, Norm) {
-  EXPECT_EQ(35, TransposedView{v4_} * v4_);
+  EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
   EXPECT_EQ(Sqrt(4'126'647.0), m4_.FrobeniusNorm());
 }
@@ -111,7 +111,7 @@ TEST_F(UnboundedArraysTest, MultiplicationDivision) {
 }
 
 TEST_F(UnboundedArraysTest, Algebra) {
-  EXPECT_EQ(3270, TransposedView{v3_} * v3_);
+  EXPECT_EQ(3270, TransposedView{v3_} * v3_);  // NOLINT
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {

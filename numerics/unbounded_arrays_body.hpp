@@ -218,7 +218,7 @@ Product<Scalar, Product<LScalar, RScalar>>
 UnboundedMatrix<Scalar>::operator()(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) const {
-  return TransposedView{left} * (*this * right);
+  return TransposedView{left} * (*this * right);  // NOLINT
 }
 
 template<typename Scalar>
@@ -505,7 +505,7 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose(
 template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> InnerProduct(UnboundedVector<LScalar> const& left,
                                        UnboundedVector<RScalar> const& right) {
-  return TransposedView{left} * right;
+  return TransposedView{left} * right;  // NOLINT
 }
 
 template<typename Scalar>

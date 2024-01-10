@@ -86,7 +86,7 @@ TEST_F(FixedArraysTest, Assignment) {
 }
 
 TEST_F(FixedArraysTest, Norm) {
-  EXPECT_EQ(35, TransposedView{v4_} * v4_);
+  EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
   EXPECT_EQ(35, v4_.Norm²());
   EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
@@ -121,7 +121,7 @@ TEST_F(FixedArraysTest, VectorSpaces) {
 }
 
 TEST_F(FixedArraysTest, Algebra) {
-  EXPECT_EQ(-535, TransposedView{u3_} * v3_);
+  EXPECT_EQ(-535, TransposedView{u3_} * v3_);  // NOLINT
   EXPECT_EQ((FixedMatrix<double, 3, 4>({-30, -30,  10,   40,
                                         -93, -93,  31,  124,
                                         141, 141, -47, -188})),
