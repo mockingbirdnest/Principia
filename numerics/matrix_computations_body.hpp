@@ -31,9 +31,10 @@ using namespace principia::quantities::_si;
 // fixed/unbounded arrays so that we don't have to write each algorithm N times.
 
 // A view of a column of a matrix.
-// TODO(phl): Could we extract Scalar from Matrix?
-template<typename Scalar, typename Matrix>
+template<typename Matrix>
 struct ColumnView {
+  using Scalar = typename Matrix::Scalar;
+
   Matrix& matrix;
   int first_row;
   int last_row;
@@ -53,8 +54,8 @@ struct ColumnView {
   ColumnView& operator/=(double right);
 };
 
-template<typename Scalar, typename Matrix>
-Square<Scalar> ColumnView<Scalar, Matrix>::Norm²() const {
+template<typename Matrix>
+auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
   Square<Scalar> result{};
   for (int i = first_row; i <= last_row; ++i) {
     result += Pow<2>(matrix(i, column));
@@ -62,18 +63,18 @@ Square<Scalar> ColumnView<Scalar, Matrix>::Norm²() const {
   return result;
 }
 
-template<typename Scalar, typename Matrix>
-Scalar ColumnView<Scalar, Matrix>::Norm() const {
+template<typename Matrix>
+auto ColumnView<Matrix>::Norm() const -> Scalar {
   return Sqrt(Norm²());
 }
 
-template<typename Scalar, typename Matrix>
-constexpr int ColumnView<Scalar, Matrix>::size() const {
+template<typename Matrix>
+constexpr auto ColumnView<Matrix>::size() const -> int {
   return last_row - first_row + 1;
 }
 
-template<typename Scalar, typename Matrix>
-ColumnView<Scalar, Matrix>::operator UnboundedVector<Scalar>() const {
+template<typename Matrix>
+ColumnView<Matrix>::operator UnboundedVector<typename Matrix::Scalar>() const {
   UnboundedVector<Scalar> result(size(), uninitialized);
   for (int i = first_row; i <= last_row; ++i) {
     result[i - first_row] = matrix(i, column);
@@ -81,35 +82,34 @@ ColumnView<Scalar, Matrix>::operator UnboundedVector<Scalar>() const {
   return result;
 }
 
-template<typename Scalar, typename Matrix>
-constexpr Scalar& ColumnView<Scalar, Matrix>::operator[](int const index) {
+template<typename Matrix>
+constexpr auto ColumnView<Matrix>::operator[](int const index) -> Scalar& {
   CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
 
-template<typename Scalar, typename Matrix>
-constexpr Scalar const& ColumnView<Scalar, Matrix>::operator[](
-    int const index) const {
+template<typename Matrix>
+constexpr auto ColumnView<Matrix>::operator[](
+    int const index) const -> Scalar const& {
   CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
 
-template<typename Scalar, typename Matrix>
-ColumnView<Scalar, Matrix>& ColumnView<Scalar, Matrix>::operator/=(
-    double const right) {
+template<typename Matrix>
+auto ColumnView<Matrix>::operator/=(double const right) -> ColumnView<Matrix>& {
   for (int i = first_row; i < last_row; ++i) {
     matrix(i, column) /= right;
   }
 }
 
-template<typename Scalar, typename Matrix>
-UnboundedVector<double> Normalize(ColumnView<Scalar, Matrix> const& view) {
-  return UnboundedVector<Scalar>(view) / view.Norm();
+template<typename Matrix>
+UnboundedVector<double> Normalize(ColumnView<Matrix> const& view) {
+  return UnboundedVector<typename Matrix::Scalar>(view) / view.Norm();
 }
 
-template<typename Scalar, typename Matrix>
+template<typename Matrix>
 std::ostream& operator<<(std::ostream& out,
-                         ColumnView<Scalar, Matrix> const& view) {
+                         ColumnView<Matrix> const& view) {
   std::stringstream s;
   for (int i = 0; i < view.size(); ++i) {
     s << (i == 0 ? "{" : "") << view[i]
@@ -119,8 +119,10 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-template<typename Scalar, typename Matrix>
+template<typename Matrix>
 struct BlockView {
+  using Scalar = typename Matrix::Scalar;
+
   Matrix& matrix;
   int first_row;
   int last_row;
@@ -136,36 +138,36 @@ struct BlockView {
   BlockView& operator-=(UnboundedMatrix<Scalar> const& right);
 };
 
-template<typename Scalar, typename Matrix>
-constexpr int BlockView<Scalar, Matrix>::rows() const {
+template<typename Matrix>
+constexpr auto BlockView<Matrix>::rows() const -> int {
   return last_row - first_row + 1;
 }
 
-template<typename Scalar, typename Matrix>
-constexpr int BlockView<Scalar, Matrix>::columns() const {
+template<typename Matrix>
+constexpr auto BlockView<Matrix>::columns() const -> int{
   return last_column - first_column + 1;
 }
 
-template<typename Scalar, typename Matrix>
-constexpr Scalar& BlockView<Scalar, Matrix>::operator()(int const row,
-                                                        int const column) {
+template<typename Matrix>
+constexpr auto BlockView<Matrix>::operator()(
+    int const row, int const column) -> Scalar& {
   CONSTEXPR_DCHECK(row <= last_row - first_row);
   CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
 }
 
-template<typename Scalar, typename Matrix>
-constexpr Scalar const& BlockView<Scalar, Matrix>::operator()(
+template<typename Matrix>
+constexpr auto BlockView<Matrix>::operator()(
     int const row,
-    int const column) const {
+    int const column) const -> Scalar const& {
   CONSTEXPR_DCHECK(row <= last_row - first_row);
   CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
 }
 
-template<typename Scalar, typename Matrix>
-BlockView<Scalar, Matrix>& BlockView<Scalar, Matrix>::operator-=(
-    UnboundedMatrix<Scalar> const& right) {
+template<typename Matrix>
+auto BlockView<Matrix>::operator-=(
+    UnboundedMatrix<Scalar> const& right) -> BlockView<Matrix>& {
   CHECK_EQ(rows(), right.rows());
   CHECK_EQ(columns(), right.columns());
   for (int i = 0; i < right.rows(); ++i) {
@@ -177,12 +179,13 @@ BlockView<Scalar, Matrix>& BlockView<Scalar, Matrix>::operator-=(
 }
 
 
-template<typename LScalar, typename RScalar, typename Matrix>
-UnboundedVector<Product<LScalar, RScalar>> operator*(
-    BlockView<LScalar, Matrix> const& left,
+template<typename LMatrix, typename RScalar>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    BlockView<LMatrix> const& left,
     UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.columns(), right.size());
-  UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
+  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
+      left.rows());
   for (int i = 0; i < left.rows(); ++i) {
     auto& result_i = result[i];
     for (int j = 0; j < left.columns(); ++j) {
@@ -192,12 +195,13 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
   return result;
 }
 
-template<typename LScalar, typename RScalar, typename Matrix>
-UnboundedVector<Product<LScalar, RScalar>> operator*(
-    TransposedView<BlockView<LScalar, Matrix>> const& left,
+template<typename LMatrix, typename RScalar>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    TransposedView<BlockView<LMatrix>> const& left,
     UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.transpose.rows(), right.size());
-  UnboundedVector<Product<LScalar, RScalar>> result(left.transpose.columns());
+  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
+      left.transpose.columns());
   for (int j = 0; j < left.transpose.columns(); ++j) {
     auto& result_j = result[j];
     for (int i = 0; i < left.transpose.rows(); ++i) {
@@ -350,20 +354,20 @@ void FrancisQRStep(Matrix& H) {
     auto const P = ComputeHouseholderReflection(xyz);
     int const q = std::max(1, k);
     {
-      auto block = BlockView<Scalar, Matrix>{.matrix = H,
-                                             .first_row = k,
-                                             .last_row = k + 2,
-                                             .first_column = q - 1,
-                                             .last_column = n - 1};
+      auto block = BlockView<Matrix>{.matrix = H,
+                                     .first_row = k,
+                                     .last_row = k + 2,
+                                     .first_column = q - 1,
+                                     .last_column = n - 1};
       Premultiply(P, block);
     }
     int const r = std::min(k + 4, n);
     {
-      auto block = BlockView<Scalar, Matrix>{.matrix = H,
-                                             .first_row = 0,
-                                             .last_row = r - 1,
-                                             .first_column = k,
-                                             .last_column = k + 2};
+      auto block = BlockView<Matrix>{.matrix = H,
+                                     .first_row = 0,
+                                     .last_row = r - 1,
+                                     .first_column = k,
+                                     .last_column = k + 2};
       PostMultiply(block, P);
     }
     x = H(k + 1, k);
@@ -375,45 +379,42 @@ void FrancisQRStep(Matrix& H) {
   FixedVector<Scalar, 2> xy({x, y});
   auto const P = ComputeHouseholderReflection(xy);
   {
-    auto block = BlockView<Scalar, Matrix>{.matrix = H,
-                                           .first_row = n - 2,
-                                           .last_row = n - 1,
-                                           .first_column = n - 3,
-                                           .last_column = n - 1};
+    auto block = BlockView<Matrix>{.matrix = H,
+                                   .first_row = n - 2,
+                                   .last_row = n - 1,
+                                   .first_column = n - 3,
+                                   .last_column = n - 1};
     Premultiply(P, block);
   }
   {
-    auto block = BlockView<Scalar, Matrix>{.matrix = H,
-                                           .first_row = 0,
-                                           .last_row = n - 1,
-                                           .first_column = n - 2,
-                                           .last_column = n - 1};
+    auto block = BlockView<Matrix>{.matrix = H,
+                                   .first_row = 0,
+                                   .last_row = n - 1,
+                                   .first_column = n - 2,
+                                   .last_column = n - 1};
     PostMultiply(block, P);
   }
   // TODO(phl): Accumulate Z.
 }
 
 
-template<typename Scalar_>
-struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
-  using Scalar = Scalar_;
+template<typename Scalar>
+struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar>> {
   using Result = UnboundedUpperTriangularMatrix<SquareRoot<Scalar>>;
   static Result Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u);
 };
 
-template<typename Scalar_, int columns>
+template<typename Scalar, int columns>
 struct CholeskyDecompositionGenerator<
-    FixedUpperTriangularMatrix<Scalar_, columns>> {
-  using Scalar = Scalar_;
+    FixedUpperTriangularMatrix<Scalar, columns>> {
   using Result = FixedUpperTriangularMatrix<SquareRoot<Scalar>, columns>;
   static Result Uninitialized(
       FixedUpperTriangularMatrix<Scalar, columns> const& u);
 };
 
-template<typename Scalar_>
-struct ᵗRDRDecompositionGenerator<UnboundedVector<Scalar_>,
-                                  UnboundedUpperTriangularMatrix<Scalar_>> {
-  using Scalar = Scalar_;
+template<typename Scalar>
+struct ᵗRDRDecompositionGenerator<UnboundedVector<Scalar>,
+                                  UnboundedUpperTriangularMatrix<Scalar>> {
   struct Result {
     UnboundedUpperTriangularMatrix<double> R;
     UnboundedVector<Scalar> D;
@@ -421,11 +422,10 @@ struct ᵗRDRDecompositionGenerator<UnboundedVector<Scalar_>,
   static Result Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u);
 };
 
-template<typename Scalar_, int columns>
+template<typename Scalar, int columns>
 struct ᵗRDRDecompositionGenerator<
-    FixedVector<Scalar_, columns>,
-    FixedUpperTriangularMatrix<Scalar_, columns>> {
-  using Scalar = Scalar_;
+    FixedVector<Scalar, columns>,
+    FixedUpperTriangularMatrix<Scalar, columns>> {
   struct Result {
     FixedUpperTriangularMatrix<double, columns> R;
     FixedVector<Scalar, columns> D;
@@ -450,43 +450,38 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
   static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
 };
 
-template<typename Scalar_>
-struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar_>> {
-  using Scalar = Scalar_;
+template<typename Scalar>
+struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> H;
   };
 };
 
-template<typename Scalar_, int dimension>
+template<typename Scalar, int dimension>
 struct HessenbergDecompositionGenerator<
-    FixedMatrix<Scalar_, dimension, dimension>> {
-  using Scalar = Scalar_;
+    FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
     FixedMatrix<Scalar, dimension, dimension> H;
   };
 };
 
-template<typename Scalar_>
-struct RealSchurDecompositionGenerator<UnboundedMatrix<Scalar_>> {
-  using Scalar = Scalar_;
+template<typename Scalar>
+struct RealSchurDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> T;
   };
 };
 
-template<typename Scalar_, int dimension>
+template<typename Scalar, int dimension>
 struct RealSchurDecompositionGenerator<
-    FixedMatrix<Scalar_, dimension, dimension>> {
-  using Scalar = Scalar_;
+    FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
     FixedMatrix<Scalar, dimension, dimension> T;
   };
 };
 
-template<typename Scalar_>
-struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
-  using Scalar = Scalar_;
+template<typename Scalar>
+struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar>> {
   using Rotation = UnboundedMatrix<double>;
   struct Result {
     UnboundedMatrix<double> rotation;
@@ -496,9 +491,8 @@ struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>> {
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar_, int dimension>
-struct ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>> {
-  using Scalar = Scalar_;
+template<typename Scalar, int dimension>
+struct ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>> {
   using Rotation = FixedMatrix<double, dimension, dimension>;
   struct Result {
     FixedMatrix<double, dimension, dimension> rotation;
@@ -564,30 +558,30 @@ struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
       FixedMatrix<MScalar, rows, columns> const& m);
 };
 
-template<typename Scalar_>
-auto CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>>::
+template<typename Scalar>
+auto CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar>>::
 Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
   return Result(u.columns(), uninitialized);
 }
 
-template<typename Scalar_, int columns>
+template<typename Scalar, int columns>
 auto CholeskyDecompositionGenerator<
-    FixedUpperTriangularMatrix<Scalar_, columns>>::
+    FixedUpperTriangularMatrix<Scalar, columns>>::
 Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return Result(uninitialized);
 }
 
-template<typename Scalar_>
-auto ᵗRDRDecompositionGenerator<UnboundedVector<Scalar_>,
-                                UnboundedUpperTriangularMatrix<Scalar_>>::
+template<typename Scalar>
+auto ᵗRDRDecompositionGenerator<UnboundedVector<Scalar>,
+                                UnboundedUpperTriangularMatrix<Scalar>>::
 Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
   return {UnboundedUpperTriangularMatrix<double>(u.columns(), uninitialized),
           UnboundedVector<Scalar>(u.columns(), uninitialized)};
 }
 
-template<typename Scalar_, int columns>
-auto ᵗRDRDecompositionGenerator<FixedVector<Scalar_, columns>,
-                                FixedUpperTriangularMatrix<Scalar_, columns>>::
+template<typename Scalar, int columns>
+auto ᵗRDRDecompositionGenerator<FixedVector<Scalar, columns>,
+                                FixedUpperTriangularMatrix<Scalar, columns>>::
 Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
   return {FixedUpperTriangularMatrix<double, columns>(uninitialized),
           FixedVector<Scalar, columns>(uninitialized)};
@@ -601,27 +595,27 @@ Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
 }
 
-template<typename Scalar_>
-auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::Identity(
-    UnboundedMatrix<Scalar_> const& m) -> Rotation {
+template<typename Scalar>
+auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar>>::Identity(
+    UnboundedMatrix<Scalar> const& m) -> Rotation {
   return UnboundedMatrix<Scalar>::Identity(m.rows(), m.columns());
 }
 
-template<typename Scalar_>
-auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar_>>::
+template<typename Scalar>
+auto ClassicalJacobiGenerator<UnboundedMatrix<Scalar>>::
 Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
   return {.rotation = UnboundedMatrix<double>(m.rows(), m.columns()),
           .eigenvalues = UnboundedVector<Scalar>(m.columns())};
 }
 
-template<typename Scalar_, int dimension>
-auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
-Identity(FixedMatrix<Scalar_, dimension, dimension> const& m) -> Rotation {
+template<typename Scalar, int dimension>
+auto ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>>::
+Identity(FixedMatrix<Scalar, dimension, dimension> const& m) -> Rotation {
   return Rotation::Identity();
 }
 
-template<typename Scalar_, int dimension>
-auto ClassicalJacobiGenerator<FixedMatrix<Scalar_, dimension, dimension>>::
+template<typename Scalar, int dimension>
+auto ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>>::
 Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
   return {.rotation = FixedMatrix<double, dimension, dimension>(),
           .eigenvalues = FixedVector<Scalar, dimension>()};
@@ -686,7 +680,7 @@ template<typename UpperTriangularMatrix>
 typename CholeskyDecompositionGenerator<UpperTriangularMatrix>::Result
 CholeskyDecomposition(UpperTriangularMatrix const& A) {
   using G = CholeskyDecompositionGenerator<UpperTriangularMatrix>;
-  using Scalar = typename G::Scalar;
+  using Scalar = typename UpperTriangularMatrix::Scalar;
   auto R = G::Uninitialized(A);
   for (int j = 0; j < A.columns(); ++j) {
     for (int i = 0; i < j; ++i) {
@@ -711,7 +705,7 @@ template<typename Vector, typename UpperTriangularMatrix>
 typename ᵗRDRDecompositionGenerator<Vector, UpperTriangularMatrix>::Result
 ᵗRDRDecomposition(UpperTriangularMatrix const& A) {
   using G = ᵗRDRDecompositionGenerator<Vector, UpperTriangularMatrix>;
-  using Scalar = typename G::Scalar;
+  using Scalar = typename UpperTriangularMatrix::Scalar;
   auto result = G::Uninitialized(A);
   auto& R = result.R;
   auto& D = result.D;
@@ -776,7 +770,6 @@ template<typename Matrix>
 typename HessenbergDecompositionGenerator<Matrix>::Result
 HessenbergDecomposition(Matrix const& A) {
   using G = HessenbergDecompositionGenerator<Matrix>;
-  using Scalar = typename G::Scalar;
   typename HessenbergDecompositionGenerator<Matrix>::Result result{.H = A};
   auto& H = result.H;
   int const n = A.rows();
@@ -784,24 +777,24 @@ HessenbergDecomposition(Matrix const& A) {
   // [GV13], Algorithm 7.4.2.
   for (int k = 0; k < n - 2; ++k) {
     auto const P = ComputeHouseholderReflection(
-        ColumnView<Scalar, Matrix>{.matrix = H,
-                                   .first_row = k + 1,
-                                   .last_row = n - 1,
-                                   .column = k});
+        ColumnView<Matrix>{.matrix = H,
+                           .first_row = k + 1,
+                           .last_row = n - 1,
+                           .column = k});
     {
-      auto block = BlockView<Scalar, Matrix>{.matrix = H,
-                                             .first_row = k + 1,
-                                             .last_row = n - 1,
-                                             .first_column = k,
-                                             .last_column = n - 1};
+      auto block = BlockView<Matrix>{.matrix = H,
+                                     .first_row = k + 1,
+                                     .last_row = n - 1,
+                                     .first_column = k,
+                                     .last_column = n - 1};
       Premultiply(P, block);
     }
     {
-      auto block = BlockView<Scalar, Matrix>{.matrix = H,
-                                             .first_row = 0,
-                                             .last_row = n - 1,
-                                             .first_column = k + 1,
-                                             .last_column = n - 1};
+      auto block = BlockView<Matrix>{.matrix = H,
+                                     .first_row = 0,
+                                     .last_row = n - 1,
+                                     .first_column = k + 1,
+                                     .last_column = n - 1};
       PostMultiply(block, P);
     }
   }
@@ -812,7 +805,7 @@ template<typename Matrix>
 typename RealSchurDecompositionGenerator<Matrix>::Result
 RealSchurDecomposition(Matrix const& A, double const ε) {
   using G = RealSchurDecompositionGenerator<Matrix>;
-  using Scalar = typename G::Scalar;
+  using Scalar = typename Matrix::Scalar;
   static const auto zero = Scalar{};
 
   // [GV13] algorithm 7.5.2.
@@ -854,11 +847,11 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
       }
     }
 
-    auto H₂₂ = BlockView<Scalar, Matrix>{.matrix = H,
-                                         .first_row = p,
-                                         .last_row = n - q - 1,
-                                         .first_column = p,
-                                         .last_column = n - q - 1};
+    auto H₂₂ = BlockView<Matrix>{.matrix = H,
+                                 .first_row = p,
+                                 .last_row = n - q - 1,
+                                 .first_column = p,
+                                 .last_column = n - q - 1};
     FrancisQRStep<Scalar>(H₂₂);
   }
 
@@ -870,7 +863,7 @@ template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
 ClassicalJacobi(Matrix const& A,  int max_iterations, double const ε) {
   using G = ClassicalJacobiGenerator<Matrix>;
-  using Scalar = typename G::Scalar;
+  using Scalar = typename Matrix::Scalar;
   auto result = G::Uninitialized(A);
   auto& V = result.rotation;
 
