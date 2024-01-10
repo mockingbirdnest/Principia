@@ -41,9 +41,11 @@ class UnboundedUpperTriangularMatrix;
 // The following classes are similar to those in fixed_arrays.hpp, but they have
 // an Extend method to add more entries to the arrays.
 
-template<typename Scalar>
+template<typename Scalar_>
 class UnboundedVector final {
  public:
+  using Scalar = Scalar_;
+
   explicit UnboundedVector(int size);  // Zero-initialized.
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
@@ -82,9 +84,11 @@ class UnboundedVector final {
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 };
 
-template<typename Scalar>
+template<typename Scalar_>
 class UnboundedMatrix final {
  public:
+  using Scalar = Scalar_;
+
   UnboundedMatrix(int rows, int columns);
   UnboundedMatrix(int rows, int columns, uninitialized_t);
 
@@ -129,9 +133,11 @@ class UnboundedMatrix final {
                                   UnboundedMatrix<S> const& matrix);
 };
 
-template<typename Scalar>
+template<typename Scalar_>
 class UnboundedLowerTriangularMatrix final {
  public:
+  using Scalar = Scalar_;
+
   explicit UnboundedLowerTriangularMatrix(int rows);
   UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
 
@@ -171,9 +177,11 @@ class UnboundedLowerTriangularMatrix final {
       UnboundedLowerTriangularMatrix<S> const& matrix);
 };
 
-template<typename Scalar>
+template<typename Scalar_>
 class UnboundedUpperTriangularMatrix final {
  public:
+  using Scalar = Scalar_;
+
   explicit UnboundedUpperTriangularMatrix(int columns);
   UnboundedUpperTriangularMatrix(int columns, uninitialized_t);
 
