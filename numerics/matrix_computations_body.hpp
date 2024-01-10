@@ -788,7 +788,7 @@ template<typename Matrix, typename Vector>
 typename RayleighQuotientGenerator<Matrix, Vector>::Result
 RayleighQuotient(Matrix const& A, Vector const& x) {
   // [GV13], section 8.2.3.
-  return x.Transpose() * (A * x) / (x.Transpose() * x);
+  return TransposedView{x} * (A * x) / (TransposedView{x} * x);
 }
 
 template<typename Matrix, typename Vector>

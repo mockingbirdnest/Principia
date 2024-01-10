@@ -56,13 +56,6 @@ void UnboundedVector<Scalar>::EraseToEnd(int const begin_index) {
 }
 
 template<typename Scalar>
-TransposedView<UnboundedVector<Scalar>>
-UnboundedVector<Scalar>::Transpose() const {
-  return TransposedView<UnboundedVector>{*this};
-}
-
-
-template<typename Scalar>
 Scalar UnboundedVector<Scalar>::Norm() const {
   return Sqrt(Norm²());
 }
@@ -163,9 +156,14 @@ int UnboundedMatrix<Scalar>::size() const {
 }
 
 template<typename Scalar>
-TransposedView<UnboundedMatrix<Scalar>>
-UnboundedMatrix<Scalar>::Transpose() const {
-  return TransposedView<UnboundedMatrix>{*this};
+UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
+  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      m(j, i) = (*this)(i, j);
+    }
+  }
+  return m;
 }
 
 template<typename Scalar>

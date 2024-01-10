@@ -51,9 +51,6 @@ class UnboundedVector final {
 
   void EraseToEnd(int begin_index);
 
-  // This object must outlive the result of Transpose.
-  TransposedView<UnboundedVector> Transpose() const;
-
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
@@ -101,8 +98,7 @@ class UnboundedMatrix final {
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
 
-  // This object must outlive the result of Transpose.
-  TransposedView<UnboundedMatrix> Transpose() const;
+  UnboundedMatrix Transpose() const;
 
   Scalar FrobeniusNorm() const;
 

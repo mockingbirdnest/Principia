@@ -72,12 +72,6 @@ constexpr FixedVector<Scalar, size_>::FixedVector(
     : data_(std::move(data)) {}
 
 template<typename Scalar, int size_>
-TransposedView<FixedVector<Scalar, size_>>
-FixedVector<Scalar, size_>::Transpose() const {
-  return {.transpose = *this};
-}
-
-template<typename Scalar, int size_>
 Scalar FixedVector<Scalar, size_>::Norm() const {
   return Sqrt(Norm²());
 }
@@ -168,9 +162,15 @@ Scalar const* FixedMatrix<Scalar, rows_, columns_>::row() const {
 }
 
 template<typename Scalar, int rows_, int columns_>
-TransposedView<FixedMatrix<Scalar, rows_, columns_>>
+FixedMatrix<Scalar, rows_, columns_>
 FixedMatrix<Scalar, rows_, columns_>::Transpose() const {
-  return TransposedView{*this};
+  FixedMatrix<Scalar, rows(), columns()> m(uninitialized);
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      m(j, i) = (*this)(i, j);
+    }
+  }
+  return m;
 }
 
 template<typename Scalar, int rows_, int columns_>

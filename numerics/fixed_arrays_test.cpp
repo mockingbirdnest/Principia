@@ -86,7 +86,7 @@ TEST_F(FixedArraysTest, Assignment) {
 }
 
 TEST_F(FixedArraysTest, Norm) {
-  EXPECT_EQ(35, v4_.Transpose() * v4_);
+  EXPECT_EQ(35, TransposedView{v4_} * v4_);
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
   EXPECT_EQ(35, v4_.Norm²());
   EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
@@ -121,11 +121,11 @@ TEST_F(FixedArraysTest, VectorSpaces) {
 }
 
 TEST_F(FixedArraysTest, Algebra) {
-  EXPECT_EQ(-535, u3_.Transpose() * v3_);
+  EXPECT_EQ(-535, TransposedView{u3_} * v3_);
   EXPECT_EQ((FixedMatrix<double, 3, 4>({-30, -30,  10,   40,
                                         -93, -93,  31,  124,
                                         141, 141, -47, -188})),
-             v3_ * v4_.Transpose());
+             v3_ * TransposedView{v4_});
   EXPECT_EQ((FixedMatrix<double, 2, 4>({ 0,  14, -22,   3,
                                         14, -63,   5, -92})),
             m23_ * m34_);

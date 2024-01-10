@@ -39,9 +39,6 @@ class FixedVector final {
   constexpr FixedVector(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
-  // This object must outlive the result of Transpose.
-  TransposedView<FixedVector> Transpose() const;
-
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
@@ -104,8 +101,7 @@ class FixedMatrix final {
   template<int r>
   Scalar const* row() const;
 
-  // This object must outlive the result of Transpose.
-  TransposedView<FixedMatrix> Transpose() const;
+  FixedMatrix Transpose() const;
 
   Scalar FrobeniusNorm() const;
 
