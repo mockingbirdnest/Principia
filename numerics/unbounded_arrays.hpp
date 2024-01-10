@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,6 +19,7 @@ namespace internal {
 // TODO(phl): This should support the same operations as fixed_arrays.hpp.
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -44,6 +46,8 @@ class UnboundedVector final {
   explicit UnboundedVector(int size);  // Zero-initialized.
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
+  template<int size_>
+  explicit UnboundedVector(FixedVector<Scalar, size_> const& data);
 
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);

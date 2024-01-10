@@ -219,7 +219,8 @@ HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
   // In order to avoid issues with quantities, we start by normalizing x.  This
   // implies that μ is 1.
   auto const normalized_x = Normalize(x);
-  HouseholderReflection result{.v = normalized_x, .β = 0};
+  HouseholderReflection result{.v = UnboundedVector<double>(normalized_x),
+                               .β = 0};
   double const& x₁ = normalized_x[0];
   double& v₁ = result.v[0];
   auto x₂ₘ = normalized_x;
@@ -330,6 +331,68 @@ void PostMultiply(Matrix& A, JacobiRotation const& J) {
   }
 }
 
+// [GV13] algorithm 7.5.1.
+template<typename Scalar, typename Matrix>
+void FrancisQRStep(Matrix& H) {
+  int const n = H.rows();
+  int const m = n - 1;
+  auto const s = H(m - 1, m - 1) + H(n - 1, n - 1);
+  auto const t = H(m - 1, m - 1) * H(n - 1, n - 1) -
+                 H(m - 1, n - 1) * H(n - 1, m - 1);
+  FixedVector<Scalar, 3> xyz(uninitialized);
+  auto& x = xyz[0];
+  auto& y = xyz[1];
+  auto& z = xyz[2];
+  x = Pow<2>(H(0, 0)) + H(0, 1) * H(1, 0) - s * H(0, 0) + t;
+  y = H(1, 0) * (H(0, 0) + H(1, 1) - s);
+  z = H(1, 0) * H(2, 1);
+  for (int k = 0; k < n - 2; ++k) {
+    auto const P = ComputeHouseholderReflection(xyz);
+    int const q = std::max(1, k);
+    {
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = k,
+                                             .last_row = k + 2,
+                                             .first_column = q - 1,
+                                             .last_column = n - 1};
+      Premultiply(P, block);
+    }
+    int const r = std::min(k + 4, n);
+    {
+      auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                             .first_row = 0,
+                                             .last_row = r - 1,
+                                             .first_column = k,
+                                             .last_column = k + 2};
+      PostMultiply(block, P);
+    }
+    x = H(k + 1, k);
+    y = H(k + 2, k);
+    if (k < n - 3) {
+      z = H(k + 3, k);
+    }
+  }
+  FixedVector<Scalar, 2> xy({x, y});
+  auto const P = ComputeHouseholderReflection(xy);
+  {
+    auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                           .first_row = n - 2,
+                                           .last_row = n - 1,
+                                           .first_column = n - 3,
+                                           .last_column = n - 1};
+    Premultiply(P, block);
+  }
+  {
+    auto block = BlockView<Scalar, Matrix>{.matrix = H,
+                                           .first_row = 0,
+                                           .last_row = n - 1,
+                                           .first_column = n - 2,
+                                           .last_column = n - 1};
+    PostMultiply(block, P);
+  }
+  // TODO(phl): Accumulate Z.
+}
+
 
 template<typename Scalar_>
 struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar_>> {
@@ -390,7 +453,6 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 template<typename Scalar_>
 struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar_>> {
   using Scalar = Scalar_;
-  using Reflector = UnboundedVector<double>;
   struct Result {
     UnboundedMatrix<Scalar> H;
   };
@@ -400,9 +462,25 @@ template<typename Scalar_, int dimension>
 struct HessenbergDecompositionGenerator<
     FixedMatrix<Scalar_, dimension, dimension>> {
   using Scalar = Scalar_;
-  using Reflector = FixedVector<double, dimension>;
   struct Result {
     FixedMatrix<Scalar, dimension, dimension> H;
+  };
+};
+
+template<typename Scalar_>
+struct RealSchurDecompositionGenerator<UnboundedMatrix<Scalar_>> {
+  using Scalar = Scalar_;
+  struct Result {
+    UnboundedMatrix<Scalar> T;
+  };
+};
+
+template<typename Scalar_, int dimension>
+struct RealSchurDecompositionGenerator<
+    FixedMatrix<Scalar_, dimension, dimension>> {
+  using Scalar = Scalar_;
+  struct Result {
+    FixedMatrix<Scalar, dimension, dimension> T;
   };
 };
 
@@ -731,8 +809,66 @@ HessenbergDecomposition(Matrix const& A) {
 }
 
 template<typename Matrix>
+typename RealSchurDecompositionGenerator<Matrix>::Result
+RealSchurDecomposition(Matrix const& A, double const ε) {
+  using G = RealSchurDecompositionGenerator<Matrix>;
+  using Scalar = typename G::Scalar;
+  static const auto zero = Scalar{};
+
+  // [GV13] algorithm 7.5.2.
+  auto hessenberg = HessenbergDecomposition(A);
+  auto& H = hessenberg.H;
+  int const n = H.rows();
+  for (;;) {
+    for (int i = 1; i < n; ++i) {
+      if (Abs(H(i, i - 1)) <= ε * (Abs(H(i, i)) + Abs(H(i - 1, i - 1)))) {
+        H(i, i - 1) = zero;
+      }
+    }
+
+    // Upper quasi-triangular means that we don't have consecutive nonzero
+    // subdiagonal elements, and we end on a zero.
+    bool has_subdiagonal_element = false;
+    int q = 0;
+    for (int i = 1; i <= n; ++i) {
+      // The case i == n corresponds to a zero sentinel immediately to the left
+      // of the first element of the matrix.
+      if (i == n || H(n - i, n - i - 1) == zero) {
+        q = i;
+        has_subdiagonal_element = false;
+      } else if (has_subdiagonal_element) {
+        break;
+      } else {
+        has_subdiagonal_element = true;
+      }
+    }
+
+    if (q == n) {
+      break;
+    }
+
+    int p = n - q - 1;
+    for (; p > 0; --p) {
+      if (H(p, p - 1) == zero) {
+        break;
+      }
+    }
+
+    auto H₂₂ = BlockView<Scalar, Matrix>{.matrix = H,
+                                         .first_row = p,
+                                         .last_row = n - q - 1,
+                                         .first_column = p,
+                                         .last_column = n - q - 1};
+    FrancisQRStep<Scalar>(H₂₂);
+  }
+
+  typename RealSchurDecompositionGenerator<Matrix>::Result result{.T = H};
+  return result;
+}
+
+template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix const& A,  int max_iterations, double ε) {
+ClassicalJacobi(Matrix const& A,  int max_iterations, double const ε) {
   using G = ClassicalJacobiGenerator<Matrix>;
   using Scalar = typename G::Scalar;
   auto result = G::Uninitialized(A);

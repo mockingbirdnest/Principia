@@ -34,6 +34,11 @@ UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
     : data_(std::move(data)) {}
 
 template<typename Scalar>
+template<int size_>
+UnboundedVector<Scalar>::UnboundedVector(FixedVector<Scalar, size_> const& data)
+    : data_(data.begin(), data.end()) {}
+
+template<typename Scalar>
 void UnboundedVector<Scalar>::Extend(int const extra_size) {
   DCHECK_LE(0, extra_size);
   data_.resize(data_.size() + extra_size, Scalar{});
