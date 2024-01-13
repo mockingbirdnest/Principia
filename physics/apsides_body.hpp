@@ -142,8 +142,6 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     Trajectory<Frame> const& trajectory,
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides) {
-  std::vector<Interval<Instant>> intervals;
-
   auto squared_distance_from_centre = [&reference,
                                        &trajectory](Instant const& time) {
     Position<Frame> const body_position =
@@ -157,9 +155,11 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
 
   auto const max_radius² = Pow<2>(reference_body.max_radius());
 
+  // NOTE(phl): This function doesn't consider |t_min| and |t_max| as potential
+  // periapsis, only as potential apoapsis.  Unsure if that's right.
+
   // Construct the list of times of the apoapsides.  This list includes the
-  // times designated by |begin| and |end| if they are "on the way" to an
-  // apoapsis.
+  // times |t_min| and |t_max| if they are "on the way" to an apoapsis.
   std::list<Instant> apoapsides_times;
   for (auto const& [time, _] : apoapsides) {
     apoapsides_times.push_back(time);
@@ -174,66 +174,68 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
   }
   CHECK_EQ(apoapsides_times.size(), periapsides.size() + 1);
 
+  std::vector<Interval<Instant>> intervals;
+
   auto ait = apoapsides_times.begin();
   for (auto pit = periapsides.begin(); pit != periapsides.end();) {
-    Instant apoapside_time = *ait;
-    Instant periapside_time = pit->time;
-    CHECK_LE(apoapside_time, periapside_time);
+    Instant apoapsis_time = *ait;
+    Instant periapsis_time = pit->time;
+    CHECK_LE(apoapsis_time, periapsis_time);
 
-    // No collision possible if the periapside is above |max_radius|.
-    if (squared_distance_from_centre(periapside_time) < max_radius²) {
+    // No collision is possible if the periapsis is above |max_radius|.
+    if (squared_distance_from_centre(periapsis_time) < max_radius²) {
       Interval<Instant> interval;
-      if (squared_distance_from_centre(apoapside_time) > max_radius²) {
-        // The periapside is below |max_radius| and the preceding apoapside is
+      if (squared_distance_from_centre(apoapsis_time) > max_radius²) {
+        // The periapsis is below |max_radius| and the preceding apoapsis is
         // above.  Find the intersection point.
         interval.min = Brent(
             [max_radius², &squared_distance_from_centre](Instant const& time) {
               return squared_distance_from_centre(time) - max_radius²;
             },
-            apoapside_time,
-            periapside_time);
+            apoapsis_time,
+            periapsis_time);
       } else {
-        // A periapside below |max_radius| can only happen at the beginning of
+        // A periapsis below |max_radius| can only happen at the beginning of
         // the list because the loop below skips the other ones.
         CHECK(pit == periapsides.begin());
-        interval.min = periapside_time;
+        interval.min = periapsis_time;
       }
 
-      // Loop until we find an apoapside above |max_radius|, or we reach the end
-      // of |apoapsides_time|.  We only move |periapside_time| to limit the
+      // Loop until we find an apoapsis above |max_radius|, or we reach the end
+      // of |apoapsides_time|.  We only move |periapsis_time| to limit the
       // range that the Brent algorithm has to search.
       for (++ait; ait != apoapsides_times.end(); ++ait, ++pit) {
         CHECK(pit != periapsides.end());
-        apoapside_time = *ait;
-        periapside_time = pit->time;
-        CHECK_LE(periapside_time, apoapside_time);
+        apoapsis_time = *ait;
+        periapsis_time = pit->time;
+        CHECK_LE(periapsis_time, apoapsis_time);
 
-        if (squared_distance_from_centre(apoapside_time) > max_radius²) {
-          // The periapside is below |max_radius| and the following apoapside is
+        if (squared_distance_from_centre(apoapsis_time) > max_radius²) {
+          // The periapsis is below |max_radius| and the following apoapsis is
           // above.  Find the intersection point.
           interval.max = Brent(
               [max_radius²,
                &squared_distance_from_centre](Instant const& time) {
                 return squared_distance_from_centre(time) - max_radius²;
               },
-              periapside_time,
-              apoapside_time);
+              periapsis_time,
+              apoapsis_time);
           break;
         } else {
-          // Fill the end of the interval with the current apoapside time.  This
+          // Fill the end of the interval with the current apoapsis time.  This
           // will yield the right value if we reach the end of
           // |apoapsides_time|.
-          interval.max = apoapside_time;
+          interval.max = apoapsis_time;
         }
       }
 
       intervals.push_back(interval);
 
-      // Go to the periapside right after the apoapside that we used to compute
+      // Go to the periapsis right after the apoapsis that we used to compute
       // |interval.max|.
       ++pit;
     } else {
-      // Go to the next pair periapside, apoapside (in this order).
+      // Go to the next pair periapsis, apoapsis (in this order).
       ++ait;
       ++pit;
     }
