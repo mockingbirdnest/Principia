@@ -27,6 +27,11 @@ struct Interval {
 };
 
 template<typename T>
+bool operator==(Interval<T> const& left, Interval<T> const& right);
+template<typename T>
+bool operator!=(Interval<T> const& left, Interval<T> const& right);
+
+template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval);
 
 }  // namespace internal

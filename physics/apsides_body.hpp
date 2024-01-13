@@ -144,7 +144,7 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
     typename DiscreteTrajectory<Frame>::iterator end,
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides) {
-  std::vector<Intervar<Instant>> segments;
+  std::vector<Interval<Instant>> segments;
 
   auto squared_distance_from_centre = [&reference,
                                        &trajectory](Instant const& time) {
@@ -166,7 +166,7 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
   for (auto const& [time, _] : apoapsides) {
     apoapsides_times.push_back(time);
   }
-  if (apoapsides_time.empty() ||
+  if (apoapsides_times.empty() ||
       apoapsides_times.front() > periapsides.begin()->time) {
     apoapsides_times.push_front(begin->time);
   }
@@ -174,7 +174,7 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
     apoapsides_times.push_back(std::prev(end)->time);
   }
 
-  auto ait = apoapsides_time.begin();
+  auto ait = apoapsides_times.begin();
   for (auto pit = periapsides.begin(); pit != periapsides.end();) {
     Instant apoapside_time = *ait;
     Instant periapside_time = pit->time;
@@ -182,7 +182,7 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
 
     // No collision possible if the periapside is above |max_radius|.
     if (squared_distance_from_centre(periapside_time) < max_radius²) {
-      Interval<Time> segment;
+      Interval<Instant> segment;
       if (squared_distance_from_centre(apoapside_time) > max_radius²) {
         // The periapside is below |max_radius| and the preceding apoapside is
         // above.  Find the intersection point.
@@ -228,10 +228,9 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
       }
 
       segments.push_back(segment);
-    } else {
-      ++ait;
-      ++pit;
     }
+    ++ait;
+    ++pit;
   }
 
   return segments;

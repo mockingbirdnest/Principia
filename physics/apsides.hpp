@@ -6,6 +6,7 @@
 #include "base/constant_function.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
@@ -95,6 +96,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 
 using internal::ComputeApsides;
 using internal::ComputeCollision;
+using internal::ComputeCollisionSegments;
 using internal::ComputeNodes;
 
 }  // namespace _apsides

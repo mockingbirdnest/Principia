@@ -11,6 +11,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -39,12 +40,14 @@
 namespace principia {
 namespace physics {
 
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -67,6 +70,11 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
+
+MATCHER_P2(IntervalMatches, min_matcher, max_matcher, "") {
+  return ::testing::ExplainMatchResult(min_matcher, arg.min, result_listener) &&
+         ::testing::ExplainMatchResult(max_matcher, arg.max, result_listener);
+}
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -172,6 +180,69 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   }
 }
 
+#endif
+
+TEST_F(ApsidesTest, ComputeCollisionSegments) {
+  Instant const t0;
+  Instant const t1 = t0;
+  Instant const t2 = t0 + 10 * Second;
+  DiscreteTrajectory<World> reference_trajectory;
+  DiscreteTrajectory<World> vessel_trajectory;
+
+  // Only |max_radius| matters for the body.
+  RotatingBody<World> const body(
+      1 * Kilogram,
+      RotatingBody<World>::Parameters(
+          /*min_radius=*/2 * Metre,
+          /*mean_radius=*/2 * Metre,
+          /*max_radius=*/2 * Metre,
+          /*reference_angle=*/0 * Radian,
+          /*reference_instant=*/t0,
+          /*angular_frequency=*/2 * π * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Radian,
+          /*declination_of_pole=*/π / 2 * Radian));
+
+  // The celestial is motionless at origin.
+  AppendTrajectoryTimeline(NewMotionlessTrajectoryTimeline(World::origin,
+                                                           /*Δt=*/1 * Second,
+                                                           t1, t2),
+                           reference_trajectory);
+  // A linear trajectory that intersects the body.
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1, t2),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(reference_trajectory,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+
+  const auto segments = ComputeCollisionSegments(body,
+                                                 reference_trajectory,
+                                                 vessel_trajectory,
+                                                 vessel_trajectory.begin(),
+                                                 vessel_trajectory.end(),
+                                                 apoapsides,
+                                                 periapsides);
+  EXPECT_THAT(segments,
+              ElementsAre(IntervalMatches(
+                  AlmostEquals(t0 + (4 - Sqrt(3)) * Second, 0),
+                  AlmostEquals(t0 + (4 + Sqrt(3)) * Second, 0))));
+}
+
 TEST_F(ApsidesTest, ComputeCollision) {
   Instant const t0;
   DiscreteTrajectory<World> reference_trajectory;
@@ -244,6 +315,8 @@ TEST_F(ApsidesTest, ComputeCollision) {
                                     -1 * Metre / Second,
                                     0 * Metre / Second}), 0));
 }
+
+#if !defined(_DEBUG)
 
 TEST_F(ApsidesTest, ComputeNodes) {
   Instant const t0;
