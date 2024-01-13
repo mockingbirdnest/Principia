@@ -229,9 +229,15 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
       }
 
       segments.push_back(segment);
+
+      // Go to the periapside right after the apoapside that we used to compute
+      // |segment.max|.
+      ++pit;
+    } else {
+      // Go to the next pair apoapside, periapside.
+      ++ait;
+      ++pit;
     }
-    ++ait;
-    ++pit;
   }
 
   return segments;
