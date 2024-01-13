@@ -40,8 +40,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     DiscreteTrajectory<Frame>& periapsides);
 
 // Returns the ordered time intervals where there can be a collision with the
-// celestial because the |trajectory| is below the |max_radius| of the
-// |reference_body|.
+// |reference_body| because the |trajectory| is below its |max_radius|.
 template<typename Frame>
 std::vector<Interval<Instant>> ComputeCollisionIntervals(
     RotatingBody<Frame> const& reference_body,

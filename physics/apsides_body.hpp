@@ -246,7 +246,6 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
   return intervals;
 }
 
-
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     RotatingBody<Frame> const& reference_body,
