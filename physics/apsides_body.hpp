@@ -88,7 +88,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       Instant apsis_time;
       int valid_extrema = 0;
       for (auto const& extremum : extrema) {
-        if (extremum >= *previous_time && extremum <= time) {
+        if (extremum > *previous_time && extremum <= time) {
           apsis_time = extremum;
           ++valid_extrema;
         }
