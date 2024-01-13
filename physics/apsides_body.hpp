@@ -159,62 +159,61 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
 
   auto const max_radius² = Pow<2>(reference_body.max_radius());
 
-  auto const last = std::prev(end);
-  auto ait = apoapsides.begin();
-  auto pit = apoapsides.begin();
+  // Construct the list of times of the apoapsides.  This list includes the
+  // times designated by |begin| and |end| if they are "on the way" to an
+  // apoapsis.
+  std::list<Instant> apoapsides_times;
+  for (auto const& [time, _] : apoapsides) {
+    apoapsides_times.push_back(time);
+  }
+  if (apoapsides_time.empty() ||
+      apoapsides_times.front() > periapsides.begin()->time) {
+    apoapsides_times.push_front(begin->time);
+  }
+  if (apoapsides_times.back() < std::prev(periapsides.end())->time) {
+    apoapsides_times.push_back(std::prev(end)->time);
+  }
 
-  if (ait == apoapsides.end()) {
-    Interval<Time> segment;
-    if (squared_distance_from_centre(pit->time) < max_radius²) {
+  auto ait = apoapsides_time.begin();
+  for (auto pit = periapsides.begin(); pit != periapsides.end(); ++pit) {
+    Instant const& periapside_time = pit->time;
+    Instant apoapside_time = *ait;
+    CHECK_LE(apoapside_time, periapside_time);
+
+    // No collision possible if the periaspide is above |max_radius|.
+    if (squared_distance_from_centre(periapside_time) < max_radius²) {
       Interval<Time> segment;
-      if (squared_distance_from_centre(begin->time) > max_radius²) {
+      if (squared_distance_from_centre(apoapside_time) > max_radius²) {
+        // The periapside is below |max_radius| and the preceding apoapside is
+        // above.  Find the intersection point.
         segment.min = Brent(
             [max_radius², &squared_distance_from_centre](Instant const& time) {
               return squared_distance_from_centre(time) - max_radius²;
             },
-            begin->time,
-            pit->time);
+            apoapside_time,
+            periapside_time);
       } else {
-        segment.min = begin->time;
+        //TODO(phl)comment
+        segment.min = periapside_time;
       }
-      if (squared_distance_from_centre(last->time) > max_radius²) {
+
+      ++ait;
+      apoapside_time = *ait;
+      if (squared_distance_from_centre(apoapside_time) > max_radius²) {
+        // The periapside is below |max_radius| and the following apoapside is
+        // above.  Find the intersection point.
         segment.max = Brent(
             [max_radius², &squared_distance_from_centre](Instant const& time) {
               return squared_distance_from_centre(time) - max_radius²;
             },
-            pit->time,
-            last->time);
+            periapside_time,
+            apoapside_time);
       } else {
-        segment.max = last->time;
+        //TODO(phl)comment
+        segment.max = apoapside_time;
       }
-      return {segment};
-    } else {
-      return {};
+      segments.push_back(segment);
     }
-  }
-
-  for (auto pit = periapsides.begin(); pit != periapsides.end(); ++pit) {
-    Interval<Time> segment;
-    if (squared_distance_from_centre(ait->time) > max_radius² &&
-        squared_distance_from_centre(pit->time) < max_radius²) {
-      segment.min = Brent(
-          [max_radius², &squared_distance_from_centre](Instant const& time) {
-            return squared_distance_from_centre(time) - max_radius²;
-          },
-          ait->time,
-          pit->time);
-    }
-    ++ait;
-    if (squared_distance_from_centre(ait->time) > max_radius² &&
-        squared_distance_from_centre(pit->time) < max_radius²) {
-      segment.max = Brent(
-          [max_radius², &squared_distance_from_centre](Instant const& time) {
-            return squared_distance_from_centre(time) - max_radius²;
-          },
-          pit->time,
-          ait->time);
-    }
-    segments.push_back(segment);
   }
 
   return segments;
