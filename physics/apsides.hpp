@@ -19,6 +19,7 @@ namespace internal {
 using namespace principia::base::_constant_function;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
@@ -35,6 +36,17 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     int max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
+
+//TODO(phl)comment
+template<typename Frame>
+std::vector<Interval<Instant>> ComputeCollisionSegments(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator begin,
+    typename DiscreteTrajectory<Frame>::iterator end,
+    DiscreteTrajectory<Frame> const& apoapsides,
+    DiscreteTrajectory<Frame> const& periapsides);
 
 // Computes a collision between a vessel and a rotating body.  |first_time| and
 // |last_time| must be on opposite sides of the surface of the body (in

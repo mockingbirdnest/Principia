@@ -136,6 +136,92 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 }
 
 template<typename Frame>
+std::vector<Interval<Instant>> ComputeCollisionSegments(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    typename DiscreteTrajectory<Frame>::iterator begin,
+    typename DiscreteTrajectory<Frame>::iterator end,
+    DiscreteTrajectory<Frame> const& apoapsides,
+    DiscreteTrajectory<Frame> const& periapsides) {
+  std::vector<Intervar<Instant>> segments;
+
+  auto squared_distance_from_centre = [&reference,
+                                       &trajectory](Instant const& time) {
+    Position<Frame> const body_position =
+        reference.EvaluatePosition(time);
+    Position<Frame> const trajectory_position =
+        trajectory.EvaluatePosition(time);
+    Displacement<Frame> const displacement =
+        trajectory_position - body_position;
+    return displacement.Norm²();
+  };
+
+  auto const max_radius² = Pow<2>(reference_body.max_radius());
+
+  auto const last = std::prev(end);
+  auto ait = apoapsides.begin();
+  auto pit = apoapsides.begin();
+
+  if (ait == apoapsides.end()) {
+    Interval<Time> segment;
+    if (squared_distance_from_centre(pit->time) < max_radius²) {
+      Interval<Time> segment;
+      if (squared_distance_from_centre(begin->time) > max_radius²) {
+        segment.min = Brent(
+            [max_radius², &squared_distance_from_centre](Instant const& time) {
+              return squared_distance_from_centre(time) - max_radius²;
+            },
+            begin->time,
+            pit->time);
+      } else {
+        segment.min = begin->time;
+      }
+      if (squared_distance_from_centre(last->time) > max_radius²) {
+        segment.max = Brent(
+            [max_radius², &squared_distance_from_centre](Instant const& time) {
+              return squared_distance_from_centre(time) - max_radius²;
+            },
+            pit->time,
+            last->time);
+      } else {
+        segment.max = last->time;
+      }
+      return {segment};
+    } else {
+      return {};
+    }
+  }
+
+  for (auto pit = periapsides.begin(); pit != periapsides.end(); ++pit) {
+    Interval<Time> segment;
+    if (squared_distance_from_centre(ait->time) > max_radius² &&
+        squared_distance_from_centre(pit->time) < max_radius²) {
+      segment.min = Brent(
+          [max_radius², &squared_distance_from_centre](Instant const& time) {
+            return squared_distance_from_centre(time) - max_radius²;
+          },
+          ait->time,
+          pit->time);
+    }
+    ++ait;
+    if (squared_distance_from_centre(ait->time) > max_radius² &&
+        squared_distance_from_centre(pit->time) < max_radius²) {
+      segment.max = Brent(
+          [max_radius², &squared_distance_from_centre](Instant const& time) {
+            return squared_distance_from_centre(time) - max_radius²;
+          },
+          pit->time,
+          ait->time);
+    }
+    segments.push_back(segment);
+  }
+
+  return segments;
+}
+
+
+template<typename Frame>
 typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
