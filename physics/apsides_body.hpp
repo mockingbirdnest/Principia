@@ -170,7 +170,8 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
       apoapsides_times.front() > periapsides.begin()->time) {
     apoapsides_times.push_front(begin->time);
   }
-  if (apoapsides_times.back() < std::prev(periapsides.end())->time) {
+  if (periapsides.empty() ||
+      apoapsides_times.back() < std::prev(periapsides.end())->time) {
     apoapsides_times.push_back(std::prev(end)->time);
   }
 
