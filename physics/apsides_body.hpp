@@ -136,15 +136,13 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 }
 
 template<typename Frame>
-std::vector<Interval<Instant>> ComputeCollisionSegments(
+std::vector<Interval<Instant>> ComputeCollisionIntervals(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
-    typename DiscreteTrajectory<Frame>::iterator begin,
-    typename DiscreteTrajectory<Frame>::iterator end,
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides) {
-  std::vector<Interval<Instant>> segments;
+  std::vector<Interval<Instant>> intervals;
 
   auto squared_distance_from_centre = [&reference,
                                        &trajectory](Instant const& time) {
@@ -168,12 +166,13 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
   }
   if (apoapsides_times.empty() ||
       apoapsides_times.front() > periapsides.begin()->time) {
-    apoapsides_times.push_front(begin->time);
+    apoapsides_times.push_front(trajectory.t_min());
   }
   if (periapsides.empty() ||
       apoapsides_times.back() < std::prev(periapsides.end())->time) {
-    apoapsides_times.push_back(std::prev(end)->time);
+    apoapsides_times.push_back(trajectory.t_max());
   }
+  CHECK_EQ(apoapsides_times.size(), periapsides.size() + 1);
 
   auto ait = apoapsides_times.begin();
   for (auto pit = periapsides.begin(); pit != periapsides.end();) {
@@ -183,11 +182,11 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
 
     // No collision possible if the periapside is above |max_radius|.
     if (squared_distance_from_centre(periapside_time) < max_radius²) {
-      Interval<Instant> segment;
+      Interval<Instant> interval;
       if (squared_distance_from_centre(apoapside_time) > max_radius²) {
         // The periapside is below |max_radius| and the preceding apoapside is
         // above.  Find the intersection point.
-        segment.min = Brent(
+        interval.min = Brent(
             [max_radius², &squared_distance_from_centre](Instant const& time) {
               return squared_distance_from_centre(time) - max_radius²;
             },
@@ -197,7 +196,7 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
         // A periapside below |max_radius| can only happen at the beginning of
         // the list because the loop below skips the other ones.
         CHECK(pit == periapsides.begin());
-        segment.min = periapside_time;
+        interval.min = periapside_time;
       }
 
       // Loop until we find an apoapside above |max_radius|, or we reach the end
@@ -212,7 +211,7 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
         if (squared_distance_from_centre(apoapside_time) > max_radius²) {
           // The periapside is below |max_radius| and the following apoapside is
           // above.  Find the intersection point.
-          segment.max = Brent(
+          interval.max = Brent(
               [max_radius²,
                &squared_distance_from_centre](Instant const& time) {
                 return squared_distance_from_centre(time) - max_radius²;
@@ -221,26 +220,26 @@ std::vector<Interval<Instant>> ComputeCollisionSegments(
               apoapside_time);
           break;
         } else {
-          // Fill the end of the segment with the current apoapside time.  This
+          // Fill the end of the interval with the current apoapside time.  This
           // will yield the right value if we reach the end of
           // |apoapsides_time|.
-          segment.max = apoapside_time;
+          interval.max = apoapside_time;
         }
       }
 
-      segments.push_back(segment);
+      intervals.push_back(interval);
 
       // Go to the periapside right after the apoapside that we used to compute
-      // |segment.max|.
+      // |interval.max|.
       ++pit;
     } else {
-      // Go to the next pair apoapside, periapside.
+      // Go to the next pair periapside, apoapside (in this order).
       ++ait;
       ++pit;
     }
   }
 
-  return segments;
+  return intervals;
 }
 
 

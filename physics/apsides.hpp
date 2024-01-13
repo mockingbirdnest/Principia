@@ -38,14 +38,14 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
 
-//TODO(phl)comment
+// Returns the ordered time intervals where there can be a collision with the
+// celestial because the |trajectory| is below the |max_radius| of the
+// |reference_body|.
 template<typename Frame>
-std::vector<Interval<Instant>> ComputeCollisionSegments(
+std::vector<Interval<Instant>> ComputeCollisionIntervals(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
-    typename DiscreteTrajectory<Frame>::iterator begin,
-    typename DiscreteTrajectory<Frame>::iterator end,
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides);
 
@@ -96,7 +96,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 
 using internal::ComputeApsides;
 using internal::ComputeCollision;
-using internal::ComputeCollisionSegments;
+using internal::ComputeCollisionIntervals;
 using internal::ComputeNodes;
 
 }  // namespace _apsides
