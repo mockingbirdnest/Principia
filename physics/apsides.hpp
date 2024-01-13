@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 
 #include "absl/status/status.h"
 #include "base/constant_function.hpp"

@@ -2,7 +2,9 @@
 
 #include "physics/apsides.hpp"
 
+#include <list>
 #include <optional>
+#include <vector>
 
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"

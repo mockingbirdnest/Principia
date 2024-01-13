@@ -378,8 +378,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
 #endif
 
-// A dedicated fixture for |ComputeCollisionIntervals| because we have many tests
-// for that function.
+// A dedicated fixture for |ComputeCollisionIntervals| because we have many
+// tests for that function.
 class ApsidesTest_ComputeCollisionIntervals : public ::testing::Test {
  protected:
   using World = Frame<struct WorldTag, Inertial>;
@@ -623,12 +623,12 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
                                                    vessel_trajectory,
                                                    apoapsides,
                                                    periapsides);
-  EXPECT_THAT(
-      intervals,
-      ElementsAre(IntervalMatches(AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
-                                  AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 1)),
-                  IntervalMatches(AlmostEquals(t0_ + 8 * Second, 0),
-                                  AlmostEquals(t0_ + 10 * Second, 0))));
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                              AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                              AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 1)),
+                          IntervalMatches(AlmostEquals(t0_ + 8 * Second, 0),
+                                          AlmostEquals(t0_ + 10 * Second, 0))));
 }
 
 // Two linear trajectory segments at 45° resulting in an apoapsis above
