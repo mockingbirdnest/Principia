@@ -179,256 +179,6 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 
 #endif
 
-TEST_F(ApsidesTest, ComputeCollisionSegments) {
-  Instant const t0;
-  Instant const t1 = t0;
-  Instant const t2 = t0 + 20 * Second;
-  DiscreteTrajectory<World> reference_trajectory;
-
-  // Only |max_radius| matters for the body.
-  RotatingBody<World> const body(
-      1 * Kilogram,
-      RotatingBody<World>::Parameters(
-          /*min_radius=*/2 * Metre,
-          /*mean_radius=*/2 * Metre,
-          /*max_radius=*/2 * Metre,
-          /*reference_angle=*/0 * Radian,
-          /*reference_instant=*/t0,
-          /*angular_frequency=*/2 * π * Radian / Second,
-          /*right_ascension_of_pole=*/0 * Radian,
-          /*declination_of_pole=*/π / 2 * Radian));
-
-  // The celestial is motionless at origin.
-  AppendTrajectoryTimeline(NewMotionlessTrajectoryTimeline(World::origin,
-                                                           /*Δt=*/1 * Second,
-                                                           t1, t2),
-                           reference_trajectory);
-
-  // A linear trajectory that intersects the body.  There is one periapsis below
-  // |max_radius| and two sentinel apoapsides at the extremities of the
-  // trajectory.
-  {
-    DiscreteTrajectory<World> vessel_trajectory;
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre }),
-          Velocity<World>({1 * Metre / Second,
-                           0 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t1, t2),
-      vessel_trajectory);
-
-    DiscreteTrajectory<World> apoapsides;
-    DiscreteTrajectory<World> periapsides;
-    ComputeApsides(reference_trajectory,
-                   vessel_trajectory,
-                   vessel_trajectory.begin(),
-                   vessel_trajectory.end(),
-                   /*max_point=*/10,
-                   apoapsides,
-                   periapsides);
-    EXPECT_THAT(apoapsides, IsEmpty());
-    EXPECT_THAT(periapsides, SizeIs(1));
-
-    const auto segments = ComputeCollisionSegments(body,
-                                                   reference_trajectory,
-                                                   vessel_trajectory,
-                                                   vessel_trajectory.begin(),
-                                                   vessel_trajectory.end(),
-                                                   apoapsides,
-                                                   periapsides);
-    EXPECT_THAT(segments,
-                ElementsAre(IntervalMatches(
-                    AlmostEquals(t0 + (4 - Sqrt(3)) * Second, 0),
-                    AlmostEquals(t0 + (4 + Sqrt(3)) * Second, 0))));
-  }
-
-  // A linear trajectory that does not intersect the body.  There is one
-  // periapsis above |max_radius|.
-  {
-    DiscreteTrajectory<World> vessel_trajectory;
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({-4 * Metre, 3 * Metre, 0 * Metre }),
-          Velocity<World>({1 * Metre / Second,
-                           0 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t1, t2),
-      vessel_trajectory);
-
-    DiscreteTrajectory<World> apoapsides;
-    DiscreteTrajectory<World> periapsides;
-    ComputeApsides(reference_trajectory,
-                   vessel_trajectory,
-                   vessel_trajectory.begin(),
-                   vessel_trajectory.end(),
-                   /*max_point=*/10,
-                   apoapsides,
-                   periapsides);
-    EXPECT_THAT(apoapsides, IsEmpty());
-    EXPECT_THAT(periapsides, SizeIs(1));
-
-    const auto segments = ComputeCollisionSegments(body,
-                                                   reference_trajectory,
-                                                   vessel_trajectory,
-                                                   vessel_trajectory.begin(),
-                                                   vessel_trajectory.end(),
-                                                   apoapsides,
-                                                   periapsides);
-    EXPECT_THAT(segments, IsEmpty());
-  }
-
-  // A linear trajectory without a periapsis.
-  {
-    DiscreteTrajectory<World> vessel_trajectory;
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({-30 * Metre, 3 * Metre, 0 * Metre }),
-          Velocity<World>({1 * Metre / Second,
-                           0 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t1, t2),
-      vessel_trajectory);
-
-    DiscreteTrajectory<World> apoapsides;
-    DiscreteTrajectory<World> periapsides;
-    ComputeApsides(reference_trajectory,
-                   vessel_trajectory,
-                   vessel_trajectory.begin(),
-                   vessel_trajectory.end(),
-                   /*max_point=*/10,
-                   apoapsides,
-                   periapsides);
-    EXPECT_THAT(apoapsides, IsEmpty());
-    EXPECT_THAT(periapsides, IsEmpty());
-
-    const auto segments = ComputeCollisionSegments(body,
-                                                   reference_trajectory,
-                                                   vessel_trajectory,
-                                                   vessel_trajectory.begin(),
-                                                   vessel_trajectory.end(),
-                                                   apoapsides,
-                                                   periapsides);
-    EXPECT_THAT(segments, IsEmpty());
-  }
-
-  // Two perpendicular linear trajectory segments resulting in an apoapsis
-  // below |max_radius| and two periapsides.
-  {
-    DiscreteTrajectory<World> vessel_trajectory;
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre }),
-          Velocity<World>({1 * Metre / Second,
-                           0 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t1, t0 + 4.9 * Second),
-      vessel_trajectory);
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({1 * Metre, 1 * Metre, 0 * Metre }),
-          Velocity<World>({0 * Metre / Second,
-                           -1 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t0 + 5 * Second, t2),
-      vessel_trajectory);
-
-    DiscreteTrajectory<World> apoapsides;
-    DiscreteTrajectory<World> periapsides;
-    ComputeApsides(reference_trajectory,
-                   vessel_trajectory,
-                   vessel_trajectory.begin(),
-                   vessel_trajectory.end(),
-                   /*max_point=*/10,
-                   apoapsides,
-                   periapsides);
-    EXPECT_THAT(apoapsides, SizeIs(1));
-    EXPECT_THAT(periapsides, SizeIs(2));
-
-    const auto segments = ComputeCollisionSegments(body,
-                                                   reference_trajectory,
-                                                   vessel_trajectory,
-                                                   vessel_trajectory.begin(),
-                                                   vessel_trajectory.end(),
-                                                   apoapsides,
-                                                   periapsides);
-    EXPECT_THAT(segments,
-                ElementsAre(IntervalMatches(
-                    AlmostEquals(t0 + (4 - Sqrt(3)) * Second, 0),
-                    AlmostEquals(t0 + (6 + Sqrt(3)) * Second, 1))));
-  }
-
-  // Two linear trajectory segments at 45° resulting in an apoapsis above
-  // |max_radius| and two periapsides.
-  {
-    DiscreteTrajectory<World> vessel_trajectory;
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre }),
-          Velocity<World>({1 * Metre / Second,
-                           0 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t1, t0 + 6.9 * Second),
-      vessel_trajectory);
-    AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-        DegreesOfFreedom<World>(
-          World::origin +
-          Displacement<World>({3 * Metre, 1 * Metre, 0 * Metre }),
-          Velocity<World>({-1 * Metre / Second,
-                           -1 * Metre / Second,
-                           0 * Metre / Second })),
-        /*Δt=*/1 * Second,
-        t0 + 7 * Second, t2),
-      vessel_trajectory);
-
-    DiscreteTrajectory<World> apoapsides;
-    DiscreteTrajectory<World> periapsides;
-    ComputeApsides(reference_trajectory,
-                   vessel_trajectory,
-                   vessel_trajectory.begin(),
-                   vessel_trajectory.end(),
-                   /*max_point=*/10,
-                   apoapsides,
-                   periapsides);
-    EXPECT_THAT(apoapsides, SizeIs(1));
-    EXPECT_THAT(periapsides, SizeIs(2));
-
-    const auto segments = ComputeCollisionSegments(body,
-                                                   reference_trajectory,
-                                                   vessel_trajectory,
-                                                   vessel_trajectory.begin(),
-                                                   vessel_trajectory.end(),
-                                                   apoapsides,
-                                                   periapsides);
-    EXPECT_THAT(
-        segments,
-        ElementsAre(
-            IntervalMatches(AlmostEquals(t0 + (4 - Sqrt(3)) * Second, 0),
-                            AlmostEquals(t0 + (4 + Sqrt(3)) * Second, 1)),
-            IntervalMatches(AlmostEquals(t0 + 8 * Second, 0),
-                            AlmostEquals(t0 + 10 * Second, 0))));
-  }
-}
-
 TEST_F(ApsidesTest, ComputeCollision) {
   Instant const t0;
   DiscreteTrajectory<World> reference_trajectory;
@@ -627,6 +377,269 @@ TEST_F(ApsidesTest, ComputeNodes) {
 }
 
 #endif
+
+// A dedicated fixture for |ComputeCollisionSegments| because we have many tests
+// for that function.
+class ApsidesTest_ComputeCollisionSegments : public ::testing::Test {
+ protected:
+  using World = Frame<struct WorldTag, Inertial>;
+
+  ApsidesTest_ComputeCollisionSegments()
+      :  // Only |max_radius| matters for the body.
+        body_(1 * Kilogram,
+              RotatingBody<World>::Parameters(
+                  /*min_radius=*/2 * Metre,
+                  /*mean_radius=*/2 * Metre,
+                  /*max_radius=*/2 * Metre,
+                  /*reference_angle=*/0 * Radian,
+                  /*reference_instant=*/t0_,
+                  /*angular_frequency=*/2 * π * Radian / Second,
+                  /*right_ascension_of_pole=*/0 * Radian,
+                  /*declination_of_pole=*/π / 2 * Radian)) {
+    // The celestial is motionless at origin.
+    AppendTrajectoryTimeline(NewMotionlessTrajectoryTimeline(World::origin,
+                                                             /*Δt=*/1 * Second,
+                                                             t1_,
+                                                             t2_),
+                             body_trajectory_);
+  }
+
+  Instant const t0_;
+  Instant const t1_ = t0_;
+  Instant const t2_ = t0_ + 20 * Second;
+  RotatingBody<World> const body_;
+  DiscreteTrajectory<World> body_trajectory_;
+};
+
+// A linear trajectory that intersects the body.  There is one periapsis below
+// |max_radius| and two sentinel apoapsides at the extremities of the
+// trajectory.
+TEST_F(ApsidesTest_ComputeCollisionSegments, OnePeriapsisBelowMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto segments = ComputeCollisionSegments(body_,
+                                                 body_trajectory_,
+                                                 vessel_trajectory,
+                                                 vessel_trajectory.begin(),
+                                                 vessel_trajectory.end(),
+                                                 apoapsides,
+                                                 periapsides);
+  EXPECT_THAT(segments,
+              ElementsAre(IntervalMatches(
+                  AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                  AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 0))));
+}
+
+// A linear trajectory that does not intersect the body.  There is one periapsis
+// above |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionSegments, OnePeriapsisAboveMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 3 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto segments = ComputeCollisionSegments(body_,
+                                                 body_trajectory_,
+                                                 vessel_trajectory,
+                                                 vessel_trajectory.begin(),
+                                                 vessel_trajectory.end(),
+                                                 apoapsides,
+                                                 periapsides);
+  EXPECT_THAT(segments, IsEmpty());
+}
+
+// A linear trajectory without a periapsis.
+TEST_F(ApsidesTest_ComputeCollisionSegments, NoPeriapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-30 * Metre, 3 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, IsEmpty());
+
+  const auto segments = ComputeCollisionSegments(body_,
+                                                 body_trajectory_,
+                                                 vessel_trajectory,
+                                                 vessel_trajectory.begin(),
+                                                 vessel_trajectory.end(),
+                                                 apoapsides,
+                                                 periapsides);
+  EXPECT_THAT(segments, IsEmpty());
+}
+
+// Two perpendicular linear trajectory segments resulting in an apoapsis
+// below |max_radius| and two periapsides.
+TEST_F(ApsidesTest_ComputeCollisionSegments, OneApoapsisBelowMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 4.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({1 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({0 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 5 * Second,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(2));
+
+  const auto segments = ComputeCollisionSegments(body_,
+                                                 body_trajectory_,
+                                                 vessel_trajectory,
+                                                 vessel_trajectory.begin(),
+                                                 vessel_trajectory.end(),
+                                                 apoapsides,
+                                                 periapsides);
+  EXPECT_THAT(segments,
+              ElementsAre(IntervalMatches(
+                  AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                  AlmostEquals(t0_ + (6 + Sqrt(3)) * Second, 1))));
+}
+
+// Two linear trajectory segments at 45° resulting in an apoapsis above
+// |max_radius| and two periapsides.
+TEST_F(ApsidesTest_ComputeCollisionSegments, OneApoapsisAboveMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 6.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({3 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({-1 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 7 * Second,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(2));
+
+  const auto segments = ComputeCollisionSegments(body_,
+                                                 body_trajectory_,
+                                                 vessel_trajectory,
+                                                 vessel_trajectory.begin(),
+                                                 vessel_trajectory.end(),
+                                                 apoapsides,
+                                                 periapsides);
+  EXPECT_THAT(
+      segments,
+      ElementsAre(IntervalMatches(AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                                  AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 1)),
+                  IntervalMatches(AlmostEquals(t0_ + 8 * Second, 0),
+                                  AlmostEquals(t0_ + 10 * Second, 0))));
+}
 
 }  // namespace physics
 }  // namespace principia
