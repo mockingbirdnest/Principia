@@ -259,10 +259,10 @@ Derivative<Value, Argument> ЧебышёвSeries<Value, Argument>::EvaluateDeriv
 }
 
 template<typename Value, typename Argument>
-UnboundedMatrix<Value>
+UnboundedMatrix<double>
 ЧебышёвSeries<Value, Argument>::FrobeniusCompanionMatrix() const {
   int const N = degree();
-  UnboundedMatrix<Value> A(N, N, uninitialized);
+  UnboundedMatrix<double> A(N, N, uninitialized);
 
   // j = 1.
   for (int k = 1; k <= N; ++k) {

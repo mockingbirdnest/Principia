@@ -98,7 +98,7 @@ class ЧебышёвSeries final {
       Argument const& argument) const;
 
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
-  UnboundedMatrix<Value> FrobeniusCompanionMatrix() const;
+  UnboundedMatrix<double> FrobeniusCompanionMatrix() const;
 
   void WriteToMessage(not_null<serialization::ЧебышёвSeries*> message) const;
   static ЧебышёвSeries ReadFromMessage(
