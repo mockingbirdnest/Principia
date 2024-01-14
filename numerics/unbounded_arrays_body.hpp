@@ -21,52 +21,53 @@ void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
   ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
 }
 
-template<typename Scalar>
-UnboundedVector<Scalar>::UnboundedVector(int const size)
+template<typename Scalar_>
+UnboundedVector<Scalar_>::UnboundedVector(int const size)
     : data_(size, Scalar{}) {}
 
-template<typename Scalar>
-UnboundedVector<Scalar>::UnboundedVector(int const size, uninitialized_t)
+template<typename Scalar_>
+UnboundedVector<Scalar_>::UnboundedVector(int const size, uninitialized_t)
     : data_(size) {}
 
-template<typename Scalar>
-UnboundedVector<Scalar>::UnboundedVector(std::initializer_list<Scalar> data)
+template<typename Scalar_>
+UnboundedVector<Scalar_>::UnboundedVector(std::initializer_list<Scalar> data)
     : data_(std::move(data)) {}
 
-template<typename Scalar>
+template<typename Scalar_>
 template<int size_>
-UnboundedVector<Scalar>::UnboundedVector(FixedVector<Scalar, size_> const& data)
+UnboundedVector<Scalar_>::UnboundedVector(
+    FixedVector<Scalar, size_> const& data)
     : data_(data.begin(), data.end()) {}
 
-template<typename Scalar>
-void UnboundedVector<Scalar>::Extend(int const extra_size) {
+template<typename Scalar_>
+void UnboundedVector<Scalar_>::Extend(int const extra_size) {
   DCHECK_LE(0, extra_size);
   data_.resize(data_.size() + extra_size, Scalar{});
 }
 
-template<typename Scalar>
-void UnboundedVector<Scalar>::Extend(int const extra_size, uninitialized_t) {
+template<typename Scalar_>
+void UnboundedVector<Scalar_>::Extend(int const extra_size, uninitialized_t) {
   DCHECK_LE(0, extra_size);
   data_.resize(data_.size() + extra_size);
 }
 
-template<typename Scalar>
-void UnboundedVector<Scalar>::Extend(std::initializer_list<Scalar> data) {
+template<typename Scalar_>
+void UnboundedVector<Scalar_>::Extend(std::initializer_list<Scalar> data) {
   std::move(data.begin(), data.end(), std::back_inserter(data_));
 }
 
-template<typename Scalar>
-void UnboundedVector<Scalar>::EraseToEnd(int const begin_index) {
+template<typename Scalar_>
+void UnboundedVector<Scalar_>::EraseToEnd(int const begin_index) {
   data_.erase(data_.begin() + begin_index, data_.end());
 }
 
-template<typename Scalar>
-Scalar UnboundedVector<Scalar>::Norm() const {
+template<typename Scalar_>
+Scalar_ UnboundedVector<Scalar_>::Norm() const {
   return Sqrt(Norm²());
 }
 
-template<typename Scalar>
-Square<Scalar> UnboundedVector<Scalar>::Norm²() const {
+template<typename Scalar_>
+Square<Scalar_> UnboundedVector<Scalar_>::Norm²() const {
   Square<Scalar> norm²{};
   for (auto const c : data_) {
     norm² += c * c;
@@ -74,94 +75,95 @@ Square<Scalar> UnboundedVector<Scalar>::Norm²() const {
   return norm²;
 }
 
-template<typename Scalar>
-int UnboundedVector<Scalar>::size() const {
+template<typename Scalar_>
+int UnboundedVector<Scalar_>::size() const {
   return data_.size();
 }
 
-template<typename Scalar>
-typename std::vector<Scalar>::const_iterator UnboundedVector<Scalar>::begin()
+template<typename Scalar_>
+typename std::vector<Scalar_>::const_iterator UnboundedVector<Scalar_>::begin()
     const {
   return data_.cbegin();
 }
 
-template<typename Scalar>
-typename std::vector<Scalar>::const_iterator UnboundedVector<Scalar>::end()
+template<typename Scalar_>
+typename std::vector<Scalar_>::const_iterator UnboundedVector<Scalar_>::end()
     const {
   return data_.cend();
 }
 
-template<typename Scalar>
-Scalar& UnboundedVector<Scalar>::operator[](int const index) {
+template<typename Scalar_>
+Scalar_& UnboundedVector<Scalar_>::operator[](int const index) {
   DCHECK_LE(0, index);
   DCHECK_LT(index, size());
   return data_[index];
 }
 
-template<typename Scalar>
-Scalar const& UnboundedVector<Scalar>::operator[](int const index) const {
+template<typename Scalar_>
+Scalar_ const& UnboundedVector<Scalar_>::operator[](int const index) const {
   DCHECK_LE(0, index);
   DCHECK_LT(index, size());
   return data_[index];
 }
 
-template<typename Scalar>
-bool UnboundedVector<Scalar>::operator==(UnboundedVector const& right) const {
+template<typename Scalar_>
+bool UnboundedVector<Scalar_>::operator==(UnboundedVector const& right) const {
   return data_ == right.data_;
 }
 
-template<typename Scalar>
-bool UnboundedVector<Scalar>::operator!=(UnboundedVector const& right) const {
+template<typename Scalar_>
+bool UnboundedVector<Scalar_>::operator!=(UnboundedVector const& right) const {
   return data_ != right.data_;
 }
 
-template<typename Scalar>
-UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns)
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>::UnboundedMatrix(int const rows, int const columns)
     : rows_(rows),
       columns_(columns),
       data_(rows_ * columns_, Scalar{}) {}
 
-template<typename Scalar>
-UnboundedMatrix<Scalar>::UnboundedMatrix(int rows, int columns, uninitialized_t)
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>::UnboundedMatrix(int const rows, int const columns,
+                                          uninitialized_t)
     : rows_(rows),
       columns_(columns),
       data_(rows_ * columns_) {}
 
 
-template<typename Scalar>
-UnboundedMatrix<Scalar>::UnboundedMatrix(std::initializer_list<Scalar> data)
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>::UnboundedMatrix(std::initializer_list<Scalar_> data)
     : rows_(Sqrt(data.size())),
       columns_(Sqrt(data.size())),
       data_(std::move(data)) {
   CHECK_EQ(data.size(), rows_ * columns_);
 }
 
-template<typename Scalar>
-UnboundedMatrix<Scalar>::UnboundedMatrix(int const rows, int const columns,
-                                         std::initializer_list<Scalar> data)
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>::UnboundedMatrix(int const rows, int const columns,
+                                          std::initializer_list<Scalar> data)
     : rows_(rows),
       columns_(columns),
       data_(std::move(data)) {
   CHECK_EQ(data.size(), rows_ * columns_);
 }
 
-template<typename Scalar>
-int UnboundedMatrix<Scalar>::rows() const {
+template<typename Scalar_>
+int UnboundedMatrix<Scalar_>::rows() const {
   return rows_;
 }
 
-template<typename Scalar>
-int UnboundedMatrix<Scalar>::columns() const {
+template<typename Scalar_>
+int UnboundedMatrix<Scalar_>::columns() const {
   return columns_;
 }
 
-template<typename Scalar>
-int UnboundedMatrix<Scalar>::size() const {
+template<typename Scalar_>
+int UnboundedMatrix<Scalar_>::size() const {
   return rows_ * columns_;
 }
 
-template<typename Scalar>
-UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
+template<typename Scalar_>
+UnboundedMatrix<Scalar_> UnboundedMatrix<Scalar_>::Transpose() const {
   UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < columns_; ++j) {
@@ -171,8 +173,8 @@ UnboundedMatrix<Scalar> UnboundedMatrix<Scalar>::Transpose() const {
   return m;
 }
 
-template<typename Scalar>
-Scalar UnboundedMatrix<Scalar>::FrobeniusNorm() const {
+template<typename Scalar_>
+Scalar_ UnboundedMatrix<Scalar_>::FrobeniusNorm() const {
   Square<Scalar> Σᵢⱼaᵢⱼ²{};
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j < columns_; ++j) {
@@ -182,8 +184,8 @@ Scalar UnboundedMatrix<Scalar>::FrobeniusNorm() const {
   return Sqrt(Σᵢⱼaᵢⱼ²);
 }
 
-template<typename Scalar>
-Scalar& UnboundedMatrix<Scalar>::operator()(
+template<typename Scalar_>
+Scalar_& UnboundedMatrix<Scalar_>::operator()(
     int const row, int const column) {
   DCHECK_LE(0, row);
   DCHECK_LT(row, rows_);
@@ -192,8 +194,8 @@ Scalar& UnboundedMatrix<Scalar>::operator()(
   return data_[row * columns_ + column];
 }
 
-template<typename Scalar>
-Scalar const& UnboundedMatrix<Scalar>::operator()(
+template<typename Scalar_>
+Scalar_ const& UnboundedMatrix<Scalar_>::operator()(
     int const row, int const column) const {
   DCHECK_LE(0, row);
   DCHECK_LT(row, rows_);
@@ -202,28 +204,28 @@ Scalar const& UnboundedMatrix<Scalar>::operator()(
   return data_[row * columns_ + column];
 }
 
-template<typename Scalar>
-bool UnboundedMatrix<Scalar>::operator==(UnboundedMatrix const& right) const {
+template<typename Scalar_>
+bool UnboundedMatrix<Scalar_>::operator==(UnboundedMatrix const& right) const {
   return data_ == right.data_;
 }
 
-template<typename Scalar>
-bool UnboundedMatrix<Scalar>::operator!=(UnboundedMatrix const& right) const {
+template<typename Scalar_>
+bool UnboundedMatrix<Scalar_>::operator!=(UnboundedMatrix const& right) const {
   return !(*this == right);
 }
 
-template<typename Scalar>
+template<typename Scalar_>
 template<typename LScalar, typename RScalar>
-Product<Scalar, Product<LScalar, RScalar>>
-UnboundedMatrix<Scalar>::operator()(
+Product<Scalar_, Product<LScalar, RScalar>>
+UnboundedMatrix<Scalar_>::operator()(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) const {
   return TransposedView{left} * (*this * right);  // NOLINT
 }
 
-template<typename Scalar>
-UnboundedMatrix<Scalar>
-UnboundedMatrix<Scalar>::Identity(int const rows, int const columns) {
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>
+UnboundedMatrix<Scalar_>::Identity(int const rows, int const columns) {
   UnboundedMatrix<Scalar> m(rows, columns);
   for (int i = 0; i < rows; ++i) {
     m(i, i) = 1;
@@ -231,73 +233,73 @@ UnboundedMatrix<Scalar>::Identity(int const rows, int const columns) {
   return m;
 }
 
-template<typename Scalar>
-UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
+template<typename Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
     int const rows)
     : rows_(rows),
       data_(rows_ * (rows_ + 1) / 2, Scalar{}) {}
 
-template<typename Scalar>
-UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
+template<typename Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
     int const rows,
     uninitialized_t)
     : rows_(rows),
       data_(rows_ * (rows_ + 1) / 2) {}
 
-template<typename Scalar>
-UnboundedLowerTriangularMatrix<Scalar>::UnboundedLowerTriangularMatrix(
+template<typename Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
     std::initializer_list<Scalar> data)
     : rows_(static_cast<int>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5))),
       data_(std::move(data)) {
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
 
-template<typename Scalar>
-void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const extra_rows) {
+template<typename Scalar_>
+void UnboundedLowerTriangularMatrix<Scalar_>::Extend(int const extra_rows) {
   rows_ += extra_rows;
   data_.resize(rows_ * (rows_ + 1) / 2, Scalar{});
 }
 
-template<typename Scalar>
-void UnboundedLowerTriangularMatrix<Scalar>::Extend(int const extra_rows,
-                                                    uninitialized_t) {
+template<typename Scalar_>
+void UnboundedLowerTriangularMatrix<Scalar_>::Extend(int const extra_rows,
+                                                     uninitialized_t) {
   rows_ += extra_rows;
   data_.resize(rows_ * (rows_ + 1) / 2);
 }
 
-template<typename Scalar>
-void UnboundedLowerTriangularMatrix<Scalar>::Extend(
+template<typename Scalar_>
+void UnboundedLowerTriangularMatrix<Scalar_>::Extend(
     std::initializer_list<Scalar> data) {
   std::move(data.begin(), data.end(), std::back_inserter(data_));
   rows_ = static_cast<int>(std::lround((-1 + Sqrt(8 * data_.size())) * 0.5));
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
 
-template<typename Scalar>
-void UnboundedLowerTriangularMatrix<Scalar>::EraseToEnd(
+template<typename Scalar_>
+void UnboundedLowerTriangularMatrix<Scalar_>::EraseToEnd(
     int const begin_row_index) {
   rows_ = begin_row_index;
   data_.erase(data_.begin() + begin_row_index * (begin_row_index + 1) / 2,
               data_.end());
 }
 
-template<typename Scalar>
-int UnboundedLowerTriangularMatrix<Scalar>::rows() const {
+template<typename Scalar_>
+int UnboundedLowerTriangularMatrix<Scalar_>::rows() const {
   return rows_;
 }
 
-template<typename Scalar>
-int UnboundedLowerTriangularMatrix<Scalar>::columns() const {
+template<typename Scalar_>
+int UnboundedLowerTriangularMatrix<Scalar_>::columns() const {
   return rows_;
 }
 
-template<typename Scalar>
-int UnboundedLowerTriangularMatrix<Scalar>::size() const {
+template<typename Scalar_>
+int UnboundedLowerTriangularMatrix<Scalar_>::size() const {
   return data_.size();
 }
 
-template<typename Scalar>
-Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+template<typename Scalar_>
+Scalar_& UnboundedLowerTriangularMatrix<Scalar_>::operator()(
     int const row, int const column) {
   DCHECK_LE(0, column);
   DCHECK_LE(column, row);
@@ -305,8 +307,8 @@ Scalar& UnboundedLowerTriangularMatrix<Scalar>::operator()(
   return data_[row * (row + 1) / 2 + column];
 }
 
-template<typename Scalar>
-Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
+template<typename Scalar_>
+Scalar_ const& UnboundedLowerTriangularMatrix<Scalar_>::operator()(
     int const row, int const column) const {
   DCHECK_LE(0, column);
   DCHECK_LE(column, row);
@@ -314,9 +316,9 @@ Scalar const& UnboundedLowerTriangularMatrix<Scalar>::operator()(
   return data_[row * (row + 1) / 2 + column];
 }
 
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<Scalar>
-UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
+template<typename Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>::Transpose() const {
   UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized);
   for (int i = 0; i < rows_; ++i) {
     for (int j = 0; j <= i; ++j) {
@@ -326,33 +328,33 @@ UnboundedLowerTriangularMatrix<Scalar>::Transpose() const {
   return u;
 }
 
-template<typename Scalar>
-bool UnboundedLowerTriangularMatrix<Scalar>::operator==(
+template<typename Scalar_>
+bool UnboundedLowerTriangularMatrix<Scalar_>::operator==(
     UnboundedLowerTriangularMatrix const& right) const {
   return rows_ == right.rows_ && data_ == right.data_;
 }
 
-template<typename Scalar>
-bool UnboundedLowerTriangularMatrix<Scalar>::operator!=(
+template<typename Scalar_>
+bool UnboundedLowerTriangularMatrix<Scalar_>::operator!=(
     UnboundedLowerTriangularMatrix const& right) const {
   return !(*this == right);
 }
 
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<Scalar>::UnboundedUpperTriangularMatrix(
+template<typename Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
     int const columns)
     : columns_(columns),
       data_(columns_ * (columns_ + 1) / 2, Scalar{}) {}
 
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<Scalar>::UnboundedUpperTriangularMatrix(
+template<typename Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
     int const columns,
     uninitialized_t)
     : columns_(columns),
       data_(columns_ * (columns_ + 1) / 2) {}
 
-template<typename Scalar>
-UnboundedUpperTriangularMatrix<Scalar>::UnboundedUpperTriangularMatrix(
+template<typename Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
     std::initializer_list<Scalar> const& data)
     : columns_(
           static_cast<int>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5))),
@@ -362,21 +364,21 @@ UnboundedUpperTriangularMatrix<Scalar>::UnboundedUpperTriangularMatrix(
   DCHECK_EQ(data_.size(), columns_ * (columns_ + 1) / 2);
 }
 
-template<typename Scalar>
-void UnboundedUpperTriangularMatrix<Scalar>::Extend(int const extra_columns) {
+template<typename Scalar_>
+void UnboundedUpperTriangularMatrix<Scalar_>::Extend(int const extra_columns) {
   columns_ += extra_columns;
   data_.resize(columns_ * (columns_ + 1) / 2, Scalar{});
 }
 
-template<typename Scalar>
-void UnboundedUpperTriangularMatrix<Scalar>::Extend(int const extra_columns,
-                                                    uninitialized_t) {
+template<typename Scalar_>
+void UnboundedUpperTriangularMatrix<Scalar_>::Extend(int const extra_columns,
+                                                     uninitialized_t) {
   columns_ += extra_columns;
   data_.resize(columns_ * (columns_ + 1) / 2);
 }
 
-template<typename Scalar>
-void UnboundedUpperTriangularMatrix<Scalar>::Extend(
+template<typename Scalar_>
+void UnboundedUpperTriangularMatrix<Scalar_>::Extend(
     std::initializer_list<Scalar> const& data) {
   int const new_columns = static_cast<int>(
       std::lround((-1 + Sqrt(8 * (data_.size() + data.size()))) * 0.5));
@@ -390,31 +392,31 @@ void UnboundedUpperTriangularMatrix<Scalar>::Extend(
   DCHECK_EQ(data_.size(), columns_ * (columns_ + 1) / 2);
 }
 
-template<typename Scalar>
-void UnboundedUpperTriangularMatrix<Scalar>::EraseToEnd(
+template<typename Scalar_>
+void UnboundedUpperTriangularMatrix<Scalar_>::EraseToEnd(
     int const begin_column_index) {
   columns_ = begin_column_index;
   data_.erase(data_.begin() + begin_column_index * (begin_column_index + 1) / 2,
               data_.end());
 }
 
-template<typename Scalar>
-int UnboundedUpperTriangularMatrix<Scalar>::rows() const {
+template<typename Scalar_>
+int UnboundedUpperTriangularMatrix<Scalar_>::rows() const {
   return columns_;
 }
 
-template<typename Scalar>
-int UnboundedUpperTriangularMatrix<Scalar>::columns() const {
+template<typename Scalar_>
+int UnboundedUpperTriangularMatrix<Scalar_>::columns() const {
   return columns_;
 }
 
-template<typename Scalar>
-int UnboundedUpperTriangularMatrix<Scalar>::size() const {
+template<typename Scalar_>
+int UnboundedUpperTriangularMatrix<Scalar_>::size() const {
   return data_.size();
 }
 
-template<typename Scalar>
-Scalar& UnboundedUpperTriangularMatrix<Scalar>::operator()(
+template<typename Scalar_>
+Scalar_& UnboundedUpperTriangularMatrix<Scalar_>::operator()(
     int const row, int const column) {
   DCHECK_LE(0, row);
   DCHECK_LE(row, column);
@@ -422,8 +424,8 @@ Scalar& UnboundedUpperTriangularMatrix<Scalar>::operator()(
   return data_[column * (column + 1) / 2 + row];
 }
 
-template<typename Scalar>
-Scalar const& UnboundedUpperTriangularMatrix<Scalar>::operator()(
+template<typename Scalar_>
+Scalar_ const& UnboundedUpperTriangularMatrix<Scalar_>::operator()(
     int const row, int const column) const {
   DCHECK_LE(0, row);
   DCHECK_LE(row, column);
@@ -431,9 +433,9 @@ Scalar const& UnboundedUpperTriangularMatrix<Scalar>::operator()(
   return data_[column * (column + 1) / 2 + row];
 }
 
-template<typename Scalar>
-UnboundedLowerTriangularMatrix<Scalar>
-UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
+template<typename Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>::Transpose() const {
   UnboundedLowerTriangularMatrix<Scalar> l(columns_, uninitialized);
   for (int i = 0; i < rows(); ++i) {
     for (int j = i; j < columns_; ++j) {
@@ -443,21 +445,21 @@ UnboundedUpperTriangularMatrix<Scalar>::Transpose() const {
   return l;
 }
 
-template<typename Scalar>
-bool UnboundedUpperTriangularMatrix<Scalar>::operator==(
+template<typename Scalar_>
+bool UnboundedUpperTriangularMatrix<Scalar_>::operator==(
     UnboundedUpperTriangularMatrix const& right) const {
   return columns_ == right.columns_ && data_ == right.data_;
 }
 
-template<typename Scalar>
-bool UnboundedUpperTriangularMatrix<Scalar>::operator!=(
+template<typename Scalar_>
+bool UnboundedUpperTriangularMatrix<Scalar_>::operator!=(
     UnboundedUpperTriangularMatrix const& right) const {
   return !(*this == right);
 }
 
-template<typename Scalar>
+template<typename Scalar_>
 auto
-UnboundedUpperTriangularMatrix<Scalar>::Transpose(
+UnboundedUpperTriangularMatrix<Scalar_>::Transpose(
     std::initializer_list<Scalar> const& data,
     int const current_columns,
     int const extra_columns) ->
