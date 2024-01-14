@@ -13,6 +13,7 @@
 #include "geometry/space.hpp"
 #include "numerics/approximation.hpp"
 #include "numerics/hermite3.hpp"
+#include "mathematica/logger.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -29,6 +30,8 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_matrix_computations;
@@ -323,18 +326,31 @@ ComputeFirstCollision(
                   spherical_coordinates.longitude);
   };
 
+  Logger logger(TEMP_DIR / "collision_two.wl");
+
   // Interpolate the height above the terrain using a Чебышёв polynomial.
   auto const чебышёв_interpolant = ЧебышёвPolynomialInterpolant(
       height_above_terrain_at_time,
       interval.min,
       interval.max,
       reference_body.mean_radius() * max_error_relative_to_radius);
+  logger.Set("interpolant",
+             ЧебышёвPolynomialInterpolant(
+                 height_above_terrain_at_time,
+                 interval.min,
+                 interval.max,
+                 reference_body.mean_radius() * max_error_relative_to_radius),
+             ExpressInSIUnits);
 
   auto const companion_matrix = чебышёв_interpolant.FrobeniusCompanionMatrix();
+  logger.Set("companionMatrix", companion_matrix,
+             ExpressInSIUnits);
   auto const companion_matrix_schur_decomposition =
       RealSchurDecomposition(companion_matrix, max_error_relative_to_radius);
 
   auto const& T = companion_matrix_schur_decomposition.T;
+  logger.Set("triangular", T,
+             ExpressInSIUnits);
   absl::btree_set<double> real_roots;
   for (int i = 0; i < T.rows() - 1; ++i) {
     if (i == T.rows() - 1 && T(i, i - 1) == 0) {
