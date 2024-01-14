@@ -157,8 +157,8 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
 
   auto const max_radius² = Pow<2>(reference_body.max_radius());
 
-  // Construct the set of all extrema times (apsides and extremities) and
-  // determine if that set starts with a periapsis or an apoapsis.
+  // Construct the set of all extrema times (apsides and extremities).  In this
+  // set, apoapsides and periapsides alternate.
   absl::btree_set<Instant> apsides_times{trajectory.t_min(),
                                          trajectory.t_max()};
   for (auto const& [time, _] : apoapsides) {
