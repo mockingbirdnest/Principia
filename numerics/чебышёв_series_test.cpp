@@ -5,6 +5,7 @@
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/matrix_computations.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -17,6 +18,7 @@ namespace numerics {
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
@@ -135,6 +137,8 @@ TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
                    1.0 / 2.0,       0.0,   1.0 / 2.0,
                    1.0 / 6.0, 1.0 / 4.0, -5.0 / 12.0}),
                   0));
+  auto const matrix_schur_decomposition = RealSchurDecomposition(matrix, 1e-16);
+  LOG(ERROR)<<matrix_schur_decomposition.T;
 }
 
 TEST_F(ЧебышёвSeriesTest, X6Vector) {
