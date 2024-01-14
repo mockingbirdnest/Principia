@@ -170,7 +170,7 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
 
   // Initialize the iterators.  After this block |it| designates the first
   // periapsis and |previous_it| designates the previous apoapsis, if there is
-  // one, or it past the end.
+  // one, or is past the end.
   absl::btree_set<Instant>::const_iterator it;
   absl::btree_set<Instant>::const_iterator previous_it;
   {
@@ -178,14 +178,15 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     auto const second_it = std::next(first_it);
     if (squared_distance_from_centre(*first_it) <
         squared_distance_from_centre(*second_it)) {
-      it = first_it;
       previous_it = apsides_times.end();
+      it = first_it;
     } else {
+      previous_it = first_it;
       it = second_it;
-      previous_it = it;
     }
   }
 
+  std::vector<Interval<Instant>> intervals;
   for (; it != apsides_times.end(); previous_it = it, ++it) {
     // Here |it| designates a periapsis, and |previous_it| the previous
     // apoapsis, if any.
@@ -221,8 +222,8 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
       }
 
       // Loop until we find an apoapsis above |max_radius|, or we reach the end
-      // of |apsides_time|.  Note that when entering this look |it| denotes a
-      // periapsis and |previous_it| the preceding apoapsis, if any.
+      // of |apsides_time|.  When entering this loop |it| denotes a periapsis
+      // and |previous_it| the preceding apoapsis, if any.
       do {
         Instant const periapis_time = *it;
         previous_it = it;
@@ -263,13 +264,15 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
         break;
       }
 
-      // The out loop increment will move us to the periapsis right after the
+      // The outer loop increment will move us to the periapsis right after the
       // apoapsis that we used to compute |interval.max| using Brent.
     } else {
       // Go to the next pair periapsis, apoapsis (in this order).
       previous_it = it;
       ++it;
       if (it == apsides_times.end()) {
+        // Reached the end of |apsides_times| with a periapsis above
+        // |max_radius|.
         break;
       }
     }

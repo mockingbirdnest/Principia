@@ -677,10 +677,12 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisOnePeriapsis) {
                                                    vessel_trajectory,
                                                    apoapsides,
                                                    periapsides);
-  EXPECT_THAT(
-      intervals,
-      ElementsAre(IntervalMatches(AlmostEquals(t0_ + 3 * Second, 0),
-                                  AlmostEquals(t0_ + 5 * Second, 0))));
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                              AlmostEquals(t0_, 0),
+                              AlmostEquals(t0_ + (Sqrt(3) - 1) * Second, 2)),
+                          IntervalMatches(AlmostEquals(t0_ + 3 * Second, 0),
+                                          AlmostEquals(t0_ + 5 * Second, 0))));
 }
 
 // Two linear trajectory segments at 45° resulting in a periapsis below
