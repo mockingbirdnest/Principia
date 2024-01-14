@@ -2,7 +2,9 @@
 
 #include "physics/apsides.hpp"
 
+#include <list>
 #include <optional>
+#include <vector>
 
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -88,7 +90,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       Instant apsis_time;
       int valid_extrema = 0;
       for (auto const& extremum : extrema) {
-        if (extremum >= *previous_time && extremum <= time) {
+        if (extremum > *previous_time && extremum <= time) {
           apsis_time = extremum;
           ++valid_extrema;
         }
@@ -133,6 +135,152 @@ void ComputeApsides(Trajectory<Frame> const& reference,
     previous_squared_distance = squared_distance;
     previous_squared_distance_derivative = squared_distance_derivative;
   }
+}
+
+template<typename Frame>
+std::vector<Interval<Instant>> ComputeCollisionIntervals(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    DiscreteTrajectory<Frame> const& apoapsides,
+    DiscreteTrajectory<Frame> const& periapsides) {
+  auto squared_distance_from_centre = [&reference,
+                                       &trajectory](Instant const& time) {
+    Position<Frame> const body_position =
+        reference.EvaluatePosition(time);
+    Position<Frame> const trajectory_position =
+        trajectory.EvaluatePosition(time);
+    Displacement<Frame> const displacement =
+        trajectory_position - body_position;
+    return displacement.Norm²();
+  };
+
+  auto const max_radius² = Pow<2>(reference_body.max_radius());
+
+  // Construct the set of all extrema times (apsides and extremities).  In this
+  // set, apoapsides and periapsides alternate.
+  absl::btree_set<Instant> apsides_times{trajectory.t_min(),
+                                         trajectory.t_max()};
+  for (auto const& [time, _] : apoapsides) {
+    apsides_times.insert(time);
+  }
+  for (auto const& [time, _] : periapsides) {
+    apsides_times.insert(time);
+  }
+
+  // Initialize the iterators.  After this block |it| designates the first
+  // periapsis and |previous_it| designates the previous apoapsis, if there is
+  // one, or is past the end.
+  absl::btree_set<Instant>::const_iterator it;
+  absl::btree_set<Instant>::const_iterator previous_it;
+  {
+    auto const first_it = apsides_times.begin();
+    auto const second_it = std::next(first_it);
+    if (squared_distance_from_centre(*first_it) <
+        squared_distance_from_centre(*second_it)) {
+      previous_it = apsides_times.end();
+      it = first_it;
+    } else {
+      previous_it = first_it;
+      it = second_it;
+    }
+  }
+
+  std::vector<Interval<Instant>> intervals;
+  for (; it != apsides_times.end(); previous_it = it, ++it) {
+    // Here |it| designates a periapsis, and |previous_it| the previous
+    // apoapsis, if any.
+    Instant const periapsis_time = *it;
+
+    // No collision is possible if the periapsis is above |max_radius|.
+    if (squared_distance_from_centre(periapsis_time) < max_radius²) {
+      Interval<Instant> interval;
+      if (previous_it == apsides_times.end()) {
+        // No previous periapsis can only happen the first time through the
+        // loop.
+        CHECK_EQ(periapsis_time, trajectory.t_min());
+        interval.min = periapsis_time;
+      } else {
+        Instant const apoapsis_time = *previous_it;
+        CHECK_LE(apoapsis_time, periapsis_time);
+
+        if (squared_distance_from_centre(apoapsis_time) > max_radius²) {
+          // The periapsis is below |max_radius| and the preceding apoapsis is
+          // above.  Find the intersection point.
+          interval.min = Brent(
+              [max_radius²,
+               &squared_distance_from_centre](Instant const& time) {
+                return squared_distance_from_centre(time) - max_radius²;
+              },
+              apoapsis_time,
+              periapsis_time);
+        } else {
+          // An apoapsis below |max_radius| can only happen the first time
+          // through the loop because the nested loop below skips the other
+          // ones.
+          CHECK_EQ(apoapsis_time, trajectory.t_min());
+          interval.min = apoapsis_time;
+        }
+      }
+
+      // Loop until we find an apoapsis above |max_radius|, or we reach the end
+      // of |apsides_time|.  When entering this loop |it| denotes a periapsis
+      // and |previous_it| the preceding apoapsis, if any.
+      do {
+        Instant const periapis_time = *it;
+        previous_it = it;
+        ++it;
+        if (it == apsides_times.end()) {
+          interval.max = periapsis_time;
+          break;
+        }
+        // Here |it| designates an apoapsis, and |previous_it| the previous
+        // periapsis.
+        Instant const apoapsis_time = *it;
+        CHECK_LE(periapsis_time, apoapsis_time);
+
+        if (squared_distance_from_centre(apoapsis_time) > max_radius²) {
+          // The periapsis is below |max_radius| and the following apoapsis is
+          // above.  Find the intersection point.
+          interval.max = Brent(
+              [max_radius²,
+               &squared_distance_from_centre](Instant const& time) {
+                return squared_distance_from_centre(time) - max_radius²;
+              },
+              periapsis_time,
+              apoapsis_time);
+          break;
+        }
+
+        // Fill the end of the interval with the current apoapsis time.  This
+        // will yield the right value if we reach the end of |apsides_times| in
+        // the while below.
+        interval.max = apoapsis_time;
+        previous_it = it;
+        ++it;
+      } while (it != apsides_times.end());
+
+      intervals.push_back(interval);
+
+      if (it == apsides_times.end()) {
+        break;
+      }
+
+      // The outer loop increment will move us to the periapsis right after the
+      // apoapsis that we used to compute |interval.max| using Brent.
+    } else {
+      // Go to the next pair periapsis, apoapsis (in this order).
+      previous_it = it;
+      ++it;
+      if (it == apsides_times.end()) {
+        // Reached the end of |apsides_times| with a periapsis above
+        // |max_radius|.
+        break;
+      }
+    }
+  }
+
+  return intervals;
 }
 
 template<typename Frame>

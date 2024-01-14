@@ -1,11 +1,13 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 
 #include "absl/status/status.h"
 #include "base/constant_function.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
@@ -19,6 +21,7 @@ namespace internal {
 using namespace principia::base::_constant_function;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
@@ -35,6 +38,16 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     int max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
+
+// Returns the ordered time intervals where there can be a collision with the
+// |reference_body| because the |trajectory| is below its |max_radius|.
+template<typename Frame>
+std::vector<Interval<Instant>> ComputeCollisionIntervals(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    DiscreteTrajectory<Frame> const& apoapsides,
+    DiscreteTrajectory<Frame> const& periapsides);
 
 // Computes a collision between a vessel and a rotating body.  |first_time| and
 // |last_time| must be on opposite sides of the surface of the body (in
@@ -83,6 +96,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 
 using internal::ComputeApsides;
 using internal::ComputeCollision;
+using internal::ComputeCollisionIntervals;
 using internal::ComputeNodes;
 
 }  // namespace _apsides

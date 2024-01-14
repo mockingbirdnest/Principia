@@ -68,6 +68,33 @@ MATCHER_P(StatusIs,
   return arg.code() == code;
 }
 
+MATCHER_P2(
+    IntervalMatches,
+    min_matcher, max_matcher,
+    "has a min that " +
+        ::testing::DescribeMatcher<decltype(std::declval<arg_type>().min)>(
+            min_matcher,
+            negation) +
+        " and a max that " +
+        ::testing::DescribeMatcher<decltype(std::declval<arg_type>().max)>(
+            max_matcher,
+            negation)) {
+  bool const min_matches = ::testing::Matches(min_matcher)(arg.min);
+  bool const max_matches = ::testing::Matches(max_matcher)(arg.max);
+  if (!min_matches) {
+    *result_listener << "whose min doesn't match because ";
+    ::testing::ExplainMatchResult(min_matcher, arg.min, result_listener);
+  }
+  if (!max_matches) {
+    if (!min_matches) {
+      *result_listener << " and ";
+    }
+    *result_listener << "whose max doesn't match because ";
+    ::testing::ExplainMatchResult(max_matcher, arg.max, result_listener);
+  }
+  return min_matches && max_matches;
+}
+
 MATCHER_P(SSEHighHalfIs,
           value,
           std::string(negation ? "does not have" : "has") + " high half: " +
@@ -85,6 +112,7 @@ MATCHER_P(SSELowHalfIs,
 }  // namespace internal
 
 using internal::EqualsProto;
+using internal::IntervalMatches;
 using internal::IsOk;
 using internal::IsOkAndHolds;
 using internal::SSEHighHalfIs;

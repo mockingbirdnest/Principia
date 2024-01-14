@@ -11,6 +11,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -39,12 +40,15 @@
 namespace principia {
 namespace physics {
 
+using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::IsEmpty;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -67,6 +71,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -172,6 +177,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   }
 }
 
+#endif
+
 TEST_F(ApsidesTest, ComputeCollision) {
   Instant const t0;
   DiscreteTrajectory<World> reference_trajectory;
@@ -244,6 +251,8 @@ TEST_F(ApsidesTest, ComputeCollision) {
                                     -1 * Metre / Second,
                                     0 * Metre / Second}), 0));
 }
+
+#if !defined(_DEBUG)
 
 TEST_F(ApsidesTest, ComputeNodes) {
   Instant const t0;
@@ -368,6 +377,504 @@ TEST_F(ApsidesTest, ComputeNodes) {
 }
 
 #endif
+
+// A dedicated fixture for |ComputeCollisionIntervals| because we have many
+// tests for that function.
+class ApsidesTest_ComputeCollisionIntervals : public ::testing::Test {
+ protected:
+  using World = Frame<struct WorldTag, Inertial>;
+
+  ApsidesTest_ComputeCollisionIntervals()
+      :  // Only |max_radius| matters for the body.
+        body_(1 * Kilogram,
+              RotatingBody<World>::Parameters(
+                  /*min_radius=*/2 * Metre,
+                  /*mean_radius=*/2 * Metre,
+                  /*max_radius=*/2 * Metre,
+                  /*reference_angle=*/0 * Radian,
+                  /*reference_instant=*/t0_,
+                  /*angular_frequency=*/2 * π * Radian / Second,
+                  /*right_ascension_of_pole=*/0 * Radian,
+                  /*declination_of_pole=*/π / 2 * Radian)) {
+    // The celestial is motionless at origin.
+    AppendTrajectoryTimeline(NewMotionlessTrajectoryTimeline(World::origin,
+                                                             /*Δt=*/1 * Second,
+                                                             t1_,
+                                                             t2_),
+                             body_trajectory_);
+  }
+
+  Instant const t0_;
+  Instant const t1_ = t0_;
+  Instant const t2_ = t0_ + 20 * Second;
+  RotatingBody<World> const body_;
+  DiscreteTrajectory<World> body_trajectory_;
+};
+
+// A linear trajectory that intersects the body.  There is one periapsis below
+// |max_radius| and two sentinel apoapsides at the extremities of the
+// trajectory.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                  AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                  AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 0))));
+}
+
+// A linear trajectory that does not intersect the body.  There is one periapsis
+// above |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisAboveMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 3 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals, IsEmpty());
+}
+
+// A linear trajectory without a periapsis or an apoapsis.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, NoPeriapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-30 * Metre, 3 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, IsEmpty());
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals, IsEmpty());
+}
+
+// Two perpendicular linear trajectory segments resulting in an apoapsis
+// below |max_radius| and two periapsides.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 4.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({1 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({0 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 5 * Second,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(2));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                  AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                  AlmostEquals(t0_ + (6 + Sqrt(3)) * Second, 1))));
+}
+
+// Two linear trajectory segments at 45° resulting in an apoapsis above
+// |max_radius| and two periapsides.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 6.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({3 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({-1 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 7 * Second,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(2));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                              AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                              AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 1)),
+                          IntervalMatches(AlmostEquals(t0_ + 8 * Second, 0),
+                                          AlmostEquals(t0_ + 10 * Second, 0))));
+}
+
+// Two linear trajectory segments at 45° resulting in an apoapsis above
+// |max_radius| followed by a periapsis below |max_radius|.  The initial point
+// acts as a periapsis below |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionIntervals,
+       InitialPeriapsisOneApoapsisOnePeriapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({1 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 1.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({3 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({-1 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 2 * Second,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                              AlmostEquals(t0_, 0),
+                              AlmostEquals(t0_ + (Sqrt(3) - 1) * Second, 2)),
+                          IntervalMatches(AlmostEquals(t0_ + 3 * Second, 0),
+                                          AlmostEquals(t0_ + 5 * Second, 0))));
+}
+
+// Two linear trajectory segments at 45° resulting in a periapsis below
+// |max_radius| followed by an apoapsis above |max_radius|.  The final point
+// acts as a periapsis below |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionIntervals,
+       OnePeriapsisOneApoapsisFinalPeriapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-3 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 5.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({3 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({-0.9 * Metre / Second,
+                               -0.9 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 6 * Second,
+          t0_ + 8.9 * Second),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(
+      intervals,
+      ElementsAre(
+          IntervalMatches(AlmostEquals(t0_ + (3 - Sqrt(3)) * Second, 1),
+                          AlmostEquals(t0_ + (3 + Sqrt(3)) * Second, 1)),
+          IntervalMatches(AlmostEquals(t0_ + (6 + 1 / 0.9) * Second, 1),
+                          AlmostEquals(t0_ + 8 * Second, 0))));
+}
+
+// Two linear trajectory segments at 45° resulting in a periapsis below
+// |max_radius| followed by an apoapsis above |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-4 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t0_ + 6.9 * Second),
+      vessel_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({3 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({-1 * Metre / Second,
+                               -1 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t0_ + 7 * Second,
+          t0_ + 8.9 * Second),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                  AlmostEquals(t0_ + (4 - Sqrt(3)) * Second, 0),
+                  AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 1))));
+}
+
+// A linear trajectory with a periapsis below |max_radius|.  The initial point
+// acts as an apoapsis below |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-1 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                              AlmostEquals(t0_, 0),
+                              AlmostEquals(t0_ + (1 + Sqrt(3)) * Second, 0))));
+}
+
+// A linear trajectory with a periapsis below |max_radius|.  The final point
+// acts as an apoapsis below |max_radius|.
+TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisFinalApoapsis) {
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin +
+                  Displacement<World>({-18 * Metre, 1 * Metre, 0 * Metre}),
+              Velocity<World>({1 * Metre / Second,
+                               0 * Metre / Second,
+                               0 * Metre / Second})),
+          /*Δt=*/1 * Second,
+          t1_,
+          t2_),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(body_trajectory_,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_point=*/10,
+                 apoapsides,
+                 periapsides);
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+
+  const auto intervals = ComputeCollisionIntervals(body_,
+                                                   body_trajectory_,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals,
+              ElementsAre(IntervalMatches(
+                              AlmostEquals(t0_ + (18 - Sqrt(3)) * Second, 0),
+                              AlmostEquals(t0_ + 19 * Second, 0))));
+}
 
 }  // namespace physics
 }  // namespace principia
