@@ -352,10 +352,12 @@ ComputeFirstCollision(
   logger.Set("triangular", T,
              ExpressInSIUnits);
   absl::btree_set<double> real_roots;
-  for (int i = 0; i < T.rows() - 1; ++i) {
-    if (i == T.rows() - 1 && T(i, i - 1) == 0) {
+  for (int i = 0; i < T.rows(); ++i) {
+    if (i == 0 && T(i + 1, i) == 0) {
       real_roots.insert(T(i, i));
-    } else if (T(i + 1, i) == 0) {
+    } else if (i == T.rows() - 1 && T(i, i - 1) == 0) {
+      real_roots.insert(T(i, i));
+    } else if (T(i + 1, i) == 0 && T(i, i - 1) == 0) {
       real_roots.insert(T(i, i));
     }
   }
