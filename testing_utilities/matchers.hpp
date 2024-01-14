@@ -86,6 +86,9 @@ MATCHER_P2(
     ::testing::ExplainMatchResult(min_matcher, arg.min, result_listener);
   }
   if (!max_matches) {
+    if (!min_matches) {
+      *result_listener << " and ";
+    }
     *result_listener << "whose max doesn't match because ";
     ::testing::ExplainMatchResult(max_matcher, arg.max, result_listener);
   }

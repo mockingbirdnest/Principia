@@ -196,8 +196,9 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     if (squared_distance_from_centre(periapsis_time) < max_radius²) {
       Interval<Instant> interval;
       if (previous_it == apsides_times.end()) {
-        // No previous periapsis can only happens the first time through the
+        // No previous periapsis can only happen the first time through the
         // loop.
+        CHECK_EQ(periapsis_time, trajectory.t_min());
         interval.min = periapsis_time;
       } else {
         Instant const apoapsis_time = *previous_it;
@@ -214,10 +215,11 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
               apoapsis_time,
               periapsis_time);
         } else {
-          // A periapsis below |max_radius| can only happen the first time
+          // An apoapsis below |max_radius| can only happen the first time
           // through the loop because the nested loop below skips the other
           // ones.
-          interval.min = periapsis_time;
+          CHECK_EQ(apoapsis_time, trajectory.t_min());
+          interval.min = apoapsis_time;
         }
       }
 
