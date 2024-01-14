@@ -21,12 +21,13 @@ using namespace principia::quantities::_si;
 
 // TODO(phl): This should support the same operations as unbounded_arrays.hpp.
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar_, int rows, int columns>
 class FixedMatrix;
 
-template<typename Scalar, int size_>
+template<typename Scalar_, int size_>
 class FixedVector final {
  public:
+  using Scalar = Scalar_;
   static constexpr int dimension = size_;
 
   constexpr FixedVector();
@@ -78,9 +79,10 @@ class FixedVector final {
       FixedVector<R, c> const& right);
 };
 
-template<typename Scalar, int rows_, int columns_>
+template<typename Scalar_, int rows_, int columns_>
 class FixedMatrix final {
  public:
+  using Scalar = Scalar_;
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return columns_; }
   static constexpr int size() { return rows_ * columns_; }
@@ -126,9 +128,10 @@ class FixedMatrix final {
       FixedVector<R, c> const& right);
 };
 
-template<typename Scalar, int rows_>
+template<typename Scalar_, int rows_>
 class FixedStrictlyLowerTriangularMatrix final {
  public:
+  using Scalar = Scalar_;
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return rows_; }
   static constexpr int size() { return rows_ * (rows_ - 1) / 2; }
@@ -156,9 +159,10 @@ class FixedStrictlyLowerTriangularMatrix final {
   std::array<Scalar, size()> data_;
 };
 
-template<typename Scalar, int rows_>
+template<typename Scalar_, int rows_>
 class FixedLowerTriangularMatrix final {
  public:
+  using Scalar = Scalar_;
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return rows_; }
   static constexpr int size() { return rows_ * (rows_ + 1) / 2; }
@@ -183,9 +187,10 @@ class FixedLowerTriangularMatrix final {
   std::array<Scalar, size()> data_;
 };
 
-template<typename Scalar, int columns_>
+template<typename Scalar_, int columns_>
 class FixedUpperTriangularMatrix final {
  public:
+  using Scalar = Scalar_;
   static constexpr int rows() { return columns_; }
   static constexpr int columns() { return columns_; }
   static constexpr int size() { return columns_ * (columns_ + 1) / 2; }

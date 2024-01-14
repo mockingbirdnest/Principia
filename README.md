@@ -1,10 +1,8 @@
 # Principia
 
-![⚠️](https://place-hold.it/10/f00000/000000&text=) _If you downloaded Jordan before December 14, 15:12 UTC, you probably have a buggy version (see [#3819](https://github.com/mockingbirdnest/Principia/issues/3819)). Please download it again. If you have the correct version, the version string in the Principia UI says `2023121300-Jordan-0-ge51928f832188fd4eeedd50e33d11218e1cd44eb`. We apologize for the inconvenience._ ![⚠️](https://place-hold.it/10/f00000/000000&text=)
+**&lrm;[Julia](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#julia), the January version of Principia, is available, with bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/jv11a).**
 
-**&lrm;[Jordan](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#jordan), the December version of Principia, is available, with improvements and bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/j0rcl4n).**
-
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Jordan for 1.8.1—1.12.5](https://share.weiyun.com/gp7xxtuW).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Julia for 1.8.1—1.12.5](https://share.weiyun.com/ghO6qBLl).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -20,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/j0rcl4n).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Jordan](https://github.com/mockingbirdnest/Principia/releases/tag/2023121300-Jordan) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/jv11a).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Julia](https://github.com/mockingbirdnest/Principia/releases/tag/2024011112-Julia) release.
