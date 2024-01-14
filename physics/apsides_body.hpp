@@ -328,6 +328,13 @@ ComputeFirstCollision(
 
   Logger logger(TEMP_DIR / "collision_two.wl");
 
+  std::vector<std::tuple<Instant, Length>> height;
+  for (int i = 0; i <= 100; ++i) {
+    Instant const t = interval.min + interval.measure() * i / 100;
+    height.push_back(std::tuple(t, height_above_terrain_at_time(t)));
+  }
+  logger.Set("height", height, ExpressInSIUnits);
+
   // Interpolate the height above the terrain using a Чебышёв polynomial.
   auto const чебышёв_interpolant = ЧебышёвPolynomialInterpolant(
       height_above_terrain_at_time,
