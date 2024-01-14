@@ -157,24 +157,52 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
 
   auto const max_radius² = Pow<2>(reference_body.max_radius());
 
-  // NOTE(phl): This function doesn't consider |t_min| and |t_max| as potential
-  // periapsis, only as potential apoapsis.  Unsure if that's right.
-
-  // Construct the list of times of the apoapsides.  This list includes the
-  // times |t_min| and |t_max| if they are "on the way" to an apoapsis.
   std::list<Instant> apoapsides_times;
-  for (auto const& [time, _] : apoapsides) {
-    apoapsides_times.push_back(time);
+  std::list<Instant> periapsides_times;
+  if (apoapsides.empty() && periapsides.empty()) {
+    // In the special case where there are no bona fide apsides, the extremities
+    // are sentinel apsides.
+    if (squared_distance_from_centre(trajectory.t_min()) <
+        squared_distance_from_centre(trajectory.t_max())) {
+      apoapsides_times.push_back(trajectory.t_max());
+      periapsides_times.push_back(trajectory.t_min());
+    } else {
+      apoapsides_times.push_back(trajectory.t_min());
+      periapsides_times.push_back(trajectory.t_max());
+    }
+  } else {
+    // Construct the list of times of the apoapsides.  This list includes the
+    // times |t_min| and |t_max| as sentinels if they directly precede or follow
+    // a periapsis.
+    for (auto const& [time, _] : apoapsides) {
+      apoapsides_times.push_back(time);
+    }
+    if (apoapsides_times.empty() ||
+        periapsides.begin()->time < apoapsides_times.front()) {
+      apoapsides_times.push_front(trajectory.t_min());
+    }
+    if (periapsides.empty() ||
+        apoapsides_times.back() < std::prev(periapsides.end())->time) {
+      apoapsides_times.push_back(trajectory.t_max());
+    }
+    CHECK_EQ(apoapsides_times.size(), periapsides.size() + 1);
+
+    // Construct the list of times of the periapsides.  This list includes the
+    // times |t_min| and |t_max| as sentinels if they directly precede or follow
+    // an apoapsis.
+    for (auto const& [time, _] : periapsides) {
+      periapsides_times.push_back(time);
+    }
+    if (periapsides_times.empty() ||
+        apoapsides.begin()->time < periapsides_times.front()) {
+      periapsides_times.push_front(trajectory.t_min());
+    }
+    if (apoapsides.empty() ||
+        periapsides_times.back() < std::prev(apoapsides.end())->time) {
+      periapsides_times.push_back(trajectory.t_max());
+    }
+    CHECK_EQ(periapsides_times.size(), apoapsides.size() + 1);
   }
-  if (apoapsides_times.empty() ||
-      apoapsides_times.front() > periapsides.begin()->time) {
-    apoapsides_times.push_front(trajectory.t_min());
-  }
-  if (periapsides.empty() ||
-      apoapsides_times.back() < std::prev(periapsides.end())->time) {
-    apoapsides_times.push_back(trajectory.t_max());
-  }
-  CHECK_EQ(apoapsides_times.size(), periapsides.size() + 1);
 
   std::vector<Interval<Instant>> intervals;
 
