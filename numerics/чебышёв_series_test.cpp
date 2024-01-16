@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
