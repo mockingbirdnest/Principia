@@ -11,10 +11,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
-#include "numerics/approximation.hpp"
 #include "numerics/hermite3.hpp"
-#include "mathematica/logger.hpp"
-#include "numerics/matrix_computations.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -30,17 +27,11 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
-using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_hermite3;
-using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
-
-constexpr double max_error_relative_to_radius = 1e-4;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -290,92 +281,6 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
   }
 
   return intervals;
-}
-
-template<typename Frame>
-std::optional<typename DiscreteTrajectory<Frame>::value_type>
-ComputeFirstCollision(
-    RotatingBody<Frame> const& reference_body,
-    Trajectory<Frame> const& reference,
-    Trajectory<Frame> const& trajectory,
-    Interval<Instant> const& interval,
-    std::function<Length(Angle const& latitude, Angle const& longitude)> const&
-        radius) {
-  // The frame of the surface of the celestial.
-  using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
-
-  auto height_above_terrain_at_time = [&radius,
-                                       &reference,
-                                       &reference_body,
-                                       &trajectory](Instant const& t) {
-    auto const reference_position = reference.EvaluatePosition(t);
-    auto const trajectory_position = trajectory.EvaluatePosition(t);
-    Displacement<Frame> const displacement_in_frame =
-        trajectory_position - reference_position;
-
-    auto const to_surface_frame =
-        reference_body.template ToSurfaceFrame<SurfaceFrame>(t);
-    Displacement<SurfaceFrame> const displacement_in_surface =
-        to_surface_frame(displacement_in_frame);
-
-    SphericalCoordinates<Length> const spherical_coordinates =
-        displacement_in_surface.coordinates().ToSpherical();
-
-    return spherical_coordinates.radius -
-           radius(spherical_coordinates.latitude,
-                  spherical_coordinates.longitude);
-  };
-
-  Logger logger(TEMP_DIR / "collision_two.wl");
-
-  std::vector<std::tuple<Instant, Length>> height;
-  for (int i = 0; i <= 100; ++i) {
-    Instant const t = interval.min + interval.measure() * i / 100;
-    height.push_back(std::tuple(t, height_above_terrain_at_time(t)));
-  }
-  logger.Set("height", height, ExpressInSIUnits);
-
-  // Interpolate the height above the terrain using a Чебышёв polynomial.
-  auto const чебышёв_interpolant = ЧебышёвPolynomialInterpolant(
-      height_above_terrain_at_time,
-      interval.min,
-      interval.max,
-      reference_body.mean_radius() * max_error_relative_to_radius);
-  logger.Set("interpolant",
-             ЧебышёвPolynomialInterpolant(
-                 height_above_terrain_at_time,
-                 interval.min,
-                 interval.max,
-                 reference_body.mean_radius() * max_error_relative_to_radius),
-             ExpressInSIUnits);
-
-  auto const companion_matrix = чебышёв_interpolant.FrobeniusCompanionMatrix();
-  logger.Set("companionMatrix", companion_matrix, ExpressInSIUnits);
-  auto const companion_matrix_schur_decomposition =
-      RealSchurDecomposition(companion_matrix, max_error_relative_to_radius);
-
-  auto const& T = companion_matrix_schur_decomposition.T;
-  logger.Set("triangular", T, ExpressInSIUnits);
-  absl::btree_set<double> real_roots;
-  for (int i = 0; i < T.rows(); ++i) {
-    if (i == 0) {
-      if (T(i + 1, i) == 0) {
-        real_roots.insert(T(i, i));
-      }
-    } else if (i == T.rows() - 1) {
-      if (T(i, i - 1) == 0) {
-        real_roots.insert(T(i, i));
-      }
-    } else if (T(i + 1, i) == 0 && T(i, i - 1) == 0) {
-      real_roots.insert(T(i, i));
-    }
-  }
-
-  for (double r : real_roots) {
-    LOG(ERROR)<<r;
-  }
-
-  return std::nullopt;
 }
 
 template<typename Frame>
