@@ -151,10 +151,11 @@ TYPED_TEST(MatrixComputationsTest, RealSchurDecomposition) {
                     8, -9, -2,  4});
   auto s4 = RealSchurDecomposition(m4, 1e-6);
   // Only check the real eigenvalues.
-  EXPECT_THAT(s4.T(2, 2),
-              RelativeErrorFrom(8.8004352424313246181, IsNear(6.0e-7_(1))));
-  EXPECT_THAT(s4.T(3, 3),
-              RelativeErrorFrom(6.2103405225078473234, IsNear(8.4e-7_(1))));
+  EXPECT_THAT(
+      s4.real_eigenvalues,
+      ElementsAre(
+          RelativeErrorFrom(6.2103405225078473234, IsNear(8.4e-7_(1))),
+          RelativeErrorFrom(8.8004352424313246181, IsNear(6.0e-7_(1)))));
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {

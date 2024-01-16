@@ -15,12 +15,14 @@
 namespace principia {
 namespace numerics {
 
+using ::testing::ElementsAre;
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::numerics::_чебышёв_series;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -129,8 +131,6 @@ TEST_F(ЧебышёвSeriesTest, T2Double) {
 TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
   ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
   auto const matrix = series.FrobeniusCompanionMatrix();
-  // Checked with Mathematica that the eigenvalues of this matrix are the zeroes
-  // of the above series.
   EXPECT_THAT(matrix,
               AlmostEquals(UnboundedMatrix<double>(
                   {0.0,             1.0,         0.0,
@@ -138,7 +138,10 @@ TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
                    1.0 / 6.0, 1.0 / 4.0, -5.0 / 12.0}),
                   0));
   auto const matrix_schur_decomposition = RealSchurDecomposition(matrix, 1e-16);
-  LOG(ERROR)<<matrix_schur_decomposition.T;
+  EXPECT_THAT(matrix_schur_decomposition.real_eigenvalues,
+              ElementsAre(AlmostEquals((1.0 - Sqrt(337.0)) / 24.0, 4),
+                          AlmostEquals(-0.5, 1),
+                          AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
 }
 
 TEST_F(ЧебышёвSeriesTest, X6Vector) {
