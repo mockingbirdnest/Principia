@@ -49,6 +49,17 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides);
 
+//TODO(phl)Comment
+template<typename Frame>
+std::optional<typename DiscreteTrajectory<Frame>::value_type>
+ComputeFirstCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    Interval<Instant> const& interval,
+    std::function<Length(Angle const& latitude, Angle const& longitude)> const&
+        radius);
+
 // Computes a collision between a vessel and a rotating body.  |first_time| and
 // |last_time| must be on opposite sides of the surface of the body (in
 // particular, a collision must exist).  |radius| gives the radius of the
@@ -97,6 +108,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 using internal::ComputeApsides;
 using internal::ComputeCollision;
 using internal::ComputeCollisionIntervals;
+using internal::ComputeFirstCollision;
 using internal::ComputeNodes;
 
 }  // namespace _apsides
