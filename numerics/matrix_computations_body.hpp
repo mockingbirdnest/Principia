@@ -6,8 +6,10 @@
 #include <limits>
 #include <utility>
 
+#include "absl/container/btree_set.h"
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/root_finders.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -20,6 +22,7 @@ namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
@@ -335,6 +338,21 @@ void PostMultiply(Matrix& A, JacobiRotation const& J) {
   }
 }
 
+template<typename Matrix>
+absl::btree_set<typename Matrix::Scalar> Compute2By2Eigenvalues(
+    BlockView<Matrix> const& block) {
+  static constexpr typename Matrix::Scalar zero{};
+  // TODO(phl): Would |SymmetricSchurDecomposition2By2| work to shoot one zero
+  // (even though the |block| is not symmetric)?
+  auto const& a = block(0, 0);
+  auto const& b = block(0, 1);
+  auto const& c = block(1, 0);
+  auto const& d = block(1, 1);
+  auto const solutions = SolveQuadraticEquation(zero, a * d - b * c, -a - d, 1);
+  return absl::btree_set<typename Matrix::Scalar>(solutions.begin(),
+                                                  solutions.end());
+}
+
 // [GV13] algorithm 7.5.1.
 template<typename Scalar, typename Matrix>
 void FrancisQRStep(Matrix& H) {
@@ -469,6 +487,7 @@ template<typename Scalar>
 struct RealSchurDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> T;
+    absl::btree_set<double> real_eigenvalues;
   };
 };
 
@@ -477,6 +496,7 @@ struct RealSchurDecompositionGenerator<
     FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
     FixedMatrix<Scalar, dimension, dimension> T;
+    absl::btree_set<double> real_eigenvalues;
   };
 };
 
@@ -855,8 +875,40 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
     FrancisQRStep<Scalar>(H₂₂);
   }
 
-  typename RealSchurDecompositionGenerator<Matrix>::Result result{.T = H};
-  return result;
+  // Find the real eigenvalues.  Note that they may be part of a 2×2 block which
+  // happens to have real roots.
+  absl::btree_set<Scalar> real_eigenvalues;
+  for (int i = 0; i < H.rows();) {
+    int first_in_block = 0;
+    if (i == H.rows() - 1) {
+      if (H(i, i - 1) == 0) {
+        real_eigenvalues.insert(H(i, i));
+      }
+      break;
+    } else if (H(i + 1, i) == 0) {
+      real_eigenvalues.insert(H(i, i));
+      ++i;
+      continue;
+    } else {
+      first_in_block = i;
+    }
+    auto const block = BlockView<Matrix>{.matrix = H,
+                                         .first_row = first_in_block,
+                                         .last_row = first_in_block + 1,
+                                         .first_column = first_in_block,
+                                         .last_column = first_in_block + 1};
+    auto const block_real_eigenvalues = Compute2By2Eigenvalues(block);
+    real_eigenvalues.insert(block_real_eigenvalues.begin(),
+                            block_real_eigenvalues.end());
+
+    // The 2×2 block is processed on its first index, so the next index is
+    // skipped.
+    i += 2;
+  }
+
+  return typename RealSchurDecompositionGenerator<Matrix>::Result{
+      .T = std::move(H),
+      .real_eigenvalues = std::move(real_eigenvalues)};
 }
 
 template<typename Matrix>
