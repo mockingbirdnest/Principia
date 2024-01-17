@@ -150,11 +150,16 @@ TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
 
 TEST_F(ЧебышёвSeriesTest, RealRoots) {
   ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
-  EXPECT_THAT(
-      series.RealRoots(1e-16),
-      ElementsAre(AlmostEquals(t0_ + (13.0 - Sqrt(337.0)) / 12.0 * Second, 15),
-                  AbsoluteErrorFrom(t0_, Lt(2.3e-16 * Second)),
-                  AlmostEquals(t0_ + (13.0 + Sqrt(337.0)) / 12.0 * Second, 1)));
+  Instant const r1 = t0_ + (13.0 - Sqrt(337.0)) / 12.0 * Second;
+  Instant const r2 = t0_;
+  Instant const r3 = t0_ + (13.0 + Sqrt(337.0)) / 12.0 * Second;
+  EXPECT_THAT(series.RealRoots(1e-16),
+              ElementsAre(AlmostEquals(r1, 15),
+                          AbsoluteErrorFrom(r2, Lt(2.3e-16 * Second)),
+                          AlmostEquals(r3, 1)));
+  EXPECT_THAT(Abs(series.Evaluate(r1)), Lt(8.9e-16));
+  EXPECT_THAT(Abs(series.Evaluate(r2)), AlmostEquals(0, 0));
+  EXPECT_THAT(Abs(series.Evaluate(r3)), Lt(1.8e-15));
 }
 
 TEST_F(ЧебышёвSeriesTest, X6Vector) {
