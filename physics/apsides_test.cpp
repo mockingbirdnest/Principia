@@ -234,7 +234,8 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
     return (Cos(4 * longitude) + 2) * Metre;
   };
 
-  // The computations below were verified with Mathematica.
+  // The computations below were verified with Mathematica to the given
+  // accuracy.
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;
   ComputeApsides(reference_trajectory,

@@ -335,8 +335,10 @@ ComputeFirstCollision(
   auto const& real_roots = чебышёв_interpolant.RealRoots(
       max_error_relative_to_radius);
   if (real_roots.empty()) {
+    // No root, no collision.
     return std::nullopt;
   } else {
+    // The smallest root is the first collision.
     Instant const first_collision_time = *real_roots.begin();
     return typename DiscreteTrajectory<Frame>::value_type(
         first_collision_time,

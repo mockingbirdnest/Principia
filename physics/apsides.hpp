@@ -49,7 +49,12 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides);
 
-//TODO(phl)Comment
+// Computes the first collision between a vessel and a rotating body over the
+// given time |interval|.  Returns |nullopt| if there is no collision over the
+// |interval|.  The |interval| should have been obtained by
+// |ComputeCollisionIntervals|.  |radius| must give the radius of the celestial
+// at a particular position given by its latitude and longitude.  It must never
+// exceed the |max_radius| of the body.
 template<typename Frame>
 std::optional<typename DiscreteTrajectory<Frame>::value_type>
 ComputeFirstCollision(
