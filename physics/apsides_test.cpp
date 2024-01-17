@@ -199,6 +199,9 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
           /*t1=*/t0 - 10 * Second,
           /*t2=*/t0 + 10 * Second),
       reference_trajectory);
+
+  // Note that the trajectory is short enough that we only have to go to degree
+  // 64 for the interpolant.
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
           DegreesOfFreedom<World>(
@@ -210,7 +213,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
           /*Δt=*/1 * Second,
           t0,
           /*t1=*/t0 - 10 * Second,
-          /*t2=*/t0 + 2.9 * Second),
+          /*t2=*/t0 + 1.9 * Second),
       vessel_trajectory);
 
   RotatingBody<World> const body(
@@ -253,7 +256,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
   EXPECT_THAT(intervals,
               ElementsAre(IntervalMatches(
                   AlmostEquals(t0 + (1.0 - Sqrt(17.0)) / 2.0 * Second, 1),
-                  AlmostEquals(t0 + 2 * Second, 0))));
+                  AlmostEquals(t0 + 1 * Second, 0))));
 
   auto const maybe_collision =
       ComputeFirstCollision(body,
