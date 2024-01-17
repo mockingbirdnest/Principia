@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -99,6 +100,10 @@ class ЧебышёвSeries final {
 
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
   UnboundedMatrix<double> FrobeniusCompanionMatrix() const;
+
+  // Returns the real roots of the polynomial, computed as the eigenvalues of
+  // the Frobenius companion matrix.
+  absl::btree_set<Argument> RealRoots(double ε) const;
 
   void WriteToMessage(not_null<serialization::ЧебышёвSeries*> message) const;
   static ЧебышёвSeries ReadFromMessage(
