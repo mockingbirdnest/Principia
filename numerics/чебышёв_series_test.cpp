@@ -12,11 +12,13 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace numerics {
 
 using ::testing::ElementsAre;
+using ::testing::Lt;
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -28,6 +30,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class ЧебышёвSeriesTest : public ::testing::Test {
  protected:
@@ -143,6 +146,15 @@ TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
               ElementsAre(AlmostEquals((1.0 - Sqrt(337.0)) / 24.0, 4),
                           AlmostEquals(-0.5, 1),
                           AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
+}
+
+TEST_F(ЧебышёвSeriesTest, RealRoots) {
+  ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
+  EXPECT_THAT(
+      series.RealRoots(1e-16),
+      ElementsAre(AlmostEquals(t0_ + (13.0 - Sqrt(337.0)) / 12.0 * Second, 15),
+                  AbsoluteErrorFrom(t0_, Lt(2.3e-16 * Second)),
+                  AlmostEquals(t0_ + (13.0 + Sqrt(337.0)) / 12.0 * Second, 1)));
 }
 
 TEST_F(ЧебышёвSeriesTest, X6Vector) {

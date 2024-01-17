@@ -8,6 +8,7 @@
 #include "geometry/serialization.hpp"
 #include "glog/logging.h"
 #include "numerics/combinatorics.hpp"
+#include "numerics/matrix_computations.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -16,10 +17,12 @@ namespace _чебышёв_series {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
+using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
@@ -289,6 +292,26 @@ UnboundedMatrix<double>
   }
 
   return A;
+}
+
+template<typename Value, typename Argument>
+absl::btree_set<Argument> ЧебышёвSeries<Value, Argument>::RealRoots(
+    double const ε) const {
+  auto const companion_matrix = FrobeniusCompanionMatrix();
+  auto const real_schur_decomposition =
+      RealSchurDecomposition(companion_matrix, ε);
+  absl::btree_set<double> const& scaled_real_roots =
+      real_schur_decomposition.real_eigenvalues;
+
+  // Rescale from [-1, 1] to [lower_bound_, upper_bound_].
+  absl::btree_set<Argument> real_roots;
+  auto const midpoint = Barycentre(std::pair{lower_bound_, upper_bound_},
+                                   std::pair{1, 1});
+  auto const half_width = 0.5 * (upper_bound_ - lower_bound_);
+  for (auto const& scaled_real_root : scaled_real_roots) {
+    real_roots.insert(scaled_real_root * half_width + midpoint);
+  }
+  return real_roots;
 }
 
 template<typename Value, typename Argument>
