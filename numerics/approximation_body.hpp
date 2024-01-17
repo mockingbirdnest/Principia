@@ -79,8 +79,16 @@ template<int N, typename Argument, typename Function>
           f, a, b, max_error, fₖ, aⱼ);
     }
   }
+
+  // Unlike [Boy13], section 4, we return the polynomial of the lower degree
+  // that is within the |max_error| bound (that is, the one of degree N / 2).
+  // Even though we computed the polynomial of degree N, returning it would
+  // impose an unnecessary cost on the client (e.g., more costly evaluation). If
+  // a client wants a more precise approximation, they just need to give a
+  // smaller |max_error|.
   std::vector<Value<Argument, Function>> coefficients;
-  std::copy(aⱼ.begin(), aⱼ.end(), std::back_inserter(coefficients));
+  std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
+            std::back_inserter(coefficients));
   return ЧебышёвSeries<Value<Argument, Function>, Argument>(
       coefficients, a, b);
 }

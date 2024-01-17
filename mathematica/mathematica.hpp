@@ -232,6 +232,10 @@ std::string ToMathematica(Tuple const& tuple,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(UnboundedMatrix<Scalar> const& matrix,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
                           OptionalExpressIn express_in = std::nullopt);
 

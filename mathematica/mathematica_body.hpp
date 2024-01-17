@@ -461,6 +461,22 @@ std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
 }
 
 template<typename Scalar, typename OptionalExpressIn>
+std::string ToMathematica(UnboundedMatrix<Scalar> const& matrix,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> rows;
+  rows.reserve(matrix.rows());
+  for (int i = 0; i < matrix.rows(); ++i) {
+    std::vector<std::string> row;
+    row.reserve(matrix.columns());
+    for (int j = 0; j < matrix.columns(); ++j) {
+      row.push_back(ToMathematica(matrix(i, j), express_in));
+    }
+    rows.push_back(RawApply("List", row));
+  }
+  return RawApply("List", rows);
+}
+
+template<typename Scalar, typename OptionalExpressIn>
 std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
                           OptionalExpressIn express_in) {
   std::vector<std::string> rows;

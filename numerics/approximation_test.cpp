@@ -26,10 +26,10 @@ TEST(ApproximationTest, SinInverse) {
                                            /*lower_bound=*/0.1,
                                            /*upper_bound=*/10,
                                            /*max_error=*/1e-6);
-  EXPECT_EQ(256, approximation.degree());
+  EXPECT_EQ(128, approximation.degree());
   for (double x = 0.1; x < 10.0; x += 0.01) {
     EXPECT_THAT(approximation.Evaluate(x),
-                AbsoluteErrorFrom(f(x), AllOf(Lt(1.1e-13), Ge(0))));
+                AbsoluteErrorFrom(f(x), AllOf(Lt(3.0e-6), Ge(0))));
   }
 }
 
@@ -40,10 +40,10 @@ TEST(ApproximationTest, Exp) {
                                            /*lower_bound=*/0.01,
                                            /*upper_bound=*/3,
                                            /*max_error=*/1e-6);
-  EXPECT_EQ(32, approximation.degree());
+  EXPECT_EQ(16, approximation.degree());
   for (double x = 0.01; x < 3; x += 0.01) {
     EXPECT_THAT(approximation.Evaluate(x),
-                AbsoluteErrorFrom(f(x), AllOf(Lt(1.8e-14), Ge(0))));
+                AbsoluteErrorFrom(f(x), AllOf(Lt(7.2e-15), Ge(0))));
   }
 }
 
