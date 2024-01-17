@@ -13,8 +13,6 @@
 #include "geometry/space.hpp"
 #include "numerics/approximation.hpp"
 #include "numerics/hermite3.hpp"
-#include "mathematica/logger.hpp"
-#include "numerics/matrix_computations.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -30,11 +28,8 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_hermite3;
-using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
