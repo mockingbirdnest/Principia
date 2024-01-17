@@ -880,15 +880,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
   absl::btree_set<Scalar> real_eigenvalues;
   for (int i = 0; i < H.rows();) {
     int first_in_block = 0;
-    if (i == 0) {
-      if (H(i + 1, i) == 0) {
-        real_eigenvalues.insert(H(i, i));
-        ++i;
-        continue;
-      } else {
-        first_in_block = 0;
-      }
-    } else if (i == H.rows() - 1) {
+    if (i == H.rows() - 1) {
       if (H(i, i - 1) == 0) {
         real_eigenvalues.insert(H(i, i));
       }
@@ -901,10 +893,10 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
       first_in_block = i;
     }
     auto const block = BlockView<Matrix>{.matrix = H,
-                                   .first_row = first_in_block,
-                                   .last_row = first_in_block + 1,
-                                   .first_column = first_in_block,
-                                   .last_column = first_in_block + 1};
+                                         .first_row = first_in_block,
+                                         .last_row = first_in_block + 1,
+                                         .first_column = first_in_block,
+                                         .last_column = first_in_block + 1};
     auto const block_real_eigenvalues = Compute2By2Eigenvalues(block);
     real_eigenvalues.insert(block_real_eigenvalues.begin(),
                             block_real_eigenvalues.end());
