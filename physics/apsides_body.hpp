@@ -354,23 +354,8 @@ ComputeFirstCollision(
   auto const companion_matrix_schur_decomposition =
       RealSchurDecomposition(companion_matrix, max_error_relative_to_radius);
 
-  auto const& T = companion_matrix_schur_decomposition.T;
-  logger.Set("triangular", T, ExpressInSIUnits);
-  absl::btree_set<double> real_roots;
-  for (int i = 0; i < T.rows(); ++i) {
-    if (i == 0) {
-      if (T(i + 1, i) == 0) {
-        real_roots.insert(T(i, i));
-      }
-    } else if (i == T.rows() - 1) {
-      if (T(i, i - 1) == 0) {
-        real_roots.insert(T(i, i));
-      }
-    } else if (T(i + 1, i) == 0 && T(i, i - 1) == 0) {
-      real_roots.insert(T(i, i));
-    }
-  }
-
+  auto const& real_roots =
+      companion_matrix_schur_decomposition.real_eigenvalues;
   for (double r : real_roots) {
     LOG(ERROR)<<r;
   }
