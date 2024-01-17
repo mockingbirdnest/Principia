@@ -326,41 +326,22 @@ ComputeFirstCollision(
                   spherical_coordinates.longitude);
   };
 
-  Logger logger(TEMP_DIR / "collision_two.wl");
-
-  std::vector<std::tuple<Instant, Length>> height;
-  for (int i = 0; i <= 100; ++i) {
-    Instant const t = interval.min + interval.measure() * i / 100;
-    height.push_back(std::tuple(t, height_above_terrain_at_time(t)));
-  }
-  logger.Set("height", height, ExpressInSIUnits);
-
   // Interpolate the height above the terrain using a Чебышёв polynomial.
   auto const чебышёв_interpolant = ЧебышёвPolynomialInterpolant(
       height_above_terrain_at_time,
       interval.min,
       interval.max,
       reference_body.mean_radius() * max_error_relative_to_radius);
-  logger.Set("interpolant",
-             ЧебышёвPolynomialInterpolant(
-                 height_above_terrain_at_time,
-                 interval.min,
-                 interval.max,
-                 reference_body.mean_radius() * max_error_relative_to_radius),
-             ExpressInSIUnits);
-
-  auto const companion_matrix = чебышёв_interpolant.FrobeniusCompanionMatrix();
-  logger.Set("companionMatrix", companion_matrix, ExpressInSIUnits);
-  auto const companion_matrix_schur_decomposition =
-      RealSchurDecomposition(companion_matrix, max_error_relative_to_radius);
-
-  auto const& real_roots =
-      companion_matrix_schur_decomposition.real_eigenvalues;
-  for (double r : real_roots) {
-    LOG(ERROR)<<r;
+  auto const& real_roots = чебышёв_interpolant.RealRoots(
+      max_error_relative_to_radius);
+  if (real_roots.empty()) {
+    return std::nullopt;
+  } else {
+    Instant const first_collision_time = *real_roots.begin();
+    return typename DiscreteTrajectory<Frame>::value_type(
+        first_collision_time,
+        trajectory.EvaluateDegreesOfFreedom(first_collision_time));
   }
-
-  return std::nullopt;
 }
 
 template<typename Frame>

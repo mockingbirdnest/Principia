@@ -210,7 +210,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
           /*Δt=*/1 * Second,
           t0,
           /*t1=*/t0 - 10 * Second,
-          /*t2=*/t0 + 1 * Second),
+          /*t2=*/t0 + 2.9 * Second),
       vessel_trajectory);
 
   RotatingBody<World> const body(
@@ -231,6 +231,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
     return (Cos(4 * longitude) + 2) * Metre;
   };
 
+  // The computations below were verified with Mathematica.
   DiscreteTrajectory<World> apoapsides;
   DiscreteTrajectory<World> periapsides;
   ComputeApsides(reference_trajectory,
@@ -240,9 +241,9 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                  /*max_point=*/10,
                  apoapsides,
                  periapsides);
-  //TODO(phl)Check this.
   EXPECT_THAT(apoapsides, IsEmpty());
-  EXPECT_THAT(periapsides, IsEmpty());
+  EXPECT_THAT(periapsides, SizeIs(1));
+  EXPECT_THAT(periapsides.begin()->time, AlmostEquals(t0 + 0.5 * Second, 0));
 
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
@@ -252,8 +253,8 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
   //TODO(phl)Check this.
   EXPECT_THAT(intervals,
               ElementsAre(IntervalMatches(
-                  AlmostEquals(t0 - 1.561552812808830292 * Second, 0),
-                  AlmostEquals(t0, 0))));
+                  AlmostEquals(t0 + (1.0 - Sqrt(17.0)) / 2.0 * Second, 1),
+                  AlmostEquals(t0 + 2 * Second, 0))));
 
   auto const maybe_collision =
       ComputeFirstCollision(body,
