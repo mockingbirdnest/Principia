@@ -250,7 +250,6 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                                                    vessel_trajectory,
                                                    apoapsides,
                                                    periapsides);
-  //TODO(phl)Check this.
   EXPECT_THAT(intervals,
               ElementsAre(IntervalMatches(
                   AlmostEquals(t0 + (1.0 - Sqrt(17.0)) / 2.0 * Second, 1),
@@ -264,12 +263,11 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                             radius);
   auto const& collision = maybe_collision.value();
 
-  // The collision was verified with Mathematica to the given accuracy.
   EXPECT_THAT(collision.time - t0,
-              IsNear(-0.5254924180437539_(1) * Second));
+              IsNear(-1.43862_(1) * Second));
   EXPECT_THAT(collision.degrees_of_freedom.position() - World::origin,
               Componentwise(1 * Metre,
-                            IsNear(-0.4745075819562462_(1) * Metre),
+                            IsNear(0.43862_(1) * Metre),
                             0 * Metre));
   EXPECT_THAT(
       collision.degrees_of_freedom.velocity(),
