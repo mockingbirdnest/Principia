@@ -310,7 +310,11 @@ absl::btree_set<Argument> ЧебышёвSeries<Value, Argument>::RealRoots(
                                    std::pair{1, 1});
   auto const half_width = 0.5 * (upper_bound_ - lower_bound_);
   for (auto const& scaled_real_root : scaled_real_roots) {
-    real_roots.insert(scaled_real_root * half_width + midpoint);
+    // Чебышёв polynomials don't make sense outside of [-1, 1] but they may
+    // stil have roots there.
+    if (-1 <= scaled_real_root && scaled_real_root <= 1) {
+      real_roots.insert(scaled_real_root * half_width + midpoint);
+    }
   }
   return real_roots;
 }
