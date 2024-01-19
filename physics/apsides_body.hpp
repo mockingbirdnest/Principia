@@ -11,6 +11,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
+#include "numerics/approximation.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -27,11 +28,14 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
+
+constexpr double max_error_relative_to_radius = 1e-4;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -281,6 +285,60 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
   }
 
   return intervals;
+}
+
+template<typename Frame>
+std::optional<typename DiscreteTrajectory<Frame>::value_type>
+ComputeFirstCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    Interval<Instant> const& interval,
+    std::function<Length(Angle const& latitude, Angle const& longitude)> const&
+        radius) {
+  // The frame of the surface of the celestial.
+  using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
+
+  auto height_above_terrain_at_time = [&radius,
+                                       &reference,
+                                       &reference_body,
+                                       &trajectory](Instant const& t) {
+    auto const reference_position = reference.EvaluatePosition(t);
+    auto const trajectory_position = trajectory.EvaluatePosition(t);
+    Displacement<Frame> const displacement_in_frame =
+        trajectory_position - reference_position;
+
+    auto const to_surface_frame =
+        reference_body.template ToSurfaceFrame<SurfaceFrame>(t);
+    Displacement<SurfaceFrame> const displacement_in_surface =
+        to_surface_frame(displacement_in_frame);
+
+    SphericalCoordinates<Length> const spherical_coordinates =
+        displacement_in_surface.coordinates().ToSpherical();
+
+    return spherical_coordinates.radius -
+           radius(spherical_coordinates.latitude,
+                  spherical_coordinates.longitude);
+  };
+
+  // Interpolate the height above the terrain using a Чебышёв polynomial.
+  auto const чебышёв_interpolant = ЧебышёвPolynomialInterpolant(
+      height_above_terrain_at_time,
+      interval.min,
+      interval.max,
+      reference_body.mean_radius() * max_error_relative_to_radius);
+  auto const& real_roots = чебышёв_interpolant.RealRoots(
+      max_error_relative_to_radius);
+  if (real_roots.empty()) {
+    // No root, no collision.
+    return std::nullopt;
+  } else {
+    // The smallest root is the first collision.
+    Instant const first_collision_time = *real_roots.begin();
+    return typename DiscreteTrajectory<Frame>::value_type(
+        first_collision_time,
+        trajectory.EvaluateDegreesOfFreedom(first_collision_time));
+  }
 }
 
 template<typename Frame>

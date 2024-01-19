@@ -49,6 +49,22 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     DiscreteTrajectory<Frame> const& apoapsides,
     DiscreteTrajectory<Frame> const& periapsides);
 
+// Computes the first collision between a vessel and a rotating body over the
+// given time |interval|.  Returns |nullopt| if there is no collision over the
+// |interval|.  The |interval| should have been obtained by
+// |ComputeCollisionIntervals|.  |radius| must give the radius of the celestial
+// at a particular position given by its latitude and longitude.  It must never
+// exceed the |max_radius| of the body.
+template<typename Frame>
+std::optional<typename DiscreteTrajectory<Frame>::value_type>
+ComputeFirstCollision(
+    RotatingBody<Frame> const& reference_body,
+    Trajectory<Frame> const& reference,
+    Trajectory<Frame> const& trajectory,
+    Interval<Instant> const& interval,
+    std::function<Length(Angle const& latitude, Angle const& longitude)> const&
+        radius);
+
 // Computes a collision between a vessel and a rotating body.  |first_time| and
 // |last_time| must be on opposite sides of the surface of the body (in
 // particular, a collision must exist).  |radius| gives the radius of the
@@ -97,6 +113,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 using internal::ComputeApsides;
 using internal::ComputeCollision;
 using internal::ComputeCollisionIntervals;
+using internal::ComputeFirstCollision;
 using internal::ComputeNodes;
 
 }  // namespace _apsides
