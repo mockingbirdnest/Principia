@@ -3,6 +3,7 @@
 #include "numerics/approximation.hpp"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/tags.hpp"
