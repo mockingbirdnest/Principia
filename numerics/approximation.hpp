@@ -29,7 +29,7 @@ template<int max_degree, typename Argument, typename Function>
     Difference<Value<Argument, Function>> const& max_error,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
-// Returns an ordered vector of Чебышёв polynomial interpolants of f over, which
+// Returns an ordered vector of Чебышёв polynomial interpolants of f, which
 // together cover [lower_bound, upper_bound].  Subdivides the interval so that
 // the degree of each approximant doesn't exceed |max_degree|.  The final
 // (estimated) absolute error is guaranteed to be below |max_error|.
