@@ -18,13 +18,15 @@ using Value = std::invoke_result_t<Function, Argument>;
 
 // Returns a Чебышёв polynomial approximant of f over
 // [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
-// below |max_error| or if |max_degree| has been reached.
+// below |max_error| or if |max_degree| has been reached.  If |error_estimate|
+// is nonnull, it receives the estimate of the L∞ error.
 template<int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument> ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    Difference<Value<Argument, Function>> const& max_error);
+    Difference<Value<Argument, Function>> const& max_error,
+    Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 }  // namespace internal
 

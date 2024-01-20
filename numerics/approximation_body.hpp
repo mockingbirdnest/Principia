@@ -47,7 +47,8 @@ template<int N, int max_degree, typename Argument, typename Function>
     Argument const& b,
     Difference<Value<Argument, Function>> const& max_error,
     FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_fₖ,
-    FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_aⱼ) {
+    FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_aⱼ,
+    Difference<Value<Argument, Function>>* const error_estimate) {
   // This implementation follows [Boy13], section 4 and appendix A.
   auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
 
@@ -75,21 +76,21 @@ template<int N, int max_degree, typename Argument, typename Function>
 
   // Compute an upper bound for the error, based on the previous and new
   // polynomials.
-  Difference<Value<Argument, Function>> error_estimate{};
+  Difference<Value<Argument, Function>> current_error_estimate{};
   for (std::int64_t j = 0; j <= N / 2; ++j) {
-    error_estimate += Abs(previous_aⱼ[j] - aⱼ[j]);
+    current_error_estimate += Abs(previous_aⱼ[j] - aⱼ[j]);
   }
   for (std::int64_t j = N / 2 + 1; j <= N; ++j) {
-    error_estimate += Abs(aⱼ[j]);
+    current_error_estimate += Abs(aⱼ[j]);
   }
 
   if constexpr (N <= max_degree) {
-    if (error_estimate > max_error) {
+    if (current_error_estimate > max_error) {
       // Note that this recursive call overflows the stack when
       // max_degree >= 256.  We could allocate on the heap, but then we don't
       // care about very high degree polynomials.
       return ЧебышёвPolynomialInterpolantImplementation<2 * N, max_degree>(
-          f, a, b, max_error, fₖ, aⱼ);
+          f, a, b, max_error, fₖ, aⱼ, error_estimate);
     }
   }
 
@@ -99,6 +100,9 @@ template<int N, int max_degree, typename Argument, typename Function>
   // impose an unnecessary cost on the client (e.g., more costly evaluation). If
   // a client wants a more precise approximation, they just need to give a
   // smaller |max_error|.
+  if (error_estimate != nullptr) {
+    *error_estimate = current_error_estimate;
+  }
   std::vector<Value<Argument, Function>> coefficients;
   std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
             std::back_inserter(coefficients));
@@ -112,7 +116,8 @@ template<int max_degree, typename Argument, typename Function>
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    Difference<Value<Argument, Function>> const& max_error) {
+    Difference<Value<Argument, Function>> const& max_error,
+    Difference<Value<Argument, Function>>* const error_estimate) {
   auto const& a = lower_bound;
   auto const& b = upper_bound;
   auto const f_a = f(a);
@@ -120,11 +125,12 @@ template<int max_degree, typename Argument, typename Function>
   FixedVector<Value<Argument, Function>, 2> const fₖ({f_b, f_a});
   FixedVector<Value<Argument, Function>, 2> const aⱼ(
       {0.5 * (f_b + f_a), 0.5 * (f_b - f_a)});
+
   return ЧебышёвPolynomialInterpolantImplementation</*N=*/2,
                                                     max_degree,
                                                     Argument,
                                                     Function>(
-      f, a, b, max_error, fₖ, aⱼ);
+      f, a, b, max_error, fₖ, aⱼ, error_estimate);
 }
 
 }  // namespace internal
