@@ -10,6 +10,7 @@
 #include "glog/logging.h"
 #include "numerics/combinatorics.hpp"
 #include "numerics/matrix_computations.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,6 +25,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
@@ -293,6 +295,25 @@ UnboundedMatrix<double>
   }
 
   return A;
+}
+
+template<typename Value, typename Argument>
+bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots() const {
+  // TODO(phl): This is a property of the series so we should cache it.
+  // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
+  // criterion, B₁ and concludes: “There was no detectable difference between
+  // the two criteria, so the first criterion, which requires only summing the
+  // absolute values of all coefficients but the first, should be used to the
+  // exclusion of the other zero-free test”.  My own experiments failed to
+  // locate, for N = 5, any series for which B₁ would be better than B₀, after
+  // trying millions of random series.
+  int const N = degree();
+  Value B₀{};
+  for (int j = 1; j <= N; ++j) {
+    auto const abs_aⱼ = Abs(helper_.coefficients(j));
+    B₀ += abs_aⱼ;
+  }
+  return B₀ >= Abs(helper_.coefficients(0));
 }
 
 template<typename Value, typename Argument>

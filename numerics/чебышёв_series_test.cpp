@@ -148,6 +148,18 @@ TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
                           AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
 }
 
+TEST_F(ЧебышёвSeriesTest, MayHaveRealRoots) {
+  // B₀ path.
+  ЧебышёвSeries<double, Instant> series1({16, 5, 3, 7}, t_min_, t_max_);
+  EXPECT_FALSE(series1.MayHaveRealRoots());
+  // We don't know, but it actually doesn't have zeroes.
+  ЧебышёвSeries<double, Instant> series2({13, 5, 3, 7}, t_min_, t_max_);
+  EXPECT_TRUE(series2.MayHaveRealRoots());
+  // We don't know, but it actually has zeroes.
+  ЧебышёвSeries<double, Instant> series3({4, 5, 3, 7}, t_min_, t_max_);
+  EXPECT_TRUE(series3.MayHaveRealRoots());
+}
+
 TEST_F(ЧебышёвSeriesTest, RealRoots) {
   ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
   Instant const r1 = t0_ + (13.0 - Sqrt(337.0)) / 12.0 * Second;

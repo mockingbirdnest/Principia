@@ -101,6 +101,11 @@ class ЧебышёвSeries final {
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
   UnboundedMatrix<double> FrobeniusCompanionMatrix() const;
 
+  // Returns true if this polynomial may (but doesn't necessarily) have real
+  // roots.  Returns false it is guaranteed not to have real roots.  This is
+  // significantly faster than calling |RealRoots|.
+  bool MayHaveRealRoots() const;
+
   // Returns the real roots of the polynomial, computed as the eigenvalues of
   // the Frobenius companion matrix.
   absl::btree_set<Argument> RealRoots(double ε) const;
