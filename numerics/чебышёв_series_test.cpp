@@ -153,11 +153,11 @@ TEST_F(ЧебышёвSeriesTest, MayHaveRealRoots) {
   ЧебышёвSeries<double, Instant> series1({16, 5, 3, 7}, t_min_, t_max_);
   EXPECT_FALSE(series1.MayHaveRealRoots());
   // We don't know, but it actually doesn't have zeroes.
-  ЧебышёвSeries<double, Instant> series3({13, 5, 3, 7}, t_min_, t_max_);
-  EXPECT_TRUE(series3.MayHaveRealRoots());
+  ЧебышёвSeries<double, Instant> series2({13, 5, 3, 7}, t_min_, t_max_);
+  EXPECT_TRUE(series2.MayHaveRealRoots());
   // We don't know, but it actually has zeroes.
-  ЧебышёвSeries<double, Instant> series4({4, 5, 3, 7}, t_min_, t_max_);
-  EXPECT_TRUE(series4.MayHaveRealRoots());
+  ЧебышёвSeries<double, Instant> series3({4, 5, 3, 7}, t_min_, t_max_);
+  EXPECT_TRUE(series3.MayHaveRealRoots());
 }
 
 TEST_F(ЧебышёвSeriesTest, RealRoots) {
