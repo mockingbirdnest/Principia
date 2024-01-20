@@ -3,6 +3,7 @@
 #include "numerics/approximation.hpp"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/tags.hpp"
@@ -126,11 +127,58 @@ template<int max_degree, typename Argument, typename Function>
   FixedVector<Value<Argument, Function>, 2> const aⱼ(
       {0.5 * (f_b + f_a), 0.5 * (f_b - f_a)});
 
-  return ЧебышёвPolynomialInterpolantImplementation</*N=*/2,
-                                                    max_degree,
-                                                    Argument,
-                                                    Function>(
+  return ЧебышёвPolynomialInterpolantImplementation</*N=*/2, max_degree>(
       f, a, b, max_error, fₖ, aⱼ, error_estimate);
+}
+
+template<int max_degree, typename Argument, typename Function>
+std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
+AdaptiveЧебышёвPolynomialInterpolant(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Difference<Value<Argument, Function>> const& max_error,
+    Difference<Value<Argument, Function>>* error_estimate) {
+  // Try to build an interpolation over the entire interval.
+  Difference<Value<Argument, Function>> full_error_estimate;
+  auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
+      f, lower_bound, upper_bound, max_error, &full_error_estimate);
+  if (full_error_estimate <= max_error) {
+    // If the interpolant over the entire interval is within the desired error
+    // bound, return it.
+    if (error_estimate != nullptr) {
+      *error_estimate = full_error_estimate;
+    }
+    std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
+        interpolants;
+    interpolants.emplace_back(std::move(full_interpolant));
+    return interpolants;
+  } else {
+    // If the interpolant over the entire interval is not within the desired
+    // error bound, subdivide the interval.
+    Difference<Value<Argument, Function>> upper_error_estimate;
+    Difference<Value<Argument, Function>> lower_error_estimate;
+    auto const midpoint =
+        Barycentre(std::pair(lower_bound, upper_bound), std::pair(1, 1));
+    auto lower_interpolants =
+        AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
+            f, lower_bound, midpoint, max_error, &lower_error_estimate);
+    auto upper_interpolants =
+        AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
+            f, midpoint, upper_bound, max_error, &upper_error_estimate);
+    std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
+        all_interpolants;
+    std::move(lower_interpolants.begin(),
+              lower_interpolants.end(),
+              std::back_inserter(all_interpolants));
+    std::move(upper_interpolants.begin(),
+              upper_interpolants.end(),
+              std::back_inserter(all_interpolants));
+    if (error_estimate != nullptr) {
+      *error_estimate = std::max(lower_error_estimate, upper_error_estimate);
+    }
+    return all_interpolants;
+  }
 }
 
 }  // namespace internal
