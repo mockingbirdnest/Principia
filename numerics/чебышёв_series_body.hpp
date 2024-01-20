@@ -10,6 +10,7 @@
 #include "glog/logging.h"
 #include "numerics/combinatorics.hpp"
 #include "numerics/matrix_computations.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -25,7 +26,6 @@ using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
