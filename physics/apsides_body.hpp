@@ -322,11 +322,12 @@ ComputeFirstCollision(
   };
 
   // Interpolate the height above the terrain using a Чебышёв polynomial.
-  auto const чебышёв_interpolant = ЧебышёвPolynomialInterpolant(
-      height_above_terrain_at_time,
-      interval.min,
-      interval.max,
-      reference_body.mean_radius() * max_error_relative_to_radius);
+  auto const чебышёв_interpolant =
+      ЧебышёвPolynomialInterpolant</*max_degree=*/128>(
+          height_above_terrain_at_time,
+          interval.min,
+          interval.max,
+          reference_body.mean_radius() * max_error_relative_to_radius);
   auto const& real_roots = чебышёв_interpolant.RealRoots(
       max_error_relative_to_radius);
   if (real_roots.empty()) {

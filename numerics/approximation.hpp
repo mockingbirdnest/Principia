@@ -16,7 +16,10 @@ using namespace principia::quantities::_named_quantities;
 template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;
 
-template<typename Argument, typename Function>
+// Returns a Чебышёв polynomial approximant of f over
+// [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
+// below |max_error| or if |max_degree| has been reached.
+template<int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument> ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,

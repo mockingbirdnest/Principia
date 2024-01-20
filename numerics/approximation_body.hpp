@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/tags.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -15,14 +16,30 @@ namespace numerics {
 namespace _approximation {
 namespace internal {
 
+using namespace principia::base::_tags;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-constexpr std::int64_t max_чебышёв_degree = 500;
+// Compute the interpolation matrix and cache it in a static variable.
+template<int N>
+FixedMatrix<double, N + 1, N + 1> const& ЧебышёвInterpolationMatrix() {
+  static FixedMatrix<double, N + 1, N + 1> const ℐ = []() {
+    FixedMatrix<double, N + 1, N + 1> ℐ(uninitialized);
+    for (std::int64_t j = 0; j <= N; ++j) {
+      double const pⱼ = j == 0 || j == N ? 2 : 1;
+      for (std::int64_t k = 0; k <= N; ++k) {
+        double const pₖ = k == 0 || k == N ? 2 : 1;
+        ℐ(j, k) = 2 * Cos(π * j * k * Radian / N) / (pⱼ * pₖ * N);
+      }
+    }
+    return ℐ;
+  }();
+  return ℐ;
+}
 
-template<int N, typename Argument, typename Function>
+template<int N, int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
@@ -39,7 +56,7 @@ template<int N, typename Argument, typename Function>
     return 0.5 * (b - a) * Cos(π * k * Radian / N) + midpoint;
   };
 
-  FixedVector<Value<Argument, Function>, N + 1> fₖ;
+  FixedVector<Value<Argument, Function>, N + 1> fₖ(uninitialized);
 
   // Reuse the previous evaluations of |f|.
   for (std::int64_t k = 0; k <= N / 2; ++k) {
@@ -51,16 +68,9 @@ template<int N, typename Argument, typename Function>
     fₖ[k] = f(чебышёв_lobato_point(k));
   }
 
-  FixedMatrix<double, N + 1, N + 1> ℐⱼₖ;
-  for (std::int64_t j = 0; j <= N; ++j) {
-    double const pⱼ = j == 0 || j == N ? 2 : 1;
-    for (std::int64_t k = 0; k <= N; ++k) {
-      double const pₖ = k == 0 || k == N ? 2 : 1;
-      ℐⱼₖ(j, k) = 2 * Cos(π * j * k * Radian / N) / (pⱼ * pₖ * N);
-    }
-  }
-
   // Compute the coefficients of the Чебышёв polynomial.
+  FixedMatrix<double, N + 1, N + 1> const& ℐⱼₖ =
+      ЧебышёвInterpolationMatrix<N>();
   auto const aⱼ = ℐⱼₖ * fₖ;
 
   // Compute an upper bound for the error, based on the previous and new
@@ -73,9 +83,12 @@ template<int N, typename Argument, typename Function>
     error_estimate += Abs(aⱼ[j]);
   }
 
-  if constexpr (2 * N <= max_чебышёв_degree) {
+  if constexpr (N <= max_degree) {
     if (error_estimate > max_error) {
-      return ЧебышёвPolynomialInterpolantImplementation<2 * N>(
+      // Note that this recursive call overflows the stack when
+      // max_degree >= 256.  We could allocate on the heap, but then we don't
+      // care about very high degree polynomials.
+      return ЧебышёвPolynomialInterpolantImplementation<2 * N, max_degree>(
           f, a, b, max_error, fₖ, aⱼ);
     }
   }
@@ -93,7 +106,7 @@ template<int N, typename Argument, typename Function>
       coefficients, a, b);
 }
 
-template<typename Argument, typename Function>
+template<int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument>
 ЧебышёвPolynomialInterpolant(
     Function const& f,
@@ -108,6 +121,7 @@ template<typename Argument, typename Function>
   FixedVector<Value<Argument, Function>, 2> const aⱼ(
       {0.5 * (f_b + f_a), 0.5 * (f_b - f_a)});
   return ЧебышёвPolynomialInterpolantImplementation</*N=*/2,
+                                                    max_degree,
                                                     Argument,
                                                     Function>(
       f, a, b, max_error, fₖ, aⱼ);

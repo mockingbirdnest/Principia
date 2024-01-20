@@ -22,10 +22,10 @@ using ::testing::Lt;
 TEST(ApproximationTest, SinInverse) {
   auto const f = [](double const x) { return Sin(1 * Radian / x); };
   auto const approximation =
-      ЧебышёвPolynomialInterpolant<double>(f,
-                                           /*lower_bound=*/0.1,
-                                           /*upper_bound=*/10,
-                                           /*max_error=*/1e-6);
+      ЧебышёвPolynomialInterpolant<128>(f,
+                                        /*lower_bound=*/0.1,
+                                        /*upper_bound=*/10.0,
+                                        /*max_error=*/1e-6);
   EXPECT_EQ(128, approximation.degree());
   for (double x = 0.1; x < 10.0; x += 0.01) {
     EXPECT_THAT(approximation.Evaluate(x),
@@ -36,10 +36,10 @@ TEST(ApproximationTest, SinInverse) {
 TEST(ApproximationTest, Exp) {
   auto const f = [](double const x) { return std::exp(x); };
   auto const approximation =
-      ЧебышёвPolynomialInterpolant<double>(f,
-                                           /*lower_bound=*/0.01,
-                                           /*upper_bound=*/3,
-                                           /*max_error=*/1e-6);
+      ЧебышёвPolynomialInterpolant<128>(f,
+                                        /*lower_bound=*/0.01,
+                                        /*upper_bound=*/3.0,
+                                        /*max_error=*/1e-6);
   EXPECT_EQ(16, approximation.degree());
   for (double x = 0.01; x < 3; x += 0.01) {
     EXPECT_THAT(approximation.Evaluate(x),
