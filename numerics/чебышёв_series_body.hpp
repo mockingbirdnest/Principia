@@ -24,6 +24,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 // The compiler does a much better job on an |R3Element<double>| than on a
@@ -293,6 +294,34 @@ UnboundedMatrix<double>
   }
 
   return A;
+}
+
+template<typename Value, typename Argument>
+bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots() const {
+  // TODO(phl): This is a property of the series so we should cache it.
+  // This code follow [Boy06], theorem 2.
+  int const N = degree();
+  Value B₀{};
+  Value B₁{};
+  for (int j = 1; j <= N; ++j) {
+    auto const Abs_aⱼ = Abs(helper_.coefficients(j));
+    B₀ += Abs_aⱼ;
+    B₁ += j * Abs_aⱼ;
+  }
+  if (B₀ < Abs(helper_.coefficients(0))) {
+    return false;
+  }
+  double const h = π / N;
+  auto const B₁h_over_2 = 0.5 * B₁ * h;
+  for (int j = 0; j <= N; ++j) {
+    // Note that [Boy06] has a typo in the definition of tⱼ.
+    auto const tⱼ = j * h;
+    auto const fⱼ = Evaluate(Cos(tⱼ));
+    if (fⱼ <= B₁h_over_2) {
+      return true;
+    }
+  }
+  return false;
 }
 
 template<typename Value, typename Argument>
