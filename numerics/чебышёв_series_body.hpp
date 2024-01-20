@@ -301,10 +301,10 @@ template<typename Value, typename Argument>
 bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots() const {
   // TODO(phl): This is a property of the series so we should cache it.
   // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
-  // criterion, B₁ and concludes: "There was no detectable difference between
+  // criterion, B₁ and concludes: “There was no detectable difference between
   // the two criteria, so the first criterion, which requires only summing the
   // absolute values of all coefficients but the first, should be used to the
-  // exclusion of the other zero-free test".  My own experiments failed to
+  // exclusion of the other zero-free test”.  My own experiments failed to
   // locate, for N = 5, any series for which B₁ would be better than B₀, after
   // trying millions of random series.
   int const N = degree();
