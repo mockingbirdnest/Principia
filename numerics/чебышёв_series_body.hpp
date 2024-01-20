@@ -24,6 +24,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
@@ -299,29 +300,20 @@ UnboundedMatrix<double>
 template<typename Value, typename Argument>
 bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots() const {
   // TODO(phl): This is a property of the series so we should cache it.
-  // This code follow [Boy06], theorem 2.
+  // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
+  // criterion, B₁ and concludes: "There was no detectable difference between
+  // the two criteria, so the first criterion, which requires only summing the
+  // absolute values of all coefficients but the first, should be used to the
+  // exclusion of the other zero-free test".  My own experiments failed to
+  // locate, for N = 5, any series for which B₁ would be better than B₀, after
+  // trying millions of random series.
   int const N = degree();
   Value B₀{};
-  Value B₁{};
   for (int j = 1; j <= N; ++j) {
-    auto const Abs_aⱼ = Abs(helper_.coefficients(j));
-    B₀ += Abs_aⱼ;
-    B₁ += j * Abs_aⱼ;
+    auto const abs_aⱼ = Abs(helper_.coefficients(j));
+    B₀ += abs_aⱼ;
   }
-  if (B₀ < Abs(helper_.coefficients(0))) {
-    return false;
-  }
-  double const h = π / N;
-  auto const B₁h_over_2 = 0.5 * B₁ * h;
-  for (int j = 0; j <= N; ++j) {
-    // Note that [Boy06] has a typo in the definition of tⱼ.
-    auto const tⱼ = j * h;
-    auto const fⱼ = Evaluate(Cos(tⱼ));
-    if (fⱼ <= B₁h_over_2) {
-      return true;
-    }
-  }
-  return false;
+  return B₀ >= Abs(helper_.coefficients(0));
 }
 
 template<typename Value, typename Argument>
