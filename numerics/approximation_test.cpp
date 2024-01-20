@@ -5,9 +5,9 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
-#include "testing_utilities/approximate_quantity.hpp"
 
 namespace principia {
 namespace numerics {
