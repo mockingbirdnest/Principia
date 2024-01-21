@@ -333,13 +333,20 @@ ComputeFirstCollision(
     if (interpolant.MayHaveRealRoots()) {
       auto const& real_roots =
           interpolant.RealRoots(max_error_relative_to_radius);
-      if (!real_roots.empty()) {
+      if (real_roots.empty()) {
+        VLOG(1) << "No real roots over [" << interpolant.lower_bound() << ", "
+                << interpolant.upper_bound() << "]";
+      } else {
         // The smallest root is the first collision.
         Instant const first_collision_time = *real_roots.begin();
+        VLOG(1) << "First collision time is " << first_collision_time;
         return typename DiscreteTrajectory<Frame>::value_type(
             first_collision_time,
             trajectory.EvaluateDegreesOfFreedom(first_collision_time));
       }
+    } else {
+      VLOG(1) << "No roots over [" << interpolant.lower_bound() << ", "
+              << interpolant.upper_bound() << "]";
     }
   }
 
