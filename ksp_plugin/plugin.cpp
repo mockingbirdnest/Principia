@@ -1035,7 +1035,7 @@ Plugin::ComputeAndRenderFirstCollision(
     auto const maybe_collision = ComputeFirstCollision(celestial_body,
                                                        celestial_trajectory,
                                                        trajectory,
-                                                       intervals[0],
+                                                       interval,
                                                        radius);
     if (maybe_collision.has_value()) {
       auto const& collision = maybe_collision.value();
