@@ -65,22 +65,6 @@ ComputeFirstCollision(
     std::function<Length(Angle const& latitude, Angle const& longitude)> const&
         radius);
 
-// Computes a collision between a vessel and a rotating body.  |first_time| and
-// |last_time| must be on opposite sides of the surface of the body (in
-// particular, a collision must exist).  |radius| gives the radius of the
-// celestial at a particular position given by its latitude and longitude.  It
-// must never exceed the |max_radius| of the body.
-// NOTE: |first_time| must be "far" from the body and |last_time| "close".
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
-    RotatingBody<Frame> const& reference_body,
-    Trajectory<Frame> const& reference,
-    Trajectory<Frame> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
-    std::function<Length(Angle const& latitude,
-                         Angle const& longitude)> const& radius);
-
 // Computes the crossings of the section given by |begin| and |end| of
 // |trajectory| with the xy plane.  Appends the crossings that go towards the
 // |north| side of the xy plane to |ascending|, and those that go away from the
@@ -111,7 +95,6 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 }  // namespace internal
 
 using internal::ComputeApsides;
-using internal::ComputeCollision;
 using internal::ComputeCollisionIntervals;
 using internal::ComputeFirstCollision;
 using internal::ComputeNodes;
