@@ -53,9 +53,7 @@ NewExecutor(Plugin const* const plugin,
 
   return make_not_null_unique<
       PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
-                       Length,
-                       Angle,
-                       Angle>>(std::move(task));
+                       Length, Angle, Angle>>(std::move(task));
 }
 
 
@@ -104,9 +102,7 @@ bool __cdecl principia__CollisionGetLatitudeLongitude(
 
 PushPullExecutor<
     std::optional<DiscreteTrajectory<World>::value_type>,
-    Length,
-    Angle,
-    Angle>* __cdecl principia__CollisionNewFlightPlanExecutor(
+    Length, Angle, Angle>* __cdecl principia__CollisionNewFlightPlanExecutor(
     Plugin const* const plugin,
     int const celestial_index,
     XYZ const sun_world_position,
@@ -130,9 +126,7 @@ PushPullExecutor<
 
 PushPullExecutor<
     std::optional<DiscreteTrajectory<World>::value_type>,
-    Length,
-    Angle,
-    Angle>* __cdecl principia__CollisionNewPredictionExecutor(
+    Length, Angle, Angle>* __cdecl principia__CollisionNewPredictionExecutor(
     Plugin const* const plugin,
     int const celestial_index,
     XYZ const sun_world_position,
