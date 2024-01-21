@@ -1003,8 +1003,6 @@ std::optional<DegreesOfFreedom<World>> Plugin::ComputeAndRenderFirstCollision(
     Trajectory<Barycentric> const& trajectory,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end,
-    Instant const& first_time,
-    Instant const& last_time,
     Position<World> const& sun_world_position,
     int max_points,
     std::function<Length(Angle const& latitude,

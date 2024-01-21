@@ -151,6 +151,12 @@ message QP {
   required XYZ p = 2;
 }
 
+message Collision {
+  // |collision| is irrelevant if |found_collision| is false.
+  required bool found_collision = 1;
+  required QP collision = 2;
+}
+
 message Status {
   // A principia::base::Error, or equivalently, a google.rpc.Code.
   required int32 error = 1;
@@ -418,17 +424,18 @@ message CollisionDeleteExecutor {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
          (is_consumed) = true];
   }
   message Out {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>"];
+         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>"];
   }
   message Return {
-    // Deleting the executor returns the degrees of freedom of the collision.
-    required QP collision = 1;
+    // Deleting the executor returns the degrees of freedom of the collision, if
+    // any.
+    required Collision collision = 1;
   }
   optional In in = 1;
   optional Out out = 2;
@@ -442,7 +449,7 @@ message CollisionGetLatitudeLongitude {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
          (is_subject) = true];
   }
   message Out {
@@ -466,14 +473,13 @@ message CollisionNewFlightPlanExecutor {
                                  (is_subject) = true];
     required int32 celestial_index = 2;
     required XYZ sun_world_position = 3;
+    required int32 max_points = 7;
     required string vessel_guid = 4;
-    required double apoapside_time = 5;
-    required double periapside_time = 6;
   }
   message Return {
     required fixed64 result = 1
     [(pointer_to) =
-    "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
+    "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
     (is_produced) = true];
   }
   optional In in = 1;
@@ -489,14 +495,13 @@ message CollisionNewPredictionExecutor {
                                  (is_subject) = true];
     required int32 celestial_index = 2;
     required XYZ sun_world_position = 3;
+    required int32 max_points = 7;
     required string vessel_guid = 4;
-    required double apoapside_time = 5;
-    required double periapside_time = 6;
   }
   message Return {
     required fixed64 result = 1
     [(pointer_to) =
-    "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
+    "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
     (is_produced) = true];
   }
   optional In in = 1;
@@ -510,7 +515,7 @@ message CollisionSetRadius {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<DegreesOfFreedom<World>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
          (is_subject) = true];
     required double radius = 2;
   }

@@ -184,6 +184,16 @@ inline bool operator==(Burn const& left, Burn const& right) {
          left.delta_v == right.delta_v;
 }
 
+inline bool operator==(Collision const& left, Collision const& right) {
+  if (left.found_collision != right.found_collision) {
+    return false;
+  } else if (left.found_collision) {
+    return left.collision == right.collision;
+  } else {
+    return true;
+  }
+}
+
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                        FlightPlanAdaptiveStepParameters const& right) {
   return left.integrator_kind == right.integrator_kind &&
