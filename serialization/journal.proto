@@ -152,8 +152,8 @@ message QP {
 }
 
 message TQP {
-  required double time = 1;
-  required QP degrees_of_freedom = 2;
+  required double t = 1;
+  required QP qp = 2;
 }
 
 message Status {

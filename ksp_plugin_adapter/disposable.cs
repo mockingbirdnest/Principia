@@ -11,8 +11,8 @@ static class DisposableIteratorExtensions {
          !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
       yield return new TQP {
-          time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
-          degrees_of_freedom = apsis_iterator.IteratorGetDiscreteTrajectoryQP()
+          t = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
+          qp = apsis_iterator.IteratorGetDiscreteTrajectoryQP()
       };
     }
   }

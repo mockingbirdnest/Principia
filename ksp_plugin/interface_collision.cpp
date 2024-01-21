@@ -74,9 +74,8 @@ bool __cdecl principia__CollisionDeleteExecutor(
     TakeOwnership(executor);
   }
   if (maybe_collision.has_value()) {
-    *collision = TQP{
-        .time = ToGameTime(*plugin, maybe_collision->time),
-        .degrees_of_freedom = ToQP(maybe_collision->degrees_of_freedom)};
+    *collision = TQP{.t = ToGameTime(*plugin, maybe_collision->time),
+                     .qp = ToQP(maybe_collision->degrees_of_freedom)};
     return m.Return(true);
   } else {
     return m.Return(false);

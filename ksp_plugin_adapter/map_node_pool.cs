@@ -165,10 +165,10 @@ internal class MapNodePool {
           object_type = provenance.type,
           colour = colour,
           reference_frame = reference_frame,
-          world_position = (Vector3d)marker.degrees_of_freedom.q,
-          velocity = (Vector3d)marker.degrees_of_freedom.p,
+          world_position = (Vector3d)marker.qp.q,
+          velocity = (Vector3d)marker.qp.p,
           source = provenance.source,
-          time = marker.time,
+          time = marker.t,
           associated_map_object = associated_map_object,
       };
       if (provenance.type == MapObject.ObjectType.Periapsis) {

@@ -286,8 +286,7 @@ inline bool operator==(Status const& left, Status const& right) {
 }
 
 inline bool operator==(TQP const& left, TQP const& right) {
-  return NaNIndependentEq(left.time, right.time) &&
-         left.degrees_of_freedom == right.degrees_of_freedom;
+  return NaNIndependentEq(left.t, right.t) && left.qp == right.qp;
 }
 
 inline bool operator==(WXYZ const& left, WXYZ const& right) {
