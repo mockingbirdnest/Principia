@@ -13,6 +13,7 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/journal.pb.h"
 
