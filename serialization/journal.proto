@@ -151,7 +151,7 @@ message QP {
   required XYZ p = 2;
 }
 
-message Collision {
+message TQP {
   required double time = 1;
   required QP degrees_of_freedom = 2;
 }
@@ -432,11 +432,12 @@ message CollisionDeleteExecutor {
     required fixed64 executor = 1
         [(pointer_to) =
          "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>"];
-    // Deleting the executor returns the degrees of freedom of the collision, if
-    // any.
-    required Collision collision = 2;
+    // Deleting the executor returns the time and degrees of freedom of the
+    // collision, if any.
+    required TQP collision = 2;
   }
   message Return {
+    // True if a collision was found.
     required bool found = 1;
   }
   optional In in = 1;

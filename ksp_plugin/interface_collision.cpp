@@ -65,7 +65,7 @@ bool __cdecl principia__CollisionDeleteExecutor(
     Plugin const* const plugin,
     PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
                      Length, Angle, Angle>** const executor,
-    Collision* const collision) {
+    TQP* const collision) {
   journal::Method<journal::CollisionDeleteExecutor> m{{plugin, executor},
                                                       {executor, collision}};
   CHECK_NOTNULL(executor);
@@ -74,7 +74,7 @@ bool __cdecl principia__CollisionDeleteExecutor(
     TakeOwnership(executor);
   }
   if (maybe_collision.has_value()) {
-    *collision = Collision{
+    *collision = TQP{
         .time = ToGameTime(*plugin, maybe_collision->time),
         .degrees_of_freedom = ToQP(maybe_collision->degrees_of_freedom)};
     return m.Return(true);

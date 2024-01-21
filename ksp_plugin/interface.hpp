@@ -89,7 +89,6 @@ void __cdecl principia__InitGoogleLogging();
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);
-bool operator==(Collision const& left, Collision const& right);
 bool operator==(EquatorialCrossings const& left,
                 EquatorialCrossings const& right);
 bool operator==(FlightPlanAdaptiveStepParameters const& left,
@@ -107,6 +106,7 @@ bool operator==(OrbitalElements const& left, OrbitalElements const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(QPRW const& left, QPRW const& right);
 bool operator==(SolarTimesOfNodes const& left, SolarTimesOfNodes const& right);
+bool operator==(TQP const& left, TQP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XY const& left, XY const& right);
 bool operator==(XYZ const& left, XYZ const& right);

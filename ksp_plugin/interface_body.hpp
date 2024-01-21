@@ -184,11 +184,6 @@ inline bool operator==(Burn const& left, Burn const& right) {
          left.delta_v == right.delta_v;
 }
 
-inline bool operator==(Collision const& left, Collision const& right) {
-  return NaNIndependentEq(left.time, right.time) &&
-         left.degrees_of_freedom == right.degrees_of_freedom;
-}
-
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                        FlightPlanAdaptiveStepParameters const& right) {
   return left.integrator_kind == right.integrator_kind &&
@@ -288,6 +283,11 @@ inline bool operator==(SolarTimesOfNodes const& left,
 
 inline bool operator==(Status const& left, Status const& right) {
   return left.error == right.error;
+}
+
+inline bool operator==(TQP const& left, TQP const& right) {
+  return NaNIndependentEq(left.time, right.time) &&
+         left.degrees_of_freedom == right.degrees_of_freedom;
 }
 
 inline bool operator==(WXYZ const& left, WXYZ const& right) {
