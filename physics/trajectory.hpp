@@ -32,6 +32,8 @@ class Trajectory {
   virtual Velocity<Frame> EvaluateVelocity(Instant const& time) const = 0;
   virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& time) const = 0;
+
+  // TODO(phl): This should probably declare |value_type| and friends.
 };
 
 }  // namespace internal

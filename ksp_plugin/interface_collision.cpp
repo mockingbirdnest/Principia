@@ -24,9 +24,9 @@ using namespace principia::quantities::_si;
 namespace {
 
 template<typename TrajectoryLike>
-not_null<
-    std::unique_ptr<PushPullExecutor<std::optional<DegreesOfFreedom<World>>,
-                                     Length, Angle, Angle>>>
+not_null<std::unique_ptr<
+    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+                     Length, Angle, Angle>>>
 NewExecutor(Plugin const* const plugin,
             int const celestial_index,
             XYZ const sun_world_position,
@@ -52,7 +52,7 @@ NewExecutor(Plugin const* const plugin,
   };
 
   return make_not_null_unique<
-      PushPullExecutor<std::optional<DegreesOfFreedom<World>>,
+      PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
                        Length,
                        Angle,
                        Angle>>(std::move(task));
@@ -61,26 +61,30 @@ NewExecutor(Plugin const* const plugin,
 
 }  // namespace
 
-Collision __cdecl principia__CollisionDeleteExecutor(
-    PushPullExecutor<std::optional<DegreesOfFreedom<World>>,
-                     Length, Angle, Angle>** const executor) {
-  journal::Method<journal::CollisionDeleteExecutor> m{{executor}, {executor}};
+bool __cdecl principia__CollisionDeleteExecutor(
+    Plugin const* const plugin,
+    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+                     Length, Angle, Angle>** const executor,
+    Collision* const collision) {
+  journal::Method<journal::CollisionDeleteExecutor> m{{plugin, executor},
+                                                      {executor, collision}};
   CHECK_NOTNULL(executor);
-  auto const maybe_collision_degrees_of_freedom = (*executor)->get();
+  auto const maybe_collision = (*executor)->get();
   {
     TakeOwnership(executor);
   }
-  if (maybe_collision_degrees_of_freedom.has_value()) {
-    return m.Return(Collision{
-        .found_collision = true,
-        .collision = ToQP(maybe_collision_degrees_of_freedom.value())});
+  if (maybe_collision.has_value()) {
+    *collision = Collision{
+        .time = ToGameTime(*plugin, maybe_collision->time),
+        .degrees_of_freedom = ToQP(maybe_collision->degrees_of_freedom)};
+    return m.Return(true);
   } else {
-    return m.Return(Collision{.found_collision = false});
+    return m.Return(false);
   }
 }
 
 bool __cdecl principia__CollisionGetLatitudeLongitude(
-    PushPullExecutor<std::optional<DegreesOfFreedom<World>>,
+    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
                      Length, Angle, Angle>* const executor,
     double* const latitude_in_degrees,
     double* const longitude_in_degrees) {
@@ -99,8 +103,11 @@ bool __cdecl principia__CollisionGetLatitudeLongitude(
   return m.Return(more);
 }
 
-PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>*
-__cdecl principia__CollisionNewFlightPlanExecutor(
+PushPullExecutor<
+    std::optional<DiscreteTrajectory<World>::value_type>,
+    Length,
+    Angle,
+    Angle>* __cdecl principia__CollisionNewFlightPlanExecutor(
     Plugin const* const plugin,
     int const celestial_index,
     XYZ const sun_world_position,
@@ -122,8 +129,11 @@ __cdecl principia__CollisionNewFlightPlanExecutor(
                       .release());
 }
 
-PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>*
-__cdecl principia__CollisionNewPredictionExecutor(
+PushPullExecutor<
+    std::optional<DiscreteTrajectory<World>::value_type>,
+    Length,
+    Angle,
+    Angle>* __cdecl principia__CollisionNewPredictionExecutor(
     Plugin const* const plugin,
     int const celestial_index,
     XYZ const sun_world_position,
@@ -146,7 +156,7 @@ __cdecl principia__CollisionNewPredictionExecutor(
 }
 
 void __cdecl principia__CollisionSetRadius(
-    PushPullExecutor<std::optional<DegreesOfFreedom<World>>,
+    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
                      Length, Angle, Angle>* const executor,
     double const radius) {
   journal::Method<journal::CollisionSetRadius> m{

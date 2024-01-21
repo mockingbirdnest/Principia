@@ -370,7 +370,8 @@ class Plugin {
 
   // Computes the first collision between the trajectory defined by |begin| and
   // |end| and the celestial with index |celestial_index|.
-  virtual std::optional<DegreesOfFreedom<World>> ComputeAndRenderFirstCollision(
+  virtual std::optional<DiscreteTrajectory<World>::value_type>
+  ComputeAndRenderFirstCollision(
       Index celestial_index,
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator const& begin,

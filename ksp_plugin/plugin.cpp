@@ -998,7 +998,8 @@ void Plugin::ComputeAndRenderApsides(
                     PlanetariumRotation());
 }
 
-std::optional<DegreesOfFreedom<World>> Plugin::ComputeAndRenderFirstCollision(
+std::optional<DiscreteTrajectory<World>::value_type>
+Plugin::ComputeAndRenderFirstCollision(
     Index const celestial_index,
     Trajectory<Barycentric> const& trajectory,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
@@ -1048,7 +1049,7 @@ std::optional<DegreesOfFreedom<World>> Plugin::ComputeAndRenderFirstCollision(
               trajectory_to_render.end(),
               sun_world_position,
               PlanetariumRotation());
-      return rendered_trajectory.front().degrees_of_freedom;
+      return rendered_trajectory.front();
     }
   }
 

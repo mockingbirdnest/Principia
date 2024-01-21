@@ -152,9 +152,8 @@ message QP {
 }
 
 message Collision {
-  // |collision| is irrelevant if |found_collision| is false.
-  required bool found_collision = 1;
-  required QP collision = 2;
+  required double time = 1;
+  required QP degrees_of_freedom = 2;
 }
 
 message Status {
@@ -422,20 +421,23 @@ message CollisionDeleteExecutor {
     optional CollisionDeleteExecutor extension = 5193;
   }
   message In {
-    required fixed64 executor = 1
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed64 executor = 2
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
          (is_consumed) = true];
   }
   message Out {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>"];
-  }
-  message Return {
+         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>"];
     // Deleting the executor returns the degrees of freedom of the collision, if
     // any.
-    required Collision collision = 1;
+    required Collision collision = 2;
+  }
+  message Return {
+    required bool found = 1;
   }
   optional In in = 1;
   optional Out out = 2;
@@ -449,7 +451,7 @@ message CollisionGetLatitudeLongitude {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
          (is_subject) = true];
   }
   message Out {
@@ -479,7 +481,7 @@ message CollisionNewFlightPlanExecutor {
   message Return {
     required fixed64 result = 1
     [(pointer_to) =
-    "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
+    "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
     (is_produced) = true];
   }
   optional In in = 1;
@@ -501,7 +503,7 @@ message CollisionNewPredictionExecutor {
   message Return {
     required fixed64 result = 1
     [(pointer_to) =
-    "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
+    "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
     (is_produced) = true];
   }
   optional In in = 1;
@@ -515,7 +517,7 @@ message CollisionSetRadius {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DegreesOfFreedom<World>>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
          (is_subject) = true];
     required double radius = 2;
   }
