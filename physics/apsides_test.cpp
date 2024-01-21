@@ -242,7 +242,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());

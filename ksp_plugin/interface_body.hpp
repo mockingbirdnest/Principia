@@ -285,6 +285,10 @@ inline bool operator==(Status const& left, Status const& right) {
   return left.error == right.error;
 }
 
+inline bool operator==(TQP const& left, TQP const& right) {
+  return NaNIndependentEq(left.t, right.t) && left.qp == right.qp;
+}
+
 inline bool operator==(WXYZ const& left, WXYZ const& right) {
   return NaNIndependentEq(left.w, right.w) &&
          NaNIndependentEq(left.x, right.x) &&

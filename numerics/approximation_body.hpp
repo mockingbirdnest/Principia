@@ -146,6 +146,9 @@ AdaptiveЧебышёвPolynomialInterpolant(
   if (full_error_estimate <= max_error) {
     // If the interpolant over the entire interval is within the desired error
     // bound, return it.
+    VLOG(1) << "Degree " << full_interpolant.degree() << " interpolant over ["
+            << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
+            << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
     if (error_estimate != nullptr) {
       *error_estimate = full_error_estimate;
     }

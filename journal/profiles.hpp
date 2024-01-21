@@ -13,6 +13,7 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/journal.pb.h"
 
@@ -46,6 +47,7 @@ using interface::QP;
 using interface::QPRW;
 using interface::SolarTimesOfNodes;
 using interface::Status;
+using interface::TQP;
 using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;
@@ -61,6 +63,7 @@ using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 
 #include "journal/profiles.generated.h"
