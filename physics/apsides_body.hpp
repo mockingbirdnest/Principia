@@ -35,6 +35,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
+constexpr int max_чебышёв_degree = 16;
 constexpr double max_error_relative_to_radius = 1e-4;
 
 template<typename Frame>
@@ -321,25 +322,29 @@ ComputeFirstCollision(
                   spherical_coordinates.longitude);
   };
 
-  // Interpolate the height above the terrain using a Чебышёв polynomial.
-  auto const чебышёв_interpolant =
-      ЧебышёвPolynomialInterpolant</*max_degree=*/128>(
+  // Interpolate the height above the terrain using Чебышёв polynomials.
+  auto const чебышёв_interpolants =
+      AdaptiveЧебышёвPolynomialInterpolant<max_чебышёв_degree>(
           height_above_terrain_at_time,
           interval.min,
           interval.max,
           reference_body.mean_radius() * max_error_relative_to_radius);
-  auto const& real_roots = чебышёв_interpolant.RealRoots(
-      max_error_relative_to_radius);
-  if (real_roots.empty()) {
-    // No root, no collision.
-    return std::nullopt;
-  } else {
-    // The smallest root is the first collision.
-    Instant const first_collision_time = *real_roots.begin();
-    return typename DiscreteTrajectory<Frame>::value_type(
-        first_collision_time,
-        trajectory.EvaluateDegreesOfFreedom(first_collision_time));
+  for (auto const& interpolant : чебышёв_interpolants) {
+    if (interpolant.MayHaveRealRoots()) {
+      auto const& real_roots =
+          interpolant.RealRoots(max_error_relative_to_radius);
+      if (!real_roots.empty()) {
+        // The smallest root is the first collision.
+        Instant const first_collision_time = *real_roots.begin();
+        return typename DiscreteTrajectory<Frame>::value_type(
+            first_collision_time,
+            trajectory.EvaluateDegreesOfFreedom(first_collision_time));
+      }
+    }
   }
+
+  // No root, no collision.
+  return std::nullopt;
 }
 
 template<typename Frame>
