@@ -21,8 +21,8 @@
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
-#include "base/flags.hpp"
 #include "base/fingerprint2011.hpp"
+#include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
@@ -49,6 +49,7 @@
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/parser.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -60,8 +61,8 @@ using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_file;
-using namespace principia::base::_flags;
 using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_flags;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_map_util;
 using namespace principia::base::_serialization;
@@ -86,7 +87,6 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_parser;
-using namespace principia::quantities::_si;
 
 Length const& MaxCollisionError() {
   static Length const max_collision_error = []() {
