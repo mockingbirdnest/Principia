@@ -50,11 +50,11 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     DiscreteTrajectory<Frame> const& periapsides);
 
 // Computes the first collision between a vessel and a rotating body over the
-// given time |interval|.  Returns |nullopt| if there is no collision over the
-// |interval|.  The |interval| should have been obtained by
-// |ComputeCollisionIntervals|.  |radius| must give the radius of the celestial
-// at a particular position given by its latitude and longitude.  It must never
-// exceed the |max_radius| of the body.
+// given time |interval| with an accuracy better than |max_collision_error|.
+// Returns |nullopt| if there is no collision over the |interval|.  The
+// |interval| should have been obtained by |ComputeCollisionIntervals|. |radius|
+// must give the radius of the celestial at a particular position given by its
+// latitude and longitude.  It must never exceed the |max_radius| of the body.
 template<typename Frame>
 std::optional<typename DiscreteTrajectory<Frame>::value_type>
 ComputeFirstCollision(
@@ -62,6 +62,7 @@ ComputeFirstCollision(
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
     Interval<Instant> const& interval,
+    Length const& max_collision_error,
     std::function<Length(Angle const& latitude, Angle const& longitude)> const&
         radius);
 

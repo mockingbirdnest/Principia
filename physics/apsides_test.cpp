@@ -264,6 +264,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                             reference_trajectory,
                             vessel_trajectory,
                             intervals[0],
+                            /*max_error=*/2e-4 * Metre,
                             radius);
   auto const& collision = maybe_collision.value();
 

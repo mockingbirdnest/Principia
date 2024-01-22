@@ -17,6 +17,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -34,9 +35,12 @@ using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 constexpr int max_чебышёв_degree = 16;
-constexpr double max_error_relative_to_radius = 1e-4;
+// The error bound |max_collision_error| is guaranteed to be met if the vessel
+// is slower than this.
+constexpr Speed max_collision_speed = 10'000 * Metre / Second;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -295,6 +299,7 @@ ComputeFirstCollision(
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
     Interval<Instant> const& interval,
+    Length const& max_collision_error,
     std::function<Length(Angle const& latitude, Angle const& longitude)> const&
         radius) {
   // The frame of the surface of the celestial.
@@ -328,11 +333,18 @@ ComputeFirstCollision(
           height_above_terrain_at_time,
           interval.min,
           interval.max,
-          reference_body.mean_radius() * max_error_relative_to_radius);
+          max_collision_error);
   for (auto const& interpolant : чебышёв_interpolants) {
     if (interpolant.MayHaveRealRoots()) {
-      auto const& real_roots =
-          interpolant.RealRoots(max_error_relative_to_radius);
+      // The relative error on the roots is choosen so that it corresponds to an
+      // absolute error in distance similar to |max_collision_error|, assuming
+      // that the speed is below |max_collision_speed|.  We don't care too much
+      // about the performance of this computation, because the zero-free test
+      // is very efficient.
+      auto const& real_roots = interpolant.RealRoots(
+          max_collision_error /
+          ((interpolant.upper_bound() - interpolant.lower_bound()) *
+           max_collision_speed));
       if (real_roots.empty()) {
         VLOG(1) << "No real roots over [" << interpolant.lower_bound() << ", "
                 << interpolant.upper_bound() << "]";

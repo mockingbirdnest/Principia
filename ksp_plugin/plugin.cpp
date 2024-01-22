@@ -21,6 +21,7 @@
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
+#include "base/flags.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
@@ -59,6 +60,7 @@ using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_file;
+using namespace principia::base::_flags;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_map_util;
@@ -83,6 +85,23 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_parser;
+using namespace principia::quantities::_si;
+
+Length const& MaxCollisionError() {
+  static Length const max_collision_error = []() {
+    std::string_view name = "max_collision_error";
+    if (Flags::IsPresent(name)) {
+      auto const values = Flags::Values(name);
+      CHECK_EQ(values.size(), 1);
+      return ParseQuantity<Length>(
+          *Flags::Values("max_collision_error").begin());
+    } else {
+      return 10 * Metre;
+    }
+  }();
+  return max_collision_error;
+}
 
 // Keep this consistent with |prediction_steps_| in |main_window.cs|.
 constexpr std::int64_t max_steps_in_prediction = 1 << 24;
@@ -1036,6 +1055,7 @@ Plugin::ComputeAndRenderFirstCollision(
                                                        celestial_trajectory,
                                                        trajectory,
                                                        interval,
+                                                       MaxCollisionError(),
                                                        radius);
     if (maybe_collision.has_value()) {
       auto const& collision = maybe_collision.value();
