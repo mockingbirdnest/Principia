@@ -328,12 +328,17 @@ ComputeFirstCollision(
   };
 
   // Interpolate the height above the terrain using Чебышёв polynomials.
+  TerminationPredicate<Length, Instant> const done =
+      [max_collision_error](auto const& _,
+                            Length const& error_estimate) -> bool {
+    return error_estimate < max_collision_error;
+  };
   auto const чебышёв_interpolants =
       AdaptiveЧебышёвPolynomialInterpolant<max_чебышёв_degree>(
           height_above_terrain_at_time,
           interval.min,
           interval.max,
-          max_collision_error);
+          done);
   for (auto const& interpolant : чебышёв_interpolants) {
     if (interpolant.MayHaveRealRoots()) {
       // The relative error on the roots is choosen so that it corresponds to an
