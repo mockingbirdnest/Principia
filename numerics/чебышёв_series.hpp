@@ -103,8 +103,12 @@ class ЧебышёвSeries final {
 
   // Returns true if this polynomial may (but doesn't necessarily) have real
   // roots.  Returns false it is guaranteed not to have real roots.  This is
-  // significantly faster than calling |RealRoots|.
-  bool MayHaveRealRoots() const;
+  // significantly faster than calling |RealRoots|.  If |error_estimate| is
+  // given, this series is assumed to be an approximation of some function with
+  // an L∞ error less than |error_estimate|.  In that case, false is only
+  // returned if the envelope of the series within |error_estimate| has no real
+  // roots.
+  bool MayHaveRealRoots(Value error_estimate = Value{}) const;
 
   // Returns the real roots of the polynomial, computed as the eigenvalues of
   // the Frobenius companion matrix.

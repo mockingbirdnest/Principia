@@ -164,6 +164,8 @@ TEST_F(ЧебышёвSeriesTest, MayHaveRealRoots) {
   // B₀ path.
   ЧебышёвSeries<double, Instant> series1({16, 5, 3, 7}, t_min_, t_max_);
   EXPECT_FALSE(series1.MayHaveRealRoots());
+  // An error estimate causes the result to be more pessimistic.
+  EXPECT_TRUE(series1.MayHaveRealRoots(/*error_estimate*/1.5));
   // We don't know, but it actually doesn't have zeroes.
   ЧебышёвSeries<double, Instant> series2({13, 5, 3, 7}, t_min_, t_max_);
   EXPECT_TRUE(series2.MayHaveRealRoots());
