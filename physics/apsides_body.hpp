@@ -176,6 +176,9 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
   for (auto const& [time, _] : periapsides) {
     apsides_times.insert(time);
   }
+  if (apsides_times.size() < 2) {
+    return {};
+  }
 
   // Initialize the iterators.  After this block |it| designates the first
   // periapsis and |previous_it| designates the previous apoapsis, if there is
