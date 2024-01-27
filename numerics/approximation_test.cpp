@@ -32,16 +32,12 @@ using namespace principia::testing_utilities::_numerics_matchers;
 
 TEST(ApproximationTest, SinInverse) {
   auto const f = [](double const x) { return Sin(1 * Radian / x); };
-  TerminationPredicate<double, double> const done =
-      [](auto const& _, double const& error_estimate) -> bool {
-    return error_estimate < 1e-6;
-  };
   double error_estimate;
   auto const interpolant =
       ЧебышёвPolynomialInterpolant<128>(f,
                                         /*lower_bound=*/0.1,
                                         /*upper_bound=*/10.0,
-                                        done,
+                                        /*max_error=*/1e-6,
                                         &error_estimate);
   EXPECT_EQ(128, interpolant.degree());
   // Didn't reach the desired accuracy.
@@ -54,16 +50,12 @@ TEST(ApproximationTest, SinInverse) {
 
 TEST(ApproximationTest, Exp) {
   auto const f = [](double const x) { return std::exp(x); };
-  TerminationPredicate<double, double> const done =
-      [](auto const& _, double const& error_estimate) -> bool {
-    return error_estimate < 1e-6;
-  };
   double error_estimate;
   auto const interpolant =
       ЧебышёвPolynomialInterpolant<128>(f,
                                         /*lower_bound=*/0.01,
                                         /*upper_bound=*/3.0,
-                                        done,
+                                        /*max_error=*/1e-6,
                                         &error_estimate);
   EXPECT_EQ(16, interpolant.degree());
   EXPECT_THAT(error_estimate, IsNear(4.7e-14_(1)));
@@ -75,16 +67,17 @@ TEST(ApproximationTest, Exp) {
 
 TEST(ApproximationTest, AdaptiveSinInverse) {
   auto const f = [](double const x) { return Sin(1 * Radian / x); };
-  TerminationPredicate<double, double> const done =
+  SubdivisionPredicate<double, double> subdivide =
       [](auto const& _, double const& error_estimate) -> bool {
-    return error_estimate < 1e-6;
+    return true;
   };
   double error_estimate;
   auto const interpolants =
       AdaptiveЧебышёвPolynomialInterpolant<8>(f,
                                               /*lower_bound=*/0.1,
                                               /*upper_bound=*/10.0,
-                                              done,
+                                              /*max_error=*/1e-6,
+                                              subdivide,
                                               &error_estimate);
   EXPECT_THAT(error_estimate, IsNear(7.1e-7_(1)));
   EXPECT_THAT(interpolants, SizeIs(11));

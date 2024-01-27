@@ -46,7 +46,7 @@ template<int N, int max_degree, typename Argument, typename Function>
     Function const& f,
     Argument const& a,
     Argument const& b,
-    TerminationPredicate<Value<Argument, Function>, Argument> const& done,
+    Difference<Value<Argument, Function>> const& max_error,
     FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_fₖ,
     FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_aⱼ,
     Difference<Value<Argument, Function>>* const error_estimate) {
@@ -85,19 +85,13 @@ template<int N, int max_degree, typename Argument, typename Function>
     current_error_estimate += Abs(aⱼ[j]);
   }
 
-  std::vector<Value<Argument, Function>> coefficients;
-  std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
-            std::back_inserter(coefficients));
-  ЧебышёвSeries<Value<Argument, Function>, Argument> current_interpolant(
-      coefficients, a, b);
-
   if constexpr (N <= max_degree) {
-    if (!done(current_interpolant, current_error_estimate)) {
+    if (current_error_estimate > max_error) {
       // Note that this recursive call overflows the stack when
       // max_degree >= 256.  We could allocate on the heap, but then we don't
       // care about very high degree polynomials.
       return ЧебышёвPolynomialInterpolantImplementation<2 * N, max_degree>(
-          f, a, b, done, fₖ, aⱼ, error_estimate);
+          f, a, b, max_error, fₖ, aⱼ, error_estimate);
     }
   }
 
@@ -110,7 +104,11 @@ template<int N, int max_degree, typename Argument, typename Function>
   if (error_estimate != nullptr) {
     *error_estimate = current_error_estimate;
   }
-  return current_interpolant;
+  std::vector<Value<Argument, Function>> coefficients;
+  std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
+            std::back_inserter(coefficients));
+  return ЧебышёвSeries<Value<Argument, Function>, Argument>(
+      coefficients, a, b);
 }
 
 template<int max_degree, typename Argument, typename Function>
@@ -119,7 +117,7 @@ template<int max_degree, typename Argument, typename Function>
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    TerminationPredicate<Value<Argument, Function>, Argument> const& done,
+    Difference<Value<Argument, Function>> const& max_error,
     Difference<Value<Argument, Function>>* const error_estimate) {
   auto const& a = lower_bound;
   auto const& b = upper_bound;
@@ -130,7 +128,7 @@ template<int max_degree, typename Argument, typename Function>
       {0.5 * (f_b + f_a), 0.5 * (f_b - f_a)});
 
   return ЧебышёвPolynomialInterpolantImplementation</*N=*/2, max_degree>(
-      f, a, b, done, fₖ, aⱼ, error_estimate);
+      f, a, b, max_error, fₖ, aⱼ, error_estimate);
 }
 
 template<int max_degree, typename Argument, typename Function>
@@ -139,15 +137,18 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    TerminationPredicate<Value<Argument, Function>, Argument> const& done,
+    Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     Difference<Value<Argument, Function>>* error_estimate) {
   // Try to build an interpolation over the entire interval.
   Difference<Value<Argument, Function>> full_error_estimate;
   auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
-      f, lower_bound, upper_bound, done, &full_error_estimate);
-  if (done(full_interpolant, full_error_estimate)) {
-    // If the interpolant over the entire interval matches the termination
-    // predicate, return it.
+      f, lower_bound, upper_bound, max_error, &full_error_estimate);
+  if (full_error_estimate <= max_error ||
+      !subdivide(full_interpolant, full_error_estimate)) {
+    // If the interpolant over the entire interval is within the desired error
+    // bound, return it.  Same thing if |subdivide| tells us that we should not
+    // subdivide the interval.
     LOG(INFO) << "Degree " << full_interpolant.degree() << " interpolant over ["
             << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
             << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
@@ -165,12 +166,10 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Difference<Value<Argument, Function>> lower_error_estimate;
     auto const midpoint =
         Barycentre(std::pair(lower_bound, upper_bound), std::pair(1, 1));
-    auto lower_interpolants =
-        AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
-            f, lower_bound, midpoint, done, &lower_error_estimate);
-    auto upper_interpolants =
-        AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
-            f, midpoint, upper_bound, done, &upper_error_estimate);
+    auto lower_interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
+        f, lower_bound, midpoint, max_error, subdivide, &lower_error_estimate);
+    auto upper_interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
+        f, midpoint, upper_bound, max_error, subdivide, &upper_error_estimate);
     std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
         all_interpolants;
     std::move(lower_interpolants.begin(),

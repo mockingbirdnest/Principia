@@ -18,11 +18,11 @@ using namespace principia::quantities::_named_quantities;
 template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;
 
-// A function that returns true iff the interpolant search should terminate
-// because it has reached an acceptable solution.  A simple predicate can just
-// check if |error_estimate| is below some threshold.
+// A function that returns true iff the interpolation interval should be split
+// further.  It is only called if the |error_estimate| is larger than the
+// |max_error| given to |AdaptiveЧебышёвPolynomialInterpolant|.
 template<typename Value, typename Argument>
-using TerminationPredicate =
+using SubdivisionPredicate =
     std::function<bool(ЧебышёвSeries<Value, Argument> const& interpolant,
                        Difference<Value> const& error_estimate)>;
 
@@ -35,7 +35,7 @@ template<int max_degree, typename Argument, typename Function>
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    TerminationPredicate<Value<Argument, Function>, Argument> const& done,
+    Difference<Value<Argument, Function>> const& max_error,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 // Returns an ordered vector of Чебышёв polynomial interpolants of f, which
@@ -47,14 +47,15 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    TerminationPredicate<Value<Argument, Function>, Argument> const& done,
+    Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 }  // namespace internal
 
 using internal::AdaptiveЧебышёвPolynomialInterpolant;
+using internal::SubdivisionPredicate;
 using internal::ЧебышёвPolynomialInterpolant;
-using internal::TerminationPredicate;///REMOVE
 
 }  // namespace _approximation
 }  // namespace numerics
