@@ -37,7 +37,16 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-constexpr int max_чебышёв_degree = 16;
+// This number was selected in game to obtain good performance without missing
+// collisions.  It was found that that one evaluation of
+// |height_above_terrain_at_time| costs around 15 µs, and that the number of
+// evaluations grows roughly linearly with the degree.  This is probably because
+// the terrain is very bumpy, so even a high degree doesn't approximate it well,
+// and the number of subdivisions is largely independent from the degree.  It
+// would be faster to use degree 4, but since the height would only be evaluated
+// 5 times per interval we could easily miss significant features of the
+// terrain.
+constexpr int max_чебышёв_degree = 8;
 // The error bound |max_collision_error| is guaranteed to be met if the vessel
 // is slower than this.
 constexpr Speed max_collision_speed = 10'000 * Metre / Second;
@@ -308,10 +317,14 @@ ComputeFirstCollision(
   // The frame of the surface of the celestial.
   using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
 
-  auto height_above_terrain_at_time = [&radius,
+  std::int64_t evaluations_count = 0;
+
+  auto height_above_terrain_at_time = [&evaluations_count,
+                                       &radius,
                                        &reference,
                                        &reference_body,
                                        &trajectory](Instant const& t) {
+    ++evaluations_count;
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
     Displacement<Frame> const displacement_in_frame =
@@ -331,19 +344,17 @@ ComputeFirstCollision(
   };
 
   // Interpolate the height above the terrain using Чебышёв polynomials.
-  TerminationPredicate<Length, Instant> const done =
-      [max_collision_error](auto const& interpolant,
-                            Length const& error_estimate) -> bool {
-    return error_estimate < max_collision_error ||
-           (interpolant.degree() > 4 &&
-            !interpolant.MayHaveRealRoots(error_estimate));
+  SubdivisionPredicate<Length, Instant> const subdivide =
+      [](auto const& interpolant, Length const& error_estimate) -> bool {
+    return interpolant.MayHaveRealRoots(error_estimate);
   };
   auto const чебышёв_interpolants =
       AdaptiveЧебышёвPolynomialInterpolant<max_чебышёв_degree>(
           height_above_terrain_at_time,
           interval.min,
           interval.max,
-          done);
+          max_collision_error,
+          subdivide);
   for (auto const& interpolant : чебышёв_interpolants) {
     if (interpolant.MayHaveRealRoots()) {
       // The relative error on the roots is choosen so that it corresponds to an
@@ -361,7 +372,8 @@ ComputeFirstCollision(
       } else {
         // The smallest root is the first collision.
         Instant const first_collision_time = *real_roots.begin();
-        LOG(INFO) << "First collision time is " << first_collision_time;
+        LOG(INFO) << "First collision time is " << first_collision_time
+                  << " with " << evaluations_count << " evaluations";
         return typename DiscreteTrajectory<Frame>::value_type(
             first_collision_time,
             trajectory.EvaluateDegreesOfFreedom(first_collision_time));

@@ -160,6 +160,9 @@ AdaptiveЧебышёвPolynomialInterpolant(
     interpolants.emplace_back(std::move(full_interpolant));
     return interpolants;
   } else {
+    LOG(INFO) << "Splitting [" << lower_bound << " (" << f(lower_bound) << "), "
+              << upper_bound << " (" << f(upper_bound) << ")] with error "
+              << full_error_estimate;
     // If the interpolant over the entire interval doesn't match the termination
     // predicate, we stopped because of |max_degree|.  Subdivide the interval.
     Difference<Value<Argument, Function>> upper_error_estimate;
