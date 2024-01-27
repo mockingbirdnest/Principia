@@ -105,6 +105,7 @@ template<int N, int max_degree, typename Argument, typename Function>
     *error_estimate = current_error_estimate;
   }
   std::vector<Value<Argument, Function>> coefficients;
+  coefficients.reserve(N / 2 + 1);
   std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
             std::back_inserter(coefficients));
   return ЧебышёвSeries<Value<Argument, Function>, Argument>(
