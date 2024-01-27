@@ -162,11 +162,11 @@ AdaptiveЧебышёвPolynomialInterpolant(
     interpolants.emplace_back(std::move(full_interpolant));
     return interpolants;
   } else {
+    // If the interpolant over the entire interval is not within the desired
+    // error bound, subdivide the interval.
     VLOG(1) << "Splitting [" << lower_bound << " (" << f(lower_bound) << "), "
             << upper_bound << " (" << f(upper_bound) << ")] with error "
             << full_error_estimate;
-    // If the interpolant over the entire interval doesn't match the termination
-    // predicate, we stopped because of |max_degree|.  Subdivide the interval.
     Difference<Value<Argument, Function>> upper_error_estimate;
     Difference<Value<Argument, Function>> lower_error_estimate;
     auto const midpoint =

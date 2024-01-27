@@ -42,10 +42,10 @@ using namespace principia::quantities::_si;
 // |height_above_terrain_at_time| costs around 15 µs, and that the number of
 // evaluations grows roughly linearly with the degree.  This is probably because
 // the terrain is very bumpy, so even a high degree doesn't approximate it well,
-// and the number of subdivisions is largely independent from the degree.  It
-// would be faster to use degree 4, but since the height would only be evaluated
-// 5 times per interval we could easily miss significant features of the
-// terrain.
+// and the number of subdivisions end up being largely independent from the
+// degree.  It would be faster to use degree 4, but since the height would only
+// be evaluated 5 times per interval we could easily miss significant features
+// of the terrain.
 constexpr int max_чебышёв_degree = 8;
 // The error bound |max_collision_error| is guaranteed to be met if the vessel
 // is slower than this.
