@@ -317,14 +317,14 @@ ComputeFirstCollision(
   // The frame of the surface of the celestial.
   using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
 
-  std::int64_t evaluations_count = 0;
+  std::int64_t number_of_evaluations = 0;
 
-  auto height_above_terrain_at_time = [&evaluations_count,
+  auto height_above_terrain_at_time = [&number_of_evaluations,
                                        &radius,
                                        &reference,
                                        &reference_body,
                                        &trajectory](Instant const& t) {
-    ++evaluations_count;
+    ++number_of_evaluations;
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
     Displacement<Frame> const displacement_in_frame =
@@ -367,19 +367,19 @@ ComputeFirstCollision(
           ((interpolant.upper_bound() - interpolant.lower_bound()) *
            max_collision_speed));
       if (real_roots.empty()) {
-        LOG(INFO) << "No real roots over [" << interpolant.lower_bound() << ", "
+        VLOG(1) << "No real roots over [" << interpolant.lower_bound() << ", "
                 << interpolant.upper_bound() << "]";
       } else {
         // The smallest root is the first collision.
         Instant const first_collision_time = *real_roots.begin();
-        LOG(INFO) << "First collision time is " << first_collision_time
-                  << " with " << evaluations_count << " evaluations";
+        VLOG(1) << "First collision time is " << first_collision_time
+                << " with " << number_of_evaluations << " evaluations";
         return typename DiscreteTrajectory<Frame>::value_type(
             first_collision_time,
             trajectory.EvaluateDegreesOfFreedom(first_collision_time));
       }
     } else {
-      LOG(INFO) << "No roots over [" << interpolant.lower_bound() << ", "
+      VLOG(1) << "No roots over [" << interpolant.lower_bound() << ", "
               << interpolant.upper_bound() << "]";
     }
   }

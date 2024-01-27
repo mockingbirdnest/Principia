@@ -1048,9 +1048,9 @@ Plugin::ComputeAndRenderFirstCollision(
                                                    apoapsides_trajectory,
                                                    periapsides_trajectory);
 
-  LOG(INFO) << "Found " << intervals.size() << " collision intervals";
+  VLOG(1) << "Found " << intervals.size() << " collision intervals";
   for (auto const& interval : intervals) {
-    LOG(INFO) << "Collision interval: " << interval;
+    VLOG(1) << "Collision interval: " << interval;
     auto const maybe_collision = ComputeFirstCollision(celestial_body,
                                                        celestial_trajectory,
                                                        trajectory,
