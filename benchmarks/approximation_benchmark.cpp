@@ -1,12 +1,13 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=ApproximationBenchmark --benchmark_min_time=30  // NOLINT(whitespace/line_length)
 
-#include "numerics/approximation.hpp"
-
 #include <random>
+#include <vector>
 
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
+#include "numerics/approximation.hpp"
 #include "numerics/чебышёв_series.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

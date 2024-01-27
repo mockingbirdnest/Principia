@@ -86,7 +86,7 @@
     <ClCompile Include="lagrange_equipotentials_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="approximation.cpp">
+    <ClCompile Include="approximation_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

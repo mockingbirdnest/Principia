@@ -14,7 +14,7 @@
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
-    <ClCompile Include="approximation.cpp" />
+    <ClCompile Include="approximation_benchmark.cpp" />
     <ClCompile Include="apsides_benchmark.cpp" />
     <ClCompile Include="checkpointer_benchmark.cpp" />
     <ClCompile Include="discrete_trajectory_benchmark.cpp" />
