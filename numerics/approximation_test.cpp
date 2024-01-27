@@ -67,12 +67,17 @@ TEST(ApproximationTest, Exp) {
 
 TEST(ApproximationTest, AdaptiveSinInverse) {
   auto const f = [](double const x) { return Sin(1 * Radian / x); };
+  SubdivisionPredicate<double, double> subdivide =
+      [](auto const& _, double const& error_estimate) -> bool {
+    return true;
+  };
   double error_estimate;
   auto const interpolants =
       AdaptiveЧебышёвPolynomialInterpolant<8>(f,
                                               /*lower_bound=*/0.1,
                                               /*upper_bound=*/10.0,
                                               /*max_error=*/1e-6,
+                                              subdivide,
                                               &error_estimate);
   EXPECT_THAT(error_estimate, IsNear(7.1e-7_(1)));
   EXPECT_THAT(interpolants, SizeIs(11));

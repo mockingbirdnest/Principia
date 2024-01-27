@@ -138,14 +138,17 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Argument const& lower_bound,
     Argument const& upper_bound,
     Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     Difference<Value<Argument, Function>>* error_estimate) {
   // Try to build an interpolation over the entire interval.
   Difference<Value<Argument, Function>> full_error_estimate;
   auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
       f, lower_bound, upper_bound, max_error, &full_error_estimate);
-  if (full_error_estimate <= max_error) {
+  if (full_error_estimate <= max_error ||
+      !subdivide(full_interpolant, full_error_estimate)) {
     // If the interpolant over the entire interval is within the desired error
-    // bound, return it.
+    // bound, return it.  Same thing if |subdivide| tells us that we should not
+    // subdivide the interval.
     VLOG(1) << "Degree " << full_interpolant.degree() << " interpolant over ["
             << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
             << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
@@ -157,18 +160,19 @@ AdaptiveЧебышёвPolynomialInterpolant(
     interpolants.emplace_back(std::move(full_interpolant));
     return interpolants;
   } else {
-    // If the interpolant over the entire interval is not within the desired
-    // error bound, subdivide the interval.
+    VLOG(1) << "Splitting [" << lower_bound << " (" << f(lower_bound) << "), "
+            << upper_bound << " (" << f(upper_bound) << ")] with error "
+            << full_error_estimate;
+    // If the interpolant over the entire interval doesn't match the termination
+    // predicate, we stopped because of |max_degree|.  Subdivide the interval.
     Difference<Value<Argument, Function>> upper_error_estimate;
     Difference<Value<Argument, Function>> lower_error_estimate;
     auto const midpoint =
         Barycentre(std::pair(lower_bound, upper_bound), std::pair(1, 1));
-    auto lower_interpolants =
-        AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
-            f, lower_bound, midpoint, max_error, &lower_error_estimate);
-    auto upper_interpolants =
-        AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
-            f, midpoint, upper_bound, max_error, &upper_error_estimate);
+    auto lower_interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
+        f, lower_bound, midpoint, max_error, subdivide, &lower_error_estimate);
+    auto upper_interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
+        f, midpoint, upper_bound, max_error, subdivide, &upper_error_estimate);
     std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
         all_interpolants;
     std::move(lower_interpolants.begin(),

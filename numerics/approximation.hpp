@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <type_traits>
 #include <vector>
 
@@ -17,10 +18,18 @@ using namespace principia::quantities::_named_quantities;
 template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;
 
+// A function that returns true iff the interpolation interval should be split
+// further.  It is only called if the |error_estimate| is larger than the
+// |max_error| given to |AdaptiveЧебышёвPolynomialInterpolant|.
+template<typename Value, typename Argument>
+using SubdivisionPredicate =
+    std::function<bool(ЧебышёвSeries<Value, Argument> const& interpolant,
+                       Difference<Value> const& error_estimate)>;
+
 // Returns a Чебышёв polynomial interpolant of f over
-// [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
-// below |max_error| or if |max_degree| has been reached.  If |error_estimate|
-// is nonnull, it receives the estimate of the L∞ error.
+// [lower_bound, upper_bound].  Stops if the termination predicate |done|
+// returns true or if |max_degree| has been reached.  If |error_estimate| is
+// nonnull, it receives the estimate of the L∞ error.
 template<int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument> ЧебышёвPolynomialInterpolant(
     Function const& f,
@@ -31,8 +40,7 @@ template<int max_degree, typename Argument, typename Function>
 
 // Returns an ordered vector of Чебышёв polynomial interpolants of f, which
 // together cover [lower_bound, upper_bound].  Subdivides the interval so that
-// the degree of each approximant doesn't exceed |max_degree|.  The final
-// (estimated) absolute error is guaranteed to be below |max_error|.
+// the degree of each approximant doesn't exceed |max_degree|.
 template<int max_degree, typename Argument, typename Function>
 std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
 AdaptiveЧебышёвPolynomialInterpolant(
@@ -40,11 +48,13 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Argument const& lower_bound,
     Argument const& upper_bound,
     Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 }  // namespace internal
 
 using internal::AdaptiveЧебышёвPolynomialInterpolant;
+using internal::SubdivisionPredicate;
 using internal::ЧебышёвPolynomialInterpolant;
 
 }  // namespace _approximation
