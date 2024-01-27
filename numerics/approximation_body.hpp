@@ -148,7 +148,7 @@ AdaptiveЧебышёвPolynomialInterpolant(
   if (done(full_interpolant, full_error_estimate)) {
     // If the interpolant over the entire interval matches the termination
     // predicate, return it.
-    VLOG(1) << "Degree " << full_interpolant.degree() << " interpolant over ["
+    LOG(INFO) << "Degree " << full_interpolant.degree() << " interpolant over ["
             << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
             << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
     if (error_estimate != nullptr) {
