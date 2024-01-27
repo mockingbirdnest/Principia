@@ -105,6 +105,7 @@ template<int N, int max_degree, typename Argument, typename Function>
     *error_estimate = current_error_estimate;
   }
   std::vector<Value<Argument, Function>> coefficients;
+  coefficients.reserve(N / 2 + 1);
   std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
             std::back_inserter(coefficients));
   return ЧебышёвSeries<Value<Argument, Function>, Argument>(
@@ -157,14 +158,15 @@ AdaptiveЧебышёвPolynomialInterpolant(
     }
     std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
         interpolants;
+    interpolants.reserve(1);
     interpolants.emplace_back(std::move(full_interpolant));
     return interpolants;
   } else {
+    // If the interpolant over the entire interval is not within the desired
+    // error bound, subdivide the interval.
     VLOG(1) << "Splitting [" << lower_bound << " (" << f(lower_bound) << "), "
             << upper_bound << " (" << f(upper_bound) << ")] with error "
             << full_error_estimate;
-    // If the interpolant over the entire interval doesn't match the termination
-    // predicate, we stopped because of |max_degree|.  Subdivide the interval.
     Difference<Value<Argument, Function>> upper_error_estimate;
     Difference<Value<Argument, Function>> lower_error_estimate;
     auto const midpoint =
@@ -175,6 +177,8 @@ AdaptiveЧебышёвPolynomialInterpolant(
         f, midpoint, upper_bound, max_error, subdivide, &upper_error_estimate);
     std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
         all_interpolants;
+    all_interpolants.reserve(lower_interpolants.size() +
+                             upper_interpolants.size());
     std::move(lower_interpolants.begin(),
               lower_interpolants.end(),
               std::back_inserter(all_interpolants));

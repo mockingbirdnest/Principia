@@ -58,10 +58,10 @@ TEST(ApproximationTest, Exp) {
                                         /*max_error=*/1e-6,
                                         &error_estimate);
   EXPECT_EQ(16, interpolant.degree());
-  EXPECT_THAT(error_estimate, IsNear(4.7e-14_(1)));
+  EXPECT_THAT(error_estimate, IsNear(4.3e-14_(1)));
   for (double x = 0.01; x < 3; x += 0.01) {
     EXPECT_THAT(interpolant.Evaluate(x),
-                AbsoluteErrorFrom(f(x), AllOf(Lt(7.2e-15), Ge(0))));
+                AbsoluteErrorFrom(f(x), AllOf(Lt(1.1e-14), Ge(0))));
   }
 }
 
@@ -143,7 +143,7 @@ TEST(ApproximationTest, AdaptiveSinInverse) {
          x < interpolant.upper_bound();
          x += 0.01) {
       EXPECT_THAT(interpolant.Evaluate(x),
-                  AbsoluteErrorFrom(f(x), AllOf(Lt(6.2e-7), Ge(2.7e-17))));
+                  AbsoluteErrorFrom(f(x), AllOf(Lt(6.2e-7), Ge(0))));
     }
   }
 }

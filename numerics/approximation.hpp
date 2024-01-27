@@ -27,9 +27,9 @@ using SubdivisionPredicate =
                        Difference<Value> const& error_estimate)>;
 
 // Returns a Чебышёв polynomial interpolant of f over
-// [lower_bound, upper_bound].  Stops if the termination predicate |done|
-// returns true or if |max_degree| has been reached.  If |error_estimate| is
-// nonnull, it receives the estimate of the L∞ error.
+// [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
+// below |max_error| or if |max_degree| has been reached.  If |error_estimate|
+// is nonnull, it receives the estimate of the L∞ error.
 template<int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument> ЧебышёвPolynomialInterpolant(
     Function const& f,
@@ -39,8 +39,8 @@ template<int max_degree, typename Argument, typename Function>
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 // Returns an ordered vector of Чебышёв polynomial interpolants of f, which
-// together cover [lower_bound, upper_bound].  Subdivides the interval so that
-// the degree of each approximant doesn't exceed |max_degree|.
+// together cover [lower_bound, upper_bound].  Subdivides the interval until the
+// error is below |max_error| or |subdivide| returns false.
 template<int max_degree, typename Argument, typename Function>
 std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
 AdaptiveЧебышёвPolynomialInterpolant(
