@@ -158,6 +158,7 @@ AdaptiveЧебышёвPolynomialInterpolant(
     }
     std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
         interpolants;
+    interpolants.reserve(1);
     interpolants.emplace_back(std::move(full_interpolant));
     return interpolants;
   } else {
@@ -176,6 +177,8 @@ AdaptiveЧебышёвPolynomialInterpolant(
         f, midpoint, upper_bound, max_error, subdivide, &upper_error_estimate);
     std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
         all_interpolants;
+    all_interpolants.reserve(lower_interpolants.size() +
+                             upper_interpolants.size());
     std::move(lower_interpolants.begin(),
               lower_interpolants.end(),
               std::back_inserter(all_interpolants));
