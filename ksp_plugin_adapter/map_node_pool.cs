@@ -171,19 +171,6 @@ internal class MapNodePool {
           time = marker.t,
           associated_map_object = associated_map_object,
       };
-      if (provenance.type == MapObject.ObjectType.Periapsis) {
-        var centre = reference_frame.Centre();
-        if (provenance.source == NodeSource.FlightPlan ||
-            !reference_frame.IsSurfaceFrame()) {
-          // TODO(phl): For the flight plan, preserve the old behaviour for now.
-          // Also, the terrain-based markers only make sense for the surface
-          // frame.
-          if (centre.GetAltitude(node_properties.world_position) < 0) {
-            node_properties.object_type = MapObject.ObjectType.PatchTransition;
-            node_properties.colour = XKCDColors.Orange;
-          }
-        }
-      }
 
       if (pool.nodes_used == pool.nodes.Count) {
         pool.nodes.Add(MakePoolNode());
@@ -314,25 +301,18 @@ internal class MapNodePool {
               source,
               celestial.GetAltitude(position).FormatN(0));
           caption.captionLine1 = "";
-          // TODO(phl): Add support for the flight plan.
-          if (properties.source == NodeSource.Prediction) {
-            caption.captionLine2 = L10N.CacheFormat(
-                "#Principia_MapNode_ImpactCaptionLine2",
-                speed.FormatN(0));
-          } else {
-            caption.captionLine2 = "";
-          }
+          caption.captionLine2 = L10N.CacheFormat(
+              "#Principia_MapNode_ImpactCaptionLine2",
+              speed.FormatN(0));
           break;
         }
       }
-      // TODO(phl): Add support for the flight plan.
-      if (properties.object_type != MapObject.ObjectType.PatchTransition ||
-          properties.source == NodeSource.Prediction) {
-        caption.captionLine1 =
-            "T" + new PrincipiaTimeSpan(
-                    Planetarium.GetUniversalTime() - properties.time).
-                Format(with_leading_zeroes: false, with_seconds: true);
-      }
+      caption.captionLine1 = "T" +
+                             new PrincipiaTimeSpan(
+                                     Planetarium.GetUniversalTime() -
+                                     properties.time).
+                                 Format(with_leading_zeroes: false,
+                                        with_seconds: true);
       // The font used by map nodes does not support the minus sign, so we
       // fall back to the hyphen-minus.
       string minus = Culture.culture.NumberFormat.NegativeSign;

@@ -2294,8 +2294,37 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private TQP? RenderedCollision(string vessel_guid, CelestialBody centre) {
+  private TQP? RenderedPredictionCollision(string vessel_guid,
+                                           CelestialBody centre) {
     var executor = plugin_.CollisionNewPredictionExecutor(
+        celestial_index: centre.flightGlobalsIndex,
+        sun_world_position: (XYZ)Planetarium.fetch.Sun.position,
+        // TODO(phl): This should be much larger, if it is limited at all.
+        max_points: MapNodePool.MaxNodesPerProvenance,
+        vessel_guid: vessel_guid);
+
+    for (;;) {
+      bool more = executor.CollisionGetLatitudeLongitude(
+          out double trial_latitude,
+          out double trial_longitude);
+      if (!more) {
+        if (plugin_.CollisionDeleteExecutor(ref executor, out TQP collision)) {
+          return collision;
+        } else {
+          return null;
+        }
+      }
+      executor.CollisionSetRadius(centre.TerrainAltitude(
+                                      trial_latitude,
+                                      trial_longitude,
+                                      allowNegative: !centre.ocean) +
+                                  centre.Radius);
+    }
+  }
+
+  private TQP? RenderedFlightPlanCollision(string vessel_guid,
+                                           CelestialBody centre) {
+    var executor = plugin_.CollisionNewFlightPlanExecutor(
         celestial_index: centre.flightGlobalsIndex,
         sun_world_position: (XYZ)Planetarium.fetch.Sun.position,
         // TODO(phl): This should be much larger, if it is limited at all.
@@ -2360,7 +2389,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         var centre = plotting_frame_selector_.Centre();
         var centre_index = centre.flightGlobalsIndex;
         if (plotting_frame_selector_.IsSurfaceFrame()) {
-          TQP? collision = RenderedCollision(vessel_guid, centre);
+          TQP? collision = RenderedPredictionCollision(vessel_guid, centre);
           if (collision.HasValue) {
             map_node_pool_.RenderMarkers(new[] {collision.Value },
                                            new MapNodePool.Provenance(
@@ -2451,7 +2480,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           plotting_frame_selector_);
     } else {
       if (plotting_frame_selector_.Centre() != null) {
-        var centre_index = plotting_frame_selector_.Centre().flightGlobalsIndex;
+        var centre = plotting_frame_selector_.Centre();
+        var centre_index = centre.flightGlobalsIndex;
+        if (plotting_frame_selector_.IsSurfaceFrame()) {
+          TQP? collision = RenderedFlightPlanCollision(vessel_guid, centre);
+          if (collision.HasValue) {
+            map_node_pool_.RenderMarkers(new[] {collision.Value },
+                                         new MapNodePool.Provenance(
+                                             vessel_guid,
+                                             MapNodePool.NodeSource.
+                                                 FlightPlan,
+                                             MapObject.ObjectType.
+                                                 PatchTransition),
+                                         plotting_frame_selector_);
+          }
+        }
         plugin_.FlightPlanRenderedApsides(vessel_guid,
                                           centre_index,
                                           sun_world_position,
