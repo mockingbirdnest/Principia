@@ -306,16 +306,25 @@ internal class MapNodePool {
         }
         case MapObject.ObjectType.PatchTransition: {
           CelestialBody celestial = properties.reference_frame.Centre();
-          // TODO(phl): If we have a non-BS time, give it here.
+          double speed = properties.velocity.magnitude;
           caption.Header = L10N.CacheFormat("#Principia_MapNode_ImpactHeader",
                                             source,
                                             celestial.Name());
           caption.captionLine1 = "";
-          caption.captionLine2 = "";
+          // TODO(phl): Add support for the flight plan.
+          if (properties.source == NodeSource.Prediction) {
+            caption.captionLine2 = L10N.CacheFormat(
+                "#Principia_MapNode_ImpactCaptionLine2",
+                speed.FormatN(0));
+          } else {
+            caption.captionLine2 = "";
+          }
           break;
         }
       }
-      if (properties.object_type != MapObject.ObjectType.PatchTransition) {
+      // TODO(phl): Add support for the flight plan.
+      if (properties.object_type != MapObject.ObjectType.PatchTransition ||
+          properties.source == NodeSource.Prediction) {
         caption.captionLine1 =
             "T" + new PrincipiaTimeSpan(
                     Planetarium.GetUniversalTime() - properties.time).
