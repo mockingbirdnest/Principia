@@ -306,10 +306,13 @@ internal class MapNodePool {
         }
         case MapObject.ObjectType.PatchTransition: {
           CelestialBody celestial = properties.reference_frame.Centre();
+          Vector3d position = properties.world_position;
           double speed = properties.velocity.magnitude;
-          caption.Header = L10N.CacheFormat("#Principia_MapNode_ImpactHeader",
-                                            source,
-                                            celestial.Name());
+          caption.Header = L10N.CelestialString(
+              "#Principia_MapNode_ImpactHeader",
+              new[]{ celestial },
+              source,
+              celestial.GetAltitude(position).FormatN(0));
           caption.captionLine1 = "";
           // TODO(phl): Add support for the flight plan.
           if (properties.source == NodeSource.Prediction) {
