@@ -26,6 +26,12 @@ using SubdivisionPredicate =
     std::function<bool(ЧебышёвSeries<Value, Argument> const& interpolant,
                        Difference<Value> const& error_estimate)>;
 
+// A function that returns true if construction of the interpolants
+// must proceed.
+template<typename Value, typename Argument>
+using ProceedPredicate =
+    std::function<bool(ЧебышёвSeries<Value, Argument> interpolant)>;
+
 // Returns a Чебышёв polynomial interpolant of f over
 // [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
 // below |max_error| or if |max_degree| has been reached.  If |error_estimate|
@@ -51,9 +57,24 @@ AdaptiveЧебышёвPolynomialInterpolant(
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
+// A streaming version of the above: as each interpolant that is below
+// |max_error| is computed, it is passed to |proceed|, which should return false
+// if the production of interpolants should continue and false if it should
+// stop.
+template<int max_degree, typename Argument, typename Function>
+void StreamingAdaptiveЧебышёвPolynomialInterpolant(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
+    ProceedPredicate<Value<Argument, Function>, Argument> const& proceed,
+    Difference<Value<Argument, Function>>* error_estimate = nullptr);
+
 }  // namespace internal
 
 using internal::AdaptiveЧебышёвPolynomialInterpolant;
+using internal::StreamingAdaptiveЧебышёвPolynomialInterpolant;
 using internal::SubdivisionPredicate;
 using internal::ЧебышёвPolynomialInterpolant;
 
