@@ -41,6 +41,10 @@ public class Filenames {
     return Regex.Replace(file_info.Name, @"\..+$", "");
   }
 
+  public static bool IsBenchmark(FileInfo file_info) {
+    return Regex.IsMatch(file_info.Name, @"_benchmark\.cpp$");
+  }
+
   public static bool IsBody(FileInfo file_info, HashSet<string> extra_headers) {
     if (extra_headers.Contains(file_info.Name)) {
       return false;
