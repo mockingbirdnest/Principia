@@ -155,10 +155,10 @@ TEST(ApproximationTest, StreamingAdaptiveSinInverse) {
     return true;
   };
   std::int64_t number_of_interpolants = 0;
-  ProceedPredicate<double, double> proceed =
+  TerminationPredicate<double, double> stop =
       [&number_of_interpolants](auto const& _) -> bool {
     ++number_of_interpolants;
-    return true;
+    return false;
   };
   double error_estimate;
   StreamingAdaptiveЧебышёвPolynomialInterpolant<8>(f,
@@ -166,7 +166,7 @@ TEST(ApproximationTest, StreamingAdaptiveSinInverse) {
                                                    /*upper_bound=*/10.0,
                                                    /*max_error=*/1e-6,
                                                    subdivide,
-                                                   proceed,
+                                                   stop,
                                                    &error_estimate);
   EXPECT_THAT(error_estimate, IsNear(7.1e-7_(1)));
   EXPECT_EQ(11, number_of_interpolants);

@@ -26,10 +26,9 @@ using SubdivisionPredicate =
     std::function<bool(ЧебышёвSeries<Value, Argument> const& interpolant,
                        Difference<Value> const& error_estimate)>;
 
-// A function that returns true if construction of the interpolants
-// must proceed.
+// A function that returns true iff construction of the interpolants must stop.
 template<typename Value, typename Argument>
-using ProceedPredicate =
+using TerminationPredicate =
     std::function<bool(ЧебышёвSeries<Value, Argument> interpolant)>;
 
 // Returns a Чебышёв polynomial interpolant of f over
@@ -58,9 +57,8 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 // A streaming version of the above: as each interpolant that is below
-// |max_error| is computed, it is passed to |proceed|, which should return false
-// if the production of interpolants should continue and false if it should
-// stop.
+// |max_error| is computed, it is passed to |stop|, which should return false
+// if the production of interpolants should continue and true if it should stop.
 template<int max_degree, typename Argument, typename Function>
 void StreamingAdaptiveЧебышёвPolynomialInterpolant(
     Function const& f,
@@ -68,15 +66,15 @@ void StreamingAdaptiveЧебышёвPolynomialInterpolant(
     Argument const& upper_bound,
     Difference<Value<Argument, Function>> const& max_error,
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
-    ProceedPredicate<Value<Argument, Function>, Argument> const& proceed,
+    TerminationPredicate<Value<Argument, Function>, Argument> const& stop,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 }  // namespace internal
 
 using internal::AdaptiveЧебышёвPolynomialInterpolant;
-using internal::ProceedPredicate;
 using internal::StreamingAdaptiveЧебышёвPolynomialInterpolant;
 using internal::SubdivisionPredicate;
+using internal::TerminationPredicate;
 using internal::ЧебышёвPolynomialInterpolant;
 
 }  // namespace _approximation
