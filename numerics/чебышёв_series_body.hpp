@@ -298,7 +298,9 @@ UnboundedMatrix<double>
 }
 
 template<typename Value, typename Argument>
-bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots() const {
+bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots(
+    Value const error_estimate) const {
+  CHECK_LE(Value{}, error_estimate);
   // TODO(phl): This is a property of the series so we should cache it.
   // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
   // criterion, B₁ and concludes: “There was no detectable difference between
@@ -313,7 +315,10 @@ bool ЧебышёвSeries<Value, Argument>::MayHaveRealRoots() const {
     auto const abs_aⱼ = Abs(helper_.coefficients(j));
     B₀ += abs_aⱼ;
   }
-  return B₀ >= Abs(helper_.coefficients(0));
+  auto const abs_a₀ = Abs(helper_.coefficients(0));
+  // The error may shift the curve vertically.  Note that the following
+  // comparison is valid if the right-hand side is negative.
+  return B₀ >= abs_a₀ - error_estimate;
 }
 
 template<typename Value, typename Argument>

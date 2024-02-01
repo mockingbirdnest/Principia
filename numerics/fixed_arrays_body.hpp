@@ -19,36 +19,25 @@ using namespace principia::quantities::_elementary_functions;
 // A helper class to compute the dot product of two arrays.  |LScalar| and
 // |RScalar| are the types of the elements of the arrays.  |Left| and |Right|
 // are the (deduced) types of the arrays.  They must both have an operator[].
-// |size| is the size of the arrays.  This unrolling helps with performance.
-template<typename LScalar, typename RScalar, int size, int i = size - 1>
-struct DotProduct {
+// The third argument must be |std::make_index_sequence<size>|.
+template<typename LScalar, typename RScalar, typename>
+struct DotProduct;
+
+template<typename LScalar, typename RScalar, int... i>
+struct DotProduct<LScalar, RScalar, std::index_sequence<i...>> {
   template<typename Left, typename Right>
   static Product<LScalar, RScalar> Compute(Left const& left,
                                            Right const& right);
 };
 
-template<typename LScalar, typename RScalar, int size>
-struct DotProduct<LScalar, RScalar, size, 0> {
-  template<typename Left, typename Right>
-  static Product<LScalar, RScalar> Compute(Left const& left,
-                                           Right const& right);
-};
 
-template<typename LScalar, typename RScalar, int size, int i>
+template<typename LScalar, typename RScalar, int... i>
 template<typename Left, typename Right>
 Product<LScalar, RScalar>
-DotProduct<LScalar, RScalar, size, i>::Compute(Left const& left,
-                                               Right const& right) {
-  return left[i] * right[i] +
-         DotProduct<LScalar, RScalar, size, i - 1>::Compute(left, right);
-}
-
-template<typename LScalar, typename RScalar, int size>
-template<typename Left, typename Right>
-Product<LScalar, RScalar>
-DotProduct<LScalar, RScalar, size, 0>::Compute(Left const& left,
-                                               Right const& right) {
-  return left[0] * right[0];
+DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
+    Left const& left,
+    Right const& right) {
+  return ((left[i] * right[i]) + ...);
 }
 
 // The |data_| member is aggregate-initialized with an empty list initializer,
@@ -78,7 +67,8 @@ Scalar_ FixedVector<Scalar_, size_>::Norm() const {
 
 template<typename Scalar_, int size_>
 Square<Scalar_> FixedVector<Scalar_, size_>::Norm²() const {
-  return DotProduct<Scalar, Scalar, size_>::Compute(data_, data_);
+  return DotProduct<Scalar, Scalar, std::make_index_sequence<size_>>::Compute(
+      data_, data_);
 }
 
 template<typename Scalar_, int size_>
@@ -382,7 +372,8 @@ template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
-  return DotProduct<LScalar, RScalar, size>::Compute(left, right);
+  return DotProduct<LScalar, RScalar, std::make_index_sequence<size>>::Compute(
+      left, right);
 }
 
 template<typename Scalar, int size>
@@ -630,14 +621,15 @@ template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> operator*(
     LScalar* const left,
     FixedVector<RScalar, size> const& right) {
-  return DotProduct<LScalar, RScalar, size>::Compute(left, right.data_);
+  return DotProduct<LScalar, RScalar, std::make_index_sequence<size>>::Compute(
+      left, right.data_);
 }
 
 template<typename LScalar, typename RScalar, int size>
 constexpr Product<LScalar, RScalar> operator*(
     TransposedView<FixedVector<LScalar, size>> const& left,
     FixedVector<RScalar, size> const& right) {
-  return DotProduct<LScalar, RScalar, size>::Compute(
+  return DotProduct<LScalar, RScalar, std::make_index_sequence<size>>::Compute(
       left.transpose.data_, right.data_);
 }
 
@@ -678,7 +670,8 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
   auto const* row = left.data_.data();
   for (int i = 0; i < rows; ++i) {
     result[i] =
-        DotProduct<LScalar, RScalar, columns>::Compute(row, right.data_);
+        DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::
+            Compute(row, right.data_);
     row += columns;
   }
   return FixedVector<Product<LScalar, RScalar>, rows>(std::move(result));

@@ -58,21 +58,26 @@ TEST(ApproximationTest, Exp) {
                                         /*max_error=*/1e-6,
                                         &error_estimate);
   EXPECT_EQ(16, interpolant.degree());
-  EXPECT_THAT(error_estimate, IsNear(4.7e-14_(1)));
+  EXPECT_THAT(error_estimate, IsNear(4.3e-14_(1)));
   for (double x = 0.01; x < 3; x += 0.01) {
     EXPECT_THAT(interpolant.Evaluate(x),
-                AbsoluteErrorFrom(f(x), AllOf(Lt(7.2e-15), Ge(0))));
+                AbsoluteErrorFrom(f(x), AllOf(Lt(1.1e-14), Ge(0))));
   }
 }
 
 TEST(ApproximationTest, AdaptiveSinInverse) {
   auto const f = [](double const x) { return Sin(1 * Radian / x); };
+  SubdivisionPredicate<double, double> subdivide =
+      [](auto const& _, double const& error_estimate) -> bool {
+    return true;
+  };
   double error_estimate;
   auto const interpolants =
       AdaptiveЧебышёвPolynomialInterpolant<8>(f,
                                               /*lower_bound=*/0.1,
                                               /*upper_bound=*/10.0,
                                               /*max_error=*/1e-6,
+                                              subdivide,
                                               &error_estimate);
   EXPECT_THAT(error_estimate, IsNear(7.1e-7_(1)));
   EXPECT_THAT(interpolants, SizeIs(11));
@@ -138,9 +143,33 @@ TEST(ApproximationTest, AdaptiveSinInverse) {
          x < interpolant.upper_bound();
          x += 0.01) {
       EXPECT_THAT(interpolant.Evaluate(x),
-                  AbsoluteErrorFrom(f(x), AllOf(Lt(6.2e-7), Ge(2.7e-17))));
+                  AbsoluteErrorFrom(f(x), AllOf(Lt(6.2e-7), Ge(0))));
     }
   }
+}
+
+TEST(ApproximationTest, StreamingAdaptiveSinInverse) {
+  auto const f = [](double const x) { return Sin(1 * Radian / x); };
+  SubdivisionPredicate<double, double> subdivide =
+      [](auto const& _, double const& error_estimate) -> bool {
+    return true;
+  };
+  std::int64_t number_of_interpolants = 0;
+  TerminationPredicate<double, double> stop =
+      [&number_of_interpolants](auto const& _) -> bool {
+    ++number_of_interpolants;
+    return false;
+  };
+  double error_estimate;
+  StreamingAdaptiveЧебышёвPolynomialInterpolant<8>(f,
+                                                   /*lower_bound=*/0.1,
+                                                   /*upper_bound=*/10.0,
+                                                   /*max_error=*/1e-6,
+                                                   subdivide,
+                                                   stop,
+                                                   &error_estimate);
+  EXPECT_THAT(error_estimate, IsNear(7.1e-7_(1)));
+  EXPECT_EQ(11, number_of_interpolants);
 }
 
 }  // namespace _approximation

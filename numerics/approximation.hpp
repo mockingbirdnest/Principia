@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <type_traits>
 #include <vector>
 
@@ -17,6 +18,19 @@ using namespace principia::quantities::_named_quantities;
 template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;
 
+// A function that returns true iff the interpolation interval should be split
+// further.  It is only called if the |error_estimate| is larger than the
+// |max_error| given to |AdaptiveЧебышёвPolynomialInterpolant|.
+template<typename Value, typename Argument>
+using SubdivisionPredicate =
+    std::function<bool(ЧебышёвSeries<Value, Argument> const& interpolant,
+                       Difference<Value> const& error_estimate)>;
+
+// A function that returns true iff construction of the interpolants must stop.
+template<typename Value, typename Argument>
+using TerminationPredicate =
+    std::function<bool(ЧебышёвSeries<Value, Argument> interpolant)>;
+
 // Returns a Чебышёв polynomial interpolant of f over
 // [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
 // below |max_error| or if |max_degree| has been reached.  If |error_estimate|
@@ -30,9 +44,8 @@ template<int max_degree, typename Argument, typename Function>
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 // Returns an ordered vector of Чебышёв polynomial interpolants of f, which
-// together cover [lower_bound, upper_bound].  Subdivides the interval so that
-// the degree of each approximant doesn't exceed |max_degree|.  The final
-// (estimated) absolute error is guaranteed to be below |max_error|.
+// together cover [lower_bound, upper_bound].  Subdivides the interval until the
+// error is below |max_error| or |subdivide| returns false.
 template<int max_degree, typename Argument, typename Function>
 std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
 AdaptiveЧебышёвPolynomialInterpolant(
@@ -40,11 +53,28 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Argument const& lower_bound,
     Argument const& upper_bound,
     Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
+    Difference<Value<Argument, Function>>* error_estimate = nullptr);
+
+// A streaming version of the above: as each interpolant that is below
+// |max_error| is computed, it is passed to |stop|, which should return false
+// if the production of interpolants should continue and true if it should stop.
+template<int max_degree, typename Argument, typename Function>
+void StreamingAdaptiveЧебышёвPolynomialInterpolant(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
+    TerminationPredicate<Value<Argument, Function>, Argument> const& stop,
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 }  // namespace internal
 
 using internal::AdaptiveЧебышёвPolynomialInterpolant;
+using internal::StreamingAdaptiveЧебышёвPolynomialInterpolant;
+using internal::SubdivisionPredicate;
+using internal::TerminationPredicate;
 using internal::ЧебышёвPolynomialInterpolant;
 
 }  // namespace _approximation

@@ -105,7 +105,7 @@ internal class MapNodePool {
   }
 
   public void RenderMarkers(
-      DisposableIterator apsis_iterator,
+      IEnumerable<TQP> markers,
       Provenance provenance,
       ReferenceFrameSelector<PlottingFrameParameters> reference_frame) {
     if (!nodes_.ContainsKey(provenance)) {
@@ -150,62 +150,27 @@ internal class MapNodePool {
           colour = XKCDColors.Chartreuse;
         }
         break;
+      case MapObject.ObjectType.PatchTransition:
+        associated_map_object = reference_frame.Centre().MapObject;
+        colour = XKCDColors.Orange;
+        break;
       default:
         throw Log.Fatal($"Unexpected type {provenance.type}");
     }
     colour.a = 1;
 
-    for (int i = 0;
-         i < MaxNodesPerProvenance && !apsis_iterator.IteratorAtEnd();
-         ++i, apsis_iterator.IteratorIncrement()) {
-      QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
+    foreach (TQP marker in markers) {
       MapNodeProperties node_properties = new MapNodeProperties {
           visible = true,
           object_type = provenance.type,
           colour = colour,
           reference_frame = reference_frame,
-          world_position = (Vector3d)apsis.q,
-          velocity = (Vector3d)apsis.p,
+          world_position = (Vector3d)marker.qp.q,
+          velocity = (Vector3d)marker.qp.p,
           source = provenance.source,
-          time = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
+          time = marker.t,
           associated_map_object = associated_map_object,
       };
-      if (provenance.type == MapObject.ObjectType.Periapsis) {
-        var centre = reference_frame.Centre();
-        if (provenance.source == NodeSource.FlightPlan ||
-            !reference_frame.IsSurfaceFrame()) {
-          // For the flight plan, preserve the old behaviour for now.  Also, the
-          // terrain-based markers only make sense for the surface frame.
-          if (centre.GetAltitude(node_properties.world_position) < 0) {
-            node_properties.object_type = MapObject.ObjectType.PatchTransition;
-            node_properties.colour = XKCDColors.Orange;
-          }
-        } else {
-          // Prediction in the surface frame.
-          centre.GetLatLonAlt(node_properties.world_position,
-                              out double latitude,
-                              out double longitude,
-                              out double altitude);
-          var terrain_altitude = centre.TerrainAltitude(
-              latitude,
-              longitude,
-              allowNegative: !centre.ocean);
-          if (altitude < terrain_altitude) {
-            if (provenance.source == NodeSource.Prediction) {
-              QP collision =
-                  ComputeCollision(centre,
-                                   provenance.vessel_guid,
-                                   node_properties.time);
-              node_properties.object_type =
-                  MapObject.ObjectType.PatchTransition;
-              node_properties.colour = XKCDColors.Orange;
-              node_properties.world_position = (Vector3d)collision.q;
-              node_properties.velocity = (Vector3d)collision.p;
-              // TODO(phl): Set node_properties.time.
-            }
-          }
-        }
-      }
 
       if (pool.nodes_used == pool.nodes.Count) {
         pool.nodes.Add(MakePoolNode());
@@ -328,20 +293,26 @@ internal class MapNodePool {
         }
         case MapObject.ObjectType.PatchTransition: {
           CelestialBody celestial = properties.reference_frame.Centre();
-          caption.Header = L10N.CacheFormat("#Principia_MapNode_ImpactHeader",
-                                            source,
-                                            celestial.Name());
+          Vector3d position = properties.world_position;
+          double speed = properties.velocity.magnitude;
+          caption.Header = L10N.CelestialString(
+              "#Principia_MapNode_ImpactHeader",
+              new[]{ celestial },
+              source,
+              celestial.GetAltitude(position).FormatN(0));
           caption.captionLine1 = "";
-          caption.captionLine2 = "";
+          caption.captionLine2 = L10N.CacheFormat(
+              "#Principia_MapNode_ImpactCaptionLine2",
+              speed.FormatN(0));
           break;
         }
       }
-      if (properties.object_type != MapObject.ObjectType.PatchTransition) {
-        caption.captionLine1 =
-            "T" + new PrincipiaTimeSpan(
-                    Planetarium.GetUniversalTime() - properties.time).
-                Format(with_leading_zeroes: false, with_seconds: true);
-      }
+      caption.captionLine1 = "T" +
+                             new PrincipiaTimeSpan(
+                                     Planetarium.GetUniversalTime() -
+                                     properties.time).
+                                 Format(with_leading_zeroes: false,
+                                        with_seconds: true);
       // The font used by map nodes does not support the minus sign, so we
       // fall back to the hyphen-minus.
       string minus = Culture.culture.NumberFormat.NegativeSign;
@@ -353,31 +324,6 @@ internal class MapNodePool {
     new_node.OnUpdatePosition += (KSP.UI.Screens.Mapview.MapNode node) =>
         ScaledSpace.LocalToScaledSpace(properties_[node].world_position);
     return new_node;
-  }
-
-  private QP ComputeCollision(CelestialBody centre,
-                              string vessel_guid,
-                              double subterranean_time) {
-    var executor = Plugin.CollisionNewPredictionExecutor(
-        celestial_index: centre.flightGlobalsIndex,
-        sun_world_position: (XYZ)Planetarium.fetch.Sun.position,
-        vessel_guid: vessel_guid,
-        Planetarium.GetUniversalTime(),
-        subterranean_time);
-
-    for (;;) {
-      bool more = executor.CollisionGetLatitudeLongitude(
-          out double trial_latitude,
-          out double trial_longitude);
-      if (!more) {
-        return Interface.CollisionDeleteExecutor(ref executor);
-      }
-      executor.CollisionSetRadius(centre.TerrainAltitude(
-                                      trial_latitude,
-                                      trial_longitude,
-                                      allowNegative: !centre.ocean) +
-                                  centre.Radius);
-    }
   }
 
   private class MapNodeProperties {

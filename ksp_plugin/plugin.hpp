@@ -368,14 +368,16 @@ class Plugin {
       DiscreteTrajectory<World>& apoapsides,
       DiscreteTrajectory<World>& periapsides) const;
 
-  // Computes the collision between the trajectory defined by |first_time| and
-  // |last_time| and the celestial with index |celestial_index|.
-  virtual DegreesOfFreedom<World> ComputeAndRenderCollision(
+  // Computes the first collision between the trajectory defined by |begin| and
+  // |end| and the celestial with index |celestial_index|.
+  virtual std::optional<DiscreteTrajectory<World>::value_type>
+  ComputeAndRenderFirstCollision(
       Index celestial_index,
       Trajectory<Barycentric> const& trajectory,
-      Instant const& first_time,
-      Instant const& last_time,
+      DiscreteTrajectory<Barycentric>::iterator const& begin,
+      DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
+      int max_points,
       std::function<Length(Angle const& latitude,
                            Angle const& longitude)> const& radius) const;
 

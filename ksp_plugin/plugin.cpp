@@ -22,6 +22,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
 #include "base/fingerprint2011.hpp"
+#include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
@@ -48,6 +49,7 @@
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/parser.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -60,6 +62,7 @@ using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_file;
 using namespace principia::base::_fingerprint2011;
+using namespace principia::base::_flags;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_map_util;
 using namespace principia::base::_serialization;
@@ -83,6 +86,22 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_parser;
+
+Length const& MaxCollisionError() {
+  static Length const max_collision_error = []() {
+    std::string_view name = "max_collision_error";
+    if (Flags::IsPresent(name)) {
+      auto const values = Flags::Values(name);
+      CHECK_EQ(values.size(), 1);
+      return ParseQuantity<Length>(
+          *Flags::Values("max_collision_error").begin());
+    } else {
+      return 10 * Metre;
+    }
+  }();
+  return max_collision_error;
+}
 
 // Keep this consistent with |prediction_steps_| in |main_window.cs|.
 constexpr std::int64_t max_steps_in_prediction = 1 << 24;
@@ -998,34 +1017,66 @@ void Plugin::ComputeAndRenderApsides(
                     PlanetariumRotation());
 }
 
-DegreesOfFreedom<World> Plugin::ComputeAndRenderCollision(
+std::optional<DiscreteTrajectory<World>::value_type>
+Plugin::ComputeAndRenderFirstCollision(
     Index const celestial_index,
     Trajectory<Barycentric> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
+    int max_points,
     std::function<Length(Angle const& latitude,
                          Angle const& longitude)> const& radius) const {
   auto const& celestial = FindOrDie(celestials_, celestial_index);
-  auto const collision = ComputeCollision<Barycentric>(*celestial->body(),
-                                                       celestial->trajectory(),
+  auto const& celestial_body = *celestial->body();
+  auto const& celestial_trajectory = celestial->trajectory();
+
+  // TODO(phl): We should cache the apsides.
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  ComputeApsides(celestial_trajectory,
+                 trajectory,
+                 begin,
+                 end,
+                 max_points,
+                 apoapsides_trajectory,
+                 periapsides_trajectory);
+
+  const auto intervals = ComputeCollisionIntervals(celestial_body,
+                                                   celestial_trajectory,
+                                                   trajectory,
+                                                   apoapsides_trajectory,
+                                                   periapsides_trajectory);
+
+  VLOG(1) << "Found " << intervals.size() << " collision intervals";
+  for (auto const& interval : intervals) {
+    VLOG(1) << "Collision interval: " << interval;
+    auto const maybe_collision = ComputeFirstCollision(celestial_body,
+                                                       celestial_trajectory,
                                                        trajectory,
-                                                       first_time, last_time,
+                                                       interval,
+                                                       MaxCollisionError(),
                                                        radius);
+    if (maybe_collision.has_value()) {
+      auto const& collision = maybe_collision.value();
 
-  // We create a trajectory with a single point to simplify rendering.
-  DiscreteTrajectory<Barycentric> trajectory_to_render;
-  CHECK_OK(trajectory_to_render.Append(collision.time,
-                                       collision.degrees_of_freedom));
-  DiscreteTrajectory<World> rendered_trajectory =
-      renderer_->RenderBarycentricTrajectoryInWorld(
-          current_time_,
-          trajectory_to_render.begin(),
-          trajectory_to_render.end(),
-          sun_world_position,
-          PlanetariumRotation());
+      // We create a trajectory with a single point to simplify rendering.
+      DiscreteTrajectory<Barycentric> trajectory_to_render;
+      CHECK_OK(trajectory_to_render.Append(collision.time,
+                                           collision.degrees_of_freedom));
+      DiscreteTrajectory<World> rendered_trajectory =
+          renderer_->RenderBarycentricTrajectoryInWorld(
+              current_time_,
+              trajectory_to_render.begin(),
+              trajectory_to_render.end(),
+              sun_world_position,
+              PlanetariumRotation());
+      return rendered_trajectory.front();
+    }
+  }
 
-  return rendered_trajectory.front().degrees_of_freedom;
+  // No collision.
+  return std::nullopt;
 }
 
 void Plugin::ComputeAndRenderClosestApproaches(

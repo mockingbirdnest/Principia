@@ -133,25 +133,39 @@ TEST_F(ЧебышёвSeriesTest, T2Double) {
 }
 
 TEST_F(ЧебышёвSeriesTest, FrobeniusCompanionMatrix) {
-  ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
-  auto const matrix = series.FrobeniusCompanionMatrix();
-  EXPECT_THAT(matrix,
-              AlmostEquals(UnboundedMatrix<double>(
-                  {0.0,             1.0,         0.0,
-                   1.0 / 2.0,       0.0,   1.0 / 2.0,
-                   1.0 / 6.0, 1.0 / 4.0, -5.0 / 12.0}),
-                  0));
-  auto const matrix_schur_decomposition = RealSchurDecomposition(matrix, 1e-16);
-  EXPECT_THAT(matrix_schur_decomposition.real_eigenvalues,
-              ElementsAre(AlmostEquals((1.0 - Sqrt(337.0)) / 24.0, 4),
-                          AlmostEquals(-0.5, 1),
-                          AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
+  {
+    ЧебышёвSeries<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
+    auto const matrix = series.FrobeniusCompanionMatrix();
+    EXPECT_THAT(matrix,
+      AlmostEquals(UnboundedMatrix<double>(
+        { 0.0,             1.0,         0.0,
+         1.0 / 2.0,       0.0,   1.0 / 2.0,
+         1.0 / 6.0, 1.0 / 4.0, -5.0 / 12.0 }),
+        0));
+    auto const matrix_schur_decomposition =
+        RealSchurDecomposition(matrix, 1e-16);
+    EXPECT_THAT(matrix_schur_decomposition.real_eigenvalues,
+                ElementsAre(AlmostEquals((1.0 - Sqrt(337.0)) / 24.0, 4),
+                            AlmostEquals(-0.5, 1),
+                            AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
+  }
+  {
+    ЧебышёвSeries<double, Instant> series({-2, 3}, t_min_, t_max_);
+    auto const matrix = series.FrobeniusCompanionMatrix();
+    EXPECT_THAT(matrix, AlmostEquals(UnboundedMatrix<double>({1.0 / 3.0}), 0));
+    auto const matrix_schur_decomposition =
+        RealSchurDecomposition(matrix, 1e-16);
+    EXPECT_THAT(matrix_schur_decomposition.real_eigenvalues,
+                ElementsAre(AlmostEquals(1.0 / 3.0, 0)));
+  }
 }
 
 TEST_F(ЧебышёвSeriesTest, MayHaveRealRoots) {
   // B₀ path.
   ЧебышёвSeries<double, Instant> series1({16, 5, 3, 7}, t_min_, t_max_);
   EXPECT_FALSE(series1.MayHaveRealRoots());
+  // An error estimate causes the result to be more pessimistic.
+  EXPECT_TRUE(series1.MayHaveRealRoots(/*error_estimate*/1.5));
   // We don't know, but it actually doesn't have zeroes.
   ЧебышёвSeries<double, Instant> series2({13, 5, 3, 7}, t_min_, t_max_);
   EXPECT_TRUE(series2.MayHaveRealRoots());

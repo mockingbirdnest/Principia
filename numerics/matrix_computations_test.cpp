@@ -223,7 +223,7 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotientIteration) {
 
   auto const actual = RayleighQuotientIteration(m4, v4);
   EXPECT_THAT(actual.eigenvalue,
-              AlmostEquals(1.61073818969894450774101079322, 1));
+              AlmostEquals(1.61073818969894450774101079322, 1, 2));
   EXPECT_THAT(actual.eigenvector,
               AlmostEquals(Vector({-0.169506517685592297780621340523,
                                    0.444078911480267347768558852121,

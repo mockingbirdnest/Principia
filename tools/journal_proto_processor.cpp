@@ -1230,6 +1230,8 @@ void JournalProtoProcessor::ProcessInOut(
                 std::back_inserter(cxx_run_arguments_[descriptor]));
 
       if (Contains(out_, field_descriptor)) {
+        CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
+            << field_descriptor->full_name() << " must be required";
         cxx_run_body_prolog_[descriptor] +=
             "  " + field_cxx_type_[field_descriptor] + " " +
             run_local_variable + ";\n";
@@ -1321,7 +1323,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
-        << descriptor->full_name() << " must be required";
+        << field_descriptor->full_name() << " must be required";
     return_.insert(field_descriptor);
     ProcessField(field_descriptor);
     if (Contains(field_cxx_address_of_, field_descriptor)) {

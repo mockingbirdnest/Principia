@@ -242,7 +242,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());
@@ -264,6 +264,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                             reference_trajectory,
                             vessel_trajectory,
                             intervals[0],
+                            /*max_error=*/2e-4 * Metre,
                             radius);
   auto const& collision = maybe_collision.value();
 
@@ -272,79 +273,6 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
   EXPECT_THAT(collision.degrees_of_freedom.position() - World::origin,
               Componentwise(1 * Metre,
                             IsNear(0.43862_(1) * Metre),
-                            0 * Metre));
-  EXPECT_THAT(
-      collision.degrees_of_freedom.velocity(),
-      AlmostEquals(Velocity<World>({0 * Metre / Second,
-                                    -1 * Metre / Second,
-                                    0 * Metre / Second}), 0));
-}
-
-TEST_F(ApsidesTest, ComputeCollision) {
-  Instant const t0;
-  DiscreteTrajectory<World> reference_trajectory;
-  DiscreteTrajectory<World> vessel_trajectory;
-
-  // At |t0| the vessel is inside the celestial, so we expect the collision at a
-  // negative time.
-  AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-          DegreesOfFreedom<World>(
-              World::origin +
-                  Displacement<World>({0 * Metre, -1 * Metre, 0 * Metre}),
-              Velocity<World>({1 * Metre / Second,
-                               0 * Metre / Second,
-                               0 * Metre / Second})),
-          /*Δt=*/1 * Second,
-          t0,
-          /*t1=*/t0 - 10 * Second,
-          /*t2=*/t0 + 10 * Second),
-      reference_trajectory);
-  AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-          DegreesOfFreedom<World>(
-              World::origin +
-                  Displacement<World>({1 * Metre, -1 * Metre, 0 * Metre}),
-              Velocity<World>({0 * Metre / Second,
-                               -1 * Metre / Second,
-                               0 * Metre / Second})),
-          /*Δt=*/1 * Second,
-          t0,
-          /*t1=*/t0 - 10 * Second,
-          /*t2=*/t0 + 1 * Second),
-      vessel_trajectory);
-
-  RotatingBody<World> const body(
-      1 * Kilogram,
-      RotatingBody<World>::Parameters(
-          /*min_radius=*/1 * Metre,
-          /*mean_radius=*/2 * Metre,
-          /*max_radius=*/3 * Metre,
-          /*reference_angle=*/0 * Radian,
-          /*reference_instant=*/t0,
-          /*angular_frequency=*/2 * π * Radian / Second,
-          /*right_ascension_of_pole=*/0 * Radian,
-          /*declination_of_pole=*/π / 2 * Radian));
-
-  // The celestial is infinite in the z direction and has four lobes in the x-y
-  // plane.  Think of a LEGO® axle.
-  auto radius = [](Angle const& latitude, Angle const& longitude) {
-    return (Cos(4 * longitude) + 2) * Metre;
-  };
-
-  auto const collision = ComputeCollision(body,
-                                          reference_trajectory,
-                                          vessel_trajectory,
-                                          vessel_trajectory.front().time,
-                                          vessel_trajectory.back().time,
-                                          radius);
-
-  // The collision was verified with Mathematica to the given accuracy.
-  EXPECT_THAT(collision.time - t0,
-              IsNear(-0.5254924180437539_(1) * Second));
-  EXPECT_THAT(collision.degrees_of_freedom.position() - World::origin,
-              Componentwise(1 * Metre,
-                            IsNear(-0.4745075819562462_(1) * Metre),
                             0 * Metre));
   EXPECT_THAT(
       collision.degrees_of_freedom.velocity(),

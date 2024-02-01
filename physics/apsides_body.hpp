@@ -17,6 +17,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -34,8 +35,21 @@ using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
-constexpr double max_error_relative_to_radius = 1e-4;
+// This number was selected in game to obtain good performance without missing
+// collisions.  It was found that that one evaluation of
+// |height_above_terrain_at_time| costs around 15 µs, and that the number of
+// evaluations grows roughly linearly with the degree.  This is probably because
+// the terrain is very bumpy, so even a high degree doesn't approximate it well,
+// and the number of subdivisions end up being largely independent from the
+// degree.  It would be faster to use degree 4, but since the height would only
+// be evaluated 5 times per interval we could easily miss significant features
+// of the terrain.
+constexpr int max_чебышёв_degree = 8;
+// The error bound |max_collision_error| is guaranteed to be met if the vessel
+// is slower than this.
+constexpr Speed max_collision_speed = 10'000 * Metre / Second;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -171,6 +185,9 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
   for (auto const& [time, _] : periapsides) {
     apsides_times.insert(time);
   }
+  if (apsides_times.size() < 2) {
+    return {};
+  }
 
   // Initialize the iterators.  After this block |it| designates the first
   // periapsis and |previous_it| designates the previous apoapsis, if there is
@@ -294,15 +311,20 @@ ComputeFirstCollision(
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
     Interval<Instant> const& interval,
+    Length const& max_collision_error,
     std::function<Length(Angle const& latitude, Angle const& longitude)> const&
         radius) {
   // The frame of the surface of the celestial.
   using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
 
-  auto height_above_terrain_at_time = [&radius,
+  std::int64_t number_of_evaluations = 0;
+
+  auto height_above_terrain_at_time = [&number_of_evaluations,
+                                       &radius,
                                        &reference,
                                        &reference_body,
                                        &trajectory](Instant const& t) {
+    ++number_of_evaluations;
     auto const reference_position = reference.EvaluatePosition(t);
     auto const trajectory_position = trajectory.EvaluatePosition(t);
     Displacement<Frame> const displacement_in_frame =
@@ -321,114 +343,64 @@ ComputeFirstCollision(
                   spherical_coordinates.longitude);
   };
 
-  // Interpolate the height above the terrain using a Чебышёв polynomial.
-  auto const чебышёв_interpolant =
-      ЧебышёвPolynomialInterpolant</*max_degree=*/128>(
-          height_above_terrain_at_time,
-          interval.min,
-          interval.max,
-          reference_body.mean_radius() * max_error_relative_to_radius);
-  auto const& real_roots = чебышёв_interpolant.RealRoots(
-      max_error_relative_to_radius);
-  if (real_roots.empty()) {
-    // No root, no collision.
-    return std::nullopt;
-  } else {
-    // The smallest root is the first collision.
-    Instant const first_collision_time = *real_roots.begin();
+  // Subdivide the interpolant if it could have real roots given the current
+  // error estimate.
+  SubdivisionPredicate<Length, Instant> const subdivide =
+      [](auto const& interpolant, Length const& error_estimate) -> bool {
+    return interpolant.MayHaveRealRoots(error_estimate);
+  };
+
+  // Stop if the interpolant has a real root.  This is the first collision.
+  std::optional<Instant> first_collision_time;
+  TerminationPredicate<Length, Instant> const stop =
+      [&first_collision_time,
+       max_collision_error,
+       &number_of_evaluations](auto interpolant) -> bool {
+    if (interpolant.MayHaveRealRoots()) {
+      // The relative error on the roots is choosen so that it corresponds to an
+      // absolute error in distance similar to |max_collision_error|, assuming
+      // that the speed is below |max_collision_speed|.  We don't care too much
+      // about the performance of this computation, because the zero-free test
+      // is very efficient.
+      auto const& real_roots = interpolant.RealRoots(
+          max_collision_error /
+          ((interpolant.upper_bound() - interpolant.lower_bound()) *
+           max_collision_speed));
+      if (real_roots.empty()) {
+        VLOG(1) << "No real roots over [" << interpolant.lower_bound() << ", "
+                << interpolant.upper_bound() << "]";
+        return false;
+      } else {
+        // The smallest root is the first collision.
+        first_collision_time = *real_roots.begin();
+        VLOG(1) << "First collision time is " << first_collision_time.value()
+                << " with " << number_of_evaluations << " evaluations";
+        return true;
+      }
+    } else {
+      VLOG(1) << "No roots over [" << interpolant.lower_bound() << ", "
+              << interpolant.upper_bound() << "]";
+      return false;
+    }
+  };
+
+  // Interpolate the height above the terrain using Чебышёв polynomials.
+  StreamingAdaptiveЧебышёвPolynomialInterpolant<max_чебышёв_degree>(
+      height_above_terrain_at_time,
+      interval.min,
+      interval.max,
+      max_collision_error,
+      subdivide,
+      stop);
+  if (first_collision_time.has_value()) {
+    // The first collision.
     return typename DiscreteTrajectory<Frame>::value_type(
-        first_collision_time,
-        trajectory.EvaluateDegreesOfFreedom(first_collision_time));
-  }
-}
-
-template<typename Frame>
-typename DiscreteTrajectory<Frame>::value_type ComputeCollision(
-    RotatingBody<Frame> const& reference_body,
-    Trajectory<Frame> const& reference,
-    Trajectory<Frame> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
-    std::function<Length(Angle const& latitude,
-                         Angle const& longitude)> const& radius) {
-  // The frame of the surface of the celestial.
-  using SurfaceFrame = geometry::_frame::Frame<struct SurfaceFrameTag>;
-
-  auto squared_distance_from_centre = [&reference,
-                                       &trajectory](Instant const& time) {
-    Position<Frame> const body_position =
-        reference.EvaluatePosition(time);
-    Position<Frame> const trajectory_position =
-        trajectory.EvaluatePosition(time);
-    Displacement<Frame> const displacement =
-        trajectory_position - body_position;
-    return displacement.Norm²();
-  };
-
-  auto const max_radius² = Pow<2>(reference_body.max_radius());
-  auto const min_radius² = Pow<2>(reference_body.min_radius());
-
-  // Find the time at which the |trajectory| crosses |max_radius|, if any.
-  // We'll start the search from there.  This is cheap because it doesn't call
-  // C#.
-  Instant max_radius_time;
-  if (squared_distance_from_centre(first_time) > max_radius²) {
-    max_radius_time = Brent(
-        [max_radius², &squared_distance_from_centre](Instant const& time) {
-          return squared_distance_from_centre(time) - max_radius²;
-        },
-        first_time,
-        last_time);
+        *first_collision_time,
+        trajectory.EvaluateDegreesOfFreedom(*first_collision_time));
   } else {
-    max_radius_time = first_time;
+    // No collision.
+    return std::nullopt;
   }
-
-  // Similarly, find the time at which the |trajectory| crosses |min_radius|, if
-  // any.
-  Instant min_radius_time;
-  if (squared_distance_from_centre(last_time) < min_radius²) {
-    min_radius_time = Brent(
-        [min_radius², &squared_distance_from_centre](Instant const& time) {
-          return squared_distance_from_centre(time) - min_radius²;
-        },
-        max_radius_time,
-        last_time);
-  } else {
-    min_radius_time = last_time;
-  }
-
-  auto height_above_terrain_at_time = [&radius,
-                                       &reference,
-                                       &reference_body,
-                                       &trajectory](Instant const& t) {
-    auto const reference_position = reference.EvaluatePosition(t);
-    auto const trajectory_position = trajectory.EvaluatePosition(t);
-    Displacement<Frame> const displacement_in_frame =
-        trajectory_position - reference_position;
-
-    auto const to_surface_frame =
-        reference_body.template ToSurfaceFrame<SurfaceFrame>(t);
-    Displacement<SurfaceFrame> const displacement_in_surface =
-        to_surface_frame(displacement_in_frame);
-
-    SphericalCoordinates<Length> const spherical_coordinates =
-        displacement_in_surface.coordinates().ToSpherical();
-
-    return spherical_coordinates.radius -
-           radius(spherical_coordinates.latitude,
-                  spherical_coordinates.longitude);
-  };
-
-  CHECK_LE(Length{}, height_above_terrain_at_time(max_radius_time));
-  CHECK_LE(height_above_terrain_at_time(min_radius_time), Length{});
-
-  Instant const collision_time = Brent(height_above_terrain_at_time,
-                                       max_radius_time,
-                                       min_radius_time);
-
-  return typename DiscreteTrajectory<Frame>::value_type(
-      collision_time,
-      trajectory.EvaluateDegreesOfFreedom(collision_time));
 }
 
 template<typename Frame, typename Predicate>

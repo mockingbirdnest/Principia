@@ -881,7 +881,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
   for (int i = 0; i < H.rows();) {
     int first_in_block = 0;
     if (i == H.rows() - 1) {
-      if (H(i, i - 1) == 0) {
+      if (i == 0 || H(i, i - 1) == 0) {
         real_eigenvalues.insert(H(i, i));
       }
       break;
