@@ -148,6 +148,30 @@ TEST(ApproximationTest, AdaptiveSinInverse) {
   }
 }
 
+TEST(ApproximationTest, StreamingAdaptiveSinInverse) {
+  auto const f = [](double const x) { return Sin(1 * Radian / x); };
+  SubdivisionPredicate<double, double> subdivide =
+      [](auto const& _, double const& error_estimate) -> bool {
+    return true;
+  };
+  std::int64_t number_of_interpolants = 0;
+  TerminationPredicate<double, double> stop =
+      [&number_of_interpolants](auto const& _) -> bool {
+    ++number_of_interpolants;
+    return false;
+  };
+  double error_estimate;
+  StreamingAdaptiveЧебышёвPolynomialInterpolant<8>(f,
+                                                   /*lower_bound=*/0.1,
+                                                   /*upper_bound=*/10.0,
+                                                   /*max_error=*/1e-6,
+                                                   subdivide,
+                                                   stop,
+                                                   &error_estimate);
+  EXPECT_THAT(error_estimate, IsNear(7.1e-7_(1)));
+  EXPECT_EQ(11, number_of_interpolants);
+}
+
 }  // namespace _approximation
 }  // namespace numerics
 }  // namespace principia

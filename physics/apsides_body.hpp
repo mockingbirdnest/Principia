@@ -343,19 +343,19 @@ ComputeFirstCollision(
                   spherical_coordinates.longitude);
   };
 
-  // Interpolate the height above the terrain using Чебышёв polynomials.
+  // Subdivide the interpolant if it could have real roots given the current
+  // error estimate.
   SubdivisionPredicate<Length, Instant> const subdivide =
       [](auto const& interpolant, Length const& error_estimate) -> bool {
     return interpolant.MayHaveRealRoots(error_estimate);
   };
-  auto const чебышёв_interpolants =
-      AdaptiveЧебышёвPolynomialInterpolant<max_чебышёв_degree>(
-          height_above_terrain_at_time,
-          interval.min,
-          interval.max,
-          max_collision_error,
-          subdivide);
-  for (auto const& interpolant : чебышёв_interpolants) {
+
+  // Stop if the interpolant has a real root.  This is the first collision.
+  std::optional<Instant> first_collision_time;
+  TerminationPredicate<Length, Instant> const stop =
+      [&first_collision_time,
+       max_collision_error,
+       &number_of_evaluations](auto interpolant) -> bool {
     if (interpolant.MayHaveRealRoots()) {
       // The relative error on the roots is choosen so that it corresponds to an
       // absolute error in distance similar to |max_collision_error|, assuming
@@ -369,23 +369,38 @@ ComputeFirstCollision(
       if (real_roots.empty()) {
         VLOG(1) << "No real roots over [" << interpolant.lower_bound() << ", "
                 << interpolant.upper_bound() << "]";
+        return false;
       } else {
         // The smallest root is the first collision.
-        Instant const first_collision_time = *real_roots.begin();
-        VLOG(1) << "First collision time is " << first_collision_time
+        first_collision_time = *real_roots.begin();
+        VLOG(1) << "First collision time is " << first_collision_time.value()
                 << " with " << number_of_evaluations << " evaluations";
-        return typename DiscreteTrajectory<Frame>::value_type(
-            first_collision_time,
-            trajectory.EvaluateDegreesOfFreedom(first_collision_time));
+        return true;
       }
     } else {
       VLOG(1) << "No roots over [" << interpolant.lower_bound() << ", "
               << interpolant.upper_bound() << "]";
+      return false;
     }
-  }
+  };
 
-  // No root, no collision.
-  return std::nullopt;
+  // Interpolate the height above the terrain using Чебышёв polynomials.
+  StreamingAdaptiveЧебышёвPolynomialInterpolant<max_чебышёв_degree>(
+      height_above_terrain_at_time,
+      interval.min,
+      interval.max,
+      max_collision_error,
+      subdivide,
+      stop);
+  if (first_collision_time.has_value()) {
+    // The first collision.
+    return typename DiscreteTrajectory<Frame>::value_type(
+        *first_collision_time,
+        trajectory.EvaluateDegreesOfFreedom(*first_collision_time));
+  } else {
+    // No collision.
+    return std::nullopt;
+  }
 }
 
 template<typename Frame, typename Predicate>

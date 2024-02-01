@@ -112,6 +112,73 @@ template<int N, int max_degree, typename Argument, typename Function>
       coefficients, a, b);
 }
 
+// Returns true if production of interpolants should stop.
+template<int max_degree, typename Argument, typename Function>
+bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
+    TerminationPredicate<Value<Argument, Function>, Argument> const& stop,
+    Difference<Value<Argument, Function>>* const error_estimate) {
+  // Try to build an interpolation over the entire interval.
+  Difference<Value<Argument, Function>> full_error_estimate;
+  auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
+      f, lower_bound, upper_bound, max_error, &full_error_estimate);
+  if (full_error_estimate <= max_error ||
+      !subdivide(full_interpolant, full_error_estimate)) {
+    // If the interpolant over the entire interval is within the desired error
+    // bound, return it.  Same thing if |subdivide| tells us that we should not
+    // subdivide the interval.
+    VLOG(1) << "Degree " << full_interpolant.degree() << " interpolant over ["
+            << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
+            << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
+    if (error_estimate != nullptr) {
+      *error_estimate = full_error_estimate;
+    }
+    return stop(std::move(full_interpolant));
+  } else {
+    // If the interpolant over the entire interval is not within the desired
+    // error bound, subdivide the interval.
+    VLOG(1) << "Splitting [" << lower_bound << " (" << f(lower_bound) << "), "
+            << upper_bound << " (" << f(upper_bound) << ")] with error "
+            << full_error_estimate;
+    Difference<Value<Argument, Function>> upper_error_estimate;
+    Difference<Value<Argument, Function>> lower_error_estimate;
+    auto const midpoint =
+        Barycentre(std::pair(lower_bound, upper_bound), std::pair(1, 1));
+    bool const lower_interpolants_stop =
+        StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
+            f,
+            lower_bound,
+            midpoint,
+            max_error,
+            subdivide,
+            stop,
+            &lower_error_estimate);
+    if (lower_interpolants_stop) {
+      if (error_estimate != nullptr) {
+        *error_estimate = lower_error_estimate;
+      }
+      return true;
+    }
+    bool const upper_interpolants_stop =
+        StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
+            f,
+            midpoint,
+            upper_bound,
+            max_error,
+            subdivide,
+            stop,
+            &upper_error_estimate);
+    if (error_estimate != nullptr) {
+      *error_estimate = std::max(lower_error_estimate, upper_error_estimate);
+    }
+    return upper_interpolants_stop;
+  }
+}
+
 template<int max_degree, typename Argument, typename Function>
 ЧебышёвSeries<Value<Argument, Function>, Argument>
 ЧебышёвPolynomialInterpolant(
@@ -140,56 +207,46 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Argument const& upper_bound,
     Difference<Value<Argument, Function>> const& max_error,
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
-    Difference<Value<Argument, Function>>* error_estimate) {
-  // Try to build an interpolation over the entire interval.
-  Difference<Value<Argument, Function>> full_error_estimate;
-  auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
-      f, lower_bound, upper_bound, max_error, &full_error_estimate);
-  if (full_error_estimate <= max_error ||
-      !subdivide(full_interpolant, full_error_estimate)) {
-    // If the interpolant over the entire interval is within the desired error
-    // bound, return it.  Same thing if |subdivide| tells us that we should not
-    // subdivide the interval.
-    VLOG(1) << "Degree " << full_interpolant.degree() << " interpolant over ["
-            << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
-            << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
-    if (error_estimate != nullptr) {
-      *error_estimate = full_error_estimate;
-    }
-    std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
-        interpolants;
-    interpolants.reserve(1);
-    interpolants.emplace_back(std::move(full_interpolant));
-    return interpolants;
-  } else {
-    // If the interpolant over the entire interval is not within the desired
-    // error bound, subdivide the interval.
-    VLOG(1) << "Splitting [" << lower_bound << " (" << f(lower_bound) << "), "
-            << upper_bound << " (" << f(upper_bound) << ")] with error "
-            << full_error_estimate;
-    Difference<Value<Argument, Function>> upper_error_estimate;
-    Difference<Value<Argument, Function>> lower_error_estimate;
-    auto const midpoint =
-        Barycentre(std::pair(lower_bound, upper_bound), std::pair(1, 1));
-    auto lower_interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
-        f, lower_bound, midpoint, max_error, subdivide, &lower_error_estimate);
-    auto upper_interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
-        f, midpoint, upper_bound, max_error, subdivide, &upper_error_estimate);
-    std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
-        all_interpolants;
-    all_interpolants.reserve(lower_interpolants.size() +
-                             upper_interpolants.size());
-    std::move(lower_interpolants.begin(),
-              lower_interpolants.end(),
-              std::back_inserter(all_interpolants));
-    std::move(upper_interpolants.begin(),
-              upper_interpolants.end(),
-              std::back_inserter(all_interpolants));
-    if (error_estimate != nullptr) {
-      *error_estimate = std::max(lower_error_estimate, upper_error_estimate);
-    }
-    return all_interpolants;
-  }
+    Difference<Value<Argument, Function>>* const error_estimate) {
+  std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>> interpolants;
+
+  TerminationPredicate<Value<Argument, Function>, Argument> const
+      emplace_back_and_continue =
+          [&interpolants](
+              ЧебышёвSeries<Value<Argument, Function>, Argument> interpolant) {
+            interpolants.emplace_back(std::move(interpolant));
+            return false;
+          };
+
+  StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
+      f,
+      lower_bound,
+      upper_bound,
+      max_error,
+      subdivide,
+      emplace_back_and_continue,
+      error_estimate);
+
+  return interpolants;
+}
+
+template<int max_degree, typename Argument, typename Function>
+void StreamingAdaptiveЧебышёвPolynomialInterpolant(
+    Function const& f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    Difference<Value<Argument, Function>> const& max_error,
+    SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
+    TerminationPredicate<Value<Argument, Function>, Argument> const& stop,
+    Difference<Value<Argument, Function>>* const error_estimate) {
+  StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
+      f,
+      lower_bound,
+      upper_bound,
+      max_error,
+      subdivide,
+      stop,
+      error_estimate);
 }
 
 }  // namespace internal
