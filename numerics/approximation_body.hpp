@@ -158,6 +158,9 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
             proceed,
             &lower_error_estimate);
     if (!lower_interpolants_proceed) {
+      if (error_estimate != nullptr) {
+        *error_estimate = lower_error_estimate;
+      }
       return false;
     }
     bool const upper_interpolants_proceed =
@@ -169,6 +172,9 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
             subdivide,
             proceed,
             &upper_error_estimate);
+    if (error_estimate != nullptr) {
+      *error_estimate = std::max(lower_error_estimate, upper_error_estimate);
+    }
     return upper_interpolants_proceed;
   }
 }
@@ -201,7 +207,7 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Argument const& upper_bound,
     Difference<Value<Argument, Function>> const& max_error,
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
-    Difference<Value<Argument, Function>>* error_estimate) {
+    Difference<Value<Argument, Function>>* const error_estimate) {
   std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>> interpolants;
 
   ProceedPredicate<Value<Argument, Function>, Argument> const
@@ -232,7 +238,7 @@ void StreamingAdaptiveЧебышёвPolynomialInterpolant(
     Difference<Value<Argument, Function>> const& max_error,
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     ProceedPredicate<Value<Argument, Function>, Argument> const& proceed,
-    Difference<Value<Argument, Function>>* error_estimate) {
+    Difference<Value<Argument, Function>>* const error_estimate) {
   StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
       f,
       lower_bound,

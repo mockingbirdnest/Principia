@@ -74,6 +74,7 @@ void StreamingAdaptiveЧебышёвPolynomialInterpolant(
 }  // namespace internal
 
 using internal::AdaptiveЧебышёвPolynomialInterpolant;
+using internal::ProceedPredicate;
 using internal::StreamingAdaptiveЧебышёвPolynomialInterpolant;
 using internal::SubdivisionPredicate;
 using internal::ЧебышёвPolynomialInterpolant;
