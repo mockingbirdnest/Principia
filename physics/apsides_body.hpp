@@ -301,6 +301,12 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     }
   }
 
+  // Check the consistency of the result.
+  for (std::int64_t i = 1; i < intervals.size(); ++i) {
+    CHECK_LE(intervals[i - 1].max, intervals[i].min);
+    CHECK_LE(intervals[i].min, intervals[i].max);
+  }
+
   return intervals;
 }
 
