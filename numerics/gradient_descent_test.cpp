@@ -30,8 +30,8 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class GradientDescentTest : public ::testing::Test {
  protected:

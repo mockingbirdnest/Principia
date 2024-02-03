@@ -21,8 +21,8 @@
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/angle_reduction.hpp"
-#include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -61,8 +61,8 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_angle_reduction;
-using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;

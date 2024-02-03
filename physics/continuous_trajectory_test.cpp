@@ -14,6 +14,7 @@
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -40,6 +41,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_astronomy;

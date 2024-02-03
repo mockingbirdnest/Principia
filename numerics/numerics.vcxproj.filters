@@ -245,6 +245,12 @@
     <ClInclude Include="approximation_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="polynomial_in_monomial_basis.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="polynomial_in_monomial_basis_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -263,9 +269,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="fit_hermite_spline_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="polynomial_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="polynomial_evaluators_test.cpp">
@@ -368,6 +371,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="approximation_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial_in_monomial_basis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

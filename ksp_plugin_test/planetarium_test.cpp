@@ -63,7 +63,6 @@ using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;

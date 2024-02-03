@@ -2,7 +2,7 @@
   "profiles": {
     "sourcerer": {
       "commandName": "Project",
-      "commandLineArgs": "    make_editorconfig `\r\n    --project:astronomy `\r\n    --project:base `\r\n    --project:benchmarks `\r\n    --project:geometry `\r\n    --project:integrators `\r\n    --project:journal `\r\n    --project:ksp_plugin `\r\n    --project:ksp_plugin_test `\r\n    --project:mathematica `\r\n    --project:numerics `\r\n    --project:physics `\r\n    --project:quantities `\r\n    --project:testing_utilities `\r\n    --project:tools `\r\n    --extra:gmock/gmock.h=gmock/gmock-matchers.h `\r\n    --extra:gtest/gtest.h=gtest/gtest-matchers.h+gtest/internal/gtest-internal.h `\r\n    --solution:.",
+      "commandLineArgs": "   include_what_you_using `\r\n    --dry_run:false `\r\n    --project:astronomy `\r\n    --extra_header:body.hpp `\r\n    --extra_header:massive_body.hpp `\r\n    --extra_header:massless_body.hpp `\r\n    --extra_header:oblate_body.hpp `\r\n    --extra_header:rotating_body.hpp `\r\n    --special_own_header:ksp_plugin/interface_*.cpp=ksp_plugin/interface.hpp `\r\n    --special_own_header:ksp_plugin_test/interface_*.cpp=ksp_plugin/interface.hpp `\r\n    --special_own_header:ksp_plugin_test/benchmark.cpp=ksp_plugin/plugin.hpp `\r\n    --special_own_header:ksp_plugin_test/plugin*_test.cpp=ksp_plugin/plugin.hpp",
       "workingDirectory": "C:\\Users\\phl\\Projects\\GitHub\\Principia\\Principia"
     }
   }

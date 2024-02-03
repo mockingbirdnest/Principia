@@ -19,6 +19,7 @@
     <ClCompile Include="checkpointer_benchmark.cpp" />
     <ClCompile Include="discrete_trajectory_benchmark.cpp" />
     <ClCompile Include="lagrange_equipotentials_benchmark.cpp" />
+    <ClCompile Include="polynomial_in_monomial_basis_benchmark.cpp" />
     <ClCompile Include="rigid_reference_frame_benchmark.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />
@@ -34,7 +35,6 @@
     <ClCompile Include="orbital_elements_benchmark.cpp" />
     <ClCompile Include="perspective_benchmark.cpp" />
     <ClCompile Include="planetarium_benchmark.cpp" />
-    <ClCompile Include="polynomial_benchmark.cpp" />
     <ClCompile Include="quantities_benchmark.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_benchmark.cpp" />
     <ClCompile Include="thread_pool_benchmark.cpp" />

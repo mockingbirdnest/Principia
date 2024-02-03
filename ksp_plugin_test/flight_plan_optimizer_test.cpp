@@ -76,17 +76,17 @@ using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
-using namespace principia::testing_utilities::_matchers;
 
 class FlightPlanOptimizerTest : public testing::Test {
  protected:

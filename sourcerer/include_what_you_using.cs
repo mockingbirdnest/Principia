@@ -388,8 +388,11 @@ class IncludeWhatYouUsing {
   }
 
   private static void FixUsingDirectivesOrdering(Parser.File file) {
+    bool is_test_or_benchmark =
+        IsTest(file.file_info) || IsBenchmark(file.file_info);
+    // In tests and benchmarks the using directives are not internal.
     List<UsingDirective> using_directives =
-        FindUsingDirectives(file, internal_only: true);
+        FindUsingDirectives(file, internal_only: !is_test_or_benchmark);
     if (using_directives.Count == 0) {
       return;
     }
@@ -440,10 +443,12 @@ class IncludeWhatYouUsing {
       int last_position_in_parent = segment.Item3;
       // Check if the using directive is in the namespace for this file.  If it
       // isn't, we are reopening someone else's namespace and we wouldn't want
-      // to touch that.
-      if (parent is Namespace ns1 &&
-          ns1.parent is Namespace ns2 &&
-          ns2.name == file.file_namespace_simple_name) {
+      // to touch that.  In tests or benchmarks we don't care, there is no such
+      // reopening.
+      if (is_test_or_benchmark ||
+          (parent is Namespace ns1 &&
+           ns1.parent is Namespace ns2 &&
+           ns2.name == file.file_namespace_simple_name)) {
         // Order by namespace name.
         var namespace_to_using_directive =
             new SortedDictionary<string[], UsingDirective>(
@@ -452,7 +457,10 @@ class IncludeWhatYouUsing {
              pos <= last_position_in_parent;
              ++pos) {
           var ud = parent.children[pos] as UsingDirective;
-          namespace_to_using_directive.Add(ud!.ns.Split("::"), ud);
+          string[] key = ud!.ns.Split("::");
+          if (!namespace_to_using_directive.ContainsKey(key)) {
+            namespace_to_using_directive.Add(key, ud);
+          }
         }
 
         // Replace this segment of using directives with an ordered segment.

@@ -5,8 +5,8 @@
 
 #include "glog/logging.h"
 #include "numerics/elliptic_integrals.hpp"
-#include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -16,8 +16,8 @@ namespace _elliptic_functions {
 namespace internal {
 
 using namespace principia::numerics::_elliptic_integrals;
-using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
