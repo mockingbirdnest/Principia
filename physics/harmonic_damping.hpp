@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry/grassmann.hpp"
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -12,7 +12,7 @@ namespace _harmonic_damping {
 namespace internal {
 
 using namespace principia::geometry::_grassmann;
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -9,7 +9,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "glog/logging.h"
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -21,7 +21,7 @@ using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

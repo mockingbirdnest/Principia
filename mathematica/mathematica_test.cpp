@@ -21,7 +21,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "numerics/чебышёв_series.hpp"
@@ -52,7 +52,7 @@ using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::numerics::_чебышёв_series;
