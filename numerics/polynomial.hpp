@@ -5,14 +5,8 @@
 #include <string>
 
 #include "base/macros.hpp"  // 🧙 For forward declarations.
-#include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
-#include "geometry/hilbert.hpp"
-#include "geometry/point.hpp"
-#include "geometry/traits.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {

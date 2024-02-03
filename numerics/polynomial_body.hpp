@@ -7,13 +7,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "geometry/cartesian_product.hpp"
-#include "geometry/serialization.hpp"
-#include "numerics/combinatorics.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "numerics/quadrature.hpp"
-#include "quantities/elementary_functions.hpp"
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
