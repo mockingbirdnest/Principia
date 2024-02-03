@@ -14,7 +14,7 @@
 #include "geometry/hilbert.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -52,7 +52,7 @@ using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

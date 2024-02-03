@@ -1,4 +1,4 @@
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 
 #include <tuple>
 
@@ -7,6 +7,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
@@ -31,6 +32,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
@@ -39,7 +41,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 
-class PolynomialTest : public ::testing::Test {
+class PolynomialInMonomialBasisTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
@@ -55,7 +57,7 @@ class PolynomialTest : public ::testing::Test {
   using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17,
                                         EstrinEvaluator>;
 
-  PolynomialTest()
+  PolynomialInMonomialBasisTest()
       : coefficients_({
             Displacement<World>({0 * Metre,
                                  0 * Metre,
@@ -72,7 +74,7 @@ class PolynomialTest : public ::testing::Test {
 
 #if PRINCIPIA_USE_IACA
 // A convenient skeleton for analysing code with IACA.
-TEST_F(PolynomialTest, DISABLED_IACA) {
+TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
   constexpr int degree = 17;
   using E = EstrinEvaluator<Displacement<World>, Time, degree>;
   using P = PolynomialInMonomialBasis<Displacement<World>,
@@ -92,7 +94,7 @@ TEST_F(PolynomialTest, DISABLED_IACA) {
 #endif
 
 // Check that coefficients can be accessed and have the right type.
-TEST_F(PolynomialTest, Coefficients) {
+TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
   Displacement<World> const d = std::get<0>(coefficients_);
   Velocity<World> const v = std::get<1>(coefficients_);
   EXPECT_EQ(1 * Metre, d.coordinates().z);
@@ -100,7 +102,7 @@ TEST_F(PolynomialTest, Coefficients) {
 }
 
 // Check that a polynomial can be constructed and evaluated.
-TEST_F(PolynomialTest, Evaluate2V) {
+TEST_F(PolynomialInMonomialBasisTest, Evaluate2V) {
   P2V const p(coefficients_);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p(0.5 * Second);
@@ -114,7 +116,7 @@ TEST_F(PolynomialTest, Evaluate2V) {
 }
 
 // Check that a polynomial can be for an affine argument.
-TEST_F(PolynomialTest, Evaluate2A) {
+TEST_F(PolynomialInMonomialBasisTest, Evaluate2A) {
   Instant const t0 = Instant() + 0.3 * Second;
   P2A const p(coefficients_, t0);
   EXPECT_EQ(2, p.degree());
@@ -132,7 +134,7 @@ TEST_F(PolynomialTest, Evaluate2A) {
 }
 
 // Check that a polynomial can return an affine value.
-TEST_F(PolynomialTest, Evaluate2P) {
+TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
   Instant const t0 = Instant() + 0.3 * Second;
   P2P const p({World::origin + std::get<0>(coefficients_),
                std::get<1>(coefficients_),
@@ -156,7 +158,7 @@ TEST_F(PolynomialTest, Evaluate2P) {
 }
 
 // Check that a polynomial of high order may be declared.
-TEST_F(PolynomialTest, Evaluate17) {
+TEST_F(PolynomialInMonomialBasisTest, Evaluate17) {
   P17::Coefficients const coefficients;
   P17 const p(coefficients);
   EXPECT_EQ(17, p.degree());
@@ -167,7 +169,7 @@ TEST_F(PolynomialTest, Evaluate17) {
 }
 
 // Check that a conversion to increase the degree works.
-TEST_F(PolynomialTest, Conversion) {
+TEST_F(PolynomialInMonomialBasisTest, Conversion) {
   P2V const p2v(coefficients_);
   P17 const p17 = P17(p2v);
   Displacement<World> const d = p17(0.5 * Second);
@@ -180,7 +182,7 @@ TEST_F(PolynomialTest, Conversion) {
                                                0 * Metre / Second}), 0));
 }
 
-TEST_F(PolynomialTest, VectorSpace) {
+TEST_F(PolynomialInMonomialBasisTest, VectorSpace) {
   P2V const p2v(coefficients_);
   {
     auto const p = p2v + p2v;
@@ -219,7 +221,7 @@ TEST_F(PolynomialTest, VectorSpace) {
   }
 }
 
-TEST_F(PolynomialTest, Ring) {
+TEST_F(PolynomialInMonomialBasisTest, Ring) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
@@ -250,7 +252,7 @@ TEST_F(PolynomialTest, Ring) {
   }
 }
 
-TEST_F(PolynomialTest, Affine) {
+TEST_F(PolynomialInMonomialBasisTest, Affine) {
   using P0A = PolynomialInMonomialBasis<Instant, Time, 0, HornerEvaluator>;
   using P0V = PolynomialInMonomialBasis<Time, Time, 0, HornerEvaluator>;
 
@@ -281,7 +283,7 @@ TEST_F(PolynomialTest, Affine) {
 // 11.0.0.  Since we don't use Compose as of this writing, and working around
 // the bug would be hard, we ifdef out the test.
 #if PRINCIPIA_COMPILER_MSVC
-TEST_F(PolynomialTest, Monoid) {
+TEST_F(PolynomialInMonomialBasisTest, Monoid) {
   using P0 =
       PolynomialInMonomialBasis<Current, Temperature, 0, HornerEvaluator>;
   using P2A =
@@ -341,7 +343,7 @@ TEST_F(PolynomialTest, Monoid) {
 }
 #endif
 
-TEST_F(PolynomialTest, PointwiseInnerProduct) {
+TEST_F(PolynomialInMonomialBasisTest, PointwiseInnerProduct) {
   P2V::Coefficients const coefficients({
       Displacement<World>({0 * Metre,
                            2 * Metre,
@@ -378,7 +380,7 @@ TEST_F(PolynomialTest, PointwiseInnerProduct) {
   }
 }
 
-TEST_F(PolynomialTest, AtOrigin) {
+TEST_F(PolynomialInMonomialBasisTest, AtOrigin) {
   Instant const t0 = Instant() + 3 * Second;
   P2A const p(coefficients_, t0);
   P2A const q = p.AtOrigin(Instant() - 2 * Second);
@@ -389,7 +391,7 @@ TEST_F(PolynomialTest, AtOrigin) {
   }
 }
 
-TEST_F(PolynomialTest, Derivative) {
+TEST_F(PolynomialInMonomialBasisTest, Derivative) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
@@ -411,7 +413,7 @@ TEST_F(PolynomialTest, Derivative) {
             p3.Derivative<3>()(0 * Second));
 }
 
-TEST_F(PolynomialTest, PrimitiveIntegrate) {
+TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
 
@@ -428,7 +430,7 @@ TEST_F(PolynomialTest, PrimitiveIntegrate) {
               AlmostEquals(-99.0 / 6.0 * Kelvin * Second, 3));
 }
 
-TEST_F(PolynomialTest, EvaluateConstant) {
+TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
   PolynomialInMonomialBasis<Entropy, Time, 0, HornerEvaluator> const
       horner_boltzmann(std::make_tuple(BoltzmannConstant));
   PolynomialInMonomialBasis<Entropy, Time, 0, EstrinEvaluator> const
@@ -441,7 +443,7 @@ TEST_F(PolynomialTest, EvaluateConstant) {
               Eq(0 * Watt / Kelvin));
 }
 
-TEST_F(PolynomialTest, EvaluateLinear) {
+TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
   PolynomialInMonomialBasis<Length, Time, 1, HornerEvaluator> const
       horner_light({0 * Metre, SpeedOfLight});
   PolynomialInMonomialBasis<Length, Time, 1, EstrinEvaluator> const
@@ -454,7 +456,7 @@ TEST_F(PolynomialTest, EvaluateLinear) {
 }
 
 // Check that polynomials may be serialized.
-TEST_F(PolynomialTest, Serialization) {
+TEST_F(PolynomialInMonomialBasisTest, Serialization) {
   {
     P2V p2v(coefficients_);
     serialization::Polynomial message;
@@ -539,7 +541,7 @@ TEST_F(PolynomialTest, Serialization) {
   }
 }
 
-TEST_F(PolynomialTest, Output) {
+TEST_F(PolynomialInMonomialBasisTest, Output) {
   P2V p2v(coefficients_);
   P2A p2a(coefficients_, Instant());
   P17::Coefficients const coefficients;

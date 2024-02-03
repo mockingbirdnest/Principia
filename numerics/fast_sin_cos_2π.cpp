@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstdint>
 
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 
 namespace principia {
@@ -13,7 +13,7 @@ namespace numerics {
 namespace _fast_sin_cos_2π {
 namespace internal {
 
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 
 namespace {

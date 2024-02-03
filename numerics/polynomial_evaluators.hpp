@@ -1,6 +1,6 @@
 #pragma once
 
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -8,7 +8,7 @@ namespace numerics {
 namespace _polynomial_evaluators {
 namespace internal {
 
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Value, typename Argument, int degree, bool allow_fma>

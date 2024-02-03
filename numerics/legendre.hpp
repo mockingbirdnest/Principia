@@ -1,13 +1,13 @@
 #pragma once
 
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _legendre {
 namespace internal {
 
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 template<int degree_, template<typename, typename, int> class Evaluator>
 constexpr PolynomialInMonomialBasis<double, double, degree_, Evaluator>

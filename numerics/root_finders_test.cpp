@@ -10,7 +10,7 @@
 #include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -30,7 +30,7 @@ using ::testing::IsEmpty;
 using ::testing::Le;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_point;
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_scale_b;

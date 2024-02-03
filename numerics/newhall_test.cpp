@@ -9,7 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
-#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -27,7 +27,7 @@ namespace numerics {
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_newhall;
-using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_elementary_functions;
