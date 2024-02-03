@@ -247,9 +247,6 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
   auto const& F = orthogonal.fore;
   auto const& N = orthogonal.normal;
   auto const& B = orthogonal.binormal;
-  auto const& f = orthonormal.fore;
-  auto const& n = orthonormal.normal;
-  auto const& b = orthonormal.binormal;
 
   // The derivatives of the |orthogonal| trihedron.
   Velocity<InertialFrame> const& Ḟ = ṙ;
