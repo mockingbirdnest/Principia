@@ -291,7 +291,7 @@ void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage
       serialization::PolynomialInЧебышёвBasis::Coefficient>;
   using ArgumentSerializer = DoubleOrQuantityOrPointOrMultivectorSerializer<
       Argument,
-      serialization::PolynomialInЧебышёвBasis>;
+      serialization::PolynomialInЧебышёвBasis::Argument>;
 
   for (auto const& coefficient : coefficients_) {
     CoefficientSerializer::WriteToMessage(coefficient,
@@ -320,7 +320,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
       serialization::PolynomialInЧебышёвBasis::Coefficient>;
   using ArgumentSerializer = DoubleOrQuantityOrPointOrMultivectorSerializer<
       Argument,
-      serialization::PolynomialInЧебышёвBasis>;
+      serialization::PolynomialInЧебышёвBasis::Argument>;
 
   Coefficients coefficients;
   for (int i = 0; i < coefficients.size(); ++i) {
@@ -331,6 +331,22 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
       coefficients,
       ArgumentSerializer::ReadFromMessage(extension.lower_bound()),
       ArgumentSerializer::ReadFromMessage(extension.upper_bound()));
+}
+
+template<typename Value, typename Argument, int degree>
+constexpr bool operator==(
+    PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
+    PolynomialInЧебышёвBasis<Value, Argument, degree> const& right) {
+  return left.coefficients_ == right.coefficients_ &&
+         left.lower_bound_ == right.lower_bound_ &&
+         left.upper_bound_ == right.upper_bound_;
+}
+
+template<typename Value, typename Argument, int degree>
+constexpr bool operator!=(
+    PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
+    PolynomialInЧебышёвBasis<Value, Argument, degree> const& right) {
+  return !ЧебышёвSeries::operator==(right);
 }
 
 }  // namespace internal

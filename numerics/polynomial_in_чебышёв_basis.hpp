@@ -75,6 +75,11 @@ class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
   Coefficients coefficients_;
   Argument lower_bound_;
   Argument upper_bound_;
+
+  template<typename V, typename A, int d>
+  friend constexpr bool operator==(
+      PolynomialInЧебышёвBasis<V, A, d> const& left,
+      PolynomialInЧебышёвBasis<V, A, d> const& right);
 };
 
 template<typename Value, typename Argument, int degree>

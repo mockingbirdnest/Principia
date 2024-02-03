@@ -77,19 +77,17 @@ message PolynomialInChebyshevBasis {
       Multivector multivector = 3;
     }
   }
+  message Argument {
+    oneof message {
+      double double = 1;
+      Quantity quantity = 2;
+      Multivector multivector = 3;
+      Point point = 4;
+    }
+  }
   repeated Coefficient coefficient = 1;
-  oneof lower_bound {
-    double double = 1;
-    Quantity quantity = 2;
-    Multivector multivector = 3;
-    Point point = 4;
-  }
-  oneof upper_bound {
-    double double = 1;
-    Quantity quantity = 2;
-    Multivector multivector = 3;
-    Point point = 4;
-  }
+  required Argument lower_bound = 2;
+  required Argument upper_bound = 3;
 }
 
 message PolynomialInMonomialBasis {
