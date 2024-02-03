@@ -62,4 +62,4 @@ using internal::Polynomial;
 
 #include "numerics/polynomial_body.hpp"
 
-#endif PRINCIPIA_NUMERICS_POLYNOMIAL_HPP_
+#endif  // PRINCIPIA_NUMERICS_POLYNOMIAL_HPP_

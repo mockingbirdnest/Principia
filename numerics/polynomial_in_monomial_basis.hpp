@@ -391,4 +391,4 @@ using internal::PolynomialInMonomialBasis;
 
 #include "numerics/polynomial_in_monomial_basis_body.hpp"
 
-#endif PRINCIPIA_NUMERICS_POLYNOMIAL_IN_MONOMIAL_BASIS_HPP_
+#endif  // PRINCIPIA_NUMERICS_POLYNOMIAL_IN_MONOMIAL_BASIS_HPP_
