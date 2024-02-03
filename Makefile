@@ -97,7 +97,7 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 SHARED_ARGS   := \
 	-std=c++20 -stdlib=libc++ -O3 -g                              \
 	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
-	-fno-char8_t                                                  \
+	-fno-char8_t -fbracket-depth=257                              \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
 	-Wno-gnu-anonymous-struct                                     \
