@@ -69,7 +69,6 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
-using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;

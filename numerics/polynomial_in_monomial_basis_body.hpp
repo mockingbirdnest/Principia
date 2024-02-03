@@ -23,6 +23,7 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
+using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;

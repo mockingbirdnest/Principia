@@ -2,12 +2,8 @@
 
 #include "numerics/polynomial.hpp"
 
-#include <algorithm>
 #include <memory>
-#include <string>
-#include <tuple>
 #include <utility>
-#include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -24,13 +20,7 @@ namespace numerics {
 namespace _polynomial {
 namespace internal {
 
-using namespace principia::geometry::_cartesian_product;
-using namespace principia::geometry::_serialization;
-using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::numerics::_quadrature;
-using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_quantities;
 
 #define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
   case value:                                                          \
