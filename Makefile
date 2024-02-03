@@ -119,9 +119,7 @@ ifeq ($(UNAME_S),Linux)
     endif
     LIBS += -lsupc++
     TEST_LIBS += -lsupc++
-    SHAREDFLAG := \
-			-shared \
-			-fbracket-depth=257
+    SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
@@ -132,8 +130,7 @@ ifeq ($(UNAME_S),Darwin)
 			-mmacosx-version-min=10.12 \
 			-arch x86_64 \
 			-D_LIBCPP_STD_VER=20 \
-			-D_LIBCPP_NO_EXCEPTIONS \
-			-fbracket-depth=257
+			-D_LIBCPP_NO_EXCEPTIONS
     SHAREDFLAG := -dynamiclib
 endif
 
