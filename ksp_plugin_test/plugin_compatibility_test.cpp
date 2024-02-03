@@ -223,7 +223,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
                    apoapsides,
                    periapsides);
     auto const radius = celestial.body()->mean_radius();
-    for (const auto [time, _] : periapsides) {
+    for (auto const& [time, _] : periapsides) {
       if ((celestial_trajectory.EvaluatePosition(time) -
            flight_plan_trajectory.EvaluatePosition(time))
               .Norm() < 50 * radius) {

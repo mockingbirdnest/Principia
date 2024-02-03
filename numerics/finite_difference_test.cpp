@@ -35,7 +35,7 @@ template<int... values>
 using IntegralConstants = Types<std::integral_constant<int, values>...>;
 using UpTo9 = IntegralConstants<1, 2, 3, 4, 5, 6, 7, 8, 9>;
 
-TYPED_TEST_CASE(FiniteDifferenceTest, UpTo9);
+TYPED_TEST_SUITE(FiniteDifferenceTest, UpTo9);
 
 // Polynomials of degree up to n - 1, differentiated exactly.
 TYPED_TEST(FiniteDifferenceTest, LowDegreePolynomials) {

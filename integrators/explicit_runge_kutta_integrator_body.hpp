@@ -140,7 +140,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
     DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
     for (int i = 0; i < stages_; ++i) {
       for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ)
-          .loop([&a, &b, i](
+          .loop([&b, i](
                     auto const& kᵢ, auto const& y, auto& Δy, auto& Σᵢ_bᵢ_kᵢ) {
             Σᵢ_bᵢ_kᵢ += b[i] * kᵢ;
             Δy = Σᵢ_bᵢ_kᵢ;

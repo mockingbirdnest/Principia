@@ -790,7 +790,7 @@ template<typename Matrix>
 typename HessenbergDecompositionGenerator<Matrix>::Result
 HessenbergDecomposition(Matrix const& A) {
   using G = HessenbergDecompositionGenerator<Matrix>;
-  typename HessenbergDecompositionGenerator<Matrix>::Result result{.H = A};
+  typename G::Result result{.H = A};
   auto& H = result.H;
   int const n = A.rows();
 
@@ -906,9 +906,8 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
     i += 2;
   }
 
-  return typename RealSchurDecompositionGenerator<Matrix>::Result{
-      .T = std::move(H),
-      .real_eigenvalues = std::move(real_eigenvalues)};
+  return typename G::Result{.T = std::move(H),
+                            .real_eigenvalues = std::move(real_eigenvalues)};
 }
 
 template<typename Matrix>

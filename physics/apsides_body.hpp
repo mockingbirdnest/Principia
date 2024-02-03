@@ -248,7 +248,7 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
       // of |apsides_time|.  When entering this loop |it| denotes a periapsis
       // and |previous_it| the preceding apoapsis, if any.
       do {
-        Instant const periapis_time = *it;
+        Instant const periapsis_time = *it;
         previous_it = it;
         ++it;
         if (it == apsides_times.end()) {
@@ -299,6 +299,12 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
         break;
       }
     }
+  }
+
+  // Check the consistency of the result.
+  for (std::int64_t i = 1; i < intervals.size(); ++i) {
+    CHECK_LE(intervals[i - 1].max, intervals[i].min);
+    CHECK_LE(intervals[i].min, intervals[i].max);
   }
 
   return intervals;

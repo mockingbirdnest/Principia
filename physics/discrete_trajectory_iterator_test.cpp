@@ -271,7 +271,7 @@ TEST_F(DiscreteTrajectoryIteratorTest, EmptySegment) {
   auto segments = MakeSegments(1);
   {
     int count = 0;
-    for (auto const& point : segments->front()) {
+    for (auto const& _ : segments->front()) {
       ++count;
     }
     EXPECT_EQ(0, count);
