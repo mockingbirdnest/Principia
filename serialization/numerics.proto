@@ -63,7 +63,13 @@ message PoissonSeries {
 
 message Polynomial {
   required int32 degree = 1;
-  extensions 10000 to 10999;  // Last used: 10000.
+  extensions 10000 to 10999;  // Last used: 10001.
+}
+
+message PolynomialInChebyshevBasis {
+  extend Polynomial {
+    optional PolynomialInMonomialBasis extension = 10001;
+  }
 }
 
 message PolynomialInMonomialBasis {
