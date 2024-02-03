@@ -70,6 +70,26 @@ message PolynomialInChebyshevBasis {
   extend Polynomial {
     optional PolynomialInMonomialBasis extension = 10001;
   }
+  message Coefficient {
+    oneof message {
+      double double = 1;
+      Quantity quantity = 2;
+      Multivector multivector = 3;
+    }
+  }
+  repeated Coefficient coefficient = 1;
+  oneof lower_bound {
+    double double = 1;
+    Quantity quantity = 2;
+    Multivector multivector = 3;
+    Point point = 4;
+  }
+  oneof upper_bound {
+    double double = 1;
+    Quantity quantity = 2;
+    Multivector multivector = 3;
+    Point point = 4;
+  }
 }
 
 message PolynomialInMonomialBasis {
