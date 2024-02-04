@@ -129,6 +129,7 @@
     <ClCompile Include="poisson_series_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_in_monomial_basis_test.cpp" />
+    <ClCompile Include="polynomial_in_чебышёв_basis_test.cpp" />
     <ClCompile Include="quadrature_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="scale_b_test.cpp" />

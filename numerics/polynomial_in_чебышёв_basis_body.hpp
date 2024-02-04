@@ -8,9 +8,10 @@
 
 namespace principia {
 namespace numerics {
-namespace polynomial_in_чебышёв_basis {
+namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
+using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
@@ -33,7 +34,7 @@ template<typename Scalar_, typename Frame_, int rank_, int degree_>
 struct EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>
     : not_constructible {
   using Value = Multivector<Scalar_, Frame_, rank_>;
-  using Coefficients = std::array<Value, degre_ + 1>;
+  using Coefficients = std::array<Value, degree_ + 1>;
 
   static Value Evaluate(Coefficients const& coefficients,
                         double scaled_argument);
@@ -45,17 +46,17 @@ auto EvaluationHelper<Value_, degree_>::Evaluate(
     double const scaled_argument) -> Value {
   double const two_scaled_argument = scaled_argument + scaled_argument;
   Value const c_0 = coefficients[0];
-  switch (degre_) {
+  switch (degree_) {
     case 0:
       return c_0;
     case 1:
       return c_0 + scaled_argument * coefficients[1];
     default:
       // b_degree   = c_degree.
-      Value b_i = coefficients[degre_];
+      Value b_i = coefficients[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
-      Value b_j = coefficients_[degre_ - 1] + two_scaled_argument * b_i;
-      int k = degre_ - 3;
+      Value b_j = coefficients[degree_ - 1] + two_scaled_argument * b_i;
+      int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
         b_i = coefficients[k + 1] + two_scaled_argument * b_j - b_i;
@@ -79,41 +80,41 @@ auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
     Coefficients const& coefficients,
     double const scaled_argument) -> Value {
   double const two_scaled_argument = scaled_argument + scaled_argument;
-  R3Element<double> const c_0 = coefficients_[0];
+  R3Element<double> const c_0 = coefficients[0];
   switch (degree_) {
     case 0:
-      return Multivector<double, Frame, rank>(c_0) * si::Unit<Scalar>;
+      return Multivector<double, Frame_, rank_>(c_0) * si::Unit<Scalar>;
     case 1:
-      return Multivector<double, Frame, rank>(
-                 c_0 + scaled_argument * coefficients_[1]) * si::Unit<Scalar>;
+      return Multivector<double, Frame_, rank_>(
+                 c_0 + scaled_argument * coefficients[1]) * si::Unit<Scalar>;
     default:
       // b_degree   = c_degree.
-      R3Element<double> b_i = coefficients_[degree_];
+      R3Element<double> b_i = coefficients[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
       R3Element<double> b_j =
           coefficients_[degree_ - 1] + two_scaled_argument * b_i;
       int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
-        R3Element<double> const c_kplus1 = coefficients_[k + 1];
+        R3Element<double> const c_kplus1 = coefficients[k + 1];
         b_i.x = c_kplus1.x + two_scaled_argument * b_j.x - b_i.x;
         b_i.y = c_kplus1.y + two_scaled_argument * b_j.y - b_i.y;
         b_i.z = c_kplus1.z + two_scaled_argument * b_j.z - b_i.z;
         // b_k   = c_k   + 2 t b_k+1 - b_k+2.
-        R3Element<double> const c_k = coefficients_[k];
+        R3Element<double> const c_k = coefficients[k];
         b_j.x = c_k.x + two_scaled_argument * b_i.x - b_j.x;
         b_j.y = c_k.y + two_scaled_argument * b_i.y - b_j.y;
         b_j.z = c_k.z + two_scaled_argument * b_i.z - b_j.z;
       }
       if (k == 0) {
         // b_1 = c_1 + 2 t b_2 - b_3.
-        b_i = coefficients_[1] + two_scaled_argument * b_j - b_i;
+        b_i = coefficients[1] + two_scaled_argument * b_j - b_i;
         // c_0 + t b_1 - b_2.
-        return Multivector<double, Frame, rank>(
+        return Multivector<double, Frame_, rank_>(
                    c_0 + scaled_argument * b_i - b_j) * si::Unit<Scalar>;
       } else {
         // c_0 + t b_1 - b_2.
-        return Multivector<double, Frame, rank>(
+        return Multivector<double, Frame_, rank_>(
                    c_0 + scaled_argument * b_j - b_i) * si::Unit<Scalar>;
       }
     }
@@ -350,6 +351,6 @@ constexpr bool operator!=(
 }
 
 }  // namespace internal
-}  // namespace polynomial_in_чебышёв_basis
+}  // namespace _polynomial_in_чебышёв_basis
 }  // namespace numerics
 }  // namespace principia

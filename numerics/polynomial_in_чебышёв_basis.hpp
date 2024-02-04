@@ -18,7 +18,7 @@ using PolynomialInЧебышёвBasis = PolynomialInChebyshevBasis;
 }  // namespace serialization
 
 namespace numerics {
-namespace polynomial_in_чебышёв_basis {
+namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -92,8 +92,10 @@ constexpr bool operator!=(
     PolynomialInЧебышёвBasis<Value, Argument, degree> const& right);
 
 }  // namespace internal
-}  // namespace polynomial_in_чебышёв_basis
+}  // namespace _polynomial_in_чебышёв_basis
 }  // namespace numerics
 }  // namespace principia
+
+#include "numerics/polynomial_in_чебышёв_basis_body.hpp"
 
 #endif  // PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
