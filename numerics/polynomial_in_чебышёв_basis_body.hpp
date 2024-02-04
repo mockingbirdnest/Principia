@@ -3,9 +3,11 @@
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
 #include "base/tags.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
+#include "numerics/matrix_computations.hpp"
 
 namespace principia {
 namespace numerics {
@@ -14,10 +16,12 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
+using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
@@ -125,12 +129,14 @@ auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
 
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
-    PolynomialInЧебышёвBasis(Coefficients coefficients,
-                             Argument const& lower_bound,
-                             Argument const& upper_bound)
+PolynomialInЧебышёвBasis(Coefficients coefficients,
+                          Argument const& lower_bound,
+                          Argument const& upper_bound)
     : coefficients_(std::move(coefficients)),
       lower_bound_(lower_bound),
-      upper_bound_(upper_bound) {}
+      upper_bound_(upper_bound),
+      width_(upper_bound - lower_bound),
+      one_over_width_(1 / width_) {}
 
 template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
@@ -205,7 +211,7 @@ FixedMatrix<double, degree_ + 1, degree_ + 1>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionMatrix()
     const {
   int const N = degree();
-  FixedMatrix<double, degree_ + 1, degree_ + 1> A(N, N, uninitialized);
+  FixedMatrix<double, degree_ + 1, degree_ + 1> A(uninitialized);
 
   // j = 1.
   for (int k = 1; k <= N; ++k) {

@@ -75,6 +75,9 @@ class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
   Coefficients coefficients_;
   Argument lower_bound_;
   Argument upper_bound_;
+  Difference<Argument> width_;
+  // Precomputed to save operations at the expense of some accuracy loss.
+  Inverse<Difference<Argument>> one_over_width_;
 
   template<typename V, typename A, int d>
   friend constexpr bool operator==(

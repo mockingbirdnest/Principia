@@ -68,7 +68,7 @@ message Polynomial {
 
 message PolynomialInChebyshevBasis {
   extend Polynomial {
-    optional PolynomialInMonomialBasis extension = 10001;
+    optional PolynomialInChebyshevBasis extension = 10001;
   }
   message Coefficient {
     oneof message {

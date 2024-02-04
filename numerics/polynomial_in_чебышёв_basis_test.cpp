@@ -221,12 +221,12 @@ TEST_F(PolynomialInЧебышёвBasisDeathTest, SerializationError) {
   Series2 d({7, 8, -1}, t_min_, t_max_);
 
   EXPECT_DEATH({
-    serialization::PolynomialInЧебышёвBasis message;
+    serialization::Polynomial message;
     v.WriteToMessage(&message);
     Series2::ReadFromMessage(message);
   }, "has_double");
   EXPECT_DEATH({
-    serialization::PolynomialInЧебышёвBasis message;
+    serialization::Polynomial message;
     d.WriteToMessage(&message);
     Series1::ReadFromMessage(message);
   }, "has_quantity");
@@ -234,49 +234,63 @@ TEST_F(PolynomialInЧебышёвBasisDeathTest, SerializationError) {
 
 TEST_F(PolynomialInЧебышёвBasisTest, SerializationSuccess) {
   {
-    serialization::PolynomialInЧебышёвBasis message;
+    serialization::Polynomial message;
     PolynomialInЧебышёвBasis<Speed, Instant, 2> const v1(
         {1 * Metre / Second, -2 * Metre / Second, 5 * Metre / Second},
         t_min_, t_max_);
     v1.WriteToMessage(&message);
-    EXPECT_EQ(3, message.coefficient_size());
-    EXPECT_FALSE(message.coefficient(0).has_double_());
-    EXPECT_TRUE(message.coefficient(0).has_quantity());
-    EXPECT_EQ(0x7C01, message.coefficient(0).quantity().dimensions());
-    EXPECT_EQ(1.0, message.coefficient(0).quantity().magnitude());
-    EXPECT_TRUE(message.has_lower_bound());
-    EXPECT_TRUE(message.lower_bound().has_scalar());
-    EXPECT_TRUE(message.lower_bound().scalar().has_dimensions());
-    EXPECT_TRUE(message.lower_bound().scalar().has_magnitude());
-    EXPECT_EQ(-1.0, message.lower_bound().scalar().magnitude());
-    EXPECT_TRUE(message.has_upper_bound());
-    EXPECT_TRUE(message.upper_bound().has_scalar());
-    EXPECT_TRUE(message.upper_bound().scalar().has_dimensions());
-    EXPECT_TRUE(message.upper_bound().scalar().has_magnitude());
-    EXPECT_EQ(3.0, message.upper_bound().scalar().magnitude());
-    auto const v2 = PolynomialInЧебышёвBasis<Speed, Instant>::ReadFromMessage(message);
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInЧебышёвBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInЧебышёвBasis::extension);
+    EXPECT_EQ(3, extension.coefficient_size());
+    EXPECT_FALSE(extension.coefficient(0).has_double_());
+    EXPECT_TRUE(extension.coefficient(0).has_quantity());
+    EXPECT_EQ(0x7C01, extension.coefficient(0).quantity().dimensions());
+    EXPECT_EQ(1.0, extension.coefficient(0).quantity().magnitude());
+    EXPECT_TRUE(extension.has_lower_bound());
+    EXPECT_TRUE(extension.lower_bound().has_point());
+    EXPECT_TRUE(extension.lower_bound().point().has_scalar());
+    EXPECT_TRUE(extension.lower_bound().point().scalar().has_dimensions());
+    EXPECT_TRUE(extension.lower_bound().point().scalar().has_magnitude());
+    EXPECT_EQ(-1.0, extension.lower_bound().point().scalar().magnitude());
+    EXPECT_TRUE(extension.has_upper_bound());
+    EXPECT_TRUE(extension.upper_bound().has_point());
+    EXPECT_TRUE(extension.upper_bound().point().has_scalar());
+    EXPECT_TRUE(extension.upper_bound().point().scalar().has_dimensions());
+    EXPECT_TRUE(extension.upper_bound().point().scalar().has_magnitude());
+    EXPECT_EQ(3.0, extension.upper_bound().point().scalar().magnitude());
+    auto const v2 =
+        PolynomialInЧебышёвBasis<Speed, Instant, 2>::ReadFromMessage(message);
     EXPECT_EQ(v1, v2);
   }
   {
-    serialization::PolynomialInЧебышёвBasis message;
+    serialization::Polynomial message;
     PolynomialInЧебышёвBasis<double, Instant, 2> const d1(
         {-1, 2, 5}, t_min_, t_max_);
     d1.WriteToMessage(&message);
-    EXPECT_EQ(3, message.coefficient_size());
-    EXPECT_TRUE(message.coefficient(0).has_double_());
-    EXPECT_FALSE(message.coefficient(0).has_quantity());
-    EXPECT_EQ(-1.0, message.coefficient(0).double_());
-    EXPECT_TRUE(message.has_lower_bound());
-    EXPECT_TRUE(message.lower_bound().has_scalar());
-    EXPECT_TRUE(message.lower_bound().scalar().has_dimensions());
-    EXPECT_TRUE(message.lower_bound().scalar().has_magnitude());
-    EXPECT_EQ(-1.0, message.lower_bound().scalar().magnitude());
-    EXPECT_TRUE(message.has_upper_bound());
-    EXPECT_TRUE(message.upper_bound().has_scalar());
-    EXPECT_TRUE(message.upper_bound().scalar().has_dimensions());
-    EXPECT_TRUE(message.upper_bound().scalar().has_magnitude());
-    EXPECT_EQ(3.0, message.upper_bound().scalar().magnitude());
-    auto const d2 = PolynomialInЧебышёвBasis<double, Instant>::ReadFromMessage(message);
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInЧебышёвBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInЧебышёвBasis::extension);
+    EXPECT_EQ(3, extension.coefficient_size());
+    EXPECT_TRUE(extension.coefficient(0).has_double_());
+    EXPECT_FALSE(extension.coefficient(0).has_quantity());
+    EXPECT_EQ(-1.0, extension.coefficient(0).double_());
+    EXPECT_TRUE(extension.has_lower_bound());
+    EXPECT_TRUE(extension.lower_bound().has_point());
+    EXPECT_TRUE(extension.lower_bound().point().has_scalar());
+    EXPECT_TRUE(extension.lower_bound().point().scalar().has_dimensions());
+    EXPECT_TRUE(extension.lower_bound().point().scalar().has_magnitude());
+    EXPECT_EQ(-1.0, extension.lower_bound().point().scalar().magnitude());
+    EXPECT_TRUE(extension.has_upper_bound());
+    EXPECT_TRUE(extension.upper_bound().has_point());
+    EXPECT_TRUE(extension.upper_bound().point().has_scalar());
+    EXPECT_TRUE(extension.upper_bound().point().scalar().has_dimensions());
+    EXPECT_TRUE(extension.upper_bound().point().scalar().has_magnitude());
+    EXPECT_EQ(3.0, extension.upper_bound().point().scalar().magnitude());
+    auto const d2 =
+        PolynomialInЧебышёвBasis<double, Instant, 2>::ReadFromMessage(message);
     EXPECT_EQ(d1, d2);
   }
 }
