@@ -29,6 +29,7 @@ using namespace principia::quantities::_named_quantities;
 template<typename Value_, typename Argument_, int degree_>
 class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
  public:
+  static_assert(degree_ >= 0);
   using Argument = Argument_;
   using Value = Value_;
 
@@ -66,10 +67,9 @@ class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
   // the Frobenius companion matrix.
   absl::btree_set<Argument> RealRoots(double ε) const;
 
-  void WriteToMessage(
-      not_null<serialization::PolynomialInЧебышёвBasis*> message) const;
+  void WriteToMessage(not_null<serialization::Polynomial*> message) const;
   static PolynomialInЧебышёвBasis ReadFromMessage(
-      serialization::PolynomialInЧебышёвBasis const& message);
+      serialization::Polynomial const& message);
 
  private:
   Coefficients coefficients_;
@@ -92,6 +92,9 @@ constexpr bool operator!=(
     PolynomialInЧебышёвBasis<Value, Argument, degree> const& right);
 
 }  // namespace internal
+
+using internal::PolynomialInЧебышёвBasis;
+
 }  // namespace _polynomial_in_чебышёв_basis
 }  // namespace numerics
 }  // namespace principia

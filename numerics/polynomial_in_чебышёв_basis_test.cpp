@@ -45,96 +45,91 @@ class PolynomialInЧебышёвBasisTest : public ::testing::Test {
 
 using PolynomialInЧебышёвBasisDeathTest = PolynomialInЧебышёвBasisTest;
 
-TEST_F(PolynomialInЧебышёвBasisDeathTest, ConstructionErrors) {
-  using Series = PolynomialInЧебышёвBasis<double, Instant>;
-  EXPECT_DEATH({ Series p({}, t_min_, t_max_); }, "at least 0");
-  EXPECT_DEATH({ Series p({1}, t_max_, t_min_); }, "not be empty");
-}
-
 TEST_F(PolynomialInЧебышёвBasisDeathTest, EvaluationErrors) {
 #ifdef _DEBUG
-  using Series = PolynomialInЧебышёвBasis<double, Instant>;
+  using Series = PolynomialInЧебышёвBasis<double, Instant, 0>;
   EXPECT_DEATH({
     Series p({1}, t_min_, t_max_);
-    p.Evaluate(t_min_ - 10 * Second);
+    p(t_min_ - 10 * Second);
   }, ">= -1.1");
   EXPECT_DEATH({
     Series p({1}, t_min_, t_max_);
-    p.Evaluate(t_max_ + 10 * Second);
+    p(t_max_ + 10 * Second);
   }, "<= 1.1");
 #endif
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, T0) {
-  PolynomialInЧебышёвBasis<double, Instant> t0({1}, t_min_, t_max_);
-  EXPECT_EQ(1, t0.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(1, t0.Evaluate(t0_ + 3 * Second));
+  PolynomialInЧебышёвBasis<double, Instant, 0> t0({1}, t_min_, t_max_);
+  EXPECT_EQ(1, t0(t0_ + 1 * Second));
+  EXPECT_EQ(1, t0(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, T1) {
-  PolynomialInЧебышёвBasis<double, Instant> t1({0, 1}, t_min_, t_max_);
-  EXPECT_EQ(0, t1.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(1, t1.Evaluate(t0_ + 3 * Second));
+  PolynomialInЧебышёвBasis<double, Instant, 1> t1({0, 1}, t_min_, t_max_);
+  EXPECT_EQ(0, t1(t0_ + 1 * Second));
+  EXPECT_EQ(1, t1(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, T2) {
-  PolynomialInЧебышёвBasis<double, Instant> t2({0, 0, 1}, t_min_, t_max_);
-  EXPECT_EQ(1, t2.Evaluate(t0_ + -1 * Second));
-  EXPECT_EQ(-1, t2.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(1, t2.Evaluate(t0_ + 3 * Second));
+  PolynomialInЧебышёвBasis<double, Instant, 2> t2({0, 0, 1}, t_min_, t_max_);
+  EXPECT_EQ(1, t2(t0_ + -1 * Second));
+  EXPECT_EQ(-1, t2(t0_ + 1 * Second));
+  EXPECT_EQ(1, t2(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, T3) {
-  PolynomialInЧебышёвBasis<double, Instant> t3({0, 0, 0, 1}, t_min_, t_max_);
-  EXPECT_EQ(-1, t3.Evaluate(t0_ + -1 * Second));
-  EXPECT_EQ(0, t3.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(-1, t3.Evaluate(t0_ + 2 * Second));
-  EXPECT_EQ(1, t3.Evaluate(t0_ + 3 * Second));
+  PolynomialInЧебышёвBasis<double, Instant, 3> t3({0, 0, 0, 1}, t_min_, t_max_);
+  EXPECT_EQ(-1, t3(t0_ + -1 * Second));
+  EXPECT_EQ(0, t3(t0_ + 1 * Second));
+  EXPECT_EQ(-1, t3(t0_ + 2 * Second));
+  EXPECT_EQ(1, t3(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, X5) {
-  PolynomialInЧебышёвBasis<double, Instant> x5(
+  PolynomialInЧебышёвBasis<double, Instant, 5> x5(
       {0.0, 10.0 / 16.0, 0, 5.0 / 16.0, 0, 1.0 / 16.0},
       t_min_, t_max_);
-  EXPECT_EQ(-1, x5.Evaluate(t0_ + -1 * Second));
-  EXPECT_EQ(0, x5.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(1.0 / 1024.0, x5.Evaluate(t0_ + 1.5 * Second));
-  EXPECT_EQ(1.0 / 32.0, x5.Evaluate(t0_ + 2 * Second));
-  EXPECT_EQ(1, x5.Evaluate(t0_ + 3 * Second));
+  EXPECT_EQ(-1, x5(t0_ + -1 * Second));
+  EXPECT_EQ(0, x5(t0_ + 1 * Second));
+  EXPECT_EQ(1.0 / 1024.0, x5(t0_ + 1.5 * Second));
+  EXPECT_EQ(1.0 / 32.0, x5(t0_ + 2 * Second));
+  EXPECT_EQ(1, x5(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, X6) {
-  PolynomialInЧебышёвBasis<double, Instant> x6(
+  PolynomialInЧебышёвBasis<double, Instant, 6> x6(
       {10.0 / 32.0, 0, 15.0 / 32.0, 0, 6.0 / 32.0, 0, 1.0 / 32.0},
       t_min_, t_max_);
-  EXPECT_EQ(1, x6.Evaluate(t0_ + -1 * Second));
-  EXPECT_EQ(0, x6.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(1.0 / 4096.0, x6.Evaluate(t0_ + 1.5 * Second));
-  EXPECT_EQ(1.0 / 64.0, x6.Evaluate(t0_ + 2 * Second));
-  EXPECT_EQ(1, x6.Evaluate(t0_ + 3 * Second));
+  EXPECT_EQ(1, x6(t0_ + -1 * Second));
+  EXPECT_EQ(0, x6(t0_ + 1 * Second));
+  EXPECT_EQ(1.0 / 4096.0, x6(t0_ + 1.5 * Second));
+  EXPECT_EQ(1.0 / 64.0, x6(t0_ + 2 * Second));
+  EXPECT_EQ(1, x6(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, T2Dimension) {
-  PolynomialInЧебышёвBasis<Length, Instant> t2(
+  PolynomialInЧебышёвBasis<Length, Instant, 2> t2(
       {0 * Metre, 0 * Metre, 1 * Metre},
       t_min_, t_max_);
-  EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + -1 * Second));
-  EXPECT_EQ(-1 * Metre, t2.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(1 * Metre, t2.Evaluate(t0_ + 3 * Second));
+  EXPECT_EQ(1 * Metre, t2(t0_ + -1 * Second));
+  EXPECT_EQ(-1 * Metre, t2(t0_ + 1 * Second));
+  EXPECT_EQ(1 * Metre, t2(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, T2Double) {
-  PolynomialInЧебышёвBasis<Length, double> t2(
+  PolynomialInЧебышёвBasis<Length, double, 2> t2(
       {0 * Metre, 0 * Metre, 1 * Metre},
       -1, 2);
-  EXPECT_EQ(1 * Metre, t2.Evaluate(-1));
-  EXPECT_EQ(-7.0 / 9.0 * Metre, t2.Evaluate(1));
-  EXPECT_EQ(1 * Metre, t2.Evaluate(2));
+  EXPECT_EQ(1 * Metre, t2(-1));
+  EXPECT_EQ(-7.0 / 9.0 * Metre, t2(1));
+  EXPECT_EQ(1 * Metre, t2(2));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
   {
-    PolynomialInЧебышёвBasis<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
+    PolynomialInЧебышёвBasis<double, Instant, 3> series(
+        {-2, 3, 5, 6}, t_min_, t_max_);
     auto const matrix = series.FrobeniusCompanionMatrix();
     EXPECT_THAT(matrix,
       AlmostEquals(UnboundedMatrix<double>(
@@ -150,7 +145,8 @@ TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
                             AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
   }
   {
-    PolynomialInЧебышёвBasis<double, Instant> series({-2, 3}, t_min_, t_max_);
+    PolynomialInЧебышёвBasis<double, Instant, 1> series(
+        {-2, 3}, t_min_, t_max_);
     auto const matrix = series.FrobeniusCompanionMatrix();
     EXPECT_THAT(matrix, AlmostEquals(UnboundedMatrix<double>({1.0 / 3.0}), 0));
     auto const matrix_schur_decomposition =
@@ -162,20 +158,24 @@ TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
 
 TEST_F(PolynomialInЧебышёвBasisTest, MayHaveRealRoots) {
   // B₀ path.
-  PolynomialInЧебышёвBasis<double, Instant> series1({16, 5, 3, 7}, t_min_, t_max_);
+  PolynomialInЧебышёвBasis<double, Instant, 3> series1(
+      {16, 5, 3, 7}, t_min_, t_max_);
   EXPECT_FALSE(series1.MayHaveRealRoots());
   // An error estimate causes the result to be more pessimistic.
   EXPECT_TRUE(series1.MayHaveRealRoots(/*error_estimate*/1.5));
   // We don't know, but it actually doesn't have zeroes.
-  PolynomialInЧебышёвBasis<double, Instant> series2({13, 5, 3, 7}, t_min_, t_max_);
+  PolynomialInЧебышёвBasis<double, Instant, 3> series2(
+      {13, 5, 3, 7}, t_min_, t_max_);
   EXPECT_TRUE(series2.MayHaveRealRoots());
   // We don't know, but it actually has zeroes.
-  PolynomialInЧебышёвBasis<double, Instant> series3({4, 5, 3, 7}, t_min_, t_max_);
+  PolynomialInЧебышёвBasis<double, Instant, 3> series3(
+      {4, 5, 3, 7}, t_min_, t_max_);
   EXPECT_TRUE(series3.MayHaveRealRoots());
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, RealRoots) {
-  PolynomialInЧебышёвBasis<double, Instant> series({-2, 3, 5, 6}, t_min_, t_max_);
+  PolynomialInЧебышёвBasis<double, Instant, 3> series(
+      {-2, 3, 5, 6}, t_min_, t_max_);
   Instant const r1 = t0_ + (13.0 - Sqrt(337.0)) / 12.0 * Second;
   Instant const r2 = t0_;
   Instant const r3 = t0_ + (13.0 + Sqrt(337.0)) / 12.0 * Second;
@@ -183,9 +183,9 @@ TEST_F(PolynomialInЧебышёвBasisTest, RealRoots) {
               ElementsAre(AlmostEquals(r1, 15),
                           AbsoluteErrorFrom(r2, Lt(2.3e-16 * Second)),
                           AlmostEquals(r3, 1)));
-  EXPECT_THAT(Abs(series.Evaluate(r1)), Lt(8.9e-16));
-  EXPECT_THAT(Abs(series.Evaluate(r2)), AlmostEquals(0, 0));
-  EXPECT_THAT(Abs(series.Evaluate(r3)), Lt(1.8e-15));
+  EXPECT_THAT(Abs(series(r1)), Lt(8.9e-16));
+  EXPECT_THAT(Abs(series(r2)), AlmostEquals(0, 0));
+  EXPECT_THAT(Abs(series(r3)), Lt(1.8e-15));
 }
 
 TEST_F(PolynomialInЧебышёвBasisTest, X6Vector) {
@@ -198,22 +198,22 @@ TEST_F(PolynomialInЧебышёвBasisTest, X6Vector) {
   V const c4 = V({0.0 * Metre, 0.0 * Metre, 6.0 / 32.0 * Metre});
   V const c5 = V({0.0 * Metre, 1.0 / 16.0 * Metre, 0 * Metre});
   V const c6 = V({0.0 * Metre, 0.0 * Metre, 1.0 / 32.0 * Metre});
-  PolynomialInЧебышёвBasis<Vector<Length, ICRS>, Instant> x6(
+  PolynomialInЧебышёвBasis<Vector<Length, ICRS>, Instant, 6> x6(
       {c0, c1, c2, c3, c4, c5, c6},
       t_min_, t_max_);
   EXPECT_EQ(V({-1 * Metre, -1 * Metre, 1 * Metre}),
-            x6.Evaluate(t0_ + -1 * Second));
+            x6(t0_ + -1 * Second));
   EXPECT_EQ(V({0 * Metre, 0 * Metre, 0 * Metre}),
-            x6.Evaluate(t0_ + 1 * Second));
+            x6(t0_ + 1 * Second));
   EXPECT_EQ(V({-1 * Metre, 1.0 / 32.0 * Metre, 1 / 64.0 * Metre}),
-            x6.Evaluate(t0_ + 2 * Second));
+            x6(t0_ + 2 * Second));
   EXPECT_EQ(V({1 * Metre, 1 * Metre, 1 * Metre}),
-            x6.Evaluate(t0_ + 3 * Second));
+            x6(t0_ + 3 * Second));
 }
 
 TEST_F(PolynomialInЧебышёвBasisDeathTest, SerializationError) {
-  using Series1 = PolynomialInЧебышёвBasis<Speed, Instant>;
-  using Series2 = PolynomialInЧебышёвBasis<double, Instant>;
+  using Series1 = PolynomialInЧебышёвBasis<Speed, Instant, 2>;
+  using Series2 = PolynomialInЧебышёвBasis<double, Instant, 2>;
   Series1 v({1 * Metre / Second,
              -2 * Metre / Second,
              5 * Metre / Second},
@@ -235,10 +235,9 @@ TEST_F(PolynomialInЧебышёвBasisDeathTest, SerializationError) {
 TEST_F(PolynomialInЧебышёвBasisTest, SerializationSuccess) {
   {
     serialization::PolynomialInЧебышёвBasis message;
-    PolynomialInЧебышёвBasis<Speed, Instant> const v1({1 * Metre / Second,
-                                            -2 * Metre / Second,
-                                            5 * Metre / Second},
-                                           t_min_, t_max_);
+    PolynomialInЧебышёвBasis<Speed, Instant, 2> const v1(
+        {1 * Metre / Second, -2 * Metre / Second, 5 * Metre / Second},
+        t_min_, t_max_);
     v1.WriteToMessage(&message);
     EXPECT_EQ(3, message.coefficient_size());
     EXPECT_FALSE(message.coefficient(0).has_double_());
@@ -260,7 +259,8 @@ TEST_F(PolynomialInЧебышёвBasisTest, SerializationSuccess) {
   }
   {
     serialization::PolynomialInЧебышёвBasis message;
-    PolynomialInЧебышёвBasis<double, Instant> const d1({-1, 2, 5}, t_min_, t_max_);
+    PolynomialInЧебышёвBasis<double, Instant, 2> const d1(
+        {-1, 2, 5}, t_min_, t_max_);
     d1.WriteToMessage(&message);
     EXPECT_EQ(3, message.coefficient_size());
     EXPECT_TRUE(message.coefficient(0).has_double_());

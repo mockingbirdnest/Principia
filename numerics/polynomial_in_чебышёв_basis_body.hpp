@@ -2,6 +2,7 @@
 
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
+#include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
@@ -12,11 +13,13 @@ namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_si;
 
 // A helper class for implementing |Evaluate| that can be specialized for speed.
 template<typename Value_, int degree_>
@@ -83,16 +86,16 @@ auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
   R3Element<double> const c_0 = coefficients[0];
   switch (degree_) {
     case 0:
-      return Multivector<double, Frame_, rank_>(c_0) * si::Unit<Scalar>;
+      return Multivector<double, Frame_, rank_>(c_0) * si::Unit<Scalar_>;
     case 1:
       return Multivector<double, Frame_, rank_>(
-                 c_0 + scaled_argument * coefficients[1]) * si::Unit<Scalar>;
+                 c_0 + scaled_argument * coefficients[1]) * si::Unit<Scalar_>;
     default:
       // b_degree   = c_degree.
       R3Element<double> b_i = coefficients[degree_];
       // b_degree-1 = c_degree-1 + 2 t b_degree.
       R3Element<double> b_j =
-          coefficients_[degree_ - 1] + two_scaled_argument * b_i;
+          coefficients[degree_ - 1] + two_scaled_argument * b_i;
       int k = degree_ - 3;
       for (; k >= 1; k -= 2) {
         // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
@@ -111,11 +114,11 @@ auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
         b_i = coefficients[1] + two_scaled_argument * b_j - b_i;
         // c_0 + t b_1 - b_2.
         return Multivector<double, Frame_, rank_>(
-                   c_0 + scaled_argument * b_i - b_j) * si::Unit<Scalar>;
+                   c_0 + scaled_argument * b_i - b_j) * si::Unit<Scalar_>;
       } else {
         // c_0 + t b_1 - b_2.
         return Multivector<double, Frame_, rank_>(
-                   c_0 + scaled_argument * b_j - b_i) * si::Unit<Scalar>;
+                   c_0 + scaled_argument * b_j - b_i) * si::Unit<Scalar_>;
       }
     }
 }
@@ -163,15 +166,14 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
   Value* b_kplus2 = &b_kplus2_vector;
   Value* b_kplus1 = &b_kplus1_vector;
   Value* const& b_k = b_kplus2;  // An overlay.
-  for (int k = helper_.degree() - 1; k >= 1; --k) {
-    *b_k = helper_.coefficients(k + 1) * (k + 1) +
+  for (int k = degree_ - 1; k >= 1; --k) {
+    *b_k = coefficients_[k + 1] * (k + 1) +
            two_scaled_argument * *b_kplus1 - *b_kplus2;
     Value* const last_b_k = b_k;
     b_kplus2 = b_kplus1;
     b_kplus1 = last_b_k;
   }
-  return (helper_.coefficients(1) + two_scaled_argument * *b_kplus1 -
-          *b_kplus2) *
+  return (coefficients_[1] + two_scaled_argument * *b_kplus1 - *b_kplus2) *
          (one_over_width_ + one_over_width_);
 }
 
@@ -219,14 +221,13 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionM
   }
 
   // j = N.
-  auto const two_aN = 2 * helper_.coefficients(N);
+  auto const two_aN = 2 * coefficients_[N];
   for (int k = 1; k <= N; ++k) {
     auto& Aⱼₖ = A(N - 1, k - 1);
     // Note that [Boy13] formula (B.2) has aⱼ₋₁ instead of aₖ₋₁ below, but
     // that's probably a typo because it's immediately corrected in formula
     // (B.3).
-    Aⱼₖ =
-        -helper_.coefficients(k - 1) / two_aN + 0.5 * KroneckerDelta(k, N - 1);
+    Aⱼₖ = -coefficients_[k - 1] / two_aN + 0.5 * KroneckerDelta(k, N - 1);
   }
 
   return A;
@@ -246,10 +247,10 @@ bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::MayHaveRealRoo
   int const N = degree();
   Value B₀{};
   for (int j = 1; j <= N; ++j) {
-    auto const abs_aⱼ = Abs(helper_.coefficients(j));
+    auto const abs_aⱼ = Abs(coefficients_[j]);
     B₀ += abs_aⱼ;
   }
-  auto const abs_a₀ = Abs(helper_.coefficients(0));
+  auto const abs_a₀ = Abs(coefficients_[0]);
   // The error may shift the curve vertically.  Note that the following
   // comparison is valid if the right-hand side is negative.
   return B₀ >= abs_a₀ - error_estimate;
@@ -282,7 +283,7 @@ RealRoots(double const ε) const {
 
 template<typename Value_, typename Argument_, int degree_>
 void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage(
-    not_null<serialization::PolynomialInЧебышёвBasis*> message) const {
+    not_null<serialization::Polynomial*> message) const {
   message->set_degree(degree_);
   auto* const extension = message->MutableExtension(
       serialization::PolynomialInЧебышёвBasis::extension);
@@ -307,7 +308,7 @@ void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage
 template<typename Value_, typename Argument_, int degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
-    serialization::PolynomialInЧебышёвBasis const& message) {
+    serialization::Polynomial const& message) {
   // TODO(phl): Add compatibility code with |ЧебышёвSeries|.
   CHECK_EQ(degree_, message.degree()) << message.DebugString();
   CHECK(
@@ -347,7 +348,7 @@ template<typename Value, typename Argument, int degree>
 constexpr bool operator!=(
     PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
     PolynomialInЧебышёвBasis<Value, Argument, degree> const& right) {
-  return !ЧебышёвSeries::operator==(right);
+  return !operator==(left, right);
 }
 
 }  // namespace internal
