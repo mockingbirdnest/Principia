@@ -429,7 +429,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:09:47"_DateTime));
   EXPECT_THAT(flyby_inclination, IsNear(89.98_(1) * Degree));
-  EXPECT_EQ(35, number_of_evaluations);
+  EXPECT_EQ(34, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
