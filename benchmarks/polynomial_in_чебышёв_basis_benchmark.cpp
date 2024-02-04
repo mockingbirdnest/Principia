@@ -53,7 +53,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<double, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
-    coefficients.push_back(static_cast<double>(random()));
+    coefficients[i] = static_cast<double>(random());
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
@@ -67,7 +67,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
 
   for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += series.Evaluate(t);
+      result += series(t);
       t += Δt;
     }
   }
@@ -82,7 +82,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<Length, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
-    coefficients.push_back(static_cast<double>(random()) * Metre);
+    coefficients[i] = static_cast<double>(random()) * Metre;
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
@@ -96,7 +96,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
 
   for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += series.Evaluate(t);
+      result += series(t);
       t += Δt;
     }
   }
@@ -113,9 +113,9 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<R3Element<double>, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
-    coefficients.push_back({static_cast<double>(random()),
-                            static_cast<double>(random()),
-                            static_cast<double>(random())});
+    coefficients[i] = {static_cast<double>(random()),
+                       static_cast<double>(random()),
+                       static_cast<double>(random())};
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
@@ -129,7 +129,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
 
   for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += series.Evaluate(t);
+      result += series(t);
       t += Δt;
     }
   }
@@ -144,12 +144,12 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
 template<int degree>
 void BM_EvaluateVectorDouble(benchmark::State& state) {
   std::mt19937_64 random(42);
-  std::vector<Multivector<double, ICRS, 1>> coefficients;
+  std::array<Multivector<double, ICRS, 1>, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
-    coefficients.push_back(
+    coefficients[i] =
         Multivector<double, ICRS, 1>({static_cast<double>(random()),
                                       static_cast<double>(random()),
-                                      static_cast<double>(random())}));
+                                      static_cast<double>(random())});
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
@@ -163,7 +163,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
 
   for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += series.Evaluate(t);
+      result += series(t);
       t += Δt;
     }
   }
@@ -178,12 +178,12 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
 template<int degree>
 void BM_EvaluateDisplacement(benchmark::State& state) {
   std::mt19937_64 random(42);
-  std::vector<Displacement<ICRS>> coefficients;
+  std::array<Displacement<ICRS>, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
-    coefficients.push_back(
+    coefficients[i] =
         Displacement<ICRS>({static_cast<double>(random()) * Metre,
                             static_cast<double>(random()) * Metre,
-                            static_cast<double>(random()) * Metre}));
+                            static_cast<double>(random()) * Metre});
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
@@ -197,7 +197,7 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
 
   for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += series.Evaluate(t);
+      result += series(t);
       t += Δt;
     }
   }
