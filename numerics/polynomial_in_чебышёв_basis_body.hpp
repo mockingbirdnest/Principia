@@ -41,7 +41,11 @@ template<typename Scalar_, typename Frame_, int rank_, int degree_>
 struct EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>
     : not_constructible {
   using Value = Multivector<Scalar_, Frame_, rank_>;
-  using Coefficients = std::array<Value, degree_ + 1>;
+using C = decltype(std::declval<Value>().coordinates());
+C c;
+R3Element<double> r = c;
+  using Coefficients =
+      std::array<decltype(std::declval<Value>().coordinates()), degree_ + 1>;
 
   static Value Evaluate(Coefficients const& coefficients,
                         double scaled_argument);
