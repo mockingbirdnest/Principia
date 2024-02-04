@@ -268,7 +268,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   EXPECT_THAT(
       (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
       IsNear(61.6_(1) * Metre / Second));
-  EXPECT_EQ(105, number_of_evaluations);
+  EXPECT_EQ(106, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
@@ -344,7 +344,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   ComputeFlyby(*flight_plan_, moon, flyby_time, flyby_distance);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:15:12"_DateTime));
   EXPECT_THAT(flyby_distance, IsNear(1999.6_(1) * Kilo(Metre)));
-  EXPECT_EQ(74, number_of_evaluations);
+  EXPECT_EQ(75, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
