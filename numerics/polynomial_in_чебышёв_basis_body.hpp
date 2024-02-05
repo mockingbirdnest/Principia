@@ -35,6 +35,7 @@ struct EvaluationHelper : not_constructible {
                         double scaled_argument);
 };
 
+#if 0
 // The compiler does a much better job on an |R3Element<double>| than on a
 // |Vector<Quantity>| so we specialize this case.
 template<typename Scalar_, typename Frame_, int rank_, int degree_>
@@ -50,6 +51,7 @@ R3Element<double> r = c;
   static Value Evaluate(Coefficients const& coefficients,
                         double scaled_argument);
 };
+#endif
 
 template<typename Value_, int degree_>
 auto EvaluationHelper<Value_, degree_>::Evaluate(
@@ -86,6 +88,7 @@ auto EvaluationHelper<Value_, degree_>::Evaluate(
   }
 }
 
+#if 0
 template<typename Scalar_, typename Frame_, int rank_, int degree_>
 auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
     Coefficients const& coefficients,
@@ -130,6 +133,7 @@ auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
       }
     }
 }
+#endif
 
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
