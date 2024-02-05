@@ -251,7 +251,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
             flight_plan_->GetManœuvre(6).initial_time());
   EXPECT_THAT((manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
               IsNear(1.283_(1) * Metre / Second));
-  EXPECT_EQ(90, number_of_evaluations);
+  EXPECT_EQ(91, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
@@ -264,7 +264,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   EXPECT_EQ(8, flight_plan_->number_of_anomalous_manœuvres());
   EXPECT_THAT(
       manœuvre7.initial_time() - flight_plan_->GetManœuvre(7).initial_time(),
-      IsNear(104_(1) * Milli(Second)));
+      IsNear(103_(1) * Milli(Second)));
   EXPECT_THAT(
       (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
       IsNear(61.6_(1) * Metre / Second));
