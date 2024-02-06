@@ -1,22 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Evaluate  // NOLINT(whitespace/line_length)
-// Benchmarking on 1 X 3310 MHz CPU
-// 2015/06/09-22:18:17
-// Benchmark                    Time(ns)    CPU(ns) Iterations
-// -----------------------------------------------------------
-// BM_EvaluateDouble/4              8031       8139      63254
-// BM_EvaluateDouble/8             15548      15602      32995
-// BM_EvaluateDouble/15            35945      36121      14252
-// BM_EvaluateDouble/16            36019      36104      14259
-// BM_EvaluateDouble/17            39483      39558      13014
-// BM_EvaluateDouble/18            42357      42413      12138
-// BM_EvaluateDouble/19            45989      44785      11495
-// BM_EvaluateDisplacement/4       52921      53034       9707
-// BM_EvaluateDisplacement/8      101641     101800       5057
-// BM_EvaluateDisplacement/15     186835     187269       2749
-// BM_EvaluateDisplacement/16     199863     200781       2564
-// BM_EvaluateDisplacement/17     211855     212203       2426
-// BM_EvaluateDisplacement/18     225181     225494       2283
-// BM_EvaluateDisplacement/19     236922     237237       2170
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=EvaluatePolynomialInChebyshevBasis  // NOLINT(whitespace/line_length)
 
 #include <random>
 #include <string>
@@ -49,7 +31,7 @@ constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
 template<int degree>
-void BM_EvaluateDouble(benchmark::State& state) {
+void BM_EvaluatePolynomialInChebyshevBasisDouble(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<double, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -78,7 +60,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
 }
 
 template<int degree>
-void BM_EvaluateQuantity(benchmark::State& state) {
+void BM_EvaluatePolynomialInChebyshevBasisQuantity(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<Length, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -109,7 +91,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
 }
 
 template<int degree>
-void BM_EvaluateR3ElementDouble(benchmark::State& state) {
+void BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<R3Element<double>, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -142,7 +124,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
 }
 
 template<int degree>
-void BM_EvaluateVectorDouble(benchmark::State& state) {
+void BM_EvaluatePolynomialInChebyshevBasisVectorDouble(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<Multivector<double, ICRS, 1>, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -176,7 +158,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
 }
 
 template<int degree>
-void BM_EvaluateDisplacement(benchmark::State& state) {
+void BM_EvaluatePolynomialInChebyshevBasisDisplacement(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::array<Displacement<ICRS>, degree + 1> coefficients;
   for (int i = 0; i <= degree; ++i) {
@@ -209,52 +191,52 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 4)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 8)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 15)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 17)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 18)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDouble, 19)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 4)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 8)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 15)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 16)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 17)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 18)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDouble, 19)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 4)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 8)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 15)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 17)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 18)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateQuantity, 19)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 4)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 8)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 15)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 16)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 17)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 18)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisQuantity, 19)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 4)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 4)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 8)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 8)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 15)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 15)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 16)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 16)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 17)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 17)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 18)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 18)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateR3ElementDouble, 19)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisR3ElementDouble, 19)
     ->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 4)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 8)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 15)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 17)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 18)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateVectorDouble, 19)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 4)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 8)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 15)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 16)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 17)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 18)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisVectorDouble, 19)->Unit(benchmark::kMicrosecond);
 
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 4)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 8)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 15)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 17)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 18)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateDisplacement, 19)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 4)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 8)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 15)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 16)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 17)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 18)->Unit(benchmark::kMicrosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInChebyshevBasisDisplacement, 19)->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics
 }  // namespace principia

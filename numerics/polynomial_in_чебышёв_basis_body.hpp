@@ -3,6 +3,7 @@
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
 #include "base/tags.hpp"
+#include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/serialization.hpp"
@@ -15,6 +16,7 @@ namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::base::_traits;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
@@ -24,116 +26,6 @@ using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
-
-// A helper class for implementing |Evaluate| that can be specialized for speed.
-template<typename Value_, int degree_>
-struct EvaluationHelper : not_constructible {
-  using Value = Value_;
-  using Coefficients = std::array<Value, degree_ + 1>;
-
-  static Value Evaluate(Coefficients const& coefficients,
-                        double scaled_argument);
-};
-
-#if 0
-// The compiler does a much better job on an |R3Element<double>| than on a
-// |Vector<Quantity>| so we specialize this case.
-template<typename Scalar_, typename Frame_, int rank_, int degree_>
-struct EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>
-    : not_constructible {
-  using Value = Multivector<Scalar_, Frame_, rank_>;
-using C = decltype(std::declval<Value>().coordinates());
-C c;
-R3Element<double> r = c;
-  using Coefficients =
-      std::array<decltype(std::declval<Value>().coordinates()), degree_ + 1>;
-
-  static Value Evaluate(Coefficients const& coefficients,
-                        double scaled_argument);
-};
-#endif
-
-template<typename Value_, int degree_>
-auto EvaluationHelper<Value_, degree_>::Evaluate(
-    Coefficients const& coefficients,
-    double const scaled_argument) -> Value {
-  double const two_scaled_argument = scaled_argument + scaled_argument;
-  Value const c_0 = coefficients[0];
-  switch (degree_) {
-    case 0:
-      return c_0;
-    case 1:
-      return c_0 + scaled_argument * coefficients[1];
-    default:
-      // b_degree   = c_degree.
-      Value b_i = coefficients[degree_];
-      // b_degree-1 = c_degree-1 + 2 t b_degree.
-      Value b_j = coefficients[degree_ - 1] + two_scaled_argument * b_i;
-      int k = degree_ - 3;
-      for (; k >= 1; k -= 2) {
-        // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
-        b_i = coefficients[k + 1] + two_scaled_argument * b_j - b_i;
-        // b_k   = c_k   + 2 t b_k+1 - b_k+2.
-        b_j = coefficients[k] + two_scaled_argument * b_i - b_j;
-      }
-      if (k == 0) {
-        // b_1 = c_1 + 2 t b_2 - b_3.
-        b_i = coefficients[1] + two_scaled_argument * b_j - b_i;
-        // c_0 + t b_1 - b_2.
-        return c_0 + scaled_argument * b_i - b_j;
-      } else {
-        // c_0 + t b_1 - b_2.
-        return c_0 + scaled_argument * b_j - b_i;
-      }
-  }
-}
-
-#if 0
-template<typename Scalar_, typename Frame_, int rank_, int degree_>
-auto EvaluationHelper<Multivector<Scalar_, Frame_, rank_>, degree_>::Evaluate(
-    Coefficients const& coefficients,
-    double const scaled_argument) -> Value {
-  double const two_scaled_argument = scaled_argument + scaled_argument;
-  R3Element<double> const c_0 = coefficients[0];
-  switch (degree_) {
-    case 0:
-      return Multivector<double, Frame_, rank_>(c_0) * si::Unit<Scalar_>;
-    case 1:
-      return Multivector<double, Frame_, rank_>(
-                 c_0 + scaled_argument * coefficients[1]) * si::Unit<Scalar_>;
-    default:
-      // b_degree   = c_degree.
-      R3Element<double> b_i = coefficients[degree_];
-      // b_degree-1 = c_degree-1 + 2 t b_degree.
-      R3Element<double> b_j =
-          coefficients[degree_ - 1] + two_scaled_argument * b_i;
-      int k = degree_ - 3;
-      for (; k >= 1; k -= 2) {
-        // b_k+1 = c_k+1 + 2 t b_k+2 - b_k+3.
-        R3Element<double> const c_kplus1 = coefficients[k + 1];
-        b_i.x = c_kplus1.x + two_scaled_argument * b_j.x - b_i.x;
-        b_i.y = c_kplus1.y + two_scaled_argument * b_j.y - b_i.y;
-        b_i.z = c_kplus1.z + two_scaled_argument * b_j.z - b_i.z;
-        // b_k   = c_k   + 2 t b_k+1 - b_k+2.
-        R3Element<double> const c_k = coefficients[k];
-        b_j.x = c_k.x + two_scaled_argument * b_i.x - b_j.x;
-        b_j.y = c_k.y + two_scaled_argument * b_i.y - b_j.y;
-        b_j.z = c_k.z + two_scaled_argument * b_i.z - b_j.z;
-      }
-      if (k == 0) {
-        // b_1 = c_1 + 2 t b_2 - b_3.
-        b_i = coefficients[1] + two_scaled_argument * b_j - b_i;
-        // c_0 + t b_1 - b_2.
-        return Multivector<double, Frame_, rank_>(
-                   c_0 + scaled_argument * b_i - b_j) * si::Unit<Scalar_>;
-      } else {
-        // c_0 + t b_1 - b_2.
-        return Multivector<double, Frame_, rank_>(
-                   c_0 + scaled_argument * b_j - b_i) * si::Unit<Scalar_>;
-      }
-    }
-}
-#endif
 
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
@@ -159,8 +51,24 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
   DCHECK_LE(scaled_argument, 1.1);
   DCHECK_GE(scaled_argument, -1.1);
 
-  return EvaluationHelper<Value, degree_>::Evaluate(coefficients_,
-                                                    scaled_argument);
+  double const two_scaled_argument = scaled_argument + scaled_argument;
+  Value const& c₀ = coefficients_[0];
+  switch (degree_) {
+  case 0:
+    return c₀;
+  case 1:
+    return c₀ + scaled_argument * coefficients_[1];
+  default:
+    Value bₖ₊₂ = coefficients_[degree_];
+    Value bₖ₊₁ =
+        coefficients_[degree_ - 1] + two_scaled_argument * bₖ₊₂;
+    for (int k = degree_ - 2; k >= 1; --k) {
+      Value const bₖ = coefficients_[k] + two_scaled_argument * bₖ₊₁ - bₖ₊₂;
+      bₖ₊₂ = bₖ₊₁;
+      bₖ₊₁ = bₖ;
+    }
+    return c₀ + scaled_argument * bₖ₊₁ - bₖ₊₂;
+  }
 }
 
 template<typename Value_, typename Argument_, int degree_>
@@ -298,26 +206,32 @@ RealRoots(double const ε) const {
 template<typename Value_, typename Argument_, int degree_>
 void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage(
     not_null<serialization::Polynomial*> message) const {
-  message->set_degree(degree_);
-  auto* const extension = message->MutableExtension(
-      serialization::PolynomialInЧебышёвBasis::extension);
+  if constexpr (is_instance_of_v<R3Element, Value>) {
+    // |R3Element| is a low-level structure, so we don't want polynomials to use
+    // it directly: they should go through |Multivector|.  However, it's useful
+    // to be able to run benchmarks using them.
+    LOG(FATAL) << "R3Element only supported for tests";
+  } else{
+    message->set_degree(degree_);
+    auto* const extension = message->MutableExtension(
+        serialization::PolynomialInЧебышёвBasis::extension);
 
-  using CoefficientSerializer = DoubleOrQuantityOrMultivectorSerializer<
-      Value,
-      serialization::PolynomialInЧебышёвBasis::Coefficient>;
-  using ArgumentSerializer = DoubleOrQuantityOrPointOrMultivectorSerializer<
-      Argument,
-      serialization::PolynomialInЧебышёвBasis::Argument>;
+    using CoefficientSerializer = DoubleOrQuantityOrMultivectorSerializer<
+        Value,
+        serialization::PolynomialInЧебышёвBasis::Coefficient>;
+    using ArgumentSerializer = DoubleOrQuantityOrPointOrMultivectorSerializer<
+        Argument,
+        serialization::PolynomialInЧебышёвBasis::Argument>;
 
-  for (auto const& coefficient : coefficients_) {
-    CoefficientSerializer::WriteToMessage(coefficient,
-                                          extension->add_coefficient());
+    for (auto const& coefficient : coefficients_) {
+      CoefficientSerializer::WriteToMessage(coefficient,
+                                            extension->add_coefficient());
+    }
+    ArgumentSerializer::WriteToMessage(lower_bound_,
+                                       extension->mutable_lower_bound());
+    ArgumentSerializer::WriteToMessage(upper_bound_,
+                                       extension->mutable_upper_bound());}
   }
-  ArgumentSerializer::WriteToMessage(lower_bound_,
-                                     extension->mutable_lower_bound());
-  ArgumentSerializer::WriteToMessage(upper_bound_,
-                                     extension->mutable_upper_bound());
-}
 
 template<typename Value_, typename Argument_, int degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
