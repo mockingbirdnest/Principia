@@ -6,7 +6,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/matrix_computations.hpp"
-#include "numerics/unbounded_arrays.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -23,7 +23,7 @@ using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_matrix_computations;
-using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -132,7 +132,7 @@ TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
         {-2, 3, 5, 6}, t_min_, t_max_);
     auto const matrix = series.FrobeniusCompanionMatrix();
     EXPECT_THAT(matrix,
-      AlmostEquals(UnboundedMatrix<double>(
+      AlmostEquals(FixedMatrix<double, 3, 3>(
         { 0.0,             1.0,         0.0,
          1.0 / 2.0,       0.0,   1.0 / 2.0,
          1.0 / 6.0, 1.0 / 4.0, -5.0 / 12.0 }),
@@ -148,7 +148,8 @@ TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
     PolynomialInЧебышёвBasis<double, Instant, 1> series(
         {-2, 3}, t_min_, t_max_);
     auto const matrix = series.FrobeniusCompanionMatrix();
-    EXPECT_THAT(matrix, AlmostEquals(UnboundedMatrix<double>({1.0 / 3.0}), 0));
+    EXPECT_THAT(matrix,
+                AlmostEquals(FixedMatrix<double, 1, 1>({1.0 / 3.0}), 0));
     auto const matrix_schur_decomposition =
         RealSchurDecomposition(matrix, 1e-16);
     EXPECT_THAT(matrix_schur_decomposition.real_eigenvalues,

@@ -52,7 +52,7 @@ class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
   Argument const& upper_bound() const;
 
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
-  FixedMatrix<double, degree_ + 1, degree_ + 1>
+  FixedMatrix<double, degree_, degree_>
   FrobeniusCompanionMatrix() const;
 
   // Returns true if this polynomial may (but doesn't necessarily) have real

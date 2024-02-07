@@ -123,11 +123,11 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::upper_bound() const
 }
 
 template<typename Value_, typename Argument_, int degree_>
-FixedMatrix<double, degree_ + 1, degree_ + 1>
+FixedMatrix<double, degree_, degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionMatrix()
     const {
   int const N = degree();
-  FixedMatrix<double, degree_ + 1, degree_ + 1> A(uninitialized);
+  FixedMatrix<double, degree_, degree_> A(uninitialized);
 
   // j = 1.
   for (int k = 1; k <= N; ++k) {
