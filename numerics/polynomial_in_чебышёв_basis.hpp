@@ -7,7 +7,9 @@
 #define PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
 
 #include "absl/container/btree_set.h"
+#include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/named_quantities.hpp"
 #include "serialization/numerics.pb.h"
 
 // TODO(phl): Mathematica support.
@@ -22,8 +24,8 @@ namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
 
 template<typename Value_, typename Argument_, int degree_>

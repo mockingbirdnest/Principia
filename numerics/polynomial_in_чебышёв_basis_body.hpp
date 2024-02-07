@@ -2,13 +2,17 @@
 
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
+#include "base/not_constructible.hpp"
 #include "base/tags.hpp"
 #include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/matrix_computations.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -16,8 +20,8 @@ namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
-using namespace principia::base::_traits;
 using namespace principia::base::_tags;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
