@@ -66,8 +66,7 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
     return c₀ + scaled_argument * coefficients_[1];
   default:
     Value bₖ₊₂ = coefficients_[degree_];
-    Value bₖ₊₁ =
-        coefficients_[degree_ - 1] + two_scaled_argument * bₖ₊₂;
+    Value bₖ₊₁ = coefficients_[degree_ - 1] + two_scaled_argument * bₖ₊₂;
     for (int k = degree_ - 2; k >= 1; --k) {
       Value const bₖ = coefficients_[k] + two_scaled_argument * bₖ₊₁ - bₖ₊₂;
       bₖ₊₂ = bₖ₊₁;
