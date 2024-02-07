@@ -2,6 +2,8 @@
 
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
+#include <utility>
+
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
 #include "base/traits.hpp"
@@ -215,7 +217,7 @@ void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage
     // it directly: they should go through |Multivector|.  However, it's useful
     // to be able to run benchmarks using them.
     LOG(FATAL) << "R3Element only supported for tests";
-  } else{
+  } else {
     message->set_degree(degree_);
     auto* const extension = message->MutableExtension(
         serialization::PolynomialInЧебышёвBasis::extension);
