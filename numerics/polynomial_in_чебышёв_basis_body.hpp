@@ -59,19 +59,19 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
   double const two_scaled_argument = scaled_argument + scaled_argument;
   Value const& c₀ = coefficients_[0];
   switch (degree_) {
-  case 0:
-    return c₀;
-  case 1:
-    return c₀ + scaled_argument * coefficients_[1];
-  default:
-    Value bₖ₊₂ = coefficients_[degree_];
-    Value bₖ₊₁ = coefficients_[degree_ - 1] + two_scaled_argument * bₖ₊₂;
-    for (int k = degree_ - 2; k >= 1; --k) {
-      Value const bₖ = coefficients_[k] + two_scaled_argument * bₖ₊₁ - bₖ₊₂;
-      bₖ₊₂ = bₖ₊₁;
-      bₖ₊₁ = bₖ;
-    }
-    return c₀ + scaled_argument * bₖ₊₁ - bₖ₊₂;
+    case 0:
+      return c₀;
+    case 1:
+      return c₀ + scaled_argument * coefficients_[1];
+    default:
+      Value bₖ₊₂ = coefficients_[degree_];
+      Value bₖ₊₁ = coefficients_[degree_ - 1] + two_scaled_argument * bₖ₊₂;
+      for (int k = degree_ - 2; k >= 1; --k) {
+        Value const bₖ = coefficients_[k] + two_scaled_argument * bₖ₊₁ - bₖ₊₂;
+        bₖ₊₂ = bₖ₊₁;
+        bₖ₊₁ = bₖ;
+      }
+      return c₀ + scaled_argument * bₖ₊₁ - bₖ₊₂;
   }
 }
 
@@ -86,19 +86,15 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
   DCHECK_LE(scaled_argument, 1.1);
   DCHECK_GE(scaled_argument, -1.1);
 
-  Value b_kplus2_vector{};
-  Value b_kplus1_vector{};
-  Value* b_kplus2 = &b_kplus2_vector;
-  Value* b_kplus1 = &b_kplus1_vector;
-  Value* const& b_k = b_kplus2;  // An overlay.
+  Value bₖ₊₂{};
+  Value bₖ₊₁{};
   for (int k = degree_ - 1; k >= 1; --k) {
-    *b_k = coefficients_[k + 1] * (k + 1) +
-           two_scaled_argument * *b_kplus1 - *b_kplus2;
-    Value* const last_b_k = b_k;
-    b_kplus2 = b_kplus1;
-    b_kplus1 = last_b_k;
+    Value const bₖ =
+        coefficients_[k + 1] * (k + 1) + two_scaled_argument * bₖ₊₁ - bₖ₊₂;
+    bₖ₊₂ = bₖ₊₁;
+    bₖ₊₁ = bₖ;
   }
-  return (coefficients_[1] + two_scaled_argument * *b_kplus1 - *b_kplus2) *
+  return (coefficients_[1] + two_scaled_argument * bₖ₊₁ - bₖ₊₂) *
          (one_over_width_ + one_over_width_);
 }
 
