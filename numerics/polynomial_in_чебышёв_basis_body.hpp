@@ -50,8 +50,7 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
   // This formula ensures continuity at the edges by producing -1 or +1 within
   // 2 ulps for |lower_bound_| and |upper_bound_|.
   double const scaled_argument =
-      ((argument - upper_bound_) + (argument - lower_bound_)) *
-      one_over_width_;
+      ((argument - upper_bound_) + (argument - lower_bound_)) * one_over_width_;
   // We have to allow |scaled_argument| to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
   DCHECK_LE(scaled_argument, 1.1);
@@ -82,8 +81,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
     Argument const& argument) const {
   // See comments above.
   double const scaled_argument =
-      ((argument - upper_bound_) + (argument - lower_bound_)) *
-      one_over_width_;
+      ((argument - upper_bound_) + (argument - lower_bound_)) * one_over_width_;
   double const two_scaled_argument = scaled_argument + scaled_argument;
   DCHECK_LE(scaled_argument, 1.1);
   DCHECK_GE(scaled_argument, -1.1);

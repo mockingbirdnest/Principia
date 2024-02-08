@@ -126,6 +126,14 @@ TEST_F(PolynomialInЧебышёвBasisTest, T2Double) {
   EXPECT_EQ(1 * Metre, t2(2));
 }
 
+TEST_F(PolynomialInЧебышёвBasisTest, Derivative) {
+  PolynomialInЧебышёвBasis<double, Instant, 3> series(
+      {-2, 3, 5, 6}, t_min_, t_max_);
+  EXPECT_EQ(18.5 / Second, series.EvaluateDerivative(t0_ + -1 * Second));
+  EXPECT_EQ(-7.5 / Second, series.EvaluateDerivative(t0_ + 1 * Second));
+  EXPECT_EQ(38.5 / Second, series.EvaluateDerivative(t0_ + 3 * Second));
+}
+
 TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
   {
     PolynomialInЧебышёвBasis<double, Instant, 3> series(
