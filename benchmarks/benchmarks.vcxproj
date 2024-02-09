@@ -20,6 +20,7 @@
     <ClCompile Include="discrete_trajectory_benchmark.cpp" />
     <ClCompile Include="lagrange_equipotentials_benchmark.cpp" />
     <ClCompile Include="polynomial_in_monomial_basis_benchmark.cpp" />
+    <ClCompile Include="polynomial_in_чебышёв_basis_benchmark.cpp" />
     <ClCompile Include="rigid_reference_frame_benchmark.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />

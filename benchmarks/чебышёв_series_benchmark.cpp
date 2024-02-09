@@ -1,22 +1,22 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Evaluate  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=EvaluateChebyshevSeries  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/06/09-22:18:17
 // Benchmark                    Time(ns)    CPU(ns) Iterations
 // -----------------------------------------------------------
-// BM_EvaluateDouble/4              8031       8139      63254
-// BM_EvaluateDouble/8             15548      15602      32995
-// BM_EvaluateDouble/15            35945      36121      14252
-// BM_EvaluateDouble/16            36019      36104      14259
-// BM_EvaluateDouble/17            39483      39558      13014
-// BM_EvaluateDouble/18            42357      42413      12138
-// BM_EvaluateDouble/19            45989      44785      11495
-// BM_EvaluateDisplacement/4       52921      53034       9707
-// BM_EvaluateDisplacement/8      101641     101800       5057
-// BM_EvaluateDisplacement/15     186835     187269       2749
-// BM_EvaluateDisplacement/16     199863     200781       2564
-// BM_EvaluateDisplacement/17     211855     212203       2426
-// BM_EvaluateDisplacement/18     225181     225494       2283
-// BM_EvaluateDisplacement/19     236922     237237       2170
+// BM_EvaluateChebyshevSeriesDouble/4              8031       8139      63254
+// BM_EvaluateChebyshevSeriesDouble/8             15548      15602      32995
+// BM_EvaluateChebyshevSeriesDouble/15            35945      36121      14252
+// BM_EvaluateChebyshevSeriesDouble/16            36019      36104      14259
+// BM_EvaluateChebyshevSeriesDouble/17            39483      39558      13014
+// BM_EvaluateChebyshevSeriesDouble/18            42357      42413      12138
+// BM_EvaluateChebyshevSeriesDouble/19            45989      44785      11495
+// BM_EvaluateChebyshevSeriesDisplacement/4       52921      53034       9707
+// BM_EvaluateChebyshevSeriesDisplacement/8      101641     101800       5057
+// BM_EvaluateChebyshevSeriesDisplacement/15     186835     187269       2749
+// BM_EvaluateChebyshevSeriesDisplacement/16     199863     200781       2564
+// BM_EvaluateChebyshevSeriesDisplacement/17     211855     212203       2426
+// BM_EvaluateChebyshevSeriesDisplacement/18     225181     225494       2283
+// BM_EvaluateChebyshevSeriesDisplacement/19     236922     237237       2170
 
 #include <random>
 #include <string>
@@ -48,7 +48,7 @@ namespace {
 constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
-void BM_EvaluateDouble(benchmark::State& state) {
+void BM_EvaluateChebyshevSeriesDouble(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<double> coefficients;
@@ -76,7 +76,7 @@ void BM_EvaluateDouble(benchmark::State& state) {
   state.SetLabel(std::to_string(result).substr(0, 0));
 }
 
-void BM_EvaluateQuantity(benchmark::State& state) {
+void BM_EvaluateChebyshevSeriesQuantity(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Length> coefficients;
@@ -106,7 +106,7 @@ void BM_EvaluateQuantity(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluateR3ElementDouble(benchmark::State& state) {
+void BM_EvaluateChebyshevSeriesR3ElementDouble(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<R3Element<double>> coefficients;
@@ -139,7 +139,7 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluateVectorDouble(benchmark::State& state) {
+void BM_EvaluateChebyshevSeriesVectorDouble(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Multivector<double, ICRS, 1>> coefficients;
@@ -173,7 +173,7 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluateDisplacement(benchmark::State& state) {
+void BM_EvaluateChebyshevSeriesDisplacement(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRS>> coefficients;
@@ -207,7 +207,7 @@ void BM_EvaluateDisplacement(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-BENCHMARK(BM_EvaluateDouble)
+BENCHMARK(BM_EvaluateChebyshevSeriesDouble)
     ->Arg(4)
     ->Arg(8)
     ->Arg(15)
@@ -216,7 +216,7 @@ BENCHMARK(BM_EvaluateDouble)
     ->Arg(18)
     ->Arg(19)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_EvaluateQuantity)
+BENCHMARK(BM_EvaluateChebyshevSeriesQuantity)
     ->Arg(4)
     ->Arg(8)
     ->Arg(15)
@@ -225,7 +225,7 @@ BENCHMARK(BM_EvaluateQuantity)
     ->Arg(18)
     ->Arg(19)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_EvaluateR3ElementDouble)
+BENCHMARK(BM_EvaluateChebyshevSeriesR3ElementDouble)
     ->Arg(4)
     ->Arg(8)
     ->Arg(15)
@@ -234,7 +234,7 @@ BENCHMARK(BM_EvaluateR3ElementDouble)
     ->Arg(18)
     ->Arg(19)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_EvaluateVectorDouble)
+BENCHMARK(BM_EvaluateChebyshevSeriesVectorDouble)
     ->Arg(4)
     ->Arg(8)
     ->Arg(15)
@@ -243,7 +243,7 @@ BENCHMARK(BM_EvaluateVectorDouble)
     ->Arg(18)
     ->Arg(19)
     ->Unit(benchmark::kMicrosecond);
-BENCHMARK(BM_EvaluateDisplacement)
+BENCHMARK(BM_EvaluateChebyshevSeriesDisplacement)
     ->Arg(4)
     ->Arg(8)
     ->Arg(15)
