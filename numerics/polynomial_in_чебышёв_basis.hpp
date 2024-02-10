@@ -57,8 +57,8 @@ using namespace principia::quantities::_traits;
 template<typename Value_, typename Argument_, auto _ = std::nullopt>
 class PolynomialInЧебышёвBasis;
 
-// Degree-agnostic base class defining the contract of polynomial in the Чебышёв
-// basis and used for polymorphic storage.
+// Degree-agnostic base class defining the contract of polynomials in the
+// Чебышёв basis and used for polymorphic storage.
 template<typename Value_, typename Argument_>
 class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
     : public Polynomial<Value_, Argument_> {
@@ -72,7 +72,7 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
 
   // Beware! The concept of real roots is only meaningful for scalar-valued
   // polynomials.  Because the language doesn't make it possible to express this
-  // statically (no constraints on virtual functions) these function will fail
+  // statically (no constraints on virtual functions) these functions will fail
   // when called on a polynomial that is not scalar-valued.
 
   // Returns true if this polynomial may (but doesn't necessarily) have real
