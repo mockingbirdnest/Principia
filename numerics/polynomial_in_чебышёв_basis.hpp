@@ -17,8 +17,6 @@
 #include "quantities/traits.hpp"
 #include "serialization/numerics.pb.h"
 
-// Spelling: Чебышёв ЧЕБЫШЁВ чебышёв
-
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE(
@@ -71,27 +69,31 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   virtual Argument const& lower_bound() const = 0;
   virtual Argument const& upper_bound() const = 0;
 
-  // Beware! The concept of real roots is only meaningful for scalar-valued
-  // polynomials.  Because the language doesn't make it possible to express this
-  // statically (no constraints on virtual functions) these functions will fail
-  // when called on a polynomial that is not scalar-valued.
-
   // Returns true if this polynomial may (but doesn't necessarily) have real
   // roots.  Returns false it is guaranteed not to have real roots.  This is
   // significantly faster than calling |RealRoots|.  If |error_estimate| is
   // given, false is only returned if the envelope of the series at a distance
   // of |error_estimate| has no real roots.  This is useful if the series is an
   // approximation of some function with an L∞ error less than |error_estimate|.
-  virtual bool MayHaveRealRoots(Value error_estimate = Value{}) const = 0;
+  bool MayHaveRealRoots(Value error_estimate = Value{}) const
+    requires is_quantity_v<Value>;
 
   // Returns the real roots of the polynomial, computed as the eigenvalues of
   // the Frobenius companion matrix.
-  virtual absl::btree_set<Argument> RealRoots(double ε) const = 0;
+  absl::btree_set<Argument> RealRoots(double ε) const
+    requires is_quantity_v<Value>;
 
   // Compatibility deserialization: this class is the equivalent of the old
   // ЧебышёвSeries.
   static std::unique_ptr<PolynomialInЧебышёвBasis> ReadFromMessage(
       serialization::ЧебышёвSeries const& pre_канторович_message);
+
+ protected:
+  // Beware! The concept of real roots is only meaningful for scalar-valued
+  // polynomials.  These functions will fail if called on a polynomial that is
+  // not scalar-valued.
+  virtual bool MayHaveRealRootsOrDie(Value error_estimate) const = 0;
+  virtual absl::btree_set<Argument> RealRootsOrDie(double ε) const = 0;
 };
 
 template<typename Value_, typename Argument_, int degree_>
@@ -124,12 +126,13 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
   FixedMatrix<double, degree_, degree_> FrobeniusCompanionMatrix() const
     requires is_quantity_v<Value>;
 
-  bool MayHaveRealRoots(Value error_estimate = Value{}) const override;
-  absl::btree_set<Argument> RealRoots(double ε) const override;
-
   void WriteToMessage(not_null<serialization::Polynomial*> message) const;
   static PolynomialInЧебышёвBasis ReadFromMessage(
       serialization::Polynomial const& message);
+
+ protected:
+  bool MayHaveRealRootsOrDie(Value error_estimate) const override;
+  absl::btree_set<Argument> RealRootsOrDie(double ε) const override;
 
  private:
   Coefficients coefficients_;

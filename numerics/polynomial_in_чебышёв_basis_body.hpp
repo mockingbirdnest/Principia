@@ -34,6 +34,21 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
+template<typename Value_, typename Argument_>
+bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
+    MayHaveRealRoots(Value const error_estimate) const
+  requires is_quantity_v<Value> {
+  return MayHaveRealRootsOrDie(error_estimate);
+}
+
+template<typename Value_, typename Argument_>
+absl::btree_set<Argument_>
+PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
+    double const ε) const
+  requires is_quantity_v<Value> {
+  return RealRootsOrDie(ε);
+}
+
 #define PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(degree)  \
   return std::make_unique<PolynomialInЧебышёвBasis<Value, Argument, degree>>( \
       PolynomialInЧебышёвBasis<Value, Argument, degree>::ReadFromMessage(     \
@@ -205,62 +220,6 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionM
 }
 
 template<typename Value_, typename Argument_, int degree_>
-bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::MayHaveRealRoots(
-    Value const error_estimate) const {
-  if constexpr (is_quantity_v<Value>) {
-    CHECK_LE(Value{}, error_estimate);
-    // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
-    // criterion, B₁ and concludes: “There was no detectable difference between
-    // the two criteria, so the first criterion, which requires only summing the
-    // absolute values of all coefficients but the first, should be used to the
-    // exclusion of the other zero-free test”.  My own experiments failed to
-    // locate, for N = 5, any series for which B₁ would be better than B₀, after
-    // trying millions of random series.
-    int const N = degree();
-    Value B₀{};
-    for (int j = 1; j <= N; ++j) {
-      auto const abs_aⱼ = Abs(coefficients_[j]);
-      B₀ += abs_aⱼ;
-    }
-    auto const abs_a₀ = Abs(coefficients_[0]);
-    // The error may shift the curve vertically.  Note that the following
-    // comparison is valid if the right-hand side is negative.
-    return B₀ >= abs_a₀ - error_estimate;
-  } else {
-    LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
-  }
-}
-
-template<typename Value_, typename Argument_, int degree_>
-absl::btree_set<Argument_>
-PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
-RealRoots(double const ε) const {
-  if constexpr (is_quantity_v<Value>) {
-    auto const companion_matrix = FrobeniusCompanionMatrix();
-    auto const real_schur_decomposition =
-        RealSchurDecomposition(companion_matrix, ε);
-    absl::btree_set<double> const& scaled_real_roots =
-        real_schur_decomposition.real_eigenvalues;
-
-    // Rescale from [-1, 1] to [lower_bound_, upper_bound_].
-    absl::btree_set<Argument> real_roots;
-    auto const midpoint =
-        Barycentre(std::pair{lower_bound_, upper_bound_}, std::pair{1, 1});
-    auto const half_width = 0.5 * (upper_bound_ - lower_bound_);
-    for (auto const& scaled_real_root : scaled_real_roots) {
-      // Чебышёв polynomials don't make sense outside of [-1, 1] but they may
-      // stil have roots there.
-      if (-1 <= scaled_real_root && scaled_real_root <= 1) {
-        real_roots.insert(scaled_real_root * half_width + midpoint);
-      }
-    }
-    return real_roots;
-  } else {
-    LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
-  }
-}
-
-template<typename Value_, typename Argument_, int degree_>
 void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage(
     not_null<serialization::Polynomial*> message) const {
   if constexpr (is_instance_of_v<R3Element, Value>) {
@@ -317,6 +276,62 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
       coefficients,
       ArgumentSerializer::ReadFromMessage(extension.lower_bound()),
       ArgumentSerializer::ReadFromMessage(extension.upper_bound()));
+}
+
+template<typename Value_, typename Argument_, int degree_>
+bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+MayHaveRealRootsOrDie(Value const error_estimate) const {
+  if constexpr (is_quantity_v<Value>) {
+    CHECK_LE(Value{}, error_estimate);
+    // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
+    // criterion, B₁ and concludes: “There was no detectable difference between
+    // the two criteria, so the first criterion, which requires only summing the
+    // absolute values of all coefficients but the first, should be used to the
+    // exclusion of the other zero-free test”.  My own experiments failed to
+    // locate, for N = 5, any series for which B₁ would be better than B₀, after
+    // trying millions of random series.
+    int const N = degree();
+    Value B₀{};
+    for (int j = 1; j <= N; ++j) {
+      auto const abs_aⱼ = Abs(coefficients_[j]);
+      B₀ += abs_aⱼ;
+    }
+    auto const abs_a₀ = Abs(coefficients_[0]);
+    // The error may shift the curve vertically.  Note that the following
+    // comparison is valid if the right-hand side is negative.
+    return B₀ >= abs_a₀ - error_estimate;
+  } else {
+    LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
+  }
+}
+
+template<typename Value_, typename Argument_, int degree_>
+absl::btree_set<Argument_>
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+RealRootsOrDie(double const ε) const {
+  if constexpr (is_quantity_v<Value>) {
+    auto const companion_matrix = FrobeniusCompanionMatrix();
+    auto const real_schur_decomposition =
+        RealSchurDecomposition(companion_matrix, ε);
+    absl::btree_set<double> const& scaled_real_roots =
+        real_schur_decomposition.real_eigenvalues;
+
+    // Rescale from [-1, 1] to [lower_bound_, upper_bound_].
+    absl::btree_set<Argument> real_roots;
+    auto const midpoint =
+        Barycentre(std::pair{lower_bound_, upper_bound_}, std::pair{1, 1});
+    auto const half_width = 0.5 * (upper_bound_ - lower_bound_);
+    for (auto const& scaled_real_root : scaled_real_roots) {
+      // Чебышёв polynomials don't make sense outside of [-1, 1] but they may
+      // stil have roots there.
+      if (-1 <= scaled_real_root && scaled_real_root <= 1) {
+        real_roots.insert(scaled_real_root * half_width + midpoint);
+      }
+    }
+    return real_roots;
+  } else {
+    LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
+  }
 }
 
 template<typename Value, typename Argument, int degree>
