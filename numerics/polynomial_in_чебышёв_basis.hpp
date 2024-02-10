@@ -7,7 +7,6 @@
 #define PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
 
 #include <optional>
-#include <type_traits>
 
 #include "absl/container/btree_set.h"
 #include "base/not_null.hpp"
@@ -16,8 +15,26 @@
 #include "quantities/traits.hpp"
 #include "serialization/numerics.pb.h"
 
-// TODO(phl): Mathematica support.
 namespace principia {
+namespace numerics {
+FORWARD_DECLARE(
+    TEMPLATE(typename Value, typename Argument, auto degree) class,
+    PolynomialInЧебышёвBasis,
+    FROM(polynomial_in_чебышёв_basis));
+}  // namespace numerics
+
+namespace mathematica {
+FORWARD_DECLARE_FUNCTION(
+    TEMPLATE(typename Value,
+             typename Argument,
+             int degree,
+             typename OptionalExpressIn) std::string,
+    ToMathematicaBody,
+    (numerics::_polynomial_in_чебышёв_basis::
+         PolynomialInЧебышёвBasis<Value, Argument, degree> const& series,
+     OptionalExpressIn express_in),
+    FROM(mathematica));
+}  // namespace mathematica
 
 namespace serialization {
 using PolynomialInЧебышёвBasis = PolynomialInChebyshevBasis;
@@ -116,6 +133,10 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
   friend constexpr bool operator==(
       PolynomialInЧебышёвBasis<V, A, d> const& left,
       PolynomialInЧебышёвBasis<V, A, d> const& right);
+  template<typename V, typename A, int d, typename O>
+  friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
+      PolynomialInЧебышёвBasis<V, A, d> const& series,
+      O express_in);
 };
 
 template<typename Value, typename Argument, int degree>

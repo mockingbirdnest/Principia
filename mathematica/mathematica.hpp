@@ -18,6 +18,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "numerics/чебышёв_series.hpp"
@@ -45,6 +46,7 @@ using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::numerics::_чебышёв_series;
@@ -266,6 +268,18 @@ template<typename V, typename A, int d,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    OptionalExpressIn express_in = std::nullopt);
+
+template<typename V, typename A, int d,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematicaBody(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
+    OptionalExpressIn express_in);
+
+template<typename V, typename A, int d,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
     OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, typename A,
