@@ -119,6 +119,29 @@ std::string ToMathematicaBody(
   return RawApply("Plus", monomials);
 }
 
+template<typename V, typename A, int d,
+         typename OptionalExpressIn>
+std::string ToMathematicaBody(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
+    OptionalExpressIn express_in) {
+  auto const& a = polynomial.lower_bound();
+  auto const& b = polynomial.upper_bound();
+  auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
+  std::string const argument = RawApply(
+      "Divide",
+      {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),
+       ToMathematica((b - a) / 2.0, express_in)});
+  std::vector<std::string> terms;
+  auto const& coefficients = polynomial.coefficients_;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    terms.push_back(RawApply(
+        "Times",
+        {ToMathematica(coefficients[i], express_in),
+         RawApply("ChebyshevT", {ToMathematica(i, express_in), argument})}));
+  }
+  return RawApply("Plus", terms);
+}
+
 template<typename V, typename A, typename OptionalExpressIn>
 std::string ToMathematicaBody(ЧебышёвSeries<V, A> const& series,
                               OptionalExpressIn express_in) {
@@ -539,6 +562,14 @@ template<typename V, typename A, int d,
          typename OptionalExpressIn>
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    OptionalExpressIn express_in) {
+  return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
+}
+
+template<typename V, typename A, int d,
+         typename OptionalExpressIn>
+std::string ToMathematica(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
     OptionalExpressIn express_in) {
   return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
 }
