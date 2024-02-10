@@ -15,14 +15,14 @@ namespace principia {
 namespace numerics {
 namespace _approximation {
 
-using namespace principia::testing_utilities::_numerics_matchers;
-using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_approximate_quantity;
-using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::quantities::_si;
-using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
+using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_numerics_matchers;
 using ::testing::SizeIs;
 using ::testing::Property;
 using ::testing::Pointee;
