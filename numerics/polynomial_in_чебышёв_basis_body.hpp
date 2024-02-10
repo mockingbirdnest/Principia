@@ -2,6 +2,7 @@
 
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
+#include <memory>
 #include <utility>
 
 #include "base/not_constructible.hpp"

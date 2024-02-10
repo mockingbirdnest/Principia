@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <optional>
+#include <string>
 
 #include "absl/container/btree_set.h"
 #include "base/not_null.hpp"
