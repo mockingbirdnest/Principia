@@ -6,7 +6,7 @@
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
 #include "numerics/approximation.hpp"
-#include "numerics/чебышёв_series.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -17,7 +17,7 @@ namespace numerics {
 
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_approximation;
-using namespace principia::numerics::_чебышёв_series;
+using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -59,7 +59,8 @@ class ApproximationBenchmark : public benchmark::Fixture {
       return interpolant.MayHaveRealRoots(error_estimate);
     };
 
-    std::vector<ЧебышёвSeries<Length, Instant>> interpolants;
+    std::vector<std::unique_ptr<PolynomialInЧебышёвBasis<Length, Instant>>>
+        interpolants;
     for (auto _ : state) {
       interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
           altitude,
