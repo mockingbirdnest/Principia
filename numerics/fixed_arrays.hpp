@@ -40,6 +40,9 @@ class FixedVector final {
   constexpr FixedVector(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
+  // Convertible to an array.
+  explicit constexpr operator std::array<Scalar, size_>() const;
+
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 

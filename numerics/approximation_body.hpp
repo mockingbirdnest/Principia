@@ -3,6 +3,7 @@
 #include "numerics/approximation.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -41,7 +42,7 @@ FixedMatrix<double, N + 1, N + 1> const& ЧебышёвInterpolationMatrix() {
 }
 
 template<int N, int max_degree, typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>, Argument>
+std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
     Argument const& a,
@@ -104,12 +105,10 @@ template<int N, int max_degree, typename Argument, typename Function>
   if (error_estimate != nullptr) {
     *error_estimate = current_error_estimate;
   }
-  std::vector<Value<Argument, Function>> coefficients;
-  coefficients.reserve(N / 2 + 1);
-  std::copy(previous_aⱼ.begin(), previous_aⱼ.end(),
-            std::back_inserter(coefficients));
-  return ЧебышёвSeries<Value<Argument, Function>, Argument>(
-      coefficients, a, b);
+  using Interpolant =
+      PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument, N / 2>;
+  return std::make_unique<Interpolant>(
+      Interpolant::Coefficients(previous_aⱼ), a, b);
 }
 
 // Returns true if production of interpolants should stop.
@@ -127,11 +126,11 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
   auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
       f, lower_bound, upper_bound, max_error, &full_error_estimate);
   if (full_error_estimate <= max_error ||
-      !subdivide(full_interpolant, full_error_estimate)) {
+      !subdivide(*full_interpolant, full_error_estimate)) {
     // If the interpolant over the entire interval is within the desired error
     // bound, return it.  Same thing if |subdivide| tells us that we should not
     // subdivide the interval.
-    VLOG(1) << "Degree " << full_interpolant.degree() << " interpolant over ["
+    VLOG(1) << "Degree " << full_interpolant->degree() << " interpolant over ["
             << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
             << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
     if (error_estimate != nullptr) {
@@ -180,7 +179,7 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
 }
 
 template<int max_degree, typename Argument, typename Function>
-ЧебышёвSeries<Value<Argument, Function>, Argument>
+std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>
 ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
@@ -200,7 +199,8 @@ template<int max_degree, typename Argument, typename Function>
 }
 
 template<int max_degree, typename Argument, typename Function>
-std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>>
+std::vector<std::unique_ptr<
+    PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>>
 AdaptiveЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
@@ -208,15 +208,16 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Difference<Value<Argument, Function>> const& max_error,
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     Difference<Value<Argument, Function>>* const error_estimate) {
-  std::vector<ЧебышёвSeries<Value<Argument, Function>, Argument>> interpolants;
+  using Interpolant =
+      PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>;
+  std::vector<std::unique_ptr<Interpolant>> interpolants;
 
-  TerminationPredicate<Value<Argument, Function>, Argument> const
-      emplace_back_and_continue =
-          [&interpolants](
-              ЧебышёвSeries<Value<Argument, Function>, Argument> interpolant) {
-            interpolants.emplace_back(std::move(interpolant));
-            return false;
-          };
+  TerminationPredicate<Value<Argument, Function>,
+                       Argument> const emplace_back_and_continue =
+      [&interpolants](std::unique_ptr<Interpolant> interpolant) {
+        interpolants.emplace_back(std::move(interpolant));
+        return false;
+      };
 
   StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
       f,
