@@ -6,10 +6,14 @@
 #ifndef PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
 #define PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
 
+#include <optional>
+#include <type_traits>
+
 #include "absl/container/btree_set.h"
 #include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/traits.hpp"
 #include "serialization/numerics.pb.h"
 
 // TODO(phl): Mathematica support.
@@ -27,9 +31,45 @@ using namespace principia::base::_not_null;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_traits;
+
+template<typename Value_, typename Argument_, auto _ = std::nullopt>
+class PolynomialInЧебышёвBasis;
+
+// Degree-agnostic base class defining the contract of polynomial in the Чебышёв
+// basis and used for polymorphic storage.
+template<typename Value_, typename Argument_>
+class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
+    : public Polynomial<Value_, Argument_> {
+ public:
+  using Argument = Argument_;
+  using Value = Value_;
+
+  // Bounds passed at construction.
+  virtual Argument const& lower_bound() const = 0;
+  virtual Argument const& upper_bound() const = 0;
+
+  // Beware! The concept of real roots is only meaningful for scalar-valued
+  // polynomials.  Because the language doesn't make it possible to express this
+  // statically (no constraints on virtual functions) these function will fail
+  // when called on a polynomial that is not scalar-valued.
+
+  // Returns true if this polynomial may (but doesn't necessarily) have real
+  // roots.  Returns false it is guaranteed not to have real roots.  This is
+  // significantly faster than calling |RealRoots|.  If |error_estimate| is
+  // given, false is only returned if the envelope of the series at a distance
+  // of |error_estimate| has no real roots.  This is useful if the series is an
+  // approximation of some function with an L∞ error less than |error_estimate|.
+  virtual bool MayHaveRealRoots(Value error_estimate = Value{}) const = 0;
+
+  // Returns the real roots of the polynomial, computed as the eigenvalues of
+  // the Frobenius companion matrix.
+  virtual absl::btree_set<Argument> RealRoots(double ε) const = 0;
+};
 
 template<typename Value_, typename Argument_, int degree_>
-class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
+class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
+    : public PolynomialInЧебышёвBasis<Value_, Argument_> {
  public:
   static_assert(degree_ >= 0);
   using Argument = Argument_;
@@ -50,24 +90,15 @@ class PolynomialInЧебышёвBasis : public Polynomial<Value_, Argument_> {
   constexpr int degree() const override;
   bool is_zero() const override;
 
-  Argument const& lower_bound() const;
-  Argument const& upper_bound() const;
+  Argument const& lower_bound() const override;
+  Argument const& upper_bound() const override;
 
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
-  FixedMatrix<double, degree_, degree_>
-  FrobeniusCompanionMatrix() const;
+  FixedMatrix<double, degree_, degree_> FrobeniusCompanionMatrix() const
+    requires is_quantity_v<Value>;
 
-  // Returns true if this polynomial may (but doesn't necessarily) have real
-  // roots.  Returns false it is guaranteed not to have real roots.  This is
-  // significantly faster than calling |RealRoots|.  If |error_estimate| is
-  // given, false is only returned if the envelope of the series at a distance
-  // of |error_estimate| has no real roots.  This is useful if the series is an
-  // approximation of some function with an L∞ error less than |error_estimate|.
-  bool MayHaveRealRoots(Value error_estimate = Value{}) const;
-
-  // Returns the real roots of the polynomial, computed as the eigenvalues of
-  // the Frobenius companion matrix.
-  absl::btree_set<Argument> RealRoots(double ε) const;
+  bool MayHaveRealRoots(Value error_estimate = Value{}) const override;
+  absl::btree_set<Argument> RealRoots(double ε) const override;
 
   void WriteToMessage(not_null<serialization::Polynomial*> message) const;
   static PolynomialInЧебышёвBasis ReadFromMessage(
