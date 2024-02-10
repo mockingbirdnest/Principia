@@ -33,6 +33,55 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
+#define PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(degree)  \
+  return std::make_unique<PolynomialInЧебышёвBasis<Value, Argument, degree>>( \
+      PolynomialInЧебышёвBasis<Value, Argument, degree>::ReadFromMessage(     \
+          message))
+
+template<typename Value_, typename Argument_>
+std::unique_ptr<PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>>
+PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessage(
+    serialization::ЧебышёвSeries const& pre_канторович_message) {
+  serialization::Polynomial message;
+  auto* const extension =
+      message.AddExtension(PolynomialInЧебышёвBasis::extension);
+  for (auto const& coefficient : pre_канторович_message.coefficient()) {
+    *extension->add_coefficient() = coefficient;
+  }
+  *extension->mutable_lower_bound()->mutable_point() =
+      pre_канторович_message.lower_bound();
+  *extension->mutable_upper_bound()->mutable_point() =
+      pre_канторович_message.upper_bound();
+  switch (pre_канторович_message.coefficient_size() - 1) {
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(0);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(1);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(2);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(3);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(4);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(5);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(6);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(7);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(8);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(9);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(10);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(11);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(12);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(13);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(14);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(15);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(16);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(17);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(18);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(19);
+    PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(20);
+    default:
+      LOG(FATAL) << "Unexpected degree: "
+                 << pre_канторович_message.DebugString();
+  }
+}
+
+#undef PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE
+
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 PolynomialInЧебышёвBasis(Coefficients coefficients,
@@ -244,7 +293,6 @@ template<typename Value_, typename Argument_, int degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
     serialization::Polynomial const& message) {
-  // TODO(phl): Add compatibility code with |ЧебышёвSeries|.
   CHECK_EQ(degree_, message.degree()) << message.DebugString();
   CHECK(
       message.HasExtension(serialization::PolynomialInЧебышёвBasis::extension))

@@ -6,6 +6,7 @@
 #ifndef PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
 #define PRINCIPIA_NUMERICS_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_HPP_
 
+#include <memory>
 #include <optional>
 
 #include "absl/container/btree_set.h"
@@ -14,6 +15,8 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
 #include "serialization/numerics.pb.h"
+
+// Spelling: Чебышёв ЧЕБЫШЁВ чебышёв
 
 namespace principia {
 namespace numerics {
@@ -38,6 +41,7 @@ FORWARD_DECLARE_FUNCTION(
 
 namespace serialization {
 using PolynomialInЧебышёвBasis = PolynomialInChebyshevBasis;
+using ЧебышёвSeries = ChebyshevSeries;
 }  // namespace serialization
 
 namespace numerics {
@@ -82,6 +86,11 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   // Returns the real roots of the polynomial, computed as the eigenvalues of
   // the Frobenius companion matrix.
   virtual absl::btree_set<Argument> RealRoots(double ε) const = 0;
+
+  // Compatibility deserialization: this class is the equivalent of the old
+  // ЧебышёвSeries.
+  static std::unique_ptr<PolynomialInЧебышёвBasis> ReadFromMessage(
+      serialization::ЧебышёвSeries const& pre_канторович_message);
 };
 
 template<typename Value_, typename Argument_, int degree_>
