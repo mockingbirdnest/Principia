@@ -9,7 +9,9 @@
 
 #include "base/tags.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/чебышёв_lobatto.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -21,6 +23,7 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_чебышёв_lobatto;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
@@ -56,7 +59,7 @@ std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argum
 
   auto чебышёв_lobato_point =
       [&a, &b, &midpoint](std::int64_t const k) -> Argument {
-    return 0.5 * (b - a) * Cos(π * k * Radian / N) + midpoint;
+    return 0.5 * (b - a) * ЧебышёвLobattoPoint<N>(k) + midpoint;
   };
 
   FixedVector<Value<Argument, Function>, N + 1> fₖ(uninitialized);

@@ -11,7 +11,7 @@
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/gauss_legendre_weights.mathematica.h"
 #include "numerics/legendre_roots.mathematica.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/чебышёв_lobatto.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,7 +24,7 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_fast_fourier_transform;
 using namespace principia::numerics::_gauss_legendre_weights;
 using namespace principia::numerics::_legendre_roots;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_чебышёв_lobatto;
 using namespace principia::quantities::_si;
 
 template<int points, typename Argument, typename Function>
@@ -119,7 +119,6 @@ void FillClenshawCurtisCache(
   static_assert(N == 1 << log2_N);
 
   Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
-  constexpr Angle N⁻¹π = π * Radian / N;
 
   if constexpr (N == 1) {
     DCHECK(f_cos_N⁻¹π_bit_reversed.empty());
@@ -141,7 +140,7 @@ void FillClenshawCurtisCache(
          ++evaluations, reverse = BitReversedIncrement(reverse, log2_N - 1)) {
       int const s = 2 * reverse + 1;
       f_cos_N⁻¹π_bit_reversed.push_back(
-          f(lower_bound + half_width * (1 + Cos(N⁻¹π * s))));
+          f(lower_bound + half_width * (1 + ЧебышёвLobattoPoint<N>(s))));
     }
   }
 }
