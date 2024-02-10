@@ -257,6 +257,12 @@
     <ClInclude Include="polynomial_in_чебышёв_basis_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="чебышёв_lobatto.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="чебышёв_lobatto_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -381,6 +387,9 @@
     </ClCompile>
     <ClCompile Include="polynomial_in_monomial_basis_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial_in_чебышёв_basis_test.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
