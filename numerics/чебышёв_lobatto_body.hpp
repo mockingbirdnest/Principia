@@ -21,16 +21,16 @@ using namespace principia::quantities::_si;
 // k (values for even k should be obtained by calling the N/2 instantiation).
 template<int N>
 double ЧебышёвLobattoPoint(std::int64_t const k) {
-  static std::array<double, N> points = []() {
-    std::array<double, N> points;
+  static const std::array<double, N>* const points = []() {
+    auto* const points = new std::array<double, N>;
     for (std::int64_t k = 1; k <= N; k += 2) {
-      points[k] = Cos(π * k * Radian / N);
+      (*points)[k] = Cos(π * k * Radian / N);
     }
     return points;
   }();
 
   DCHECK_EQ(k % 2, 1);
-  return points[k];
+  return (*points)[k];
 }
 
 }  // namespace internal
