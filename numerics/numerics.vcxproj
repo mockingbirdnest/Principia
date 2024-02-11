@@ -89,6 +89,8 @@
     <ClInclude Include="apodization.hpp" />
     <ClInclude Include="unbounded_arrays.hpp" />
     <ClInclude Include="unbounded_arrays_body.hpp" />
+    <ClInclude Include="чебышёв_lobatto.hpp" />
+    <ClInclude Include="чебышёв_lobatto_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>

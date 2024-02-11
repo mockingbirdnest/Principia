@@ -101,8 +101,8 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 PolynomialInЧебышёвBasis(Coefficients coefficients,
-                          Argument const& lower_bound,
-                          Argument const& upper_bound)
+                         Argument const& lower_bound,
+                         Argument const& upper_bound)
     : coefficients_(std::move(coefficients)),
       lower_bound_(lower_bound),
       upper_bound_(upper_bound),
