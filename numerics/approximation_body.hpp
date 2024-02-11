@@ -111,7 +111,7 @@ std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argum
   using Interpolant =
       PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument, N / 2>;
   return std::make_unique<Interpolant>(
-      Interpolant::Coefficients(previous_aⱼ), a, b);
+      typename Interpolant::Coefficients(previous_aⱼ), a, b);
 }
 
 // Returns true if production of interpolants should stop.
