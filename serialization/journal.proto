@@ -19,7 +19,6 @@ message NavigationFrameParameters {
   required int32 centre_index = 2;
   required int32 primary_index = 3 [(is_private) = true];
   required int32 secondary_index = 4 [(is_private) = true];
-  required double filler = 5;
 }
 
 message XYZ {
