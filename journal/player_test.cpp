@@ -113,7 +113,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // |method_out_return| protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Issues\3569\JOURNAL.20231026-191142)";  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Issues\3872\JOURNAL.20240210-173425)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -131,24 +131,22 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
              << player.last_method_out_return().DebugString();
   std::this_thread::sleep_for(10s);
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::FlightPlanGetCoastAnalysis::extension);
+        serialization::CollisionDeleteExecutor::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(1813489403728);
-    in->set_vessel_guid("5f7e35b7-645a-4985-9734-7bdeb31b2336");
-    in->set_ground_track_revolution(0);
-    in->set_index(0);
+    in->set_plugin(2237555212240);
+    in->set_executor(2237561081696);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::FlightPlanGetCoastAnalysis::extension);
+        serialization::CollisionDeleteExecutor::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<FlightPlanGetCoastAnalysis>(
+  CHECK(RunIfAppropriate<CollisionDeleteExecutor>(
       method_in, method_out_return, player));
 #endif
 #if 0
