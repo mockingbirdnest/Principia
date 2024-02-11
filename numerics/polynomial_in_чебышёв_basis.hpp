@@ -76,12 +76,12 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   // of |error_estimate| has no real roots.  This is useful if the series is an
   // approximation of some function with an L∞ error less than |error_estimate|.
   bool MayHaveRealRoots(Value error_estimate = Value{}) const
-    requires is_quantity_v<Value>;
+    requires is_quantity_v<Value_>;
 
   // Returns the real roots of the polynomial, computed as the eigenvalues of
   // the Frobenius companion matrix.
   absl::btree_set<Argument> RealRoots(double ε) const
-    requires is_quantity_v<Value>;
+    requires is_quantity_v<Value_>;
 
   // Compatibility deserialization: this class is the equivalent of the old
   // ЧебышёвSeries.
@@ -124,7 +124,7 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
 
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
   FixedMatrix<double, degree_, degree_> FrobeniusCompanionMatrix() const
-    requires is_quantity_v<Value>;
+    requires is_quantity_v<Value_>;
 
   void WriteToMessage(not_null<serialization::Polynomial*> message) const;
   static PolynomialInЧебышёвBasis ReadFromMessage(
