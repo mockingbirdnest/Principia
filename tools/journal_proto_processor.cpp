@@ -1420,6 +1420,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& object_parameter_name = ToLower(name) + "_object";
   MessageOptions const& options = descriptor->options();
   ProcessAddressOfSizeOf(descriptor);
+  std::string keyword = "struct";
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
@@ -1429,6 +1430,11 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       options.HasExtension(journal::serialization::custom_marshaler);
   bool needs_custom_marshaler = false;
   bool needs_insert = false;
+  if (options.HasExtension(journal::serialization::is_class)) {
+    CHECK(options.GetExtension(journal::serialization::is_class));
+    keyword = "class";
+    needs_custom_marshaler = true;
+  }
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     interchange_.insert(field_descriptor);
@@ -1452,15 +1458,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     cs_interchange_type_declaration_[descriptor] =
         "internal partial class " + name + " {\n";
   } else {
-    MessageOptions const& message_options = descriptor->options();
-    std::string keyword = "struct";
-    if (message_options.HasExtension(journal::serialization::is_class)) {
-      CHECK(message_options.GetExtension(journal::serialization::is_class));
-      keyword = "class";
-    }
     std::string visibility = "internal";
-    if (message_options.HasExtension(journal::serialization::is_public)) {
-      CHECK(message_options.GetExtension(journal::serialization::is_public));
+    if (options.HasExtension(journal::serialization::is_public)) {
+      CHECK(options.GetExtension(journal::serialization::is_public));
       visibility = "public";
     }
     cs_interchange_type_declaration_[descriptor] =
