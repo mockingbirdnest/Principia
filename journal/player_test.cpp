@@ -131,7 +131,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
              << player.last_method_out_return().DebugString();
   std::this_thread::sleep_for(10s);
 
-#if 1
+#if 0
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
