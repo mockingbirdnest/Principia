@@ -98,9 +98,9 @@ inline int OrbitRecurrence::number_of_revolutions() const {
 
 inline Angle OrbitRecurrence::equatorial_shift() const {
   double const Nᴛₒ = number_of_revolutions();
-  double const ⅟κ = Cᴛₒ_ / Nᴛₒ;
+  double const κ⁻¹ = Cᴛₒ_ / Nᴛₒ;
   // See (8.24).
-  return -2 * π * Radian * ⅟κ;
+  return -2 * π * Radian * κ⁻¹;
 }
 
 inline Angle OrbitRecurrence::base_interval() const {

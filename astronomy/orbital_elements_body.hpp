@@ -212,8 +212,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
     Angle const& Ω = elements.longitude_of_ascending_node;
     Angle const& M = *elements.mean_anomaly;
     Angle const& i = elements.inclination;
-    double const tg_½i = Tan(i / 2);
-    double const cotg_½i = 1 / tg_½i;
+    double const tg_iⳆ2 = Tan(i / 2);
+    double const cotg_iⳆ2 = 1 / tg_iⳆ2;
     double const sin_Ω = Sin(Ω);
     double const cos_Ω = Cos(Ω);
     return {.t = time,
@@ -222,10 +222,10 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
             .k = e * Cos(ϖ),
             .λ = UnwindFrom(
                 unwound_λs[(time - t_min) / third_of_estimated_period], ϖ + M),
-            .p = tg_½i * sin_Ω,
-            .q = tg_½i * cos_Ω,
-            .pʹ = cotg_½i * sin_Ω,
-            .qʹ = cotg_½i * cos_Ω};
+            .p = tg_iⳆ2 * sin_Ω,
+            .q = tg_iⳆ2 * cos_Ω,
+            .pʹ = cotg_iⳆ2 * sin_Ω,
+            .qʹ = cotg_iⳆ2 * cos_Ω};
   };
 
   auto const sidereal_period =
@@ -453,12 +453,12 @@ OrbitalElements::ToClassicalElements(
   classical_elements.reserve(equinoctial_elements.size());
   for (auto const& equinoctial : equinoctial_elements) {
     RETURN_IF_STOPPED;
-    double const tg_½i = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
-    double const cotg_½i =
+    double const tg_iⳆ2 = Sqrt(Pow<2>(equinoctial.p) + Pow<2>(equinoctial.q));
+    double const cotg_iⳆ2 =
         Sqrt(Pow<2>(equinoctial.pʹ) + Pow<2>(equinoctial.qʹ));
     Angle const i =
-        cotg_½i > tg_½i ? 2 * ArcTan(tg_½i) : 2 * ArcTan(1 / cotg_½i);
-    Angle const Ω = cotg_½i > tg_½i ? ArcTan(equinoctial.p, equinoctial.q)
+        cotg_iⳆ2 > tg_iⳆ2 ? 2 * ArcTan(tg_iⳆ2) : 2 * ArcTan(1 / cotg_iⳆ2);
+    Angle const Ω = cotg_iⳆ2 > tg_iⳆ2 ? ArcTan(equinoctial.p, equinoctial.q)
                                     : ArcTan(equinoctial.pʹ, equinoctial.qʹ);
     double const e = Sqrt(Pow<2>(equinoctial.h) + Pow<2>(equinoctial.k));
     Angle const ϖ = ArcTan(equinoctial.h, equinoctial.k);

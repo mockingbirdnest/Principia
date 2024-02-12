@@ -1121,9 +1121,9 @@ PolynomialInMonomialBasis<double, double, 20, EstrinEvaluator> const
 // NOTE(phl): The following polynomials differ slightly from the original code
 // but they match more closely those in [Fuk11a].  The notation follows
 // [Fuk11a].
-// A polynomial for B٭X(m) / m.
+// A polynomial for B*X(m) / m.
 PolynomialInMonomialBasis<double, double, 7, EstrinEvaluator> const
-    fukushima_B٭X_maclaurin(std::make_tuple(-1.0 / 4.0,
+    fukushima_B𐌟X_maclaurin(std::make_tuple(-1.0 / 4.0,
                                             -1.0 / 32.0,
                                             -3.0 / 256.0,
                                             -25.0 / 4096.0,
@@ -1280,7 +1280,7 @@ void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
     B_m = (X_mc * (EX_mc - mc * KX_mc) + one_over_two_KX_mc) * Radian / m;
     D_m = X_mc * KX_mc * Radian - B_m;
   } else if (m <= 0.01) {
-    B_m = (-π * Radian) * fukushima_B٭X_maclaurin(m);
+    B_m = (-π * Radian) * fukushima_B𐌟X_maclaurin(m);
     D_m = (π * Radian) * fukushima_EX_maclaurin(m);
   } else if (m <= 0.1) {
     double const mx = 0.95 - mc;
