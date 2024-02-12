@@ -1571,21 +1571,21 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
       // If we need to generate a marshaler, do it now.
       if (needs_custom_marshaler) {
-        cs_representation_type_declaration_[descriptor] += "    public ";
+        cs_representation_type_declaration_[descriptor] += "      public ";
         if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
           cs_representation_type_declaration_[descriptor] +=
               "IntPtr " + field_descriptor_name + ";\n";
           cs_clean_up_native_definition_[descriptor] +=
-              "    " + field_cs_custom_marshaler_[field_descriptor] +
+              "      " + field_cs_custom_marshaler_[field_descriptor] +
               ".GetInstance(null).CleanUpNativeData(representation." +
               field_descriptor_name + ");\n";
           cs_managed_to_native_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = " +
+              "          " + field_descriptor_name + " = " +
               field_cs_custom_marshaler_[field_descriptor] +
               ".GetInstance(null).MarshalManagedToNative(value." +
               field_descriptor_name + "),\n";
           cs_native_to_managed_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = " +
+              "          " + field_descriptor_name + " = " +
               field_cs_custom_marshaler_[field_descriptor] +
               ".GetInstance(null).MarshalNativeToManaged(representation." +
               field_descriptor_name + ") as " +
@@ -1595,10 +1595,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
               field_cs_type_[field_descriptor] + " " + field_descriptor_name +
               ";\n";
           cs_managed_to_native_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = value." +
+              "          " + field_descriptor_name + " = value." +
               field_descriptor_name + ",\n";
           cs_native_to_managed_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = representation." +
+              "          " + field_descriptor_name + " = representation." +
               field_descriptor_name + ",\n";
         }
       }
@@ -1664,9 +1664,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         cs_native_to_managed_definition_[descriptor] +
         "      };\n"
         "    }\n\n"
-        "    private static readonly " + cs_custom_marshaler_name_[descriptor] +
-        " instance_ =\n"
-        "        new " + cs_custom_marshaler_name_[descriptor] + "();\n"
+        "    private static readonly Marshaler instance_ = new Marshaler();\n"
         "  }\n"
         "}\n\n";
   }
