@@ -295,7 +295,7 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cs_interface_return_marshal_;
 
   // The interchange messages that are represented by a class (as opposed to a
-  // struct in the C# code.
+  // struct) in the C# code.
   std::set<Descriptor const*> cs_interchange_classes_;
 
   // The C#/C++ definition of a type corresponding to an interchange message.
