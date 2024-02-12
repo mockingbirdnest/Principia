@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-[StructLayout(LayoutKind.Sequential)]
 internal partial class NavigationFrameParameters {
   public int extension;
   public int centre_index;
@@ -444,7 +443,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalCelestialGetPosition",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalCelestialGetPosition(
       this IntPtr plugin,
       int body_index,
@@ -454,7 +453,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalCelestialGetSurfacePosition",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalCelestialGetSurfacePosition(
       this IntPtr plugin,
       int body_index,
@@ -467,7 +466,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalFlowFreefall",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalFlowFreefall(
       this IntPtr plugin,
       int central_body_index,
@@ -479,7 +478,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalGeopotentialGetCoefficient",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalGeopotentialGetCoefficient(
       this IntPtr plugin,
       int body_index,
@@ -490,7 +489,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalGeopotentialGetReferenceRadius",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalGeopotentialGetReferenceRadius(
       this IntPtr plugin,
       int body_index,
@@ -499,7 +498,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalVesselGetPosition",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalVesselGetPosition(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -509,7 +508,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ExternalGetNearestPlannedCoastDegreesOfFreedom",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status ExternalGetNearestPlannedCoastDegreesOfFreedom(
       this IntPtr plugin,
       int central_body_index,
@@ -573,7 +572,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanGetAnomalousStatus",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanGetAnomalousStatus(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
@@ -581,7 +580,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanGetCoastAnalysis",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysisMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysis.Marshaler>))]
   internal static extern OrbitAnalysis FlightPlanGetCoastAnalysis(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -639,7 +638,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanInsert",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanInsert(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -683,7 +682,7 @@ internal static partial class Interface {
       double distance,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble inclination_in_degrees,
       int celestial_index,
-      NavigationFrameParameters navigation_frame_parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NavigationFrameParameters.Marshaler))] NavigationFrameParameters navigation_frame_parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanOptimizationDriverStart",
@@ -696,7 +695,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanRebase",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanRebase(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -705,7 +704,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanRemove",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanRemove(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -757,7 +756,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanReplace",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanReplace(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -782,7 +781,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanSetAdaptiveStepParameters",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanSetAdaptiveStepParameters(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -791,7 +790,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanSetDesiredFinalTime",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status FlightPlanSetDesiredFinalTime(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -880,29 +879,29 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializeDownsamplingParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationDownsamplingParametersMarshaler))] ConfigurationDownsamplingParameters downsampling_parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationDownsamplingParameters.Marshaler))] ConfigurationDownsamplingParameters downsampling_parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InitializeEphemerisParameters",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializeEphemerisParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAccuracyParametersMarshaler))] ConfigurationAccuracyParameters accuracy_parameters,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParametersMarshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAccuracyParameters.Marshaler))] ConfigurationAccuracyParameters accuracy_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InitializeHistoryParameters",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializeHistoryParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParametersMarshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InitializePsychohistoryParameters",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void InitializePsychohistoryParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAdaptiveStepParametersMarshaler))] ConfigurationAdaptiveStepParameters parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAdaptiveStepParameters.Marshaler))] ConfigurationAdaptiveStepParameters parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InsertCelestialAbsoluteCartesian",
@@ -911,7 +910,7 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParametersMarshaler))] BodyParameters body_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string x,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string y,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string z,
@@ -926,7 +925,7 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParametersMarshaler))] BodyParameters body_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<KeplerianElements>))] BoxedKeplerianElements keplerian_elements);
 
   [DllImport(dllName           : dll_path,
@@ -1314,7 +1313,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__SayNotFound",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, StatusMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
   internal static extern Status SayNotFound();
 
   [DllImport(dllName           : dll_path,
@@ -1358,7 +1357,7 @@ internal static partial class Interface {
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void SetPlottingFrame(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(PlottingFrameParametersMarshaler))] PlottingFrameParameters parameters);
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(PlottingFrameParameters.Marshaler))] PlottingFrameParameters parameters);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__SetStderrLogging",
@@ -1434,7 +1433,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__VesselGetAnalysis",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysisMarshaler>))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysis.Marshaler>))]
   internal static extern OrbitAnalysis VesselGetAnalysis(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,

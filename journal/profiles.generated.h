@@ -818,7 +818,7 @@ struct FlightPlanOptimizationDriverMake : not_constructible {
     double const distance;
     double const* const inclination_in_degrees;
     int const celestial_index;
-    NavigationFrameParameters const navigation_frame_parameters;
+    NavigationFrameParameters const& navigation_frame_parameters;
   };
 
   using Message = serialization::FlightPlanOptimizationDriverMake;
