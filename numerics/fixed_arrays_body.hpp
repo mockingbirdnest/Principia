@@ -61,6 +61,12 @@ constexpr FixedVector<Scalar_, size_>::FixedVector(
     : data_(std::move(data)) {}
 
 template<typename Scalar_, int size_>
+constexpr FixedVector<Scalar_, size_>::operator std::array<Scalar_, size_>()
+    const {
+  return data_;
+}
+
+template<typename Scalar_, int size_>
 Scalar_ FixedVector<Scalar_, size_>::Norm() const {
   return Sqrt(Norm²());
 }

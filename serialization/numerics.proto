@@ -9,6 +9,7 @@ option cc_enable_arenas = true;
 
 // We would like to use Cyrillic for the name of this message, but the protobuf
 // language only supports ASCII in identifiers.  Sigh.  Blame Kenton.
+// Removed in Канторович.
 message ChebyshevSeries {
   message Coefficient {
     oneof coefficient {
@@ -63,7 +64,31 @@ message PoissonSeries {
 
 message Polynomial {
   required int32 degree = 1;
-  extensions 10000 to 10999;  // Last used: 10000.
+  extensions 10000 to 10999;  // Last used: 10001.
+}
+
+message PolynomialInChebyshevBasis {
+  extend Polynomial {
+    optional PolynomialInChebyshevBasis extension = 10001;
+  }
+  message Coefficient {
+    oneof message {
+      double double = 1;
+      Quantity quantity = 2;
+      Multivector multivector = 3;
+    }
+  }
+  message Argument {
+    oneof message {
+      double double = 1;
+      Quantity quantity = 2;
+      Multivector multivector = 3;
+      Point point = 4;
+    }
+  }
+  repeated Coefficient coefficient = 1;
+  required Argument lower_bound = 2;
+  required Argument upper_bound = 3;
 }
 
 message PolynomialInMonomialBasis {

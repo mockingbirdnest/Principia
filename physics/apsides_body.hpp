@@ -362,19 +362,19 @@ ComputeFirstCollision(
       [&first_collision_time,
        max_collision_error,
        &number_of_evaluations](auto interpolant) -> bool {
-    if (interpolant.MayHaveRealRoots()) {
+    if (interpolant->MayHaveRealRoots()) {
       // The relative error on the roots is choosen so that it corresponds to an
       // absolute error in distance similar to |max_collision_error|, assuming
       // that the speed is below |max_collision_speed|.  We don't care too much
       // about the performance of this computation, because the zero-free test
       // is very efficient.
-      auto const& real_roots = interpolant.RealRoots(
+      auto const& real_roots = interpolant->RealRoots(
           max_collision_error /
-          ((interpolant.upper_bound() - interpolant.lower_bound()) *
+          ((interpolant->upper_bound() - interpolant->lower_bound()) *
            max_collision_speed));
       if (real_roots.empty()) {
-        VLOG(1) << "No real roots over [" << interpolant.lower_bound() << ", "
-                << interpolant.upper_bound() << "]";
+        VLOG(1) << "No real roots over [" << interpolant->lower_bound() << ", "
+                << interpolant->upper_bound() << "]";
         return false;
       } else {
         // The smallest root is the first collision.
@@ -384,8 +384,8 @@ ComputeFirstCollision(
         return true;
       }
     } else {
-      VLOG(1) << "No roots over [" << interpolant.lower_bound() << ", "
-              << interpolant.upper_bound() << "]";
+      VLOG(1) << "No roots over [" << interpolant->lower_bound() << ", "
+              << interpolant->upper_bound() << "]";
       return false;
     }
   };

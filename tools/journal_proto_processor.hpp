@@ -294,12 +294,16 @@ class JournalProtoProcessor final {
   // The key is a descriptor for a Return message.
   std::map<Descriptor const*, std::string> cs_interface_return_marshal_;
 
+  // The interchange messages that are represented by a class (as opposed to a
+  // struct) in the C# code.
+  std::set<Descriptor const*> cs_interchange_classes_;
+
   // The C#/C++ definition of a type corresponding to an interchange message.
   // The key is a descriptor for an interchange message.
   std::map<Descriptor const*, std::string> cs_interchange_type_declaration_;
   std::map<Descriptor const*, std::string> cxx_interchange_type_declaration_;
 
-  // The name of the C# class that implements a custom marshaler for an
+  // The full name of the C# class that implements a custom marshaler for an
   // interchange message.
   std::map<Descriptor const*, std::string> cs_custom_marshaler_name_;
 

@@ -432,7 +432,7 @@ void __cdecl principia__FlightPlanOptimizationDriverMake(
     double const distance,
     double const* const inclination_in_degrees,
     int const celestial_index,
-    NavigationFrameParameters const navigation_frame_parameters) {
+    NavigationFrameParameters const& navigation_frame_parameters) {
   journal::Method<journal::FlightPlanOptimizationDriverMake> m(
       {plugin,
        vessel_guid,

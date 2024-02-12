@@ -22,7 +22,7 @@ $msbuildpaths = &$vswhere                 `
     -prerelease                           `
     -all                                  `
     -requires Microsoft.Component.MSBuild `
-    -find MSBuild\**\Bin\MSBuild.exe
+    -find MSBuild\**\Bin\amd64\MSBuild.exe
 
 $i = 0;
 foreach ($name in $names) {

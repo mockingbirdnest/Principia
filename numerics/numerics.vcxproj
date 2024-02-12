@@ -75,6 +75,8 @@
     <ClInclude Include="polynomial_evaluators_body.hpp" />
     <ClInclude Include="polynomial_in_monomial_basis.hpp" />
     <ClInclude Include="polynomial_in_monomial_basis_body.hpp" />
+    <ClInclude Include="polynomial_in_чебышёв_basis.hpp" />
+    <ClInclude Include="polynomial_in_чебышёв_basis_body.hpp" />
     <ClInclude Include="quadrature.hpp" />
     <ClInclude Include="quadrature_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
@@ -87,6 +89,8 @@
     <ClInclude Include="apodization.hpp" />
     <ClInclude Include="unbounded_arrays.hpp" />
     <ClInclude Include="unbounded_arrays_body.hpp" />
+    <ClInclude Include="чебышёв_lobatto.hpp" />
+    <ClInclude Include="чебышёв_lobatto_body.hpp" />
     <ClInclude Include="чебышёв_series.hpp" />
     <ClInclude Include="чебышёв_series_body.hpp" />
   </ItemGroup>
@@ -127,6 +131,7 @@
     <ClCompile Include="poisson_series_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_in_monomial_basis_test.cpp" />
+    <ClCompile Include="polynomial_in_чебышёв_basis_test.cpp" />
     <ClCompile Include="quadrature_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="scale_b_test.cpp" />

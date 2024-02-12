@@ -449,7 +449,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       // This wouldn't be hard, we'd need another OptionalMarshaler that calls
       // the element's marshaler, but we don't need it yet.
       LOG(FATAL) << "Optional messages with an element that does have a custom "
-                    "marshaller are not yet implemented.";
+                    "marshaler are not yet implemented.";
     } else {
       field_cs_custom_marshaler_[descriptor] =
           custom_marshaler_generic_name(cs_unboxed_type);
@@ -1419,50 +1419,42 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& proto_parameter_name = ToLower(name) + "_proto";
   std::string const& object_parameter_name = ToLower(name) + "_object";
   MessageOptions const& options = descriptor->options();
+  if (options.HasExtension(journal::serialization::is_class)) {
+    CHECK(options.GetExtension(journal::serialization::is_class));
+    cs_interchange_classes_.insert(descriptor);
+  }
   ProcessAddressOfSizeOf(descriptor);
 
   // Start by processing the fields.  We need to know if any of them has a
   // custom marshaler to decide whether we generate a struct or a class.
   // Similarly, we'll need to know whether we have to generate an Insert method
   // for inner pointers.
-  bool const has_custom_marshaler =
-      options.HasExtension(journal::serialization::custom_marshaler);
-  bool needs_custom_marshaler = false;
+  bool needs_custom_marshaler = cs_interchange_classes_.contains(descriptor);
   bool needs_insert = false;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     interchange_.insert(field_descriptor);
     ProcessField(field_descriptor);
-    if (!has_custom_marshaler &&
-        Contains(field_cs_custom_marshaler_, field_descriptor)) {
+    if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
       needs_custom_marshaler = true;
     }
     if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
       needs_insert = true;
     }
   }
-  if (has_custom_marshaler) {
-    cs_custom_marshaler_name_[descriptor] =
-        options.GetExtension(journal::serialization::custom_marshaler);
-  } else if (needs_custom_marshaler) {
-    cs_custom_marshaler_name_[descriptor] = name + "Marshaler";
-  }
-
-  if (has_custom_marshaler || needs_custom_marshaler) {
+  if (needs_custom_marshaler) {
+    cs_custom_marshaler_name_[descriptor] = name + ".Marshaler";
+    cs_interchange_classes_.insert(descriptor);
     cs_interchange_type_declaration_[descriptor] =
         "internal partial class " + name + " {\n";
   } else {
-    MessageOptions const& message_options = descriptor->options();
-    std::string keyword = "struct";
-    if (message_options.HasExtension(journal::serialization::is_class)) {
-      CHECK(message_options.GetExtension(journal::serialization::is_class));
-      keyword = "class";
-    }
     std::string visibility = "internal";
-    if (message_options.HasExtension(journal::serialization::is_public)) {
-      CHECK(message_options.GetExtension(journal::serialization::is_public));
+    if (options.HasExtension(journal::serialization::is_public)) {
+      CHECK(options.GetExtension(journal::serialization::is_public));
       visibility = "public";
     }
+    std::string const keyword =
+        cs_interchange_classes_.contains(descriptor) ? "class" : "struct";
     cs_interchange_type_declaration_[descriptor] =
         "[StructLayout(LayoutKind.Sequential)]\n" + visibility + " partial " +
         keyword + " " + name + " {\n";
@@ -1579,21 +1571,21 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
       // If we need to generate a marshaler, do it now.
       if (needs_custom_marshaler) {
-        cs_representation_type_declaration_[descriptor] += "    public ";
+        cs_representation_type_declaration_[descriptor] += "      public ";
         if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
           cs_representation_type_declaration_[descriptor] +=
               "IntPtr " + field_descriptor_name + ";\n";
           cs_clean_up_native_definition_[descriptor] +=
-              "    " + field_cs_custom_marshaler_[field_descriptor] +
+              "      " + field_cs_custom_marshaler_[field_descriptor] +
               ".GetInstance(null).CleanUpNativeData(representation." +
               field_descriptor_name + ");\n";
           cs_managed_to_native_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = " +
+              "          " + field_descriptor_name + " = " +
               field_cs_custom_marshaler_[field_descriptor] +
               ".GetInstance(null).MarshalManagedToNative(value." +
               field_descriptor_name + "),\n";
           cs_native_to_managed_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = " +
+              "          " + field_descriptor_name + " = " +
               field_cs_custom_marshaler_[field_descriptor] +
               ".GetInstance(null).MarshalNativeToManaged(representation." +
               field_descriptor_name + ") as " +
@@ -1603,10 +1595,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
               field_cs_type_[field_descriptor] + " " + field_descriptor_name +
               ";\n";
           cs_managed_to_native_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = value." +
+              "          " + field_descriptor_name + " = value." +
               field_descriptor_name + ",\n";
           cs_native_to_managed_definition_[descriptor] +=
-              "        " + field_descriptor_name + " = representation." +
+              "          " + field_descriptor_name + " = representation." +
               field_descriptor_name + ",\n";
         }
       }
@@ -1631,48 +1623,49 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 
   if (needs_custom_marshaler) {
+    std::string const keyword =
+        cs_interchange_classes_.contains(descriptor) ? "class" : "struct";
     cs_custom_marshaler_class_[descriptor] =
-        "internal class " + cs_custom_marshaler_name_[descriptor] +
-        " : MonoMarshaler {\n"
-        "  [StructLayout(LayoutKind.Sequential)]\n"
-        "  internal struct Representation {\n" +
+        "internal partial " + keyword + " " + name + " {\n"
+        "  internal class Marshaler : MonoMarshaler {\n"
+        "    [StructLayout(LayoutKind.Sequential)]\n"
+        "    internal struct Representation {\n" +
         cs_representation_type_declaration_[descriptor] +
-        "  }\n\n"
-        "  public static ICustomMarshaler GetInstance(string s) {\n"
-        "    return instance_;\n"
-        "  }\n\n"
-        "  public override void CleanUpNativeDataImplementation("
+        "    }\n\n"
+        "    public static ICustomMarshaler GetInstance(string s) {\n"
+        "      return instance_;\n"
+        "    }\n\n"
+        "    public override void CleanUpNativeDataImplementation("
         "IntPtr native_data) {\n"
-        "    var representation = (Representation)Marshal.PtrToStructure("
+        "      var representation = (Representation)Marshal.PtrToStructure("
         "native_data, typeof(Representation));\n" +
         cs_clean_up_native_definition_[descriptor] +
-        "    Marshal.FreeHGlobal(native_data);\n"
-        "  }\n\n"
-        "  public override IntPtr MarshalManagedToNativeImplementation("
+        "      Marshal.FreeHGlobal(native_data);\n"
+        "    }\n\n"
+        "    public override IntPtr MarshalManagedToNativeImplementation("
         "object managed_object) {\n"
-        "    if (!(managed_object is " + name + " value)) {\n"
-        "      throw new NotSupportedException();\n"
-        "    }\n"
-        "    var representation = new Representation{\n" +
+        "      if (!(managed_object is " + name + " value)) {\n"
+        "        throw new NotSupportedException();\n"
+        "      }\n"
+        "      var representation = new Representation{\n" +
         cs_managed_to_native_definition_[descriptor] +
-        "    };\n"
-        "    IntPtr buffer = Marshal.AllocHGlobal("
+        "      };\n"
+        "      IntPtr buffer = Marshal.AllocHGlobal("
         "Marshal.SizeOf(representation));\n"
-        "    Marshal.StructureToPtr("
+        "      Marshal.StructureToPtr("
         "representation, buffer, fDeleteOld: false);\n" +
-        "    return buffer;\n"
-        "  }\n\n"
-        "  public override object MarshalNativeToManaged("
+        "      return buffer;\n"
+        "    }\n\n"
+        "    public override object MarshalNativeToManaged("
         "IntPtr native_data) {\n"
-        "    var representation = (Representation)Marshal.PtrToStructure("
+        "      var representation = (Representation)Marshal.PtrToStructure("
         "native_data, typeof(Representation));\n"
-        "    return new " + name + "{\n" +
+        "      return new " + name + "{\n" +
         cs_native_to_managed_definition_[descriptor] +
-        "    };\n"
-        "  }\n\n"
-        "  private static readonly " + cs_custom_marshaler_name_[descriptor] +
-        " instance_ =\n"
-        "      new " + cs_custom_marshaler_name_[descriptor] + "();\n"
+        "      };\n"
+        "    }\n\n"
+        "    private static readonly Marshaler instance_ = new Marshaler();\n"
+        "  }\n"
         "}\n\n";
   }
 }

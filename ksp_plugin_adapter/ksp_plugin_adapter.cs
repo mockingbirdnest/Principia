@@ -1938,7 +1938,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       }
     }
     if (guidance_node_ != null) {
-      guidance_node_.RemoveSelf();
+      // We may end up here with a guidance node created for another vessel when
+      // switching vessels, see #3873.
+      if (active_vessel.patchedConicSolver.maneuverNodes.Contains(
+              guidance_node_)) {
+        guidance_node_.RemoveSelf();
+      }
       guidance_node_ = null;
     }
   }
