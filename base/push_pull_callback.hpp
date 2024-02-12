@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <thread>
 #include <tuple>
@@ -45,9 +46,10 @@ class PushPullCallback {
   void Push(Arguments... arguments);
   Result Pull();
 
-  // These functions return |lock_| held exclusively.
-  void WaitUntilHasArgumentsOrShuttingDownAndLock();
-  void WaitUntilHasResultAndLock();
+  // These functions return a (held) |MutexLock| that the caller should use to
+  // ensure proper release of |lock_|.
+  std::unique_ptr<absl::MutexLock> WaitUntilHasArgumentsOrShuttingDownAndLock();
+  std::unique_ptr<absl::MutexLock> WaitUntilHasResultAndLock();
 
   absl::Mutex lock_;
   std::optional<std::tuple<Arguments...>> arguments_ GUARDED_BY(lock_);

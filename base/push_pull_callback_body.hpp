@@ -2,6 +2,7 @@
 
 #include "base/push_pull_callback.hpp"
 
+#include <memory>
 #include <utility>
 
 namespace principia {
@@ -11,13 +12,12 @@ namespace internal {
 
 template<typename Result, typename... Arguments>
 bool PushPullCallback<Result, Arguments...>::Pull(Arguments&... arguments) {
-  WaitUntilHasArgumentsOrShuttingDownAndLock();
+  auto const mutex_lock = WaitUntilHasArgumentsOrShuttingDownAndLock();
   if (shutdown_) {
     return false;
   }
   std::tie(arguments...) = std::move(arguments_.value());
   arguments_.reset();
-  lock_.Unlock();
   return true;
 }
 
@@ -51,33 +51,37 @@ void PushPullCallback<Result, Arguments...>::Push(
 
 template<typename Result, typename... Arguments>
 Result PushPullCallback<Result, Arguments...>::Pull() {
-  WaitUntilHasResultAndLock();
-  lock_.AssertHeld();
+  auto const mutex_lock = WaitUntilHasResultAndLock();
   Result result = result_.value();
   result_.reset();
-  lock_.Unlock();
   return std::move(result);
 }
 
 template<typename Result, typename... Arguments>
-void PushPullCallback<Result, Arguments...>::
-    WaitUntilHasArgumentsOrShuttingDownAndLock() {
+std::unique_ptr<absl::MutexLock>
+PushPullCallback<Result,
+                 Arguments...>::WaitUntilHasArgumentsOrShuttingDownAndLock() {
   auto has_arguments_or_shutting_down = [this]() {
     lock_.AssertReaderHeld();
     return shutdown_ || arguments_.has_value();
   };
 
-  lock_.LockWhen(absl::Condition(&has_arguments_or_shutting_down));
+  auto mutex_lock = std::make_unique<absl::MutexLock>(&lock_);
+  lock_.Await(absl::Condition(&has_arguments_or_shutting_down));
+  return mutex_lock;
 }
 
 template<typename Result, typename... Arguments>
-void PushPullCallback<Result, Arguments...>::WaitUntilHasResultAndLock() {
+std::unique_ptr<absl::MutexLock>
+PushPullCallback<Result, Arguments...>::WaitUntilHasResultAndLock() {
   auto has_result = [this]() {
     lock_.AssertReaderHeld();
     return result_.has_value();
   };
 
-  lock_.LockWhen(absl::Condition(&has_result));
+  auto mutex_lock = std::make_unique<absl::MutexLock>(&lock_);
+  lock_.Await(absl::Condition(&has_result));
+  return mutex_lock;
 }
 
 template<typename T, typename Result, typename... Arguments>
