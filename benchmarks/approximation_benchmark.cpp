@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/instant.hpp"
 #include "numerics/approximation.hpp"
@@ -16,6 +17,7 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
@@ -60,7 +62,8 @@ class ApproximationBenchmark : public benchmark::Fixture {
       return interpolant.MayHaveRealRoots(error_estimate);
     };
 
-    std::vector<std::unique_ptr<PolynomialInЧебышёвBasis<Length, Instant>>>
+    std::vector<
+        not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Length, Instant>>>>
         interpolants;
     for (auto _ : state) {
       interpolants = AdaptiveЧебышёвPolynomialInterpolant<max_degree>(
