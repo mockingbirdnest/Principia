@@ -11,8 +11,8 @@
 #include "geometry/space.hpp"
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial.hpp"
-#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -26,8 +26,8 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Result,
