@@ -11,7 +11,7 @@
 #include "numerics/fma.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "numerics/чебышёв_series.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -29,7 +29,7 @@ using namespace principia::numerics::_fma;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::numerics::_чебышёв_series;
+using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -52,13 +52,14 @@ class ЧебышёвAdapter {
       Instant const& t_max,
       Difference<Value>& error_estimate);
 
-  Value Evaluate(Instant const& t) const;
+  Value operator()(Instant const& t) const;
   Variation<Value> EvaluateDerivative(Instant const& t) const;
 
  private:
-  explicit ЧебышёвAdapter(ЧебышёвSeries<Value, Instant> series);
+  using P = PolynomialInЧебышёвBasis<Value, Instant, degree>;
+  explicit ЧебышёвAdapter(P const& polynomial);
 
-  ЧебышёвSeries<Value, Instant> series_;
+  P polynomial_;
 };
 
 template<typename Value, int degree>
@@ -71,7 +72,7 @@ class MonomialAdapter {
       Instant const& t_max,
       Difference<Value>& error_estimate);
 
-  Value Evaluate(Instant const& t) const;
+  Value operator()(Instant const& t) const;
   Variation<Value> EvaluateDerivative(Instant const& t) const;
 
  private:
@@ -90,27 +91,27 @@ template<typename Value, int degree>
     Instant const& t_min,
     Instant const& t_max,
     Difference<Value>& error_estimate) {
-  return ЧебышёвAdapter(NewhallApproximationInЧебышёвBasis(degree,
-                                                           q, v,
-                                                           t_min, t_max,
-                                                           error_estimate));
+  return ЧебышёвAdapter(NewhallApproximationInЧебышёвBasis<Value, degree>(
+      q, v,
+      t_min, t_max,
+      error_estimate));
 }
 
 template<typename Value, int degree>
-Value ЧебышёвAdapter<Value, degree>::Evaluate(Instant const& t) const {
-  return series_.Evaluate(t);
+Value ЧебышёвAdapter<Value, degree>::operator()(Instant const& t) const {
+  return polynomial_(t);
 }
 
 template<typename Value, int degree>
 Variation<Value>
 ЧебышёвAdapter<Value, degree>::EvaluateDerivative(Instant const& t) const {
-  return series_.EvaluateDerivative(t);
+  return polynomial_.EvaluateDerivative(t);
 }
 
 template<typename Value, int degree>
 ЧебышёвAdapter<Value, degree>::ЧебышёвAdapter(
-    ЧебышёвSeries<Value, Instant> series)
-    : series_(std::move(series)) {}
+    P const& polynomial)
+    : polynomial_(polynomial) {}
 
 template<typename Value, int degree>
 MonomialAdapter<Value, degree>
@@ -128,7 +129,7 @@ MonomialAdapter<Value, degree>::NewhallApproximation(
 }
 
 template<typename Value, int degree>
-Value MonomialAdapter<Value, degree>::Evaluate(Instant const& t) const {
+Value MonomialAdapter<Value, degree>::operator()(Instant const& t) const {
   return polynomial_(t);
 }
 
@@ -203,7 +204,7 @@ class NewhallTest : public ::testing::Test {
     Variation<Value> variation_absolute_error;
     for (Instant t = t_min_; t <= t_max_; t += 0.05 * Second) {
       Value const expected_value = length_function(t);
-      Value const actual_value = approximation.Evaluate(t);
+      Value const actual_value = approximation(t);
       Variation<Value> const expected_variation = speed_function(t);
       Variation<Value> const actual_variation =
           approximation.EvaluateDerivative(t);

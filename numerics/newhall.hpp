@@ -6,8 +6,8 @@
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "numerics/чебышёв_series.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -18,8 +18,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_named_quantities;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
@@ -27,14 +27,23 @@ using namespace principia::quantities::_named_quantities;
 // [t_min, t_max].  |error_estimate| gives an estimate of the error between the
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
-template<typename Vector>
-ЧебышёвSeries<Vector, Instant>
-NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Vector> const& q,
-                                   std::vector<Variation<Vector>> const& v,
+template<typename Value, int degree>
+PolynomialInЧебышёвBasis<Value, Instant, degree>
+NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
+                                   std::vector<Variation<Value>> const& v,
                                    Instant const& t_min,
                                    Instant const& t_max,
-                                   Vector& error_estimate);
+                                   Value& error_estimate);
+
+// Same as above but the |degree| is not a constant expression.
+template<typename Value>
+not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
+NewhallApproximationInЧебышёвBasis(int degree,
+                                   std::vector<Value> const& q,
+                                   std::vector<Variation<Value>> const& v,
+                                   Instant const& t_min,
+                                   Instant const& t_max,
+                                   Value& error_estimate);
 
 // Computes a Newhall approximation of the given |degree| in the monomial basis.
 // The parameters have the same meaning as in the preceding function.  The

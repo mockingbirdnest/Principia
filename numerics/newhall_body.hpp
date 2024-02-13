@@ -142,27 +142,50 @@ Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
       homogeneous_coefficients[degree] * scale_degree;
 }
 
-template<typename Value, int degree,
-         template<typename, typename, int> class Evaluator>
-struct NewhallApproximator {
+template<typename Value, int degree>
+struct NewhallЧебышёвApproximator {
   static std::array<Value, degree + 1> HomogeneousCoefficients(
       QV<Value> const& qv,
       Value& error_estimate);
 };
 
+template<typename Value, int degree,
+         template<typename, typename, int> class Evaluator>
+struct NewhallMonomialApproximator {
+  static std::array<Value, degree + 1> HomogeneousCoefficients(
+      QV<Value> const& qv,
+      Value& error_estimate);
+};
+
+#define PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(degree) \
+  template<typename Value>                                            \
+  struct NewhallЧебышёвApproximator<Value, (degree)> {                \
+    static std::array<Value, (degree) + 1> HomogeneousCoefficients(   \
+        QV<Value> const& qv,                                          \
+        Value& error_estimate) {                                      \
+      std::array<Value, degree + 1> result;                           \
+      Multiply<(degree)>(                                             \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, \
+          qv,                                                         \
+          result);                                                    \
+      error_estimate = result[degree];                                \
+      return result;                                                  \
+    }                                                                 \
+  }
+
 // The error estimate must be computed in the Чебышёв basis because the elements
 // of the monomial basis are not bounded.
-#define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                 \
+#define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value, template<typename, typename, int> class Evaluator> \
-  struct NewhallApproximator<Value, (degree), Evaluator> {                    \
-    static std::array<Value, ((degree) + 1)> HomogeneousCoefficients(         \
+  struct NewhallMonomialApproximator<Value, (degree), Evaluator> {            \
+    static std::array<Value, (degree) + 1> HomogeneousCoefficients(           \
         QV<Value> const& qv,                                                  \
         Value& error_estimate) {                                              \
       error_estimate = DotProduct<>::Compute(                                 \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
               .row<(degree)>(),                                               \
           qv);                                                                \
-      std::array<Value, ((degree) + 1)> result;                               \
+      std::array<Value, (degree) + 1> result;                                 \
       Multiply<(degree)>(                                                     \
           newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04,        \
           qv,                                                                 \
@@ -171,40 +194,48 @@ struct NewhallApproximator {
     }                                                                         \
   }
 
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(3);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(4);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(5);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(6);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(7);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(8);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(9);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(10);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(11);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(12);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(13);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(14);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(15);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(16);
-PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(3);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(4);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(5);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(6);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(7);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(8);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(9);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(10);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(11);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(12);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(13);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(14);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(15);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(16);
+PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(17);
 
-#undef PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(3);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(4);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(5);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(6);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(7);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(8);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(9);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(10);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(11);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(12);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(13);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(14);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(15);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(16);
+PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(17);
 
-#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree) \
-  case (degree):                                                      \
-    Multiply<(degree)>(                                               \
-        newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04,   \
-        qv,                                                           \
-        coefficients);                                                \
-    break
+#undef PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION
+#undef PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION
 
-template<typename Vector>
-ЧебышёвSeries<Vector, Instant>
-NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Vector> const& q,
-                                   std::vector<Variation<Vector>> const& v,
+template<typename Value, int degree>
+PolynomialInЧебышёвBasis<Value, Instant, degree>
+NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
+                                   std::vector<Variation<Value>> const& v,
                                    Instant const& t_min,
                                    Instant const& t_max,
-                                   Vector& error_estimate) {
+                                   Value& error_estimate) {
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
 
@@ -212,7 +243,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  QV<Vector> qv;
+  QV<Value> qv;
   for (int i = 0, j = 2 * divisions;
        i < divisions + 1 && j >= 0;
        ++i, j -= 2) {
@@ -220,8 +251,28 @@ NewhallApproximationInЧебышёвBasis(int degree,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  std::vector<Vector> coefficients;
-  coefficients.resize(degree + 1);
+  auto const coefficients =
+      NewhallЧебышёвApproximator<Difference<Value>, degree>::
+          HomogeneousCoefficients(qv, error_estimate);
+  return PolynomialInЧебышёвBasis<Value, Instant, degree>(
+      coefficients, t_min, t_max);
+}
+
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree) \
+  case (degree):                                                      \
+    return make_not_null_unique<                                      \
+        PolynomialInЧебышёвBasis<Value, Instant, (degree)>>(          \
+        NewhallApproximationInЧебышёвBasis<Value, (degree)>(          \
+            q, v, t_min, t_max, error_estimate))
+
+template<typename Value>
+not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
+NewhallApproximationInЧебышёвBasis(int degree,
+                                   std::vector<Value> const& q,
+                                   std::vector<Variation<Value>> const& v,
+                                   Instant const& t_min,
+                                   Instant const& t_max,
+                                   Value& error_estimate) {
   switch (degree) {
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(3);
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(4);
@@ -242,9 +293,6 @@ NewhallApproximationInЧебышёвBasis(int degree,
       LOG(FATAL) << "Unexpected degree " << degree;
       break;
   }
-  CHECK_EQ(degree + 1, coefficients.size());
-  error_estimate = coefficients[degree];
-  return ЧебышёвSeries<Vector, Instant>(coefficients, t_min, t_max);
 }
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE
@@ -276,7 +324,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
   Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return origin +
          Dehomogeneize<Difference<Value>, degree, Evaluator>(
-             NewhallApproximator<Difference<Value>, degree, Evaluator>::
+             NewhallMonomialApproximator<Difference<Value>, degree, Evaluator>::
                  HomogeneousCoefficients(qv, error_estimate),
              /*scale=*/1.0 / duration_over_two,
              t_mid);

@@ -45,7 +45,8 @@ FixedMatrix<double, N + 1, N + 1> const& ЧебышёвInterpolationMatrix() {
 }
 
 template<int N, int max_degree, typename Argument, typename Function>
-std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>
+not_null<std::unique_ptr<
+    PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>>
 ЧебышёвPolynomialInterpolantImplementation(
     Function const& f,
     Argument const& a,
@@ -110,7 +111,7 @@ std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argum
   }
   using Interpolant =
       PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument, N / 2>;
-  return std::make_unique<Interpolant>(
+  return make_not_null_unique<Interpolant>(
       typename Interpolant::Coefficients(previous_aⱼ), a, b);
 }
 
@@ -182,7 +183,8 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
 }
 
 template<int max_degree, typename Argument, typename Function>
-std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>
+not_null<std::unique_ptr<
+    PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>>
 ЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
@@ -202,8 +204,8 @@ std::unique_ptr<PolynomialInЧебышёвBasis<Value<Argument, Function>, Argum
 }
 
 template<int max_degree, typename Argument, typename Function>
-std::vector<std::unique_ptr<
-    PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>>
+std::vector<not_null<std::unique_ptr<
+    PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>>>
 AdaptiveЧебышёвPolynomialInterpolant(
     Function const& f,
     Argument const& lower_bound,
@@ -213,11 +215,11 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Difference<Value<Argument, Function>>* const error_estimate) {
   using Interpolant =
       PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>;
-  std::vector<std::unique_ptr<Interpolant>> interpolants;
+  std::vector<not_null<std::unique_ptr<Interpolant>>> interpolants;
 
   TerminationPredicate<Value<Argument, Function>,
                        Argument> const emplace_back_and_continue =
-      [&interpolants](std::unique_ptr<Interpolant> interpolant) {
+      [&interpolants](not_null<std::unique_ptr<Interpolant>> interpolant) {
         interpolants.emplace_back(std::move(interpolant));
         return false;
       };
