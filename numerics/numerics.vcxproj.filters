@@ -389,7 +389,7 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="polynomial_in_чебышёв_basis_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

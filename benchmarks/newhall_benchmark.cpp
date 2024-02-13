@@ -12,7 +12,7 @@
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "numerics/чебышёв_series.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -26,7 +26,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::numerics::_чебышёв_series;
+using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
@@ -95,8 +95,10 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   }
 }
 
-using ResultЧебышёвDouble = ЧебышёвSeries<double, Instant>;
-using ResultЧебышёвDisplacement = ЧебышёвSeries<Displacement<ICRS>, Instant>;
+using ResultЧебышёвDouble =
+    not_null<std::unique_ptr<PolynomialInЧебышёвBasis<double, Instant>>>;
+using ResultЧебышёвDisplacement = not_null<
+    std::unique_ptr<PolynomialInЧебышёвBasis<Displacement<ICRS>, Instant>>>;
 using ResultMonomialDouble =
     not_null<std::unique_ptr<Polynomial<double, Instant>>>;
 using ResultMonomialDisplacement =
