@@ -389,7 +389,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       // Read the polynomial, evaluate it and use the resulting values to build
       // a polynomial in the monomial basis.
       auto const pre_cohen_чебышёв_series =
-          PolynomialInЧебышёвBasis<Displacement<Frame>,Instant>::
+          PolynomialInЧебышёвBasis<Displacement<Frame>, Instant>::
               ReadFromMessage(s);
       auto const& polynomial = *pre_cohen_чебышёв_series;
       Time const step =
