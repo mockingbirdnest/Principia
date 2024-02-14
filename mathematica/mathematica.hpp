@@ -268,6 +268,18 @@ std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in = std::nullopt);
 
+template<typename V, typename A, int d,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematicaBody(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
+    OptionalExpressIn express_in);
+
+template<typename V, typename A, int d,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
+    OptionalExpressIn express_in = std::nullopt);
+
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
