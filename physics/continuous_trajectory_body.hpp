@@ -26,8 +26,8 @@ namespace internal {
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::numerics::_ulp_distance;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
+using namespace principia::numerics::_ulp_distance;
 using namespace principia::quantities::_si;
 
 constexpr int max_degree = 17;
