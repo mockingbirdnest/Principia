@@ -799,6 +799,11 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
             return "*" + expr;
           };
     }
+    if (Contains(interchange_, descriptor) &&
+        Contains(cs_custom_marshaler_name_, message_type)) {
+      field_cs_custom_marshaler_[descriptor] =
+          cs_custom_marshaler_name_[message_type];
+    }
   }
   std::string const deserialization_storage_arguments =
       cxx_deserialization_storage_arguments_[message_type];
