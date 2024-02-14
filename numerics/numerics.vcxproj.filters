@@ -17,12 +17,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="чебышёв_series.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="чебышёв_series_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="double_precision.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -265,9 +259,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="чебышёв_series_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="fixed_arrays_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>

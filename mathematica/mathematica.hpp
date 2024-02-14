@@ -21,7 +21,6 @@
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -49,7 +48,6 @@ using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::numerics::_чебышёв_series;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -269,28 +267,6 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in = std::nullopt);
-
-template<typename V, typename A, int d,
-         typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematicaBody(
-    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
-    OptionalExpressIn express_in);
-
-template<typename V, typename A, int d,
-         typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(
-    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
-    OptionalExpressIn express_in = std::nullopt);
-
-template<typename V, typename A,
-         typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematicaBody(ЧебышёвSeries<V, A> const& series,
-                              OptionalExpressIn express_in);
-
-template<typename V, typename A,
-         typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(ЧебышёвSeries<V, A> const& series,
-                          OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int ad, int pd,
          template<typename, typename, int> class E,
