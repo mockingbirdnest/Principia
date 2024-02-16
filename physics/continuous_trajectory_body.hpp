@@ -14,8 +14,8 @@
 #include "glog/stl_logging.h"
 #include "numerics/newhall.hpp"
 #include "numerics/poisson_series.hpp"
+#include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/ulp_distance.hpp"
-#include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -26,8 +26,8 @@ namespace internal {
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_poisson_series;
+using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_ulp_distance;
-using namespace principia::numerics::_чебышёв_series;
 using namespace principia::quantities::_si;
 
 constexpr int max_degree = 17;
@@ -386,26 +386,30 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
           Length::ReadFromMessage(message.tolerance()));
   if (is_pre_cohen) {
     for (auto const& s : message.series()) {
-      // Read the series, evaluate it and use the resulting values to build a
-      // polynomial in the monomial basis.
-      auto const series =
-          ЧебышёвSeries<Displacement<Frame>, Instant>::ReadFromMessage(s);
+      // Read the polynomial, evaluate it and use the resulting values to build
+      // a polynomial in the monomial basis.
+      auto const pre_cohen_чебышёв_series =
+          PolynomialInЧебышёвBasis<Displacement<Frame>, Instant>::
+              ReadFromMessage(s);
+      auto const& polynomial = *pre_cohen_чебышёв_series;
       Time const step =
-          (series.upper_bound() - series.lower_bound()) / divisions;
-      Instant t = series.lower_bound();
+          (polynomial.upper_bound() - polynomial.lower_bound()) / divisions;
+      Instant t = polynomial.lower_bound();
       std::vector<Position<Frame>> q;
       std::vector<Velocity<Frame>> v;
       for (int i = 0; i <= divisions; t += step, ++i) {
-        q.push_back(series.Evaluate(t) + Frame::origin);
-        v.push_back(series.EvaluateDerivative(t));
+        q.push_back(polynomial(t) + Frame::origin);
+        v.push_back(polynomial.EvaluateDerivative(t));
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
       continuous_trajectory->polynomials_.emplace_back(
-          series.upper_bound(),
+          polynomial.upper_bound(),
           continuous_trajectory->NewhallApproximationInMonomialBasis(
-              series.degree(),
-              q, v,
-              series.lower_bound(), series.upper_bound(),
+              polynomial.degree(),
+              q,
+              v,
+              polynomial.lower_bound(),
+              polynomial.upper_bound(),
               error_estimate));
     }
   } else {

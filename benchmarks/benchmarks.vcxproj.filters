@@ -17,9 +17,6 @@
     <ClCompile Include="quantities_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="чебышёв_series_benchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ephemeris_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

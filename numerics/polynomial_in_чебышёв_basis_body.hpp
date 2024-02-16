@@ -49,20 +49,38 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
   return RealRootsOrDie(ε);
 }
 
-#define PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(degree)  \
-  return std::make_unique<PolynomialInЧебышёвBasis<Value, Argument, degree>>( \
-      PolynomialInЧебышёвBasis<Value, Argument, degree>::ReadFromMessage(     \
-          message))
+#define PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(degree) \
+  case (degree):                                                             \
+    return std::make_unique<                                                 \
+        PolynomialInЧебышёвBasis<Value, Argument, degree>>(                  \
+        PolynomialInЧебышёвBasis<Value, Argument, degree>::ReadFromMessage(  \
+            message))
 
 template<typename Value_, typename Argument_>
 std::unique_ptr<PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>>
 PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessage(
     serialization::ЧебышёвSeries const& pre_канторович_message) {
+  LOG(WARNING) << "Reading pre-Канторович PolynomialInЧебышёвBasis";
   serialization::Polynomial message;
-  auto* const extension =
-      message.AddExtension(PolynomialInЧебышёвBasis::extension);
+  message.set_degree(pre_канторович_message.coefficient_size() - 1);
+  auto* const extension = message.MutableExtension(
+      serialization::PolynomialInЧебышёвBasis::extension);
   for (auto const& coefficient : pre_канторович_message.coefficient()) {
-    *extension->add_coefficient() = coefficient;
+    switch (coefficient.coefficient_case()) {
+      case serialization::ЧебышёвSeries::Coefficient::kDouble:
+        extension->add_coefficient()->set_double_(coefficient.double_());
+        break;
+      case serialization::ЧебышёвSeries::Coefficient::kQuantity:
+        *extension->add_coefficient()->mutable_quantity() =
+            coefficient.quantity();
+        break;
+      case serialization::ЧебышёвSeries::Coefficient::kMultivector:
+        *extension->add_coefficient()->mutable_multivector() =
+            coefficient.multivector();
+        break;
+      case serialization::ЧебышёвSeries::Coefficient::COEFFICIENT_NOT_SET:
+        LOG(FATAL) << pre_канторович_message.DebugString();
+    };
   }
   *extension->mutable_lower_bound()->mutable_point() =
       pre_канторович_message.lower_bound();
