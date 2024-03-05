@@ -1054,7 +1054,8 @@ message FlightPlanGetManoeuvre {
     required int32 index = 3;
   }
   message Return {
-    required NavigationManoeuvre result = 1;
+    required NavigationManoeuvre result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;
