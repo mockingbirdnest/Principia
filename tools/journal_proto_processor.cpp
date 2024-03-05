@@ -1595,6 +1595,16 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
               ".GetInstance(null).MarshalNativeToManaged(representation." +
               field_descriptor_name + ") as " +
               field_cs_type_[field_descriptor] + ",\n";
+        } else if (field_descriptor->type() == FieldDescriptor::TYPE_BOOL) {
+          // Bools must be marshalled as a byte that is 0 or 1.
+          cs_representation_type_declaration_[descriptor] +=
+              "byte " + field_descriptor_name + ";\n";
+          cs_managed_to_native_definition_[descriptor] +=
+              "          " + field_descriptor_name + " = value." +
+              field_descriptor_name + " ? (byte)1 : (byte)0,\n";
+          cs_native_to_managed_definition_[descriptor] +=
+              "          " + field_descriptor_name + " = representation." +
+              field_descriptor_name + " != (byte)0,\n";
         } else {
           cs_representation_type_declaration_[descriptor] +=
               field_cs_type_[field_descriptor] + " " + field_descriptor_name +
