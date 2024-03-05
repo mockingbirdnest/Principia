@@ -41,14 +41,14 @@ internal static class L10N {
   }
 
   private static string LingoonaUnqualified(string s) {
-    return s.Split(new[]{'^'}, 2)[0];
+    return s.Split(new[]{ '^' }, 2)[0];
   }
 
   private static string LingoonaQualifiers(string s) {
     if (!s.Contains('^')) {
       return "";
     }
-    return s.Split(new[]{'^'}, 2)[1];
+    return s.Split(new[]{ '^' }, 2)[1];
   }
 
   private static string LingoonaQualify(string s, string qualifiers) {
@@ -76,7 +76,7 @@ internal static class L10N {
       qualifiers = "N";
     }
     if (StartsWithCapitalizedDefiniteArticle(body.displayName)) {
-      name = name.Split(new[]{' '}, 2)[1];
+      name = name.Split(new[]{ ' ' }, 2)[1];
       // Lowercase the gender, allowing for articles.
       qualifiers = char.ToLower(qualifiers[0]) + qualifiers.Substring(1);
     }
@@ -88,8 +88,8 @@ internal static class L10N {
       return result;
     }
     return initials_[body] = IsCJKV(LingoonaUnqualified(body.displayName))
-        ? body.displayName
-        : body.Name()[0].ToString();
+                                 ? body.displayName
+                                 : body.Name()[0].ToString();
   }
 
   private static string UILanguage() {
@@ -118,10 +118,11 @@ internal static class L10N {
                                        CelestialBody[] bodies,
                                        params object[] args) {
     string[] names =
-      (from body in bodies
-       from name in new[]{body?.Name() ?? "\0", body?.Initial() ?? "\0"}
-       select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return lru_cache_.Get(template, names,
+        (from body in bodies
+         from name in new[]{ body?.Name() ?? "\0", body?.Initial() ?? "\0" }
+         select name).Concat(from arg in args select arg.ToString()).ToArray();
+    return lru_cache_.Get(template,
+                          names,
                           () => CelestialOverride(template, names, bodies) ??
                                 Format(template, names));
   }
@@ -130,10 +131,11 @@ internal static class L10N {
                                              CelestialBody[] bodies,
                                              params object[] args) {
     string[] names =
-      (from body in bodies
-       from name in new[]{body.Name(), body.Initial()}
-       select name).Concat(from arg in args select arg.ToString()).ToArray();
-    return lru_cache_.Get(template, names,
+        (from body in bodies
+         from name in new[]{ body.Name(), body.Initial() }
+         select name).Concat(from arg in args select arg.ToString()).ToArray();
+    return lru_cache_.Get(template,
+                          names,
                           () => CelestialOverride(template, names, bodies) ??
                                 FormatOrNull(template, names));
   }
@@ -153,8 +155,9 @@ internal static class L10N {
     foreach (var arg in args) {
       // KSP treats nulls as empty strings here (but not in the overload
       // that takes objects).
-      resolved_args.Add(
-          arg == null ? "" : (Localizer.Tags.GetValueOrNull(arg) ?? arg));
+      resolved_args.Add(arg == null
+                            ? ""
+                            : (Localizer.Tags.GetValueOrNull(arg) ?? arg));
     }
 
     // Nested <<>> rules don’t work prior to Lingoona 1.7.0 (2021-07-07).
@@ -173,14 +176,15 @@ internal static class L10N {
     // These escapes are handled by KSP *after* formatting, contrary to
     // the \u ones and the ｢｣ for {}, which are handled when the Localizer
     // loads the tags.
-    var result = Lingoona.Grammar.useGrammar(template, resolved_args)
-        .Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
+    var result = Lingoona.Grammar.useGrammar(template, resolved_args).
+        Replace(@"\n", "\n").Replace(@"\""", "\"").Replace(@"\t", "\t");
     Lingoona.Grammar.setLanguage(Localizer.CurrentLanguage);
     return result;
   }
 
   public static string CacheFormat(string name, params object[] args) {
-    return CacheFormat(name, (from arg in args select arg.ToString()).ToArray());
+    return CacheFormat(name,
+                       (from arg in args select arg.ToString()).ToArray());
   }
 
   private static readonly LRUCache lru_cache_ = new LRUCache();
@@ -190,5 +194,5 @@ internal static class L10N {
       new Dictionary<CelestialBody, string>();
 }
 
-}
-}
+}  // namespace ksp_plugin_adapter
+}  // namespace principia
