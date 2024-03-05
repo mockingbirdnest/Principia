@@ -110,7 +110,7 @@ internal static class L10N {
                                           string[] names,
                                           CelestialBody[] bodies) {
     return FormatOrNull(
-        $"{template}({string.Join(",", from body in bodies select body.name)})",
+        $"{template}({string.Join(",", from body in bodies select body?.name ?? "\0")})",
         names);
   }
 
@@ -119,7 +119,7 @@ internal static class L10N {
                                        params object[] args) {
     string[] names =
       (from body in bodies
-       from name in new[]{body.Name(), body.Initial()}
+       from name in new[]{body?.Name() ?? "\0", body?.Initial() ?? "\0"}
        select name).Concat(from arg in args select arg.ToString()).ToArray();
     return lru_cache_.Get(template, names,
                           () => CelestialOverride(template, names, bodies) ??
