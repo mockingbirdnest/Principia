@@ -1544,7 +1544,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
               field_cxx_deserializer_fn_[field_descriptor](
                   deserialize_field_getter)));
 
-      if (Contains(field_cs_private_type_, field_descriptor)) {
+      if (!needs_custom_marshaler &&
+          Contains(field_cs_private_type_, field_descriptor)) {
+        // If the field has private setters/getters, generate them now.  Note
+        // that the marshaller trumps, because it takes care of everything.
         std::string const field_private_member_name =
             field_descriptor_name + "_";
         std::vector<std::string> fn_arguments = {field_private_member_name};
@@ -1553,8 +1556,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_private_member_name + ";\n";
         cs_interchange_type_declaration_[descriptor] +=
             "  public " + field_cs_type_[field_descriptor] + " " +
-            field_descriptor_name + " {\n" +
-            "    " +
+            field_descriptor_name + " {\n" + "    " +
             field_cs_private_getter_fn_[field_descriptor](fn_arguments) + "\n" +
             "    " +
             field_cs_private_setter_fn_[field_descriptor](fn_arguments) + "\n" +
@@ -1574,8 +1576,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "  " + field_cxx_type_[field_descriptor] + " " +
           field_descriptor_name + ";\n";
 
-      // If we need to generate a marshaler, do it now.
       if (needs_custom_marshaler) {
+        // If we need to generate a marshaler, do it now.
         cs_representation_type_declaration_[descriptor] += "      public ";
         if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
           cs_representation_type_declaration_[descriptor] +=
