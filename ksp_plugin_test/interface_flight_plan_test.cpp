@@ -304,15 +304,16 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
       .WillOnce(Return(celestial_index));
   auto const navigation_manoeuvre =
-      principia__FlightPlanGetManoeuvre(plugin_.get(),
-                                        vessel_guid,
-                                        3);
+      std::unique_ptr<NavigationManoeuvre>(
+          principia__FlightPlanGetManoeuvre(plugin_.get(),
+                                            vessel_guid,
+                                            3));
 
-  EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
-  EXPECT_EQ(6000, navigation_manoeuvre.burn.frame.extension);
-  EXPECT_EQ(celestial_index, navigation_manoeuvre.burn.frame.centre_index);
-  EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
-  EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
+  EXPECT_EQ(10, navigation_manoeuvre->burn.thrust_in_kilonewtons);
+  EXPECT_EQ(6000, navigation_manoeuvre->burn.frame.extension);
+  EXPECT_EQ(celestial_index, navigation_manoeuvre->burn.frame.centre_index);
+  EXPECT_EQ(20, navigation_manoeuvre->initial_mass_in_tonnes);
+  EXPECT_THAT(navigation_manoeuvre->burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
 
   EXPECT_CALL(flight_plan, GetManœuvre(3))
