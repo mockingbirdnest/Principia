@@ -419,6 +419,11 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   FieldOptions const& options = descriptor->options();
 
   // Build a lambda to construct a marshaler name.
+  // TODO(phl): Using an OwnershipTransferMarshaler on a field means that the
+  // marshaler for the containing object must itself be wrapped in an
+  // OwnershipTransferMarshaler.  It would be nice to have a runtime check for
+  // this: we could have a property in MonoMarshaler to say "I am owned" and set
+  // it when wrapping a marshaler in an OwnershipTransferMarshaler.
   std::function<std::string(std::string const&)> custom_marshaler_generic_name;
   if (options.HasExtension(journal::serialization::is_produced)) {
     CHECK(options.GetExtension(journal::serialization::is_produced))
