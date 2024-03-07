@@ -700,7 +700,7 @@ struct FlightPlanGetManoeuvre : not_constructible {
     char const* const vessel_guid;
     int const index;
   };
-  using Return = NavigationManoeuvre;
+  using Return = NavigationManoeuvre*;
 
   using Message = serialization::FlightPlanGetManoeuvre;
   static void Fill(In const& in, not_null<Message*> const message);
@@ -743,7 +743,7 @@ struct FlightPlanInsert : not_constructible {
   struct In final {
     Plugin const* const plugin;
     char const* const vessel_guid;
-    Burn const burn;
+    Burn const& burn;
     int const index;
   };
   using Return = Status*;
@@ -947,7 +947,7 @@ struct FlightPlanReplace : not_constructible {
   struct In final {
     Plugin const* const plugin;
     char const* const vessel_guid;
-    Burn const burn;
+    Burn const& burn;
     int const index;
   };
   using Return = Status*;

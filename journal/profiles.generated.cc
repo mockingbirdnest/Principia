@@ -1495,7 +1495,8 @@ void FlightPlanGetManoeuvre::Fill(In const& in, not_null<Message*> const message
 }
 
 void FlightPlanGetManoeuvre::Fill(Return const& result, not_null<Message*> const message) {
-  *message->mutable_return_()->mutable_result() = SerializeNavigationManoeuvre(result);
+  *message->mutable_return_()->mutable_result() = SerializeNavigationManoeuvre(*result);
+  message->mutable_return_()->set_address(SerializePointer(result));
 }
 
 void FlightPlanGetManoeuvre::Run(Message const& message, Player::PointerMap& pointer_map) {
@@ -1504,7 +1505,8 @@ void FlightPlanGetManoeuvre::Run(Message const& message, Player::PointerMap& poi
   auto vessel_guid = in.vessel_guid().c_str();
   auto index = in.index();
   auto const result = interface::principia__FlightPlanGetManoeuvre(plugin, vessel_guid, index);
-  PRINCIPIA_CHECK_EQ(DeserializeNavigationManoeuvre(message.return_().result(), pointer_map), result);
+  PRINCIPIA_CHECK_EQ(DeserializeNavigationManoeuvre(message.return_().result(), pointer_map), *result);
+  Insert(message.return_().address(), result, pointer_map);
 }
 
 void FlightPlanGetManoeuvreFrenetTrihedron::Fill(In const& in, not_null<Message*> const message) {

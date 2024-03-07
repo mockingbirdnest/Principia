@@ -54,18 +54,13 @@ internal partial class BodyParameters {
   public BodyGeopotentialElement[] geopotential;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct Burn {
+internal partial class Burn {
   public double thrust_in_kilonewtons;
   public double specific_impulse_in_seconds_g0;
   public NavigationFrameParameters frame;
   public double initial_time;
   public XYZ delta_v;
-  private byte is_inertially_fixed_;
-  public bool is_inertially_fixed {
-    get { return is_inertially_fixed_ != (byte)0; }
-    set { is_inertially_fixed_ = value ? (byte)1 : (byte)0; }
-  }
+  public bool is_inertially_fixed;
 }
 
 internal partial class ConfigurationAccuracyParameters {
@@ -109,8 +104,7 @@ internal partial struct KeplerianElements {
   public double mean_anomaly;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct NavigationManoeuvre {
+internal partial class NavigationManoeuvre {
   public Burn burn;
   public double initial_mass_in_tonnes;
   public double final_mass_in_tonnes;
@@ -614,6 +608,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanGetManoeuvre",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<NavigationManoeuvre, NavigationManoeuvre.Marshaler>))]
   internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
@@ -642,7 +637,7 @@ internal static partial class Interface {
   internal static extern Status FlightPlanInsert(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      Burn burn,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
       int index);
 
   [DllImport(dllName           : dll_path,
@@ -760,7 +755,7 @@ internal static partial class Interface {
   internal static extern Status FlightPlanReplace(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      Burn burn,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
       int index);
 
   [DllImport(dllName           : dll_path,

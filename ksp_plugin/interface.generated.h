@@ -666,7 +666,7 @@ double __cdecl principia__FlightPlanGetInitialTime(
     char const* const vessel_guid);
 
 extern "C" PRINCIPIA_DLL
-NavigationManoeuvre __cdecl principia__FlightPlanGetManoeuvre(
+NavigationManoeuvre* __cdecl principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const index);
@@ -687,7 +687,7 @@ extern "C" PRINCIPIA_DLL
 Status* __cdecl principia__FlightPlanInsert(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    Burn const burn,
+    Burn const& burn,
     int const index);
 
 extern "C" PRINCIPIA_DLL
@@ -775,7 +775,7 @@ extern "C" PRINCIPIA_DLL
 Status* __cdecl principia__FlightPlanReplace(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    Burn const burn,
+    Burn const& burn,
     int const index);
 
 extern "C" PRINCIPIA_DLL
