@@ -149,19 +149,18 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.is_inertially_fixed()};
 }
 
-NavigationManoeuvre ToInterfaceNavigationManoeuvre(
+NavigationManoeuvre* ToNewInterfaceNavigationManoeuvre(
     Plugin const& plugin,
     NavigationManœuvre const& manœuvre) {
-  NavigationManoeuvre result;
-  result.burn = GetBurn(plugin, manœuvre);
-  result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
-  result.final_mass_in_tonnes = manœuvre.final_mass() / Tonne;
-  result.mass_flow = manœuvre.mass_flow() / (Kilogram / Second);
-  result.duration = manœuvre.duration() / Second;
-  result.final_time = ToGameTime(plugin, manœuvre.final_time());
-  result.time_of_half_delta_v = ToGameTime(plugin, manœuvre.time_of_half_Δv());
-  result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
-  return result;
+  return new NavigationManoeuvre{
+      .burn = GetBurn(plugin, manœuvre),
+      .initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne,
+      .final_mass_in_tonnes = manœuvre.final_mass() / Tonne,
+      .mass_flow = manœuvre.mass_flow() / (Kilogram / Second),
+      .duration = manœuvre.duration() / Second,
+      .final_time = ToGameTime(plugin, manœuvre.final_time()),
+      .time_of_half_delta_v = ToGameTime(plugin, manœuvre.time_of_half_Δv()),
+      .time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second};
 }
 
 }  // namespace
@@ -316,7 +315,7 @@ double __cdecl principia__FlightPlanGetInitialTime(
                  GetFlightPlan(*plugin, vessel_guid).initial_time()));
 }
 
-NavigationManoeuvre __cdecl principia__FlightPlanGetManoeuvre(
+NavigationManoeuvre* __cdecl principia__FlightPlanGetManoeuvre(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const index) {
@@ -324,7 +323,7 @@ NavigationManoeuvre __cdecl principia__FlightPlanGetManoeuvre(
                                                       vessel_guid,
                                                       index});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToInterfaceNavigationManoeuvre(
+  return m.Return(ToNewInterfaceNavigationManoeuvre(
                       *plugin,
                       GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index)));
 }
@@ -372,7 +371,7 @@ XYZ __cdecl principia__FlightPlanGetManoeuvreInitialPlottedVelocity(
 
 Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
                                             char const* const vessel_guid,
-                                            Burn const burn,
+                                            Burn const& burn,
                                             int const index) {
   journal::Method<journal::FlightPlanInsert> m(
       {plugin, vessel_guid, burn, index});
@@ -630,7 +629,7 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
 
 Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
                                              char const* const vessel_guid,
-                                             Burn const burn,
+                                             Burn const& burn,
                                              int const index) {
   journal::Method<journal::FlightPlanReplace> m({plugin,
                                                  vessel_guid,

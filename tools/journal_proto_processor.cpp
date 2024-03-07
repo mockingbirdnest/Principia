@@ -419,6 +419,11 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   FieldOptions const& options = descriptor->options();
 
   // Build a lambda to construct a marshaler name.
+  // TODO(phl): Using an OwnershipTransferMarshaler on a field means that the
+  // marshaler for the containing object must itself be wrapped in an
+  // OwnershipTransferMarshaler.  It would be nice to have a runtime check for
+  // this: we could have a property in MonoMarshaler to say "I am owned" and set
+  // it when wrapping a marshaler in an OwnershipTransferMarshaler.
   std::function<std::string(std::string const&)> custom_marshaler_generic_name;
   if (options.HasExtension(journal::serialization::is_produced)) {
     CHECK(options.GetExtension(journal::serialization::is_produced))
@@ -798,6 +803,11 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
           [](std::string const& expr) {
             return "*" + expr;
           };
+    }
+    if (Contains(interchange_, descriptor) &&
+        Contains(cs_custom_marshaler_name_, message_type)) {
+      // Marshal this field by plain copy.  This is a class-within-a-class.
+      field_cs_marshal_by_copy_.insert(descriptor);
     }
   }
   std::string const deserialization_storage_arguments =
@@ -1435,7 +1445,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     interchange_.insert(field_descriptor);
     ProcessField(field_descriptor);
-    if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
+    if (Contains(field_cs_custom_marshaler_, field_descriptor) ||
+        Contains(field_cs_marshal_by_copy_, field_descriptor)) {
       needs_custom_marshaler = true;
     }
     if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
@@ -1539,7 +1550,10 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
               field_cxx_deserializer_fn_[field_descriptor](
                   deserialize_field_getter)));
 
-      if (Contains(field_cs_private_type_, field_descriptor)) {
+      if (!needs_custom_marshaler &&
+          Contains(field_cs_private_type_, field_descriptor)) {
+        // If the field has private setters/getters, generate them now.  Note
+        // that the marshaller trumps, because it takes care of everything.
         std::string const field_private_member_name =
             field_descriptor_name + "_";
         std::vector<std::string> fn_arguments = {field_private_member_name};
@@ -1548,8 +1562,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_private_member_name + ";\n";
         cs_interchange_type_declaration_[descriptor] +=
             "  public " + field_cs_type_[field_descriptor] + " " +
-            field_descriptor_name + " {\n" +
-            "    " +
+            field_descriptor_name + " {\n" + "    " +
             field_cs_private_getter_fn_[field_descriptor](fn_arguments) + "\n" +
             "    " +
             field_cs_private_setter_fn_[field_descriptor](fn_arguments) + "\n" +
@@ -1569,8 +1582,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "  " + field_cxx_type_[field_descriptor] + " " +
           field_descriptor_name + ";\n";
 
-      // If we need to generate a marshaler, do it now.
       if (needs_custom_marshaler) {
+        // If we need to generate a marshaler for the message, produce the code
+        // fragments to marshal this field.
         cs_representation_type_declaration_[descriptor] += "      public ";
         if (Contains(field_cs_custom_marshaler_, field_descriptor)) {
           cs_representation_type_declaration_[descriptor] +=
@@ -1590,6 +1604,30 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
               ".GetInstance(null).MarshalNativeToManaged(representation." +
               field_descriptor_name + ") as " +
               field_cs_type_[field_descriptor] + ",\n";
+        } else if (Contains(field_cs_marshal_by_copy_, field_descriptor)) {
+          cs_representation_type_declaration_[descriptor] +=
+              field_cs_type_[field_descriptor] + ".Marshaler.Representation " +
+              field_descriptor_name + ";\n";
+          cs_managed_to_native_definition_[descriptor] +=
+              "          " + field_descriptor_name + " = " +
+              field_cs_type_[field_descriptor] +
+              ".Marshaler.ManagedToNative(value." + field_descriptor_name +
+              "),\n";
+          cs_native_to_managed_definition_[descriptor] +=
+              "          " + field_descriptor_name + " = " +
+              field_cs_type_[field_descriptor] +
+              ".Marshaler.NativeToManaged(representation." +
+              field_descriptor_name + "),\n";
+        } else if (field_descriptor->type() == FieldDescriptor::TYPE_BOOL) {
+          // Bools must be marshalled as a byte that is 0 or 1.
+          cs_representation_type_declaration_[descriptor] +=
+              "byte " + field_descriptor_name + ";\n";
+          cs_managed_to_native_definition_[descriptor] +=
+              "          " + field_descriptor_name + " = value." +
+              field_descriptor_name + " ? (byte)1 : (byte)0,\n";
+          cs_native_to_managed_definition_[descriptor] +=
+              "          " + field_descriptor_name + " = representation." +
+              field_descriptor_name + " != (byte)0,\n";
         } else {
           cs_representation_type_declaration_[descriptor] +=
               field_cs_type_[field_descriptor] + " " + field_descriptor_name +
@@ -1623,6 +1661,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 
   if (needs_custom_marshaler) {
+    // Generate the marshaler for the entire message.
     std::string const keyword =
         cs_interchange_classes_.contains(descriptor) ? "class" : "struct";
     cs_custom_marshaler_class_[descriptor] =
@@ -1631,6 +1670,18 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "    [StructLayout(LayoutKind.Sequential)]\n"
         "    internal struct Representation {\n" +
         cs_representation_type_declaration_[descriptor] +
+        "    }\n\n"
+        "    public static Representation ManagedToNative(" + name +
+        " value) {\n"
+        "      return new Representation{\n" +
+        cs_managed_to_native_definition_[descriptor] +
+        "      };\n"
+        "    }\n\n"
+        "    public static " + name + " NativeToManaged("
+        "Representation representation) {\n"
+        "      return new " + name + "{\n" +
+        cs_native_to_managed_definition_[descriptor] +
+        "      };\n"
         "    }\n\n"
         "    public static ICustomMarshaler GetInstance(string s) {\n"
         "      return instance_;\n"
@@ -1647,9 +1698,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "      if (!(managed_object is " + name + " value)) {\n"
         "        throw new NotSupportedException();\n"
         "      }\n"
-        "      var representation = new Representation{\n" +
-        cs_managed_to_native_definition_[descriptor] +
-        "      };\n"
+        "      var representation = ManagedToNative(value);\n" +
         "      IntPtr buffer = Marshal.AllocHGlobal("
         "Marshal.SizeOf(representation));\n"
         "      Marshal.StructureToPtr("
@@ -1660,9 +1709,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "IntPtr native_data) {\n"
         "      var representation = (Representation)Marshal.PtrToStructure("
         "native_data, typeof(Representation));\n"
-        "      return new " + name + "{\n" +
-        cs_native_to_managed_definition_[descriptor] +
-        "      };\n"
+        "      return NativeToManaged(representation);\n" +
         "    }\n\n"
         "    private static readonly Marshaler instance_ = new Marshaler();\n"
         "  }\n"
