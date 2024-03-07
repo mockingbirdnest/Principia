@@ -256,6 +256,11 @@ class JournalProtoProcessor final {
   std::map<FieldDescriptor const*, std::string> field_cs_custom_marshaler_;
   std::map<FieldDescriptor const*, std::string> field_cs_predefined_marshaler_;
 
+  // The fields that must be marshalled by simply copying their fields.  This is
+  // useful for classes-within-classes when we don't need a level of
+  // indirection.
+  std::set<FieldDescriptor const*> field_cs_marshal_by_copy_;
+
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).
   std::map<FieldDescriptor const*, std::string> field_cs_private_type_;
