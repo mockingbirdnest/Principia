@@ -1654,6 +1654,17 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "    internal struct Representation {\n" +
         cs_representation_type_declaration_[descriptor] +
         "    }\n\n"
+        "    public Representation ManagedToNative(" + name + " value) {\n"
+        "      return new Representation{\n" +
+        cs_managed_to_native_definition_[descriptor] +
+        "      };\n"
+        "    }\n\n"
+        "    public " + name + " NativeToManaged("
+        "Representation representation) {\n"
+        "      return new " + name + "{\n" +
+        cs_native_to_managed_definition_[descriptor] +
+        "      };\n"
+        "    }\n\n"
         "    public static ICustomMarshaler GetInstance(string s) {\n"
         "      return instance_;\n"
         "    }\n\n"
@@ -1669,9 +1680,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "      if (!(managed_object is " + name + " value)) {\n"
         "        throw new NotSupportedException();\n"
         "      }\n"
-        "      var representation = new Representation{\n" +
-        cs_managed_to_native_definition_[descriptor] +
-        "      };\n"
+        "      var representation = ManagedToNative(value);\n" +
         "      IntPtr buffer = Marshal.AllocHGlobal("
         "Marshal.SizeOf(representation));\n"
         "      Marshal.StructureToPtr("
@@ -1682,9 +1691,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "IntPtr native_data) {\n"
         "      var representation = (Representation)Marshal.PtrToStructure("
         "native_data, typeof(Representation));\n"
-        "      return new " + name + "{\n" +
-        cs_native_to_managed_definition_[descriptor] +
-        "      };\n"
+        "      return NativeToManaged(representation);\n" +
         "    }\n\n"
         "    private static readonly Marshaler instance_ = new Marshaler();\n"
         "  }\n"
