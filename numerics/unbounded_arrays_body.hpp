@@ -367,7 +367,7 @@ template<typename Scalar_>
 UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
     TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view)
     : UnboundedUpperTriangularMatrix<Scalar>(view.columns(), uninitialized) {
-  for (int i = 0; i < columns(); ++i) {
+  for (int i = 0; i < rows(); ++i) {
     for (int j = i; j < columns(); ++j) {
       (*this)(i, j) = view(i, j);
     }
