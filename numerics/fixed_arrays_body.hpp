@@ -131,6 +131,17 @@ constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
     : data_(data) {}
 
 template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
+    TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view)
+    : FixedMatrix(uninitialized) {
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
+
+template<typename Scalar_, int rows_, int columns_>
 constexpr Scalar_& FixedMatrix<Scalar_, rows_, columns_>::operator()(
     int const row, int const column) {
   CONSTEXPR_DCHECK(0 <= row);
@@ -155,18 +166,6 @@ template<int r>
 Scalar_ const* FixedMatrix<Scalar_, rows_, columns_>::row() const {
   static_assert(r < rows_);
   return &data_[r * columns()];
-}
-
-template<typename Scalar_, int rows_, int columns_>
-FixedMatrix<Scalar_, rows_, columns_>
-FixedMatrix<Scalar_, rows_, columns_>::Transpose() const {
-  FixedMatrix<Scalar, rows(), columns()> m(uninitialized);
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
-      m(j, i) = (*this)(i, j);
-    }
-  }
-  return m;
 }
 
 template<typename Scalar_, int rows_, int columns_>
