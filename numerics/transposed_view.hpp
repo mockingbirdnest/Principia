@@ -15,9 +15,9 @@ template<typename T>
 struct TransposedView {
   T const& transpose;
 
-  int rows() const requires two_dimensional<T> && unbounded<T>;
-  int columns() const requires two_dimensional<T> && unbounded<T>;
-  int size() const requires one_dimensional<T> && unbounded<T>;
+  constexpr int rows() const requires two_dimensional<T>;
+  constexpr int columns() const requires two_dimensional<T>;
+  constexpr int size() const requires one_dimensional<T>;
 
   constexpr typename T::Scalar& operator[](int index)
     requires one_dimensional<T>;
