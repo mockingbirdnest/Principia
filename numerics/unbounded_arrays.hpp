@@ -97,6 +97,8 @@ class UnboundedMatrix final {
 
   UnboundedMatrix(int rows, int columns, std::initializer_list<Scalar> data);
 
+  explicit UnboundedMatrix(TransposedView<UnboundedMatrix<Scalar>> const& view);
+
   int rows() const;
   int columns() const;
   // TODO(phl): The meaning of |size| for matrices is unclear.
@@ -107,8 +109,6 @@ class UnboundedMatrix final {
   // |a(i, j)| implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  UnboundedMatrix Transpose() const;
 
   Scalar FrobeniusNorm() const;
 

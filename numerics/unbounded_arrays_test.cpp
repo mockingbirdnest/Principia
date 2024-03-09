@@ -236,7 +236,8 @@ TEST_F(UnboundedArraysTest, Transpose) {
       UnboundedMatrix<double>({1,  8,  55,  377,
                                2, 13,  89,  610,
                                3, 21, 144,  987,
-                               5, 34, 233, 1597}), m4_.Transpose());
+                               5, 34, 233, 1597}),
+      UnboundedMatrix<double>(TransposedView{m4_}));
   EXPECT_EQ(
       UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
                                                  3,  8, 34,

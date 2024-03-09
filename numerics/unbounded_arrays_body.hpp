@@ -148,6 +148,17 @@ UnboundedMatrix<Scalar_>::UnboundedMatrix(int const rows, int const columns,
 }
 
 template<typename Scalar_>
+UnboundedMatrix<Scalar_>::UnboundedMatrix(
+    TransposedView<UnboundedMatrix<Scalar>> const& view)
+    : UnboundedMatrix(view.rows(), view.columns(), uninitialized) {
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < columns_; ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
+
+template<typename Scalar_>
 int UnboundedMatrix<Scalar_>::rows() const {
   return rows_;
 }
@@ -160,17 +171,6 @@ int UnboundedMatrix<Scalar_>::columns() const {
 template<typename Scalar_>
 int UnboundedMatrix<Scalar_>::size() const {
   return rows_ * columns_;
-}
-
-template<typename Scalar_>
-UnboundedMatrix<Scalar_> UnboundedMatrix<Scalar_>::Transpose() const {
-  UnboundedMatrix<Scalar> m(columns_, rows_, uninitialized);
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < columns_; ++j) {
-      m(j, i) = (*this)(i, j);
-    }
-  }
-  return m;
 }
 
 template<typename Scalar_>
