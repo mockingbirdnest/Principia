@@ -9,8 +9,6 @@ namespace internal {
 
 using namespace principia::numerics::_concepts;
 
-// TODO(phl): Add a way to explicitly cast a |TransposedView| of a matrix to
-// another matrix.
 template<typename T>
 struct TransposedView {
   T const& transpose;

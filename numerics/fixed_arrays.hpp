@@ -107,8 +107,6 @@ class FixedMatrix final {
   template<int r>
   Scalar const* row() const;
 
-  FixedMatrix Transpose() const;
-
   Scalar FrobeniusNorm() const;
 
   bool operator==(FixedMatrix const& right) const;

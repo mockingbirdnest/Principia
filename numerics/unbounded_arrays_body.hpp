@@ -255,6 +255,17 @@ UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
 }
 
 template<typename Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
+    TransposedView<UnboundedUpperTriangularMatrix<Scalar>> const& view)
+    : UnboundedLowerTriangularMatrix(view.rows(), uninitialized) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j <= i; ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
+
+template<typename Scalar_>
 void UnboundedLowerTriangularMatrix<Scalar_>::Extend(int const extra_rows) {
   rows_ += extra_rows;
   data_.resize(rows_ * (rows_ + 1) / 2, Scalar{});
@@ -317,18 +328,6 @@ Scalar_ const& UnboundedLowerTriangularMatrix<Scalar_>::operator()(
 }
 
 template<typename Scalar_>
-UnboundedUpperTriangularMatrix<Scalar_>
-UnboundedLowerTriangularMatrix<Scalar_>::Transpose() const {
-  UnboundedUpperTriangularMatrix<Scalar> u(rows_, uninitialized);
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j <= i; ++j) {
-      u(j, i) = (*this)(i, j);
-    }
-  }
-  return u;
-}
-
-template<typename Scalar_>
 bool UnboundedLowerTriangularMatrix<Scalar_>::operator==(
     UnboundedLowerTriangularMatrix const& right) const {
   return rows_ == right.rows_ && data_ == right.data_;
@@ -362,6 +361,17 @@ UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
                       /*current_columns=*/0,
                       /*extra_columns=*/columns_)) {
   DCHECK_EQ(data_.size(), columns_ * (columns_ + 1) / 2);
+}
+
+template<typename Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
+    TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view)
+    : UnboundedUpperTriangularMatrix<Scalar>(view.columns(), uninitialized) {
+  for (int i = 0; i < columns(); ++i) {
+    for (int j = i; j < columns(); ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
 }
 
 template<typename Scalar_>
@@ -431,18 +441,6 @@ Scalar_ const& UnboundedUpperTriangularMatrix<Scalar_>::operator()(
   DCHECK_LE(row, column);
   DCHECK_LT(column, columns_);
   return data_[column * (column + 1) / 2 + row];
-}
-
-template<typename Scalar_>
-UnboundedLowerTriangularMatrix<Scalar_>
-UnboundedUpperTriangularMatrix<Scalar_>::Transpose() const {
-  UnboundedLowerTriangularMatrix<Scalar> l(columns_, uninitialized);
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = i; j < columns_; ++j) {
-      l(j, i) = (*this)(i, j);
-    }
-  }
-  return l;
 }
 
 template<typename Scalar_>
