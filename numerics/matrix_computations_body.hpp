@@ -28,7 +28,7 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-// TODO(phl): The view stuff should be (1) made completed, j.e., have all the
+// TODO(phl): The view stuff should be (1) made completed, i.e., have all the
 // operations that exist for fixed/unbounded vectors/matrices; (2) moved to a
 // common place (probably together with TransposedView); (3) unified with
 // fixed/unbounded arrays so that we don't have to write each algorithm N times.
@@ -844,7 +844,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
     bool has_subdiagonal_element = false;
     int q = 0;
     for (int i = 1; i <= n; ++i) {
-      // The case j == n corresponds to a zero sentinel immediately to the left
+      // The case i == n corresponds to a zero sentinel immediately to the left
       // of the first element of the matrix.
       if (i == n || H(n - i, n - i - 1) == zero) {
         q = i;
