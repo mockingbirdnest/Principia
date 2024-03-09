@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[掛谷](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%E6%8E%9B%E8%B0%B7), the February version of Principia, is available, with improved display of collisions.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k4key4).**
+**&lrm;[Канторович](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%D0%BA%D0%B0%D0%BD%D1%82%D0%BE%D1%80%D0%BE%D0%B2%D0%B8%D1%87), the March version of Principia, is available, with bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k4nt0r0v1c).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia 掛谷 for 1.8.1—1.12.5](https://share.weiyun.com/ZppQxezf).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Канторович for 1.8.1—1.12.5](https://share.weiyun.com/rK1IQWdZ).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k4key4).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [掛谷](https://github.com/mockingbirdnest/Principia/releases/tag/2024020923-%E6%8E%9B%E8%B0%B7) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k4nt0r0v1c).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Канторович](https://github.com/mockingbirdnest/Principia/releases/tag/2024031009-%D0%9A%D0%B0%D0%BD%D1%82%D0%BE%D1%80%D0%BE%D0%B2%D0%B8%D1%87) release.
