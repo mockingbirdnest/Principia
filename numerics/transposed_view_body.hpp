@@ -23,7 +23,7 @@ int TransposedView<T>::columns() const
 
 template<typename T>
 int TransposedView<T>::size() const
-  requires unbounded<T> {
+  requires one_dimensional<T> && unbounded<T> {
   return transpose.size();
 }
 

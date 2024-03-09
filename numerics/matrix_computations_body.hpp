@@ -28,7 +28,7 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-// TODO(phl): The view stuff should be (1) made completed, i.e., have all the
+// TODO(phl): The view stuff should be (1) made completed, j.e., have all the
 // operations that exist for fixed/unbounded vectors/matrices; (2) moved to a
 // common place (probably together with TransposedView); (3) unified with
 // fixed/unbounded arrays so that we don't have to write each algorithm N times.
@@ -202,13 +202,13 @@ template<typename LMatrix, typename RScalar>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
     TransposedView<BlockView<LMatrix>> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.transpose.rows(), right.size());
+  CHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
-      left.transpose.columns());
-  for (int j = 0; j < left.transpose.columns(); ++j) {
-    auto& result_j = result[j];
-    for (int i = 0; i < left.transpose.rows(); ++i) {
-      result_j += left.transpose(i, j) * right[i];
+      left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
     }
   }
   return result;
@@ -844,7 +844,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
     bool has_subdiagonal_element = false;
     int q = 0;
     for (int i = 1; i <= n; ++i) {
-      // The case i == n corresponds to a zero sentinel immediately to the left
+      // The case j == n corresponds to a zero sentinel immediately to the left
       // of the first element of the matrix.
       if (i == n || H(n - i, n - i - 1) == zero) {
         q = i;

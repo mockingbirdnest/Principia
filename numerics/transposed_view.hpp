@@ -9,14 +9,15 @@ namespace internal {
 
 using namespace principia::numerics::_concepts;
 
-// TODO(phl): Turn this into a proper view that can be applied to matrices, etc.
+// TODO(phl): Add a way to explicitly cast a |TransposedView| of a matrix to
+// another matrix.
 template<typename T>
 struct TransposedView {
   T const& transpose;
 
   int rows() const requires two_dimensional<T> && unbounded<T>;
   int columns() const requires two_dimensional<T> && unbounded<T>;
-  int size() const requires unbounded<T>;
+  int size() const requires one_dimensional<T> && unbounded<T>;
 
   constexpr typename T::Scalar& operator[](int index)
     requires one_dimensional<T>;

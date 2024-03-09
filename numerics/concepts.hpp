@@ -21,6 +21,9 @@ concept two_dimensional = requires(T& t, int row, int column) {
 template<typename T>
 concept unbounded = requires(T& t) {
   { t.size() } -> std::same_as<int>;
+} || requires(T& t) {
+  { t.rows() } -> std::same_as<int>;
+  { t.columns() } -> std::same_as<int>;
 };
 
 }  // namespace internal

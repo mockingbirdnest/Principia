@@ -825,11 +825,11 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
     TransposedView<UnboundedMatrix<LScalar>> const& left,
     UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.rows(), right.size());
-  UnboundedVector<Product<LScalar, RScalar>> result(left.columns());
-  for (int j = 0; j < left.columns(); ++j) {
-    auto& result_j = result[j];
-    for (int i = 0; i < left.rows(); ++i) {
-      result_j += left(i, j) * right[i];
+  UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
     }
   }
   return result;
