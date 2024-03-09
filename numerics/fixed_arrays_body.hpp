@@ -646,7 +646,7 @@ constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
   FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
   for (int i = 0; i < lsize; ++i) {
     for (int j = 0; j < rsize; ++j) {
-      result(i, j) = left[i] * right.transpose[j];
+      result(i, j) = left[i] * right[j];
     }
   }
   return result;

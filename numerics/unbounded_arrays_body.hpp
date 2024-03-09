@@ -765,10 +765,10 @@ template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> operator*(
     TransposedView<UnboundedVector<LScalar>> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.transpose.size(), right.size());
+  CHECK_EQ(left.size(), right.size());
   Product<LScalar, RScalar> result{};
-  for (int i = 0; i < left.transpose.size(); ++i) {
-    result += left.transpose[i] * right[i];
+  for (int i = 0; i < left.size(); ++i) {
+    result += left[i] * right[i];
   }
   return result;
 }
@@ -778,11 +778,11 @@ UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     UnboundedVector<LScalar> const& left,
     TransposedView<UnboundedVector<RScalar>> const& right) {
   UnboundedMatrix<Product<LScalar, RScalar>> result(left.size(),
-                                                    right.transpose.size(),
+                                                    right.size(),
                                                     uninitialized);
   for (int i = 0; i < result.rows(); ++i) {
     for (int j = 0; j < result.columns(); ++j) {
-      result(i, j) = left[i] * right.transpose[j];
+      result(i, j) = left[i] * right[j];
     }
   }
   return result;

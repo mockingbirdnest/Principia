@@ -16,6 +16,7 @@
     <ClInclude Include="apodization_body.hpp" />
     <ClInclude Include="approximation.hpp" />
     <ClInclude Include="approximation_body.hpp" />
+    <ClInclude Include="concepts.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
     <ClInclude Include="finite_difference_coefficients.mathematica.h" />
     <ClInclude Include="global_optimization.hpp" />
@@ -84,6 +85,7 @@
     <ClInclude Include="scale_b.hpp" />
     <ClInclude Include="scale_b_body.hpp" />
     <ClInclude Include="transposed_view.hpp" />
+    <ClInclude Include="transposed_view_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
     <ClInclude Include="ulp_distance_body.hpp" />
     <ClInclude Include="apodization.hpp" />
