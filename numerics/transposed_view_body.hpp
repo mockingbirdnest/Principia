@@ -8,22 +8,22 @@ namespace _transposed_view {
 namespace internal {
 
 template<typename T>
-int TransposedView<T>::rows() const
-  requires two_dimensional<T> && unbounded<T> {
+constexpr int TransposedView<T>::rows() const
+  requires two_dimensional<T> {
   // Note the transposition.
   return transpose.columns();
 }
 
 template<typename T>
-int TransposedView<T>::columns() const
-  requires two_dimensional<T> && unbounded<T> {
+constexpr int TransposedView<T>::columns() const
+  requires two_dimensional<T> {
   // Note the transposition.
   return transpose.rows();
 }
 
 template<typename T>
-int TransposedView<T>::size() const
-  requires one_dimensional<T> && unbounded<T> {
+constexpr int TransposedView<T>::size() const
+  requires one_dimensional<T> {
   return transpose.size();
 }
 
