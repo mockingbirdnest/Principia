@@ -194,6 +194,9 @@
     <ClInclude Include="homothecy_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="concepts.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">

@@ -3,6 +3,7 @@
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
+#include "geometry/concepts.hpp"
 #include "geometry/grassmann.hpp"  // 🧙 For _grassmann::internal.
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
@@ -13,6 +14,7 @@ namespace _hilbert {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::geometry::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_traits;
 
@@ -53,10 +55,8 @@ struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>> : not_constructible {
 };
 
 template<typename T1, typename T2>
-struct Hilbert<T1, T2,
-               std::void_t<decltype(InnerProduct(std::declval<T1>(),
-                                                 std::declval<T2>()))>>
-    : not_constructible {
+  requires has_inner_product<T1, T2>
+struct Hilbert<T1, T2> : not_constructible {
   static_assert(T1::dimension == T2::dimension);
   static constexpr int dimension = T1::dimension;
 
@@ -81,10 +81,8 @@ struct Hilbert<T1, T2,
 };
 
 template<typename T>
-struct Hilbert<T, T,
-               std::void_t<decltype(InnerProduct(std::declval<T>(),
-                                                 std::declval<T>()))>>
-    : not_constructible {
+  requires has_inner_product<T, T>
+struct Hilbert<T, T> : not_constructible {
   static constexpr int dimension = T::dimension;
 
   using InnerProductType =
