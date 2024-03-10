@@ -7,6 +7,8 @@ namespace base {
 namespace _concepts {
 namespace internal {
 
+// True if and only if T has a (possibly templated) static member function named
+// ReadFromMessage.
 template<typename T>
 concept serializable = requires {
   &T::ReadFromMessage;

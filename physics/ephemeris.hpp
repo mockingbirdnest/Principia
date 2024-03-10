@@ -11,7 +11,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "base/recurring_thread.hpp"
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -40,7 +40,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
@@ -271,14 +271,13 @@ class Ephemeris {
 
   virtual void WriteToMessage(
       not_null<serialization::Ephemeris*> message) const EXCLUDES(lock_);
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
   // The parameter |desired_t_min| indicates that the ephemeris must be restored
   // at a checkpoint such that, once the ephemeris is prolonged, its |t_min()|
   // is at or before |desired_t_min|.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       Instant const& desired_t_min,
-      serialization::Ephemeris const& message) EXCLUDES(lock_);
+      serialization::Ephemeris const& message) EXCLUDES(lock_)
+    requires serializable<Frame>;
 
  protected:
   // For mocking purposes, leaves everything uninitialized and uses the given

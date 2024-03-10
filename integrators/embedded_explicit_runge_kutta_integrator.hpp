@@ -86,8 +86,6 @@ class EmbeddedExplicitRungeKuttaIntegrator
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 #if 0
-    template<typename... DV = DependentVariable...,
-             typename = std::enable_if_t<is_serializable_v<DV...>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
@@ -98,7 +96,8 @@ class EmbeddedExplicitRungeKuttaIntegrator
         Parameters const& parameters,
         typename ODE::IndependentVariableDifference const& step,
         bool first_use,
-        EmbeddedExplicitRungeKuttaIntegrator const& integrator);
+        EmbeddedExplicitRungeKuttaIntegrator const& integrator)
+      requires serializable<DependentVariable>...;
 #endif
 
    private:

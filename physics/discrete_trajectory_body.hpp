@@ -617,11 +617,11 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-template<typename F, typename>
 DiscreteTrajectory<Frame>
 DiscreteTrajectory<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectory const& message,
-    std::vector<SegmentIterator*> const& tracked) {
+    std::vector<SegmentIterator*> const& tracked)
+  requires serializable<Frame> {
   DiscreteTrajectory trajectory(uninitialized);
 
   bool const is_pre_hamilton = message.segment_size() == 0;

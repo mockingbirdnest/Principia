@@ -10,7 +10,7 @@
 
 #include "absl/container/btree_set.h"
 #include "base/map_util.hpp"
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -22,7 +22,7 @@ namespace internal {
 
 using ::std::placeholders::_1;
 using namespace principia::base::_map_util;
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::testing_utilities::_make_not_null;
@@ -985,7 +985,7 @@ Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
 absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   // This method is very similar to Ephemeris::Reanimate.  See the comments
   // there for some of the subtle points.
-  static_assert(is_serializable_v<Barycentric>);
+  static_assert(serializable<Barycentric>);
   absl::btree_set<Instant> checkpoints;
   LOG(INFO) << "Reanimating " << ShortDebugString() << " until "
             << desired_t_min;

@@ -230,11 +230,11 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-template<typename F, typename>
 DiscreteTrajectorySegment<Frame>
 DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectorySegment const& message,
-    DiscreteTrajectorySegmentIterator<Frame> const self) {
+    DiscreteTrajectorySegmentIterator<Frame> const self)
+  requires serializable<Frame> {
   // Note that while is_pre_hardy means that the save is pre-Hardy,
   // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
   // downsampling will have both fields present.

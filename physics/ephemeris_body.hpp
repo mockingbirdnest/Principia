@@ -800,10 +800,10 @@ void Ephemeris<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-template<typename, typename>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     Instant const& desired_t_min,
-    serialization::Ephemeris const& message) {
+    serialization::Ephemeris const& message)
+  requires serializable<Frame> {
   bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.checkpoint_size() == 0;
@@ -916,7 +916,7 @@ Ephemeris<Frame>::Ephemeris(
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
-  if constexpr (is_serializable_v<Frame>) {
+  if constexpr (serializable<Frame>) {
     lock_.AssertReaderHeld();
     if (checkpointer_->WriteToCheckpointIfNeeded(
             time, max_time_between_checkpoints)) {
@@ -930,7 +930,7 @@ void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Writer
 Ephemeris<Frame>::MakeCheckpointerWriter() {
-  if constexpr (is_serializable_v<Frame>) {
+  if constexpr (serializable<Frame>) {
     return [this](
                not_null<serialization::Ephemeris::Checkpoint*> const message) {
       lock_.AssertReaderHeld();
@@ -944,7 +944,7 @@ Ephemeris<Frame>::MakeCheckpointerWriter() {
 template<typename Frame>
 Checkpointer<serialization::Ephemeris>::Reader
 Ephemeris<Frame>::MakeCheckpointerReader() {
-  if constexpr (is_serializable_v<Frame>) {
+  if constexpr (serializable<Frame>) {
     return [this](serialization::Ephemeris::Checkpoint const& message) {
       absl::MutexLock l(&lock_);
       instance_ = FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
@@ -990,7 +990,7 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
            t_final = following_checkpoint.value(),
            t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            if constexpr (is_serializable_v<Frame>) {
+            if constexpr (serializable<Frame>) {
               return ReanimateOneCheckpoint(message, t_initial, t_final);
             } else {
               return absl::UnknownError(
