@@ -66,7 +66,7 @@ class Method final {
 
   // Only declare this method if the profile has no |Return| type.
   template<typename P = Profile>
-  void Return() requires (!has_return<P>);
+  void Return() requires (!has_return<P>);  // NOLINT
 
   // Only declare this method if the profile has a |Return| type.
   template<typename P = Profile>

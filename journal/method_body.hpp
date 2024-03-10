@@ -14,7 +14,7 @@ namespace internal {
 using namespace principia::journal::_recorder;
 
 template<typename Profile>
-Method<Profile>::Method(){
+Method<Profile>::Method() {
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
     [[maybe_unused]] auto* const message_in =
@@ -90,7 +90,7 @@ Method<Profile>::~Method() {
 template<typename Profile>
 template<typename P>
 void Method<Profile>::Return()
-  requires (!has_return<P>) {
+  requires (!has_return<P>) {  // NOLINT
   CHECK(!returned_);
   returned_ = true;
 }
