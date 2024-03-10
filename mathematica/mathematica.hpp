@@ -22,6 +22,7 @@
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory_types.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -54,6 +55,10 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_tuples;
+
+template<typename F>
+using DiscreteTrajectoryValueType =
+    principia::physics::_discrete_trajectory_types::internal::value_type<F>;
 
 // A helper class for type erasure of quantities.  It may be used with the
 // functions in this file to remove the dimensions of quantities (we know that
@@ -247,11 +252,9 @@ template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(UnboundedVector<Scalar> const& vector,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename R,
-         typename = std::void_t<decltype(std::declval<R>().time)>,
-         typename = std::void_t<decltype(std::declval<R>().degrees_of_freedom)>,
+template<typename F,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(R ref,
+std::string ToMathematica(DiscreteTrajectoryValueType<F> const& v,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, typename A, int d,
