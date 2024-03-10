@@ -112,9 +112,9 @@ void Point<Vector>::WriteToMessage(
 }
 
 template<typename Vector>
-template<typename, typename>
 Point<Vector> Point<Vector>::ReadFromMessage(
-    serialization::Point const& message) {
+    serialization::Point const& message)
+  requires serializable<Vector> {
   Point result;
   result.coordinates_ = PointSerializer<Vector>::ReadFromMessage(message);
   return result;

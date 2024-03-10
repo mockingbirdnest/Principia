@@ -2,17 +2,16 @@
 
 #include <concepts>
 
-#include "serialization/geometry.pb.h"
-
 namespace principia {
 namespace base {
 namespace _concepts {
 namespace internal {
 
-// TODO(phl): This concept applies to a frame.  Extend it.
-template<typename F>
-concept serializable = requires(serialization::Frame const& message) {
-  F::ReadFromMessage(message);
+template<typename T>
+concept serializable = requires {
+  &T::ReadFromMessage;
+} || requires {
+  &T::template ReadFromMessage<>;
 };
 
 }  // namespace internal

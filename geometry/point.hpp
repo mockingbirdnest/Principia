@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
@@ -18,7 +18,7 @@ namespace _point {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_traits;
 
@@ -53,9 +53,8 @@ class Point final {
   constexpr bool operator!=(Point const& right) const;
 
   void WriteToMessage(not_null<serialization::Point*> message) const;
-  template<typename V = Vector,
-           typename = std::enable_if_t<is_serializable_v<V>>>
-  static Point ReadFromMessage(serialization::Point const& message);
+  static Point ReadFromMessage(serialization::Point const& message)
+    requires serializable<Vector>;
 
  private:
   // This constructor allows for C++11 functional constexpr operators, and
