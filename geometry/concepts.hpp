@@ -8,7 +8,7 @@ namespace _concepts {
 namespace internal {
 
 template<typename T1, typename T2>
-concept has_inner_product = requires(T1 t1, T2 t2) {
+concept has_inner_product = requires(T1 const& t1, T2 const& t2) {
   InnerProduct(t1, t2);
 };
 

@@ -62,22 +62,7 @@ struct Hilbert<T1, T2> : not_constructible {
 
   using InnerProductType =
       decltype(InnerProduct(std::declval<T1>(), std::declval<T2>()));
-  static InnerProductType InnerProduct(T1 const& t1, T2 const& t2)
-#if _MSC_FULL_VER == 193'431'937 || \
-    _MSC_FULL_VER == 193'431'942 || \
-    _MSC_FULL_VER == 193'431'944 || \
-    _MSC_FULL_VER == 193'532'216 || \
-    _MSC_FULL_VER == 193'532'217 || \
-    _MSC_FULL_VER == 193'632'532 || \
-    _MSC_FULL_VER == 193'632'535 || \
-    _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
-  {  // NOLINT
-    return _grassmann::internal::InnerProduct(t1, t2);
-  }
-#else
-  ;  // NOLINT
-#endif
+  static InnerProductType InnerProduct(T1 const& t1, T2 const& t2);
 };
 
 template<typename T>
@@ -87,58 +72,13 @@ struct Hilbert<T, T> : not_constructible {
 
   using InnerProductType =
       decltype(InnerProduct(std::declval<T>(), std::declval<T>()));
-  static InnerProductType InnerProduct(T const& t1, T const& t2)
-#if _MSC_FULL_VER == 193'431'937 || \
-    _MSC_FULL_VER == 193'431'942 || \
-    _MSC_FULL_VER == 193'431'944 || \
-    _MSC_FULL_VER == 193'532'216 || \
-    _MSC_FULL_VER == 193'532'217 || \
-    _MSC_FULL_VER == 193'632'532 || \
-    _MSC_FULL_VER == 193'632'535 || \
-    _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
-  {  // NOLINT
-    return _grassmann::internal::InnerProduct(t1, t2);
-  }
-#else
-  ;  // NOLINT
-#endif
+  static InnerProductType InnerProduct(T const& t1, T const& t2);
 
   using Norm²Type = InnerProductType;
-  static Norm²Type Norm²(T const& t)
-#if _MSC_FULL_VER == 193'431'937 || \
-    _MSC_FULL_VER == 193'431'942 || \
-    _MSC_FULL_VER == 193'431'944 || \
-    _MSC_FULL_VER == 193'532'216 || \
-    _MSC_FULL_VER == 193'532'217 || \
-    _MSC_FULL_VER == 193'632'532 || \
-    _MSC_FULL_VER == 193'632'535 || \
-    _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
-  {  // NOLINT
-    return t.Norm²();
-  }
-#else
-  ;  // NOLINT
-#endif
+  static Norm²Type Norm²(T const& t);
 
   using NormType = decltype(std::declval<T>().Norm());
-  static NormType Norm(T const& t)
-#if _MSC_FULL_VER == 193'431'937 || \
-    _MSC_FULL_VER == 193'431'942 || \
-    _MSC_FULL_VER == 193'431'944 || \
-    _MSC_FULL_VER == 193'532'216 || \
-    _MSC_FULL_VER == 193'532'217 || \
-    _MSC_FULL_VER == 193'632'532 || \
-    _MSC_FULL_VER == 193'632'535 || \
-    _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
-  {  // NOLINT
-    return t.Norm();
-  }
-#else
-  ;  // NOLINT
-#endif
+  static NormType Norm(T const& t);
 
   using NormalizedType = Quotient<T, NormType>;
 };
