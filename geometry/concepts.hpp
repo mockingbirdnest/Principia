@@ -1,7 +1,5 @@
 #pragma once
 
-#include <concepts>
-
 namespace principia {
 namespace geometry {
 namespace _concepts {

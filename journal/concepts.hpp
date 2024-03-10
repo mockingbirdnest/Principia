@@ -1,7 +1,5 @@
 #pragma once
 
-#include <concepts>
-
 namespace principia {
 namespace journal {
 namespace _concepts {
