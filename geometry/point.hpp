@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/not_null.hpp"
 #include "base/concepts.hpp"
+#include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "quantities/named_quantities.hpp"
 #include "quantities/traits.hpp"
@@ -17,8 +17,8 @@ namespace geometry {
 namespace _point {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_traits;
 

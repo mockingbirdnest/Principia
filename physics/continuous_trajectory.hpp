@@ -7,8 +7,8 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
-#include "base/not_null.hpp"
 #include "base/concepts.hpp"
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
@@ -29,8 +29,8 @@ class TestableContinuousTrajectory;
 namespace _continuous_trajectory {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_piecewise_poisson_series;

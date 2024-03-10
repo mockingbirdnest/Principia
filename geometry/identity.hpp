@@ -1,8 +1,8 @@
 #pragma once
 
+#include "base/concepts.hpp"
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
-#include "base/concepts.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
@@ -23,9 +23,9 @@ FORWARD_DECLARE(
 namespace _identity {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
-using namespace principia::base::_concepts;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_r3_element;

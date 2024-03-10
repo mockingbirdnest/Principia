@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "base/not_constructible.hpp"
 #include "base/concepts.hpp"
+#include "base/not_constructible.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/space.hpp"
 
@@ -13,8 +13,8 @@ namespace physics {
 namespace _degrees_of_freedom {
 namespace internal {
 
-using namespace principia::base::_not_constructible;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_pair;
 using namespace principia::geometry::_space;
 

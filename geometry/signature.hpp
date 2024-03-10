@@ -1,7 +1,7 @@
 #pragma once
 
-#include "base/not_null.hpp"
 #include "base/concepts.hpp"
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
@@ -20,8 +20,8 @@ FORWARD_DECLARE(
 namespace _signature {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_sign;

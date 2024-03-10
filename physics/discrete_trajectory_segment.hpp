@@ -7,9 +7,9 @@
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
+#include "base/concepts.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
-#include "base/concepts.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"
@@ -42,8 +42,8 @@ class DiscreteTrajectorySegmentTest;
 namespace _discrete_trajectory_segment {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;

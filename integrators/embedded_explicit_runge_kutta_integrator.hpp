@@ -12,8 +12,8 @@
 #include <memory>
 
 #include "absl/status/status.h"
-#include "base/not_null.hpp"
 #include "base/concepts.hpp"
+#include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -25,8 +25,8 @@ namespace integrators {
 namespace _embedded_explicit_runge_kutta_integrator {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;

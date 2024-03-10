@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "base/not_null.hpp"
 #include "base/concepts.hpp"
+#include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -16,8 +16,8 @@ namespace geometry {
 namespace _symmetric_bilinear_form {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;

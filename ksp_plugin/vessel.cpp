@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "base/map_util.hpp"
 #include "base/concepts.hpp"
+#include "base/map_util.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -21,8 +21,8 @@ namespace _vessel {
 namespace internal {
 
 using ::std::placeholders::_1;
-using namespace principia::base::_map_util;
 using namespace principia::base::_concepts;
+using namespace principia::base::_map_util;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::testing_utilities::_make_not_null;

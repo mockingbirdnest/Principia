@@ -1,9 +1,9 @@
 #pragma once
 
+#include "base/concepts.hpp"
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "base/concepts.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/traits.hpp"
 #include "quantities/named_quantities.hpp"
@@ -21,9 +21,9 @@ namespace geometry {
 namespace _pair {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
-using namespace principia::base::_concepts;
 using namespace principia::geometry::_traits;
 using namespace principia::quantities::_named_quantities;
 

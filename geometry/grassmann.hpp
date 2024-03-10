@@ -4,8 +4,8 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
-#include "base/not_null.hpp"
 #include "base/concepts.hpp"
+#include "base/not_null.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -17,8 +17,8 @@ namespace geometry {
 namespace _grassmann {
 namespace internal {
 
-using namespace principia::base::_not_null;
 using namespace principia::base::_concepts;
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
