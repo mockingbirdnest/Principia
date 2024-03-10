@@ -24,6 +24,7 @@
     <ClInclude Include="bits.hpp" />
     <ClInclude Include="bits_body.hpp" />
     <ClInclude Include="bundle.hpp" />
+    <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constant_function.hpp" />
     <ClInclude Include="cpuid.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />

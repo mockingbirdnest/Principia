@@ -115,27 +115,27 @@ void Multivector<Scalar, Frame, 3>::WriteToMessage(
 }
 
 template<typename Scalar, typename Frame>
-template<typename, typename>
 Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
-    serialization::Multivector const& message) {
+    serialization::Multivector const& message)
+  requires serializable<Frame> {
   Frame::ReadFromMessage(message.frame());
   CHECK(message.has_vector());
   return Multivector(R3Element<Scalar>::ReadFromMessage(message.vector()));
 }
 
 template<typename Scalar, typename Frame>
-template<typename, typename>
 Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
-    serialization::Multivector const& message) {
+    serialization::Multivector const& message)
+  requires serializable<Frame> {
   Frame::ReadFromMessage(message.frame());
   CHECK(message.has_bivector());
   return Multivector(R3Element<Scalar>::ReadFromMessage(message.bivector()));
 }
 
 template<typename Scalar, typename Frame>
-template<typename, typename>
 Multivector<Scalar, Frame, 3> Multivector<Scalar, Frame, 3>::ReadFromMessage(
-    serialization::Multivector const& message) {
+    serialization::Multivector const& message)
+  requires serializable<Frame> {
   Frame::ReadFromMessage(message.frame());
   CHECK(message.has_trivector());
   return Multivector(Scalar::ReadFromMessage(message.trivector()));

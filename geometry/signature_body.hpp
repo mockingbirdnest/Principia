@@ -2,6 +2,7 @@
 
 #include "geometry/signature.hpp"
 
+#include "base/traits.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
@@ -12,6 +13,7 @@ namespace geometry {
 namespace _signature {
 namespace internal {
 
+using namespace principia::base::_traits;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
@@ -148,9 +150,9 @@ void Signature<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::LinearMap const& message) {
+    serialization::LinearMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   LinearMap<Signature, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Signature::extension));
   return ReadFromMessage(
@@ -166,9 +168,9 @@ void Signature<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 Signature<FromFrame, ToFrame> Signature<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::Signature const& message) {
+    serialization::Signature const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   auto const x = Sign::ReadFromMessage(message.x());
   auto const y = Sign::ReadFromMessage(message.y());
   auto const z = Sign::ReadFromMessage(message.z());

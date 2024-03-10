@@ -255,10 +255,10 @@ void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
-template<typename, typename>
 SymmetricBilinearForm<Scalar, Frame, Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::ReadFromMessage(
-    serialization::SymmetricBilinearForm const& message) {
+    serialization::SymmetricBilinearForm const& message)
+  requires serializable<Frame>{
   Frame::ReadFromMessage(message.frame());
   return SymmetricBilinearForm(
       R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));

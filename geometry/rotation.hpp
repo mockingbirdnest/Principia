@@ -2,7 +2,7 @@
 
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
@@ -31,7 +31,7 @@ namespace internal {
 
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_quaternion;
@@ -251,18 +251,12 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   Quaternion const& quaternion() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Rotation ReadFromMessage(serialization::LinearMap const& message);
+  static Rotation ReadFromMessage(serialization::LinearMap const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
   void WriteToMessage(not_null<serialization::Rotation*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Rotation ReadFromMessage(serialization::Rotation const& message);
+  static Rotation ReadFromMessage(serialization::Rotation const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
   template<typename Scalar>

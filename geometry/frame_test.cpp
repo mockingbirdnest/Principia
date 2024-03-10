@@ -1,6 +1,6 @@
 #include "geometry/frame.hpp"
 
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
@@ -9,7 +9,7 @@
 namespace principia {
 namespace geometry {
 
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::geometry::_frame;
 
 class FrameTest : public testing::Test {
@@ -38,8 +38,8 @@ class FrameTest : public testing::Test {
   static_assert(!std::is_same_v<F1, F3>);
   static_assert(!std::is_same_v<F2, F3>);
 
-  static_assert(is_serializable_v<World1>);
-  static_assert(!is_serializable_v<F1>);
+  static_assert(serializable<World1>);
+  static_assert(!serializable<F1>);
 };
 
 using FrameDeathTest = FrameTest;

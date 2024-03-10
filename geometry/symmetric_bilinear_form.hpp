@@ -3,6 +3,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "base/concepts.hpp"
 #include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -16,6 +17,7 @@ namespace _symmetric_bilinear_form {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_concepts;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
@@ -80,10 +82,9 @@ class SymmetricBilinearForm {
 
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
   static SymmetricBilinearForm ReadFromMessage(
-      serialization::SymmetricBilinearForm const& message);
+      serialization::SymmetricBilinearForm const& message)
+    requires serializable<Frame>;
 
  private:
   // All the operations on this class must ensure that this matrix remains

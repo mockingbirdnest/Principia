@@ -76,10 +76,10 @@ void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
-    serialization::LinearMap const& message) {
+    serialization::LinearMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   LinearMap<Homothecy, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Homothecy::extension));
   return ReadFromMessage(
@@ -93,10 +93,10 @@ void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
-    serialization::Homothecy const& message) {
+    serialization::Homothecy const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   return Homothecy(Scalar::ReadFromMessage(message.scale()));
 }
 

@@ -74,10 +74,10 @@ void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
-    serialization::LinearMap const& message) {
+    serialization::LinearMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   LinearMap<ConformalMap, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::ConformalMap::extension));
   return ReadFromMessage(
@@ -92,10 +92,10 @@ void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
-    serialization::ConformalMap const& message) {
+    serialization::ConformalMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   return ConformalMap(Scalar::ReadFromMessage(message.scale()),
                       Quaternion::ReadFromMessage(message.quaternion()));
 }

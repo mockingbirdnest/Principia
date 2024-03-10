@@ -1,7 +1,7 @@
 #pragma once
 
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
@@ -21,7 +21,7 @@ namespace _signature {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_sign;
@@ -83,18 +83,12 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
   ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Signature ReadFromMessage(serialization::LinearMap const& message);
+  static Signature ReadFromMessage(serialization::LinearMap const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
   void WriteToMessage(not_null<serialization::Signature*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Signature ReadFromMessage(serialization::Signature const& message);
+  static Signature ReadFromMessage(serialization::Signature const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
   constexpr Signature(Sign x, Sign y, Sign z);

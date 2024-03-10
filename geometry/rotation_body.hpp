@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/traits.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -13,6 +14,7 @@ namespace geometry {
 namespace _rotation {
 namespace internal {
 
+using namespace principia::base::_traits;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::quantities::_elementary_functions;
@@ -311,9 +313,9 @@ void Rotation<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::LinearMap const& message) {
+    serialization::LinearMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   LinearMap<Rotation, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::Rotation::extension));
   return ReadFromMessage(
@@ -327,9 +329,9 @@ void Rotation<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::Rotation const& message) {
+    serialization::Rotation const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   return Rotation(Quaternion::ReadFromMessage(message.quaternion()));
 }
 

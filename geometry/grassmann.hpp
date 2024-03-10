@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
+#include "base/concepts.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -18,7 +18,7 @@ namespace _grassmann {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
+using namespace principia::base::_concepts;
 using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -50,9 +50,8 @@ class Multivector<Scalar, Frame, 1> final {
 
   void WriteToMessage(
       not_null<serialization::Multivector*> message) const;
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
-  static Multivector ReadFromMessage(serialization::Multivector const& message);
+  static Multivector ReadFromMessage(serialization::Multivector const& message)
+    requires serializable<Frame>;
 
  private:
   R3Element<Scalar> coordinates_;
@@ -91,9 +90,8 @@ class Multivector<Scalar, Frame, 2> final {
       Multivector<S, Frame, 2> const& multivector) const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
-  static Multivector ReadFromMessage(serialization::Multivector const& message);
+  static Multivector ReadFromMessage(serialization::Multivector const& message)
+    requires serializable<Frame>;
 
  private:
   R3Element<Scalar> coordinates_;
@@ -125,9 +123,8 @@ class Multivector<Scalar, Frame, 3> final {
   Square<Scalar> Norm²() const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
-  static Multivector ReadFromMessage(serialization::Multivector const& message);
+  static Multivector ReadFromMessage(serialization::Multivector const& message)
+    requires serializable<Frame>;
 
  private:
   Scalar coordinates_;
