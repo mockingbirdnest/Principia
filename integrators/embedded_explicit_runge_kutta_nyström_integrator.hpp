@@ -13,6 +13,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "base/concepts.hpp"
 #include "base/traits.hpp"
 #include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -27,6 +28,7 @@ namespace _embedded_explicit_runge_kutta_nyström_integrator {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_concepts;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
@@ -96,8 +98,6 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename DV = typename ODE::DependentVariable,
-             typename = std::enable_if_t<is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
@@ -108,7 +108,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
         Parameters const& parameters,
         Time const& time_step,
         bool first_use,
-        EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
+        EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
+      requires serializable<typename ODE::DependentVariable>;
 
    private:
     Instance(InitialValueProblem<ODE> const& problem,
