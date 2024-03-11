@@ -39,7 +39,7 @@ auto Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>>::Norm(
 }
 
 template<typename T1, typename T2>
-  requires has_inner_product<T1, T2>
+  requires hilbert<T1, T2>
 auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
     -> InnerProductType {
   // Is there a better way to avoid recursion than to put our fingers inside
@@ -48,7 +48,7 @@ auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
 }
 
 template<typename T>
-  requires has_inner_product<T, T>
+  requires hilbert<T, T>
 auto Hilbert<T, T>::InnerProduct(T const& t1, T const& t2) -> InnerProductType {
   // Is there a better way to avoid recursion than to put our fingers inside
   // grassmann?
@@ -56,13 +56,13 @@ auto Hilbert<T, T>::InnerProduct(T const& t1, T const& t2) -> InnerProductType {
 }
 
 template<typename T>
-  requires has_inner_product<T, T>
+  requires hilbert<T, T>
 auto Hilbert<T, T>::Norm²(T const& t) -> Norm²Type {
   return t.Norm²();
 }
 
 template<typename T>
-  requires has_inner_product<T, T>
+  requires hilbert<T, T>
 auto Hilbert<T, T>::Norm(T const& t) -> NormType {
   return t.Norm();
 }

@@ -55,7 +55,7 @@ struct Hilbert<T, T, std::enable_if_t<is_quantity_v<T>>> : not_constructible {
 };
 
 template<typename T1, typename T2>
-  requires has_inner_product<T1, T2>
+  requires hilbert<T1, T2>
 struct Hilbert<T1, T2> : not_constructible {
   static_assert(T1::dimension == T2::dimension);
   static constexpr int dimension = T1::dimension;
@@ -66,7 +66,7 @@ struct Hilbert<T1, T2> : not_constructible {
 };
 
 template<typename T>
-  requires has_inner_product<T, T>
+  requires hilbert<T, T>
 struct Hilbert<T, T> : not_constructible {
   static constexpr int dimension = T::dimension;
 

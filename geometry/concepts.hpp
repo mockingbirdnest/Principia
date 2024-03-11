@@ -6,13 +6,13 @@ namespace _concepts {
 namespace internal {
 
 template<typename T1, typename T2>
-concept has_inner_product = requires(T1 const& t1, T2 const& t2) {
+concept hilbert = requires(T1 const& t1, T2 const& t2) {
   InnerProduct(t1, t2);
 };
 
 }  // namespace internal
 
-using internal::has_inner_product;
+using internal::hilbert;
 
 }  // namespace _concepts
 }  // namespace geometry
