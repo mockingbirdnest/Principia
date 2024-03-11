@@ -97,6 +97,8 @@ class UnboundedMatrix final {
 
   UnboundedMatrix(int rows, int columns, std::initializer_list<Scalar> data);
 
+  explicit UnboundedMatrix(TransposedView<UnboundedMatrix<Scalar>> const& view);
+
   int rows() const;
   int columns() const;
   // TODO(phl): The meaning of |size| for matrices is unclear.
@@ -107,8 +109,6 @@ class UnboundedMatrix final {
   // |a(i, j)| implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  UnboundedMatrix Transpose() const;
 
   Scalar FrobeniusNorm() const;
 
@@ -145,6 +145,9 @@ class UnboundedLowerTriangularMatrix final {
   // The |data| must be in row-major format.
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
+  UnboundedLowerTriangularMatrix(
+      TransposedView<UnboundedUpperTriangularMatrix<Scalar>> const& view);
+
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
 
@@ -162,8 +165,6 @@ class UnboundedLowerTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  UnboundedUpperTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedLowerTriangularMatrix const& right) const;
   bool operator!=(UnboundedLowerTriangularMatrix const& right) const;
@@ -189,6 +190,9 @@ class UnboundedUpperTriangularMatrix final {
   // The |data| must be in row-major format.
   UnboundedUpperTriangularMatrix(std::initializer_list<Scalar> const& data);
 
+  UnboundedUpperTriangularMatrix(
+      TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view);
+
   void Extend(int extra_columns);
   void Extend(int extra_columns, uninitialized_t);
 
@@ -206,8 +210,6 @@ class UnboundedUpperTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  UnboundedLowerTriangularMatrix<Scalar> Transpose() const;
 
   bool operator==(UnboundedUpperTriangularMatrix const& right) const;
   bool operator!=(UnboundedUpperTriangularMatrix const& right) const;

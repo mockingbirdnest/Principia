@@ -95,6 +95,9 @@ class FixedMatrix final {
   constexpr FixedMatrix(
       std::array<Scalar, size()> const& data);  // NOLINT(runtime/explicit)
 
+  constexpr explicit FixedMatrix(
+      TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view);
+
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
   // |a(i, j)|.  if i and j do not satisfy these conditions, the expression
   // |a(i, j)| implies undefined behaviour.
@@ -103,8 +106,6 @@ class FixedMatrix final {
 
   template<int r>
   Scalar const* row() const;
-
-  FixedMatrix Transpose() const;
 
   Scalar FrobeniusNorm() const;
 
