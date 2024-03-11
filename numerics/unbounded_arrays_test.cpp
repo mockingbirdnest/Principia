@@ -102,6 +102,8 @@ TEST_F(UnboundedArraysTest, Norm) {
 
 TEST_F(UnboundedArraysTest, MultiplicationDivision) {
   EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
+  EXPECT_EQ(UnboundedVector<double>({1536, 2484, 4020, 6504}),
+            TransposedView{m4_} * v4_);  // NOLINT
   EXPECT_EQ(UnboundedVector<double>({-1.5, -1.5, 0.5, 2.0}), v4_ / 2.0);
   EXPECT_EQ(UnboundedMatrix<double>(
                 {  2067,    3345,   5412,     8757,

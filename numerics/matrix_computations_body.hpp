@@ -202,13 +202,13 @@ template<typename LMatrix, typename RScalar>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
     TransposedView<BlockView<LMatrix>> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.transpose.rows(), right.size());
+  CHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
-      left.transpose.columns());
-  for (int j = 0; j < left.transpose.columns(); ++j) {
-    auto& result_j = result[j];
-    for (int i = 0; i < left.transpose.rows(); ++i) {
-      result_j += left.transpose(i, j) * right[i];
+      left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
     }
   }
   return result;

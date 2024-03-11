@@ -646,7 +646,7 @@ constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
   FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
   for (int i = 0; i < lsize; ++i) {
     for (int j = 0; j < rsize; ++j) {
-      result(i, j) = left[i] * right.transpose[j];
+      result(i, j) = left[i] * right[j];
     }
   }
   return result;
@@ -688,10 +688,10 @@ constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
     TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
     FixedVector<RScalar, rows> const& right) {
   std::array<Product<LScalar, RScalar>, columns> result{};
-  for (int j = 0; j < columns; ++j) {
-    auto& result_j = result[j];
-    for (int i = 0; i < rows; ++i) {
-      result_j += left.transpose(i, j) * right[i];
+  for (int i = 0; i < columns; ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < rows; ++j) {
+      result_i += left(i, j) * right[j];
     }
   }
   return FixedVector<Product<LScalar, RScalar>, columns>(std::move(result));

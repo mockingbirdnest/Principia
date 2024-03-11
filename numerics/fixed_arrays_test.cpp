@@ -11,6 +11,8 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_elementary_functions;
 
+// TODO(phl): The tests should be more similar to those for unbounded arrays.
+
 class FixedArraysTest : public ::testing::Test {
  protected:
   FixedArraysTest()

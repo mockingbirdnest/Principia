@@ -257,6 +257,12 @@
     <ClInclude Include="чебышёв_lobatto_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="concepts.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="transposed_view_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fixed_arrays_test.cpp">
