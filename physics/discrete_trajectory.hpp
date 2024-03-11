@@ -7,9 +7,9 @@
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
+#include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
-#include "base/traits.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -25,9 +25,9 @@ namespace physics {
 namespace _discrete_trajectory {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
@@ -145,11 +145,10 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   // and the orders of the |tracked| iterators must be consistent during
   // serialization and deserialization.  Upon return, the iterators in |tracked|
   // are past-the-end iff they were past-the-end at serialization time.
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
   static DiscreteTrajectory ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<SegmentIterator*> const& tracked);
+      std::vector<SegmentIterator*> const& tracked)
+    requires serializable<Frame>;
 
  private:
   using DownsamplingParameters =

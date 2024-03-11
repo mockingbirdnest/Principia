@@ -1,7 +1,7 @@
 #pragma once
 
+#include "base/concepts.hpp"
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "serialization/geometry.pb.h"
@@ -11,8 +11,8 @@ namespace geometry {
 namespace _affine_map {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 
@@ -43,11 +43,8 @@ class AffineMap final {
   LinearMap<FromFrame, ToFrame> const& linear_map() const;
 
   void WriteToMessage(not_null<serialization::AffineMap*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static AffineMap ReadFromMessage(serialization::AffineMap const& message);
+  static AffineMap ReadFromMessage(serialization::AffineMap const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
   Point<FromVector> from_origin_;

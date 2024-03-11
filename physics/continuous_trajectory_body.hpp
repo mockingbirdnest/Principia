@@ -356,11 +356,11 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
 }
 
 template<typename Frame>
-template<typename, typename>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
     Instant const& desired_t_min,
-    serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory const& message)
+  requires serializable<Frame> {
   bool const is_pre_cohen = message.series_size() > 0;
   bool const is_pre_fatou = !message.has_checkpoint_time();
   bool const is_pre_grassmann = message.has_adjusted_tolerance() &&
@@ -504,7 +504,7 @@ absl::Status ContinuousTrajectory<Frame>::ReadFromCheckpointAt(
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Writer
 ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
-  if constexpr (is_serializable_v<Frame>) {
+  if constexpr (serializable<Frame>) {
     return [this](
         not_null<
             serialization::ContinuousTrajectory::Checkpoint*> const message) {
@@ -531,7 +531,7 @@ ContinuousTrajectory<Frame>::MakeCheckpointerWriter() {
 template<typename Frame>
 Checkpointer<serialization::ContinuousTrajectory>::Reader
 ContinuousTrajectory<Frame>::MakeCheckpointerReader() {
-  if constexpr (is_serializable_v<Frame>) {
+  if constexpr (serializable<Frame>) {
     return [this](
                serialization::ContinuousTrajectory::Checkpoint const& message) {
       absl::MutexLock l(&lock_);

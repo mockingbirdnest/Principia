@@ -1,9 +1,9 @@
 #pragma once
 
+#include "base/concepts.hpp"
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/traits.hpp"
 #include "quantities/named_quantities.hpp"
@@ -21,9 +21,9 @@ namespace geometry {
 namespace _pair {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_traits;
 using namespace principia::quantities::_named_quantities;
 
@@ -94,11 +94,8 @@ class Pair {
   bool operator!=(Pair const& right) const;
 
   void WriteToMessage(not_null<serialization::Pair*> message) const;
-  template<typename U1 = T1,
-           typename U2 = T2,
-           typename = std::enable_if_t<is_serializable_v<U1> &&
-                                       is_serializable_v<U2>>>
-  static Pair ReadFromMessage(serialization::Pair const& message);
+  static Pair ReadFromMessage(serialization::Pair const& message)
+    requires serializable<T1> && serializable<T2>;
 
  protected:
   // The subclasses can access the members directly to implement accessors.

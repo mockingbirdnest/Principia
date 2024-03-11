@@ -1,8 +1,8 @@
 #pragma once
 
+#include "base/concepts.hpp"
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/space.hpp"
@@ -13,9 +13,9 @@ namespace geometry {
 namespace _homothecy {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_space;
@@ -54,18 +54,12 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   static Homothecy Identity();
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Homothecy ReadFromMessage(serialization::LinearMap const& message);
+  static Homothecy ReadFromMessage(serialization::LinearMap const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
   void WriteToMessage(not_null<serialization::Homothecy*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Homothecy ReadFromMessage(serialization::Homothecy const& message);
+  static Homothecy ReadFromMessage(serialization::Homothecy const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
   Scalar const scale_;

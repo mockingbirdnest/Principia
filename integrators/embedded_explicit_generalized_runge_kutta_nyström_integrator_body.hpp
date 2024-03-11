@@ -293,7 +293,6 @@ Instance::WriteToMessage(
 }
 
 template<typename Method, typename ODE_>
-template<typename, typename>
 not_null<std::unique_ptr<
     typename EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
         Method, ODE_>::Instance>>
@@ -309,7 +308,8 @@ Instance::ReadFromMessage(
     Time const& time_step,
     bool const first_use,
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&
-        integrator) {
+        integrator)
+  requires serializable<typename ODE::DependentVariable> {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<Instance>(new Instance(problem,

@@ -7,9 +7,9 @@
 
 #include "absl/container/btree_map.h"
 #include "absl/status/status.h"
+#include "base/concepts.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"
@@ -42,8 +42,8 @@ class DiscreteTrajectorySegmentTest;
 namespace _discrete_trajectory_segment {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
@@ -143,11 +143,10 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       iterator end,
       std::vector<iterator> const& exact) const;
 
-  template<typename F = Frame,
-           typename = std::enable_if_t<is_serializable_v<F>>>
   static DiscreteTrajectorySegment ReadFromMessage(
       serialization::DiscreteTrajectorySegment const& message,
-      DiscreteTrajectorySegmentIterator<Frame> self);
+      DiscreteTrajectorySegmentIterator<Frame> self)
+    requires serializable<Frame>;
 
  private:
   // Versions of find, lower_bound, and upper_bound that use optionals to

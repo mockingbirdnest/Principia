@@ -24,8 +24,9 @@ Method<Profile>::Method() {
 }
 
 template<typename Profile>
-template<typename P, typename>
-Method<Profile>::Method(typename P::In const& in) {
+template<typename P>
+Method<Profile>::Method(typename P::In const& in)
+  requires has_in<P> && (!has_out<P>) {
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
     auto* const message_in =
@@ -36,8 +37,9 @@ Method<Profile>::Method(typename P::In const& in) {
 }
 
 template<typename Profile>
-template<typename P, typename>
-Method<Profile>::Method(typename P::Out const& out) {
+template<typename P>
+Method<Profile>::Method(typename P::Out const& out)
+  requires has_out<P> && (!has_in<P>) {
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
     [[maybe_unused]] auto* const message_in =
@@ -51,8 +53,10 @@ Method<Profile>::Method(typename P::Out const& out) {
 }
 
 template<typename Profile>
-template<typename P, typename>
-Method<Profile>::Method(typename P::In const& in, typename P::Out const& out) {
+template<typename P>
+Method<Profile>::Method(typename P::In const& in,
+                        typename P::Out const& out)
+  requires has_in<P> && has_out<P> {
   if (Recorder::active_recorder_ != nullptr) {
     serialization::Method method;
     auto* const message_in =
@@ -84,16 +88,18 @@ Method<Profile>::~Method() {
 }
 
 template<typename Profile>
-template<typename P, typename>
-void Method<Profile>::Return() {
+template<typename P>
+void Method<Profile>::Return()
+  requires (!has_return<P>) {  // NOLINT
   CHECK(!returned_);
   returned_ = true;
 }
 
 template<typename Profile>
-template<typename P, typename>
+template<typename P>
 typename P::Return Method<Profile>::Return(
-    typename P::Return const& result) {
+    typename P::Return const& result)
+  requires has_return<P> {
   CHECK(!returned_);
   returned_ = true;
   if (Recorder::active_recorder_ != nullptr) {

@@ -9,6 +9,7 @@
     <Import Project="..\shared\base.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="concepts.hpp" />
     <ClInclude Include="method.hpp" />
     <ClInclude Include="method_body.hpp" />
     <ClInclude Include="player.hpp" />

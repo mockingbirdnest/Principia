@@ -1,8 +1,8 @@
 #pragma once
 
+#include "base/concepts.hpp"
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
-#include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
@@ -14,9 +14,9 @@ namespace geometry {
 namespace _permutation {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
-using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_r3_element;
@@ -97,18 +97,12 @@ class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
   static Permutation Identity();
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Permutation ReadFromMessage(serialization::LinearMap const& message);
+  static Permutation ReadFromMessage(serialization::LinearMap const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
   void WriteToMessage(not_null<serialization::Permutation*> message) const;
-  template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<is_serializable_v<F> &&
-                                       is_serializable_v<T>>>
-  static Permutation ReadFromMessage(serialization::Permutation const& message);
+  static Permutation ReadFromMessage(serialization::Permutation const& message)
+    requires serializable<FromFrame> && serializable<ToFrame>;
 
  public:
   // TODO(phl): This used to be private, but it's convenient for operating on

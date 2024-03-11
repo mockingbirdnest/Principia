@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/instant.hpp"
@@ -27,6 +28,7 @@ namespace integrators {
 namespace _symmetric_linear_multistep_integrator {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_instant;
@@ -57,15 +59,14 @@ class SymmetricLinearMultistepIntegrator
 
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
-    template<typename DV = typename ODE::DependentVariable,
-             typename = std::enable_if_t<is_serializable_v<DV>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance const&
             extension,
         InitialValueProblem<ODE> const& problem,
         AppendState const& append_state,
         Time const& step,
-        SymmetricLinearMultistepIntegrator const& integrator);
+        SymmetricLinearMultistepIntegrator const& integrator)
+      requires serializable<typename ODE::DependentVariable>;
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
@@ -80,11 +81,10 @@ class SymmetricLinearMultistepIntegrator
       void WriteToMessage(
           not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                        Step*> message) const;
-      template<typename DV = typename ODE::DependentVariable,
-               typename = std::enable_if_t<is_serializable_v<DV>>>
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
-              message);
+              message)
+        requires serializable<typename ODE::DependentVariable>;
     };
 
     class Starter : public _starter::Starter<ODE, Step, /*steps=*/order> {

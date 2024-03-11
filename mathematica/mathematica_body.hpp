@@ -527,13 +527,13 @@ std::string ToMathematica(UnboundedVector<Scalar> const& vector,
   return RawApply("List", elements);
 }
 
-template<typename R, typename, typename, typename OptionalExpressIn>
-std::string ToMathematica(R const ref,
+template<typename F, typename OptionalExpressIn>
+std::string ToMathematica(DiscreteTrajectoryValueType<F> const& v,
                           OptionalExpressIn express_in) {
   return RawApply("List",
                   std::vector<std::string>{
-                      ToMathematica(ref.time, express_in),
-                      ToMathematica(ref.degrees_of_freedom, express_in)});
+                      ToMathematica(v.time, express_in),
+                      ToMathematica(v.degrees_of_freedom, express_in)});
 }
 
 template<typename V, typename A, int d,

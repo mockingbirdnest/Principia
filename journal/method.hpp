@@ -6,6 +6,7 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "journal/concepts.hpp"
 
 namespace principia {
 namespace journal {
@@ -14,6 +15,7 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::journal::_concepts;
 
 // The parameter |Profile| is expected to have the following structure:
 //
@@ -37,24 +39,6 @@ using namespace principia::base::_not_null;
 //                    not_null<Player::PointerMap*> pointer_map);
 //  };
 
-template<typename P, typename = void>
-struct has_in : std::false_type, not_constructible {};
-template<typename P>
-struct has_in<P, std::void_t<typename P::In>> : std::true_type,
-                                                not_constructible {};
-
-template<typename P, typename = void>
-struct has_out : std::false_type {};
-template<typename P>
-struct has_out<P, std::void_t<typename P::Out>> : std::true_type,
-                                                  not_constructible {};
-
-template<typename P, typename = void>
-struct has_return : std::false_type {};
-template<typename P>
-struct has_return<P, std::void_t<typename P::Return>> : std::true_type,
-                                                        not_constructible {};
-
 template<typename Profile>
 class Method final {
  public:
@@ -62,33 +46,32 @@ class Method final {
 
   // Only declare this constructor if the profile has an |In| type and no |Out|
   // type.
-  template<typename P = Profile,
-           typename = std::enable_if_t<has_in<P>::value && !has_out<P>::value>>
-  explicit Method(typename P::In const& in);
+  template<typename P = Profile>
+  explicit Method(typename P::In const& in)
+    requires has_in<P> && (!has_out<P>);
 
   // Only declare this constructor if the profile has an |Out| type and no |In|
   // type.
-  template<typename P = Profile,
-           typename = std::enable_if_t<has_out<P>::value && !has_in<P>::value>>
-  explicit Method(typename P::Out const& out);
+  template<typename P = Profile>
+  explicit Method(typename P::Out const& out)
+    requires has_out<P> && (!has_in<P>);
 
   // Only declare this constructor if the profile has an |In| and an |Out|
   // type.
-  template<typename P = Profile,
-           typename = std::enable_if_t<has_in<P>::value && has_out<P>::value>>
-  Method(typename P::In const& in, typename P::Out const& out);
+  template<typename P = Profile>
+  Method(typename P::In const& in, typename P::Out const& out)
+    requires has_in<P> && has_out<P>;
 
   ~Method();
 
   // Only declare this method if the profile has no |Return| type.
-  template<typename P = Profile,
-           typename = std::enable_if_t<!has_return<P>::value>>
-  void Return();
+  template<typename P = Profile>
+  void Return() requires (!has_return<P>);  // NOLINT
 
   // Only declare this method if the profile has a |Return| type.
-  template<typename P = Profile,
-           typename = std::enable_if_t<has_return<P>::value>>
-  typename P::Return Return(typename P::Return const& result);
+  template<typename P = Profile>
+  typename P::Return Return(typename P::Return const& result)
+    requires has_return<P>;
 
  private:
   std::function<void(not_null<typename Profile::Message*> message)> out_filler_;

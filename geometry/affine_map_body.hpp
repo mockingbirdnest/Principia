@@ -82,10 +82,10 @@ void AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::WriteToMessage(
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap_>
-template<typename, typename, typename>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::ReadFromMessage(
-    serialization::AffineMap const& message) {
+    serialization::AffineMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   FromFrame::ReadFromMessage(message.from_frame());
   ToFrame::ReadFromMessage(message.to_frame());
   return AffineMap(Point<FromVector>::ReadFromMessage(message.from_origin()),

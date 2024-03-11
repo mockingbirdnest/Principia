@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "absl/status/status.h"
+#include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -24,6 +25,7 @@ namespace integrators {
 namespace _embedded_explicit_runge_kutta_integrator {
 namespace internal {
 
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::integrators::_integrators;
@@ -84,8 +86,6 @@ class EmbeddedExplicitRungeKuttaIntegrator
     void WriteToMessage(
         not_null<serialization::IntegratorInstance*> message) const override;
 #if 0
-    template<typename... DV = DependentVariable...,
-             typename = std::enable_if_t<is_serializable_v<DV...>>>
     static not_null<std::unique_ptr<Instance>> ReadFromMessage(
         serialization::
             EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
@@ -96,7 +96,8 @@ class EmbeddedExplicitRungeKuttaIntegrator
         Parameters const& parameters,
         typename ODE::IndependentVariableDifference const& step,
         bool first_use,
-        EmbeddedExplicitRungeKuttaIntegrator const& integrator);
+        EmbeddedExplicitRungeKuttaIntegrator const& integrator)
+      requires serializable<DependentVariable>...;
 #endif
 
    private:

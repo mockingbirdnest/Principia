@@ -34,9 +34,9 @@ void LinearMap<Map, FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename Map, typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 void LinearMap<Map, FromFrame, ToFrame>::ReadFromMessage(
-    serialization::LinearMap const& message) {
+    serialization::LinearMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   FromFrame::ReadFromMessage(message.from_frame());
   ToFrame::ReadFromMessage(message.to_frame());
 }

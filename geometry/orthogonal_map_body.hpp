@@ -98,10 +98,10 @@ void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::LinearMap const& message) {
+    serialization::LinearMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   LinearMap<OrthogonalMap, FromFrame, ToFrame>::ReadFromMessage(message);
   CHECK(message.HasExtension(serialization::OrthogonalMap::extension));
   return ReadFromMessage(
@@ -115,10 +115,10 @@ void OrthogonalMap<FromFrame, ToFrame>::WriteToMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::OrthogonalMap const& message) {
+    serialization::OrthogonalMap const& message)
+  requires serializable<FromFrame> && serializable<ToFrame> {
   bool const is_pre_frege = message.has_rotation();
   LOG_IF(WARNING, is_pre_frege) << "Reading pre-Frege OrthogonalMap";
   return OrthogonalMap(
