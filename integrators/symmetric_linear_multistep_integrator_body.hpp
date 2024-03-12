@@ -189,7 +189,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::ReadFromMessage(
     AppendState const& append_state,
     Time const& step,
     SymmetricLinearMultistepIntegrator const& integrator)
-  requires serializable<typename ODE::DependentVariable> {
+  requires serializable<typename ODE_::DependentVariable> {
   auto instance = std::unique_ptr<Instance>(new Instance(problem,
                                                          append_state,
                                                          step,
@@ -223,7 +223,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Step::
 ReadFromMessage(
     serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
         message)
-  requires serializable<typename ODE::DependentVariable> {
+  requires serializable<typename ODE_::DependentVariable> {
   using AccelerationSerializer = QuantityOrMultivectorSerializer<
       typename ODE::DependentVariableDerivative2,
       serialization::SymmetricLinearMultistepIntegratorInstance::Step::

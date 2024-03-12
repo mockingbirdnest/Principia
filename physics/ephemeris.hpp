@@ -276,7 +276,7 @@ class Ephemeris {
   // is at or before |desired_t_min|.
   static not_null<std::unique_ptr<Ephemeris>> ReadFromMessage(
       Instant const& desired_t_min,
-      serialization::Ephemeris const& message) EXCLUDES(lock_)
+      serialization::Ephemeris const& message)
     requires serializable<Frame>;
 
  protected:
