@@ -299,7 +299,7 @@ ReadFromMessage(
     Time const& time_step,
     bool const first_use,
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
-  requires serializable<typename ODE::DependentVariable> {
+  requires serializable<typename ODE_::DependentVariable> {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<Instance>(new Instance(problem,

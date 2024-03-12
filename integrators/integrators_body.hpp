@@ -522,7 +522,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
     ODE const& equation,
     AppendState const& append_state)
-  requires serializable<typename ODE::State> {
+  requires serializable<typename ODE_::State> {
   InitialValueProblem<ODE> problem;
   problem.equation = equation;
   problem.initial_state =
@@ -761,7 +761,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     ODE const& equation,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio)
-  requires serializable<typename ODE::State> {
+  requires serializable<typename ODE_::State> {
   using Serializer = DoubleOrQuantitySerializer<
       IndependentVariableDifference,
       serialization::AdaptiveStepSizeIntegratorInstance::Step>;
