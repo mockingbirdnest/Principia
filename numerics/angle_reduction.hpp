@@ -13,7 +13,8 @@ using namespace principia::quantities::_quantities;
 
 // Clang up to version 17 does not support non-type template parameters that are
 // floats.  So we wrap the float in a silly struct instead.
-#if PRINCIPIA_COMPILER_CLANG && __clang_major__ <= 17
+#if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && \
+    __clang_major__ <= 17
 struct DoubleWrapper {
   constexpr DoubleWrapper(double const d) : d(d) {}  // NOLINT(runtime/explicit)
   constexpr DoubleWrapper(int const i) : d(i) {}  // NOLINT(runtime/explicit)
