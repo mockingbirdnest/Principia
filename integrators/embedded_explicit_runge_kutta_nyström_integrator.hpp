@@ -109,7 +109,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
         Time const& time_step,
         bool first_use,
         EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
-      requires serializable<typename ODE::DependentVariable>;
+      requires serializable<typename ODE_::DependentVariable>;
 
    private:
     Instance(InitialValueProblem<ODE> const& problem,

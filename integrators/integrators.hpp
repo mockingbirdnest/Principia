@@ -106,7 +106,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
                     AppendState const& append_state)
-      requires serializable<typename ODE::State>;
+      requires serializable<typename ODE_::State>;
 
    protected:
     Instance(InitialValueProblem<ODE> const& problem,
@@ -202,7 +202,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
                     ODE const& equation,
                     AppendState const& append_state,
                     ToleranceToErrorRatio const& tolerance_to_error_ratio)
-      requires serializable<typename ODE::State>;
+      requires serializable<typename ODE_::State>;
 
    protected:
     Instance(InitialValueProblem<ODE> const& problem,
