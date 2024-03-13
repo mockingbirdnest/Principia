@@ -100,12 +100,13 @@ SHARED_ARGS   := \
 	-fno-char8_t -fbracket-depth=257                              \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
+	-Wno-elaborated-enum-class                                    \
 	-Wno-gnu-anonymous-struct                                     \
 	-Wno-c99-extensions                                           \
 	-Wno-gnu-zero-variadic-macro-arguments                        \
+	-Wno-mathematical-notation-identifier-extension               \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
-	-Wno-elaborated-enum-class                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \

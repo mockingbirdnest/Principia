@@ -117,7 +117,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
         bool first_use,
         EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&
             integrator)
-      requires serializable<typename ODE::DependentVariable>;
+      requires serializable<typename ODE_::DependentVariable>;
 
    private:
     Instance(InitialValueProblem<ODE> const& problem,

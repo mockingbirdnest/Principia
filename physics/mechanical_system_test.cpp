@@ -83,13 +83,13 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
   DegreesOfFreedom<InertialFrame> const unmoving_origin = {
       InertialFrame::origin, InertialFrame::unmoving};
 
-  constexpr double ⅞ = 7.0 / 8;
   EXPECT_THAT(
       system_.LinearMotion()({SystemFrame::origin, SystemFrame::unmoving}) -
           unmoving_origin,
       Componentwise(
-          Componentwise(⅞ * r, 0 * Metre, 0 * Metre),
-          Componentwise(0 * Metre / Second, ⅞ * v, 0 * Metre / Second)));
+          Componentwise(7.0 * r / 8.0, 0 * Metre, 0 * Metre),
+          Componentwise(
+              0 * Metre / Second, 7.0 * v / 8.0, 0 * Metre / Second)));
   EXPECT_THAT(
       system_.AngularMomentum(),
       Componentwise(AngularMomentum{}, AngularMomentum{}, r * μ * v * Radian));

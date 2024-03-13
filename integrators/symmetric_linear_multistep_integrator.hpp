@@ -66,7 +66,7 @@ class SymmetricLinearMultistepIntegrator
         AppendState const& append_state,
         Time const& step,
         SymmetricLinearMultistepIntegrator const& integrator)
-      requires serializable<typename ODE::DependentVariable>;
+      requires serializable<typename ODE_::DependentVariable>;
 
    private:
     // The data for a previous step of the integration.  The |Displacement|s
@@ -84,7 +84,7 @@ class SymmetricLinearMultistepIntegrator
       static Step ReadFromMessage(
           serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
               message)
-        requires serializable<typename ODE::DependentVariable>;
+        requires serializable<typename ODE_::DependentVariable>;
     };
 
     class Starter : public _starter::Starter<ODE, Step, /*steps=*/order> {

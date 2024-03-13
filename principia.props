@@ -84,25 +84,38 @@
       <AdditionalOptions Condition="$(PrincipiaCompilerClangLLVM)">
         <!-- \-\-version-->
         <!-- \-v-->
+        -fbracket-depth=257
+        -ferror-limit=1000
         -Werror=typename-missing
         -Werror=microsoft-template
         -Werror=unknown-argument
         -Wno-c++98-compat-pedantic
         -Wno-c++98-compat
         -Wno-c99-compat
-        -Wno-undef
+        -Wno-exit-time-destructors
         -Wno-float-equal
-        -Wno-shadow-field-in-constructor
+        -Wno-format-nonliteral
+        -Wno-global-constructors
+        -Wno-gnu-anonymous-struct
+        -Wno-gnu-zero-variadic-macro-arguments
+        -Wno-macro-redefined
+        -Wno-mathematical-notation-identifier-extension
+        -Wno-nested-anon-types
+        -Wno-reserved-macro-identifier
+        -Wno-shadow-uncaptured-local
         -Wno-sign-conversion
-        -Wno-covered-switch-default
+        -Wno-undef
+        -Wno-unknown-pragmas
         <!--Warnings in protobuf generated code are none of our business.-->
         -Xclang --system-header-prefix=serialization/
         <!--Same for warnings in dependencies.-->
+        -Xclang --system-header-prefix=absl/
         -Xclang --system-header-prefix=benchmark/
         -Xclang --system-header-prefix=google/
         -Xclang --system-header-prefix=glog/
         -Xclang --system-header-prefix=gtest/
         -Xclang --system-header-prefix=gmock/
+        -Xclang --system-header-prefix=zfp/
       </AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions Condition="!$(PrincipiaCompilerClangLLVM)">
