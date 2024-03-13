@@ -96,8 +96,20 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)zfp/include
 SHARED_ARGS   := \
 	-std=c++20 -stdlib=libc++ -O3 -g                              \
-	-fPIC -fexceptions -ferror-limit=1000 -fno-omit-frame-pointer \
-	-fno-char8_t -fbracket-depth=257                              \
+	--system-header-prefix=serialization/                         \
+	--system-header-prefix=absl/                                  \
+	--system-header-prefix=benchmark/                             \
+	--system-header-prefix=google/                                \
+	--system-header-prefix=glog/                                  \
+	--system-header-prefix=gtest/                                 \
+	--system-header-prefix=gmock/                                 \
+	--system-header-prefix=zfp/                                   \
+	-fPIC                                                         \
+	-fbracket-depth=257                                           \
+	-fexceptions                                                  \
+	-ferror-limit=1000                                            \
+	-fno-omit-frame-pointer                                       \
+	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
 	-Wno-char-subscripts                                          \
 	-Wno-elaborated-enum-class                                    \
