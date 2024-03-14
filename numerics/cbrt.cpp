@@ -25,6 +25,8 @@ using namespace principia::quantities::_elementary_functions;
 // The computations in this file are described in documentation/cbrt.pdf; the
 // identifiers match the notation in that document.
 
+namespace {
+
 // See [Nie04], algorithm 10.
 std::array<double, 4> NievergeltQuadruplyCompensatedStep(
     DoublePrecision<double> b,
@@ -94,12 +96,6 @@ bool CorrectionPossiblyNeeded(double const r₀,
   return std::abs(0.5 * (r̃ - r₀) - r₁) <= τ * r₀ && r̃ != r₀;
 }
 
-double CorrectLastBit(double const y, double const r₀, double const r̃) {
-  double const a = std::min(r₀, r̃);
-  double const b = 0.5 * std::abs(r₀ - r̃);
-  return CbrtOneBit(y, a, b) ? std::max(r₀, r̃) : a;
-}
-
 bool CbrtOneBit(double const y, double const a, double const b) {
   double const b² = b * b;
   double const b³ = b² * b;
@@ -133,6 +129,14 @@ bool CbrtOneBit(double const y, double const a, double const b) {
       (ρ_next[0] == 0 && ρ_next[1] == 0 && ρ_next[2] >= 0);
   return ρ_next_positive;
 }
+
+double CorrectLastBit(double const y, double const r₀, double const r̃) {
+  double const a = std::min(r₀, r̃);
+  double const b = 0.5 * std::abs(r₀ - r̃);
+  return CbrtOneBit(y, a, b) ? std::max(r₀, r̃) : a;
+}
+
+}  // namespace
 
 
 namespace masks {

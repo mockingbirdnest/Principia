@@ -72,7 +72,7 @@ class AngleReduction<Angle, -π / 2, π / 2> {
     reduced_in_half_cycles = _mm_cvtsd_f64(
         _mm_sub_sd(x_128d, _mm_cvtsi64_sd(__m128d{}, integer_part)));
 #else
-    integer_part = std::nearbyint(θ_in_half_cycles);
+    integer_part = static_cast<std::int64_t>(std::nearbyint(θ_in_half_cycles));
     reduced_in_half_cycles = θ_in_half_cycles - integer_part;
 #endif
     fractional_part = reduced_in_half_cycles * π * Radian;

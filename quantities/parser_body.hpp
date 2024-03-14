@@ -166,19 +166,20 @@ inline int ParseExponent(std::string const& s) {
   char* interpreted_end;
   char const* const c_string = s.c_str();
   int const exponent = std::strtol(c_string, &interpreted_end, /*base=*/10);
-  int const interpreted = interpreted_end - c_string;
+  std::int64_t const interpreted = interpreted_end - c_string;
   CHECK_LT(0, interpreted) << "invalid integer number " << s;
   return exponent;
 }
 
 inline Unit ParseExponentiationUnit(std::string const& s) {
-  int const first_caret = s.find('^');
+  std::int64_t const first_caret = s.find('^');
   if (first_caret == std::string::npos) {
     return ParseUnit(s);
   } else {
-    int const first_nonblank = s.find_first_not_of(' ', first_caret + 1);
+    std::int64_t const first_nonblank =
+        s.find_first_not_of(' ', first_caret + 1);
     CHECK_NE(std::string::npos, first_nonblank);
-    int const last_nonblank = s.find_last_not_of(' ', first_caret - 1);
+    std::int64_t const last_nonblank = s.find_last_not_of(' ', first_caret - 1);
     CHECK_NE(std::string::npos, last_nonblank);
     auto const left = ParseUnit(s.substr(0, last_nonblank + 1));
     auto const right = ParseExponent(s.substr(first_nonblank));
@@ -189,10 +190,10 @@ inline Unit ParseExponentiationUnit(std::string const& s) {
 inline Unit ParseProductUnit(std::string const& s) {
   // For a product we are looking for a blank character that is not next to a
   // carret.
-  int first_blank;
-  int first_nonblank;
-  int last_nonblank;
-  for (int start = 0;; start = first_blank + 1) {
+  std::int64_t first_blank;
+  std::int64_t first_nonblank;
+  std::int64_t last_nonblank;
+  for (std::int64_t start = 0;; start = first_blank + 1) {
     first_blank = s.find(' ', start);
     if (first_blank == std::string::npos) {
       return ParseExponentiationUnit(s);
@@ -212,14 +213,15 @@ inline Unit ParseProductUnit(std::string const& s) {
 
 inline Unit ParseQuotientUnit(std::string const& s) {
   // Look for the slash from the back to achieve proper associativity.
-  int const last_slash = s.rfind('/');
+  std::int64_t const last_slash = s.rfind('/');
   if (last_slash == std::string::npos) {
     // Not a quotient.
     return ParseProductUnit(s);
   } else {
     // A quotient.  Parse each half.  Note that there may not be a left half for
     // input like 1.23 / s.
-    int const first_nonblank = s.find_first_not_of(' ', last_slash + 1);
+    std::int64_t const first_nonblank =
+        s.find_first_not_of(' ', last_slash + 1);
     CHECK_NE(std::string::npos, first_nonblank);
     std::size_t const last_nonblank =
         last_slash == 0 ? std::string::npos
@@ -238,12 +240,12 @@ Q ParseQuantity(std::string const& s) {
   char* interpreted_end;
   char const* const c_string = s.c_str();
   double const magnitude = std::strtod(c_string, &interpreted_end);
-  int const interpreted = interpreted_end - c_string;
+  std::int64_t const interpreted = interpreted_end - c_string;
   CHECK_LT(0, interpreted) << "invalid floating-point number " << s;
 
   // Locate the unit.  It may be empty for a double.
-  int const first_nonblank = s.find_first_not_of(' ', interpreted);
-  int const last_nonblank = s.find_last_not_of(' ');
+  std::int64_t const first_nonblank = s.find_first_not_of(' ', interpreted);
+  std::int64_t const last_nonblank = s.find_last_not_of(' ');
   std::string unit_string;
   if (first_nonblank != std::string::npos) {
     unit_string = s.substr(first_nonblank, last_nonblank - first_nonblank + 1);
