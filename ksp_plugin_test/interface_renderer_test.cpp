@@ -52,6 +52,7 @@ class InterfaceRendererTest : public ::testing::Test {
     : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
       const_plugin_(plugin_.get()) {}
 
+  MockRenderer renderer_;
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> const plugin_;
   StrictMock<MockPlugin> const* const const_plugin_;
   Instant const t0_;
@@ -75,10 +76,9 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
       unused,
       &celestial_index_array[0],
       &parent_index_array[0]};
-  MockRenderer renderer;
-  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
+  EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 }
 
@@ -101,9 +101,8 @@ TEST_F(InterfaceRendererTest, Frenet) {
       &celestial_index_array[0],
       &parent_index_array[0]};
 
-  MockRenderer renderer;
-  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
+  EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
   {

@@ -140,9 +140,11 @@ class VesselTest : public testing::Test {
     vessel_.checkpointer_->WriteToMessage(message->mutable_checkpoint());
   }
 
-  MockEphemeris<Barycentric> ephemeris_;
+  std::vector<not_null<MassiveBody const*>> const bodies_;
   RotatingBody<Barycentric> const body_;
   Celestial const celestial_;
+  MockEphemeris<Barycentric> ephemeris_;
+
   PartId const part_id1_ = 111;
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
@@ -398,8 +400,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_CALL(ephemeris_,
               Prolong(_, _))
       .Times(AnyNumber());
-  std::vector<not_null<MassiveBody const*>> const bodies;
-  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
+  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies_));
   vessel_.CreateTrajectoryIfNeeded(t0_);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
@@ -822,8 +823,7 @@ TEST_F(VesselTest, SerializationSuccess) {
               Prolong(_, _))
       .WillRepeatedly(Return(absl::OkStatus()));
 
-  std::vector<not_null<MassiveBody const*>> const bodies;
-  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies));
+  ON_CALL(ephemeris_, bodies()).WillByDefault(ReturnRef(bodies_));
 
   vessel_.CreateFlightPlan(t0_ + 3.0 * Second,
                            10 * Kilogram,

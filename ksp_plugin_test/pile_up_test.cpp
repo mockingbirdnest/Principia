@@ -53,7 +53,6 @@ using ::testing::IsEmpty;
 using ::testing::Matcher;
 using ::testing::MockFunction;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::_;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
