@@ -43,22 +43,23 @@ using namespace principia::quantities::_quantities;
 class InterfacePlanetariumTest : public ::testing::Test {
  protected:
   InterfacePlanetariumTest()
-      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
+      : identity_(Rotation<Barycentric, AliceSun>::Identity()),
+        plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
         const_plugin_(plugin_.get()) {}
 
+  Rotation<Barycentric, AliceSun> identity_;
+  MockRenderer renderer_;
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> const plugin_;
   StrictMock<MockPlugin> const* const const_plugin_;
   Instant const t0_;
 };
 
 TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
-  auto const identity = Rotation<Barycentric, AliceSun>::Identity();
-  MockRenderer renderer;
-  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(*plugin_, CurrentTime()).WillRepeatedly(Return(t0_));
   EXPECT_CALL(*plugin_, PlanetariumRotation())
-      .WillRepeatedly(ReturnRef(identity));
-  EXPECT_CALL(renderer, WorldToPlotting(_, _, _))
+      .WillRepeatedly(ReturnRef(identity_));
+  EXPECT_CALL(renderer_, WorldToPlotting(_, _, _))
       .WillOnce(Return(RigidTransformation<World, Navigation>(
           World::origin,
           Navigation::origin,

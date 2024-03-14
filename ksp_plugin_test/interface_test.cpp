@@ -142,6 +142,7 @@ class InterfaceTest : public testing::Test {
         serialized_simple_plugin_(ReadFromBinaryFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
 
+  MockRenderer renderer_;
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   std::string const hexadecimal_simple_plugin_;
   std::vector<std::uint8_t> const serialized_simple_plugin_;
@@ -522,8 +523,7 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 }
 
 TEST_F(InterfaceTest, NewNavigationFrame) {
-  MockRenderer renderer;
-  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
 
   int const* const celestial_index_array[2] = {&celestial_index, nullptr};
   int const* const parent_index_array[2] = {&parent_index, nullptr};
@@ -543,7 +543,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
             std::unique_ptr<
                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
-    EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
+    EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
   }
 
@@ -560,7 +560,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
             std::unique_ptr<
                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
                 mock_navigation_frame))));
-    EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
+    EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
     principia__SetPlottingFrame(plugin_.get(), parameters);
   }
 }
@@ -584,9 +584,8 @@ TEST_F(InterfaceTest, NavballOrientation) {
       &celestial_index_array[0],
       &parent_index_array[0]};
 
-  MockRenderer renderer;
-  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrame(Pointer(mock_navigation_frame)));
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
+  EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
   Position<World> sun_position =

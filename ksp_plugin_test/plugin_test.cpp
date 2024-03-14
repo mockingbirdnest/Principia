@@ -72,7 +72,6 @@ using ::testing::Lt;
 using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::SizeIs;

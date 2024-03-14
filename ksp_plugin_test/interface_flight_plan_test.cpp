@@ -112,9 +112,31 @@ MATCHER(IsOk,
 class InterfaceFlightPlanTest : public ::testing::Test {
  protected:
   InterfaceFlightPlanTest()
-    : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
-      const_plugin_(plugin_.get()) {}
+      : adaptive_step_parameters_(
+            EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                DormandالمكاوىPrince1986RKN434FM,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*max_steps=*/111,
+            /*length_integration_tolerance=*/222 * Metre,
+            /*speed_integration_tolerance=*/333 * Metre / Second),
+        generalized_adaptive_step_parameters_(
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
+                Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
+            /*max_steps=*/111,
+            /*length_integration_tolerance=*/222 * Metre,
+            /*speed_integration_tolerance=*/333 * Metre / Second),
+        identity_(Rotation<Barycentric, AliceSun>::Identity()),
+        plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
+        const_plugin_(plugin_.get()) {}
 
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
+  Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+      generalized_adaptive_step_parameters_;
+  Rotation<Barycentric, AliceSun> identity_;
+  std::unique_ptr<MockManœuvre<Barycentric, Navigation>> navigation_manœuvre_;
+  MockRenderer renderer_;
+  StrictMock<MockFlightPlan> flight_plan_;
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> const plugin_;
   StrictMock<MockPlugin> const* const const_plugin_;
   Instant const t0_;
@@ -129,7 +151,6 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       /*delta_v=*/{4, 5, 6},
       /*is_inertially_fixed=*/true};
   StrictMock<MockVessel> vessel;
-  StrictMock<MockFlightPlan> flight_plan;
 
   EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
       .WillRepeatedly(Return(true));
@@ -138,7 +159,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(vessel, has_flight_plan())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(vessel, flight_plan())
-      .WillRepeatedly(ReturnRef(flight_plan));
+      .WillRepeatedly(ReturnRef(flight_plan_));
   EXPECT_CALL(*plugin_, ExtendPredictionForFlightPlan(vessel_guid))
       .Times(AnyNumber());
 
@@ -152,23 +173,23 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                               /*final_time=*/30,
                               /*mass_in_tonnes=*/100);
 
-  EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
+  EXPECT_CALL(flight_plan_, SetDesiredFinalTime(Instant() + 60 * Second))
       .WillOnce(Return(absl::OkStatus()));
   EXPECT_THAT(
       *principia__FlightPlanSetDesiredFinalTime(plugin_.get(), vessel_guid, 60),
       IsOk());
 
-  EXPECT_CALL(flight_plan, initial_time())
+  EXPECT_CALL(flight_plan_, initial_time())
       .WillOnce(Return(Instant() + 3 * Second));
   EXPECT_EQ(3, principia__FlightPlanGetInitialTime(plugin_.get(), vessel_guid));
 
-  EXPECT_CALL(flight_plan, desired_final_time())
+  EXPECT_CALL(flight_plan_, desired_final_time())
       .WillOnce(Return(Instant() + 4 * Second));
   EXPECT_EQ(4, principia__FlightPlanGetDesiredFinalTime(plugin_.get(),
                                                         vessel_guid));
 
   EXPECT_CALL(
-      flight_plan,
+      flight_plan_,
       SetAdaptiveStepParameters(
           AllOf(
               Property(
@@ -203,25 +224,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                    /*speed_integration_tolerance=*/33}),
               IsOk());
 
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandالمكاوىPrince1986RKN434FM,
-          Ephemeris<Barycentric>::NewtonianMotionEquation>(),
-      /*max_steps=*/111,
-      /*length_integration_tolerance=*/222 * Metre,
-      /*speed_integration_tolerance=*/333 * Metre / Second);
-  EXPECT_CALL(flight_plan, adaptive_step_parameters())
-      .WillOnce(ReturnRef(adaptive_step_parameters));
-  Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
-  generalized_adaptive_step_parameters(
-      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          Fine1987RKNG34,
-          Ephemeris<Barycentric>::GeneralizedNewtonianMotionEquation>(),
-      /*max_steps=*/111,
-      /*length_integration_tolerance=*/222 * Metre,
-      /*speed_integration_tolerance=*/333 * Metre / Second);
-  EXPECT_CALL(flight_plan, generalized_adaptive_step_parameters())
-      .WillOnce(ReturnRef(generalized_adaptive_step_parameters));
+  EXPECT_CALL(flight_plan_, adaptive_step_parameters())
+      .WillOnce(ReturnRef(adaptive_step_parameters_));
+  EXPECT_CALL(flight_plan_, generalized_adaptive_step_parameters())
+      .WillOnce(ReturnRef(generalized_adaptive_step_parameters_));
   FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
       /*integrator_kind=*/1,
       /*generalized_integrator_kind=*/2,
@@ -238,7 +244,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           ByMove(std::make_unique<StrictMock<
                      MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   EXPECT_CALL(
-      flight_plan,
+      flight_plan_,
       Insert(AllOf(HasThrust(1 * Kilo(Newton)),
                    HasSpecificImpulse(2 * Second * StandardGravity),
                    HasInitialTime(Instant() + 3 * Second),
@@ -251,7 +257,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   plugin_.get(), vessel_guid, interface_burn, 0),
               IsOk());
 
-  EXPECT_CALL(flight_plan, number_of_manœuvres())
+  EXPECT_CALL(flight_plan_, number_of_manœuvres())
       .WillOnce(Return(4));
   EXPECT_EQ(4, principia__FlightPlanNumberOfManoeuvres(plugin_.get(),
                                                        vessel_guid));
@@ -285,7 +291,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       std::unique_ptr<RigidReferenceFrame<Barycentric, Navigation> const>(
           navigation_manœuvre_frame),
       /*is_inertially_fixed=*/true};
-  MockManœuvre<Barycentric, Navigation> navigation_manœuvre(20 * Tonne, burn);
+  navigation_manœuvre_ =
+      std::make_unique<MockManœuvre<Barycentric, Navigation>>(20 * Tonne, burn);
   auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
       RigidTransformation<Barycentric, Navigation>(
           Barycentric::origin,
@@ -293,14 +300,12 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           OrthogonalMap<Barycentric, Navigation>::Identity()),
       Barycentric::nonrotating,
       Barycentric::unmoving);
-  MockRenderer renderer;
-  auto const identity = Rotation<Barycentric, AliceSun>::Identity();
-  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(*plugin_, PlanetariumRotation())
-      .WillRepeatedly(ReturnRef(identity));
-  EXPECT_CALL(flight_plan, GetManœuvre(3))
-      .WillOnce(ReturnRef(navigation_manœuvre));
+      .WillRepeatedly(ReturnRef(identity_));
+  EXPECT_CALL(flight_plan_, GetManœuvre(3))
+      .WillOnce(ReturnRef(*navigation_manœuvre_));
   EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
       .WillOnce(Return(celestial_index));
   auto const navigation_manoeuvre =
@@ -316,20 +321,20 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_THAT(navigation_manoeuvre->burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
 
-  EXPECT_CALL(flight_plan, GetManœuvre(3))
-      .WillOnce(ReturnRef(navigation_manœuvre));
+  EXPECT_CALL(flight_plan_, GetManœuvre(3))
+      .WillOnce(ReturnRef(*navigation_manœuvre_));
 
-  EXPECT_CALL(renderer, BarycentricToWorldSun(_))
+  EXPECT_CALL(renderer_, BarycentricToWorldSun(_))
       .WillOnce(Return(
           Permutation<Barycentric, WorldSun>(
               Permutation<Barycentric, WorldSun>::CoordinatePermutation::YXZ)
               .Forget<OrthogonalMap>()));
-  EXPECT_CALL(navigation_manœuvre, FrenetFrame())
+  EXPECT_CALL(*navigation_manœuvre_, FrenetFrame())
       .WillOnce(
           Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
   EXPECT_CALL(*plugin_, CurrentTime())
       .WillRepeatedly(Return(Instant() - 4 * Second));
-  EXPECT_CALL(renderer, GetPlottingFrame())
+  EXPECT_CALL(renderer_, GetPlottingFrame())
       .WillRepeatedly(Return(plotting_frame.get()));
   EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
       .WillOnce(Return(barycentric_to_plotting));
@@ -339,7 +344,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                                    vessel_guid,
                                                    3);
 
-  EXPECT_CALL(flight_plan, number_of_segments())
+  EXPECT_CALL(flight_plan_, number_of_segments())
       .WillOnce(Return(12));
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       vessel_guid));
@@ -365,9 +370,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_OK(segment.Append(t0_, immobile_origin));
   EXPECT_OK(segment.Append(t0_ + 1 * Second, immobile_origin));
   EXPECT_OK(segment.Append(t0_ + 2 * Second, immobile_origin));
-  EXPECT_CALL(flight_plan, GetSegment(3))
+  EXPECT_CALL(flight_plan_, GetSegment(3))
       .WillOnce(Return(segment.segments().begin()));
-  EXPECT_CALL(renderer, RenderBarycentricTrajectoryInWorld(_, _, _, _, _))
+  EXPECT_CALL(renderer_, RenderBarycentricTrajectoryInWorld(_, _, _, _, _))
       .WillOnce(Return(ByMove(std::move(rendered_trajectory))));
   auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
@@ -391,7 +396,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                      MockRigidReferenceFrame<Barycentric, Navigation>>>())));
   auto const manœuvre = NavigationManœuvre(/*initial_mass=*/1 * Kilogram, burn);
   EXPECT_CALL(
-      flight_plan,
+      flight_plan_,
       Replace(
           AllOf(HasThrust(10 * Kilo(Newton)),
                 HasSpecificImpulse(2 * Second * StandardGravity),
@@ -405,7 +410,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   plugin_.get(), vessel_guid, interface_burn, 42),
               IsOk());
 
-  EXPECT_CALL(flight_plan, Remove(0));
+  EXPECT_CALL(flight_plan_, Remove(0));
   principia__FlightPlanRemove(plugin_.get(), vessel_guid, 0);
 
   EXPECT_CALL(vessel, DeleteFlightPlan());
