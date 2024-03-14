@@ -37,7 +37,7 @@ constexpr Array<Element>::Array(Container const& container)
 template<typename Element>
 template<std::size_t size_plus_1, typename Character, typename>
 constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
-    : data(static_cast<Element*>(characters)),
+    : data(reinterpret_cast<Element*>(characters)),
       size(size_plus_1 - 1) {
   // The |enable_if|s should prevent this from failing, but we explicitly
   // check that the cast is trivial or reinterprets a |char const*|.  The cast
