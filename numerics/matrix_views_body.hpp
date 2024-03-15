@@ -47,7 +47,8 @@ constexpr auto BlockView<Matrix>::operator()(
 template<typename Matrix>
   requires two_dimensional<Matrix>
 template<typename T>
-    requires two_dimensional<T> && std::same_as<typename T::Scalar, Scalar_>
+  requires two_dimensional<T> &&
+           std::same_as<typename T::Scalar, typename Matrix::Scalar>
 auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
   CHECK_EQ(rows(), right.rows());
   CHECK_EQ(columns(), right.columns());
@@ -74,13 +75,6 @@ auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
     result += Pow<2>(matrix(i, column));
   }
   return result;
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
-auto ColumnView<Matrix>::Normalize()
-    -> decltype(std::declval<Matrix>() / std::declval<Scalar>()) const {
-  return *this / Norm();
 }
 
 template<typename Matrix>

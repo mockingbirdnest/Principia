@@ -44,8 +44,8 @@ template<typename T>
   requires std::same_as<typename T::Scalar, Scalar_>
 UnboundedVector<Scalar_>::UnboundedVector(ColumnView<T> const& view)
     : UnboundedVector<Scalar_>(view.size(), uninitialized) {
-  for (int i = view.first_row; i <= view.last_row; ++i) {
-    (*this)[i - view.first_row] = view(i, view.column);
+  for (int i = 0; i < view.size(); ++i) {
+    (*this)[i] = view[i];
   }
 }
 
