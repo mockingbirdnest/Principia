@@ -395,13 +395,11 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedVector<RScalar> const& right);
 
 template<typename LMatrix, typename RScalar>
-  requires two_dimensional<LMatrix>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
     BlockView<LMatrix> const& left,
     UnboundedVector<RScalar> const& right);
 
 template<typename LMatrix, typename RScalar>
-  requires two_dimensional<LMatrix>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
     TransposedView<BlockView<LMatrix>> const& left,
     UnboundedVector<RScalar> const& right);
