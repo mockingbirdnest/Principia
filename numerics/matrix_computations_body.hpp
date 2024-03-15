@@ -9,6 +9,7 @@
 #include "absl/container/btree_set.h"
 #include "base/tags.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/matrix_views.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -22,165 +23,12 @@ namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
-
-// TODO(phl): The view stuff should be (1) made completed, i.e., have all the
-// operations that exist for fixed/unbounded vectors/matrices; (2) moved to a
-// common place (probably together with TransposedView); (3) unified with
-// fixed/unbounded arrays so that we don't have to write each algorithm N times.
-
-// A view of a column of a matrix.
-template<typename Matrix>
-struct ColumnView {
-  using Scalar = typename Matrix::Scalar;
-
-  Matrix& matrix;
-  int first_row;
-  int last_row;
-  int column;
-
-  Scalar Norm() const;
-  Square<Scalar> Norm²() const;
-  constexpr int size() const;
-
-  // Constructs an unbounded vector by copying data from the view.  Note that
-  // the result is unbounded even if the matrix being viewed is a FixedMatrix.
-  explicit operator UnboundedVector<Scalar>() const;
-
-  constexpr Scalar& operator[](int index);
-  constexpr Scalar const& operator[](int index) const;
-
-  ColumnView& operator/=(double right);
-};
-
-template<typename Matrix>
-auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
-  Square<Scalar> result{};
-  for (int i = first_row; i <= last_row; ++i) {
-    result += Pow<2>(matrix(i, column));
-  }
-  return result;
-}
-
-template<typename Matrix>
-auto ColumnView<Matrix>::Norm() const -> Scalar {
-  return Sqrt(Norm²());
-}
-
-template<typename Matrix>
-constexpr auto ColumnView<Matrix>::size() const -> int {
-  return last_row - first_row + 1;
-}
-
-template<typename Matrix>
-ColumnView<Matrix>::operator UnboundedVector<typename Matrix::Scalar>() const {
-  UnboundedVector<Scalar> result(size(), uninitialized);
-  for (int i = first_row; i <= last_row; ++i) {
-    result[i - first_row] = matrix(i, column);
-  }
-  return result;
-}
-
-template<typename Matrix>
-constexpr auto ColumnView<Matrix>::operator[](int const index) -> Scalar& {
-  CONSTEXPR_DCHECK(index <= last_row - first_row);
-  return matrix(first_row + index, column);
-}
-
-template<typename Matrix>
-constexpr auto ColumnView<Matrix>::operator[](
-    int const index) const -> Scalar const& {
-  CONSTEXPR_DCHECK(index <= last_row - first_row);
-  return matrix(first_row + index, column);
-}
-
-template<typename Matrix>
-auto ColumnView<Matrix>::operator/=(double const right) -> ColumnView<Matrix>& {
-  for (int i = first_row; i < last_row; ++i) {
-    matrix(i, column) /= right;
-  }
-}
-
-template<typename Matrix>
-UnboundedVector<double> Normalize(ColumnView<Matrix> const& view) {
-  return UnboundedVector<typename Matrix::Scalar>(view) / view.Norm();
-}
-
-template<typename Matrix>
-std::ostream& operator<<(std::ostream& out,
-                         ColumnView<Matrix> const& view) {
-  std::stringstream s;
-  for (int i = 0; i < view.size(); ++i) {
-    s << (i == 0 ? "{" : "") << view[i]
-      << (i == view.size() - 1 ? "}" : ", ");
-  }
-  out << s.str();
-  return out;
-}
-
-template<typename Matrix>
-struct BlockView {
-  using Scalar = typename Matrix::Scalar;
-
-  Matrix& matrix;
-  int first_row;
-  int last_row;
-  int first_column;
-  int last_column;
-
-  constexpr int rows() const;
-  constexpr int columns() const;
-
-  constexpr Scalar& operator()(int row, int column);
-  constexpr Scalar const& operator()(int row, int column) const;
-
-  BlockView& operator-=(UnboundedMatrix<Scalar> const& right);
-};
-
-template<typename Matrix>
-constexpr auto BlockView<Matrix>::rows() const -> int {
-  return last_row - first_row + 1;
-}
-
-template<typename Matrix>
-constexpr auto BlockView<Matrix>::columns() const -> int{
-  return last_column - first_column + 1;
-}
-
-template<typename Matrix>
-constexpr auto BlockView<Matrix>::operator()(
-    int const row, int const column) -> Scalar& {
-  CONSTEXPR_DCHECK(row <= last_row - first_row);
-  CONSTEXPR_DCHECK(column <= last_column - first_column);
-  return matrix(first_row + row, first_column + column);
-}
-
-template<typename Matrix>
-constexpr auto BlockView<Matrix>::operator()(
-    int const row,
-    int const column) const -> Scalar const& {
-  CONSTEXPR_DCHECK(row <= last_row - first_row);
-  CONSTEXPR_DCHECK(column <= last_column - first_column);
-  return matrix(first_row + row, first_column + column);
-}
-
-template<typename Matrix>
-auto BlockView<Matrix>::operator-=(
-    UnboundedMatrix<Scalar> const& right) -> BlockView<Matrix>& {
-  CHECK_EQ(rows(), right.rows());
-  CHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < right.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
-      matrix(first_row + i, first_column + j) -= right(i, j);
-    }
-  }
-  return *this;
-}
-
 
 template<typename LMatrix, typename RScalar>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
