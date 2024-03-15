@@ -58,6 +58,7 @@ auto BlockView<Matrix>::operator-=(
   return *this;
 }
 
+
 template<typename Matrix>
   requires two_dimensional<Matrix>
 auto ColumnView<Matrix>::Norm() const -> Scalar {
@@ -130,6 +131,41 @@ std::ostream& operator<<(std::ostream& out,
   }
   out << s.str();
   return out;
+}
+
+
+template<typename LMatrix, typename RScalar>
+  requires two_dimensional<LMatrix>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    BlockView<LMatrix> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
+      left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
+    }
+  }
+  return result;
+}
+
+template<typename LMatrix, typename RScalar>
+  requires two_dimensional<LMatrix>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    TransposedView<BlockView<LMatrix>> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
+      left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
+    }
+  }
+  return result;
 }
 
 }  // namespace internal

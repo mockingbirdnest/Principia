@@ -1,8 +1,9 @@
 #pragma once
 
 #include "numerics/concepts.hpp"
-#include "quantities/named_quantities.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -14,6 +15,7 @@ namespace internal {
 // fixed/unbounded arrays so that we don't have to write each algorithm N times.
 
 using namespace principia::numerics::_concepts;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_named_quantities;
 
@@ -55,6 +57,7 @@ struct ColumnView {
 
   // Constructs an unbounded vector by copying data from the view.  Note that
   // the result is unbounded even if the matrix being viewed is a FixedMatrix.
+  //TODO(phl)Move
   explicit operator UnboundedVector<Scalar>() const;
 
   constexpr Scalar& operator[](int index);
@@ -62,6 +65,20 @@ struct ColumnView {
 
   ColumnView& operator/=(double right);
 };
+
+//TODO(phl)Move these operators.
+
+template<typename LMatrix, typename RScalar>
+  requires two_dimensional<LMatrix>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    BlockView<LMatrix> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LMatrix, typename RScalar>
+  requires two_dimensional<LMatrix>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    TransposedView<BlockView<LMatrix>> const& left,
+    UnboundedVector<RScalar> const& right);
 
 }  // namespace internal
 

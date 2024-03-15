@@ -30,38 +30,6 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-template<typename LMatrix, typename RScalar>
-UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
-    BlockView<LMatrix> const& left,
-    UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
-  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
-      left.rows());
-  for (int i = 0; i < left.rows(); ++i) {
-    auto& result_i = result[i];
-    for (int j = 0; j < left.columns(); ++j) {
-      result_i += left(i, j) * right[j];
-    }
-  }
-  return result;
-}
-
-template<typename LMatrix, typename RScalar>
-UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
-    TransposedView<BlockView<LMatrix>> const& left,
-    UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
-  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
-      left.rows());
-  for (int i = 0; i < left.rows(); ++i) {
-    auto& result_i = result[i];
-    for (int j = 0; j < left.columns(); ++j) {
-      result_i += left(i, j) * right[j];
-    }
-  }
-  return result;
-}
-
 // As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure
 // when applying [the Householder reflection] to a matrix".
 struct HouseholderReflection {
