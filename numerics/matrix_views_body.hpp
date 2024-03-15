@@ -46,8 +46,9 @@ constexpr auto BlockView<Matrix>::operator()(
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-auto BlockView<Matrix>::operator-=(
-    UnboundedMatrix<Scalar> const& right) -> BlockView<Matrix>& {
+template<typename T>
+    requires two_dimensional<T> && std::same_as<typename T::Scalar, Scalar_>
+auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
   CHECK_EQ(rows(), right.rows());
   CHECK_EQ(columns(), right.columns());
   for (int i = 0; i < right.rows(); ++i) {
@@ -77,18 +78,15 @@ auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto ColumnView<Matrix>::size() const -> int {
-  return last_row - first_row + 1;
+auto ColumnView<Matrix>::Normalize()
+    -> decltype(std::declval<Matrix>() / std::declval<Scalar>()) const {
+  return *this / Norm();
 }
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-ColumnView<Matrix>::operator UnboundedVector<typename Matrix::Scalar>() const {
-  UnboundedVector<Scalar> result(size(), uninitialized);
-  for (int i = first_row; i <= last_row; ++i) {
-    result[i - first_row] = matrix(i, column);
-  }
-  return result;
+constexpr auto ColumnView<Matrix>::size() const -> int {
+  return last_row - first_row + 1;
 }
 
 template<typename Matrix>
@@ -115,13 +113,6 @@ auto ColumnView<Matrix>::operator/=(double const right) -> ColumnView<Matrix>& {
 }
 
 template<typename Matrix>
-  requires two_dimensional<Matrix>
-UnboundedVector<double> Normalize(ColumnView<Matrix> const& view) {
-  return UnboundedVector<typename Matrix::Scalar>(view) / view.Norm();
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
 std::ostream& operator<<(std::ostream& out,
                          ColumnView<Matrix> const& view) {
   std::stringstream s;
@@ -131,41 +122,6 @@ std::ostream& operator<<(std::ostream& out,
   }
   out << s.str();
   return out;
-}
-
-
-template<typename LMatrix, typename RScalar>
-  requires two_dimensional<LMatrix>
-UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
-    BlockView<LMatrix> const& left,
-    UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
-  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
-      left.rows());
-  for (int i = 0; i < left.rows(); ++i) {
-    auto& result_i = result[i];
-    for (int j = 0; j < left.columns(); ++j) {
-      result_i += left(i, j) * right[j];
-    }
-  }
-  return result;
-}
-
-template<typename LMatrix, typename RScalar>
-  requires two_dimensional<LMatrix>
-UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
-    TransposedView<BlockView<LMatrix>> const& left,
-    UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
-  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
-      left.rows());
-  for (int i = 0; i < left.rows(); ++i) {
-    auto& result_i = result[i];
-    for (int j = 0; j < left.columns(); ++j) {
-      result_i += left(i, j) * right[j];
-    }
-  }
-  return result;
 }
 
 }  // namespace internal

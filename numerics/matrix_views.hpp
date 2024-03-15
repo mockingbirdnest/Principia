@@ -1,8 +1,10 @@
 #pragma once
 
+#include <concepts>
+#include <utility>
+
 #include "numerics/concepts.hpp"
 #include "numerics/transposed_view.hpp"
-#include "numerics/unbounded_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -16,7 +18,6 @@ namespace internal {
 
 using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_named_quantities;
 
 // A view of a column of a matrix.  This view is `two_dimensional`.
@@ -37,7 +38,9 @@ struct BlockView {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
-  BlockView& operator-=(UnboundedMatrix<Scalar> const& right);
+  template<typename T>
+    requires two_dimensional<T> && std::same_as<typename T::Scalar, Scalar_>
+  BlockView& operator-=(T const& right);
 };
 
 // A view of a column of a matrix.  This view is `one_dimensional`.
@@ -53,12 +56,11 @@ struct ColumnView {
 
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
-  constexpr int size() const;
 
-  // Constructs an unbounded vector by copying data from the view.  Note that
-  // the result is unbounded even if the matrix being viewed is a FixedMatrix.
-  //TODO(phl)Move
-  explicit operator UnboundedVector<Scalar>() const;
+  auto Normalize()
+      -> decltype(std::declval<Matrix>() / std::declval<Scalar>()) const;
+
+  constexpr int size() const;
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
@@ -66,19 +68,9 @@ struct ColumnView {
   ColumnView& operator/=(double right);
 };
 
-//TODO(phl)Move these operators.
-
-template<typename LMatrix, typename RScalar>
-  requires two_dimensional<LMatrix>
-UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
-    BlockView<LMatrix> const& left,
-    UnboundedVector<RScalar> const& right);
-
-template<typename LMatrix, typename RScalar>
-  requires two_dimensional<LMatrix>
-UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
-    TransposedView<BlockView<LMatrix>> const& left,
-    UnboundedVector<RScalar> const& right);
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         ColumnView<Matrix> const& view);
 
 }  // namespace internal
 

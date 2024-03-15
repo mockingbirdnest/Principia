@@ -41,7 +41,7 @@ template<typename Vector>
 HouseholderReflection ComputeHouseholderReflection(Vector const& x) {
   // In order to avoid issues with quantities, we start by normalizing x.  This
   // implies that μ is 1.
-  auto const normalized_x = Normalize(x);
+  auto const normalized_x = x.Normalize();
   HouseholderReflection result{.v = UnboundedVector<double>(normalized_x),
                                .β = 0};
   double const& x₁ = normalized_x[0];
