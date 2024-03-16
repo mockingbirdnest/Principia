@@ -14,7 +14,7 @@ using namespace quantities::_quantities;
 
 template<typename T>
 concept quantity = std::integral<T> || std::floating_point<T> || requires(T q) {
-  { Quantity{q} } -> std::same_as<std::remove_const_t<T>>;
+  { Quantity{q} } -> std::same_as<std::remove_const_t<T>>;  // NOLINT
 };
 
 }  // namespace internal
