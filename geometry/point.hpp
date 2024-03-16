@@ -8,8 +8,8 @@
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -19,8 +19,8 @@ namespace internal {
 
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_traits;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should
 // be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
@@ -75,24 +75,24 @@ class Point final {
       L const& a, R const& b, Point<Product<L, R>> const& c);
 
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
-  operator<(Point<V> const& left, Point<V> const& right);
+    requires quantity<V>
+  friend constexpr bool operator<(Point<V> const& left, Point<V> const& right);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
-  operator<=(Point<V> const& left, Point<V> const& right);
+    requires quantity<V>
+  friend constexpr bool operator<=(Point<V> const& left, Point<V> const& right);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
-  operator>=(Point<V> const& left, Point<V> const& right);
+    requires quantity<V>
+  friend constexpr bool operator>=(Point<V> const& left, Point<V> const& right);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity_v<V>, bool>
-  operator>(Point<V> const& left, Point<V> const& right);
+    requires quantity<V>
+  friend constexpr bool operator>(Point<V> const& left, Point<V> const& right);
 
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity_v<V>, Point<V>>
-  NextUp(Point<V> x);
+    requires quantity<V>
+  friend constexpr Point<V> NextUp(Point<V> x);
   template<typename V>
-  friend constexpr typename std::enable_if_t<is_quantity_v<V>, Point<V>>
-  NextDown(Point<V> x);
+    requires quantity<V>
+  friend constexpr Point<V> NextDown(Point<V> x);
 
   template<typename V>
   friend std::string DebugString(Point<V> const& point);
@@ -115,27 +115,29 @@ Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
                                              Point<Product<L, R>> const& c);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
-operator<(Point<Vector> const& left, Point<Vector> const& right);
+  requires quantity<Vector>
+constexpr bool operator<(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
-operator<=(Point<Vector> const& left, Point<Vector> const& right);
+  requires quantity<Vector>
+constexpr bool operator<=(Point<Vector> const& left,
+                          Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
-operator>=(Point<Vector> const& left, Point<Vector> const& right);
+  requires quantity<Vector>
+constexpr bool operator>=(Point<Vector> const& left,
+                          Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
-operator>(Point<Vector> const& left, Point<Vector> const& right);
+  requires quantity<Vector>
+constexpr bool operator>(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
-NextUp(Point<Vector> x);
+  requires quantity<Vector>
+constexpr Point<Vector> NextUp(Point<Vector> x);
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
-NextDown(Point<Vector> x);
+  requires quantity<Vector>
+constexpr Point<Vector> NextDown(Point<Vector> x);
 
 template<typename Vector>
 std::string DebugString(Point<Vector> const& point);
@@ -154,8 +156,8 @@ namespace _barycentre_calculator {
 namespace internal {
 
 using namespace principia::geometry::_point;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_traits;
 
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {

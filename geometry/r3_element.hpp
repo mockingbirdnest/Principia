@@ -7,9 +7,9 @@
 
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -19,9 +19,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_traits;
 
 template<typename Scalar>
 struct SphericalCoordinates;
@@ -114,68 +114,68 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
 // Dimensionful multiplication |LScalar * R3Element<RScalar>| is the tensor
 // product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
 // the result is an R3Element<Product<LScalar, RScalar>>.
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
-R3Element<Product<LScalar, RScalar>>
-operator*(LScalar const& left, R3Element<RScalar> const& right);
+template<typename LScalar, typename RScalar>
+  requires quantity<LScalar>
+R3Element<Product<LScalar, RScalar>> operator*(LScalar const& left,
+                                               R3Element<RScalar> const& right);
 
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
-R3Element<Product<LScalar, RScalar>>
-operator*(R3Element<LScalar> const& left, RScalar const& right);
+template<typename LScalar, typename RScalar>
+  requires quantity<RScalar>
+R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
+                                               RScalar const& right);
 
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
-R3Element<Quotient<LScalar, RScalar>>
-operator/(R3Element<LScalar> const& left, RScalar const& right);
+template<typename LScalar, typename RScalar>
+  requires quantity<RScalar>
+R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
+                                                RScalar const& right);
 
 // FMA for ±vector * scalar ± vector.
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 
 // FMA for ±scalar * vector ± vector.
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar>
+  requires quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,

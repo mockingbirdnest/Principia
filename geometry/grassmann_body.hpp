@@ -341,7 +341,8 @@ Multivector<Scalar, Frame, rank> operator-(
       left.coordinates() - right.coordinates());
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 operator*(LScalar const& left,
           Multivector<RScalar, Frame, rank> const& right) {
@@ -349,7 +350,8 @@ operator*(LScalar const& left,
       left * right.coordinates());
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 operator*(Multivector<LScalar, Frame, rank> const& left,
           RScalar const& right) {
@@ -357,7 +359,8 @@ operator*(Multivector<LScalar, Frame, rank> const& left,
       left.coordinates() * right);
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
           RScalar const& right) {
@@ -365,7 +368,8 @@ operator/(Multivector<LScalar, Frame, rank> const& left,
       left.coordinates() / right);
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
@@ -376,7 +380,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
       FusedMultiplyAdd(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
@@ -387,7 +392,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
       FusedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
@@ -398,7 +404,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
       FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
@@ -410,7 +417,8 @@ FusedNegatedMultiplySubtract(
       FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
@@ -421,7 +429,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
       FusedMultiplyAdd(a, b.coordinates(), c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
@@ -432,7 +441,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
       FusedMultiplySubtract(a, b.coordinates(), c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
@@ -443,7 +453,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
       FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
     LScalar const& a,
