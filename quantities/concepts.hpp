@@ -3,6 +3,7 @@
 #include <concepts>
 #include <type_traits>
 
+#include "base/traits.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -10,12 +11,12 @@ namespace quantities {
 namespace _concepts {
 namespace internal {
 
+using namespace base::_traits;
 using namespace quantities::_quantities;
 
 template<typename T>
-concept quantity = std::integral<T> || std::floating_point<T> || requires(T q) {
-  { Quantity{q} } -> std::same_as<std::remove_const_t<T>>;  // NOLINT
-};
+concept quantity = std::integral<T> || std::floating_point<T> ||
+                   is_instance_of_v<Quantity, T>;
 
 }  // namespace internal
 
