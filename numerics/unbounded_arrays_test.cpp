@@ -49,7 +49,6 @@ class UnboundedArraysTest : public ::testing::Test {
   UnboundedMatrix<double> m34_;
   UnboundedMatrix<double> m23_;
   UnboundedMatrix<double> n23_;
-  UnboundedMatrix<double> m4_;//????
   UnboundedLowerTriangularMatrix<double> l4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
