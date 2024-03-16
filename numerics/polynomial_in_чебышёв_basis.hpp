@@ -13,8 +13,8 @@
 #include "absl/container/btree_set.h"
 #include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/traits.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {
@@ -50,8 +50,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
-using namespace principia::quantities::_traits;
 
 template<typename Value_, typename Argument_, auto _ = std::nullopt>
 class PolynomialInЧебышёвBasis;
@@ -76,12 +76,12 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   // of |error_estimate| has no real roots.  This is useful if the series is an
   // approximation of some function with an L∞ error less than |error_estimate|.
   bool MayHaveRealRoots(Value error_estimate = Value{}) const
-    requires is_quantity_v<Value_>;
+    requires quantity<Value_>;
 
   // Returns the real roots of the polynomial, computed as the eigenvalues of
   // the Frobenius companion matrix.
   absl::btree_set<Argument> RealRoots(double ε) const
-    requires is_quantity_v<Value_>;
+    requires quantity<Value_>;
 
   // Compatibility deserialization: this class is the equivalent of the old
   // ЧебышёвSeries.
@@ -124,7 +124,7 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
 
   // Returns the Frobenius companion matrix suitable for the Чебышёв basis.
   FixedMatrix<double, degree_, degree_> FrobeniusCompanionMatrix() const
-    requires is_quantity_v<Value_>;
+    requires quantity<Value_>;
 
   void WriteToMessage(not_null<serialization::Polynomial*> message) const;
   static PolynomialInЧебышёвBasis ReadFromMessage(

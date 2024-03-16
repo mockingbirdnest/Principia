@@ -7,9 +7,9 @@
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "geometry/r3_element.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -20,9 +20,9 @@ namespace internal {
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_traits;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of
@@ -258,71 +258,70 @@ Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
-Multivector<Product<LScalar, RScalar>, Frame, rank>
-operator*(LScalar const& left,
-          Multivector<RScalar, Frame, rank> const& right);
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    LScalar const& left,
+    Multivector<RScalar, Frame, rank> const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
-Multivector<Product<LScalar, RScalar>, Frame, rank>
-operator*(Multivector<LScalar, Frame, rank> const& left,
-          RScalar const& right);
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
+Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
+    Multivector<LScalar, Frame, rank> const& left,
+    RScalar const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
-Multivector<Quotient<LScalar, RScalar>, Frame, rank>
-operator/(Multivector<LScalar, Frame, rank> const& left,
-          RScalar const& right);
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
+Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
+    Multivector<LScalar, Frame, rank> const& left,
+    RScalar const& right);
 
-
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank,
-         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+template<typename LScalar, typename RScalar, typename Frame, int rank>
+  requires quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
     LScalar const& a,

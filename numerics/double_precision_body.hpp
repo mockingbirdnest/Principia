@@ -15,9 +15,9 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/fma.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
-#include "quantities/traits.hpp"
 
 namespace principia {
 namespace numerics {
@@ -32,7 +32,7 @@ using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
-using namespace principia::quantities::_traits;
+using namespace principia::quantities::_concepts;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
 // complicated as it needs to peel off all of our abstractions until it reaches
@@ -101,10 +101,8 @@ struct ComponentwiseComparator<R3Element<T>, R3Element<U>> : not_constructible {
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<T, U,
-                               std::enable_if_t<
-                                   std::conjunction_v<is_quantity<T>,
-                                                      is_quantity<U>>>> {
+  requires quantity<T> && quantity<U>
+struct ComponentwiseComparator<T, U> {
   static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
     return Abs(left) >= Abs(right) || left == T{};
   }
