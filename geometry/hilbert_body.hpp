@@ -12,7 +12,7 @@ namespace internal {
 using namespace principia::quantities::_elementary_functions;
 
 template<typename T1, typename T2>
-  requires quantity<T1> && quantity<T2> && (!std::is_same_v<T1, T2>)
+  requires quantity<T1> && quantity<T2>
 auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
     -> InnerProductType {
   return t1 * t2;
@@ -36,6 +36,15 @@ auto Hilbert<T, T>::Norm(T const& t) -> NormType {
   return Abs(t);
 }
 
+#if !(_MSC_FULL_VER == 193'431'937 || \
+      _MSC_FULL_VER == 193'431'942 || \
+      _MSC_FULL_VER == 193'431'944 || \
+      _MSC_FULL_VER == 193'532'216 || \
+      _MSC_FULL_VER == 193'532'217 || \
+      _MSC_FULL_VER == 193'632'532 || \
+      _MSC_FULL_VER == 193'632'535 || \
+      _MSC_FULL_VER == 193'732'822 || \
+      _MSC_FULL_VER == 193'833'135)
 template<typename T1, typename T2>
   requires hilbert<T1, T2>
 auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
@@ -64,6 +73,7 @@ template<typename T>
 auto Hilbert<T, T>::Norm(T const& t) -> NormType {
   return t.Norm();
 }
+#endif
 
 }  // namespace internal
 }  // namespace _hilbert
