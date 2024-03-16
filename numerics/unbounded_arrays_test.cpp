@@ -28,7 +28,7 @@ class UnboundedArraysTest : public ::testing::Test {
            {1, -2,  0,
             2,  3,  7}),
       n23_(2, 3,
-           { 5,  -1,  3,
+           { 5, -1,  3,
             12, 13, -4}),
       m4_({  1,   2,   3,    5,
              8,  13,  21,   34,
@@ -122,7 +122,7 @@ TEST_F(UnboundedArraysTest, Assignment) {
 TEST_F(UnboundedArraysTest, Norm) {
   EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
-  EXPECT_EQ(35, v4_.Norm²());
+  EXPECT_EQ(35, v4_.NormÂ²());
   EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
 }
 
@@ -141,6 +141,23 @@ TEST_F(UnboundedArraysTest, AdditiveGroups) {
   EXPECT_EQ((UnboundedMatrix<double>(2, 3,
                                      { -4,  -1, -3,
                                       -10, -10, 11})), m23_ - n23_);
+}
+
+TEST_F(UnboundedArraysTest, VectorSpaces) {
+  EXPECT_EQ((UnboundedVector<double>({12, -2, 24})), 2 * u3_);
+  EXPECT_EQ((UnboundedVector<double>({-30, -93, 141})), v3_ * -3);
+
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {2, -4,  0,
+                                      4,  6, 14})), 2 * m23_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-15,   3, -9,
+                                      -36, -39, 12})), n23_ * -3);
+
+  EXPECT_EQ((UnboundedVector<double>({2.5, 7.75, -11.75})), v3_ / 4);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-2.5,  0.5, -1.5,
+                                        -6, -6.5,  2})), n23_ / -2);
 }
 
 TEST_F(UnboundedArraysTest, MultiplicationDivision) {

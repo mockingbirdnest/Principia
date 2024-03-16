@@ -564,12 +564,11 @@ UnboundedMatrix<Square<Scalar>> SymmetricSquare(
 
 template<typename Scalar>
 UnboundedVector<Scalar> operator-(UnboundedVector<Scalar> const& right) {
-  std::vector<Scalar> result;
-  result.reserve(right.size());
+  UnboundedVector<Scalar> result(right.size(), uninitialized);
   for (int i = 0; i < right.size(); ++i) {
     result[i] = -right[i];
   }
-  return UnboundedVector<Scalar>(std::move(result));
+  return result;
 }
 
 template<typename Scalar>
@@ -588,12 +587,11 @@ UnboundedVector<Sum<LScalar, RScalar>> operator+(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.size(), right.size());
-  std::vector<Sum<LScalar, RScalar>> result;
-  result.resize(right.size());
+  UnboundedVector<Sum<LScalar, RScalar>> result(right.size(), uninitialized);
   for (int i = 0; i < right.size(); ++i) {
     result[i] = left[i] + right[i];
   }
-  return UnboundedVector<Sum<LScalar, RScalar>>(std::move(result));
+  return result;
 }
 
 template<typename LScalar, typename RScalar>
@@ -617,12 +615,11 @@ UnboundedVector<Difference<LScalar, RScalar>> operator-(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.size(), right.size());
-  std::vector<Sum<LScalar, RScalar>> result;
-  result.resize(right.size());
+  UnboundedVector<Sum<LScalar, RScalar>> result(right.size(), uninitialized);
   for (int i = 0; i < right.size(); ++i) {
     result[i] = left[i] - right[i];
   }
-  return UnboundedVector<Difference<LScalar, RScalar>>(std::move(result));
+  return result;
 }
 
 template<typename LScalar, typename RScalar>
@@ -738,7 +735,7 @@ UnboundedVector<Quotient<LScalar, RScalar>> operator/(
 template<typename LScalar, typename RScalar>
 UnboundedMatrix<Quotient<LScalar, RScalar>> operator/(
     UnboundedMatrix<LScalar> const& left,
-    RScalar const right) {
+    RScalar const& right) {
   UnboundedMatrix<Quotient<LScalar, RScalar>> result(left.rows(),
                                                      left.columns(),
                                                      uninitialized);

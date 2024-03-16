@@ -24,7 +24,7 @@ class FixedArraysTest : public ::testing::Test {
              6,  -3, -2, -9}),
       m23_({1, -2,  0,
             2,  3,  7}),
-      n23_({ 5,  -1,  3,
+      n23_({ 5, -1,  3,
             12, 13, -4}),
       sl4_({
             1,
