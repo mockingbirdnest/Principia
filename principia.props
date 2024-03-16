@@ -98,14 +98,19 @@
         -Wno-global-constructors
         -Wno-gnu-anonymous-struct
         -Wno-gnu-zero-variadic-macro-arguments
+        -Wno-implicit-int-float-conversion
         -Wno-macro-redefined
         -Wno-mathematical-notation-identifier-extension
         -Wno-nested-anon-types
         -Wno-reserved-macro-identifier
+        -Wno-shadow-field-in-constructor
         -Wno-shadow-uncaptured-local
+        -Wno-sign-compare
         -Wno-sign-conversion
         -Wno-undef
         -Wno-unknown-pragmas
+        -Wno-unsafe-buffer-usage
+        -Xclang -fno-char8_t
         <!--Warnings in protobuf generated code are none of our business.-->
         -Xclang --system-header-prefix=serialization/
         <!--Same for warnings in dependencies.-->

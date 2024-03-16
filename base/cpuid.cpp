@@ -13,6 +13,7 @@ namespace principia {
 namespace base {
 namespace _cpuid {
 namespace internal {
+namespace {
 
 struct CPUIDResult {
   std::uint32_t eax;
@@ -35,6 +36,8 @@ CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
   return result;
 #endif
 }
+
+}  // namespace
 
 std::string CPUVendorIdentificationString() {
   auto const leaf_0 = CPUID(0, 0);

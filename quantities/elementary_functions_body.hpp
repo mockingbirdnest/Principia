@@ -122,7 +122,7 @@ constexpr double Pow(double x) {
 // turned into multiplications at compile time.
 
 template<>
-inline constexpr double Pow<0>(double x) {
+inline constexpr double Pow<0>(double) {
   return 1;
 }
 

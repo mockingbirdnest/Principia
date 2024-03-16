@@ -18,7 +18,7 @@ using namespace principia::quantities::_elementary_functions;
 template<class T>
 template<class U, class... Args>
 void uninitialized_allocator<T>::construct(U* const p, Args&&... args) {
-  ::new ((void*)p) U(std::forward<Args>(args)...);  // NOLINT
+  ::new (static_cast<void*>(p)) U(std::forward<Args>(args)...);
 }
 
 template<typename Scalar_>
