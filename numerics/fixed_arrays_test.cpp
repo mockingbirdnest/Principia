@@ -16,16 +16,16 @@ using namespace principia::quantities::_elementary_functions;
 class FixedArraysTest : public ::testing::Test {
  protected:
   FixedArraysTest()
-    : m34_({-8,  -6, -4, -7,
+    : u3_({6, -1, 12}),
+      v3_({10, 31, -47}),
+      v4_({-3, -3, 1, 4}),
+      m34_({-8,  -6, -4, -7,
             -4, -10,  9, -5,
              6,  -3, -2, -9}),
       m23_({1, -2,  0,
             2,  3,  7}),
-      n23_({5,  -1,  3,
+      n23_({ 5,  -1,  3,
             12, 13, -4}),
-      u3_({6, -1, 12}),
-      v3_({10, 31, -47}),
-      v4_({-3, -3, 1, 4}),
       sl4_({
             1,
             2, 3,
@@ -39,52 +39,93 @@ class FixedArraysTest : public ::testing::Test {
                   34, 55,
                       89}) {}
 
-  FixedMatrix<double, 3, 4> m34_;
-  FixedMatrix<double, 2, 3> m23_;
-  FixedMatrix<double, 2, 3> n23_;
   FixedVector<double, 3> u3_;
   FixedVector<double, 3> v3_;
   FixedVector<double, 4> v4_;
+  FixedMatrix<double, 3, 4> m34_;
+  FixedMatrix<double, 2, 3> m23_;
+  FixedMatrix<double, 2, 3> n23_;
   FixedStrictlyLowerTriangularMatrix<double, 4> sl4_;
   FixedLowerTriangularMatrix<double, 4> l4_;
   FixedUpperTriangularMatrix<double, 4> u4_;
 };
 
 TEST_F(FixedArraysTest, Assignment) {
-  FixedVector<double, 2> u2({1, 2});
-  FixedVector<double, 2> v2 = {{1, 2}};
-  FixedVector<double, 2> w2;
-  w2 = {{1, 2}};
-  EXPECT_EQ(u2, v2);
-  EXPECT_EQ(u2, w2);
+  {
+    FixedVector<double, 2> u2({1, 2});
+    FixedVector<double, 2> v2 = {{1, 2}};
+    FixedVector<double, 2> w2;
+    w2 = {{1, 2}};
+    EXPECT_EQ(u2, v2);
+    EXPECT_EQ(u2, w2);
+  }
 
-  FixedMatrix<double, 2, 3> l23({1, 2, 3,
-                                 4, 5, 6});
-  FixedMatrix<double, 2, 3> m23 = {{1, 2, 3,
-                                    4, 5, 6}};
-  FixedMatrix<double, 2, 3> n23 = {{0, 0, 0,
-                                    0, 0, 0}};
-  n23 = {{1, 2, 3,
-          4, 5, 6}};
-  EXPECT_EQ(l23, m23);
-  EXPECT_EQ(l23, n23);
-
-  FixedStrictlyLowerTriangularMatrix<double, 3> l3({
-                                                    1,
-                                                    2, 3});
-  FixedStrictlyLowerTriangularMatrix<double, 3> m3 = {{
-                                                       1,
-                                                       2, 3}};
-  FixedStrictlyLowerTriangularMatrix<double, 3> n3 = {{
-                                                       0,
-                                                       0, 0}};
-  FixedStrictlyLowerTriangularMatrix<double, 3> o3;
-  EXPECT_EQ(o3, n3);
-  n3 = {{
-         1,
-         2, 3}};
-  EXPECT_EQ(l3, m3);
-  EXPECT_EQ(l3, n3);
+  {
+    FixedMatrix<double, 2, 3> l23({1, 2, 3,
+                                   4, 5, 6});
+    FixedMatrix<double, 2, 3> m23 = {{1, 2, 3,
+                                      4, 5, 6}};
+    FixedMatrix<double, 2, 3> n23 = {{0, 0, 0,
+                                      0, 0, 0}};
+    n23 = {{1, 2, 3,
+            4, 5, 6}};
+    EXPECT_EQ(l23, m23);
+    EXPECT_EQ(l23, n23);
+  }
+  {
+    FixedStrictlyLowerTriangularMatrix<double, 3> l3({
+                                                      1,
+                                                      2, 3 });
+    FixedStrictlyLowerTriangularMatrix<double, 3> m3 = {{
+                                                         1,
+                                                         2, 3}};
+    FixedStrictlyLowerTriangularMatrix<double, 3> n3 = {{
+                                                         0,
+                                                         0, 0}};
+    FixedStrictlyLowerTriangularMatrix<double, 3> o3;
+    EXPECT_EQ(o3, n3);
+    n3 = {{
+           1,
+           2, 3}};
+    EXPECT_EQ(l3, m3);
+    EXPECT_EQ(l3, n3);
+  }
+  {
+    FixedLowerTriangularMatrix<double, 3> l3({1,
+                                              2, 3,
+                                              4, 5, 6});
+    FixedLowerTriangularMatrix<double, 3> m3 = {{1,
+                                                 2, 3,
+                                                 4, 5, 6}};
+    FixedLowerTriangularMatrix<double, 3> n3 = {{0,
+                                                 0, 0,
+                                                 0, 0, 0}};
+    FixedLowerTriangularMatrix<double, 3> o3;
+    EXPECT_EQ(o3, n3);
+    n3 = {{1,
+           2, 3,
+           4, 5, 6}};
+    EXPECT_EQ(l3, m3);
+    EXPECT_EQ(l3, n3);
+  }
+  {
+    FixedUpperTriangularMatrix<double, 3> l3({1, 2, 3,
+                                                 4, 5,
+                                                    6});
+    FixedUpperTriangularMatrix<double, 3> m3 = {{1, 2, 3,
+                                                    4, 5,
+                                                       6}};
+    FixedUpperTriangularMatrix<double, 3> n3 = {{0, 0, 0,
+                                                    0, 0,
+                                                       0}};
+    FixedUpperTriangularMatrix<double, 3> o3;
+    EXPECT_EQ(o3, n3);
+    n3 = {{1, 2, 3,
+              4, 5,
+                 6}};
+    EXPECT_EQ(l3, m3);
+    EXPECT_EQ(l3, n3);
+  }
 }
 
 TEST_F(FixedArraysTest, Norm) {

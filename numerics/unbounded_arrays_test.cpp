@@ -17,8 +17,19 @@ using namespace principia::testing_utilities::_almost_equals;
 class UnboundedArraysTest : public ::testing::Test {
  protected:
   UnboundedArraysTest()
-    : v3_({10, 31, -47}),
+    : u3_({6, -1, 12}),
+      v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
+      m34_(3, 4,
+           {-8,  -6, -4, -7,
+            -4, -10,  9, -5,
+             6,  -3, -2, -9}),
+      m23_(2, 3,
+           {1, -2,  0,
+            2,  3,  7}),
+      n23_(2, 3,
+           { 5,  -1,  3,
+            12, 13, -4}),
       m4_({  1,   2,   3,    5,
              8,  13,  21,   34,
             55,  89, 144,  233,
@@ -32,9 +43,13 @@ class UnboundedArraysTest : public ::testing::Test {
                  34, 55,
                      89}) {}
 
+  UnboundedVector<double> u3_;
   UnboundedVector<double> v3_;
   UnboundedVector<double> v4_;
-  UnboundedMatrix<double> m4_;
+  UnboundedMatrix<double> m34_;
+  UnboundedMatrix<double> m23_;
+  UnboundedMatrix<double> n23_;
+  UnboundedMatrix<double> m4_;//????
   UnboundedLowerTriangularMatrix<double> l4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
@@ -49,12 +64,22 @@ TEST_F(UnboundedArraysTest, Assignment) {
     EXPECT_EQ(u2, w2);
   }
   {
-    UnboundedMatrix<double> u2({1, 2, 3, 4});
-    UnboundedMatrix<double> v2 = {{1, 2, 3, 4}};
-    UnboundedMatrix<double> w2(2, 2);
-    w2 = {{1, 2, 3, 4}};
-    EXPECT_EQ(u2, v2);
-    EXPECT_EQ(u2, w2);
+    UnboundedMatrix<double> l23(2, 3,
+                                {1, 2, 3,
+                                 4, 5, 6 });
+    UnboundedMatrix<double> m23 = {2, 3,
+                                   {1, 2, 3,
+                                    4, 5, 6}};
+    UnboundedMatrix<double> n23 = {2, 3,
+                                   {0, 0, 0,
+                                    0, 0, 0}};
+    // TODO(phl): It would be convenient to have an operator= taking an
+    // initializer list.
+    n23 = UnboundedMatrix<double>(2, 3,
+                                  {1, 2, 3,
+                                   4, 5, 6});
+    EXPECT_EQ(l23, m23);
+    EXPECT_EQ(l23, n23);
   }
   {
     UnboundedLowerTriangularMatrix<double> l3({1,
@@ -97,7 +122,25 @@ TEST_F(UnboundedArraysTest, Assignment) {
 TEST_F(UnboundedArraysTest, Norm) {
   EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
-  EXPECT_EQ(Sqrt(4'126'647.0), m4_.FrobeniusNorm());
+  EXPECT_EQ(35, v4_.Norm²());
+  EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
+}
+
+TEST_F(UnboundedArraysTest, AdditiveGroups) {
+  EXPECT_EQ((UnboundedVector<double>({-10, -31, 47})), -v3_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-1,  2,  0,
+                                      -2, -3, -7})), -m23_);
+
+  EXPECT_EQ((UnboundedVector<double>({16, 30, -35})), u3_ + v3_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     { 6, -3, 3,
+                                      14, 16, 3})), m23_ + n23_);
+
+  EXPECT_EQ((UnboundedVector<double>({-4, -32, 59})), u3_ - v3_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     { -4,  -1, -3,
+                                      -10, -10, 11})), m23_ - n23_);
 }
 
 TEST_F(UnboundedArraysTest, MultiplicationDivision) {
