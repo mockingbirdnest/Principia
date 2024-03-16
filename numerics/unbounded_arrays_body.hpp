@@ -40,6 +40,16 @@ UnboundedVector<Scalar_>::UnboundedVector(
     : data_(data.begin(), data.end()) {}
 
 template<typename Scalar_>
+template<typename T>
+  requires std::same_as<typename T::Scalar, Scalar_>
+UnboundedVector<Scalar_>::UnboundedVector(ColumnView<T> const& view)
+    : UnboundedVector<Scalar_>(view.size(), uninitialized) {
+  for (int i = 0; i < view.size(); ++i) {
+    (*this)[i] = view[i];
+  }
+}
+
+template<typename Scalar_>
 void UnboundedVector<Scalar_>::Extend(int const extra_size) {
   DCHECK_LE(0, extra_size);
   data_.resize(data_.size() + extra_size, Scalar{});
@@ -73,6 +83,11 @@ Square<Scalar_> UnboundedVector<Scalar_>::Norm²() const {
     norm² += c * c;
   }
   return norm²;
+}
+
+template<typename Scalar_>
+UnboundedVector<double> UnboundedVector<Scalar_>::Normalize() const {
+  return *this / Norm();
 }
 
 template<typename Scalar_>
@@ -809,6 +824,38 @@ UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedVector<RScalar> const& right) {
   CHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
+    }
+  }
+  return result;
+}
+
+template<typename LMatrix, typename RScalar>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    BlockView<LMatrix> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
+      left.rows());
+  for (int i = 0; i < left.rows(); ++i) {
+    auto& result_i = result[i];
+    for (int j = 0; j < left.columns(); ++j) {
+      result_i += left(i, j) * right[j];
+    }
+  }
+  return result;
+}
+
+template<typename LMatrix, typename RScalar>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    TransposedView<BlockView<LMatrix>> const& left,
+    UnboundedVector<RScalar> const& right) {
+  CHECK_EQ(left.columns(), right.size());
+  UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
+      left.rows());
   for (int i = 0; i < left.rows(); ++i) {
     auto& result_i = result[i];
     for (int j = 0; j < left.columns(); ++j) {

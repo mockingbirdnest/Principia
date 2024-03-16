@@ -78,6 +78,11 @@ Square<Scalar_> FixedVector<Scalar_, size_>::Norm²() const {
 }
 
 template<typename Scalar_, int size_>
+FixedVector<double, size_> FixedVector<Scalar_, size_>::Normalize() const {
+  return *this / Norm();
+}
+
+template<typename Scalar_, int size_>
 constexpr Scalar_& FixedVector<Scalar_, size_>::operator[](int const index) {
   CONSTEXPR_DCHECK(0 <= index);
   CONSTEXPR_DCHECK(index < size());

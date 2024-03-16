@@ -263,6 +263,12 @@
     <ClInclude Include="transposed_view_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="matrix_views.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix_views_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fixed_arrays_test.cpp">

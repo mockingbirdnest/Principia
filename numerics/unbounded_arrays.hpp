@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <initializer_list>
 #include <memory>
 #include <type_traits>
@@ -7,7 +8,9 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "numerics/concepts.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,7 +21,9 @@ namespace _unbounded_arrays {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -49,8 +54,15 @@ class UnboundedVector final {
   explicit UnboundedVector(int size);  // Zero-initialized.
   UnboundedVector(int size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
+
   template<int size_>
   explicit UnboundedVector(FixedVector<Scalar, size_> const& data);
+
+  // Constructs an unbounded vector by copying data from the view.  Note that
+  // the result is unbounded even if the matrix being viewed is a FixedMatrix.
+  template<typename T>
+    requires std::same_as<typename T::Scalar, Scalar_>
+  explicit UnboundedVector(ColumnView<T> const& view);
 
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
@@ -60,6 +72,8 @@ class UnboundedVector final {
 
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
+
+  UnboundedVector<double> Normalize() const;
 
   int size() const;
 
@@ -378,6 +392,16 @@ UnboundedMatrix<Product<LScalar, RScalar>> operator*(
 template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<LScalar> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LMatrix, typename RScalar>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    BlockView<LMatrix> const& left,
+    UnboundedVector<RScalar> const& right);
+
+template<typename LMatrix, typename RScalar>
+UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
+    TransposedView<BlockView<LMatrix>> const& left,
     UnboundedVector<RScalar> const& right);
 
 // Use this operator to multiply a row vector with a matrix.  We don't have an

@@ -44,6 +44,8 @@ class FixedVector final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
+  FixedVector<double, size_> Normalize() const;
+
   static constexpr int size() { return size_; }
 
   constexpr Scalar& operator[](int index);

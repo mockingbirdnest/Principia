@@ -56,6 +56,8 @@
     <ClInclude Include="legendre_roots.mathematica.h" />
     <ClInclude Include="log_b.hpp" />
     <ClInclude Include="log_b_body.hpp" />
+    <ClInclude Include="matrix_views.hpp" />
+    <ClInclude Include="matrix_views_body.hpp" />
     <ClInclude Include="max_abs_normalized_associated_legendre_function.mathematica.h" />
     <ClInclude Include="nearest_neighbour.hpp" />
     <ClInclude Include="nearest_neighbour_body.hpp" />
