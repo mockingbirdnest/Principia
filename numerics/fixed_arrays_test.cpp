@@ -196,6 +196,9 @@ TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
   EXPECT_EQ(13, sl4_(3, 2));
   sl4_(3, 1) = -666;
   EXPECT_EQ(-666, sl4_(3, 1));
+
+  FixedStrictlyLowerTriangularMatrix<double, 4> const sl4 = sl4_;
+  EXPECT_EQ(1, sl4(0, 0));
 }
 
 TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
@@ -212,6 +215,9 @@ TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
   EXPECT_EQ(89, l4_(3, 3));
   l4_(3, 1) = -666;
   EXPECT_EQ(-666, l4_(3, 1));
+
+  FixedLowerTriangularMatrix<double, 4> const l4 = l4_;
+  EXPECT_EQ(1, l4(0, 0));
 }
 
 TEST_F(FixedArraysTest, UpperTriangularMatrixIndexing) {
@@ -228,6 +234,9 @@ TEST_F(FixedArraysTest, UpperTriangularMatrixIndexing) {
   EXPECT_EQ(89, u4_(3, 3));
   u4_(1, 3) = -666;
   EXPECT_EQ(-666, u4_(1, 3));
+
+  FixedUpperTriangularMatrix<double, 4> const u4 = u4_;
+  EXPECT_EQ(1, u4(0, 0));
 }
 
 TEST_F(FixedArraysTest, Row) {
@@ -239,6 +248,27 @@ TEST_F(FixedArraysTest, Row) {
 
   EXPECT_EQ(-4, r0 * v);
   EXPECT_EQ(-24, r1 * v);
+}
+
+TEST_F(FixedArraysTest, Transpose) {
+  EXPECT_EQ(
+      (FixedMatrix<double, 4, 3>({-8,  -4,  6,
+                                  -6, -10, -3,
+                                  -4,   9, -2,
+                                  -7,  -5, -9})),
+      (FixedMatrix<double, 4, 3>(TransposedView{m34_})));
+  EXPECT_EQ(
+      (FixedUpperTriangularMatrix<double, 4>({1, 2,  5, 21,
+                                                 3,  8, 34,
+                                                    13, 55,
+                                                        89})),
+      (FixedUpperTriangularMatrix<double, 4>(TransposedView{l4_})));
+  EXPECT_EQ(
+      (FixedLowerTriangularMatrix<double, 4>({1,
+                                              2,  8,
+                                              3, 13, 34,
+                                              5, 21, 55, 89})),
+      (FixedLowerTriangularMatrix<double, 4>(TransposedView{u4_})));
 }
 
 }  // namespace numerics

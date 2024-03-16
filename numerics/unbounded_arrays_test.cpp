@@ -160,20 +160,23 @@ TEST_F(UnboundedArraysTest, VectorSpaces) {
                                         -6, -6.5,  2})), n23_ / -2);
 }
 
-TEST_F(UnboundedArraysTest, MultiplicationDivision) {
-  EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
-  EXPECT_EQ(UnboundedVector<double>({1536, 2484, 4020, 6504}),
-            TransposedView{m4_} * v4_);  // NOLINT
-  EXPECT_EQ(UnboundedVector<double>({-1.5, -1.5, 0.5, 2.0}), v4_ / 2.0);
-  EXPECT_EQ(UnboundedMatrix<double>(
-                {  2067,    3345,   5412,     8757,
-                  14085,   22794,  36879,    59673,
-                  96528,  156213,  252741,  408954,
-                 661611, 1070697, 1732308, 2803005}), m4_ * m4_);
-}
-
 TEST_F(UnboundedArraysTest, Algebra) {
-  EXPECT_EQ(3270, TransposedView{v3_} * v3_);  // NOLINT
+  EXPECT_EQ(-535, TransposedView{u3_} * v3_);  // NOLINT
+  EXPECT_EQ((UnboundedMatrix<double>(3, 4,
+                                     { -30, -30,  10,   40,
+                                       -93, -93,  31,  124,
+                                       141, 141, -47, -188})),
+             v3_ * TransposedView{v4_});
+  EXPECT_EQ((UnboundedMatrix<double>(2, 4,
+                                     { 0,  14, -22,   3,
+                                      14, -63,   5, -92})),
+            m23_ * m34_);
+  EXPECT_EQ(v3_, m34_ * v4_);
+  EXPECT_EQ((UnboundedVector<double>({-486, -229, 333, 198})),
+            TransposedView{m34_} * v3_);  // NOLINT
+  UnboundedMatrix<double> m43(TransposedView{m34_});
+  EXPECT_EQ((UnboundedVector<double>({-486, -229, 333, 198})),
+            m43 * v3_);
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {

@@ -281,6 +281,17 @@ FixedLowerTriangularMatrix(std::array<Scalar, size()> const& data)
     : data_(data) {}
 
 template<typename Scalar_, int rows_>
+FixedLowerTriangularMatrix<Scalar_, rows_>::FixedLowerTriangularMatrix(
+    TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view)
+    : FixedLowerTriangularMatrix(uninitialized) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j <= i; ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
+
+template<typename Scalar_, int rows_>
 constexpr Scalar_& FixedLowerTriangularMatrix<Scalar_, rows_>::
 operator()(int const row, int const column) {
   CONSTEXPR_DCHECK(0 <= column);
@@ -323,6 +334,17 @@ template<typename Scalar_, int columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
 FixedUpperTriangularMatrix(std::array<Scalar, size()> const& data)
     : data_(Transpose(data)) {}
+
+template<typename Scalar_, int columns_>
+FixedUpperTriangularMatrix<Scalar_, columns_>::FixedUpperTriangularMatrix(
+    TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view)
+    : FixedUpperTriangularMatrix(uninitialized) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = i; j < columns(); ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
 
 template<typename Scalar_, int columns_>
 constexpr Scalar_& FixedUpperTriangularMatrix<Scalar_, columns_>::
