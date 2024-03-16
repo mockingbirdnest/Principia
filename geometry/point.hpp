@@ -156,8 +156,8 @@ namespace _barycentre_calculator {
 namespace internal {
 
 using namespace principia::geometry::_point;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_concepts;
+using namespace principia::quantities::_named_quantities;
 
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {
