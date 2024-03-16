@@ -186,6 +186,12 @@ TEST_F(FixedArraysTest, VectorIndexing) {
   EXPECT_EQ(-666, v3_[2]);
 }
 
+TEST_F(FixedArraysTest, MatrixIndexing) {
+  EXPECT_EQ(9, m34_(1, 2));
+  m34_(2, 1) = -666;
+  EXPECT_EQ(-666, m34_(2, 1));
+}
+
 TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
   EXPECT_EQ(6, (FixedStrictlyLowerTriangularMatrix<double, 4>::size()));
   EXPECT_EQ(1, sl4_(1, 0));

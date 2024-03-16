@@ -30,10 +30,6 @@ class UnboundedArraysTest : public ::testing::Test {
       n23_(2, 3,
            { 5, -1,  3,
             12, 13, -4}),
-      m4_({  1,   2,   3,    5,
-             8,  13,  21,   34,
-            55,  89, 144,  233,
-           377, 610, 987, 1597}),
       l4_({ 1,
             2,  3,
             5,  8,  13,
@@ -185,9 +181,9 @@ TEST_F(UnboundedArraysTest, VectorIndexing) {
 }
 
 TEST_F(UnboundedArraysTest, MatrixIndexing) {
-  EXPECT_EQ(21, m4_(1, 2));
-  m4_(2, 1) = -666;
-  EXPECT_EQ(-666, m4_(2, 1));
+  EXPECT_EQ(9, m34_(1, 2));
+  m34_(2, 1) = -666;
+  EXPECT_EQ(-666, m34_(2, 1));
 }
 
 TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
@@ -295,11 +291,12 @@ TEST_F(UnboundedArraysTest, Erase) {
 
 TEST_F(UnboundedArraysTest, Transpose) {
   EXPECT_EQ(
-      UnboundedMatrix<double>({1,  8,  55,  377,
-                               2, 13,  89,  610,
-                               3, 21, 144,  987,
-                               5, 34, 233, 1597}),
-      UnboundedMatrix<double>(TransposedView{m4_}));
+      UnboundedMatrix<double>(4, 3,
+                              {-8,  -4,  6,
+                               -6, -10, -3,
+                               -4,   9, -2,
+                               -7,  -5, -9}),
+      UnboundedMatrix<double>(TransposedView{m34_}));
   EXPECT_EQ(
       UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
                                                  3,  8, 34,
