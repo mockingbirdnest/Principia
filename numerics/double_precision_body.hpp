@@ -30,9 +30,9 @@ using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_fma;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
-using namespace principia::quantities::_concepts;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
 // complicated as it needs to peel off all of our abstractions until it reaches

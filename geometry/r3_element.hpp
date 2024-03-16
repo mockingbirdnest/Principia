@@ -19,9 +19,9 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_concepts;
 
 template<typename Scalar>
 struct SphericalCoordinates;
