@@ -150,7 +150,7 @@ UnboundedMatrix<Scalar_>::UnboundedMatrix(std::initializer_list<Scalar_> data)
     : rows_(Sqrt(data.size())),
       columns_(Sqrt(data.size())),
       data_(std::move(data)) {
-  CHECK_EQ(data.size(), rows_ * columns_);
+  DCHECK_EQ(data.size(), rows_ * columns_);
 }
 
 template<typename Scalar_>
@@ -159,7 +159,7 @@ UnboundedMatrix<Scalar_>::UnboundedMatrix(int const rows, int const columns,
     : rows_(rows),
       columns_(columns),
       data_(std::move(data)) {
-  CHECK_EQ(data.size(), rows_ * columns_);
+  DCHECK_EQ(data.size(), rows_ * columns_);
 }
 
 template<typename Scalar_>
@@ -532,7 +532,7 @@ template<typename LScalar, typename RScalar>
 UnboundedMatrix<Product<LScalar, RScalar>> SymmetricProduct(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.size(), right.size());
+  DCHECK_EQ(left.size(), right.size());
   UnboundedMatrix<Product<LScalar, RScalar>> result(
       left.size(), right.size(), uninitialized);
   for (int i = 0; i < left.size(); ++i) {
@@ -586,7 +586,7 @@ template<typename LScalar, typename RScalar>
 UnboundedVector<Sum<LScalar, RScalar>> operator+(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.size(), right.size());
+  DCHECK_EQ(left.size(), right.size());
   UnboundedVector<Sum<LScalar, RScalar>> result(right.size(), uninitialized);
   for (int i = 0; i < right.size(); ++i) {
     result[i] = left[i] + right[i];
@@ -598,8 +598,8 @@ template<typename LScalar, typename RScalar>
 UnboundedMatrix<Sum<LScalar, RScalar>> operator+(
     UnboundedMatrix<LScalar> const& left,
     UnboundedMatrix<RScalar> const& right) {
-  CHECK_EQ(left.rows(), right.rows());
-  CHECK_EQ(left.columns(), right.columns());
+  DCHECK_EQ(left.rows(), right.rows());
+  DCHECK_EQ(left.columns(), right.columns());
   UnboundedMatrix<Sum<LScalar, RScalar>> result(
       right.rows(), right.columns(), uninitialized);
   for (int i = 0; i < right.rows(); ++i) {
@@ -614,7 +614,7 @@ template<typename LScalar, typename RScalar>
 UnboundedVector<Difference<LScalar, RScalar>> operator-(
     UnboundedVector<LScalar> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.size(), right.size());
+  DCHECK_EQ(left.size(), right.size());
   UnboundedVector<Sum<LScalar, RScalar>> result(right.size(), uninitialized);
   for (int i = 0; i < right.size(); ++i) {
     result[i] = left[i] - right[i];
@@ -626,13 +626,13 @@ template<typename LScalar, typename RScalar>
 UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
     UnboundedMatrix<LScalar> const& left,
     UnboundedMatrix<RScalar> const& right) {
-  CHECK_EQ(left.rows(), right.rows());
-  CHECK_EQ(left.columns(), right.columns());
+  DCHECK_EQ(left.rows(), right.rows());
+  DCHECK_EQ(left.columns(), right.columns());
   UnboundedMatrix<Sum<LScalar, RScalar>> result(
       right.rows(), right.columns(), uninitialized);
   for (int i = 0; i < right.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
-      result(i, j) = left(i, j) + right(i, j);
+      result(i, j) = left(i, j) - right(i, j);
     }
   }
   return result;
@@ -775,7 +775,7 @@ template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> operator*(
     TransposedView<UnboundedVector<LScalar>> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.size(), right.size());
+  DCHECK_EQ(left.size(), right.size());
   Product<LScalar, RScalar> result{};
   for (int i = 0; i < left.size(); ++i) {
     result += left[i] * right[i];
@@ -802,7 +802,7 @@ template<typename LScalar, typename RScalar>
 UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<LScalar> const& left,
     UnboundedMatrix<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.rows());
+  DCHECK_EQ(left.columns(), right.rows());
   UnboundedMatrix<Product<LScalar, RScalar>> result(left.rows(),
                                                            right.columns());
   for (int i = 0; i < left.rows(); ++i) {
@@ -819,7 +819,7 @@ template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<LScalar> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
+  DCHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
   for (int i = 0; i < left.rows(); ++i) {
     auto& result_i = result[i];
@@ -834,7 +834,7 @@ template<typename LMatrix, typename RScalar>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
     BlockView<LMatrix> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
+  DCHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
       left.rows());
   for (int i = 0; i < left.rows(); ++i) {
@@ -850,7 +850,7 @@ template<typename LMatrix, typename RScalar>
 UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> operator*(
     TransposedView<BlockView<LMatrix>> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.columns(), right.size());
+  DCHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<typename LMatrix::Scalar, RScalar>> result(
       left.rows());
   for (int i = 0; i < left.rows(); ++i) {
@@ -866,7 +866,7 @@ template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     TransposedView<UnboundedMatrix<LScalar>> const& left,
     UnboundedVector<RScalar> const& right) {
-  CHECK_EQ(left.rows(), right.size());
+  DCHECK_EQ(left.columns(), right.size());
   UnboundedVector<Product<LScalar, RScalar>> result(left.rows());
   for (int i = 0; i < left.rows(); ++i) {
     auto& result_i = result[i];

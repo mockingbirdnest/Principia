@@ -198,7 +198,7 @@ TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
   EXPECT_EQ(-666, sl4_(3, 1));
 
   FixedStrictlyLowerTriangularMatrix<double, 4> const sl4 = sl4_;
-  EXPECT_EQ(1, sl4(0, 0));
+  EXPECT_EQ(1, sl4(1, 0));
 }
 
 TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
