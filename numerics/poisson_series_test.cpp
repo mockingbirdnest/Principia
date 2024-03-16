@@ -218,7 +218,7 @@ TEST_F(PoissonSeriesTest, Primitive) {
   auto const actual_primitive = pb_->Primitive();
 
   // The primitive was computed using Mathematica.
-  auto const expected_primitive = [=](Time const& t) {
+  auto const expected_primitive = [=, this](Time const& t) {
     auto const a0 = 3;
     auto const a1 = 4 / Second;
     auto const b0 = 9;

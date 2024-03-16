@@ -117,8 +117,6 @@ TEST_F(FastSinCos2πTest, Monotonicity) {
   std::uniform_real_distribution<> distribution(0.0, 0.25);
   double max_sin_error = 0.0;
   double max_cos_error = 0.0;
-  double max_sin_error_x = 0.0;
-  double max_cos_error_x = 0.0;
   for (int i = 0; i < iterations_; ++i) {
     double const x = distribution(random);
     double const next_x = std::nexttoward(x, 1.0);
@@ -131,11 +129,9 @@ TEST_F(FastSinCos2πTest, Monotonicity) {
 
     if (sin_2π_next_x < sin_2π_x) {
       max_sin_error = std::max(max_sin_error, sin_2π_x - sin_2π_next_x);
-      max_sin_error_x = x;
     }
     if (cos_2π_next_x > cos_2π_x) {
       max_cos_error = std::max(max_cos_error, cos_2π_next_x - cos_2π_x);
-      max_cos_error_x = x;
     }
   }
   EXPECT_LT(max_sin_error, 4e-16);

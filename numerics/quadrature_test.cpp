@@ -100,7 +100,7 @@ TEST_F(QuadratureTest, Sin2) {
   EXPECT_THAT(GaussLegendre<9>(f, -2.0 * Radian, 5.0 * Radian),
               RelativeErrorFrom(ʃf, IsNear(8.5e-6_(1))));
   EXPECT_THAT(GaussLegendre<10>(f, -2.0 * Radian, 5.0 * Radian),
-              RelativeErrorFrom(ʃf, IsNear(2.9e-7_(1))));;
+              RelativeErrorFrom(ʃf, IsNear(2.9e-7_(1))));
   EXPECT_THAT(GaussLegendre<11>(f, -2.0 * Radian, 5.0 * Radian),
               RelativeErrorFrom(ʃf, IsNear(8.1e-9_(1))));
   EXPECT_THAT(GaussLegendre<12>(f, -2.0 * Radian, 5.0 * Radian),

@@ -126,7 +126,8 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
   FixedMatrix<double, degree_, degree_> FrobeniusCompanionMatrix() const
     requires is_quantity_v<Value_>;
 
-  void WriteToMessage(not_null<serialization::Polynomial*> message) const;
+  void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const override;
   static PolynomialInЧебышёвBasis ReadFromMessage(
       serialization::Polynomial const& message);
 

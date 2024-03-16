@@ -96,8 +96,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   double const p = 1.5;
 
   X.push_back(b);
-  int bisections = 0;
-  for (; a < X.back(); ++bisections) {
+  while (a < X.back()) {
     // k is the number of interpolation steps on the interval [a, X.back()]
     // before a bisection happens again.
     int const k = std::round(std::log2((X.back() - a) / δ));
@@ -154,7 +153,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
     }
     // [WG13] define f only on X. We extend it as a step function, returning the
     // value for the element of X nearest to the given x.
-    int k;
+    int k = 0;
     double min_Δx = std::numeric_limits<double>::infinity();
     for (int i = 1; i < X.size() - 1; ++i) {
       double const Δx = std::abs(x - X[i]);
@@ -163,6 +162,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
         k = i;
       }
     }
+    CHECK_LE(1, k);
     if (expect_brent_calls) {
       EXPECT_THAT(x, AlmostEquals(X[k], 0)) << k;
     }
