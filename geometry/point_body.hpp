@@ -135,41 +135,43 @@ Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator<(
-    Point<Vector> const& left,
-    Point<Vector> const& right) {
+  requires quantity<Vector>
+constexpr bool operator<(Point<Vector> const& left,
+                         Point<Vector> const& right) {
   return left.coordinates_ < right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
-operator<=(Point<Vector> const& left, Point<Vector> const& right) {
+  requires quantity<Vector>
+constexpr bool operator<=(Point<Vector> const& left,
+                          Point<Vector> const& right) {
   return left.coordinates_ <= right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool>
-operator>=(Point<Vector> const& left, Point<Vector> const& right) {
+  requires quantity<Vector>
+constexpr bool operator>=(Point<Vector> const& left,
+                          Point<Vector> const& right) {
   return left.coordinates_ >= right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, bool> operator>(
-    Point<Vector> const& left,
-    Point<Vector> const& right) {
+  requires quantity<Vector>
+constexpr bool operator>(Point<Vector> const& left,
+                         Point<Vector> const& right) {
   return left.coordinates_ > right.coordinates_;
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
-NextUp(Point<Vector> const x) {
+  requires quantity<Vector>
+constexpr Point<Vector> NextUp(Point<Vector> const x) {
   using quantities::_elementary_functions::NextUp;
   return Point<Vector>(NextUp(x.coordinates_));
 }
 
 template<typename Vector>
-constexpr typename std::enable_if_t<is_quantity_v<Vector>, Point<Vector>>
-NextDown(Point<Vector> const x) {
+  requires quantity<Vector>
+constexpr Point<Vector> NextDown(Point<Vector> const x) {
   using quantities::_elementary_functions::NextDown;
   return Point<Vector>(NextDown(x.coordinates_));
 }

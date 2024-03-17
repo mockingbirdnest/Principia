@@ -37,7 +37,7 @@ using namespace principia::quantities::_si;
 template<typename Value_, typename Argument_>
 bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
     MayHaveRealRoots(Value const error_estimate) const
-  requires is_quantity_v<Value_> {
+  requires quantity<Value_> {
   return MayHaveRealRootsOrDie(error_estimate);
 }
 
@@ -45,7 +45,7 @@ template<typename Value_, typename Argument_>
 absl::btree_set<Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
     double const ε) const
-  requires is_quantity_v<Value_> {
+  requires quantity<Value_> {
   return RealRootsOrDie(ε);
 }
 
@@ -207,7 +207,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::upper_bound() const
 template<typename Value_, typename Argument_, int degree_>
 FixedMatrix<double, degree_, degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionMatrix()
-    const requires is_quantity_v<Value_> {
+    const requires quantity<Value_> {
   int const N = degree();
   FixedMatrix<double, degree_, degree_> A(uninitialized);
 
@@ -299,7 +299,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
 template<typename Value_, typename Argument_, int degree_>
 bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 MayHaveRealRootsOrDie(Value const error_estimate) const {
-  if constexpr (is_quantity_v<Value>) {
+  if constexpr (quantity<Value>) {
     CHECK_LE(Value{}, error_estimate);
     // This code follow [Boy06], theorem 2.  Note that [Boy06] has another
     // criterion, B₁ and concludes: “There was no detectable difference between
@@ -327,7 +327,7 @@ template<typename Value_, typename Argument_, int degree_>
 absl::btree_set<Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 RealRootsOrDie(double const ε) const {
-  if constexpr (is_quantity_v<Value>) {
+  if constexpr (quantity<Value>) {
     auto const companion_matrix = FrobeniusCompanionMatrix();
     auto const real_schur_decomposition =
         RealSchurDecomposition(companion_matrix, ε);
