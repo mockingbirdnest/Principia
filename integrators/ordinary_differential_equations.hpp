@@ -73,6 +73,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     std::tuple<DoublePrecision<DependentVariable>...> y;
 
     friend bool operator==(State const& lhs, State const& rhs) = default;
+    friend bool operator!=(State const& lhs, State const& rhs) = default;
 
     void WriteToMessage(not_null<serialization::State*> message) const;
     static State ReadFromMessage(serialization::State const& message);
@@ -109,6 +110,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
     std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
 
     friend bool operator==(State const& lhs, State const& rhs) = default;
+    friend bool operator!=(State const& lhs, State const& rhs) = default;
   };
 
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
@@ -169,6 +171,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
         velocities;
 
     friend bool operator==(State const& lhs, State const& rhs) = default;
+    friend bool operator!=(State const& lhs, State const& rhs) = default;
 
     void WriteToMessage(not_null<serialization::State*> message) const;
     static State ReadFromMessage(serialization::State const& message);
