@@ -352,22 +352,6 @@ RealRootsOrDie(double const ε) const {
   }
 }
 
-template<typename Value, typename Argument, int degree>
-constexpr bool operator==(
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& right) {
-  return left.coefficients_ == right.coefficients_ &&
-         left.lower_bound_ == right.lower_bound_ &&
-         left.upper_bound_ == right.upper_bound_;
-}
-
-template<typename Value, typename Argument, int degree>
-constexpr bool operator!=(
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& right) {
-  return !operator==(left, right);
-}
-
 }  // namespace internal
 }  // namespace _polynomial_in_чебышёв_basis
 }  // namespace numerics

@@ -82,16 +82,6 @@ constexpr Scalar_ const& FixedVector<Scalar_, size_>::operator[](
 }
 
 template<typename Scalar_, int size_>
-bool FixedVector<Scalar_, size_>::operator==(FixedVector const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int size_>
-bool FixedVector<Scalar_, size_>::operator!=(FixedVector const& right) const {
-  return data_ != right.data_;
-}
-
-template<typename Scalar_, int size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator+=(
     FixedVector const& right) {
   for (int i = 0; i < size(); ++i) {
@@ -200,18 +190,6 @@ constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_>::operator()(
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < columns());
   return data_[row * columns() + column];
-}
-
-template<typename Scalar_, int rows_, int columns_>
-bool FixedMatrix<Scalar_, rows_, columns_>::operator==(
-    FixedMatrix const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int rows_, int columns_>
-bool FixedMatrix<Scalar_, rows_, columns_>::operator!=(
-    FixedMatrix const& right) const {
-  return data_ != right.data_;
 }
 
 template<typename Scalar_, int rows_, int columns_>
@@ -327,18 +305,6 @@ Scalar_ const* FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::row() const {
 }
 
 template<typename Scalar_, int rows_>
-bool FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::operator==(
-    FixedStrictlyLowerTriangularMatrix const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int rows_>
-bool FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::operator!=(
-    FixedStrictlyLowerTriangularMatrix const& right) const {
-  return data_ != right.data_;
-}
-
-template<typename Scalar_, int rows_>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_>::
 FixedLowerTriangularMatrix()
     : data_{} {}
@@ -379,18 +345,6 @@ operator()(int const row, int const column) const {
   CONSTEXPR_DCHECK(column <= row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row + 1) / 2 + column];
-}
-
-template<typename Scalar_, int rows_>
-bool FixedLowerTriangularMatrix<Scalar_, rows_>::operator==(
-    FixedLowerTriangularMatrix const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int rows_>
-bool FixedLowerTriangularMatrix<Scalar_, rows_>::operator!=(
-    FixedLowerTriangularMatrix const& right) const {
-  return data_ != right.data_;
 }
 
 template<typename Scalar_, int columns_>
@@ -434,18 +388,6 @@ operator()(int const row, int const column) const {
   CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
   return data_[column * (column + 1) / 2 + row];
-}
-
-template<typename Scalar_, int columns_>
-bool FixedUpperTriangularMatrix<Scalar_, columns_>::operator==(
-    FixedUpperTriangularMatrix const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int columns_>
-bool FixedUpperTriangularMatrix<Scalar_, columns_>::operator!=(
-    FixedUpperTriangularMatrix const& right) const {
-  return data_ != right.data_;
 }
 
 template<typename Scalar_, int columns_>

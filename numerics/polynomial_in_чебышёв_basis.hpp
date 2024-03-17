@@ -112,6 +112,13 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
                                      Argument const& lower_bound,
                                      Argument const& upper_bound);
 
+  friend constexpr bool operator==(PolynomialInЧебышёвBasis const& left,
+                                   PolynomialInЧебышёвBasis const& right) =
+      default;
+  friend constexpr bool operator!=(PolynomialInЧебышёвBasis const& left,
+                                   PolynomialInЧебышёвBasis const& right) =
+      default;
+
   Value operator()(Argument const& argument) const override;
   Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const override;
@@ -143,24 +150,11 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
   // Precomputed to save operations at the expense of some accuracy loss.
   Inverse<Difference<Argument>> one_over_width_;
 
-  template<typename V, typename A, int d>
-  friend constexpr bool operator==(
-      PolynomialInЧебышёвBasis<V, A, d> const& left,
-      PolynomialInЧебышёвBasis<V, A, d> const& right);
   template<typename V, typename A, int d, typename O>
   friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
       PolynomialInЧебышёвBasis<V, A, d> const& series,
       O express_in);
 };
-
-template<typename Value, typename Argument, int degree>
-constexpr bool operator==(
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& right);
-template<typename Value, typename Argument, int degree>
-constexpr bool operator!=(
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& left,
-    PolynomialInЧебышёвBasis<Value, Argument, degree> const& right);
 
 }  // namespace internal
 

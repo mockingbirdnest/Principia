@@ -24,6 +24,13 @@ struct DoublePrecision final {
 
   explicit constexpr DoublePrecision(T const& value);
 
+  // This is correct assuming that left and right have non-overlapping
+  // mantissas.
+  friend bool operator==(DoublePrecision const& left,
+                         DoublePrecision const& right) = default;
+  friend bool operator!=(DoublePrecision const& left,
+                         DoublePrecision const& right) = default;
+
   DoublePrecision<T>& operator+=(DoublePrecision<Difference<T>> const& right);
   DoublePrecision<T>& operator+=(Difference<T> const& right);
   DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
@@ -87,13 +94,6 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b);
-
-template<typename T>
-bool operator==(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right);
-template<typename T>
-bool operator!=(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right);
 
 template<typename T>
 bool operator<(DoublePrecision<T> const& left,

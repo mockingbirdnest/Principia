@@ -43,11 +43,13 @@ class FixedVector final {
   // Convertible to an array.
   explicit constexpr operator std::array<Scalar, size_>() const;
 
+  friend bool operator==(FixedVector const& left,
+                         FixedVector const& right) = default;
+  friend bool operator!=(FixedVector const& left,
+                         FixedVector const& right) = default;
+
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
-
-  bool operator==(FixedVector const& right) const;
-  bool operator!=(FixedVector const& right) const;
 
   constexpr FixedVector& operator+=(FixedVector const& right);
   constexpr FixedVector& operator-=(FixedVector const& right);
@@ -107,14 +109,16 @@ class FixedMatrix final {
   constexpr explicit FixedMatrix(
       TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view);
 
+  friend bool operator==(FixedMatrix const& left,
+                         FixedMatrix const& right) = default;
+  friend bool operator!=(FixedMatrix const& left,
+                         FixedMatrix const& right) = default;
+
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
   // |a(i, j)|.  if i and j do not satisfy these conditions, the expression
   // |a(i, j)| implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
-
-  bool operator==(FixedMatrix const& right) const;
-  bool operator!=(FixedMatrix const& right) const;
 
   constexpr FixedMatrix& operator+=(FixedMatrix const& right);
   constexpr FixedMatrix& operator-=(FixedMatrix const& right);
@@ -159,6 +163,13 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size()> const& data);
 
+  friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
+                         FixedStrictlyLowerTriangularMatrix const& right) =
+      default;
+  friend bool operator!=(FixedStrictlyLowerTriangularMatrix const& left,
+                         FixedStrictlyLowerTriangularMatrix const& right) =
+      default;
+
   // For  0 ≤ j < i < rows, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
@@ -167,9 +178,6 @@ class FixedStrictlyLowerTriangularMatrix final {
 
   template<int r>
   Scalar const* row() const;
-
-  bool operator==(FixedStrictlyLowerTriangularMatrix const& right) const;
-  bool operator!=(FixedStrictlyLowerTriangularMatrix const& right) const;
 
  private:
   std::array<Scalar, size()> data_;
@@ -193,14 +201,16 @@ class FixedLowerTriangularMatrix final {
   explicit FixedLowerTriangularMatrix(
       TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view);
 
+  friend bool operator==(FixedLowerTriangularMatrix const& left,
+                         FixedLowerTriangularMatrix const& right) = default;
+  friend bool operator!=(FixedLowerTriangularMatrix const& left,
+                         FixedLowerTriangularMatrix const& right) = default;
+
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
-
-  bool operator==(FixedLowerTriangularMatrix const& right) const;
-  bool operator!=(FixedLowerTriangularMatrix const& right) const;
 
  private:
   std::array<Scalar, size()> data_;
@@ -224,14 +234,16 @@ class FixedUpperTriangularMatrix final {
   explicit FixedUpperTriangularMatrix(
       TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view);
 
+  friend bool operator==(FixedUpperTriangularMatrix const& left,
+                         FixedUpperTriangularMatrix const& right) = default;
+  friend bool operator!=(FixedUpperTriangularMatrix const& left,
+                         FixedUpperTriangularMatrix const& right) = default;
+
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
-
-  bool operator==(FixedUpperTriangularMatrix const& right) const;
-  bool operator!=(FixedUpperTriangularMatrix const& right) const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
