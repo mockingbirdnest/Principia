@@ -21,6 +21,11 @@ class LinearMap {
  public:
   virtual ~LinearMap() = default;
 
+  friend bool operator==(LinearMap const& left,
+                         LinearMap const& right) = default;
+  friend bool operator!=(LinearMap const& left,
+                         LinearMap const& right) = default;
+
   // The contract of linear maps.  All subclasses must implement these functions
   // lest they go into infinite loops or trigger weird compilation errors.  In
   // C++23, we'll want to use concepts.

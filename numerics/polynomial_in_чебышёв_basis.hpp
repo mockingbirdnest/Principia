@@ -65,6 +65,13 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   using Argument = Argument_;
   using Value = Value_;
 
+  friend constexpr bool operator==(PolynomialInЧебышёвBasis const& left,
+                                   PolynomialInЧебышёвBasis const& right) =
+      default;
+  friend constexpr bool operator!=(PolynomialInЧебышёвBasis const& left,
+                                   PolynomialInЧебышёвBasis const& right) =
+      default;
+
   // Bounds passed at construction.
   virtual Argument const& lower_bound() const = 0;
   virtual Argument const& upper_bound() const = 0;

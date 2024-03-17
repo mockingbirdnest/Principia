@@ -37,11 +37,6 @@ struct alignas(16) R3Element final {
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
   R3Element(__m128d xy, __m128d zt);
 
-  friend bool operator==(R3Element const& left,
-                         R3Element const& right) = default;
-  friend bool operator!=(R3Element const& left,
-                         R3Element const& right) = default;
-
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
 
@@ -185,6 +180,13 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
+
+template<typename Scalar>
+bool operator==(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right);
+template<typename Scalar>
+bool operator!=(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right);
 
 template<typename Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element);
