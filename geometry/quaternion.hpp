@@ -20,6 +20,14 @@ class Quaternion final {
   explicit Quaternion(double real_part);
   Quaternion(double real_part, R3Element<double> const& imaginary_part);
 
+  Quaternion& operator+=(Quaternion const& right);
+  Quaternion& operator-=(Quaternion const& right);
+  Quaternion& operator*=(Quaternion const& right);
+  Quaternion& operator/=(Quaternion const& right);
+
+  Quaternion& operator*=(double right);
+  Quaternion& operator/=(double right);
+
   double real_part() const;
   R3Element<double> const& imaginary_part() const;
 
@@ -28,14 +36,6 @@ class Quaternion final {
 
   Quaternion Conjugate() const;
   Quaternion Inverse() const;
-
-  Quaternion& operator+=(Quaternion const& right);
-  Quaternion& operator-=(Quaternion const& right);
-  Quaternion& operator*=(Quaternion const& right);
-  Quaternion& operator/=(Quaternion const& right);
-
-  Quaternion& operator*=(double right);
-  Quaternion& operator/=(double right);
 
   void WriteToMessage(not_null<serialization::Quaternion*> message) const;
   static Quaternion ReadFromMessage(serialization::Quaternion const& message);

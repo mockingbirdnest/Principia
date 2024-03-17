@@ -97,6 +97,15 @@ class PoissonSeries {
                                   higher_periodic_degree,
                                   HigherEvaluator>() const;
 
+  template<int aperiodic_rdegree, int periodic_rdegree>
+  PoissonSeries& operator+=(PoissonSeries<Value,
+                                          aperiodic_rdegree, periodic_rdegree,
+                                          Evaluator> const& right);
+  template<int aperiodic_rdegree, int periodic_rdegree>
+  PoissonSeries& operator-=(PoissonSeries<Value,
+                                          aperiodic_rdegree, periodic_rdegree,
+                                          Evaluator> const& right);
+
   Instant const& origin() const;
   AngularFrequency max_ω() const;
 
@@ -122,15 +131,6 @@ class PoissonSeries {
                     Evaluator> const& weight,
       Instant const& t_min,
       Instant const& t_max) const;
-
-  template<int aperiodic_rdegree, int periodic_rdegree>
-  PoissonSeries& operator+=(PoissonSeries<Value,
-                                          aperiodic_rdegree, periodic_rdegree,
-                                          Evaluator> const& right);
-  template<int aperiodic_rdegree, int periodic_rdegree>
-  PoissonSeries& operator-=(PoissonSeries<Value,
-                                          aperiodic_rdegree, periodic_rdegree,
-                                          Evaluator> const& right);
 
   void WriteToMessage(not_null<serialization::PoissonSeries*> message) const;
   static PoissonSeries ReadFromMessage(

@@ -18,28 +18,6 @@ Complexification<Vector>::Complexification(Vector const& real_part,
     : real_part_(real_part), imaginary_part_(imaginary_part) {}
 
 template<typename Vector>
-Vector const& Complexification<Vector>::real_part() const {
-  return real_part_;
-}
-
-template<typename Vector>
-Vector const& Complexification<Vector>::imaginary_part() const {
-  return imaginary_part_;
-}
-
-template<typename Vector>
-Complexification<Vector> Complexification<Vector>::Conjugate() const {
-  return Complexification{real_part(), -imaginary_part()};
-}
-
-template<typename Vector>
-typename Hilbert<Vector>::Norm²Type Complexification<Vector>::Norm²()
-    const {
-  return Hilbert<Vector>::Norm²(real_part_) +
-         Hilbert<Vector>::Norm²(imaginary_part_);
-}
-
-template<typename Vector>
 template<typename R>
 Complexification<Vector>& Complexification<Vector>::operator+=(R const& right) {
   return *this = *this + right;
@@ -61,6 +39,28 @@ template<typename Vector>
 template<typename R>
 Complexification<Vector>& Complexification<Vector>::operator/=(R const& right) {
   return *this = *this / right;
+}
+
+template<typename Vector>
+Vector const& Complexification<Vector>::real_part() const {
+  return real_part_;
+}
+
+template<typename Vector>
+Vector const& Complexification<Vector>::imaginary_part() const {
+  return imaginary_part_;
+}
+
+template<typename Vector>
+Complexification<Vector> Complexification<Vector>::Conjugate() const {
+  return Complexification{real_part(), -imaginary_part()};
+}
+
+template<typename Vector>
+typename Hilbert<Vector>::Norm²Type Complexification<Vector>::Norm²()
+    const {
+  return Hilbert<Vector>::Norm²(real_part_) +
+         Hilbert<Vector>::Norm²(imaginary_part_);
 }
 
 template<typename Vector>

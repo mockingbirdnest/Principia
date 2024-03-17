@@ -26,6 +26,63 @@ R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
     : rows_({row_x, row_y, row_z}) {}
 
 template<typename Scalar>
+FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
+    int const r, int const c) const {
+  switch (r) {
+    case 0:
+    case 1:
+    case 2:
+      return rows_[r][c];
+    default:
+      DLOG(FATAL) << FUNCTION_SIGNATURE
+                  << " indices = {" << r << ", " << c << "}";
+      base::noreturn();
+  }
+}
+
+template<typename Scalar>
+Scalar& R3x3Matrix<Scalar>::operator()(int r, int c) {
+  switch (r) {
+    case 0:
+    case 1:
+    case 2:
+      return rows_[r][c];
+    default:
+      DLOG(FATAL) << FUNCTION_SIGNATURE
+                  << " indices = {" << r << ", " << c << "}";
+      base::noreturn();
+  }
+}
+
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator+=(
+    R3x3Matrix const& right) {
+  return *this = *this + right;
+}
+
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator-=(
+    R3x3Matrix const& right) {
+  return *this = *this - right;
+}
+
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator*=(
+    R3x3Matrix const& right) {
+  return *this = *this * right;
+}
+
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator*=(double const right) {
+  return *this = *this * right;
+}
+
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
+  return *this = *this / right;
+}
+
+template<typename Scalar>
 R3x3Matrix<Scalar> R3x3Matrix<Scalar>::DiagonalMatrix(
     R3Element<Scalar> const& diagonal) {
   return {
@@ -98,63 +155,6 @@ R3Element<Scalar> const& R3x3Matrix<Scalar>::row_y() const {
 template<typename Scalar>
 R3Element<Scalar> const& R3x3Matrix<Scalar>::row_z() const {
   return rows_[Z];
-}
-
-template<typename Scalar>
-FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
-    int const r, int const c) const {
-  switch (r) {
-    case 0:
-    case 1:
-    case 2:
-      return rows_[r][c];
-    default:
-      DLOG(FATAL) << FUNCTION_SIGNATURE
-                  << " indices = {" << r << ", " << c << "}";
-      base::noreturn();
-  }
-}
-
-template<typename Scalar>
-Scalar& R3x3Matrix<Scalar>::operator()(int r, int c) {
-  switch (r) {
-    case 0:
-    case 1:
-    case 2:
-      return rows_[r][c];
-    default:
-      DLOG(FATAL) << FUNCTION_SIGNATURE
-                  << " indices = {" << r << ", " << c << "}";
-      base::noreturn();
-  }
-}
-
-template<typename Scalar>
-R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator+=(
-    R3x3Matrix const& right) {
-  return *this = *this + right;
-}
-
-template<typename Scalar>
-R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator-=(
-    R3x3Matrix const& right) {
-  return *this = *this - right;
-}
-
-template<typename Scalar>
-R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator*=(
-    R3x3Matrix const& right) {
-  return *this = *this * right;
-}
-
-template<typename Scalar>
-R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator*=(double const right) {
-  return *this = *this * right;
-}
-
-template<typename Scalar>
-R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
-  return *this = *this / right;
 }
 
 template<typename Scalar>

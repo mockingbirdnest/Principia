@@ -89,6 +89,11 @@ class Pair {
 
   Pair& operator+=(vector_of_t<Pair> const& right);
   Pair& operator-=(vector_of_t<Pair> const& right);
+  template<typename U1 = T1, typename U2 = T2>
+  enable_if_vector_t<Pair<U1, U2>>& operator*=(double right);
+  template<typename U1 = T1, typename U2 = T2>
+  enable_if_vector_t<Pair<U1, U2>>& operator/=(double right);
+
 
   bool operator==(Pair const& right) const;
   bool operator!=(Pair const& right) const;
@@ -151,14 +156,6 @@ class Pair {
   operator/(Pair<U1, U2> const& left, Scalar right);
 
   template<typename U1, typename U2>
-  friend enable_if_vector_t<Pair<U1, U2>>& operator*=(Pair<U1, U2>& left,
-                                                      double right);
-
-  template<typename U1, typename U2>
-  friend enable_if_vector_t<Pair<U1, U2>>& operator/=(Pair<U1, U2>& left,
-                                                      double right);
-
-  template<typename U1, typename U2>
   friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);
 };
 
@@ -190,12 +187,6 @@ typename enable_if_vector<
     Pair<T1, T2>,
     Pair<Quotient<T1, Scalar>, Quotient<T2, Scalar>>>::type
 operator/(Pair<T1, T2> const& left, Scalar right);
-
-template<typename T1, typename T2>
-enable_if_vector_t<Pair<T1, T2>>& operator*=(Pair<T1, T2>& left, double right);
-
-template<typename T1, typename T2>
-enable_if_vector_t<Pair<T1, T2>>& operator/=(Pair<T1, T2>& left, double right);
 
 template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair);

@@ -41,6 +41,44 @@ PiecewisePoissonSeries(Interval<Instant> const& interval,
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
+template<int aperiodic_rdegree, int periodic_rdegree>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+operator+=(PoissonSeries<Value,
+                         aperiodic_rdegree, periodic_rdegree,
+                         Evaluator> const& right) {
+  static_assert(aperiodic_rdegree <= aperiodic_degree_);
+  static_assert(periodic_rdegree <= periodic_degree_);
+  if (addend_.has_value()) {
+    addend_.value() += right;
+  } else {
+    addend_ = Series(right);
+  }
+  return *this;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
+template<int aperiodic_rdegree, int periodic_rdegree>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+operator-=(PoissonSeries<Value,
+                         aperiodic_rdegree, periodic_rdegree,
+                         Evaluator> const& right) {
+  static_assert(aperiodic_rdegree <= aperiodic_degree_);
+  static_assert(periodic_rdegree <= periodic_degree_);
+  if (addend_.has_value()) {
+    addend_.value() -= right;
+  } else {
+    addend_ = Series(-right);
+  }
+  return *this;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
 void
 PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 Append(Interval<Instant> const& interval,
@@ -178,44 +216,6 @@ Norm(PoissonSeries<double,
                   /*max_relative_error=*/clenshaw_curtis_relative_error,
                   /*max_points=*/max_points) /
               (t_max - t_min));
-}
-
-template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-template<int aperiodic_rdegree, int periodic_rdegree>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
-operator+=(PoissonSeries<Value,
-                         aperiodic_rdegree, periodic_rdegree,
-                         Evaluator> const& right) {
-  static_assert(aperiodic_rdegree <= aperiodic_degree_);
-  static_assert(periodic_rdegree <= periodic_degree_);
-  if (addend_.has_value()) {
-    addend_.value() += right;
-  } else {
-    addend_ = Series(right);
-  }
-  return *this;
-}
-
-template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-template<int aperiodic_rdegree, int periodic_rdegree>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
-operator-=(PoissonSeries<Value,
-                         aperiodic_rdegree, periodic_rdegree,
-                         Evaluator> const& right) {
-  static_assert(aperiodic_rdegree <= aperiodic_degree_);
-  static_assert(periodic_rdegree <= periodic_degree_);
-  if (addend_.has_value()) {
-    addend_.value() -= right;
-  } else {
-    addend_ = Series(-right);
-  }
-  return *this;
 }
 
 template<typename Value,

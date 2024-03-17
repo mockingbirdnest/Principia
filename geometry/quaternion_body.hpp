@@ -25,32 +25,6 @@ inline Quaternion::Quaternion(double const real_part,
     : real_part_(real_part),
       imaginary_part_(imaginary_part) {}
 
-inline double Quaternion::real_part() const {
-  return real_part_;
-}
-
-inline R3Element<double> const&
-Quaternion::imaginary_part() const {
-  return imaginary_part_;
-}
-
-inline double Quaternion::Norm() const {
-  return Sqrt(Norm²());
-}
-
-inline double Quaternion::Norm²() const {
-  return real_part_ * real_part_ + imaginary_part_.Norm²();
-}
-
-inline Quaternion Quaternion::Conjugate() const {
-  return Quaternion(real_part_, -imaginary_part_);
-}
-
-inline Quaternion Quaternion::Inverse() const {
-  return Conjugate() /
-      (real_part_ * real_part_ + Dot(imaginary_part_, imaginary_part_));
-}
-
 inline Quaternion& Quaternion::operator+=(Quaternion const& right) {
   real_part_ += right.real_part_;
   imaginary_part_ += right.imaginary_part_;
@@ -83,6 +57,32 @@ inline Quaternion& Quaternion::operator/=(double const right) {
   real_part_ /= right;
   imaginary_part_ /= right;
   return *this;
+}
+
+inline double Quaternion::real_part() const {
+  return real_part_;
+}
+
+inline R3Element<double> const&
+Quaternion::imaginary_part() const {
+  return imaginary_part_;
+}
+
+inline double Quaternion::Norm() const {
+  return Sqrt(Norm²());
+}
+
+inline double Quaternion::Norm²() const {
+  return real_part_ * real_part_ + imaginary_part_.Norm²();
+}
+
+inline Quaternion Quaternion::Conjugate() const {
+  return Quaternion(real_part_, -imaginary_part_);
+}
+
+inline Quaternion Quaternion::Inverse() const {
+  return Conjugate() /
+      (real_part_ * real_part_ + Dot(imaginary_part_, imaginary_part_));
 }
 
 inline void Quaternion::WriteToMessage(

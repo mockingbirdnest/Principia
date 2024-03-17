@@ -36,6 +36,15 @@ class R3x3Matrix final {
              R3Element<Scalar> const& row_y,
              R3Element<Scalar> const& row_z);
 
+  Scalar operator()(int r, int c) const;
+  Scalar& operator()(int r, int c);
+
+  R3x3Matrix& operator+=(R3x3Matrix const& right);
+  R3x3Matrix& operator-=(R3x3Matrix const& right);
+  R3x3Matrix& operator*=(R3x3Matrix const& right);
+  R3x3Matrix& operator*=(double right);
+  R3x3Matrix& operator/=(double right);
+
   static R3x3Matrix DiagonalMatrix(R3Element<Scalar> const& diagonal);
 
   R3Element<Scalar> Diagonal() const;
@@ -55,15 +64,6 @@ class R3x3Matrix final {
   R3Element<Scalar> const& row_x() const;
   R3Element<Scalar> const& row_y() const;
   R3Element<Scalar> const& row_z() const;
-
-  Scalar operator()(int r, int c) const;
-  Scalar& operator()(int r, int c);
-
-  R3x3Matrix& operator+=(R3x3Matrix const& right);
-  R3x3Matrix& operator-=(R3x3Matrix const& right);
-  R3x3Matrix& operator*=(R3x3Matrix const& right);
-  R3x3Matrix& operator*=(double right);
-  R3x3Matrix& operator/=(double right);
 
   template<typename S = Scalar,
            typename = std::enable_if_t<std::is_same_v<S, double>>>

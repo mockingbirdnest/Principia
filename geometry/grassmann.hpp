@@ -40,6 +40,11 @@ class Multivector<Scalar, Frame, 1> final {
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
+  Multivector& operator+=(Multivector const& right);
+  Multivector& operator-=(Multivector const& right);
+  Multivector& operator*=(double right);
+  Multivector& operator/=(double right);
+
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
@@ -58,19 +63,6 @@ class Multivector<Scalar, Frame, 1> final {
 
   template<typename S, typename F, int r>
   friend class Multivector;
-
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator+=(Multivector<S, F, r>& left,
-                                          Multivector<S, F, r> const& right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator-=(Multivector<S, F, r>& left,
-                                          Multivector<S, F, r> const& right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator*=(Multivector<S, F, r>& left,
-                                          double right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator/=(Multivector<S, F, r>& left,
-                                          double right);
 };
 
 template<typename Scalar, typename Frame>
@@ -80,6 +72,11 @@ class Multivector<Scalar, Frame, 2> final {
 
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
+
+  Multivector& operator+=(Multivector const& right);
+  Multivector& operator-=(Multivector const& right);
+  Multivector& operator*=(double right);
+  Multivector& operator/=(double right);
 
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
@@ -97,17 +94,7 @@ class Multivector<Scalar, Frame, 2> final {
   R3Element<Scalar> coordinates_;
 
   template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator+=(Multivector<S, F, r>& left,
-                                          Multivector<S, F, r> const& right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator-=(Multivector<S, F, r>& left,
-                                          Multivector<S, F, r> const& right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator*=(Multivector<S, F, r>& left,
-                                          double right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator/=(Multivector<S, F, r>& left,
-                                          double right);
+  friend class Multivector;
 };
 
 template<typename Scalar, typename Frame>
@@ -117,6 +104,11 @@ class Multivector<Scalar, Frame, 3> final {
 
   constexpr Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
+
+  Multivector& operator+=(Multivector const& right);
+  Multivector& operator-=(Multivector const& right);
+  Multivector& operator*=(double right);
+  Multivector& operator/=(double right);
 
   Scalar const& coordinates() const;
   Scalar Norm() const;
@@ -128,19 +120,6 @@ class Multivector<Scalar, Frame, 3> final {
 
  private:
   Scalar coordinates_;
-
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator+=(Multivector<S, F, r>& left,
-                                          Multivector<S, F, r> const& right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator-=(Multivector<S, F, r>& left,
-                                          Multivector<S, F, r> const& right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator*=(Multivector<S, F, r>& left,
-                                          double right);
-  template<typename S, typename F, int r>
-  friend Multivector<S, F, r>& operator/=(Multivector<S, F, r>& left,
-                                          double right);
 };
 
 template<typename Scalar, typename Frame>
@@ -334,23 +313,6 @@ bool operator==(Multivector<Scalar, Frame, rank> const& left,
 template<typename Scalar, typename Frame, int rank>
 bool operator!=(Multivector<Scalar, Frame, rank> const& left,
                 Multivector<Scalar, Frame, rank> const& right);
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator+=(
-    Multivector<Scalar, Frame, rank>& left,
-    Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator-=(
-    Multivector<Scalar, Frame, rank>& left,
-    Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator*=(
-    Multivector<Scalar, Frame, rank>& left,
-    double right);
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator/=(
-    Multivector<Scalar, Frame, rank>& left,
-    double right);
 
 template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
