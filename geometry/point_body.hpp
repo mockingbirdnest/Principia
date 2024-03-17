@@ -96,16 +96,6 @@ Point<Vector>& Point<Vector>::operator-=(Vector const& translation) {
 }
 
 template<typename Vector>
-constexpr bool Point<Vector>::operator==(Point<Vector> const& right) const {
-  return coordinates_ == right.coordinates_;
-}
-
-template<typename Vector>
-constexpr bool Point<Vector>::operator!=(Point<Vector> const& right) const {
-  return coordinates_ != right.coordinates_;
-}
-
-template<typename Vector>
 void Point<Vector>::WriteToMessage(
     not_null<serialization::Point*> const message) const {
   PointSerializer<Vector>::WriteToMessage(coordinates_, message);

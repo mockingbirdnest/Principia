@@ -20,6 +20,11 @@ class Quaternion final {
   explicit Quaternion(double real_part);
   Quaternion(double real_part, R3Element<double> const& imaginary_part);
 
+  friend bool operator==(Quaternion const& left,
+                         Quaternion const& right) = default;
+  friend bool operator!=(Quaternion const& left,
+                         Quaternion const& right) = default;
+
   Quaternion& operator+=(Quaternion const& right);
   Quaternion& operator-=(Quaternion const& right);
   Quaternion& operator*=(Quaternion const& right);
@@ -44,9 +49,6 @@ class Quaternion final {
   double real_part_ = 0;
   R3Element<double> imaginary_part_;
 };
-
-bool operator==(Quaternion const& left, Quaternion const& right);
-bool operator!=(Quaternion const& left, Quaternion const& right);
 
 Quaternion operator+(Quaternion const& right);
 Quaternion operator-(Quaternion const& right);

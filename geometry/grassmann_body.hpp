@@ -540,18 +540,6 @@ FusedNegatedMultiplySubtract(
 }
 
 template<typename Scalar, typename Frame, int rank>
-bool operator==(Multivector<Scalar, Frame, rank> const& left,
-                Multivector<Scalar, Frame, rank> const& right) {
-  return left.coordinates() == right.coordinates();
-}
-
-template<typename Scalar, typename Frame, int rank>
-bool operator!=(Multivector<Scalar, Frame, rank> const& left,
-                Multivector<Scalar, Frame, rank> const& right) {
-  return left.coordinates() != right.coordinates();
-}
-
-template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector) {
   // This |using| is required for the |Trivector|, whose |DebugString(Scalar)|
   // will not be found by ADL if |Scalar| is |double|.

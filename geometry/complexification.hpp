@@ -23,6 +23,11 @@ class Complexification {
   Complexification(V const& real_part);  // NOLINT(runtime/explicit)
   Complexification(Vector const& real_part, Vector const& imaginary_part);
 
+  friend bool operator==(Complexification const& left,
+                         Complexification const& right) = default;
+  friend bool operator!=(Complexification const& left,
+                         Complexification const& right) = default;
+
   template<typename R>
   Complexification& operator+=(R const& right);
   template<typename R>
@@ -43,13 +48,6 @@ class Complexification {
   Vector real_part_{};
   Vector imaginary_part_{};
 };
-
-template<typename Vector>
-bool operator==(Complexification<Vector> const& left,
-                Complexification<Vector> const& right);
-template<typename Vector>
-bool operator!=(Complexification<Vector> const& left,
-                Complexification<Vector> const& right);
 
 template<typename Vector>
 Complexification<Vector> operator+(Complexification<Vector> const& right);

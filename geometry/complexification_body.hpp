@@ -64,20 +64,6 @@ typename Hilbert<Vector>::Norm²Type Complexification<Vector>::Norm²()
 }
 
 template<typename Vector>
-bool operator==(Complexification<Vector> const& left,
-                Complexification<Vector> const& right) {
-  return left.real_part() == right.real_part() &&
-         left.imaginary_part() == right.imaginary_part();
-}
-
-template<typename Vector>
-bool operator!=(Complexification<Vector> const& left,
-                Complexification<Vector> const& right) {
-  return left.real_part() != right.real_part() ||
-         left.imaginary_part() != right.imaginary_part();
-}
-
-template<typename Vector>
 Complexification<Vector> operator+(Complexification<Vector> const& right) {
   return right;
 }

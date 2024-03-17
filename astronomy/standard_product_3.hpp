@@ -98,6 +98,11 @@ class StandardProduct3 {
   struct SatelliteIdentifier {
     SatelliteGroup group;
     int index;
+
+    friend bool operator==(SatelliteIdentifier const& left,
+                           SatelliteIdentifier const& right) = default;
+    friend bool operator!=(SatelliteIdentifier const& left,
+                           SatelliteIdentifier const& right) = default;
   };
 
   struct OrbitPoint {
@@ -139,9 +144,6 @@ class StandardProduct3 {
 
   bool has_velocities_;
 };
-
-bool operator==(StandardProduct3::SatelliteIdentifier const& left,
-                StandardProduct3::SatelliteIdentifier const& right);
 
 bool operator<(StandardProduct3::SatelliteIdentifier const& left,
                StandardProduct3::SatelliteIdentifier const& right);

@@ -40,6 +40,11 @@ class Multivector<Scalar, Frame, 1> final {
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
+  friend bool operator==(Multivector const& left,
+                         Multivector const& right) = default;
+  friend bool operator!=(Multivector const& left,
+                         Multivector const& right) = default;
+
   Multivector& operator+=(Multivector const& right);
   Multivector& operator-=(Multivector const& right);
   Multivector& operator*=(double right);
@@ -70,6 +75,11 @@ class Multivector<Scalar, Frame, 2> final {
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
+  friend bool operator==(Multivector const& left,
+                         Multivector const& right) = default;
+  friend bool operator!=(Multivector const& left,
+                         Multivector const& right) = default;
+
   Multivector& operator+=(Multivector const& right);
   Multivector& operator-=(Multivector const& right);
   Multivector& operator*=(double right);
@@ -98,6 +108,11 @@ class Multivector<Scalar, Frame, 3> final {
 
   constexpr Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
+
+  friend bool operator==(Multivector const& left,
+                         Multivector const& right) = default;
+  friend bool operator!=(Multivector const& left,
+                         Multivector const& right) = default;
 
   Multivector& operator+=(Multivector const& right);
   Multivector& operator-=(Multivector const& right);
@@ -301,13 +316,6 @@ FusedNegatedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-
-template<typename Scalar, typename Frame, int rank>
-bool operator==(Multivector<Scalar, Frame, rank> const& left,
-                Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, int rank>
-bool operator!=(Multivector<Scalar, Frame, rank> const& left,
-                Multivector<Scalar, Frame, rank> const& right);
 
 template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);

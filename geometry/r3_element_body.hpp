@@ -408,18 +408,6 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
 }
 
 template<typename Scalar>
-bool operator==(R3Element<Scalar> const& left,
-                R3Element<Scalar> const& right) {
-  return left.x == right.x && left.y == right.y && left.z == right.z;
-}
-
-template<typename Scalar>
-bool operator!=(R3Element<Scalar> const& left,
-                R3Element<Scalar> const& right) {
-  return left.x != right.x || left.y != right.y || left.z != right.z;
-}
-
-template<typename Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
   Scalar const norm = r3_element.Norm();
 #ifdef _DEBUG

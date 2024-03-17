@@ -59,16 +59,6 @@ enable_if_vector_t<Pair<U1, U2>>& Pair<T1, T2>::operator/=(double const right) {
 }
 
 template<typename T1, typename T2>
-bool Pair<T1, T2>::operator==(Pair const& right) const {
-  return t1_ == right.t1_ && t2_ == right.t2_;
-}
-
-template<typename T1, typename T2>
-bool Pair<T1, T2>::operator!=(Pair const& right) const {
-  return t1_ != right.t1_ || t2_ != right.t2_;
-}
-
-template<typename T1, typename T2>
 void Pair<T1, T2>::WriteToMessage(
     not_null<serialization::Pair*> const message) const {
   PointOrMultivectorSerializer<T1, serialization::Pair::Element>::

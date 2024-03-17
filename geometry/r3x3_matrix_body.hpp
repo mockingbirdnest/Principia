@@ -387,18 +387,6 @@ R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
 }
 
 template<typename Scalar>
-bool operator==(R3x3Matrix<Scalar> const& left,
-                R3x3Matrix<Scalar> const& right) {
-  return left.rows_ == right.rows_;
-}
-
-template<typename Scalar>
-bool operator!=(R3x3Matrix<Scalar> const& left,
-                R3x3Matrix<Scalar> const& right) {
-  return left.rows_ != right.rows_;
-}
-
-template<typename Scalar>
 std::string DebugString(R3x3Matrix<Scalar> const& r3x3_matrix) {
   constexpr auto X = R3x3Matrix<Scalar>::X;
   constexpr auto Y = R3x3Matrix<Scalar>::Y;

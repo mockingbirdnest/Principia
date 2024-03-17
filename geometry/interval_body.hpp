@@ -26,16 +26,6 @@ void Interval<T>::Include(T const& x) {
 }
 
 template<typename T>
-bool operator==(Interval<T> const& left, Interval<T> const& right) {
-  return left.min == right.min && left.max == right.max;
-}
-
-template<typename T>
-bool operator!=(Interval<T> const& left, Interval<T> const& right) {
-  return !(left == right);
-}
-
-template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval) {
   return out << interval.midpoint() << " ± " << interval.measure() / 2;
 }

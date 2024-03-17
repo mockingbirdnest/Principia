@@ -72,9 +72,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     DoublePrecision<IndependentVariable> s;
     std::tuple<DoublePrecision<DependentVariable>...> y;
 
-    friend bool operator==(State const& lhs, State const& rhs) {
-      return lhs.y == rhs.y && lhs.s == rhs.s;
-    }
+    friend bool operator==(State const& lhs, State const& rhs) = default;
 
     void WriteToMessage(not_null<serialization::State*> message) const;
     static State ReadFromMessage(serialization::State const& message);
@@ -110,9 +108,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
     DoublePrecision<Instant> time;
     std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
 
-    friend bool operator==(State const& lhs, State const& rhs) {
-      return lhs.time == rhs.time && lhs.y == rhs.y;
-    }
+    friend bool operator==(State const& lhs, State const& rhs) = default;
   };
 
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
@@ -172,11 +168,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
         DoublePrecision<Derivative<DependentVariable, IndependentVariable>>>
         velocities;
 
-    friend bool operator==(State const& lhs, State const& rhs) {
-      return lhs.positions == rhs.positions &&
-             lhs.velocities == rhs.velocities &&
-             lhs.time == rhs.time;
-    }
+    friend bool operator==(State const& lhs, State const& rhs) = default;
 
     void WriteToMessage(not_null<serialization::State*> message) const;
     static State ReadFromMessage(serialization::State const& message);

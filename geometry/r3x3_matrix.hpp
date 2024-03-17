@@ -36,6 +36,11 @@ class R3x3Matrix final {
              R3Element<Scalar> const& row_y,
              R3Element<Scalar> const& row_z);
 
+  friend bool operator==(R3x3Matrix const& left,
+                         R3x3Matrix const& right) = default;
+  friend bool operator!=(R3x3Matrix const& left,
+                         R3x3Matrix const& right) = default;
+
   Scalar operator()(int r, int c) const;
   Scalar& operator()(int r, int c);
 
@@ -115,13 +120,6 @@ class R3x3Matrix final {
   template<typename LS, typename RS, typename>
   friend R3x3Matrix<Quotient<LS, RS>> operator/(R3x3Matrix<LS> const& left,
                                                 RS const& right);
-
-  template<typename S>
-  friend bool operator==(R3x3Matrix<S> const& left,
-                         R3x3Matrix<S> const& right);
-  template<typename S>
-  friend bool operator!=(R3x3Matrix<S> const& left,
-                         R3x3Matrix<S> const& right);
 
   template<typename S>
   friend std::string DebugString(R3x3Matrix<S> const& r3x3_matrix);

@@ -89,6 +89,9 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
  public:
   explicit Rotation(Quaternion const& quaternion);
 
+  friend bool operator==(Rotation const& left, Rotation const& right) = default;
+  friend bool operator!=(Rotation const& left, Rotation const& right) = default;
+
   // A rotation of |angle| around |axis|; no coordinate change is involved, this
   // is an active rotation.
   template<typename Scalar,
@@ -271,12 +274,6 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<typename From, typename Through, typename To>
   friend Rotation<From, To> operator*(Rotation<Through, To> const& left,
                                       Rotation<From, Through> const& right);
-  template<typename From, typename To>
-  friend bool operator==(Rotation<From, To> const& left,
-                         Rotation<From, To> const& right);
-  template<typename From, typename To>
-  friend bool operator!=(Rotation<From, To> const& left,
-                         Rotation<From, To> const& right);
 
   template<typename From, typename To>
   friend std::ostream& operator<<(std::ostream& out,
@@ -291,13 +288,6 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
-
-template<typename From, typename To>
-bool operator==(Rotation<From, To> const& left,
-                Rotation<From, To> const& right);
-template<typename From, typename To>
-bool operator!=(Rotation<From, To> const& left,
-                Rotation<From, To> const& right);
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
