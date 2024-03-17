@@ -159,7 +159,7 @@ class UnboundedLowerTriangularMatrix final {
   // The |data| must be in row-major format.
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
-  UnboundedLowerTriangularMatrix(
+  explicit UnboundedLowerTriangularMatrix(
       TransposedView<UnboundedUpperTriangularMatrix<Scalar>> const& view);
 
   void Extend(int extra_rows);
@@ -204,7 +204,7 @@ class UnboundedUpperTriangularMatrix final {
   // The |data| must be in row-major format.
   UnboundedUpperTriangularMatrix(std::initializer_list<Scalar> const& data);
 
-  UnboundedUpperTriangularMatrix(
+  explicit UnboundedUpperTriangularMatrix(
       TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view);
 
   void Extend(int extra_columns);

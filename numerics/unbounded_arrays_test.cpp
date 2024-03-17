@@ -17,12 +17,19 @@ using namespace principia::testing_utilities::_almost_equals;
 class UnboundedArraysTest : public ::testing::Test {
  protected:
   UnboundedArraysTest()
-    : v3_({10, 31, -47}),
+    : u3_({6, -1, 12}),
+      v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
-      m4_({  1,   2,   3,    5,
-             8,  13,  21,   34,
-            55,  89, 144,  233,
-           377, 610, 987, 1597}),
+      m34_(3, 4,
+           {-8,  -6, -4, -7,
+            -4, -10,  9, -5,
+             6,  -3, -2, -9}),
+      m23_(2, 3,
+           {1, -2,  0,
+            2,  3,  7}),
+      n23_(2, 3,
+           { 5, -1,  3,
+            12, 13, -4}),
       l4_({ 1,
             2,  3,
             5,  8,  13,
@@ -32,9 +39,12 @@ class UnboundedArraysTest : public ::testing::Test {
                  34, 55,
                      89}) {}
 
+  UnboundedVector<double> u3_;
   UnboundedVector<double> v3_;
   UnboundedVector<double> v4_;
-  UnboundedMatrix<double> m4_;
+  UnboundedMatrix<double> m34_;
+  UnboundedMatrix<double> m23_;
+  UnboundedMatrix<double> n23_;
   UnboundedLowerTriangularMatrix<double> l4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
@@ -49,12 +59,22 @@ TEST_F(UnboundedArraysTest, Assignment) {
     EXPECT_EQ(u2, w2);
   }
   {
-    UnboundedMatrix<double> u2({1, 2, 3, 4});
-    UnboundedMatrix<double> v2 = {{1, 2, 3, 4}};
-    UnboundedMatrix<double> w2(2, 2);
-    w2 = {{1, 2, 3, 4}};
-    EXPECT_EQ(u2, v2);
-    EXPECT_EQ(u2, w2);
+    UnboundedMatrix<double> l23(2, 3,
+                                {1, 2, 3,
+                                 4, 5, 6 });
+    UnboundedMatrix<double> m23 = {2, 3,
+                                   {1, 2, 3,
+                                    4, 5, 6}};
+    UnboundedMatrix<double> n23 = {2, 3,
+                                   {0, 0, 0,
+                                    0, 0, 0}};
+    // TODO(phl): It would be convenient to have an operator= taking an
+    // initializer list.
+    n23 = UnboundedMatrix<double>(2, 3,
+                                  {1, 2, 3,
+                                   4, 5, 6});
+    EXPECT_EQ(l23, m23);
+    EXPECT_EQ(l23, n23);
   }
   {
     UnboundedLowerTriangularMatrix<double> l3({1,
@@ -97,23 +117,61 @@ TEST_F(UnboundedArraysTest, Assignment) {
 TEST_F(UnboundedArraysTest, Norm) {
   EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
-  EXPECT_EQ(Sqrt(4'126'647.0), m4_.FrobeniusNorm());
+  EXPECT_EQ(35, v4_.Norm²());
+  EXPECT_EQ(Sqrt(517.0), m34_.FrobeniusNorm());
 }
 
-TEST_F(UnboundedArraysTest, MultiplicationDivision) {
-  EXPECT_EQ(UnboundedVector<double>({14, 94, 644, 4414}), m4_ * v4_);
-  EXPECT_EQ(UnboundedVector<double>({1536, 2484, 4020, 6504}),
-            TransposedView{m4_} * v4_);  // NOLINT
-  EXPECT_EQ(UnboundedVector<double>({-1.5, -1.5, 0.5, 2.0}), v4_ / 2.0);
-  EXPECT_EQ(UnboundedMatrix<double>(
-                {  2067,    3345,   5412,     8757,
-                  14085,   22794,  36879,    59673,
-                  96528,  156213,  252741,  408954,
-                 661611, 1070697, 1732308, 2803005}), m4_ * m4_);
+TEST_F(UnboundedArraysTest, AdditiveGroups) {
+  EXPECT_EQ((UnboundedVector<double>({-10, -31, 47})), -v3_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-1,  2,  0,
+                                      -2, -3, -7})), -m23_);
+
+  EXPECT_EQ((UnboundedVector<double>({16, 30, -35})), u3_ + v3_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     { 6, -3, 3,
+                                      14, 16, 3})), m23_ + n23_);
+
+  EXPECT_EQ((UnboundedVector<double>({-4, -32, 59})), u3_ - v3_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     { -4,  -1, -3,
+                                      -10, -10, 11})), m23_ - n23_);
+}
+
+TEST_F(UnboundedArraysTest, VectorSpaces) {
+  EXPECT_EQ((UnboundedVector<double>({12, -2, 24})), 2 * u3_);
+  EXPECT_EQ((UnboundedVector<double>({-30, -93, 141})), v3_ * -3);
+
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {2, -4,  0,
+                                      4,  6, 14})), 2 * m23_);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-15,   3, -9,
+                                      -36, -39, 12})), n23_ * -3);
+
+  EXPECT_EQ((UnboundedVector<double>({2.5, 7.75, -11.75})), v3_ / 4);
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-2.5,  0.5, -1.5,
+                                        -6, -6.5,  2})), n23_ / -2);
 }
 
 TEST_F(UnboundedArraysTest, Algebra) {
-  EXPECT_EQ(3270, TransposedView{v3_} * v3_);  // NOLINT
+  EXPECT_EQ(-535, TransposedView{u3_} * v3_);  // NOLINT
+  EXPECT_EQ((UnboundedMatrix<double>(3, 4,
+                                     { -30, -30,  10,   40,
+                                       -93, -93,  31,  124,
+                                       141, 141, -47, -188})),
+             v3_ * TransposedView{v4_});
+  EXPECT_EQ((UnboundedMatrix<double>(2, 4,
+                                     { 0,  14, -22,   3,
+                                      14, -63,   5, -92})),
+            m23_ * m34_);
+  EXPECT_EQ(v3_, m34_ * v4_);
+  EXPECT_EQ((UnboundedVector<double>({-486, -229, 333, 198})),
+            TransposedView{m34_} * v3_);  // NOLINT
+  UnboundedMatrix<double> m43(TransposedView{m34_});
+  EXPECT_EQ((UnboundedVector<double>({-486, -229, 333, 198})),
+            m43 * v3_);
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {
@@ -123,9 +181,9 @@ TEST_F(UnboundedArraysTest, VectorIndexing) {
 }
 
 TEST_F(UnboundedArraysTest, MatrixIndexing) {
-  EXPECT_EQ(21, m4_(1, 2));
-  m4_(2, 1) = -666;
-  EXPECT_EQ(-666, m4_(2, 1));
+  EXPECT_EQ(9, m34_(1, 2));
+  m34_(2, 1) = -666;
+  EXPECT_EQ(-666, m34_(2, 1));
 }
 
 TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
@@ -233,11 +291,12 @@ TEST_F(UnboundedArraysTest, Erase) {
 
 TEST_F(UnboundedArraysTest, Transpose) {
   EXPECT_EQ(
-      UnboundedMatrix<double>({1,  8,  55,  377,
-                               2, 13,  89,  610,
-                               3, 21, 144,  987,
-                               5, 34, 233, 1597}),
-      UnboundedMatrix<double>(TransposedView{m4_}));
+      UnboundedMatrix<double>(4, 3,
+                              {-8,  -4,  6,
+                               -6, -10, -3,
+                               -4,   9, -2,
+                               -7,  -5, -9}),
+      UnboundedMatrix<double>(TransposedView{m34_}));
   EXPECT_EQ(
       UnboundedUpperTriangularMatrix<double>({1, 2,  5, 21,
                                                  3,  8, 34,

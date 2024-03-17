@@ -19,8 +19,10 @@ using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-template<typename Scalar_, int rows, int columns>
+template<typename Scalar_, int rows_, int columns_>
 class FixedMatrix;
+template<typename Scalar_, int rows_>
+class FixedUpperTriangularMatrix;
 
 template<typename Scalar_, int size_>
 class FixedVector final {
@@ -178,6 +180,9 @@ class FixedLowerTriangularMatrix final {
   constexpr FixedLowerTriangularMatrix(
       std::array<Scalar, size()> const& data);
 
+  explicit FixedLowerTriangularMatrix(
+      TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view);
+
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
@@ -205,6 +210,9 @@ class FixedUpperTriangularMatrix final {
   // The |data| must be in row-major format.
   constexpr FixedUpperTriangularMatrix(
       std::array<Scalar, size()> const& data);
+
+  explicit FixedUpperTriangularMatrix(
+      TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view);
 
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
