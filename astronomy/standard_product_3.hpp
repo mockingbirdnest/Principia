@@ -99,10 +99,8 @@ class StandardProduct3 {
     SatelliteGroup group;
     int index;
 
-    friend bool operator==(SatelliteIdentifier const& left,
-                           SatelliteIdentifier const& right) = default;
-    friend bool operator!=(SatelliteIdentifier const& left,
-                           SatelliteIdentifier const& right) = default;
+    friend auto operator<=>(SatelliteIdentifier const& left,
+                            SatelliteIdentifier const& right) = default;
   };
 
   struct OrbitPoint {
