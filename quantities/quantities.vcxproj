@@ -12,6 +12,7 @@
     <ClInclude Include="astronomy.hpp" />
     <ClInclude Include="bipm.hpp" />
     <ClInclude Include="cgs.hpp" />
+    <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="dimensions.hpp" />
     <ClInclude Include="dimensions_body.hpp" />
@@ -29,7 +30,6 @@
     <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="si.hpp" />
     <ClInclude Include="si_body.hpp" />
-    <ClInclude Include="traits.hpp" />
     <ClInclude Include="tuples.hpp" />
     <ClInclude Include="tuples_body.hpp" />
     <ClInclude Include="uk.hpp" />
@@ -38,7 +38,7 @@
     <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
-    <ClCompile Include="traits_test.cpp" />
+    <ClCompile Include="concepts_test.cpp" />
     <ClCompile Include="wide_test.cpp" />
   </ItemGroup>
 </Project>
