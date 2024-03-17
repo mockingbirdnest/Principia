@@ -454,12 +454,6 @@ bool StandardProduct3::file_has_velocities() const {
   return has_velocities_;
 }
 
-bool operator<(StandardProduct3::SatelliteIdentifier const& left,
-               StandardProduct3::SatelliteIdentifier const& right) {
-  return left.group < right.group ||
-         (left.group == right.group && left.index < right.index);
-}
-
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version) {
   return out << std::string(1, static_cast<char>(version));

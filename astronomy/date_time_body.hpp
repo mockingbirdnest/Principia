@@ -964,20 +964,8 @@ constexpr bool operator!=(Date const& left, Date const& right) {
   return !(left == right);
 }
 
-constexpr bool operator<(Date const& left, Date const& right) {
-  return left.jd() < right.jd();
-}
-
-constexpr bool operator>(Date const& left, Date const& right) {
-  return right < left;
-}
-
-constexpr bool operator<=(Date const& left, Date const& right) {
-  return !(right < left);
-}
-
-constexpr bool operator>=(Date const& left, Date const& right) {
-  return !(left < right);
+constexpr auto operator<=>(Date const& left, Date const& right) {
+  return left.jd() <=> right.jd();
 }
 
 constexpr Date operator""_Date(char const* const str, std::size_t const size) {

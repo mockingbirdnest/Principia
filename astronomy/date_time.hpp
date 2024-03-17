@@ -157,10 +157,7 @@ class JulianDate final {
 // Gregorian calendars compare equal.
 constexpr bool operator==(Date const& left, Date const& right);
 constexpr bool operator!=(Date const& left, Date const& right);
-constexpr bool operator<(Date const& left, Date const& right);
-constexpr bool operator>(Date const& left, Date const& right);
-constexpr bool operator<=(Date const& left, Date const& right);
-constexpr bool operator>=(Date const& left, Date const& right);
+constexpr auto operator<=>(Date const& left, Date const& right);
 constexpr Date operator""_Date(char const* str, std::size_t size);
 std::ostream& operator<<(std::ostream& out, Date const& date);
 

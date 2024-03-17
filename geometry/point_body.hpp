@@ -136,34 +136,6 @@ Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
 
 template<typename Vector>
   requires quantity<Vector>
-constexpr bool operator<(Point<Vector> const& left,
-                         Point<Vector> const& right) {
-  return left.coordinates_ < right.coordinates_;
-}
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator<=(Point<Vector> const& left,
-                          Point<Vector> const& right) {
-  return left.coordinates_ <= right.coordinates_;
-}
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator>=(Point<Vector> const& left,
-                          Point<Vector> const& right) {
-  return left.coordinates_ >= right.coordinates_;
-}
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator>(Point<Vector> const& left,
-                         Point<Vector> const& right) {
-  return left.coordinates_ > right.coordinates_;
-}
-
-template<typename Vector>
-  requires quantity<Vector>
 constexpr Point<Vector> NextUp(Point<Vector> const x) {
   using quantities::_elementary_functions::NextUp;
   return Point<Vector>(NextUp(x.coordinates_));

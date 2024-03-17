@@ -67,28 +67,6 @@ FORCE_INLINE(constexpr) Quantity<D> Quantity<D>::operator-(
   return Quantity(magnitude_ - right.magnitude_);
 }
 
-// Comparison operators
-
-template<typename D>
-constexpr bool Quantity<D>::operator>(Quantity const& right) const {
-  return magnitude_ > right.magnitude_;
-}
-
-template<typename D>
-constexpr bool Quantity<D>::operator<(Quantity const& right) const {
-  return magnitude_ < right.magnitude_;
-}
-
-template<typename D>
-constexpr bool Quantity<D>::operator>=(Quantity const& right) const {
-  return magnitude_ >= right.magnitude_;
-}
-
-template<typename D>
-constexpr bool Quantity<D>::operator<=(Quantity const& right) const {
-  return magnitude_ <= right.magnitude_;
-}
-
 template<typename D>
 void Quantity<D>::WriteToMessage(
     not_null<serialization::Quantity*> const message) const {
