@@ -192,13 +192,13 @@ void TestVectorSpace(Vector const& nullVector, Vector const& u, Vector const& v,
   EXPECT_EQ(unit * w, w);
   EXPECT_EQ(u / unit, u);
   EXPECT_EQ(zero * u, nullVector);
-  EXPECT_THAT(β * (u + v), AlmostEquals(β * u + v * β, min_ulps, max_ulps));
+  EXPECT_THAT(β * (u + v), AlmostEquals(β * u + β * v, min_ulps, max_ulps));
   EXPECT_THAT((w + v) / α, AlmostEquals(w / α + v / α, min_ulps, max_ulps));
   EXPECT_THAT((α + β) * w, AlmostEquals(α * w + β * w, min_ulps, max_ulps));
-  EXPECT_THAT(v * (α + β), AlmostEquals(α * v + β * v, min_ulps, max_ulps));
+  EXPECT_THAT(v * (α + β), AlmostEquals(v * α + v * β, min_ulps, max_ulps));
   Vector vector = u;
   vector *= α;
-  EXPECT_EQ(α * u, vector);
+  EXPECT_EQ(u * α, vector);
   vector /= α;
   EXPECT_THAT(u, AlmostEquals(vector, min_ulps, max_ulps));
   vector *= zero;
