@@ -305,42 +305,6 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 }
 
 template<typename T>
-bool operator<(DoublePrecision<T> const& left,
-               DoublePrecision<T> const& right) {
-  // This is correct assuming that left and right have non-overlapping
-  // mantissas.
-  return left.value < right.value ||
-         (left.value == right.value && left.error < right.error);
-}
-
-template<typename T>
-bool operator<=(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right) {
-  // This is correct assuming that left and right have non-overlapping
-  // mantissas.
-  return left.value <= right.value ||
-         (left.value == right.value && left.error <= right.error);
-}
-
-template<typename T>
-bool operator>=(DoublePrecision<T> const& left,
-                DoublePrecision<T> const& right) {
-  // This is correct assuming that left and right have non-overlapping
-  // mantissas.
-  return left.value >= right.value ||
-         (left.value == right.value && left.error >= right.error);
-}
-
-template<typename T>
-bool operator>(DoublePrecision<T> const& left,
-               DoublePrecision<T> const& right) {
-  // This is correct assuming that left and right have non-overlapping
-  // mantissas.
-  return left.value > right.value ||
-         (left.value == right.value && left.error > right.error);
-}
-
-template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
   static_assert(std::is_same<Difference<T>, T>::value,
                 "Unary + must be used on a vector");

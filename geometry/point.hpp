@@ -45,6 +45,8 @@ class Point final {
                                    Point const& right) = default;
   constexpr friend bool operator!=(Point const& left,
                                    Point const& right) = default;
+  constexpr friend auto operator<=>(Point const& left, Point const& right)
+    requires quantity<Vector> = default;
 
   constexpr Vector operator-(Point const& from) const;
 
@@ -78,19 +80,6 @@ class Point final {
 
   template<typename V>
     requires quantity<V>
-  friend constexpr bool operator<(Point<V> const& left, Point<V> const& right);
-  template<typename V>
-    requires quantity<V>
-  friend constexpr bool operator<=(Point<V> const& left, Point<V> const& right);
-  template<typename V>
-    requires quantity<V>
-  friend constexpr bool operator>=(Point<V> const& left, Point<V> const& right);
-  template<typename V>
-    requires quantity<V>
-  friend constexpr bool operator>(Point<V> const& left, Point<V> const& right);
-
-  template<typename V>
-    requires quantity<V>
   friend constexpr Point<V> NextUp(Point<V> x);
   template<typename V>
     requires quantity<V>
@@ -115,24 +104,6 @@ template<typename L, typename R>
 Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
                                              R const& b,
                                              Point<Product<L, R>> const& c);
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator<(Point<Vector> const& left, Point<Vector> const& right);
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator<=(Point<Vector> const& left,
-                          Point<Vector> const& right);
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator>=(Point<Vector> const& left,
-                          Point<Vector> const& right);
-
-template<typename Vector>
-  requires quantity<Vector>
-constexpr bool operator>(Point<Vector> const& left, Point<Vector> const& right);
 
 template<typename Vector>
   requires quantity<Vector>

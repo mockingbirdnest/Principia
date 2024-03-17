@@ -143,9 +143,6 @@ class StandardProduct3 {
   bool has_velocities_;
 };
 
-bool operator<(StandardProduct3::SatelliteIdentifier const& left,
-               StandardProduct3::SatelliteIdentifier const& right);
-
 std::ostream& operator<<(std::ostream& out,
                          StandardProduct3::Version const& version);
 
