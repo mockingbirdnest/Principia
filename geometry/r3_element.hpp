@@ -182,11 +182,11 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<Product<LScalar, RScalar>> const& c);
 
 template<typename Scalar>
-bool operator==(R3Element<Scalar> const& left,
-                R3Element<Scalar> const& right);
+constexpr bool operator==(R3Element<Scalar> const& left,
+                          R3Element<Scalar> const& right);
 template<typename Scalar>
-bool operator!=(R3Element<Scalar> const& left,
-                R3Element<Scalar> const& right);
+constexpr bool operator!=(R3Element<Scalar> const& left,
+                          R3Element<Scalar> const& right);
 
 template<typename Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element);

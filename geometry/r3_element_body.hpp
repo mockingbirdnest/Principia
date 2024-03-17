@@ -419,14 +419,14 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
 }
 
 template<typename Scalar>
-bool operator==(R3Element<Scalar> const& left,
-                R3Element<Scalar> const& right) {
+constexpr bool operator==(R3Element<Scalar> const& left,
+                          R3Element<Scalar> const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
 }
 
 template<typename Scalar>
-bool operator!=(R3Element<Scalar> const& left,
-                R3Element<Scalar> const& right) {
+constexpr bool operator!=(R3Element<Scalar> const& left,
+                          R3Element<Scalar> const& right) {
   return left.x != right.x || left.y != right.y || left.z != right.z;
 }
 

@@ -40,10 +40,10 @@ class Multivector<Scalar, Frame, 1> final {
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
-  friend bool operator==(Multivector const& left,
-                         Multivector const& right) = default;
-  friend bool operator!=(Multivector const& left,
-                         Multivector const& right) = default;
+  friend constexpr bool operator==(Multivector const& left,
+                                   Multivector const& right) = default;
+  friend constexpr bool operator!=(Multivector const& left,
+                                   Multivector const& right) = default;
 
   Multivector& operator+=(Multivector const& right);
   Multivector& operator-=(Multivector const& right);
@@ -78,10 +78,10 @@ class Multivector<Scalar, Frame, 2> final {
   constexpr Multivector() = default;
   explicit Multivector(R3Element<Scalar> const& coordinates);
 
-  friend bool operator==(Multivector const& left,
-                         Multivector const& right) = default;
-  friend bool operator!=(Multivector const& left,
-                         Multivector const& right) = default;
+  friend constexpr bool operator==(Multivector const& left,
+                                   Multivector const& right) = default;
+  friend constexpr bool operator!=(Multivector const& left,
+                                   Multivector const& right) = default;
 
   Multivector& operator+=(Multivector const& right);
   Multivector& operator-=(Multivector const& right);
@@ -115,10 +115,10 @@ class Multivector<Scalar, Frame, 3> final {
   constexpr Multivector() = default;
   explicit Multivector(Scalar const& coordinates);
 
-  friend bool operator==(Multivector const& left,
-                         Multivector const& right) = default;
-  friend bool operator!=(Multivector const& left,
-                         Multivector const& right) = default;
+  friend bool constexpr operator==(Multivector const& left,
+                                   Multivector const& right) = default;
+  friend bool constexpr operator!=(Multivector const& left,
+                                   Multivector const& right) = default;
 
   Multivector& operator+=(Multivector const& right);
   Multivector& operator-=(Multivector const& right);
