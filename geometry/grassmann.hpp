@@ -60,6 +60,9 @@ class Multivector<Scalar, Frame, 1> final {
 
  private:
   R3Element<Scalar> coordinates_;
+
+  template<typename S, typename F, int r>
+  friend class Multivector;
 };
 
 template<typename Scalar, typename Frame>
@@ -89,6 +92,9 @@ class Multivector<Scalar, Frame, 2> final {
 
  private:
   R3Element<Scalar> coordinates_;
+
+  template<typename S, typename F, int r>
+  friend class Multivector;
 };
 
 template<typename Scalar, typename Frame>
