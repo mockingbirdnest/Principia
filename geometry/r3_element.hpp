@@ -37,7 +37,7 @@ struct alignas(16) R3Element final {
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
   R3Element(__m128d xy, __m128d zt);
 
-  Scalar&       operator[](int index);
+  Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
 
   R3Element& operator+=(R3Element const& right);

@@ -67,6 +67,67 @@ constexpr FixedVector<Scalar_, size_>::operator std::array<Scalar_, size_>()
 }
 
 template<typename Scalar_, int size_>
+constexpr Scalar_& FixedVector<Scalar_, size_>::operator[](int const index) {
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < size());
+  return data_[index];
+}
+
+template<typename Scalar_, int size_>
+constexpr Scalar_ const& FixedVector<Scalar_, size_>::operator[](
+    int const index) const {
+  CONSTEXPR_DCHECK(0 <= index);
+  CONSTEXPR_DCHECK(index < size());
+  return data_[index];
+}
+
+template<typename Scalar_, int size_>
+bool FixedVector<Scalar_, size_>::operator==(FixedVector const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar_, int size_>
+bool FixedVector<Scalar_, size_>::operator!=(FixedVector const& right) const {
+  return data_ != right.data_;
+}
+
+template<typename Scalar_, int size_>
+constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator+=(
+    FixedVector const& right) {
+  for (int i = 0; i < size(); ++i) {
+    data_[i] += right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_, int size_>
+constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator-=(
+    FixedVector const& right) {
+  for (int i = 0; i < size(); ++i) {
+    data_[i] -= right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_, int size_>
+constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator*=(
+    double const right) {
+  for (auto& d : data_) {
+    d *= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_, int size_>
+constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator/=(
+    double const right) {
+  for (auto& d : data_) {
+    d /= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_, int size_>
 Scalar_ FixedVector<Scalar_, size_>::Norm() const {
   return Sqrt(Norm²());
 }
@@ -83,21 +144,6 @@ FixedVector<double, size_> FixedVector<Scalar_, size_>::Normalize() const {
 }
 
 template<typename Scalar_, int size_>
-constexpr Scalar_& FixedVector<Scalar_, size_>::operator[](int const index) {
-  CONSTEXPR_DCHECK(0 <= index);
-  CONSTEXPR_DCHECK(index < size());
-  return data_[index];
-}
-
-template<typename Scalar_, int size_>
-constexpr Scalar_ const& FixedVector<Scalar_, size_>::operator[](
-    int const index) const {
-  CONSTEXPR_DCHECK(0 <= index);
-  CONSTEXPR_DCHECK(index < size());
-  return data_[index];
-}
-
-template<typename Scalar_, int size_>
 typename std::array<Scalar_, size_>::const_iterator
 FixedVector<Scalar_, size_>::begin() const {
   return data_.cbegin();
@@ -107,16 +153,6 @@ template<typename Scalar_, int size_>
 typename std::array<Scalar_, size_>::const_iterator
 FixedVector<Scalar_, size_>::end() const {
   return data_.cend();
-}
-
-template<typename Scalar_, int size_>
-bool FixedVector<Scalar_, size_>::operator==(FixedVector const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int size_>
-bool FixedVector<Scalar_, size_>::operator!=(FixedVector const& right) const {
-  return data_ != right.data_;
 }
 
 template<typename H, typename Scalar_, int size_>
@@ -167,6 +203,54 @@ constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_>::operator()(
 }
 
 template<typename Scalar_, int rows_, int columns_>
+bool FixedMatrix<Scalar_, rows_, columns_>::operator==(
+    FixedMatrix const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar_, int rows_, int columns_>
+bool FixedMatrix<Scalar_, rows_, columns_>::operator!=(
+    FixedMatrix const& right) const {
+  return data_ != right.data_;
+}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>&
+FixedMatrix<Scalar_, rows_, columns_>::operator+=(FixedMatrix const& right) {
+  for (int i = 0; i < size(); ++i) {
+    data_[i] += right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>&
+FixedMatrix<Scalar_, rows_, columns_>::operator-=(FixedMatrix const& right) {
+  for (int i = 0; i < size(); ++i) {
+    data_[i] -= right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>&
+FixedMatrix<Scalar_, rows_, columns_>::operator*=(double const right) {
+  for (auto& d : data_) {
+    d *= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>&
+FixedMatrix<Scalar_, rows_, columns_>::operator/=(double const right) {
+  for (auto& d : data_) {
+    d /= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_, int rows_, int columns_>
 template<int r>
 Scalar_ const* FixedMatrix<Scalar_, rows_, columns_>::row() const {
   static_assert(r < rows_);
@@ -182,18 +266,6 @@ Scalar_ FixedMatrix<Scalar_, rows_, columns_>::FrobeniusNorm() const {
     }
   }
   return Sqrt(Σᵢⱼaᵢⱼ²);
-}
-
-template<typename Scalar_, int rows_, int columns_>
-bool FixedMatrix<Scalar_, rows_, columns_>::operator==(
-    FixedMatrix const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_, int rows_, int columns_>
-bool FixedMatrix<Scalar_, rows_, columns_>::operator!=(
-    FixedMatrix const& right) const {
-  return data_ != right.data_;
 }
 
 template<typename Scalar_, int rows_, int columns_>
@@ -516,38 +588,6 @@ constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
   return result;
 }
 
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator+=(
-    FixedVector<Scalar, size>& left,
-    FixedVector<Scalar, size> const& right) {
-  left = left + right;
-  return left;
-}
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator+=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    FixedMatrix<Scalar, rows, columns> const& right) {
-  left = left + right;
-  return left;
-}
-
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator-=(
-    FixedVector<Scalar, size>& left,
-    FixedVector<Scalar, size> const& right) {
-  left = left - right;
-  return left;
-}
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    FixedMatrix<Scalar, rows, columns> const& right) {
-  left = left - right;
-  return left;
-}
-
 template<typename LScalar, typename RScalar, int size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     LScalar const& left,
@@ -621,32 +661,6 @@ constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> operator/(
     }
   }
   return result;
-}
-
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator*=(FixedVector<Scalar, size>& left,
-                                                double const right) {
-  return left = left * right;
-}
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator*=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    double const right) {
-  return left = left * right;
-}
-
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator/=(FixedVector<Scalar, size>& left,
-                                                double const right) {
-  return left = left / right;
-}
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator/=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    double const right) {
-  return left = left / right;
 }
 
 template<typename LScalar, typename RScalar, int size>

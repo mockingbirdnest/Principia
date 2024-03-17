@@ -24,17 +24,17 @@ struct DoublePrecision final {
 
   explicit constexpr DoublePrecision(T const& value);
 
+  DoublePrecision<T>& operator+=(DoublePrecision<Difference<T>> const& right);
+  DoublePrecision<T>& operator+=(Difference<T> const& right);
+  DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
+  DoublePrecision<T>& operator-=(Difference<T> const& right);
+
   // Compensated summation.  This is less precise, but more efficient, than
   // |operator-=| or |operator+=|.  Unlike |QuickTwoSum|, these functions don't
   // DCHECK their argument, so the caller must ensure that |right| is small
   // enough.
   DoublePrecision<T>& Decrement(Difference<T> const& right);
   DoublePrecision<T>& Increment(Difference<T> const& right);
-
-  DoublePrecision<T>& operator+=(DoublePrecision<Difference<T>> const& right);
-  DoublePrecision<T>& operator+=(Difference<T> const& right);
-  DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
-  DoublePrecision<T>& operator-=(Difference<T> const& right);
 
   void WriteToMessage(not_null<serialization::DoublePrecision*> message) const;
   static DoublePrecision ReadFromMessage(

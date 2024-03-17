@@ -50,6 +50,68 @@ UnboundedVector<Scalar_>::UnboundedVector(ColumnView<T> const& view)
 }
 
 template<typename Scalar_>
+Scalar_& UnboundedVector<Scalar_>::operator[](int const index) {
+  DCHECK_LE(0, index);
+  DCHECK_LT(index, size());
+  return data_[index];
+}
+
+template<typename Scalar_>
+Scalar_ const& UnboundedVector<Scalar_>::operator[](int const index) const {
+  DCHECK_LE(0, index);
+  DCHECK_LT(index, size());
+  return data_[index];
+}
+
+template<typename Scalar_>
+bool UnboundedVector<Scalar_>::operator==(UnboundedVector const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar_>
+bool UnboundedVector<Scalar_>::operator!=(UnboundedVector const& right) const {
+  return data_ != right.data_;
+}
+
+template<typename Scalar_>
+UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator+=(
+    UnboundedVector const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < size(); ++i) {
+    data_[i] += right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_>
+UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator-=(
+    UnboundedVector const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < size(); ++i) {
+    data_[i] -= right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_>
+UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator*=(
+    double const right) {
+  for (auto& d : data_) {
+    d *= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_>
+UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator/=(
+    double const right) {
+  for (auto& d : data_) {
+    d /= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_>
 void UnboundedVector<Scalar_>::Extend(int const extra_size) {
   DCHECK_LE(0, extra_size);
   data_.resize(data_.size() + extra_size, Scalar{});
@@ -108,30 +170,6 @@ typename std::vector<Scalar_>::const_iterator UnboundedVector<Scalar_>::end()
 }
 
 template<typename Scalar_>
-Scalar_& UnboundedVector<Scalar_>::operator[](int const index) {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, size());
-  return data_[index];
-}
-
-template<typename Scalar_>
-Scalar_ const& UnboundedVector<Scalar_>::operator[](int const index) const {
-  DCHECK_LE(0, index);
-  DCHECK_LT(index, size());
-  return data_[index];
-}
-
-template<typename Scalar_>
-bool UnboundedVector<Scalar_>::operator==(UnboundedVector const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_>
-bool UnboundedVector<Scalar_>::operator!=(UnboundedVector const& right) const {
-  return data_ != right.data_;
-}
-
-template<typename Scalar_>
 UnboundedMatrix<Scalar_>::UnboundedMatrix(int const rows, int const columns)
     : rows_(rows),
       columns_(columns),
@@ -174,6 +212,85 @@ UnboundedMatrix<Scalar_>::UnboundedMatrix(
 }
 
 template<typename Scalar_>
+Scalar_& UnboundedMatrix<Scalar_>::operator()(
+    int const row, int const column) {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return data_[row * columns_ + column];
+}
+
+template<typename Scalar_>
+Scalar_ const& UnboundedMatrix<Scalar_>::operator()(
+    int const row, int const column) const {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, rows_);
+  DCHECK_LE(0, column);
+  DCHECK_LT(column, columns_);
+  return data_[row * columns_ + column];
+}
+
+template<typename Scalar_>
+template<typename LScalar, typename RScalar>
+Product<Scalar_, Product<LScalar, RScalar>>
+UnboundedMatrix<Scalar_>::operator()(
+    UnboundedVector<LScalar> const& left,
+    UnboundedVector<RScalar> const& right) const {
+  return TransposedView{left} * (*this * right);  // NOLINT
+}
+
+template<typename Scalar_>
+bool UnboundedMatrix<Scalar_>::operator==(UnboundedMatrix const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar_>
+bool UnboundedMatrix<Scalar_>::operator!=(UnboundedMatrix const& right) const {
+  return !(*this == right);
+}
+
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator+=(
+    UnboundedMatrix const& right) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < size(); ++i) {
+    data_[i] += right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator-=(
+    UnboundedMatrix const& right) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < size(); ++i) {
+    data_[i] -= right.data_[i];
+  }
+  return *this;
+}
+
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator*=(
+    double const right) {
+  for (auto& d : data_) {
+    d *= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_>
+UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator/=(
+    double const right) {
+  for (auto& d : data_) {
+    d /= right;
+  }
+  return *this;
+}
+
+template<typename Scalar_>
 int UnboundedMatrix<Scalar_>::rows() const {
   return rows_;
 }
@@ -197,45 +314,6 @@ Scalar_ UnboundedMatrix<Scalar_>::FrobeniusNorm() const {
     }
   }
   return Sqrt(Σᵢⱼaᵢⱼ²);
-}
-
-template<typename Scalar_>
-Scalar_& UnboundedMatrix<Scalar_>::operator()(
-    int const row, int const column) {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, rows_);
-  DCHECK_LE(0, column);
-  DCHECK_LT(column, columns_);
-  return data_[row * columns_ + column];
-}
-
-template<typename Scalar_>
-Scalar_ const& UnboundedMatrix<Scalar_>::operator()(
-    int const row, int const column) const {
-  DCHECK_LE(0, row);
-  DCHECK_LT(row, rows_);
-  DCHECK_LE(0, column);
-  DCHECK_LT(column, columns_);
-  return data_[row * columns_ + column];
-}
-
-template<typename Scalar_>
-bool UnboundedMatrix<Scalar_>::operator==(UnboundedMatrix const& right) const {
-  return data_ == right.data_;
-}
-
-template<typename Scalar_>
-bool UnboundedMatrix<Scalar_>::operator!=(UnboundedMatrix const& right) const {
-  return !(*this == right);
-}
-
-template<typename Scalar_>
-template<typename LScalar, typename RScalar>
-Product<Scalar_, Product<LScalar, RScalar>>
-UnboundedMatrix<Scalar_>::operator()(
-    UnboundedVector<LScalar> const& left,
-    UnboundedVector<RScalar> const& right) const {
-  return TransposedView{left} * (*this * right);  // NOLINT
 }
 
 template<typename Scalar_>
@@ -638,34 +716,6 @@ UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
   return result;
 }
 
-template<typename Scalar>
-UnboundedVector<Scalar>& operator+=(
-    UnboundedVector<Scalar>& left,
-    UnboundedVector<Scalar> const& right) {
-  return left = left + right;
-}
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator+=(
-    UnboundedMatrix<Scalar>& left,
-    UnboundedMatrix<Scalar> const& right) {
-  return left = left + right;
-}
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator-=(
-    UnboundedVector<Scalar>& left,
-    UnboundedVector<Scalar> const& right) {
-  return left = left - right;
-}
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator-=(
-    UnboundedMatrix<Scalar>& left,
-    UnboundedMatrix<Scalar> const& right) {
-  return left = left - right;
-}
-
 template<typename LScalar, typename RScalar>
 UnboundedVector<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
@@ -745,30 +795,6 @@ UnboundedMatrix<Quotient<LScalar, RScalar>> operator/(
     }
   }
   return result;
-}
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator*=(UnboundedVector<Scalar>& left,
-                                    double const right) {
-  return left = left * right;
-}
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator*=(UnboundedMatrix<Scalar>& left,
-                                    double const right) {
-  return left = left * right;
-}
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator/=(UnboundedVector<Scalar>& left,
-                                    double const right) {
-  return left = left / right;
-}
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator/=(UnboundedMatrix<Scalar>& left,
-                                    double const right) {
-  return left = left / right;
 }
 
 template<typename LScalar, typename RScalar>

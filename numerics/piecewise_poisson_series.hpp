@@ -77,6 +77,17 @@ class PiecewisePoissonSeries {
   PiecewisePoissonSeries(Interval<Instant> const& interval,
                          Series const& series);
 
+  template<int aperiodic_rdegree, int periodic_rdegree>
+  PiecewisePoissonSeries& operator+=(
+      PoissonSeries<Value,
+                    aperiodic_rdegree, periodic_rdegree,
+                    Evaluator> const& right);
+  template<int aperiodic_rdegree, int periodic_rdegree>
+  PiecewisePoissonSeries& operator-=(
+      PoissonSeries<Value,
+                    aperiodic_rdegree, periodic_rdegree,
+                    Evaluator> const& right);
+
   // The intervals for successive calls to Append must be consecutive.  For the
   // first call, the interval must be consecutive with the one passed at
   // construction.
@@ -111,17 +122,6 @@ class PiecewisePoissonSeries {
                     Evaluator> const& weight,
       Instant const& t_min,
       Instant const& t_max) const;
-
-  template<int aperiodic_rdegree, int periodic_rdegree>
-  PiecewisePoissonSeries& operator+=(
-      PoissonSeries<Value,
-                    aperiodic_rdegree, periodic_rdegree,
-                    Evaluator> const& right);
-  template<int aperiodic_rdegree, int periodic_rdegree>
-  PiecewisePoissonSeries& operator-=(
-      PoissonSeries<Value,
-                    aperiodic_rdegree, periodic_rdegree,
-                    Evaluator> const& right);
 
   void WriteToMessage(
       not_null<serialization::PiecewisePoissonSeries*> message) const;

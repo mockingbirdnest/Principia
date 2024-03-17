@@ -64,6 +64,17 @@ class UnboundedVector final {
     requires std::same_as<typename T::Scalar, Scalar_>
   explicit UnboundedVector(ColumnView<T> const& view);
 
+  Scalar& operator[](int index);
+  Scalar const& operator[](int index) const;
+
+  bool operator==(UnboundedVector const& right) const;
+  bool operator!=(UnboundedVector const& right) const;
+
+  UnboundedVector& operator+=(UnboundedVector const& right);
+  UnboundedVector& operator-=(UnboundedVector const& right);
+  UnboundedVector& operator*=(double right);
+  UnboundedVector& operator/=(double right);
+
   void Extend(int extra_size);
   void Extend(int extra_size, uninitialized_t);
   void Extend(std::initializer_list<Scalar> data);
@@ -79,12 +90,6 @@ class UnboundedVector final {
 
   typename std::vector<Scalar>::const_iterator begin() const;
   typename std::vector<Scalar>::const_iterator end() const;
-
-  Scalar& operator[](int index);
-  Scalar const& operator[](int index) const;
-
-  bool operator==(UnboundedVector const& right) const;
-  bool operator!=(UnboundedVector const& right) const;
 
   template<typename H>
   friend H AbslHashValue(H h, UnboundedVector const& vector) {
@@ -113,21 +118,11 @@ class UnboundedMatrix final {
 
   explicit UnboundedMatrix(TransposedView<UnboundedMatrix<Scalar>> const& view);
 
-  int rows() const;
-  int columns() const;
-  // TODO(phl): The meaning of |size| for matrices is unclear.
-  int size() const;
-
   // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
   // |a(i, j)|.  If i and j do not satisfy these conditions, the expression
   // |a(i, j)| implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  Scalar FrobeniusNorm() const;
-
-  bool operator==(UnboundedMatrix const& right) const;
-  bool operator!=(UnboundedMatrix const& right) const;
 
   // Applies the matrix as a bilinear form.  Present for compatibility with
   // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
@@ -135,6 +130,21 @@ class UnboundedMatrix final {
   Product<Scalar, Product<LScalar, RScalar>>
       operator()(UnboundedVector<LScalar> const& left,
                  UnboundedVector<RScalar> const& right) const;
+
+  bool operator==(UnboundedMatrix const& right) const;
+  bool operator!=(UnboundedMatrix const& right) const;
+
+  UnboundedMatrix& operator+=(UnboundedMatrix const& right);
+  UnboundedMatrix& operator-=(UnboundedMatrix const& right);
+  UnboundedMatrix& operator*=(double right);
+  UnboundedMatrix& operator/=(double right);
+
+  int rows() const;
+  int columns() const;
+  // TODO(phl): The meaning of |size| for matrices is unclear.
+  int size() const;
+
+  Scalar FrobeniusNorm() const;
 
   static UnboundedMatrix Identity(int rows, int columns);
 
@@ -349,26 +359,6 @@ template<typename LScalar, typename RScalar>
 UnboundedMatrix<Quotient<LScalar, RScalar>>
 operator/(UnboundedMatrix<LScalar> const& left,
           RScalar const& right);
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator*=(
-    UnboundedVector<Scalar>& left,
-    double right);
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator*=(
-    UnboundedMatrix<Scalar>& left,
-    double right);
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator/=(
-    UnboundedVector<Scalar>& left,
-    double right);
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator/=(
-    UnboundedMatrix<Scalar>& left,
-    double right);
 
 // Hilbert space and algebra.
 

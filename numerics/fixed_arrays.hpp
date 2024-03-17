@@ -43,6 +43,17 @@ class FixedVector final {
   // Convertible to an array.
   explicit constexpr operator std::array<Scalar, size_>() const;
 
+  constexpr Scalar& operator[](int index);
+  constexpr Scalar const& operator[](int index) const;
+
+  bool operator==(FixedVector const& right) const;
+  bool operator!=(FixedVector const& right) const;
+
+  constexpr FixedVector& operator+=(FixedVector const& right);
+  constexpr FixedVector& operator-=(FixedVector const& right);
+  constexpr FixedVector& operator*=(double right);
+  constexpr FixedVector& operator/=(double right);
+
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
@@ -50,14 +61,8 @@ class FixedVector final {
 
   static constexpr int size() { return size_; }
 
-  constexpr Scalar& operator[](int index);
-  constexpr Scalar const& operator[](int index) const;
-
   typename std::array<Scalar, size_>::const_iterator begin() const;
   typename std::array<Scalar, size_>::const_iterator end() const;
-
-  bool operator==(FixedVector const& right) const;
-  bool operator!=(FixedVector const& right) const;
 
   template<typename H>
   friend H AbslHashValue(H h, FixedVector const& vector) {
@@ -108,13 +113,18 @@ class FixedMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  bool operator==(FixedMatrix const& right) const;
+  bool operator!=(FixedMatrix const& right) const;
+
+  constexpr FixedMatrix& operator+=(FixedMatrix const& right);
+  constexpr FixedMatrix& operator-=(FixedMatrix const& right);
+  constexpr FixedMatrix& operator*=(double right);
+  constexpr FixedMatrix& operator/=(double right);
+
   template<int r>
   Scalar const* row() const;
 
   Scalar FrobeniusNorm() const;
-
-  bool operator==(FixedMatrix const& right) const;
-  bool operator!=(FixedMatrix const& right) const;
 
   // Applies the matrix as a bilinear form.  Present for compatibility with
   // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
@@ -281,26 +291,6 @@ constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right);
 
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator+=(
-    FixedVector<Scalar, size>& left,
-    FixedVector<Scalar, size> const& right);
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator+=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    FixedMatrix<Scalar, rows, columns> const& right);
-
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator-=(
-    FixedVector<Scalar, size>& left,
-    FixedVector<Scalar, size> const& right);
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator-=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    FixedMatrix<Scalar, rows, columns> const& right);
-
 // Vector spaces.
 
 template<typename LScalar, typename RScalar, int size>
@@ -332,26 +322,6 @@ template<typename LScalar, typename RScalar, int rows, int columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
 operator/(FixedMatrix<LScalar, rows, columns> const& left,
           RScalar const& right);
-
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator*=(
-    FixedVector<Scalar, size>& left,
-    double right);
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator*=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    double right);
-
-template<typename Scalar, int size>
-constexpr FixedVector<Scalar, size>& operator/=(
-    FixedVector<Scalar, size>& left,
-    double right);
-
-template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>& operator/=(
-    FixedMatrix<Scalar, rows, columns>& left,
-    double right);
 
 // Hilbert space and algebra.
 
