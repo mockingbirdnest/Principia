@@ -6,7 +6,6 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/traits.hpp"
 
 namespace principia {
 namespace numerics {
@@ -15,7 +14,6 @@ namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_traits;
 
 
 // A helper to build unit quantities or multivector.  |Coefficient| must be a

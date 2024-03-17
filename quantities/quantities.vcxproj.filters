@@ -77,14 +77,14 @@
     <ClInclude Include="generators_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="traits.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tuples.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tuples_body.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="concepts.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -100,7 +100,7 @@
     <ClCompile Include="wide_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="traits_test.cpp">
+    <ClCompile Include="concepts_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
