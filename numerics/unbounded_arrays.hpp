@@ -64,11 +64,13 @@ class UnboundedVector final {
     requires std::same_as<typename T::Scalar, Scalar_>
   explicit UnboundedVector(ColumnView<T> const& view);
 
+  friend bool operator==(UnboundedVector const& left,
+                         UnboundedVector const& right) = default;
+  friend bool operator!=(UnboundedVector const& left,
+                         UnboundedVector const& right) = default;
+
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
-
-  bool operator==(UnboundedVector const& right) const;
-  bool operator!=(UnboundedVector const& right) const;
 
   UnboundedVector& operator+=(UnboundedVector const& right);
   UnboundedVector& operator-=(UnboundedVector const& right);
@@ -118,6 +120,11 @@ class UnboundedMatrix final {
 
   explicit UnboundedMatrix(TransposedView<UnboundedMatrix<Scalar>> const& view);
 
+  friend bool operator==(UnboundedMatrix const& left,
+                         UnboundedMatrix const& right) = default;
+  friend bool operator!=(UnboundedMatrix const& left,
+                         UnboundedMatrix const& right) = default;
+
   // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
   // |a(i, j)|.  If i and j do not satisfy these conditions, the expression
   // |a(i, j)| implies undefined behaviour.
@@ -130,9 +137,6 @@ class UnboundedMatrix final {
   Product<Scalar, Product<LScalar, RScalar>>
       operator()(UnboundedVector<LScalar> const& left,
                  UnboundedVector<RScalar> const& right) const;
-
-  bool operator==(UnboundedMatrix const& right) const;
-  bool operator!=(UnboundedMatrix const& right) const;
 
   UnboundedMatrix& operator+=(UnboundedMatrix const& right);
   UnboundedMatrix& operator-=(UnboundedMatrix const& right);
@@ -172,6 +176,11 @@ class UnboundedLowerTriangularMatrix final {
   explicit UnboundedLowerTriangularMatrix(
       TransposedView<UnboundedUpperTriangularMatrix<Scalar>> const& view);
 
+  friend bool operator==(UnboundedLowerTriangularMatrix const& left,
+                         UnboundedLowerTriangularMatrix const& right) = default;
+  friend bool operator!=(UnboundedLowerTriangularMatrix const& left,
+                         UnboundedLowerTriangularMatrix const& right) = default;
+
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
 
@@ -189,9 +198,6 @@ class UnboundedLowerTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
-
-  bool operator==(UnboundedLowerTriangularMatrix const& right) const;
-  bool operator!=(UnboundedLowerTriangularMatrix const& right) const;
 
  private:
   int rows_;
@@ -217,6 +223,17 @@ class UnboundedUpperTriangularMatrix final {
   explicit UnboundedUpperTriangularMatrix(
       TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view);
 
+  friend bool operator==(UnboundedUpperTriangularMatrix const& left,
+                         UnboundedUpperTriangularMatrix const& right) = default;
+  friend bool operator!=(UnboundedUpperTriangularMatrix const& left,
+                         UnboundedUpperTriangularMatrix const& right) = default;
+
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
+  // If i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  Scalar& operator()(int row, int column);
+  Scalar const& operator()(int row, int column) const;
+
   void Extend(int extra_columns);
   void Extend(int extra_columns, uninitialized_t);
 
@@ -228,15 +245,6 @@ class UnboundedUpperTriangularMatrix final {
   int rows() const;
   int columns() const;
   int size() const;
-
-  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
-  // If i and j do not satisfy these conditions, the expression |a(i, j)|
-  // implies undefined behaviour.
-  Scalar& operator()(int row, int column);
-  Scalar const& operator()(int row, int column) const;
-
-  bool operator==(UnboundedUpperTriangularMatrix const& right) const;
-  bool operator!=(UnboundedUpperTriangularMatrix const& right) const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
@@ -307,26 +315,6 @@ template<typename LScalar, typename RScalar>
 UnboundedMatrix<Difference<LScalar, RScalar>> operator-(
     UnboundedMatrix<LScalar> const& left,
     UnboundedMatrix<RScalar> const& right);
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator+=(
-    UnboundedVector<Scalar>& left,
-    UnboundedVector<Scalar> const& right);
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator+=(
-    UnboundedMatrix<Scalar>& left,
-    UnboundedMatrix<Scalar> const& right);
-
-template<typename Scalar>
-UnboundedVector<Scalar>& operator-=(
-    UnboundedVector<Scalar>& left,
-    UnboundedVector<Scalar> const& right);
-
-template<typename Scalar>
-UnboundedMatrix<Scalar>& operator-=(
-    UnboundedMatrix<Scalar>& left,
-    UnboundedMatrix<Scalar> const& right);
 
 // Vector spaces.
 

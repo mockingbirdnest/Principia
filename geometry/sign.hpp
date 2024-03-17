@@ -29,6 +29,9 @@ class Sign final {
   template<typename T>
   explicit Sign(T x) = delete;
 
+  constexpr friend bool operator==(Sign left, Sign right) = default;
+  constexpr friend bool operator!=(Sign left, Sign right) = default;
+
   static constexpr Sign Positive();
   static constexpr Sign Negative();
 
@@ -43,9 +46,6 @@ class Sign final {
 
   // Returns ±1.
   constexpr operator int() const;
-
-  constexpr bool operator==(Sign other) const;
-  constexpr bool operator!=(Sign other) const;
 
   void WriteToMessage(not_null<serialization::Sign*> message) const;
   static Sign ReadFromMessage(serialization::Sign message);

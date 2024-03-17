@@ -61,14 +61,6 @@ inline constexpr Sign::operator int() const {
   return *this * 1;
 }
 
-constexpr bool Sign::operator==(Sign const other) const {
-  return negative_ == other.negative_;
-}
-
-constexpr bool Sign::operator!=(Sign const other) const {
-  return negative_ != other.negative_;
-}
-
 inline void Sign::WriteToMessage(
     not_null<serialization::Sign*> const message) const {
   message->set_negative(negative_);

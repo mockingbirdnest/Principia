@@ -31,6 +31,11 @@ class Polynomial {
   // making the destructor protected and nonvirtual.
   virtual ~Polynomial() = default;
 
+  friend constexpr bool operator==(Polynomial const& left,
+                                   Polynomial const& right) = default;
+  friend constexpr bool operator!=(Polynomial const& left,
+                                   Polynomial const& right) = default;
+
   virtual Value operator()(Argument const& argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;

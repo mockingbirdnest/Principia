@@ -98,6 +98,13 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   explicit constexpr PolynomialInMonomialBasis(
       Coefficients coefficients);
 
+  friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
+                                   PolynomialInMonomialBasis const& right) =
+      default;
+  friend constexpr bool operator!=(PolynomialInMonomialBasis const& left,
+                                   PolynomialInMonomialBasis const& right) =
+      default;
+
   // A polynomial may be explicitly converted to a higher degree (possibly with
   // a different evaluator).
   template<int higher_degree_,

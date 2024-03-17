@@ -70,9 +70,8 @@ class Subset final {
     friend class Subset<T>;
   };
 
-  friend bool operator==(Subset left, Subset right) {
-    return left.node_ == right.node_;
-  }
+  friend bool operator==(Subset left, Subset right) = default;
+  friend bool operator!=(Subset left, Subset right) = default;
 
  private:
   explicit Subset(not_null<Node*> node);

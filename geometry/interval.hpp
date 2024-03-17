@@ -17,6 +17,9 @@ struct Interval {
   T min = T{} + Infinity<Difference<T>>;  // NOLINT(whitespace/braces)
   T max = T{} - Infinity<Difference<T>>;  // NOLINT(whitespace/braces)
 
+  friend bool operator==(Interval const& left, Interval const& right) = default;
+  friend bool operator!=(Interval const& left, Interval const& right) = default;
+
   // The Lebesgue measure of this interval.
   Difference<T> measure() const;
   // The midpoint of this interval; NaN if the interval is empty (min > max).
@@ -25,11 +28,6 @@ struct Interval {
   // Extends this interval so that it contains x.
   void Include(T const& x);
 };
-
-template<typename T>
-bool operator==(Interval<T> const& left, Interval<T> const& right);
-template<typename T>
-bool operator!=(Interval<T> const& left, Interval<T> const& right);
 
 template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval);

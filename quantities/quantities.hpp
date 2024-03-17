@@ -55,6 +55,11 @@ class Quantity final {
   constexpr Quantity() = default;
   explicit constexpr Quantity(uninitialized_t);
 
+  constexpr friend bool operator==(Quantity const& left,
+                                   Quantity const& right) = default;
+  constexpr friend bool operator!=(Quantity const& left,
+                                   Quantity const& right) = default;
+
   constexpr Quantity operator+() const;
   constexpr Quantity operator-() const;
   constexpr Quantity operator+(Quantity const& right) const;
@@ -72,8 +77,6 @@ class Quantity final {
   constexpr bool operator<(Quantity const& right) const;
   constexpr bool operator>=(Quantity const& right) const;
   constexpr bool operator<=(Quantity const& right) const;
-  constexpr bool operator==(Quantity const& right) const;
-  constexpr bool operator!=(Quantity const& right) const;
 
   void WriteToMessage(not_null<serialization::Quantity*> message) const;
   static Quantity ReadFromMessage(serialization::Quantity const& message);

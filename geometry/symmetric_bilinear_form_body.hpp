@@ -409,24 +409,6 @@ Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
-bool operator==(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
-  return left.matrix_ == right.matrix_;
-}
-
-template<typename Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-bool operator!=(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right) {
-  return left.matrix_ != right.matrix_;
-}
-
-template<typename Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
 std::string DebugString(
     SymmetricBilinearForm<Scalar, Frame, Multivector> const& form) {
   return DebugString(form.matrix_);

@@ -41,6 +41,11 @@ class Point final {
   Point& operator=(Point&& other) = default;
 #endif
 
+  constexpr friend bool operator==(Point const& left,
+                                   Point const& right) = default;
+  constexpr friend bool operator!=(Point const& left,
+                                   Point const& right) = default;
+
   constexpr Vector operator-(Point const& from) const;
 
   constexpr Point operator+(Vector const& translation) const;
@@ -48,9 +53,6 @@ class Point final {
 
   Point& operator+=(Vector const& translation);
   Point& operator-=(Vector const& translation);
-
-  constexpr bool operator==(Point const& right) const;
-  constexpr bool operator!=(Point const& right) const;
 
   void WriteToMessage(not_null<serialization::Point*> message) const;
   static Point ReadFromMessage(serialization::Point const& message)

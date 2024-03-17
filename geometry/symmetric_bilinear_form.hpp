@@ -35,6 +35,11 @@ class SymmetricBilinearForm {
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
 
+  friend bool operator==(SymmetricBilinearForm const& left,
+                         SymmetricBilinearForm const& right) = default;
+  friend bool operator!=(SymmetricBilinearForm const& left,
+                         SymmetricBilinearForm const& right) = default;
+
   SymmetricBilinearForm& operator+=(SymmetricBilinearForm const& right);
   SymmetricBilinearForm& operator-=(SymmetricBilinearForm const& right);
   SymmetricBilinearForm& operator*=(double right);
@@ -176,13 +181,6 @@ class SymmetricBilinearForm {
       Bivector<R, F> const& bivector);
 
   template<typename S, typename F, template<typename, typename> typename M>
-  friend bool operator==(SymmetricBilinearForm<S, F, M> const& left,
-                         SymmetricBilinearForm<S, F, M> const& right);
-  template<typename S, typename F, template<typename, typename> typename M>
-  friend bool operator!=(SymmetricBilinearForm<S, F, M> const& left,
-                         SymmetricBilinearForm<S, F, M> const& right);
-
-  template<typename S, typename F, template<typename, typename> typename M>
   friend std::string DebugString(SymmetricBilinearForm<S, F, M> const& form);
 
   template<typename S, typename F, template<typename, typename> typename M>
@@ -303,17 +301,6 @@ template<typename LScalar, typename RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
     SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
     Bivector<RScalar, Frame> const& bivector);
-
-template<typename Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-bool operator==(SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
-                SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
-template<typename Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-bool operator!=(SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
-                SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
 
 template<typename Scalar,
          typename Frame,

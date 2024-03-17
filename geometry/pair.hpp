@@ -84,6 +84,9 @@ class Pair {
   Pair(T1 const& t1, T2 const& t2);
   virtual ~Pair() = default;
 
+  friend bool operator==(Pair const& left, Pair const& right) = default;
+  friend bool operator!=(Pair const& left, Pair const& right) = default;
+
   Pair operator+(vector_of_t<Pair> const& right) const;
   Pair operator-(vector_of_t<Pair> const& right) const;
 
@@ -93,10 +96,6 @@ class Pair {
   enable_if_vector_t<Pair<U1, U2>>& operator*=(double right);
   template<typename U1 = T1, typename U2 = T2>
   enable_if_vector_t<Pair<U1, U2>>& operator/=(double right);
-
-
-  bool operator==(Pair const& right) const;
-  bool operator!=(Pair const& right) const;
 
   void WriteToMessage(not_null<serialization::Pair*> message) const;
   static Pair ReadFromMessage(serialization::Pair const& message)
