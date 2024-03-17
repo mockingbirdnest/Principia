@@ -70,12 +70,17 @@ class Subset final {
     friend class Subset<T>;
   };
 
-  // For obscure reasons, the usual friend operator== declaration would cause
-  // trouble when specializing |Subset<Part>::Properties| later on, with an
-  // error message that mysteriously talks about |is_trivially_destructible|.
-  // But with member operators, all is good...
-  bool operator==(Subset const& right) = default;
-  bool operator!=(Subset const& right) = default;
+  // These operators cannot be defaulted because that would force instantiation
+  // of |not_null<Node*>| which itself would force instantiation of
+  // |std::optional<Properties>| which itself would force instantiation of
+  // |Properties|, thereby preventing further specialization in
+  // |part_subsets.hpp|.
+  friend bool operator==(Subset left, Subset right) {
+    return left.node_ == right.node_;
+  }
+  friend bool operator!=(Subset left, Subset right) {
+    return left.node_ != right.node_;
+  }
 
  private:
   explicit Subset(not_null<Node*> node);
