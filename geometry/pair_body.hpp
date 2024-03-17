@@ -43,6 +43,22 @@ Pair<T1, T2>& Pair<T1, T2>::operator-=(vector_of_t<Pair<T1, T2>> const& right) {
 }
 
 template<typename T1, typename T2>
+template<typename U1, typename U2>
+enable_if_vector_t<Pair<U1, U2>>& Pair<T1, T2>::operator*=(double const right) {
+  t1_ *= right;
+  t2_ *= right;
+  return *this;
+}
+
+template<typename T1, typename T2>
+template<typename U1, typename U2>
+enable_if_vector_t<Pair<U1, U2>>& Pair<T1, T2>::operator/=(double const right) {
+  t1_ /= right;
+  t2_ /= right;
+  return *this;
+}
+
+template<typename T1, typename T2>
 bool Pair<T1, T2>::operator==(Pair const& right) const {
   return t1_ == right.t1_ && t2_ == right.t2_;
 }
@@ -114,22 +130,6 @@ typename enable_if_vector<
 operator/(Pair<T1, T2> const& left, Scalar const right) {
   return Pair<Quotient<T1, Scalar>, Quotient<T2, Scalar>>(left.t1_ / right,
                                                           left.t2_ / right);
-}
-
-template<typename T1, typename T2>
-enable_if_vector_t<Pair<T1, T2>>& operator*=(Pair<T1, T2>& left,
-                                             double const right) {
-  left.t1_ *= right;
-  left.t2_ *= right;
-  return left;
-}
-
-template<typename T1, typename T2>
-enable_if_vector_t<Pair<T1, T2>>& operator/=(Pair<T1, T2>& left,
-                                             double const right) {
-  left.t1_ /= right;
-  left.t2_ /= right;
-  return left;
 }
 
 template<typename T1, typename T2>
