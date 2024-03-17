@@ -23,13 +23,6 @@ class Complexification {
   Complexification(V const& real_part);  // NOLINT(runtime/explicit)
   Complexification(Vector const& real_part, Vector const& imaginary_part);
 
-  Vector const& real_part() const;
-  Vector const& imaginary_part() const;
-
-  Complexification Conjugate() const;
-
-  typename Hilbert<Vector>::Norm²Type Norm²() const;
-
   template<typename R>
   Complexification& operator+=(R const& right);
   template<typename R>
@@ -38,6 +31,13 @@ class Complexification {
   Complexification& operator*=(R const& right);
   template<typename R>
   Complexification& operator/=(R const& right);
+
+  Vector const& real_part() const;
+  Vector const& imaginary_part() const;
+
+  Complexification Conjugate() const;
+
+  typename Hilbert<Vector>::Norm²Type Norm²() const;
 
  private:
   Vector real_part_{};

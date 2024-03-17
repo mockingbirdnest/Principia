@@ -105,6 +105,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   explicit operator PolynomialInMonomialBasis<
       Value, Argument, higher_degree_, HigherEvaluator>() const;
 
+  PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
+  PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
+
   Value operator()(Argument const& argument) const override;
   Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const override;
@@ -134,9 +137,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   quantities::_named_quantities::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
       Argument const& argument2) const;
-
-  PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
-  PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;

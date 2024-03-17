@@ -367,6 +367,24 @@ operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_,
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+operator+=(PolynomialInMonomialBasis const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+operator-=(PolynomialInMonomialBasis const& right) {
+  *this = *this - right;
+  return *this;
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
 operator()(Argument const& argument) const {
   return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
@@ -456,24 +474,6 @@ Integrate(Argument const& argument1,
   // + 2 is to take into account the truncation resulting from integer division.
   return _quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
                                                        argument1, argument2);
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
-operator+=(PolynomialInMonomialBasis const& right) {
-  *this = *this + right;
-  return *this;
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>&
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
-operator-=(PolynomialInMonomialBasis const& right) {
-  *this = *this - right;
-  return *this;
 }
 
 template<typename Value_, typename Argument_, int degree_,

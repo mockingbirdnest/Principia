@@ -33,9 +33,6 @@ struct BlockView {
   int first_column;
   int last_column;
 
-  constexpr int rows() const;
-  constexpr int columns() const;
-
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
@@ -43,6 +40,9 @@ struct BlockView {
     requires two_dimensional<T> &&
              std::same_as<typename T::Scalar, typename Matrix::Scalar>
   BlockView& operator-=(T const& right);
+
+  constexpr int rows() const;
+  constexpr int columns() const;
 };
 
 // A view of a column of a matrix.  This view is |one_dimensional|.
@@ -56,14 +56,14 @@ struct ColumnView {
   int last_row;
   int column;
 
-  Scalar Norm() const;
-  Square<Scalar> Norm²() const;
-  constexpr int size() const;
-
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
   ColumnView& operator/=(double right);
+
+  Scalar Norm() const;
+  Square<Scalar> Norm²() const;
+  constexpr int size() const;
 };
 
 template<typename Matrix>

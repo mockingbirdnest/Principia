@@ -15,18 +15,6 @@ using namespace principia::quantities::_elementary_functions;
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto BlockView<Matrix>::rows() const -> int {
-  return last_row - first_row + 1;
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
-constexpr auto BlockView<Matrix>::columns() const -> int{
-  return last_column - first_column + 1;
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
 constexpr auto BlockView<Matrix>::operator()(
     int const row, int const column) -> Scalar& {
   CONSTEXPR_DCHECK(row <= last_row - first_row);
@@ -60,28 +48,18 @@ auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
   return *this;
 }
 
-
 template<typename Matrix>
   requires two_dimensional<Matrix>
-auto ColumnView<Matrix>::Norm() const -> Scalar {
-  return Sqrt(Norm²());
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
-auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
-  Square<Scalar> result{};
-  for (int i = first_row; i <= last_row; ++i) {
-    result += Pow<2>(matrix(i, column));
-  }
-  return result;
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
-constexpr auto ColumnView<Matrix>::size() const -> int {
+constexpr auto BlockView<Matrix>::rows() const -> int {
   return last_row - first_row + 1;
 }
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+constexpr auto BlockView<Matrix>::columns() const -> int{
+  return last_column - first_column + 1;
+}
+
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
@@ -116,6 +94,28 @@ std::ostream& operator<<(std::ostream& out,
   }
   out << s.str();
   return out;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+auto ColumnView<Matrix>::Norm() const -> Scalar {
+  return Sqrt(Norm²());
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
+  Square<Scalar> result{};
+  for (int i = first_row; i <= last_row; ++i) {
+    result += Pow<2>(matrix(i, column));
+  }
+  return result;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+constexpr auto ColumnView<Matrix>::size() const -> int {
+  return last_row - first_row + 1;
 }
 
 }  // namespace internal

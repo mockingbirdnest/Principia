@@ -241,6 +241,36 @@ operator PoissonSeries<Value,
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_,
          template<typename, typename, int> class Evaluator>
+template<int aperiodic_rdegree, int periodic_rdegree>
+PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
+PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+operator+=(PoissonSeries<Value,
+                         aperiodic_rdegree, periodic_rdegree,
+                         Evaluator> const& right) {
+  static_assert(aperiodic_rdegree <= aperiodic_degree_);
+  static_assert(periodic_rdegree <= periodic_degree_);
+  *this = *this + right;
+  return *this;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
+template<int aperiodic_rdegree, int periodic_rdegree>
+PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
+PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+operator-=(PoissonSeries<Value,
+                         aperiodic_rdegree, periodic_rdegree,
+                         Evaluator> const& right) {
+  static_assert(aperiodic_rdegree <= aperiodic_degree_);
+  static_assert(periodic_rdegree <= periodic_degree_);
+  *this = *this - right;
+  return *this;
+}
+
+template<typename Value,
+         int aperiodic_degree_, int periodic_degree_,
+         template<typename, typename, int> class Evaluator>
 Instant const&
 PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
 origin() const {
@@ -385,36 +415,6 @@ Norm(PoissonSeries<double,
   auto const fast_quadrature = fast_integrand.Integrate(t_min, t_max);
 
   return Sqrt((slow_quadrature + fast_quadrature) / (t_max - t_min));
-}
-
-template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-template<int aperiodic_rdegree, int periodic_rdegree>
-PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
-PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
-operator+=(PoissonSeries<Value,
-                         aperiodic_rdegree, periodic_rdegree,
-                         Evaluator> const& right) {
-  static_assert(aperiodic_rdegree <= aperiodic_degree_);
-  static_assert(periodic_rdegree <= periodic_degree_);
-  *this = *this + right;
-  return *this;
-}
-
-template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-template<int aperiodic_rdegree, int periodic_rdegree>
-PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
-PoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
-operator-=(PoissonSeries<Value,
-                         aperiodic_rdegree, periodic_rdegree,
-                         Evaluator> const& right) {
-  static_assert(aperiodic_rdegree <= aperiodic_degree_);
-  static_assert(periodic_rdegree <= periodic_degree_);
-  *this = *this - right;
-  return *this;
 }
 
 template<typename Value,
