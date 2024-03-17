@@ -30,6 +30,90 @@ Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
     : coordinates_(coordinates) {}
 
 template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator+=(
+    Multivector const& right) {
+  coordinates_ += right.coordinates_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator-=(
+    Multivector const& right) {
+  coordinates_ -= right.coordinates_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator*=(
+    double const right) {
+  coordinates_ *= right;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator/=(
+    double const right) {
+  coordinates_ /= right;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator+=(
+    Multivector const& right) {
+  coordinates_ += right.coordinates_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator-=(
+    Multivector const& right) {
+  coordinates_ -= right.coordinates_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator*=(
+    double const right) {
+  coordinates_ *= right;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator/=(
+    double const right) {
+  coordinates_ /= right;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator+=(
+    Multivector const& right) {
+  coordinates_ += right.coordinates_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator-=(
+    Multivector const& right) {
+  coordinates_ -= right.coordinates_;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator*=(
+    double const right) {
+  coordinates_ *= right;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
+Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator/=(
+    double const right) {
+  coordinates_ /= right;
+  return *this;
+}
+
+template<typename Scalar, typename Frame>
 R3Element<Scalar> const& Multivector<Scalar, Frame, 1>::coordinates() const {
   return coordinates_;
 }
@@ -465,38 +549,6 @@ template<typename Scalar, typename Frame, int rank>
 bool operator!=(Multivector<Scalar, Frame, rank> const& left,
                 Multivector<Scalar, Frame, rank> const& right) {
   return left.coordinates() != right.coordinates();
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator+=(
-    Multivector<Scalar, Frame, rank>& left,
-    Multivector<Scalar, Frame, rank> const& right) {
-  left.coordinates_ += right.coordinates_;
-  return left;
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator-=(
-    Multivector<Scalar, Frame, rank>& left,
-    Multivector<Scalar, Frame, rank> const& right) {
-  left.coordinates_ -= right.coordinates_;
-  return left;
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator*=(
-    Multivector<Scalar, Frame, rank>& left,
-    double const right) {
-  left.coordinates_ *= right;
-  return left;
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank>& operator/=(
-    Multivector<Scalar, Frame, rank>& left,
-    double const right) {
-  left.coordinates_ /= right;
-  return left;
 }
 
 template<typename Scalar, typename Frame, int rank>
