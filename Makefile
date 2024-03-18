@@ -140,7 +140,7 @@ ifeq ($(UNAME_S),Darwin)
 			-include "base/macos_filesystem_replacement.hpp"
     LIBS += -framework CoreFoundation
     SHARED_ARGS += \
-			-mmacosx-version-min=10.12 \
+			-mmacosx-version-min=$(MACOS_VERSION_MIN) \
 			-arch x86_64 \
 			-D_LIBCPP_STD_VER=20 \
 			-D_LIBCPP_NO_EXCEPTIONS
