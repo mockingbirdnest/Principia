@@ -30,8 +30,8 @@ for repo in protobuf glog googletest gipfeli abseil-cpp benchmark zfp; do
   PRINCIPIA_C_FLAGS="-fPIC -O3 -g -DNDEBUG"
   PRINCIPIA_CXX_FLAGS="-std=c++20"
   PRINCIPIA_LD_FLAGS="-stdlib=libc++"
-  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=20 -D_LIBCPP_NO_EXCEPTIONS"
-  PRINCIPIA_MACOS_VERSION_MIN="10.12"
+  PRINCIPIA_MACOS_CXX_FLAGS="-D_LIBCPP_STD_VER=20"
+  PRINCIPIA_MACOS_VERSION_MIN="10.13"
   # End pipeline variables.
 
   # Task group Make.
@@ -45,6 +45,7 @@ for repo in protobuf glog googletest gipfeli abseil-cpp benchmark zfp; do
   if [ "${AGENT_OS?}" == "Darwin" ]; then
     C_FLAGS="${PRINCIPIA_C_FLAGS?} -mmacosx-version-min=${PRINCIPIA_MACOS_VERSION_MIN?} -arch x86_64"
     CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?} ${PRINCIPIA_MACOS_CXX_FLAGS?}"
+    export OSX_DEPLOYMENT_TARGET="${PRINCIPIA_MACOS_VERSION_MIN?}"
   elif [ "${AGENT_OS?}" == "Linux" ]; then
     C_FLAGS="${PRINCIPIA_C_FLAGS?} -m64"
     CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?}"
