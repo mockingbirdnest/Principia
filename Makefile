@@ -7,6 +7,7 @@ UNAME_M := $(shell uname -m)
 
 CXX := clang++
 MSBUILD := msbuild
+OSX_DEPLOYMENT_TARGET ?= 10.13
 
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
