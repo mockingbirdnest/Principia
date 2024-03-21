@@ -24,8 +24,8 @@ internal static class Loader {
       case PlatformID.Win32NT:
         is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
-            "the Microsoft Visual C++ 2015-2019 Redistributable (x64) - " +
-            "14.22.27821";
+            "the Microsoft Visual C++ 2015-2022 Redistributable (x64) - " +
+            "14.38.33130";
         possible_dll_paths = new [] {@"GameData\Principia\x64\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
@@ -37,8 +37,8 @@ internal static class Loader {
             @"GameData/Principia/MacOS64/principia.so"
         };
         is_cxx_installed = null;
-        required_cxx_packages = "libc++abi1-8 and libc++1-8 or later (Linux) " +
-                                "or Sierra or later (MacOS)";
+        required_cxx_packages = "libc++abi1-17 and libc++1-17 or later " +
+                                "(Linux) or High Sierra or later (MacOS)";
         break;
       default:
         return "The operating system " +
@@ -88,12 +88,12 @@ internal static class Loader {
 
   private static bool IsVCRedistInstalled() {
     // NOTE(phl): This GUID is specific to:
-    //   Microsoft Visual C++ 2015-2019 Redistributable (x64) - 14.22.27821
+    //   Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.38.33130
     // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
         @"Software\Classes\Installer\Dependencies\" +
-        @"VC,redist.x64,amd64,14.22,bundle",
+        @"VC,redist.x64,amd64,14.38,bundle",
         writable : false);
     if (key == null) {
       return false;
@@ -101,7 +101,7 @@ internal static class Loader {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.22.27821.0";
+      return version != null && version == "14.38.33130.0";
     }
   }
 
