@@ -44,7 +44,8 @@ auto Hilbert<T, T>::Norm(T const& t) -> NormType {
       _MSC_FULL_VER == 193'632'532 || \
       _MSC_FULL_VER == 193'632'535 || \
       _MSC_FULL_VER == 193'732'822 || \
-      _MSC_FULL_VER == 193'833'135)
+      _MSC_FULL_VER == 193'833'135 || \
+      _MSC_FULL_VER == 193'933'523)
 template<typename T1, typename T2>
   requires hilbert<T1, T2>
 auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)

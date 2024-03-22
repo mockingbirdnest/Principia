@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/macros.hpp"  // 🧙 For noreturn.
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/sign.hpp"
@@ -382,6 +383,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     }
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
+#if PRINCIPIA_COMPILER_MSVC && \
+    _MSC_FULL_VER == 193'933'523
+      base::noreturn();
+#endif
   }
 }
 

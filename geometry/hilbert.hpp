@@ -69,7 +69,8 @@ struct Hilbert<T1, T2> : not_constructible {
     _MSC_FULL_VER == 193'632'532 || \
     _MSC_FULL_VER == 193'632'535 || \
     _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
+    _MSC_FULL_VER == 193'833'135 || \
+    _MSC_FULL_VER == 193'933'523
   {  // NOLINT
     return _grassmann::internal::InnerProduct(t1, t2);
   }
@@ -94,7 +95,8 @@ struct Hilbert<T, T> : not_constructible {
     _MSC_FULL_VER == 193'632'532 || \
     _MSC_FULL_VER == 193'632'535 || \
     _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
+    _MSC_FULL_VER == 193'833'135 || \
+    _MSC_FULL_VER == 193'933'523
   {  // NOLINT
     return _grassmann::internal::InnerProduct(t1, t2);
   }
@@ -112,7 +114,8 @@ struct Hilbert<T, T> : not_constructible {
     _MSC_FULL_VER == 193'632'532 || \
     _MSC_FULL_VER == 193'632'535 || \
     _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
+    _MSC_FULL_VER == 193'833'135 || \
+    _MSC_FULL_VER == 193'933'523
   {  // NOLINT
     return t.Norm²();
   }
@@ -130,7 +133,8 @@ struct Hilbert<T, T> : not_constructible {
     _MSC_FULL_VER == 193'632'532 || \
     _MSC_FULL_VER == 193'632'535 || \
     _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
+    _MSC_FULL_VER == 193'833'135 || \
+    _MSC_FULL_VER == 193'933'523
   {  // NOLINT
     return t.Norm();
   }
