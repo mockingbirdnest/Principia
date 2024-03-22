@@ -79,18 +79,17 @@ struct ColumnView {
   constexpr int size() const;
 };
 
-template<typename Matrix>
-bool operator==(BlockView<Matrix> const& left,
-                BlockView<Matrix> const& right);
-template<typename Matrix>
-bool operator!=(BlockView<Matrix> const& left,
-                BlockView<Matrix> const& right);
-template<typename Matrix>
+// The declarations below also declare the symmetric operator== and
+// operator!=.
+
+template<typename Matrix, typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(BlockView<Matrix> const& left, T const& right);
+
+template<typename Matrix, typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
 bool operator==(ColumnView<Matrix> const& left,
-                ColumnView<Matrix> const& right);
-template<typename Matrix>
-bool operator!=(ColumnView<Matrix> const& left,
-                ColumnView<Matrix> const& right);
+                T const& right);
 
 template<typename Matrix>
 std::ostream& operator<<(std::ostream& out,

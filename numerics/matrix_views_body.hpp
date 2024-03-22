@@ -39,8 +39,8 @@ template<typename T>
 BlockView<Matrix>& BlockView<Matrix>::operator+=(T const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < right.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) += right(i, j);
     }
   }
@@ -54,8 +54,8 @@ template<typename T>
 auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < right.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) -= right(i, j);
     }
   }
@@ -65,8 +65,8 @@ auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
-  for (int i = 0; i < right.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) *= right;
     }
   }
@@ -76,8 +76,8 @@ BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator/=(double const right) {
-  for (int i = 0; i < right.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) /= right;
     }
   }
@@ -118,8 +118,8 @@ template<typename T>
   requires one_dimensional<T> && same_elements_as<T, Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator+=(T const& right) {
   DCHECK_EQ(size(), right.size());
-  for (int i = 0; i < right.size(); ++i) {
-    matrix(first_row + i, column) += right(i, column);
+  for (int i = 0; i < size(); ++i) {
+    matrix(first_row + i, column) += right[i];
   }
   return *this;
 }
@@ -130,8 +130,8 @@ template<typename T>
   requires one_dimensional<T> && same_elements_as<T, Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator-=(T const& right) {
   DCHECK_EQ(size(), right.size());
-  for (int i = 0; i < right.size(); ++i) {
-    matrix(first_row + i, column) -= right(i, column);
+  for (int i = 0; i < size(); ++i) {
+    matrix(first_row + i, column) -= right[i];
   }
   return *this;
 }
@@ -175,9 +175,9 @@ constexpr auto ColumnView<Matrix>::size() const -> int {
   return last_row - first_row + 1;
 }
 
-template<typename Matrix>
-bool operator==(BlockView<Matrix> const& left,
-                BlockView<Matrix> const& right) {
+template<typename Matrix, typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(BlockView<Matrix> const& left, T const& right) {
   if (left.rows() != right.rows() || left.columns() != right.columns()) {
     return false;
   }
@@ -191,15 +191,9 @@ bool operator==(BlockView<Matrix> const& left,
   return true;
 }
 
-template<typename Matrix>
-bool operator!=(BlockView<Matrix> const& left,
-                BlockView<Matrix> const& right) {
-  return !(left == right);
-}
-
-template<typename Matrix>
-bool operator==(ColumnView<Matrix> const& left,
-                ColumnView<Matrix> const& right) {
+template<typename Matrix, typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(ColumnView<Matrix> const& left, T const& right) {
   if (left.size() != right.size()) {
     return false;
   }
@@ -209,12 +203,6 @@ bool operator==(ColumnView<Matrix> const& left,
     }
   }
   return true;
-}
-
-template<typename Matrix>
-bool operator!=(ColumnView<Matrix> const& left,
-                ColumnView<Matrix> const& right) {
-  return !(left == right);
 }
 
 template<typename Matrix>

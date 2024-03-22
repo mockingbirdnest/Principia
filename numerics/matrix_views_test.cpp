@@ -14,7 +14,7 @@ using namespace principia::numerics::_unbounded_arrays;
 class MatrixViewsTest : public ::testing::Test {
  protected:
   MatrixViewsTest()
-    : fu3_({6, -1, 12}),
+    : fu2_({6, -1}),
       fv3_({10, 31, -47}),
       fv4_({-3, -3, 1, 4}),
       fm34_({-8,  -6, -4, -7,
@@ -24,7 +24,7 @@ class MatrixViewsTest : public ::testing::Test {
              2,  3,  7}),
       fn23_({ 5, -1,  3,
              12, 13, -4}),
-      uu3_({6, -1, 12}),
+      uu2_({6, -1}),
       uv3_({10, 31, -47}),
       uv4_({-3, -3, 1, 4}),
       um34_(3, 4,
@@ -38,13 +38,13 @@ class MatrixViewsTest : public ::testing::Test {
             { 5, -1,  3,
              12, 13, -4}) {}
 
-  FixedVector<double, 3> fu3_;
+  FixedVector<double, 2> fu2_;
   FixedVector<double, 3> fv3_;
   FixedVector<double, 4> fv4_;
   FixedMatrix<double, 3, 4> fm34_;
   FixedMatrix<double, 2, 3> fm23_;
   FixedMatrix<double, 2, 3> fn23_;
-  UnboundedVector<double> uu3_;
+  UnboundedVector<double> uu2_;
   UnboundedVector<double> uv3_;
   UnboundedVector<double> uv4_;
   UnboundedMatrix<double> um34_;
@@ -96,10 +96,10 @@ TEST_F(MatrixViewsTest, BlockView_Addition) {
                                              .last_row = 2,
                                              .first_column = 0,
                                              .last_column = 2};
-  bfm34 += fm23_;
+  bfm34 += um23_;
   EXPECT_EQ((UnboundedMatrix<double>(2, 3,
-                                     {-3, -12, 16,
-                                       8,   0,  5})),
+                                     {-3, -12, 9,
+                                       8,   0, 5})),
              bfm34);
 
   BlockView<UnboundedMatrix<double>> bum34{.matrix = um34_,
@@ -107,10 +107,26 @@ TEST_F(MatrixViewsTest, BlockView_Addition) {
                                            .last_row = 2,
                                            .first_column = 0,
                                            .last_column = 2};
-  EXPECT_EQ(-4, bum34(0, 0));
-  EXPECT_EQ(-10, bum34(0, 1));
-  EXPECT_EQ(6, bum34(1, 0));
-  EXPECT_EQ(-3, bum34(1, 1));
+  bum34 -= fm23_;
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-5, -8,  9,
+                                         4, -6, -9})),
+             bum34);
+}
+
+TEST_F(MatrixViewsTest, ColumnView_Addition) {
+  ColumnView<FixedMatrix<double, 3, 4>> cfm34{.matrix = fm34_,
+                                              .first_row = 1,
+                                              .last_row = 2,
+                                              .column = 3};
+  cfm34 += uu2_;
+  EXPECT_EQ((UnboundedVector<double>({1, -10})), cfm34);
+
+  ColumnView<UnboundedMatrix<double>> cum34{.matrix = um34_,
+                                            .first_row = 1,
+                                            .last_row = 2,
+                                            .column = 3};
+  cum34 -= fu2_;
+  EXPECT_EQ((FixedVector<double, 2>({-11, -8})), cum34);
 }
 
 }  // namespace numerics
