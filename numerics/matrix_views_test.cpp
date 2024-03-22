@@ -52,7 +52,7 @@ class MatrixViewsTest : public ::testing::Test {
   UnboundedMatrix<double> un23_;
 };
 
-TEST_F(MatrixViewsTest, Indexing) {
+TEST_F(MatrixViewsTest, BlockView_Indexing) {
   BlockView<FixedMatrix<double, 3, 4>> bfm34{.matrix = fm34_,
                                              .first_row = 1,
                                              .last_row = 2,
@@ -62,6 +62,32 @@ TEST_F(MatrixViewsTest, Indexing) {
   EXPECT_EQ(-10, bfm34(0, 1));
   EXPECT_EQ(6, bfm34(1, 0));
   EXPECT_EQ(-3, bfm34(1, 1));
+
+  BlockView<UnboundedMatrix<double>> bum34{.matrix = um34_,
+                                           .first_row = 1,
+                                           .last_row = 2,
+                                           .first_column = 0,
+                                           .last_column = 2};
+  EXPECT_EQ(-4, bum34(0, 0));
+  EXPECT_EQ(-10, bum34(0, 1));
+  EXPECT_EQ(6, bum34(1, 0));
+  EXPECT_EQ(-3, bum34(1, 1));
+}
+
+TEST_F(MatrixViewsTest, ColumnView_Indexing) {
+  ColumnView<FixedMatrix<double, 3, 4>> cfm34{.matrix = fm34_,
+                                              .first_row = 1,
+                                              .last_row = 2,
+                                              .column = 3};
+  EXPECT_EQ(-5, cfm34[0]);
+  EXPECT_EQ(-9, cfm34[1]);
+
+  ColumnView<UnboundedMatrix<double>> cum34{.matrix = um34_,
+                                            .first_row = 1,
+                                            .last_row = 2,
+                                            .column = 3};
+  EXPECT_EQ(-5, cum34[0]);
+  EXPECT_EQ(-9, cum34[1]);
 }
 
 }  // namespace numerics
