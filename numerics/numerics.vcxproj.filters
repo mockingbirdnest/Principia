@@ -394,6 +394,9 @@
     <ClCompile Include="polynomial_in_чебышёв_basis_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="matrix_views_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
