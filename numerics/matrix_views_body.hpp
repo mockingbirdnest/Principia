@@ -112,10 +112,48 @@ constexpr auto ColumnView<Matrix>::operator[](
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-auto ColumnView<Matrix>::operator/=(double const right) -> ColumnView<Matrix>& {
+template<typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator+=(T const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < right.size(); ++i) {
+    matrix(first_row + i, column) += right(i, column);
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator-=(T const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < right.size(); ++i) {
+    matrix(first_row + i, column) -= right(i, column);
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator*=(double const right) {
+  for (int i = first_row; i < last_row; ++i) {
+    matrix(i, column) *= right;
+  }
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator/=(double const right) {
   for (int i = first_row; i < last_row; ++i) {
     matrix(i, column) /= right;
   }
+  return *this;
+}
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out, BlockView<Matrix> const& view) {
+  // TODO: insert return statement here
 }
 
 template<typename Matrix>

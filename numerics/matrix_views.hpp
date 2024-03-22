@@ -42,6 +42,7 @@ struct BlockView {
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
   BlockView& operator-=(T const& right);
+
   BlockView& operator*=(double right);
   BlockView& operator/=(double right);
 
@@ -63,12 +64,24 @@ struct ColumnView {
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator+=(T const& right);
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator-=(T const& right);
+
+  ColumnView& operator*=(double right);
   ColumnView& operator/=(double right);
 
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
   constexpr int size() const;
 };
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         BlockView<Matrix> const& view);
 
 template<typename Matrix>
 std::ostream& operator<<(std::ostream& out,
