@@ -90,5 +90,28 @@ TEST_F(MatrixViewsTest, ColumnView_Indexing) {
   EXPECT_EQ(-9, cum34[1]);
 }
 
+TEST_F(MatrixViewsTest, BlockView_Addition) {
+  BlockView<FixedMatrix<double, 3, 4>> bfm34{.matrix = fm34_,
+                                             .first_row = 1,
+                                             .last_row = 2,
+                                             .first_column = 0,
+                                             .last_column = 2};
+  bfm34 += fm23_;
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-3, -12, 16,
+                                       8,   0,  5})),
+             bfm34);
+
+  BlockView<UnboundedMatrix<double>> bum34{.matrix = um34_,
+                                           .first_row = 1,
+                                           .last_row = 2,
+                                           .first_column = 0,
+                                           .last_column = 2};
+  EXPECT_EQ(-4, bum34(0, 0));
+  EXPECT_EQ(-10, bum34(0, 1));
+  EXPECT_EQ(6, bum34(1, 0));
+  EXPECT_EQ(-3, bum34(1, 1));
+}
+
 }  // namespace numerics
 }  // namespace principia
