@@ -12,11 +12,6 @@ namespace numerics {
 namespace _matrix_views {
 namespace internal {
 
-// TODO(phl): The view stuff should be (1) made complete, i.e., have all the
-// operations that exist for fixed/unbounded vectors/matrices; (2) unified with
-// fixed/unbounded arrays so that we don't have to write each algorithm N times;
-// (3) tested.
-
 using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
