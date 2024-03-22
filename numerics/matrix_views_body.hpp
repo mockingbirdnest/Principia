@@ -63,6 +63,7 @@ auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
 }
 
 template<typename Matrix>
+  requires two_dimensional<Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
   for (int i = 0; i < right.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
@@ -73,6 +74,7 @@ BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
 }
 
 template<typename Matrix>
+  requires two_dimensional<Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator/=(double const right) {
   for (int i = 0; i < right.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
