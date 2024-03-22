@@ -152,23 +152,6 @@ ColumnView<Matrix>& ColumnView<Matrix>::operator/=(double const right) {
 }
 
 template<typename Matrix>
-std::ostream& operator<<(std::ostream& out, BlockView<Matrix> const& view) {
-  // TODO: insert return statement here
-}
-
-template<typename Matrix>
-std::ostream& operator<<(std::ostream& out,
-                         ColumnView<Matrix> const& view) {
-  std::stringstream s;
-  for (int i = 0; i < view.size(); ++i) {
-    s << (i == 0 ? "{" : "") << view[i]
-      << (i == view.size() - 1 ? "}" : ", ");
-  }
-  out << s.str();
-  return out;
-}
-
-template<typename Matrix>
   requires two_dimensional<Matrix>
 auto ColumnView<Matrix>::Norm() const -> Scalar {
   return Sqrt(Norm²());
@@ -188,6 +171,34 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto ColumnView<Matrix>::size() const -> int {
   return last_row - first_row + 1;
+}
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out, BlockView<Matrix> const& view) {
+  out << "rows: " << view.rows() << " columns: " << view.columns() << "\n";
+  for (int i = 0; i < view.rows(); ++i) {
+    out << "{";
+    for (int j = 0; j < view.columns(); ++j) {
+      out << view(i, j);
+      if (j < view.columns() - 1) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         ColumnView<Matrix> const& view) {
+  std::stringstream s;
+  for (int i = 0; i < view.size(); ++i) {
+    s << (i == 0 ? "{" : "") << view[i]
+      << (i == view.size() - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
 }
 
 }  // namespace internal
