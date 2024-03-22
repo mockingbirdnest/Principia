@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/macros.hpp"  // 🧙 For noreturn.
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
 #include "base/traits.hpp"
@@ -111,6 +112,10 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
     default:
       LOG(FATAL) << "Unexpected degree: "
                  << pre_канторович_message.DebugString();
+#if PRINCIPIA_COMPILER_MSVC && \
+    _MSC_FULL_VER == 193'933'523
+      base::noreturn();
+#endif
   }
 }
 
