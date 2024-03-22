@@ -174,6 +174,48 @@ constexpr auto ColumnView<Matrix>::size() const -> int {
 }
 
 template<typename Matrix>
+bool operator==(BlockView<Matrix> const& left,
+                BlockView<Matrix> const& right) {
+  if (left.rows() != right.rows() || left.columns() != right.columns()) {
+    return false;
+  }
+  for (int i = 0; i < left.rows(); ++i) {
+    for (int j = 0; j < left.columns(); ++j) {
+      if (left(i, j) != right(i, j)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+template<typename Matrix>
+bool operator!=(BlockView<Matrix> const& left,
+                BlockView<Matrix> const& right) {
+  return !(left == right);
+}
+
+template<typename Matrix>
+bool operator==(ColumnView<Matrix> const& left,
+                ColumnView<Matrix> const& right) {
+  if (left.size() != right.size()) {
+    return false;
+  }
+  for (int i = 0; i < left.size(); ++i) {
+    if (left[i] != right[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template<typename Matrix>
+bool operator!=(ColumnView<Matrix> const& left,
+                ColumnView<Matrix> const& right) {
+  return !(left == right);
+}
+
+template<typename Matrix>
 std::ostream& operator<<(std::ostream& out, BlockView<Matrix> const& view) {
   out << "rows: " << view.rows() << " columns: " << view.columns() << "\n";
   for (int i = 0; i < view.rows(); ++i) {

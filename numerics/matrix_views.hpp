@@ -80,6 +80,19 @@ struct ColumnView {
 };
 
 template<typename Matrix>
+bool operator==(BlockView<Matrix> const& left,
+                BlockView<Matrix> const& right);
+template<typename Matrix>
+bool operator!=(BlockView<Matrix> const& left,
+                BlockView<Matrix> const& right);
+template<typename Matrix>
+bool operator==(ColumnView<Matrix> const& left,
+                ColumnView<Matrix> const& right);
+template<typename Matrix>
+bool operator!=(ColumnView<Matrix> const& left,
+                ColumnView<Matrix> const& right);
+
+template<typename Matrix>
 std::ostream& operator<<(std::ostream& out,
                          BlockView<Matrix> const& view);
 
