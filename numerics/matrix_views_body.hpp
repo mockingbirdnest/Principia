@@ -139,15 +139,16 @@ ColumnView<Matrix>& ColumnView<Matrix>::operator-=(T const& right) {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator*=(double const right) {
-  for (int i = first_row; i < last_row; ++i) {
+  for (int i = first_row; i <= last_row; ++i) {
     matrix(i, column) *= right;
   }
+  return *this;
 }
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator/=(double const right) {
-  for (int i = first_row; i < last_row; ++i) {
+  for (int i = first_row; i <= last_row; ++i) {
     matrix(i, column) /= right;
   }
   return *this;

@@ -129,5 +129,44 @@ TEST_F(MatrixViewsTest, ColumnView_Addition) {
   EXPECT_EQ((FixedVector<double, 2>({-11, -8})), cum34);
 }
 
+TEST_F(MatrixViewsTest, BlockView_Multiplication) {
+  BlockView<FixedMatrix<double, 3, 4>> bfm34{.matrix = fm34_,
+                                             .first_row = 1,
+                                             .last_row = 2,
+                                             .first_column = 0,
+                                             .last_column = 2};
+  bfm34 *= 3;
+  EXPECT_EQ((UnboundedMatrix<double>(2, 3,
+                                     {-12, -30, 27,
+                                       18,  -9, -6})),
+             bfm34);
+
+  BlockView<UnboundedMatrix<double>> bum34{.matrix = um34_,
+                                           .first_row = 1,
+                                           .last_row = 2,
+                                           .first_column = 0,
+                                           .last_column = 2};
+  bum34 /= 2;
+  EXPECT_EQ((FixedMatrix<double, 2, 3>({-2,   -5,  4.5,
+                                         3, -1.5,   -1})),
+             bum34);
+}
+
+TEST_F(MatrixViewsTest, ColumnView_Multiplication) {
+  ColumnView<FixedMatrix<double, 3, 4>> cfm34{.matrix = fm34_,
+                                              .first_row = 1,
+                                              .last_row = 2,
+                                              .column = 3};
+  cfm34 *= 3;
+  EXPECT_EQ((UnboundedVector<double>({-15, -27})), cfm34);
+
+  ColumnView<UnboundedMatrix<double>> cum34{.matrix = um34_,
+                                            .first_row = 1,
+                                            .last_row = 2,
+                                            .column = 3};
+  cum34 /= 2;
+  EXPECT_EQ((FixedVector<double, 2>({-2.5, -4.5})), cum34);
+}
+
 }  // namespace numerics
 }  // namespace principia
