@@ -35,14 +35,48 @@ constexpr auto BlockView<Matrix>::operator()(
 template<typename Matrix>
   requires two_dimensional<Matrix>
 template<typename T>
-  requires two_dimensional<T> &&
-           std::same_as<typename T::Scalar, typename Matrix::Scalar>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator+=(T const& right) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      matrix(first_row + i, first_column + j) += right(i, j);
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
 auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
-  CHECK_EQ(rows(), right.rows());
-  CHECK_EQ(columns(), right.columns());
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
   for (int i = 0; i < right.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
       matrix(first_row + i, first_column + j) -= right(i, j);
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      matrix(first_row + i, first_column + j) *= right;
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator/=(double const right) {
+  for (int i = 0; i < right.rows(); ++i) {
+    for (int j = 0; j < right.columns(); ++j) {
+      matrix(first_row + i, first_column + j) /= right;
     }
   }
   return *this;

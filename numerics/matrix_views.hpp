@@ -37,9 +37,13 @@ struct BlockView {
   constexpr Scalar const& operator()(int row, int column) const;
 
   template<typename T>
-    requires two_dimensional<T> &&
-             std::same_as<typename T::Scalar, typename Matrix::Scalar>
+    requires two_dimensional<T> && same_elements_as<T, Matrix>
+  BlockView& operator+=(T const& right);
+  template<typename T>
+    requires two_dimensional<T> && same_elements_as<T, Matrix>
   BlockView& operator-=(T const& right);
+  BlockView& operator*=(double right);
+  BlockView& operator/=(double right);
 
   constexpr int rows() const;
   constexpr int columns() const;
