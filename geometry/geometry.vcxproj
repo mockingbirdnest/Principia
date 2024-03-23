@@ -66,7 +66,6 @@
     <ClInclude Include="sphere_body.hpp" />
     <ClInclude Include="symmetric_bilinear_form.hpp" />
     <ClInclude Include="symmetric_bilinear_form_body.hpp" />
-    <ClInclude Include="traits.hpp" />
     <ClInclude Include="homothecy_body.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -95,6 +94,5 @@
     <ClCompile Include="signature_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
     <ClCompile Include="symmetric_bilinear_form_test.cpp" />
-    <ClCompile Include="traits_test.cpp" />
   </ItemGroup>
 </Project>

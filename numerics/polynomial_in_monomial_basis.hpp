@@ -18,7 +18,6 @@
 #include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
-#include "geometry/traits.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
@@ -71,7 +70,6 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
-using namespace principia::geometry::_traits;
 using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
