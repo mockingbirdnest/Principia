@@ -435,8 +435,9 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_,
                           degree_ + 1, Evaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::Primitive()
-    const requires additive_group<Value> {
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+Primitive() const
+  requires additive_group<Value> {
   return PolynomialInMonomialBasis<
              quantities::_named_quantities::Primitive<Value, Argument>,
              Argument,
@@ -448,9 +449,10 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::Primitive()
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator>
 Primitive<Value_, Argument_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::Integrate(
-    Argument const& argument1,
-    Argument const& argument2) const requires additive_group<Value> {
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator>::
+Integrate(Argument const& argument1,
+          Argument const& argument2) const
+  requires additive_group<Value> {
   // + 2 is to take into account the truncation resulting from integer division.
   return _quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
                                                        argument1, argument2);

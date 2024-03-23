@@ -123,7 +123,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // The constant term of the result is zero.
   PolynomialInMonomialBasis<Primitive<Value, Argument>,
                             Argument, degree_ + 1, Evaluator>
-  Primitive() const requires additive_group<Value>;
+  Primitive() const
+    requires additive_group<Value>;
 
   quantities::_named_quantities::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
