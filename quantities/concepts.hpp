@@ -51,7 +51,7 @@ concept real_affine_space = affine_space<V, double>;
 
 // std::integral || std::floating_point rather than
 // std::convertible_to<double, T> because
-// the former introduces ambiguities on Sign * Vector.
+// the latter introduces ambiguities on Sign * Vector.
 template<typename T>
 concept convertible_to_quantity =
     std::integral<std::remove_cvref_t<T>> ||
