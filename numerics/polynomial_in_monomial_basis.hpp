@@ -73,6 +73,7 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_traits;
 using namespace principia::numerics::_polynomial;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
 
@@ -93,10 +94,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // powers of (argument - origin).
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
-  template<typename A = Argument,
-           typename = std::enable_if_t<is_vector_v<A>>>
-  explicit constexpr PolynomialInMonomialBasis(
-      Coefficients coefficients);
+  explicit constexpr PolynomialInMonomialBasis(Coefficients coefficients)
+    requires additive_group<Argument>;
 
   // A polynomial may be explicitly converted to a higher degree (possibly with
   // a different evaluator).
@@ -123,17 +122,14 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Derivative() const;
 
   // The constant term of the result is zero.
-  template<typename V = Value,
-           typename = std::enable_if_t<is_vector_v<V>>>
   PolynomialInMonomialBasis<Primitive<Value, Argument>,
                             Argument, degree_ + 1, Evaluator>
-  Primitive() const;
+  Primitive() const requires additive_group<Value>;
 
-  template<typename V = Value,
-           typename = std::enable_if_t<is_vector_v<V>>>
   quantities::_named_quantities::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
-      Argument const& argument2) const;
+      Argument const& argument2) const
+    requires additive_group<Value>;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);

@@ -6,6 +6,7 @@
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/traits.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -24,7 +25,7 @@ namespace internal {
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_traits;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
 template<typename T1, typename T2>
@@ -50,7 +51,7 @@ struct enable_if_affine;
 template<typename T1, typename T2, typename U>
 struct enable_if_affine<
     Pair<T1, T2>, U,
-    std::enable_if_t<!std::conjunction_v<is_vector<T1>, is_vector<T2>>>>
+    std::enable_if_t<!(additive_group<T1> && additive_group<T2>)>>
     : not_constructible {
   using type = U;
 };
@@ -66,7 +67,7 @@ struct enable_if_vector;
 template<typename T1, typename T2, typename U>
 struct enable_if_vector<
     Pair<T1, T2>, U,
-    std::enable_if_t<std::conjunction_v<is_vector<T1>, is_vector<T2>>>>
+    std::enable_if_t<additive_group<T1> && additive_group<T2>>>
     : not_constructible {
   using type = U;
 };
