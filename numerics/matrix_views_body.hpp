@@ -35,14 +35,50 @@ constexpr auto BlockView<Matrix>::operator()(
 template<typename Matrix>
   requires two_dimensional<Matrix>
 template<typename T>
-  requires two_dimensional<T> &&
-           std::same_as<typename T::Scalar, typename Matrix::Scalar>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator+=(T const& right) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      matrix(first_row + i, first_column + j) += right(i, j);
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
 auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
-  CHECK_EQ(rows(), right.rows());
-  CHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < right.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) -= right(i, j);
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      matrix(first_row + i, first_column + j) *= right;
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator/=(double const right) {
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      matrix(first_row + i, first_column + j) /= right;
     }
   }
   return *this;
@@ -78,22 +114,44 @@ constexpr auto ColumnView<Matrix>::operator[](
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-auto ColumnView<Matrix>::operator/=(double const right) -> ColumnView<Matrix>& {
-  for (int i = first_row; i < last_row; ++i) {
-    matrix(i, column) /= right;
+template<typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator+=(T const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < size(); ++i) {
+    matrix(first_row + i, column) += right[i];
   }
+  return *this;
 }
 
 template<typename Matrix>
-std::ostream& operator<<(std::ostream& out,
-                         ColumnView<Matrix> const& view) {
-  std::stringstream s;
-  for (int i = 0; i < view.size(); ++i) {
-    s << (i == 0 ? "{" : "") << view[i]
-      << (i == view.size() - 1 ? "}" : ", ");
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator-=(T const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < size(); ++i) {
+    matrix(first_row + i, column) -= right[i];
   }
-  out << s.str();
-  return out;
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator*=(double const right) {
+  for (int i = first_row; i <= last_row; ++i) {
+    matrix(i, column) *= right;
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator/=(double const right) {
+  for (int i = first_row; i <= last_row; ++i) {
+    matrix(i, column) /= right;
+  }
+  return *this;
 }
 
 template<typename Matrix>
@@ -116,6 +174,64 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto ColumnView<Matrix>::size() const -> int {
   return last_row - first_row + 1;
+}
+
+template<typename Matrix, typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(BlockView<Matrix> const& left, T const& right) {
+  if (left.rows() != right.rows() || left.columns() != right.columns()) {
+    return false;
+  }
+  for (int i = 0; i < left.rows(); ++i) {
+    for (int j = 0; j < left.columns(); ++j) {
+      if (left(i, j) != right(i, j)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+template<typename Matrix, typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(ColumnView<Matrix> const& left, T const& right) {
+  if (left.size() != right.size()) {
+    return false;
+  }
+  for (int i = 0; i < left.size(); ++i) {
+    if (left[i] != right[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out, BlockView<Matrix> const& view) {
+  out << "rows: " << view.rows() << " columns: " << view.columns() << "\n";
+  for (int i = 0; i < view.rows(); ++i) {
+    out << "{";
+    for (int j = 0; j < view.columns(); ++j) {
+      out << view(i, j);
+      if (j < view.columns() - 1) {
+        out << ", ";
+      }
+    }
+    out << "}\n";
+  }
+  return out;
+}
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         ColumnView<Matrix> const& view) {
+  std::stringstream s;
+  for (int i = 0; i < view.size(); ++i) {
+    s << (i == 0 ? "{" : "") << view[i]
+      << (i == view.size() - 1 ? "}" : ", ");
+  }
+  out << s.str();
+  return out;
 }
 
 }  // namespace internal

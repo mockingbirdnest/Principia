@@ -12,11 +12,6 @@ namespace numerics {
 namespace _matrix_views {
 namespace internal {
 
-// TODO(phl): The view stuff should be (1) made complete, i.e., have all the
-// operations that exist for fixed/unbounded vectors/matrices; (2) unified with
-// fixed/unbounded arrays so that we don't have to write each algorithm N times;
-// (3) tested.
-
 using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
@@ -37,9 +32,14 @@ struct BlockView {
   constexpr Scalar const& operator()(int row, int column) const;
 
   template<typename T>
-    requires two_dimensional<T> &&
-             std::same_as<typename T::Scalar, typename Matrix::Scalar>
+    requires two_dimensional<T> && same_elements_as<T, Matrix>
+  BlockView& operator+=(T const& right);
+  template<typename T>
+    requires two_dimensional<T> && same_elements_as<T, Matrix>
   BlockView& operator-=(T const& right);
+
+  BlockView& operator*=(double right);
+  BlockView& operator/=(double right);
 
   constexpr int rows() const;
   constexpr int columns() const;
@@ -59,12 +59,36 @@ struct ColumnView {
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator+=(T const& right);
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator-=(T const& right);
+
+  ColumnView& operator*=(double right);
   ColumnView& operator/=(double right);
 
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
   constexpr int size() const;
 };
+
+// The declarations below also declare the symmetric operator== and
+// operator!=.
+
+template<typename Matrix, typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(BlockView<Matrix> const& left, T const& right);
+
+template<typename Matrix, typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+bool operator==(ColumnView<Matrix> const& left,
+                T const& right);
+
+template<typename Matrix>
+std::ostream& operator<<(std::ostream& out,
+                         BlockView<Matrix> const& view);
 
 template<typename Matrix>
 std::ostream& operator<<(std::ostream& out,
