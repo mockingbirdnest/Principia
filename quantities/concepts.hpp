@@ -52,9 +52,12 @@ concept real_affine_space = affine_space<V, double>;
 template<typename T>
 concept quantity = instance_of<T, Quantity> || std::same_as<T, double>;
 
+// std::integral || std::floating_point rather than
+// std::convertible_to<double, T> because
+// the former introduces ambiguities on Sign * Vector.
 template<typename T>
-concept convertible_to_quantity =
-    std::convertible_to<T, double> || quantity<std::remove_cvref_t<T>>;
+concept convertible_to_quantity = quantity<std::remove_cvref_t<T>> ||
+                                  std::integral<T> || std::floating_point<T>;
 
 }  // namespace internal
 
