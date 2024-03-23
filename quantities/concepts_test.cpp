@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
