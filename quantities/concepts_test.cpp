@@ -2,12 +2,14 @@
 
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
 
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 TEST(Traits, IsQuantityV) {
   static_assert(quantity<int>);

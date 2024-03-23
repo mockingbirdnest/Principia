@@ -18,7 +18,7 @@
 #include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
-#include "geometry/traits.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
@@ -71,8 +71,8 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
-using namespace principia::geometry::_traits;
 using namespace principia::numerics::_polynomial;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
 
@@ -93,10 +93,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // powers of (argument - origin).
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
-  template<typename A = Argument,
-           typename = std::enable_if_t<is_vector_v<A>>>
-  explicit constexpr PolynomialInMonomialBasis(
-      Coefficients coefficients);
+  explicit constexpr PolynomialInMonomialBasis(Coefficients coefficients)
+    requires additive_group<Argument>;
 
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
                                    PolynomialInMonomialBasis const& right) =
@@ -133,17 +131,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Derivative() const;
 
   // The constant term of the result is zero.
-  template<typename V = Value,
-           typename = std::enable_if_t<is_vector_v<V>>>
   PolynomialInMonomialBasis<Primitive<Value, Argument>,
                             Argument, degree_ + 1, Evaluator>
-  Primitive() const;
+  Primitive() const
+    requires additive_group<Value>;
 
-  template<typename V = Value,
-           typename = std::enable_if_t<is_vector_v<V>>>
   quantities::_named_quantities::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
-      Argument const& argument2) const;
+      Argument const& argument2) const
+    requires additive_group<Value>;
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
