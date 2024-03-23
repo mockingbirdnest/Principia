@@ -69,6 +69,7 @@ class GrassmannTest : public testing::Test {
                       Inertial,
                       Handedness::Right,
                       serialization::Frame::TEST>;
+  Vector<World, Acceleration> γ;
 
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
