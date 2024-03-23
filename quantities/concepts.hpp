@@ -54,7 +54,8 @@ concept real_affine_space = affine_space<V, double>;
 // the former introduces ambiguities on Sign * Vector.
 template<typename T>
 concept convertible_to_quantity =
-    std::integral<T> || std::floating_point<T> ||
+    std::integral<std::remove_cvref_t<T>> ||
+    std::floating_point<std::remove_cvref_t<T>> ||
     is_instance_of_v<Quantity, std::remove_cvref_t<T>>;
 
 }  // namespace internal
