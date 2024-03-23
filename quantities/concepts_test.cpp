@@ -12,14 +12,14 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 TEST(Traits, IsQuantityV) {
-  static_assert(quantity<int>);
-  static_assert(quantity<double>);
-  static_assert(quantity<Area>);
-  static_assert(quantity<Frequency const>);
-  // Not sure if the following is what we want, but at least let's nail it in a
-  // test.
-  static_assert(!quantity<Entropy&>);
-  static_assert(!quantity<float const&>);
+  static_assert(convertible_to_quantity<int>);
+  static_assert(convertible_to_quantity<double>);
+  static_assert(convertible_to_quantity<Area>);
+  static_assert(convertible_to_quantity<Frequency const>);
+  static_assert(convertible_to_quantity<Entropy&>);
+  static_assert(convertible_to_quantity<float const&>);
+
+  static_assert(!convertible_to_quantity<int*>);
 }
 
 }  // namespace quantities

@@ -112,15 +112,15 @@ class R3x3Matrix final {
                                               R3x3Matrix<RS> const& right);
 
   template<typename LS, typename RS>
-    requires quantity<LS>
+    requires convertible_to_quantity<LS>
   friend R3x3Matrix<Product<LS, RS>> operator*(LS const& left,
                                                R3x3Matrix<RS> const& right);
   template<typename LS, typename RS>
-    requires quantity<RS>
+    requires convertible_to_quantity<RS>
   friend R3x3Matrix<Product<LS, RS>> operator*(R3x3Matrix<LS> const& left,
                                                RS const& right);
   template<typename LS, typename RS>
-    requires quantity<RS>
+    requires convertible_to_quantity<RS>
   friend R3x3Matrix<Quotient<LS, RS>> operator/(R3x3Matrix<LS> const& left,
                                                 RS const& right);
 
@@ -156,16 +156,16 @@ R3Element<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<RScalar> const& right);
 
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3x3Matrix<RScalar> const& right);
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(R3x3Matrix<LScalar> const& left,
                                                 RScalar const& right);
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right);

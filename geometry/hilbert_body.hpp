@@ -12,26 +12,26 @@ namespace internal {
 using namespace principia::quantities::_elementary_functions;
 
 template<typename T1, typename T2>
-  requires quantity<T1> && quantity<T2>
+  requires convertible_to_quantity<T1> && convertible_to_quantity<T2>
 auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
     -> InnerProductType {
   return t1 * t2;
 }
 
 template<typename T>
-  requires quantity<T>
+  requires convertible_to_quantity<T>
 auto Hilbert<T, T>::InnerProduct(T const& t1, T const& t2) -> InnerProductType {
   return t1 * t2;
 }
 
 template<typename T>
-  requires quantity<T>
+  requires convertible_to_quantity<T>
 auto Hilbert<T, T>::Norm²(T const& t) -> Norm²Type {
   return t * t;
 }
 
 template<typename T>
-  requires quantity<T>
+  requires convertible_to_quantity<T>
 auto Hilbert<T, T>::Norm(T const& t) -> NormType {
   return Abs(t);
 }

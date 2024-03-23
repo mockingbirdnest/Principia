@@ -27,7 +27,7 @@ template<typename T1, typename T2 = T1>
 struct Hilbert;
 
 template<typename T1, typename T2>
-  requires quantity<T1> && quantity<T2>
+  requires convertible_to_quantity<T1> && convertible_to_quantity<T2>
 struct Hilbert<T1, T2> : not_constructible {
   static constexpr int dimension = 1;
 
@@ -36,7 +36,7 @@ struct Hilbert<T1, T2> : not_constructible {
 };
 
 template<typename T>
-  requires quantity<T>
+  requires convertible_to_quantity<T>
 struct Hilbert<T, T> : not_constructible {
   static constexpr int dimension = 1;
 
