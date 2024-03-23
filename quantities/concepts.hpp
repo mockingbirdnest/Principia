@@ -61,9 +61,9 @@ concept convertible_to_quantity =
 
 using internal::additive_group;
 using internal::affine_space;
+using internal::convertible_to_quantity;
 using internal::real_affine_space;
 using internal::real_vector_space;
-using internal::convertible_to_quantity;
 using internal::vector_space;
 
 }  // namespace _concepts
