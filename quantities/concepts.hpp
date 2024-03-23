@@ -17,6 +17,7 @@ using namespace quantities::_quantities;
 template<typename G>
 concept additive_group = requires(G x, G y) {
   G{};
+  { +x } -> std::same_as<G>;
   { -x } -> std::same_as<G>;
   { x + y } -> std::same_as<G>;
   { x - y } -> std::same_as<G>;
@@ -41,6 +42,8 @@ concept affine_space = requires(A x, A y) {
   { x - y } -> vector_space<K>;
   { y + (x - y) } -> std::same_as<A>;
   { y += (x - y) } -> std::same_as<A&>;
+  { y - (x - y) } -> std::same_as<A>;
+  { y -= (x - y) } -> std::same_as<A&>;
 };
 
 template<typename V>
