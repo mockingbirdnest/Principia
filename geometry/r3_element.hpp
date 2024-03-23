@@ -115,41 +115,41 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
 // product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
 // the result is an R3Element<Product<LScalar, RScalar>>.
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> operator*(LScalar const& left,
                                                R3Element<RScalar> const& right);
 
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
                                                RScalar const& right);
 
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
                                                 RScalar const& right);
 
 // FMA for ±vector * scalar ± vector.
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
@@ -157,25 +157,25 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
 
 // FMA for ±scalar * vector ± vector.
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,

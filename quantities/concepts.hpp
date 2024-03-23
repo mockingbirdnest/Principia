@@ -50,8 +50,9 @@ template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
 template<typename T>
-concept quantity = std::integral<T> || std::floating_point<T> ||
-                   is_instance_of_v<Quantity, std::remove_const_t<T>>;
+concept convertible_to_quantity =
+    std::convertible_to<T, double> ||
+    is_instance_of_v<Quantity, std::remove_cvref_t<T>>;
 
 }  // namespace internal
 
@@ -59,7 +60,7 @@ using internal::additive_group;
 using internal::affine_space;
 using internal::real_affine_space;
 using internal::real_vector_space;
-using internal::quantity;
+using internal::convertible_to_quantity;
 using internal::vector_space;
 
 }  // namespace _concepts

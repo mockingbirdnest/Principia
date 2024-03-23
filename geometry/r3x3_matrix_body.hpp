@@ -342,7 +342,7 @@ R3Element<Product<LScalar, RScalar>> operator*(
 
 
 template<typename LScalar, typename RScalar>
-  requires quantity<LScalar>
+  requires convertible_to_quantity<LScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3x3Matrix<RScalar> const& right) {
@@ -355,7 +355,7 @@ R3x3Matrix<Product<LScalar, RScalar>> operator*(
 }
 
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right) {
@@ -368,7 +368,7 @@ R3x3Matrix<Product<LScalar, RScalar>> operator*(
 }
 
 template<typename LScalar, typename RScalar>
-  requires quantity<RScalar>
+  requires convertible_to_quantity<RScalar>
 R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right) {

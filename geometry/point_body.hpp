@@ -135,14 +135,14 @@ Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
 }
 
 template<typename Vector>
-  requires quantity<Vector>
+  requires convertible_to_quantity<Vector>
 constexpr Point<Vector> NextUp(Point<Vector> const x) {
   using quantities::_elementary_functions::NextUp;
   return Point<Vector>(NextUp(x.coordinates_));
 }
 
 template<typename Vector>
-  requires quantity<Vector>
+  requires convertible_to_quantity<Vector>
 constexpr Point<Vector> NextDown(Point<Vector> const x) {
   using quantities::_elementary_functions::NextDown;
   return Point<Vector>(NextDown(x.coordinates_));
