@@ -18,7 +18,7 @@ constexpr bool all_different_v<T0, Ts...> =
     (!std::is_same_v<T0, Ts> && ...) && all_different_v<Ts...>;
 
 // The order of template parameters matches std::is_base_of; the type name
-// should be read as an infix, U is [an] instance of T.
+// should be read as an infix, “U is [an] instance of T”.
 template<typename U, template<typename...> typename T>
 struct is_instance_of : std::false_type {};
 
@@ -58,10 +58,11 @@ using internal::all_different_v;
 
 // True if and only if U is an instance of T.
 // The order of template parameters matches std::is_base_of; the type name
-// should be read as an infix, U is [an] instance of T.
+// should be read as an infix, “U is [an] instance of T”.
 template<typename U, template<typename...> typename T>
 inline constexpr bool is_instance_of_v = internal::is_instance_of<U, T>::value;
 
+// The concept instance_of<U, T> is satisfied iff U [is an] instance of T.
 // The order of template parameters allows for
 //   requires { { expression } -> instance_of<T>; }
 // or
