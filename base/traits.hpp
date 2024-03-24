@@ -59,10 +59,16 @@ using internal::all_different_v;
 template<template<typename...> typename T, typename U>
 inline constexpr bool is_instance_of_v = internal::is_instance_of<T, U>::value;
 
-// Note the argument inversion so that we can use instance_of<T> in a requires
-// clause.
+// Note that the order of template parameters is backward from is_instance_of_v.
+// This makes it possible to write
+//   requires { { expression } -> instance<T>; }
+// or
+//   template<instance<T> U>
+// but is_instance_of_v<T, U> should be preferred in boolean expressions.
+// An exception is when defining concepts; there we use instance_of<U, T> so as
+// to get concept-specific error messages.
 template<typename U, template<typename...> typename T>
-concept instance_of = is_instance_of_v<T, U>;
+concept instance = is_instance_of_v<T, U>;
 
 // True if and only if T and U are the same template.
 template<template<typename...> typename T, template<typename...> typename U>

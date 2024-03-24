@@ -50,7 +50,7 @@ template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
 template<typename T>
-concept quantity = instance_of<T, Quantity> || std::same_as<T, double>;
+concept quantity = instance<T, Quantity> || std::same_as<T, double>;
 
 // std::integral || std::floating_point rather than
 // std::convertible_to<double, T> because
