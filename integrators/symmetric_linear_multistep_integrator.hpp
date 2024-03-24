@@ -45,7 +45,7 @@ class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
-  static_assert(is_instance_of_v<SpecialSecondOrderDifferentialEquation, ODE>);
+  static_assert(instance_of<ODE, SpecialSecondOrderDifferentialEquation>);
   using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr int order = Method::order;

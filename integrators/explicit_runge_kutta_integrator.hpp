@@ -51,8 +51,7 @@ class ExplicitRungeKuttaIntegrator
     : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
-  static_assert(
-      is_instance_of_v<ExplicitFirstOrderOrdinaryDifferentialEquation, ODE>);
+  static_assert(instance_of<ODE, ExplicitFirstOrderOrdinaryDifferentialEquation>);
   using typename Integrator<ODE>::AppendState;
 
   static constexpr auto order = Method::order;

@@ -98,7 +98,7 @@ std::string ToMathematicaBody(
                                                        coefficients,
                                                        express_in);
   std::string argument;
-  if constexpr (is_instance_of_v<Point, A>) {
+  if constexpr (instance_of<A, Point>) {
     argument = RawApply("Subtract",
                         {"#", ToMathematica(polynomial.origin_, express_in)});
   } else {

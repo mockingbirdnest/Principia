@@ -138,13 +138,13 @@ struct NotNullStorage<
 // reference to its template argument.
 template<typename Pointer>
 using _checked_not_null = typename std::enable_if<
-    !is_instance_of_v<not_null, typename std::remove_reference<Pointer>::type>,
+    !instance_of<typename std::remove_reference<Pointer>::type, not_null>,
     not_null<typename std::remove_reference<Pointer>::type>>::type;
 
 // We cannot refer to the template |not_null| inside of |not_null|.
 template<typename Pointer>
 inline constexpr bool is_instance_of_not_null_v =
-    is_instance_of_v<not_null, Pointer>;
+    instance_of<Pointer, not_null>;
 
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not

@@ -68,7 +68,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
     : public AdaptiveStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
-  static_assert(is_instance_of_v<SpecialSecondOrderDifferentialEquation, ODE>);
+  static_assert(instance_of<ODE, SpecialSecondOrderDifferentialEquation>);
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;

@@ -17,12 +17,13 @@ template<typename T0, typename... Ts>
 constexpr bool all_different_v<T0, Ts...> =
     (!std::is_same_v<T0, Ts> && ...) && all_different_v<Ts...>;
 
-
-template<template<typename...> typename T, typename U>
+// The order of template parameters matches std::is_base_of; the type name
+// should be read as an infix, U is [an] instance of T.
+template<typename U, template<typename...> typename T>
 struct is_instance_of : std::false_type {};
 
 template<template<typename...> typename T, typename... Args>
-struct is_instance_of<T, T<Args...>> : std::true_type {};
+struct is_instance_of<T<Args...>, T> : std::true_type {};
 
 
 template<template<typename...> typename T,
@@ -56,13 +57,17 @@ struct other_type<T2, T1, T2> {
 using internal::all_different_v;
 
 // True if and only if U is an instance of T.
-template<template<typename...> typename T, typename U>
-inline constexpr bool is_instance_of_v = internal::is_instance_of<T, U>::value;
-
-// Note the argument inversion so that we can use instance_of<T> in a requires
-// clause.
+// The order of template parameters matches std::is_base_of; the type name
+// should be read as an infix, U is [an] instance of T.
 template<typename U, template<typename...> typename T>
-concept instance_of = is_instance_of_v<T, U>;
+inline constexpr bool is_instance_of_v = internal::is_instance_of<U, T>::value;
+
+// The order of template parameters allows for
+//   requires { { expression } -> instance_of<T>; }
+// or
+//   template<instance_of<T> U>
+template<typename U, template<typename...> typename T>
+concept instance_of = is_instance_of_v<U, T>;
 
 // True if and only if T and U are the same template.
 template<template<typename...> typename T, template<typename...> typename U>
