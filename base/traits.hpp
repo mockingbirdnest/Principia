@@ -65,8 +65,8 @@ inline constexpr bool is_instance_of_v = internal::is_instance_of<T, U>::value;
 // or
 //   template<instance<T> U>
 // but is_instance_of_v<T, U> should be preferred in boolean expressions.
-// An exception is when defining concepts; there we use instance_of<U, T> so as
-// to get concept-specific error messages.
+// An exception is when defining concepts; there we use instance<U, T> so as to
+// get concept-specific error messages.
 template<typename U, template<typename...> typename T>
 concept instance = is_instance_of_v<T, U>;
 
