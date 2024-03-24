@@ -17,149 +17,149 @@ using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_sign;
 using namespace principia::quantities::_elementary_functions;
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
     : coordinates_(coordinates) {}
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>::Multivector(R3Element<Scalar> const& coordinates)
     : coordinates_(coordinates) {}
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>::Multivector(Scalar const& coordinates)
     : coordinates_(coordinates) {}
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator+=(
     Multivector const& right) {
   coordinates_ += right.coordinates_;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator-=(
     Multivector const& right) {
   coordinates_ -= right.coordinates_;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator*=(
     double const right) {
   coordinates_ *= right;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>& Multivector<Scalar, Frame, 1>::operator/=(
     double const right) {
   coordinates_ /= right;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator+=(
     Multivector const& right) {
   coordinates_ += right.coordinates_;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator-=(
     Multivector const& right) {
   coordinates_ -= right.coordinates_;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator*=(
     double const right) {
   coordinates_ *= right;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 2>& Multivector<Scalar, Frame, 2>::operator/=(
     double const right) {
   coordinates_ /= right;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator+=(
     Multivector const& right) {
   coordinates_ += right.coordinates_;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator-=(
     Multivector const& right) {
   coordinates_ -= right.coordinates_;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator*=(
     double const right) {
   coordinates_ *= right;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 3>& Multivector<Scalar, Frame, 3>::operator/=(
     double const right) {
   coordinates_ /= right;
   return *this;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 R3Element<Scalar> const& Multivector<Scalar, Frame, 1>::coordinates() const {
   return coordinates_;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 R3Element<Scalar> const& Multivector<Scalar, Frame, 2>::coordinates() const {
   return coordinates_;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Scalar const& Multivector<Scalar, Frame, 3>::coordinates() const {
   return coordinates_;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Scalar Multivector<Scalar, Frame, 1>::Norm() const {
   return coordinates_.Norm();
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Scalar Multivector<Scalar, Frame, 2>::Norm() const {
   return coordinates_.Norm();
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Scalar Multivector<Scalar, Frame, 3>::Norm() const {
   // When |Scalar| is double, ADL will not find |Abs|.
   return Abs(coordinates_);
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Square<Scalar> Multivector<Scalar, Frame, 1>::Norm²() const {
   return coordinates_.Norm²();
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Square<Scalar> Multivector<Scalar, Frame, 2>::Norm²() const {
   return coordinates_.Norm²();
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Square<Scalar> Multivector<Scalar, Frame, 3>::Norm²() const {
   return coordinates_ * coordinates_;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 template<typename S>
 Multivector<Scalar, Frame, 1>
 Multivector<Scalar, Frame, 1>::OrthogonalizationAgainst(
@@ -168,7 +168,7 @@ Multivector<Scalar, Frame, 1>::OrthogonalizationAgainst(
       coordinates_.OrthogonalizationAgainst(multivector.coordinates_));
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 template<typename S>
 Multivector<Scalar, Frame, 2>
 Multivector<Scalar, Frame, 2>::OrthogonalizationAgainst(
@@ -177,28 +177,28 @@ Multivector<Scalar, Frame, 2>::OrthogonalizationAgainst(
       coordinates_.OrthogonalizationAgainst(multivector.coordinates_));
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 void Multivector<Scalar, Frame, 1>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
   coordinates_.WriteToMessage(message->mutable_vector());
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 void Multivector<Scalar, Frame, 2>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
   coordinates_.WriteToMessage(message->mutable_bivector());
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 void Multivector<Scalar, Frame, 3>::WriteToMessage(
       not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
   coordinates_.WriteToMessage(message->mutable_trivector());
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
     serialization::Multivector const& message)
   requires serializable<Frame> {
@@ -207,7 +207,7 @@ Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
   return Multivector(R3Element<Scalar>::ReadFromMessage(message.vector()));
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
     serialization::Multivector const& message)
   requires serializable<Frame> {
@@ -216,7 +216,7 @@ Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
   return Multivector(R3Element<Scalar>::ReadFromMessage(message.bivector()));
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 3> Multivector<Scalar, Frame, 3>::ReadFromMessage(
     serialization::Multivector const& message)
   requires serializable<Frame> {

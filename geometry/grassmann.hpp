@@ -29,10 +29,10 @@ using namespace principia::quantities::_quantities;
 // ⋀ⁿ Scalar³. Do not use this type for |rank == 0| (scalars), use the |Scalar|
 // type directly instead.
 // |Frame| represents a reference frame together with an orthonormal basis.
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 class Multivector;
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 class Multivector<Scalar, Frame, 1> final {
  public:
   static constexpr int dimension = 3;
@@ -66,11 +66,11 @@ class Multivector<Scalar, Frame, 1> final {
  private:
   R3Element<Scalar> coordinates_;
 
-  template<typename S, typename F, int r>
+  template<quantity S, typename F, int r>
   friend class Multivector;
 };
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 class Multivector<Scalar, Frame, 2> final {
  public:
   static constexpr int dimension = 3;
@@ -103,11 +103,11 @@ class Multivector<Scalar, Frame, 2> final {
  private:
   R3Element<Scalar> coordinates_;
 
-  template<typename S, typename F, int r>
+  template<quantity S, typename F, int r>
   friend class Multivector;
 };
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 class Multivector<Scalar, Frame, 3> final {
  public:
   static constexpr int dimension = 1;
@@ -137,11 +137,11 @@ class Multivector<Scalar, Frame, 3> final {
   Scalar coordinates_;
 };
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 using Vector = Multivector<Scalar, Frame, 1>;
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 using Bivector = Multivector<Scalar, Frame, 2>;
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 using Trivector = Multivector<Scalar, Frame, 3>;
 
 template<typename LScalar, typename RScalar, typename Frame>
