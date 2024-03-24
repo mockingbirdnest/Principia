@@ -52,7 +52,7 @@ class ExplicitRungeKuttaIntegrator
  public:
   using ODE = ODE_;
   static_assert(
-      instance_of<ODE, ExplicitFirstOrderOrdinaryDifferentialEquation>);
+      is_instance_of_v<ExplicitFirstOrderOrdinaryDifferentialEquation, ODE>);
   using typename Integrator<ODE>::AppendState;
 
   static constexpr auto order = Method::order;

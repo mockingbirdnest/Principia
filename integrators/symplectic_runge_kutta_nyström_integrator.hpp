@@ -75,7 +75,7 @@ class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
-  static_assert(instance_of<ODE, SpecialSecondOrderDifferentialEquation>);
+  static_assert(is_instance_of_v<SpecialSecondOrderDifferentialEquation, ODE>);
   using AppendState = typename Integrator<ODE>::AppendState;
 
   static constexpr auto order = Method::order;

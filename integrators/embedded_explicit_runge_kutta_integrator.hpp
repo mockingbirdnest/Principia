@@ -54,7 +54,7 @@ class EmbeddedExplicitRungeKuttaIntegrator
  public:
   using ODE = ODE_;
   static_assert(
-      instance_of<ODE, ExplicitFirstOrderOrdinaryDifferentialEquation>);
+      is_instance_of_v<ExplicitFirstOrderOrdinaryDifferentialEquation, ODE>);
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;

@@ -245,7 +245,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionM
 template<typename Value_, typename Argument_, int degree_>
 void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage(
     not_null<serialization::Polynomial*> message) const {
-  if constexpr (instance_of<Value, R3Element>) {
+  if constexpr (is_instance_of_v<R3Element, Value>) {
     // |R3Element| is a low-level structure, so we don't want polynomials to use
     // it directly: they should go through |Multivector|.  However, it's useful
     // to be able to run benchmarks using them.
