@@ -44,6 +44,10 @@
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE(
+    TEMPLATE(typename Value, typename Argument, int degree_) struct,
+    Evaluator,
+    FROM(polynomial_evaluators));
+FORWARD_DECLARE(
     TEMPLATE(typename Value, typename Argument, int degree_) class,
     PolynomialInMonomialBasis,
     FROM(polynomial_in_monomial_basis));
@@ -70,6 +74,7 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_polynomial;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
@@ -88,8 +93,10 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
+  template<typename Evaluator_>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
+  template<typename Evaluator_>
   explicit constexpr PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
 
@@ -144,6 +151,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  private:
   Coefficients coefficients_;
   Argument origin_;
+  Evaluator<Value_, Argument_, degree_>* evaluator_;
 
   template<typename V, typename A, int r>
   constexpr PolynomialInMonomialBasis<V, A, r>

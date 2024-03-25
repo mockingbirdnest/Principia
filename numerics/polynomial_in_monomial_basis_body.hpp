@@ -323,17 +323,21 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 
 template<typename Value_, typename Argument_, int degree_>
+template<typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients, Argument const& origin)
     : coefficients_(std::move(coefficients)),
-      origin_(origin) {}
+      origin_(origin),
+      evaluator_(Evaluator_::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
+template<typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
-      origin_(Argument{}) {}
+      origin_(Argument{}),
+      evaluator_(Evaluator_::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 template<int higher_degree_>
@@ -366,16 +370,14 @@ operator-=(PolynomialInMonomialBasis const& right) {
 template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 operator()(Argument const& argument) const {
-  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
-      coefficients_, argument - origin_);
+  return evaluator_->Evaluate(coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_>
 Derivative<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 EvaluateDerivative(Argument const& argument) const {
-  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative(
-      coefficients_, argument - origin_);
+  return evaluator_->EvaluateDerivative(coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_>

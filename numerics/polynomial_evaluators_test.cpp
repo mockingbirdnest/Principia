@@ -26,13 +26,14 @@ class PolynomialEvaluatorTest : public ::testing::Test {
            int degree>
   void Test() {
     using E = Evaluator<double, double, degree>;
+    E const e;
     auto const binomial_coefficients =
         MakeBinomialTuple<typename E::Coefficients, degree>(
             std::make_index_sequence<degree + 1>());
     for (int argument = -degree; argument <= degree; ++argument) {
-      EXPECT_EQ(E::Evaluate(binomial_coefficients, argument),
+      EXPECT_EQ(e.Evaluate(binomial_coefficients, argument),
                 std::pow(argument + 1, degree)) << argument << " " << degree;
-      EXPECT_EQ(E::EvaluateDerivative(binomial_coefficients, argument),
+      EXPECT_EQ(e.EvaluateDerivative(binomial_coefficients, argument),
                 degree * std::pow(argument + 1, degree - 1))
           << argument << " " << degree;
     }

@@ -11,9 +11,8 @@ namespace internal {
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 
-
 template<typename Value, typename Argument, int degree>
-struct PolynomialEvaluator;
+struct Evaluator;
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator;
@@ -39,13 +38,13 @@ namespace internal {
 
 //TODO(phl)CRTP?
 template<typename Value, typename Argument, int degree>
-struct PolynomialEvaluator {
+struct Evaluator {
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
 
-  Value Evaluate(Coefficients const& coefficients,
-                 Argument const& argument) const = 0;
-  Derivative<Value, Argument> EvaluateDerivative(
+  virtual Value Evaluate(Coefficients const& coefficients,
+                         Argument const& argument) const = 0;
+  virtual Derivative<Value, Argument> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument) const = 0;
 };
@@ -55,8 +54,10 @@ struct PolynomialEvaluator {
 // want linear code.
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct EstrinEvaluator : public PolynomialEvaluator<Value, Argument, degree> {
-  using PolynomialEvaluator::Coefficients;
+struct EstrinEvaluator : public Evaluator<Value, Argument, degree> {
+  using Evaluator<Value, Argument, degree>::Coefficients;
+
+  static Evaluator<Value, Argument, degree> const* Singleton();
 
   FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument) const override;
@@ -66,14 +67,16 @@ struct EstrinEvaluator : public PolynomialEvaluator<Value, Argument, degree> {
 };
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct HornerEvaluator : public PolynomialEvaluator<Value, Argument, degree> {
-  using PolynomialEvaluator::Coefficients;
+struct HornerEvaluator : public Evaluator<Value, Argument, degree> {
+  using Evaluator<Value, Argument, degree>::Coefficients;
+
+  static Evaluator<Value, Argument, degree> const* Singleton();
 
   FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
-                                      Argument const& argument);
+                                      Argument const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
-                     Argument const& argument);
+                     Argument const& argument) const override;
 };
 
 }  // namespace internal
