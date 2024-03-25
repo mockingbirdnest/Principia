@@ -102,10 +102,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   // A polynomial may be explicitly converted to a higher degree (possibly with
   // a different evaluator).
-  template<int higher_degree_,
-           template<typename, typename, int> class HigherEvaluator>
-  explicit operator PolynomialInMonomialBasis<
-      Value, Argument, higher_degree_, HigherEvaluator>() const;
+  template<int higher_degree_>
+  explicit operator PolynomialInMonomialBasis<Value, Argument, higher_degree_>()
+      const;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
@@ -146,93 +145,78 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Coefficients coefficients_;
   Argument origin_;
 
-  template<typename V, typename A, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, r, E>
-  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& right);
-  template<typename V, typename A, int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
-  friend operator+(PolynomialInMonomialBasis<V, A, l, E> const& left,
-                   PolynomialInMonomialBasis<V, A, r, E> const& right);
-  template<typename V, typename A, int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r), E>
-  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
-                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  template<typename V, typename A, int r>
+  constexpr PolynomialInMonomialBasis<V, A, r>
+  friend operator-(PolynomialInMonomialBasis<V, A, r> const& right);
+  template<typename V, typename A, int l, int r>
+  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r)>
+  friend operator+(PolynomialInMonomialBasis<V, A, l> const& left,
+                   PolynomialInMonomialBasis<V, A, r> const& right);
+  template<typename V, typename A, int l, int r>
+  constexpr PolynomialInMonomialBasis<V, A, PRINCIPIA_MAX(l, r)>
+  friend operator-(PolynomialInMonomialBasis<V, A, l> const& left,
+                   PolynomialInMonomialBasis<V, A, r> const& right);
   template<typename S,
-           typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+           typename V, typename A, int d>
+  constexpr PolynomialInMonomialBasis<Product<S, V>, A, d>
   friend operator*(S const& left,
-                   PolynomialInMonomialBasis<V, A, d, E> const& right);
+                   PolynomialInMonomialBasis<V, A, d> const& right);
   template<typename S,
-           typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Product<V, S>, A, d, E>
-  friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
+           typename V, typename A, int d>
+  constexpr PolynomialInMonomialBasis<Product<V, S>, A, d>
+  friend operator*(PolynomialInMonomialBasis<V, A, d> const& left,
                    S const& right);
   template<typename S,
-           typename V, typename A, int d,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
-  friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
+           typename V, typename A, int d>
+  constexpr PolynomialInMonomialBasis<Quotient<V, S>, A, d>
+  friend operator/(PolynomialInMonomialBasis<V, A, d> const& left,
                    S const& right);
   template<typename L, typename R, typename A,
-           int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r, E>
+           int l, int r>
+  constexpr PolynomialInMonomialBasis<Product<L, R>, A, l + r>
   friend operator*(
-      PolynomialInMonomialBasis<L, A, l, E> const& left,
-      PolynomialInMonomialBasis<R, A, r, E> const& right);
+      PolynomialInMonomialBasis<L, A, l> const& left,
+      PolynomialInMonomialBasis<R, A, r> const& right);
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-  template<typename V, typename A, int l,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, l, E>
+  template<typename V, typename A, int l>
+  constexpr PolynomialInMonomialBasis<V, A, l>
   friend operator+(
-      PolynomialInMonomialBasis<Difference<V>, A, l, E> const& left,
+      PolynomialInMonomialBasis<Difference<V>, A, l> const& left,
       V const& right);
 #endif
-  template<typename V, typename A, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, r, E>
+  template<typename V, typename A, int r>
+  constexpr PolynomialInMonomialBasis<V, A, r>
   friend operator+(
       V const& left,
-      PolynomialInMonomialBasis<Difference<V>, A, r, E> const& right);
-  template<typename V, typename A, int l,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Difference<V>, A, l, E>
-  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
+      PolynomialInMonomialBasis<Difference<V>, A, r> const& right);
+  template<typename V, typename A, int l>
+  constexpr PolynomialInMonomialBasis<Difference<V>, A, l>
+  friend operator-(PolynomialInMonomialBasis<V, A, l> const& left,
                    V const& right);
-  template<typename V, typename A, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Difference<V>, A, r, E>
+  template<typename V, typename A, int r>
+  constexpr PolynomialInMonomialBasis<Difference<V>, A, r>
   friend operator-(V const& left,
-                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+                   PolynomialInMonomialBasis<V, A, r> const& right);
   template<typename L, typename R, typename A,
-           int l, int r,
-           template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<L, A, l * r, E>
-  friend Compose(PolynomialInMonomialBasis<L, R, l, E> const& left,
-                 PolynomialInMonomialBasis<R, A, r, E> const& right);
+           int l, int r>
+  constexpr PolynomialInMonomialBasis<L, A, l * r>
+  friend Compose(PolynomialInMonomialBasis<L, R, l> const& left,
+                 PolynomialInMonomialBasis<R, A, r> const& right);
   template<typename L, typename R, typename A,
-           int l, int r,
-           template<typename, typename, int> typename E>
+           int l, int r>
   constexpr PolynomialInMonomialBasis<
-      typename Hilbert<L, R>::InnerProductType, A, l + r, E>
+      typename Hilbert<L, R>::InnerProductType, A, l + r>
   friend PointwiseInnerProduct(
-      PolynomialInMonomialBasis<L, A, l, E> const& left,
-      PolynomialInMonomialBasis<R, A, r, E> const& right);
-  template<typename V, typename A, int d,
-           template<typename, typename, int> typename E>
+      PolynomialInMonomialBasis<L, A, l> const& left,
+      PolynomialInMonomialBasis<R, A, r> const& right);
+  template<typename V, typename A, int d>
   friend std::ostream& operator<<(
       std::ostream& out,
-      PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
+      PolynomialInMonomialBasis<V, A, d> const& polynomial);
   template<typename V, typename A, int d,
-           template<typename, typename, int> class E,
            typename O>
   friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
-      PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+      PolynomialInMonomialBasis<V, A, d> const& polynomial,
       O express_in);
 };
 

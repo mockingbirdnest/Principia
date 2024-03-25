@@ -11,6 +11,10 @@ namespace internal {
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 
+
+template<typename Value, typename Argument, int degree>
+struct PolynomialEvaluator;
+
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator;
 template<typename Value, typename Argument, int degree, bool allow_fma>
@@ -33,39 +37,41 @@ using HornerEvaluatorWithoutFMA = internal::
 
 namespace internal {
 
+//TODO(phl)CRTP?
+template<typename Value, typename Argument, int degree>
+struct PolynomialEvaluator {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+
+  Value Evaluate(Coefficients const& coefficients,
+                 Argument const& argument) const = 0;
+  Derivative<Value, Argument> EvaluateDerivative(
+      Coefficients const& coefficients,
+      Argument const& argument) const = 0;
+};
+
+
 // We use FORCE_INLINE because we have to write this recursively, but we really
 // want linear code.
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct EstrinEvaluator {
-  // The fully qualified name below designates the template, not the current
-  // instance.
-  using Coefficients = typename PolynomialInMonomialBasis<
-      Value,
-      Argument,
-      degree,
-      _polynomial_evaluators::EstrinEvaluator>::Coefficients;
+struct EstrinEvaluator : public PolynomialEvaluator<Value, Argument, degree> {
+  using PolynomialEvaluator::Coefficients;
 
-  FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
-                                      Argument const& argument);
-  FORCE_INLINE(static) Derivative<Value, Argument>
+  FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
+                                      Argument const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
-                     Argument const& argument);
+                     Argument const& argument) const override;
 };
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct HornerEvaluator {
-  // The fully qualified name below designates the template, not the current
-  // instance.
-  using Coefficients = typename PolynomialInMonomialBasis<
-      Value,
-      Argument,
-      degree,
-      _polynomial_evaluators::HornerEvaluator>::Coefficients;
+struct HornerEvaluator : public PolynomialEvaluator<Value, Argument, degree> {
+  using PolynomialEvaluator::Coefficients;
 
-  FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
+  FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
                                       Argument const& argument);
-  FORCE_INLINE(static) Derivative<Value, Argument>
+  FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };

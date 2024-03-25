@@ -238,7 +238,7 @@ template<typename Value, typename Argument, int degree, bool allow_fma>
 FORCE_INLINE(inline) Value
 EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
     Coefficients const& coefficients,
-    Argument const& argument) {
+    Argument const& argument) const {
   if (allow_fma && UseHardwareFMA) {
     using InternalEvaluator = InternalEstrinEvaluator<Value,
                                                       Argument,
@@ -268,7 +268,7 @@ template<typename Value, typename Argument, int degree, bool allow_fma>
 FORCE_INLINE(inline) Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Coefficients const& coefficients,
-    Argument const& argument) {
+    Argument const& argument) const {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
   } else if (allow_fma && UseHardwareFMA) {
