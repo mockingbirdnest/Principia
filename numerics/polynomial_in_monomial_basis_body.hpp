@@ -323,21 +323,24 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 
 template<typename Value_, typename Argument_, int degree_>
-template<typename Evaluator_>
+template<template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
-PolynomialInMonomialBasis(Coefficients coefficients, Argument const& origin)
+PolynomialInMonomialBasis(Coefficients coefficients,
+                          Argument const& origin,
+                          with_evaluator_t<Evaluator_>)
     : coefficients_(std::move(coefficients)),
       origin_(origin),
-      evaluator_(Evaluator_::Singleton()) {}
+      evaluator_(Evaluator_<Value, Argument, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
-template<typename Evaluator_>
+template<template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
-PolynomialInMonomialBasis(Coefficients coefficients)
+PolynomialInMonomialBasis(Coefficients coefficients,
+                          with_evaluator_t<Evaluator_>)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
       origin_(Argument{}),
-      evaluator_(Evaluator_::Singleton()) {}
+      evaluator_(Evaluator_<Value, Argument, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 template<int higher_degree_>

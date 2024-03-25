@@ -48,14 +48,10 @@ class PolynomialInMonomialBasisTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2,
-                                        HornerEvaluator>;
-  using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2,
-                                        HornerEvaluator>;
-  using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2,
-                                        HornerEvaluator>;
-  using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17,
-                                        EstrinEvaluator>;
+  using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2>;
+  using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
+  using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2>;
+  using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17>;
 
   PolynomialInMonomialBasisTest()
       : coefficients_({
@@ -103,7 +99,7 @@ TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
 
 // Check that a polynomial can be constructed and evaluated.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate2V) {
-  P2V const p(coefficients_);
+  P2V const p(coefficients_, with_evaluator<HornerEvaluator>);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);

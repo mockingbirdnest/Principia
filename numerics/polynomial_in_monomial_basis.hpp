@@ -79,6 +79,12 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
 
+template<template<typename, typename, int> typename Evaluator_>
+struct with_evaluator_t {};
+
+template<template<typename, typename, int> typename Evaluator_>
+static constexpr with_evaluator_t<Evaluator_> with_evaluator;
+
 template<typename Value_, typename Argument_, int degree_>
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  public:
@@ -93,11 +99,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
-  template<typename Evaluator_>
+
+  template<template<typename, typename, int> typename Evaluator_>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
-                                      Argument const& origin);
-  template<typename Evaluator_>
-  explicit constexpr PolynomialInMonomialBasis(Coefficients coefficients)
+                                      Argument const& origin,
+                                      with_evaluator_t<Evaluator_>);
+
+  template<template<typename, typename, int> typename Evaluator_>
+  constexpr PolynomialInMonomialBasis(Coefficients coefficients,
+                                      with_evaluator_t<Evaluator_>)
     requires additive_group<Argument>;
 
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
@@ -332,6 +342,7 @@ std::ostream& operator<<(
 }  // namespace internal
 
 using internal::PolynomialInMonomialBasis;
+using internal::with_evaluator;
 
 }  // namespace _polynomial_in_monomial_basis
 }  // namespace numerics
