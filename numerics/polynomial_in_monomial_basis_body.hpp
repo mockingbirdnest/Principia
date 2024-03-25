@@ -340,8 +340,7 @@ template<int higher_degree_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_>() const {
   static_assert(degree_ <= higher_degree_);
-  using Result = PolynomialInMonomialBasis<
-                     Value, Argument, higher_degree_, HigherEvaluator>;
+  using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_>;
   typename Result::Coefficients higher_coefficients;
   TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
       higher_coefficients, coefficients_);

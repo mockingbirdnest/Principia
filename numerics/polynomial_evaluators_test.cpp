@@ -22,7 +22,7 @@ class PolynomialEvaluatorTest : public ::testing::Test {
   // This test builds the binomial polynomial (1 + x)^degree and evaluates it
   // using the |Evaluator| and directly using |std::pow|.
   template<template<typename Value, typename Argument, int degree>
-           class Evaluator,
+           typename Evaluator,
            int degree>
   void Test() {
     using E = Evaluator<double, double, degree>;
