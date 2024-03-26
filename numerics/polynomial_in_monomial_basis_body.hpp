@@ -508,12 +508,24 @@ ReadFromMessage(serialization::Polynomial const& message) {
 }
 
 template<typename Value_, typename Argument_, int degree_>
+template<template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
+    serialization::Polynomial const& message,
+    with_evaluator_t<Evaluator_> evaluator_tag) {
+  auto const polynomial_without_evaluator = ReadFromMessage(message);
+  return PolynomialInMonomialBasis(polynomial_without_evaluator.coefficients_,
+                                   polynomial_without_evaluator.origin_,
+                                   evaluator_tag);
+}
+
+template<typename Value_, typename Argument_, int degree_>
 constexpr Evaluator<Value_, Argument_, degree_> const*
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::DefaultEvaluator() {
   if constexpr (degree_ <= 3) {
-    return HornerEvaluator::Singleton();
+    return Horner::Singleton();
   } else {
-    return EstrinEvaluator::Singleton();
+    return Estrin::Singleton();
   }
 }
 

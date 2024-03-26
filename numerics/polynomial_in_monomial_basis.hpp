@@ -151,6 +151,10 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       not_null<serialization::Polynomial*> message) const override;
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
+  template<template<typename, typename, int> typename Evaluator_>
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message,
+      with_evaluator_t<Evaluator_>);
 
  private:
   static constexpr Evaluator<Value_, Argument_, degree_> const*
