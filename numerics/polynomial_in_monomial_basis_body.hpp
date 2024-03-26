@@ -338,7 +338,8 @@ PolynomialInMonomialBasis(Coefficients coefficients,
                           with_evaluator_t<Evaluator_>)
     : coefficients_(std::move(coefficients)),
       origin_(origin),
-      evaluator_(Evaluator_<Value, Argument, degree_>::Singleton()) {}
+      evaluator_(
+          Evaluator_<Value, Difference<Argument>, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
@@ -356,7 +357,8 @@ PolynomialInMonomialBasis(Coefficients coefficients,
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
       origin_(Argument{}),
-      evaluator_(Evaluator_<Value, Argument, degree_>::Singleton()) {}
+      evaluator_(
+          Evaluator_<Value, Difference<Argument>, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 template<int higher_degree_>
@@ -520,12 +522,12 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
 }
 
 template<typename Value_, typename Argument_, int degree_>
-constexpr Evaluator<Value_, Argument_, degree_> const*
+constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::DefaultEvaluator() {
   if constexpr (degree_ <= 3) {
-    return Horner::Singleton();
+    return Horner<Value_, Difference<Argument_>, degree_>::Singleton();
   } else {
-    return Estrin::Singleton();
+    return Estrin<Value_, Difference<Argument_>, degree_>::Singleton();
   }
 }
 

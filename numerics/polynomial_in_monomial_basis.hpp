@@ -157,12 +157,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       with_evaluator_t<Evaluator_>);
 
  private:
-  static constexpr Evaluator<Value_, Argument_, degree_> const*
+  static constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
   DefaultEvaluator();
 
   Coefficients coefficients_;
   Argument origin_;
-  Evaluator<Value_, Argument_, degree_> const* evaluator_;
+  Evaluator<Value_, Difference<Argument_>, degree_> const* evaluator_;
 
   template<typename V, typename A, int r>
   constexpr PolynomialInMonomialBasis<V, A, r>

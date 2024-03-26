@@ -1,5 +1,6 @@
 #pragma once
 
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 
@@ -8,6 +9,7 @@ namespace numerics {
 namespace _polynomial_evaluators {
 namespace internal {
 
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
 
@@ -18,6 +20,7 @@ template<template<typename, typename, int> typename Evaluator_>
 static constexpr with_evaluator_t<Evaluator_> with_evaluator;
 
 template<typename Value, typename Argument, int degree>
+  requires additive_group<Argument>
 struct Evaluator {
   // This definition is replicated from |PolynomialInMonomialBasis| to avoid
   // circular dependencies.
