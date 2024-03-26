@@ -13,6 +13,7 @@ namespace _barycentre_calculator {
 namespace internal {
 
 template<typename Vector, typename Scalar>
+  requires homogeneous_vector_space<Vector, Scalar>
 void BarycentreCalculator<Vector, Scalar>::Add(Vector const& vector,
                                                Scalar const& weight) {
   if (empty_) {
@@ -26,12 +27,14 @@ void BarycentreCalculator<Vector, Scalar>::Add(Vector const& vector,
 }
 
 template<typename Vector, typename Scalar>
+  requires homogeneous_vector_space<Vector, Scalar>
 Vector BarycentreCalculator<Vector, Scalar>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
   return Vector(weighted_sum_ / weight_);
 }
 
 template<typename Vector, typename Scalar>
+  requires homogeneous_vector_space<Vector, Scalar>
 Scalar const& BarycentreCalculator<Vector, Scalar>::weight() const {
   return weight_;
 }

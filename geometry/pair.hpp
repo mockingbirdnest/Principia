@@ -81,6 +81,9 @@ using enable_if_vector_t = typename enable_if_vector<T, U>::type;
 template<typename T1, typename T2>
 class Pair {
  public:
+  Pair()
+    requires std::default_initializable<T1> && std::default_initializable<T2> =
+      default;
   Pair(T1 const& t1, T2 const& t2);
   virtual ~Pair() = default;
 
@@ -113,7 +116,8 @@ class Pair {
   friend class Pair;
 
   // This is needed to specialize BarycentreCalculator.
-  template<typename V, typename S>
+  template<affine P, homogeneous_field S>
+    requires homogeneous_vector_space<Difference<P>, S>
   friend class _barycentre_calculator::BarycentreCalculator;
 
   // This is needed to make Pair mappable.

@@ -89,7 +89,8 @@ class Point final {
   template<typename V>
   friend std::string DebugString(Point<V> const& point);
 
-  template<typename V, typename S>
+  template<affine P, homogeneous_field S>
+    requires homogeneous_vector_space<Difference<P>, S>
   friend class _barycentre_calculator::BarycentreCalculator;
 };
 

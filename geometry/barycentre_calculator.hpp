@@ -3,6 +3,7 @@
 #include <vector>
 #include <utility>
 
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -10,11 +11,18 @@ namespace geometry {
 namespace _barycentre_calculator {
 namespace internal {
 
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
+
+
+template<affine Point, homogeneous_field Scalar>
+  requires homogeneous_vector_space<Difference<Point>, Scalar>
+class BarycentreCalculator;
 
 // |Vector| must be a vector space over the field |Scalar|.
 template<typename Vector, typename Scalar>
-class BarycentreCalculator final {
+  requires homogeneous_vector_space<Vector, Scalar>
+class BarycentreCalculator<Vector, Scalar> final {
  public:
   BarycentreCalculator() = default;
 
