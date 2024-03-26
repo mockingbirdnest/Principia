@@ -41,37 +41,37 @@ class PolynomialEvaluatorTest : public ::testing::Test {
 };
 
 TEST_F(PolynomialEvaluatorTest, Estrin) {
-  Test<EstrinEvaluator, 1>();
-  Test<EstrinEvaluator, 2>();
-  Test<EstrinEvaluator, 3>();
-  Test<EstrinEvaluator, 4>();
-  Test<EstrinEvaluator, 5>();
-  Test<EstrinEvaluator, 6>();
-  Test<EstrinEvaluator, 7>();
-  Test<EstrinEvaluator, 8>();
-  Test<EstrinEvaluator, 9>();
-  Test<EstrinEvaluator, 10>();
-  Test<EstrinEvaluator, 11>();
-  Test<EstrinEvaluator, 12>();
-  Test<EstrinEvaluator, 13>();
-  Test<EstrinEvaluator, 14>();
+  Test<Estrin, 1>();
+  Test<Estrin, 2>();
+  Test<Estrin, 3>();
+  Test<Estrin, 4>();
+  Test<Estrin, 5>();
+  Test<Estrin, 6>();
+  Test<Estrin, 7>();
+  Test<Estrin, 8>();
+  Test<Estrin, 9>();
+  Test<Estrin, 10>();
+  Test<Estrin, 11>();
+  Test<Estrin, 12>();
+  Test<Estrin, 13>();
+  Test<Estrin, 14>();
 }
 
 TEST_F(PolynomialEvaluatorTest, Horner) {
-  Test<HornerEvaluator, 1>();
-  Test<HornerEvaluator, 2>();
-  Test<HornerEvaluator, 3>();
-  Test<HornerEvaluator, 4>();
-  Test<HornerEvaluator, 5>();
-  Test<HornerEvaluator, 6>();
-  Test<HornerEvaluator, 7>();
-  Test<HornerEvaluator, 8>();
-  Test<HornerEvaluator, 9>();
-  Test<HornerEvaluator, 10>();
-  Test<HornerEvaluator, 11>();
-  Test<HornerEvaluator, 12>();
-  Test<HornerEvaluator, 13>();
-  Test<HornerEvaluator, 14>();
+  Test<Horner, 1>();
+  Test<Horner, 2>();
+  Test<Horner, 3>();
+  Test<Horner, 4>();
+  Test<Horner, 5>();
+  Test<Horner, 6>();
+  Test<Horner, 7>();
+  Test<Horner, 8>();
+  Test<Horner, 9>();
+  Test<Horner, 10>();
+  Test<Horner, 11>();
+  Test<Horner, 12>();
+  Test<Horner, 13>();
+  Test<Horner, 14>();
 }
 
 }  // namespace numerics

@@ -231,77 +231,6 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
   return low * std::get<low>(coefficients);
 }
 
-template<typename Value, typename Argument, int degree, bool allow_fma>
-Evaluator<Value, Argument, degree> const*
-EstrinEvaluator<Value, Argument, degree, allow_fma>::Singleton() {
-  static constexpr EstrinEvaluator singleton;
-  return &singleton;
-}
-
-template<typename Value, typename Argument, int degree, bool allow_fma>
-FORCE_INLINE(inline) Value
-EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) const {
-  if (allow_fma && UseHardwareFMA) {
-    using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                      Argument,
-                                                      degree,
-                                                      /*fma=*/true,
-                                                      /*low=*/0,
-                                                      /*subdegree=*/degree>;
-    return InternalEvaluator::Evaluate(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
-  } else {
-    using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                      Argument,
-                                                      degree,
-                                                      /*fma=*/false,
-                                                      /*low=*/0,
-                                                      /*subdegree=*/degree>;
-    return InternalEvaluator::Evaluate(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
-  }
-}
-
-template<typename Value, typename Argument, int degree, bool allow_fma>
-FORCE_INLINE(inline) Derivative<Value, Argument>
-EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument) const {
-  if constexpr (degree == 0) {
-    return Derivative<Value, Argument>{};
-  } else if (allow_fma && UseHardwareFMA) {
-    using InternalEvaluator =
-        InternalEstrinEvaluator<Value,
-                                Argument,
-                                degree,
-                                true,
-                                /*low=*/1,
-                                /*subdegree=*/degree - 1>;
-    return InternalEvaluator::EvaluateDerivative(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
-  } else {
-    using InternalEvaluator =
-        InternalEstrinEvaluator<Value,
-                                Argument,
-                                degree,
-                                false,
-                                /*low=*/1,
-                                /*subdegree=*/degree - 1>;
-    return InternalEvaluator::EvaluateDerivative(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
-  }
-}
-
 // Internal helper for Horner evaluation.  |degree| is the degree of the overall
 // polynomial, |low| defines the subpolynomial that we currently evaluate, i.e.,
 // the one with a constant term coefficient |std::get<low>(coefficients)|.
@@ -382,6 +311,108 @@ InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
                         Argument const& argument) {
   return std::get<degree>(coefficients) * degree;
 }
+
+
+template<typename Value, typename Argument, int degree, bool allow_fma>
+struct EstrinEvaluator : public Evaluator<Value, Argument, degree> {
+  using typename Evaluator<Value, Argument, degree>::Coefficients;
+
+  static Evaluator<Value, Argument, degree> const* Singleton();
+
+  // We use FORCE_INLINE because we have to write this recursively, but we
+  // really want linear code.
+  FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
+                                      Argument const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Argument>
+  EvaluateDerivative(Coefficients const& coefficients,
+                     Argument const& argument) const override;
+};
+
+template<typename Value, typename Argument, int degree, bool allow_fma>
+Evaluator<Value, Argument, degree> const*
+EstrinEvaluator<Value, Argument, degree, allow_fma>::Singleton() {
+  static constexpr EstrinEvaluator singleton;
+  return &singleton;
+}
+
+template<typename Value, typename Argument, int degree, bool allow_fma>
+FORCE_INLINE(inline) Value
+EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
+    Coefficients const& coefficients,
+    Argument const& argument) const {
+  if (allow_fma && UseHardwareFMA) {
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      degree,
+                                                      /*fma=*/true,
+                                                      /*low=*/0,
+                                                      /*subdegree=*/degree>;
+    return InternalEvaluator::Evaluate(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  } else {
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      degree,
+                                                      /*fma=*/false,
+                                                      /*low=*/0,
+                                                      /*subdegree=*/degree>;
+    return InternalEvaluator::Evaluate(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  }
+}
+
+template<typename Value, typename Argument, int degree, bool allow_fma>
+FORCE_INLINE(inline) Derivative<Value, Argument>
+EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
+    Coefficients const& coefficients,
+    Argument const& argument) const {
+  if constexpr (degree == 0) {
+    return Derivative<Value, Argument>{};
+  } else if (allow_fma && UseHardwareFMA) {
+    using InternalEvaluator =
+        InternalEstrinEvaluator<Value,
+                                Argument,
+                                degree,
+                                true,
+                                /*low=*/1,
+                                /*subdegree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  } else {
+    using InternalEvaluator =
+        InternalEstrinEvaluator<Value,
+                                Argument,
+                                degree,
+                                false,
+                                /*low=*/1,
+                                /*subdegree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  }
+}
+
+template<typename Value, typename Argument, int degree, bool allow_fma>
+struct HornerEvaluator : public Evaluator<Value, Argument, degree> {
+  using typename Evaluator<Value, Argument, degree>::Coefficients;
+
+  static Evaluator<Value, Argument, degree> const* Singleton();
+
+  // We use FORCE_INLINE because we have to write this recursively, but we
+  // really want linear code.
+  FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
+                                      Argument const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Argument>
+  EvaluateDerivative(Coefficients const& coefficients,
+                     Argument const& argument) const override;
+};
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
 Evaluator<Value, Argument, degree> const*
