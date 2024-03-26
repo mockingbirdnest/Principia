@@ -83,13 +83,12 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
 };
 
 template<typename V, typename A, int d,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn>
 std::string ToMathematicaBody(
-    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    PolynomialInMonomialBasis<V, A, d> const& polynomial,
     OptionalExpressIn express_in) {
   using Coefficients =
-      typename PolynomialInMonomialBasis<V, A, d, E>::Coefficients;
+      typename PolynomialInMonomialBasis<V, A, d>::Coefficients;
   std::vector<std::string> coefficients;
   coefficients.reserve(std::tuple_size_v<Coefficients>);
   TupleHelper<std::tuple_size_v<Coefficients>,
@@ -537,10 +536,9 @@ std::string ToMathematica(DiscreteTrajectoryValueType<F> const& v,
 }
 
 template<typename V, typename A, int d,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn>
 std::string ToMathematica(
-    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    PolynomialInMonomialBasis<V, A, d> const& polynomial,
     OptionalExpressIn express_in) {
   return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
 }

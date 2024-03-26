@@ -42,13 +42,11 @@ constexpr int clenshaw_curtis_points_per_period = 4;
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 // This function computes ∫ₜ₁ᵗ²(p(t) sin ω t + q(t) cos ω t) dt.
-template<typename Value,
-         int degree,
-         template<typename, typename, int> class Evaluator>
+template<typename Value, int degree>
 Primitive<Value, Time> AngularFrequencyIntegrate(
     AngularFrequency const& ω,
-    PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& p,
-    PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> const& q,
+    PolynomialInMonomialBasis<Value, Instant, degree> const& p,
+    PolynomialInMonomialBasis<Value, Instant, degree> const& q,
     Instant const& t1,
     Instant const& t2,
     double const sin_ωt1,
