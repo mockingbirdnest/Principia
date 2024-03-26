@@ -22,11 +22,12 @@ using namespace principia::base::_not_null;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
-// Point<Vector> is an affine space on the vector space Vector. Vector should
-// be equipped with operators +, -, +=, -=, ==, !=, as well as Vector * Weight
-// and Vector / Weight for any Weight used in Barycentre.
+// Point<Vector> is an affine space on the vector space Vector.
 template<typename Vector>
 class Point final {
+  // This cannot be a constraint, as it would lead to recursive instantation of
+  // Position, which is used in Frame.
+  static_assert(additive_group<Vector>);
  public:
   constexpr Point();
 
