@@ -175,8 +175,9 @@ class EllipticNomeQMaclaurin {
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
-      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
+  static inline PolynomialInMonomialBasis<double, double, n> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series,
+                 with_evaluator<Evaluator>};
 };
 
 // A generator for the Maclaurin series for Fukushima's elliptic Fs integral.
@@ -272,7 +273,7 @@ class FukushimaEllipticDsBsMaclaurin {
     return PolynomialInMonomialBasis<double, double, n - 1>(
         Generator<Tuple, std::make_index_sequence<n>>::ComputeDsCoefficients(
             std::make_tuple(args...)),
-        with_evaluator<Evaluator);
+        with_evaluator<Evaluator>);
   }
 };
 
@@ -577,8 +578,8 @@ class FukushimaTMaclaurin {
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
-      polynomial{Generator<std::make_index_sequence<n + 1>>::series
+  static inline PolynomialInMonomialBasis<double, double, n> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series,
                  with_evaluator<Evaluator>};
 };
 
@@ -1253,8 +1254,7 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
 
 template<int degree>
 double EllipticNomeQ(double const mc) {
-  return mc *
-         EllipticNomeQMaclaurin<degree - 1, EstrinEvaluator>::polynomial(mc);
+  return mc * EllipticNomeQMaclaurin<degree - 1, Estrin>::polynomial(mc);
 }
 
 void FukushimaEllipticBD(double const mc, Angle& B_m, Angle& D_m) {
