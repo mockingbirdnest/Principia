@@ -229,6 +229,15 @@ FixedMatrix<Scalar_, rows_, columns_>::operator/=(double const right) {
 }
 
 template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>&
+FixedMatrix<Scalar_, rows_, columns_>::operator*=(
+    FixedMatrix<double, rows(), columns()> const& right)
+  requires(rows() == columns()) {
+  // TODO(egg): We don’t need to copy the whole matrix.
+  return *this = *this * right;
+}
+
+template<typename Scalar_, int rows_, int columns_>
 template<int r>
 Scalar_ const* FixedMatrix<Scalar_, rows_, columns_>::row() const {
   static_assert(r < rows_);
@@ -457,6 +466,18 @@ constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
     result(i, i) = Pow<2>(vector[i]);
   }
   return result;
+}
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size> operator+(
+    FixedVector<Scalar, size> const& right) {
+  return right;
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns> operator+(
+    FixedMatrix<Scalar, rows, columns> const& right) {
+  return right;
 }
 
 template<typename Scalar, int size>
