@@ -231,7 +231,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(elements, PreserveUnits));
   }
   {
-    PolynomialInMonomialBasis<Length, Time, 2, HornerEvaluator> polynomial1(
+    PolynomialInMonomialBasis<Length, Time, 2> polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
     EXPECT_EQ(
         absl::StrReplaceAll(
@@ -240,7 +240,7 @@ TEST_F(MathematicaTest, ToMathematica) {
              {"β", ToMathematica(-3 * Metre / Second, PreserveUnits)},
              {"γ", ToMathematica(4 * Metre / Second / Second, PreserveUnits)}}),
         ToMathematica(polynomial1, PreserveUnits));
-    PolynomialInMonomialBasis<Length, Instant, 2, HornerEvaluator> polynomial2(
+    PolynomialInMonomialBasis<Length, Instant, 2> polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
     EXPECT_EQ(
@@ -275,7 +275,7 @@ TEST_F(MathematicaTest, ToMathematica) {
               ToMathematica(series, PreserveUnits));
   }
   {
-    using Series = PoissonSeries<double, 0, 0, HornerEvaluator>;
+    using Series = PoissonSeries<double, 0, 0, Horner>;
     Instant const t0 = Instant() + 3 * Second;
     Series::AperiodicPolynomial secular({1.5}, t0);
     Series::PeriodicPolynomial sin({0.5}, t0);
@@ -297,8 +297,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(series, PreserveUnits));
   }
   {
-    using PiecewiseSeries =
-        PiecewisePoissonSeries<double, 0, 0, HornerEvaluator>;
+    using PiecewiseSeries = PiecewisePoissonSeries<double, 0, 0, Horner>;
     using Series = PiecewiseSeries::Series;
     Instant const t0 = Instant() + 3 * Second;
     Series series(Series::AperiodicPolynomial({1.5}, t0),

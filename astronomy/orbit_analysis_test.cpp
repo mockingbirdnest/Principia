@@ -227,7 +227,7 @@ class OrbitAnalysisTest : public ::testing::Test {
     // general assembly (1976), commission 4, recommendation 5, note 2, and 21st
     // general assembly (1991), resolution A4, recommendation IV, note 4.  We
     // can therefore work with this formula in TT.
-    PolynomialInMonomialBasis<Angle, Instant, 2, EstrinEvaluator> const
+    PolynomialInMonomialBasis<Angle, Instant, 2> const
         newcomb_mean_longitude(
             {279 * Degree + 41 * ArcMinute + 48.04 * ArcSecond,
              129'602'768.13 * ArcSecond / (100 * JulianYear),
