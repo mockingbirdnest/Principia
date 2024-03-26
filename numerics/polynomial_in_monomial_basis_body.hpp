@@ -323,7 +323,6 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 
 template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
                           Argument const& origin)
@@ -342,7 +341,6 @@ PolynomialInMonomialBasis(Coefficients coefficients,
       evaluator_(Evaluator_<Value, Argument, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients)
   requires additive_group<Argument>
@@ -507,6 +505,16 @@ ReadFromMessage(serialization::Polynomial const& message) {
                                 serialization::PolynomialInMonomialBasis>::
                                 ReadFromMessage(extension);
   return PolynomialInMonomialBasis(coefficients, origin);
+}
+
+template<typename Value_, typename Argument_, int degree_>
+constexpr Evaluator<Value_, Argument_, degree_> const*
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::DefaultEvaluator() {
+  if constexpr (degree_ <= 3) {
+    return HornerEvaluator::Singleton();
+  } else {
+    return EstrinEvaluator::Singleton();
+  }
 }
 
 template<typename Value, typename Argument, int rdegree_>

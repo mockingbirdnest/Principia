@@ -91,7 +91,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
 
-  template<template<typename, typename, int> typename Evaluator_>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
   template<template<typename, typename, int> typename Evaluator_>
@@ -99,7 +98,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                                       Argument const& origin,
                                       with_evaluator_t<Evaluator_>);
 
-  template<template<typename, typename, int> typename Evaluator_>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
   template<template<typename, typename, int> typename Evaluator_>
@@ -155,6 +153,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       serialization::Polynomial const& message);
 
  private:
+  static constexpr Evaluator<Value_, Argument_, degree_> const*
+  DefaultEvaluator();
+
   Coefficients coefficients_;
   Argument origin_;
   Evaluator<Value_, Argument_, degree_> const* evaluator_;

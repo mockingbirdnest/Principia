@@ -19,13 +19,9 @@ struct EstrinEvaluator;
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct HornerEvaluator;
 
-template<template<typename, typename, int> typename Evaluator_>
-struct with_evaluator_t {};
-
-template<template<typename, typename, int> typename Evaluator_>
-static constexpr with_evaluator_t<Evaluator_> with_evaluator;
-
 }  // namespace internal
+
+using internal::Evaluator;
 
 template<typename Value, typename Argument, int degree>
 using EstrinEvaluator = internal::
@@ -39,6 +35,12 @@ using HornerEvaluator = internal::
 template<typename Value, typename Argument, int degree>
 using HornerEvaluatorWithoutFMA = internal::
     HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+
+template<template<typename, typename, int> typename Evaluator_>
+struct with_evaluator_t {};
+
+template<template<typename, typename, int> typename Evaluator_>
+static constexpr with_evaluator_t<Evaluator_> with_evaluator;
 
 namespace internal {
 
