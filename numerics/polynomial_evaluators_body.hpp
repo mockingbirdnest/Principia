@@ -234,8 +234,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 template<typename Value, typename Argument, int degree, bool allow_fma>
 Evaluator<Value, Argument, degree> const*
 EstrinEvaluator<Value, Argument, degree, allow_fma>::Singleton() {
-  static Evaluator const* const singleton = new EstrinEvaluator;
-  return singleton;
+  static constexpr EstrinEvaluator singleton;
+  return &singleton;
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
@@ -386,8 +386,8 @@ InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 template<typename Value, typename Argument, int degree, bool allow_fma>
 Evaluator<Value, Argument, degree> const*
 HornerEvaluator<Value, Argument, degree, allow_fma>::Singleton() {
-  static Evaluator const* const singleton = new HornerEvaluator;
-  return singleton;
+  static constexpr HornerEvaluator singleton;
+  return &singleton;
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>

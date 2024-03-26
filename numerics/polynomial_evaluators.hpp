@@ -36,7 +36,6 @@ using HornerEvaluatorWithoutFMA = internal::
 
 namespace internal {
 
-//TODO(phl)CRTP?
 template<typename Value, typename Argument, int degree>
 struct Evaluator {
   using Coefficients =
@@ -55,7 +54,7 @@ struct Evaluator {
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator : public Evaluator<Value, Argument, degree> {
-  using Evaluator<Value, Argument, degree>::Coefficients;
+  using typename Evaluator<Value, Argument, degree>::Coefficients;
 
   static Evaluator<Value, Argument, degree> const* Singleton();
 
@@ -68,7 +67,7 @@ struct EstrinEvaluator : public Evaluator<Value, Argument, degree> {
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct HornerEvaluator : public Evaluator<Value, Argument, degree> {
-  using Evaluator<Value, Argument, degree>::Coefficients;
+  using typename Evaluator<Value, Argument, degree>::Coefficients;
 
   static Evaluator<Value, Argument, degree> const* Singleton();
 

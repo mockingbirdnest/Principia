@@ -102,9 +102,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   template<template<typename, typename, int> typename Evaluator_>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
+                                      Argument const& origin);
+  template<template<typename, typename, int> typename Evaluator_>
+  constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin,
                                       with_evaluator_t<Evaluator_>);
 
+  template<template<typename, typename, int> typename Evaluator_>
+  constexpr PolynomialInMonomialBasis(Coefficients coefficients)
+    requires additive_group<Argument>;
   template<template<typename, typename, int> typename Evaluator_>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       with_evaluator_t<Evaluator_>)
@@ -117,8 +123,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                                    PolynomialInMonomialBasis const& right) =
       default;
 
-  // A polynomial may be explicitly converted to a higher degree (possibly with
-  // a different evaluator).
+  // A polynomial may be explicitly converted to a higher degree.
   template<int higher_degree_>
   explicit operator PolynomialInMonomialBasis<Value, Argument, higher_degree_>()
       const;
@@ -161,7 +166,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  private:
   Coefficients coefficients_;
   Argument origin_;
-  Evaluator<Value_, Argument_, degree_>* evaluator_;
+  Evaluator<Value_, Argument_, degree_> const* evaluator_;
 
   template<typename V, typename A, int r>
   constexpr PolynomialInMonomialBasis<V, A, r>

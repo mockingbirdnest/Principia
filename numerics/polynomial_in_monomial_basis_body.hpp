@@ -326,11 +326,29 @@ template<typename Value_, typename Argument_, int degree_>
 template<template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
+                          Argument const& origin)
+    : coefficients_(std::move(coefficients)),
+      origin_(origin),
+      evaluator_(DefaultEvaluator()) {}
+
+template<typename Value_, typename Argument_, int degree_>
+template<template<typename, typename, int> typename Evaluator_>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+PolynomialInMonomialBasis(Coefficients coefficients,
                           Argument const& origin,
                           with_evaluator_t<Evaluator_>)
     : coefficients_(std::move(coefficients)),
       origin_(origin),
       evaluator_(Evaluator_<Value, Argument, degree_>::Singleton()) {}
+
+template<typename Value_, typename Argument_, int degree_>
+template<template<typename, typename, int> typename Evaluator_>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+PolynomialInMonomialBasis(Coefficients coefficients)
+  requires additive_group<Argument>
+    : coefficients_(std::move(coefficients)),
+      origin_(Argument{}),
+      evaluator_(DefaultEvaluator()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 template<template<typename, typename, int> typename Evaluator_>
