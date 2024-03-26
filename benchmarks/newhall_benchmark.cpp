@@ -11,7 +11,6 @@
 #include "geometry/space.hpp"
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -25,7 +24,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_polynomial;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -117,13 +115,12 @@ BENCHMARK_TEMPLATE(
 BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDouble,
     ResultMonomialDouble,
-    (&NewhallApproximationInMonomialBasis<double, EstrinEvaluator>))
+    (&NewhallApproximationInMonomialBasis<double>))
     ->Arg(4)->Arg(8)->Arg(16);
 BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDisplacement,
     ResultMonomialDisplacement,
-    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>,
-                                          EstrinEvaluator>))
+    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>>))
     ->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics
