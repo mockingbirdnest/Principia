@@ -1,15 +1,15 @@
 #pragma once
 
-#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _polynomial_evaluators {
 namespace internal {
 
-using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_tuples;
 
 template<typename Value, typename Argument, int degree>
 struct Evaluator;
@@ -18,6 +18,12 @@ template<typename Value, typename Argument, int degree, bool allow_fma>
 struct EstrinEvaluator;
 template<typename Value, typename Argument, int degree, bool allow_fma>
 struct HornerEvaluator;
+
+template<template<typename, typename, int> typename Evaluator_>
+struct with_evaluator_t {};
+
+template<template<typename, typename, int> typename Evaluator_>
+static constexpr with_evaluator_t<Evaluator_> with_evaluator;
 
 }  // namespace internal
 
@@ -36,10 +42,12 @@ using HornerEvaluatorWithoutFMA = internal::
 
 namespace internal {
 
+//TODO(phl)Cleanup
 template<typename Value, typename Argument, int degree>
 struct Evaluator {
-  using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+  // This definition is replicated from |PolynomialInMonomialBasis| to avoid
+  // circular dependencies.
+  using Coefficients = Derivatives<Value, Argument, degree + 1>;
 
   virtual Value Evaluate(Coefficients const& coefficients,
                          Argument const& argument) const = 0;

@@ -18,6 +18,7 @@
 #include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -43,10 +44,6 @@
 
 namespace principia {
 namespace numerics {
-FORWARD_DECLARE(
-    TEMPLATE(typename Value, typename Argument, int degree_) struct,
-    Evaluator,
-    FROM(polynomial_evaluators));
 FORWARD_DECLARE(
     TEMPLATE(typename Value, typename Argument, int degree_) class,
     PolynomialInMonomialBasis,
@@ -78,12 +75,6 @@ using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
-
-template<template<typename, typename, int> typename Evaluator_>
-struct with_evaluator_t {};
-
-template<template<typename, typename, int> typename Evaluator_>
-static constexpr with_evaluator_t<Evaluator_> with_evaluator;
 
 template<typename Value_, typename Argument_, int degree_>
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
