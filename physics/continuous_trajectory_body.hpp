@@ -659,10 +659,10 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::_newhall::NewhallApproximationInMonomialBasis<
-             Position<Frame>, Estrin>(degree,
-                                      q, v,
-                                      t_min, t_max,
-                                      error_estimate);
+      Position<Frame>>(degree,
+                       q, v,
+                       t_min, t_max,
+                       error_estimate);
 }
 
 template<typename Frame>
