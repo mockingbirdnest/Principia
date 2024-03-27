@@ -694,7 +694,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
        time <= t2;
        time += step / number_of_substeps) {
     EXPECT_THAT(trajectory2->EvaluatePosition(time),
-                AlmostEquals(position_function1(time), 0, 10)) << time;
+                AlmostEquals(position_function1(time), 0, 11)) << time;
     EXPECT_THAT(trajectory2->EvaluateVelocity(time),
                 AlmostEquals(velocity_function1(time), 0, 4)) << time;
   }

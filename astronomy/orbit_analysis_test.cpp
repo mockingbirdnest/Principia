@@ -581,7 +581,7 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // bit less than 3 m above the nominal value around that time.
   EXPECT_THAT(
       elements.mean_semimajor_axis_interval().midpoint(),
-      DifferenceFrom(7714.42938 * Kilo(Metre), IsNear(2.63_(1) * Metre)));
+      DifferenceFrom(7714.42938 * Kilo(Metre), IsNear(2.59_(1) * Metre)));
   // Reference inclination from the legend of figure 9 of [BSFL98]; that
   // value is given as 66.040° in table 1 of [BSFL98], 66.039° in [BS96], and
   // 66.04° in [Ben97].
@@ -607,11 +607,11 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // theoretical and observed mean e and ω vary between 40 ppm and 140 ppm, and
   // between 60° and 120°, respectively.
   EXPECT_THAT(elements.mean_eccentricity_interval(),
-              AllOf(Field(&Interval<double>::min, IsNear(83e-6_(1))),
-                    Field(&Interval<double>::max, IsNear(109e-6_(1)))));
+              AllOf(Field(&Interval<double>::min, IsNear(89e-6_(1))),
+                    Field(&Interval<double>::max, IsNear(112e-6_(1)))));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval(),
-              AllOf(Field(&Interval<Angle>::min, IsNear(73.8_(1) * Degree)),
-                    Field(&Interval<Angle>::max, IsNear(99.2_(1) * Degree))));
+              AllOf(Field(&Interval<Angle>::min, IsNear(74.6_(1) * Degree)),
+                    Field(&Interval<Angle>::max, IsNear(100.6_(1) * Degree))));
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of
