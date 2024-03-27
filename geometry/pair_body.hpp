@@ -2,6 +2,8 @@
 
 #include "geometry/pair.hpp"
 
+#include <string>
+
 #include "geometry/serialization.hpp"
 
 namespace principia {

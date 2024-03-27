@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
