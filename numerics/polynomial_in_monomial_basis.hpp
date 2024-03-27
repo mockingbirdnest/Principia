@@ -96,9 +96,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   explicit constexpr PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
 
-  explicit PolynomialInMonomialBasis()
-    requires additive_group<Argument>;
-
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
                                    PolynomialInMonomialBasis const& right) =
       default;
