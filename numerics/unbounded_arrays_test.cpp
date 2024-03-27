@@ -13,6 +13,7 @@ using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
+using ::testing::Pointer;
 
 class UnboundedArraysTest : public ::testing::Test {
  protected:
@@ -166,6 +167,14 @@ TEST_F(UnboundedArraysTest, Algebra) {
                                      { 0,  14, -22,   3,
                                       14, -63,   5, -92})),
             m23_ * m34_);
+  auto m = UnboundedMatrix<double>({1, 2,
+                                    3, 4});
+  EXPECT_THAT(&(m *= UnboundedMatrix<double>({5, 6,
+                                              7, 8})),
+              Pointer(&m));
+  EXPECT_EQ((UnboundedMatrix<double>({19, 22,
+                                      43, 50})),
+            m);
   EXPECT_EQ(v3_, m34_ * v4_);
   EXPECT_EQ((UnboundedVector<double>({-486, -229, 333, 198})),
             TransposedView{m34_} * v3_);  // NOLINT
