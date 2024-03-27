@@ -1,7 +1,7 @@
 #include "numerics/fixed_arrays.hpp"
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "numerics/transposed_view.hpp"
 #include "quantities/elementary_functions.hpp"
 
