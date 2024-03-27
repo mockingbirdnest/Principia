@@ -28,6 +28,7 @@ class Point final {
   // This cannot be a constraint, as it would lead to recursive instantation of
   // Position, which is used in Frame.
   static_assert(additive_group<Vector>);
+
  public:
   constexpr Point();
 
