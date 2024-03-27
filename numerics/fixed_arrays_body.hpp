@@ -231,8 +231,8 @@ FixedMatrix<Scalar_, rows_, columns_>::operator/=(double const right) {
 template<typename Scalar_, int rows_, int columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator*=(
-    FixedMatrix<double, rows(), columns()> const& right)
-  requires(rows() == columns()) {
+    FixedMatrix<double, rows_, columns_> const& right)
+  requires(rows_ == columns_) {
   // TODO(egg): We don’t need to copy the whole matrix.
   return *this = *this * right;
 }

@@ -65,10 +65,11 @@ TEST(Traits, Algebra) {
   static_assert(homogeneous_field<double>);
 
   static_assert(!field<Length>);
+  static_assert(!field<int>);
   static_assert(field<double>);
 }
 
-TEST(Traits, LinearAgebra) {
+TEST(Traits, LinearAlgebra) {
   static_assert(!homogeneous_vector_space<FixedMatrix<double, 3, 3>,
                                           FixedMatrix<double, 3, 3>>);
   static_assert(homogeneous_vector_space<Length, Length>);
