@@ -5,6 +5,7 @@
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
+#include "geometry/space.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -22,8 +23,10 @@ namespace _pair {
 namespace internal {
 
 using namespace principia::base::_concepts;
+using namespace principia::base::_traits;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
@@ -79,7 +82,7 @@ using enable_if_vector_t = typename enable_if_vector<T, U>::type;
 // Bivector or Trivector).  Only the operations that make sense are defined,
 // depending on the nature of the parameters T1 and T2.
 template<typename T1, typename T2>
-class Pair {
+class Pair final {
  public:
   Pair(T1 const& t1, T2 const& t2);
   virtual ~Pair() = default;
@@ -97,16 +100,32 @@ class Pair {
   template<typename U1 = T1, typename U2 = T2>
   enable_if_vector_t<Pair<U1, U2>>& operator/=(double right);
 
+  T1 const& position() const
+    requires is_instance_of_v<Position, T1>
+  {
+    return t1_;
+  }
+  T1 const& displacement() const
+    requires is_instance_of_v<Displacement, T1>
+  {
+    return t1_;
+  }
+
+  T2 const& velocity() const
+    requires is_instance_of_v<Velocity, T2>
+  {
+    return t2_;
+  }
+
   void WriteToMessage(not_null<serialization::Pair*> message) const;
   static Pair ReadFromMessage(serialization::Pair const& message)
     requires serializable<T1> && serializable<T2>;
 
- protected:
+ private:
   // The subclasses can access the members directly to implement accessors.
   T1 t1_;
   T2 t2_;
 
- private:
   // This is needed so that different instantiations of Pair can access the
   // members.
   template<typename U1, typename U2>
