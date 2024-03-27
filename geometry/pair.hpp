@@ -4,6 +4,7 @@
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/space.hpp"
 #include "quantities/concepts.hpp"
@@ -23,9 +24,9 @@ namespace _pair {
 namespace internal {
 
 using namespace principia::base::_concepts;
-using namespace principia::base::_traits;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
