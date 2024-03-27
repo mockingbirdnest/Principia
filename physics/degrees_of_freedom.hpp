@@ -40,31 +40,4 @@ using internal::RelativeDegreesOfFreedom;
 
 }  // namespace _degrees_of_freedom
 }  // namespace physics
-
-// Reopen the base namespace to make RelativeDegreesOfFreedom mappable.
-namespace base {
-namespace _mappable {
-namespace internal {
-
-using namespace principia::geometry::_pair;
-using namespace principia::geometry::_space;
-using namespace principia::physics::_degrees_of_freedom;
-
-template<typename Functor, typename Frame>
-struct Mappable<Functor, RelativeDegreesOfFreedom<Frame>>
-    : not_constructible {
-  using type = Pair<decltype(std::declval<Functor>()(
-                        std::declval<Displacement<Frame>>())),
-                    decltype(std::declval<Functor>()(
-                        std::declval<Velocity<Frame>>()))>;
-
-  static type Do(Functor const& functor,
-                 RelativeDegreesOfFreedom<Frame> const& relative);
-};
-
-}  // namespace internal
-}  // namespace _mappable
-}  // namespace base
 }  // namespace principia
-
-#include "physics/degrees_of_freedom_body.hpp"

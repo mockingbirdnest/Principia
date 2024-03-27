@@ -61,6 +61,27 @@ struct enable_if_affine<
 template<typename T>
 using enable_if_affine_t = typename enable_if_affine<T>::type;
 
+template<typename T>
+struct is_position : std::false_type {};
+template<typename Frame>
+struct is_position<Position<Frame>> : std::true_type {};
+template<typename T>
+constexpr bool is_position_v = is_position<T>::value;
+
+template<typename T>
+struct is_displacement : std::false_type {};
+template<typename Frame>
+struct is_displacement<Displacement<Frame>> : std::true_type {};
+template<typename T>
+constexpr bool is_displacement_v = is_displacement<T>::value;
+
+template<typename T>
+struct is_velocity : std::false_type {};
+template<typename Frame>
+struct is_velocity<Velocity<Frame>> : std::true_type {};
+template<typename T>
+constexpr bool is_velocity_v = is_velocity<T>::value;
+
 // A template to enable declarations on vector pairs (i.e., when both of the
 // components are vectors).
 template<typename T, typename U = T, typename = void>
@@ -101,18 +122,18 @@ class Pair final {
   enable_if_vector_t<Pair<U1, U2>>& operator/=(double right);
 
   T1 const& position() const
-    requires is_instance_of_v<Position, T1>
+    requires is_position_v<T1>
   {
     return t1_;
   }
   T1 const& displacement() const
-    requires is_instance_of_v<Displacement, T1>
+    requires is_displacement_v<T1>
   {
     return t1_;
   }
 
   T2 const& velocity() const
-    requires is_instance_of_v<Velocity, T2>
+    requires is_velocity_v<T2>
   {
     return t2_;
   }
@@ -172,6 +193,9 @@ class Pair final {
       Pair<U1, U2>,
       Pair<Quotient<U1, Scalar>, Quotient<U2, Scalar>>>::type
   operator/(Pair<U1, U2> const& left, Scalar right);
+
+  template<typename U1, typename U2>
+  friend std::string DebugString(Pair<U1, U2> const& pair);
 
   template<typename U1, typename U2>
   friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);

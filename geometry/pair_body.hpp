@@ -123,6 +123,11 @@ operator/(Pair<T1, T2> const& left, Scalar const right) {
 }
 
 template<typename T1, typename T2>
+std::string DebugString(Pair<T1, T2> const& pair) {
+  return "{" + DebugString(pair.t1_) + ", " + DebugString(pair.t2_) + "}";
+}
+
+template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
   out << "{" << pair.t1_ << ", " << pair.t2_ << "}";
   return out;
