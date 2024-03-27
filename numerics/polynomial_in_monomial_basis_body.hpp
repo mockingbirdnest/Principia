@@ -391,14 +391,16 @@ operator-=(PolynomialInMonomialBasis const& right) {
 template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 operator()(Argument const& argument) const {
-  return evaluator_->Evaluate(coefficients_, argument - origin_);
+  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
+      coefficients_, argument - origin_, evaluator_);
 }
 
 template<typename Value_, typename Argument_, int degree_>
 Derivative<Value_, Argument_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 EvaluateDerivative(Argument const& argument) const {
-  return evaluator_->EvaluateDerivative(coefficients_, argument - origin_);
+  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative(
+      coefficients_, argument - origin_, evaluator_);
 }
 
 template<typename Value_, typename Argument_, int degree_>

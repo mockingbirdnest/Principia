@@ -26,17 +26,22 @@ struct Evaluator {
   // circular dependencies.
   using Coefficients = Derivatives<Value, Argument, degree + 1>;
 
-  virtual Value Evaluate(Coefficients const& coefficients,
-                         Argument const& argument) const = 0;
-  virtual Derivative<Value, Argument> EvaluateDerivative(
+  FORCE_INLINE(static)
+  Value Evaluate(
       Coefficients const& coefficients,
-      Argument const& argument) const = 0;
+      Argument const& argument,
+      Evaluator const* evaluator);
+  FORCE_INLINE(static)
+  Derivative<Value, Argument> EvaluateDerivative(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      Evaluator const* evaluator);
 };
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct EstrinEvaluator;
+class EstrinEvaluator;
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct HornerEvaluator;
+class HornerEvaluator;
 
 }  // namespace internal
 

@@ -313,19 +313,75 @@ InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 }
 
 
+template<typename Value, typename Argument, int degree>
+  requires additive_group<Argument>
+Value Evaluator<Value, Argument, degree>::Evaluate(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    Evaluator const* const evaluator) {
+  // We cannot make this function virtual, as that prevents inlining and the
+  // performance evaluation is severe (polynomial evaluation takes nanoseconds).
+  // Instead we dispatch by hand.  We use the singleton as an identity for the
+  // types since the constructors are hidden and there is only ever one object
+  // of each evaluator type.  There are no calls in this code.
+  if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
+    return Estrin<Value, Argument, degree>::Evaluate(
+        coefficients, argument);
+  } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
+    return Horner<Value, Argument, degree>::Evaluate(
+        coefficients, argument);
+  } else if (evaluator ==
+             EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
+    return EstrinWithoutFMA<Value, Argument, degree>::Evaluate(
+        coefficients, argument);
+  } else {
+    /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
+    return HornerWithoutFMA<Value, Argument, degree>::Evaluate(
+        coefficients, argument);
+  }
+}
+
+template<typename Value, typename Argument, int degree>
+  requires additive_group<Argument>
+Derivative<Value, Argument>
+Evaluator<Value, Argument, degree>::EvaluateDerivative(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    Evaluator const* const evaluator) {
+  if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
+    return Estrin<Value, Argument, degree>::EvaluateDerivative(
+        coefficients, argument);
+  } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
+    return Horner<Value, Argument, degree>::EvaluateDerivative(
+        coefficients, argument);
+  } else if (evaluator ==
+             EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
+    return EstrinWithoutFMA<Value, Argument, degree>::EvaluateDerivative(
+        coefficients, argument);
+  } else {
+    /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
+    return HornerWithoutFMA<Value, Argument, degree>::EvaluateDerivative(
+        coefficients, argument);
+  }
+}
+
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct EstrinEvaluator : public Evaluator<Value, Argument, degree> {
-  using typename Evaluator<Value, Argument, degree>::Coefficients;
+class EstrinEvaluator : public Evaluator<Value, Argument, degree> {
+ public:
+  using Coefficients =
+      typename Evaluator<Value, Argument, degree>::Coefficients;
 
   static Evaluator<Value, Argument, degree> const* Singleton();
 
-  // We use FORCE_INLINE because we have to write this recursively, but we
-  // really want linear code.
-  FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
-                                      Argument const& argument) const override;
-  FORCE_INLINE(inline) Derivative<Value, Argument>
+  FORCE_INLINE(static) Value
+  Evaluate(Coefficients const& coefficients,
+           Argument const& argument);
+  FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
-                     Argument const& argument) const override;
+                     Argument const& argument);
+
+ private:
+  EstrinEvaluator() = default;
 };
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
@@ -336,10 +392,9 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::Singleton() {
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-FORCE_INLINE(inline) Value
-EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
+Value EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
     Coefficients const& coefficients,
-    Argument const& argument) const {
+    Argument const& argument) {
   if (allow_fma && UseHardwareFMA) {
     using InternalEvaluator = InternalEstrinEvaluator<Value,
                                                       Argument,
@@ -366,10 +421,10 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-FORCE_INLINE(inline) Derivative<Value, Argument>
+Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Coefficients const& coefficients,
-    Argument const& argument) const {
+    Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
   } else if (allow_fma && UseHardwareFMA) {
@@ -400,18 +455,22 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-struct HornerEvaluator : public Evaluator<Value, Argument, degree> {
-  using typename Evaluator<Value, Argument, degree>::Coefficients;
+class HornerEvaluator : public Evaluator<Value, Argument, degree> {
+ public:
+  using Coefficients =
+      typename Evaluator<Value, Argument, degree>::Coefficients;
 
   static Evaluator<Value, Argument, degree> const* Singleton();
 
-  // We use FORCE_INLINE because we have to write this recursively, but we
-  // really want linear code.
-  FORCE_INLINE(inline) Value Evaluate(Coefficients const& coefficients,
-                                      Argument const& argument) const override;
-  FORCE_INLINE(inline) Derivative<Value, Argument>
+  FORCE_INLINE(static) Value
+  Evaluate(Coefficients const& coefficients,
+           Argument const& argument);
+  FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
-                     Argument const& argument) const override;
+                     Argument const& argument);
+
+ private:
+  HornerEvaluator() = default;
 };
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
@@ -422,10 +481,9 @@ HornerEvaluator<Value, Argument, degree, allow_fma>::Singleton() {
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-FORCE_INLINE(inline) Value
-HornerEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
+Value HornerEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
     Coefficients const& coefficients,
-    Argument const& argument) const {
+    Argument const& argument) {
   if (allow_fma && UseHardwareFMA) {
     return InternalHornerEvaluator<
         Value, Argument, degree, /*fma=*/true, /*low=*/0>::Evaluate(
@@ -438,10 +496,10 @@ HornerEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
-FORCE_INLINE(inline) Derivative<Value, Argument>
+Derivative<Value, Argument>
 HornerEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
     Coefficients const& coefficients,
-    Argument const& argument) const {
+    Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
   } else if (allow_fma && UseHardwareFMA) {
