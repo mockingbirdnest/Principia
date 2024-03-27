@@ -1,6 +1,5 @@
 #include "quantities/concepts.hpp"
 
-#include <complex>
 #include <string>
 
 #include "gtest/gtest.h"
