@@ -13,32 +13,13 @@
     <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
-    <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
-    <ClCompile Include="approximation_benchmark.cpp" />
-    <ClCompile Include="apsides_benchmark.cpp" />
-    <ClCompile Include="checkpointer_benchmark.cpp" />
-    <ClCompile Include="discrete_trajectory_benchmark.cpp" />
-    <ClCompile Include="lagrange_equipotentials_benchmark.cpp" />
     <ClCompile Include="polynomial_in_monomial_basis_benchmark.cpp" />
     <ClCompile Include="polynomial_in_чебышёв_basis_benchmark.cpp" />
-    <ClCompile Include="rigid_reference_frame_benchmark.cpp" />
     <ClCompile Include="elliptic_integrals_benchmark.cpp" />
     <ClCompile Include="elliptic_functions_benchmark.cpp" />
-    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_benchmark.cpp" />
-    <ClCompile Include="encoder_benchmark.cpp" />
     <ClCompile Include="ephemeris_benchmark.cpp" />
-    <ClCompile Include="fast_sin_cos_2π_benchmark.cpp" />
-    <ClCompile Include="geopotential_benchmark.cpp" />
-    <ClCompile Include="global_optimization_benchmark.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="nearest_neighbour_benchmark.cpp" />
     <ClCompile Include="newhall_benchmark.cpp" />
-    <ClCompile Include="orbital_elements_benchmark.cpp" />
-    <ClCompile Include="perspective_benchmark.cpp" />
-    <ClCompile Include="planetarium_benchmark.cpp" />
-    <ClCompile Include="quantities_benchmark.cpp" />
-    <ClCompile Include="symplectic_runge_kutta_nyström_integrator_benchmark.cpp" />
-    <ClCompile Include="thread_pool_benchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp" />
