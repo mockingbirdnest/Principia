@@ -134,11 +134,11 @@ concept convertible_to_quantity =
 using internal::additive_group;
 using internal::affine;
 using internal::affine_space;
+using internal::convertible_to_quantity;
 using internal::field;
 using internal::homogeneous_field;
 using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
-using internal::convertible_to_quantity;
 using internal::quantity;
 using internal::real_affine_space;
 using internal::real_vector_space;

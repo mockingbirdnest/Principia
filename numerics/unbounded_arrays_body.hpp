@@ -603,6 +603,16 @@ UnboundedMatrix<Square<Scalar>> SymmetricSquare(
 }
 
 template<typename Scalar>
+UnboundedVector<Scalar> operator+(UnboundedVector<Scalar> const& right) {
+  return right;
+}
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> operator+(UnboundedMatrix<Scalar> const& right) {
+  return right;
+}
+
+template<typename Scalar>
 UnboundedVector<Scalar> operator-(UnboundedVector<Scalar> const& right) {
   UnboundedVector<Scalar> result(right.size(), uninitialized);
   for (int i = 0; i < right.size(); ++i) {

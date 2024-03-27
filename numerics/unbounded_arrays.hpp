@@ -291,12 +291,16 @@ UnboundedMatrix<Square<Scalar>> SymmetricSquare(
 // Additive groups.
 
 template<typename Scalar>
-UnboundedVector<Scalar> operator-(
-    UnboundedVector<Scalar> const& right);
+UnboundedVector<Scalar> operator+(UnboundedVector<Scalar> const& right);
 
 template<typename Scalar>
-UnboundedMatrix<Scalar> operator-(
-    UnboundedMatrix<Scalar> const& right);
+UnboundedMatrix<Scalar> operator+(UnboundedMatrix<Scalar> const& right);
+
+template<typename Scalar>
+UnboundedVector<Scalar> operator-(UnboundedVector<Scalar> const& right);
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> operator-(UnboundedMatrix<Scalar> const& right);
 
 template<typename LScalar, typename RScalar>
 UnboundedVector<Sum<LScalar, RScalar>> operator+(
