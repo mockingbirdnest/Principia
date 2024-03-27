@@ -201,38 +201,6 @@ using internal::Pair;
 using internal::vector_of;
 
 }  // namespace _pair
-
-// Specialize BarycentreCalculator to make it applicable to Pairs.
-namespace _barycentre_calculator {
-namespace internal {
-
-using namespace principia::geometry::_pair;
-
-template<typename T1, typename T2, typename Weight>
-class BarycentreCalculator<Pair<T1, T2>, Weight> final {
- public:
-  BarycentreCalculator() = default;
-
-  void Add(Pair<T1, T2> const& pair, Weight const& weight);
-  Pair<T1, T2> Get() const;
-
-  Weight const& weight() const;
-
- private:
-  bool empty_ = true;
-  Product<Difference<T1>, Weight> t1_weighted_sum_;
-  Product<Difference<T2>, Weight> t2_weighted_sum_;
-  Weight weight_;
-
-  // We need reference values to convert points into vectors, if needed.  We
-  // pick default-constructed objects as they don't introduce any inaccuracies
-  // in the computations.
-  static T1 const reference_t1_;
-  static T2 const reference_t2_;
-};
-
-}  // namespace internal
-}  // namespace _barycentre_calculator
 }  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.

@@ -111,52 +111,6 @@ struct Mappable<Functor, RelativeDegreesOfFreedom<Frame>>
 }  // namespace internal
 }  // namespace _mappable
 }  // namespace base
-
-// Reopen the geometry namespace to make BarycentreCalculator applicable to
-// degrees of freedom.
-namespace geometry {
-namespace _barycentre_calculator {
-namespace internal {
-
-using namespace principia::geometry::_space;
-using namespace principia::physics::_degrees_of_freedom;
-
-template<typename Frame, typename Weight>
-class BarycentreCalculator<DegreesOfFreedom<Frame>, Weight> final {
- public:
-  BarycentreCalculator() = default;
-
-  void Add(DegreesOfFreedom<Frame> const& degrees_of_freedom,
-           Weight const& weight);
-  DegreesOfFreedom<Frame> Get() const;
-
-  Weight const& weight() const;
-
- private:
-  BarycentreCalculator<Pair<Position<Frame>, Velocity<Frame>>, Weight>
-      implementation_;
-};
-
-template<typename Frame, typename Weight>
-class BarycentreCalculator<RelativeDegreesOfFreedom<Frame>, Weight>
-    final {
- public:
-  BarycentreCalculator() = default;
-
-  void Add(RelativeDegreesOfFreedom<Frame> const& relative_degrees_of_freedom,
-           Weight const& weight);
-  RelativeDegreesOfFreedom<Frame> Get() const;
-
-  Weight const& weight() const;
-
- private:
-  BarycentreCalculator<Pair<Displacement<Frame>, Velocity<Frame>>, Weight>
-      implementation_;
-};
-
-}  // namespace internal
-}  // namespace _barycentre_calculator
-}  // namespace geometry
 }  // namespace principia
 
 #include "physics/degrees_of_freedom_body.hpp"
