@@ -1,6 +1,7 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
 #include "numerics/transposed_view.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -10,6 +11,7 @@ namespace numerics {
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_elementary_functions;
+using ::testing::Pointer;
 
 // TODO(phl): The tests should be more similar to those for unbounded arrays.
 
@@ -172,6 +174,14 @@ TEST_F(FixedArraysTest, Algebra) {
   EXPECT_EQ((FixedMatrix<double, 2, 4>({ 0,  14, -22,   3,
                                         14, -63,   5, -92})),
             m23_ * m34_);
+  auto m = FixedMatrix<double, 2, 2>({1, 2,
+                                      3, 4});
+  EXPECT_THAT(&(m *= FixedMatrix<double, 2, 2>({5, 6,
+                                                7, 8})),
+              Pointer(&m));
+  EXPECT_EQ((FixedMatrix<double, 2, 2>({19, 22,
+                                        43, 50})),
+            m);
   EXPECT_EQ(v3_, m34_ * v4_);
   EXPECT_EQ((FixedVector<double, 4>({-486, -229, 333, 198})),
             TransposedView{m34_} * v3_);  // NOLINT

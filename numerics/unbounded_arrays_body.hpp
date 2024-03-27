@@ -271,6 +271,12 @@ UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator/=(
 }
 
 template<typename Scalar_>
+UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator*=(
+    UnboundedMatrix<double> const& right) {
+  return *this = *this * right;
+}
+
+template<typename Scalar_>
 int UnboundedMatrix<Scalar_>::rows() const {
   return rows_;
 }
@@ -786,7 +792,7 @@ UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<RScalar> const& right) {
   DCHECK_EQ(left.columns(), right.rows());
   UnboundedMatrix<Product<LScalar, RScalar>> result(left.rows(),
-                                                           right.columns());
+                                                    right.columns());
   for (int i = 0; i < left.rows(); ++i) {
     for (int j = 0; j < right.columns(); ++j) {
       for (int k = 0; k < left.columns(); ++k) {

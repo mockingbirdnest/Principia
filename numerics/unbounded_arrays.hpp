@@ -143,6 +143,8 @@ class UnboundedMatrix final {
   UnboundedMatrix& operator*=(double right);
   UnboundedMatrix& operator/=(double right);
 
+  UnboundedMatrix& operator*=(UnboundedMatrix<double> const& right);
+
   int rows() const;
   int columns() const;
   // TODO(phl): The meaning of |size| for matrices is unclear.
