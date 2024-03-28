@@ -554,12 +554,13 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
 
   if (is_pre_καραθεοδωρή) {
     CHECK_NE(evaluator, nullptr)
-        << "No evaluator specified for pre-Καραθεοδωρή deserialization";
+        << "No evaluator specified for pre-Καραθεοδωρή deserialization "
+        << extension.DebugString();
     polynomial.evaluator_ = evaluator;
   } else {
     CHECK_EQ(evaluator, nullptr)
         << "Evaluator should not be specified for post-Καραθεοδωρή "
-        << "deserialization";
+        << "deserialization" << extension.DebugString();
     polynomial.evaluator_ =
         Evaluator<Value, Difference<Argument>, degree_>::ReadFromMessage(
             extension.evaluator());
