@@ -341,8 +341,7 @@ RealRootsOrDie(double const ε) const {
 
     // Rescale from [-1, 1] to [lower_bound_, upper_bound_].
     absl::btree_set<Argument> real_roots;
-    auto const midpoint =
-        Barycentre(std::pair{lower_bound_, upper_bound_}, std::pair{1.0, 1.0});
+    auto const midpoint = Barycentre({lower_bound_, upper_bound_}, {1, 1});
     auto const half_width = 0.5 * (upper_bound_ - lower_bound_);
     for (auto const& scaled_real_root : scaled_real_roots) {
       // Чебышёв polynomials don't make sense outside of [-1, 1] but they may
