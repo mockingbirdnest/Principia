@@ -81,8 +81,7 @@ AngularFrequencyPrimitive(
     typename PoissonSeries<Value, aperiodic_degree, periodic_degree>::
         Polynomials const& polynomials) {
   using Result = PoissonSeries<Primitive<Value, Time>,
-                               aperiodic_degree + 1, periodic_degree + 1,
-                               Evaluator>;
+                               aperiodic_degree + 1, periodic_degree + 1>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
   // Integration by parts.
@@ -98,10 +97,10 @@ AngularFrequencyPrimitive(
         polynomials.sin.template Derivative<1>() / ω * Radian;
     auto const second_part =
         AngularFrequencyPrimitive<Value,
-                                  aperiodic_degree - 1, periodic_degree - 1,
-                                  Evaluator>(ω,
-                                             {.sin = sin_polynomial,
-                                              .cos = cos_polynomial});
+                                  aperiodic_degree - 1, periodic_degree - 1>(
+            ω,
+            {.sin = sin_polynomial,
+            .cos = cos_polynomial});
     return {.sin = first_part.sin + second_part.sin,
             .cos = first_part.cos + second_part.cos};
   }

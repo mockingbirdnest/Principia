@@ -107,8 +107,7 @@ class PoissonSeries {
 
   // The constant term of the result is zero.
   PoissonSeries<Primitive<Value, Time>,
-                aperiodic_degree_ + 1, periodic_degree_ + 1,
-                Evaluator>
+                aperiodic_degree_ + 1, periodic_degree_ + 1>
   Primitive() const;
 
   quantities::_named_quantities::Primitive<Value, Time> Integrate(
@@ -118,8 +117,7 @@ class PoissonSeries {
   template<int aperiodic_wdegree, int periodic_wdegree>
   typename Hilbert<Value>::NormType Norm(
       PoissonSeries<double,
-                    aperiodic_wdegree, periodic_wdegree,
-                    Evaluator> const& weight,
+                    aperiodic_wdegree, periodic_wdegree> const& weight,
       Instant const& t_min,
       Instant const& t_max) const;
 
