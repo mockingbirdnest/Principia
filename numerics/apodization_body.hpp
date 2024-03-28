@@ -29,7 +29,7 @@ PoissonSeries<double, 0, 0, Evaluator> Dirichlet(Instant const& t_min,
                                                  Instant const& t_max) {
   using Result = PoissonSeries<double, 0, 0, Evaluator>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({1}, t_mid), {});
 }
 
@@ -40,7 +40,7 @@ PoissonSeries<double, 0, 0, Evaluator> Sine(Instant const& t_min,
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = π * Radian / (t_max - t_min);
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({0}, t_mid),
                 {{ω,
                   {.sin = PeriodicPolynomial({0}, t_mid),
@@ -54,7 +54,7 @@ PoissonSeries<double, 0, 0, Evaluator> Hann(Instant const& t_min,
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({0.5}, t_mid),
                 {{ω,
                   {.sin = PeriodicPolynomial({0}, t_mid),
@@ -68,7 +68,7 @@ PoissonSeries<double, 0, 0, Evaluator> Hamming(Instant const& t_min,
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({25.0 / 46.0}, t_mid),
                 {{ω,
                   {.sin = PeriodicPolynomial({0}, t_mid),
@@ -99,7 +99,7 @@ PoissonSeries<double, 0, 0, Evaluator> ExactBlackman(Instant const& t_min,
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({3969.0 / 9304.0}, t_mid),
                 {{ω,
                   {.sin = PeriodicPolynomial({0}, t_mid),
@@ -116,7 +116,7 @@ PoissonSeries<double, 0, 0, Evaluator> Nuttall(Instant const& t_min,
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({0.355768}, t_mid),
                 {{ω,
                   {.sin = PeriodicPolynomial({0}, t_mid),
@@ -136,7 +136,7 @@ PoissonSeries<double, 0, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
-  Instant const t_mid = Barycentre<Instant, int>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Result(AperiodicPolynomial({0.3635819}, t_mid),
                 {{ω,
                   {.sin = PeriodicPolynomial({0}, t_mid),
