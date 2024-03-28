@@ -553,7 +553,7 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
   auto polynomial = PolynomialInMonomialBasis(coefficients, origin);
 
   if (is_pre_καραθεοδωρή) {
-    CHECK_NE(evaluator, nullptr)
+    CHECK_NOTNULL(evaluator)
         << "No evaluator specified for pre-Καραθεοδωρή deserialization "
         << extension.DebugString();
     polynomial.evaluator_ = evaluator;
