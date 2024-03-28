@@ -80,11 +80,11 @@ struct RandomTupleGenerator<Tuple, size, size> {
 template<typename Value, typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
 void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>;
+  using P = PolynomialInMonomialBasis<Value, Argument, degree>;
   std::mt19937_64 random(42);
   typename P::Coefficients coefficients;
   RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients, random);
-  P const p(coefficients);
+  P const p(coefficients, with_evaluator<Evaluator>);
 
   auto const min = ValueGenerator<Argument>::Get(random);
   auto const max = ValueGenerator<Argument>::Get(random);
@@ -218,29 +218,21 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
-                    EstrinEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, Estrin)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
-                    EstrinEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity, Estrin)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
-                    EstrinEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble, Estrin)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
-                    EstrinEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement, Estrin)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
-                    HornerEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, Horner)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
-                    HornerEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity, Horner)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
-                    HornerEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble, Horner)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
-                    HornerEvaluator)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement, Horner)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16)->Unit(benchmark::kMicrosecond);
 
 }  // namespace numerics

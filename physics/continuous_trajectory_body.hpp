@@ -429,12 +429,12 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                EstrinEvaluator>(polynomial));
+                Estrin>(polynomial));
       } else {
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                EstrinEvaluator>(pair.polynomial()));
+                Estrin>(pair.polynomial()));
       }
     }
   }
@@ -659,10 +659,10 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::_newhall::NewhallApproximationInMonomialBasis<
-             Position<Frame>, EstrinEvaluator>(degree,
-                                               q, v,
-                                               t_min, t_max,
-                                               error_estimate);
+             Position<Frame>, Estrin>(degree,
+                                      q, v,
+                                      t_min, t_max,
+                                      error_estimate);
 }
 
 template<typename Frame>

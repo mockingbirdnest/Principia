@@ -37,8 +37,8 @@ class PoissonSeriesBasisTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 
   using V = Vector<double, World>;
-  using Series2 = PoissonSeries<double, 2, 2, HornerEvaluator>;
-  using Series3 = PoissonSeries<V, 3, 3, HornerEvaluator>;
+  using Series2 = PoissonSeries<double, 2, 2, Horner>;
+  using Series3 = PoissonSeries<V, 3, 3, Horner>;
 
   Instant const t0_;
   Instant const t1_ = t0_ - 2 * Second;

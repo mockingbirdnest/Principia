@@ -117,13 +117,12 @@ BENCHMARK_TEMPLATE(
 BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDouble,
     ResultMonomialDouble,
-    (&NewhallApproximationInMonomialBasis<double, EstrinEvaluator>))
+    (&NewhallApproximationInMonomialBasis<double, Estrin>))
     ->Arg(4)->Arg(8)->Arg(16);
 BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDisplacement,
     ResultMonomialDisplacement,
-    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>,
-                                          EstrinEvaluator>))
+    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>, Estrin>))
     ->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics

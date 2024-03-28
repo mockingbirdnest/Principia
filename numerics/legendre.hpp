@@ -9,8 +9,8 @@ namespace internal {
 
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
-template<int degree_, template<typename, typename, int> class Evaluator>
-constexpr PolynomialInMonomialBasis<double, double, degree_, Evaluator>
+template<int degree_>
+constexpr PolynomialInMonomialBasis<double, double, degree_>
 LegendrePolynomial();
 
 }  // namespace internal

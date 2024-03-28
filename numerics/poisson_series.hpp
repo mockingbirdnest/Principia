@@ -67,9 +67,9 @@ template<typename Value,
 class PoissonSeries {
  public:
   using AperiodicPolynomial =
-      PolynomialInMonomialBasis<Value, Instant, aperiodic_degree_, Evaluator>;
+      PolynomialInMonomialBasis<Value, Instant, aperiodic_degree_>;
   using PeriodicPolynomial =
-      PolynomialInMonomialBasis<Value, Instant, periodic_degree_, Evaluator>;
+      PolynomialInMonomialBasis<Value, Instant, periodic_degree_>;
 
   // TODO(phl): Use designated initializers for this struct once this project
   // can be compiled using c++latest.

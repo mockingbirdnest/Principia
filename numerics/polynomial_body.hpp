@@ -5,8 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "absl/strings/str_cat.h"
-#include "absl/strings/str_join.h"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
@@ -16,12 +14,13 @@ namespace internal {
 
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
-#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
-  case value:                                                          \
-    return make_not_null_unique<                                       \
-        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>>( \
-        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
-            ReadFromMessage(message))
+#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                       \
+  case value:                                                               \
+    return make_not_null_unique<                                            \
+        PolynomialInMonomialBasis<Value, Argument, value>>(                 \
+        PolynomialInMonomialBasis<Value, Argument, value>::ReadFromMessage( \
+            message)                                                        \
+            .WithEvaluator<Evaluator>())
 
 template<typename Value_, typename Argument_>
 template<template<typename, typename, int> typename Evaluator>

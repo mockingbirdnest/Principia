@@ -51,7 +51,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 // an argument in the range [(t_min - t_max) / 2, (t_max - t_min) / 2].
 template<typename Value, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
+PolynomialInMonomialBasis<Value, Instant, degree>
 NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                                     std::vector<Variation<Value>> const& v,
                                     Instant const& t_min,
