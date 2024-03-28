@@ -81,9 +81,9 @@ TEST_F(BarycentreCalculatorTest, Function) {
   EXPECT_THAT(Barycentre({World::origin, q}, {2, 3}),
               Eq(World::origin + 3 * r / 5));
   EXPECT_THAT(Barycentre({World::origin, q}, {0.5, 0.75}),
-              Eq(World::origin + 3 * r / 4));
+              Eq(World::origin + 3 * r / 5));
   EXPECT_THAT(Barycentre({World::origin, q}, {1, 1.5}),
-              Eq(World::origin + 3 * r / 4));
+              Eq(World::origin + 3 * r / 5));
 }
 
 }  // namespace geometry
