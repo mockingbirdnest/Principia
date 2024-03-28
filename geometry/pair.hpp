@@ -108,6 +108,9 @@ using enable_if_vector_t = typename enable_if_vector<T, U>::type;
 template<typename T1, typename T2>
 class Pair final {
  public:
+  Pair()
+    requires std::default_initializable<T1> && std::default_initializable<T2> =
+      default;
   Pair(T1 const& t1, T2 const& t2);
 
   friend bool operator==(Pair const& left, Pair const& right) = default;
@@ -143,10 +146,6 @@ class Pair final {
   // members.
   template<typename U1, typename U2>
   friend class Pair;
-
-  // This is needed to specialize BarycentreCalculator.
-  template<typename V, typename S>
-  friend class _barycentre_calculator::BarycentreCalculator;
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
@@ -232,38 +231,6 @@ using internal::Pair;
 using internal::vector_of;
 
 }  // namespace _pair
-
-// Specialize BarycentreCalculator to make it applicable to Pairs.
-namespace _barycentre_calculator {
-namespace internal {
-
-using namespace principia::geometry::_pair;
-
-template<typename T1, typename T2, typename Weight>
-class BarycentreCalculator<Pair<T1, T2>, Weight> final {
- public:
-  BarycentreCalculator() = default;
-
-  void Add(Pair<T1, T2> const& pair, Weight const& weight);
-  Pair<T1, T2> Get() const;
-
-  Weight const& weight() const;
-
- private:
-  bool empty_ = true;
-  Product<Difference<T1>, Weight> t1_weighted_sum_;
-  Product<Difference<T2>, Weight> t2_weighted_sum_;
-  Weight weight_;
-
-  // We need reference values to convert points into vectors, if needed.  We
-  // pick default-constructed objects as they don't introduce any inaccuracies
-  // in the computations.
-  static T1 const reference_t1_;
-  static T2 const reference_t2_;
-};
-
-}  // namespace internal
-}  // namespace _barycentre_calculator
 }  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.

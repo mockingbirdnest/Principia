@@ -150,7 +150,7 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
     Difference<Value<Argument, Function>> upper_error_estimate;
     Difference<Value<Argument, Function>> lower_error_estimate;
     auto const midpoint =
-        Barycentre(std::pair(lower_bound, upper_bound), std::pair(1, 1));
+        Barycentre(std::pair(lower_bound, upper_bound), std::pair(1.0, 1.0));
     bool const lower_interpolants_stop =
         StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
             f,
