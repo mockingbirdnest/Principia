@@ -500,7 +500,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
             dynamic_cast<
                 PolynomialInMonomialBasis<Displacement<World>, Instant, 2>&>(
                 *polynomial_read))
-            .WithEvaluator<Horner>();
+            .template WithEvaluator<Horner>();
     EXPECT_THAT(
         (*polynomial_read)(Instant() + 0.5 * Second),
         AlmostEquals(
@@ -533,7 +533,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
             dynamic_cast<
                 PolynomialInMonomialBasis<Displacement<World>, Time, 17>&>(
                 *polynomial_read))
-            .WithEvaluator<Estrin>();
+            .template WithEvaluator<Estrin>();
     EXPECT_THAT((*polynomial_read)(0.5 * Second),
                 AlmostEquals(
                     Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));
