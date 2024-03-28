@@ -143,6 +143,8 @@ class UnboundedMatrix final {
   UnboundedMatrix& operator*=(double right);
   UnboundedMatrix& operator/=(double right);
 
+  UnboundedMatrix& operator*=(UnboundedMatrix<double> const& right);
+
   int rows() const;
   int columns() const;
   // TODO(phl): The meaning of |size| for matrices is unclear.
@@ -289,12 +291,16 @@ UnboundedMatrix<Square<Scalar>> SymmetricSquare(
 // Additive groups.
 
 template<typename Scalar>
-UnboundedVector<Scalar> operator-(
-    UnboundedVector<Scalar> const& right);
+UnboundedVector<Scalar> operator+(UnboundedVector<Scalar> const& right);
 
 template<typename Scalar>
-UnboundedMatrix<Scalar> operator-(
-    UnboundedMatrix<Scalar> const& right);
+UnboundedMatrix<Scalar> operator+(UnboundedMatrix<Scalar> const& right);
+
+template<typename Scalar>
+UnboundedVector<Scalar> operator-(UnboundedVector<Scalar> const& right);
+
+template<typename Scalar>
+UnboundedMatrix<Scalar> operator-(UnboundedMatrix<Scalar> const& right);
 
 template<typename LScalar, typename RScalar>
 UnboundedVector<Sum<LScalar, RScalar>> operator+(

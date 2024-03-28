@@ -126,8 +126,8 @@ class FixedMatrix final {
   constexpr FixedMatrix& operator/=(double right);
 
   constexpr FixedMatrix& operator*=(
-      FixedMatrix<double, rows(), columns()> const& right)
-    requires(rows() == columns());
+      FixedMatrix<double, rows_, columns_> const& right)
+    requires(rows_ == columns_);
 
   template<int r>
   Scalar const* row() const;
