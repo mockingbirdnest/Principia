@@ -154,12 +154,22 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
+
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message);
+  // Legacy deserialization, when the evaluator is not present in |message|.
+  template<template<typename, typename, int> typename Evaluator>
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
  private:
   static constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
   DefaultEvaluator();
+
+  // The evaluator is only nonnull on the legacy path.
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message,
+      Evaluator<Value_, Difference<Argument_>, degree_> const* evaluator);
 
   Coefficients coefficients_;
   Argument origin_;

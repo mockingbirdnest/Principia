@@ -95,6 +95,10 @@ message PolynomialInMonomialBasis {
   extend Polynomial {
     optional PolynomialInMonomialBasis extension = 10000;
   }
+  enum Evaluator {
+    ESTRIN = 0;
+    HORNER = 1;
+  }
   message Coefficient {
     oneof message {
       double double = 1;
@@ -111,4 +115,6 @@ message PolynomialInMonomialBasis {
     Multivector multivector = 5;
     Point point = 2;  // Was optional Point origin = 2;
   }
+  // Added in Καραθεοδωρή.
+  optional Evaluator evaluator = 6;
 }
