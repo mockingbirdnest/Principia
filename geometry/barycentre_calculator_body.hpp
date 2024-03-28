@@ -71,7 +71,8 @@ T Barycentre(Container<T> const& ts, Container<Scalar> const& weights) {
   BarycentreCalculator<T, Scalar> calculator;
   auto ts_it = ts.begin();
   auto weights_it = weights.begin();
-  for (; ts_it != ts.end() && weights_it != weights.end();
+  for (;
+       ts_it != ts.end() && weights_it != weights.end();
        ++ts_it, ++weights_it) {
     calculator.Add(*ts_it, *weights_it);
   }
