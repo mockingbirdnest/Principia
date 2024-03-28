@@ -428,13 +428,13 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
-            Polynomial<Position<Frame>, Instant>::template ReadFromMessage(
-                polynomial));
+            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                Estrin>(polynomial));
       } else {
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
-            Polynomial<Position<Frame>, Instant>::template ReadFromMessage(
-                pair.polynomial()));
+            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                Estrin>(pair.polynomial()));
       }
     }
   }

@@ -465,7 +465,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Time>::ReadFromMessage(message);
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<Horner>(message);
     EXPECT_EQ(2, polynomial_read->degree());
     EXPECT_THAT(
         (*polynomial_read)(0.5 * Second),
@@ -492,7 +492,8 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.point().has_scalar());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Instant>::ReadFromMessage(message);
+        Polynomial<Displacement<World>, Instant>::ReadFromMessage<Horner>(
+            message);
     EXPECT_EQ(2, polynomial_read->degree());
     *polynomial_read =
         std::move(
@@ -525,7 +526,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Time>::ReadFromMessage(message);
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<Horner>(message);
     EXPECT_EQ(17, polynomial_read->degree());
     *polynomial_read =
         std::move(
