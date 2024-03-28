@@ -93,16 +93,16 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
-  template<template<typename, typename, int> typename Evaluator_>
+  template<template<typename, typename, int> typename Evaluator>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin,
-                                      with_evaluator_t<Evaluator_>);
+                                      with_evaluator_t<Evaluator>);
 
   constexpr explicit PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
-  template<template<typename, typename, int> typename Evaluator_>
+  template<template<typename, typename, int> typename Evaluator>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
-                                      with_evaluator_t<Evaluator_>)
+                                      with_evaluator_t<Evaluator>)
     requires additive_group<Argument>;
 
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
@@ -149,8 +149,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   // Changes the evaluator of this object.  Useful on the result of an operator
   // or of `ReadFromMessage`, as these functions use the default evaluator.
-  template<template<typename, typename, int> typename Evaluator_>
-  void SetEvaluator();
+  template<template<typename, typename, int> typename Evaluator>
+  PolynomialInMonomialBasis&& WithEvaluator() &&;
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;

@@ -76,7 +76,8 @@ class MonomialAdapter {
   Variation<Value> EvaluateDerivative(Instant const& t) const;
 
  private:
-  using P = PolynomialInMonomialBasis<Value, Instant, degree>;
+  using P =
+      PolynomialInMonomialBasis<Value, Instant, degree>;
   explicit MonomialAdapter(P const& polynomial);
 
   P polynomial_;
@@ -121,9 +122,10 @@ MonomialAdapter<Value, degree>::NewhallApproximation(
     Instant const& t_max,
     Difference<Value>& error_estimate) {
   return MonomialAdapter(
-      NewhallApproximationInMonomialBasis<Value, degree>(q, v,
-                                                         t_min, t_max,
-                                                         error_estimate));
+      NewhallApproximationInMonomialBasis<Value, degree, Estrin>(
+          q, v,
+          t_min, t_max,
+          error_estimate));
 }
 
 template<typename Value, int degree>
@@ -804,7 +806,7 @@ TEST_F(NewhallTest, NonConstantDegree) {
 
     Length length_error_estimate;
     auto const approximation =
-        NewhallApproximationInMonomialBasis<Length>(
+        NewhallApproximationInMonomialBasis<Length, Estrin>(
             /*degree=*/10,
             lengths, speeds, t_min_, t_max_, length_error_estimate);
 

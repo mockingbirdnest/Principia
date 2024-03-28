@@ -49,7 +49,8 @@ NewhallApproximationInЧебышёвBasis(int degree,
 // The parameters have the same meaning as in the preceding function.  The
 // result is a polynomial of |Time| valid around |(t_min + t_max) / 2| with
 // an argument in the range [(t_min - t_max) / 2, (t_max - t_min) / 2].
-template<typename Value, int degree>
+template<typename Value, int degree,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree>
 NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                                     std::vector<Variation<Value>> const& v,
@@ -58,7 +59,8 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                                     Difference<Value>& error_estimate);
 
 // Same as above but the |degree| is not a constant expression.
-template<typename Value>
+template<typename Value,
+         template<typename, typename, int> class Evaluator>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
                                     std::vector<Value> const& q,

@@ -331,15 +331,15 @@ PolynomialInMonomialBasis(Coefficients coefficients,
       evaluator_(DefaultEvaluator()) {}
 
 template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
                           Argument const& origin,
-                          with_evaluator_t<Evaluator_>)
+                          with_evaluator_t<Evaluator>)
     : coefficients_(std::move(coefficients)),
       origin_(origin),
       evaluator_(
-          Evaluator_<Value, Difference<Argument>, degree_>::Singleton()) {}
+          Evaluator<Value, Difference<Argument>, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
@@ -350,15 +350,15 @@ PolynomialInMonomialBasis(Coefficients coefficients)
       evaluator_(DefaultEvaluator()) {}
 
 template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
-                          with_evaluator_t<Evaluator_>)
+                          with_evaluator_t<Evaluator>)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
       origin_(Argument{}),
       evaluator_(
-          Evaluator_<Value, Difference<Argument>, degree_>::Singleton()) {}
+          Evaluator<Value, Difference<Argument>, degree_>::Singleton()) {}
 
 template<typename Value_, typename Argument_, int degree_>
 template<int higher_degree_>
@@ -446,12 +446,6 @@ Derivative() const {
 }
 
 template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator_>
-void PolynomialInMonomialBasis<Value_, Argument_, degree_>::SetEvaluator() {
-  evaluator_ = Evaluator_<Value, Difference<Argument>, degree_>::Singleton();
-}
-
-template<typename Value_, typename Argument_, int degree_>
 PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::Primitive() const
   requires additive_group<Value> {
@@ -472,6 +466,14 @@ Integrate(Argument const& argument1,
   // + 2 is to take into account the truncation resulting from integer division.
   return _quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
                                                        argument1, argument2);
+}
+
+template<typename Value_, typename Argument_, int degree_>
+template<template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>&&
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::WithEvaluator() && {
+  evaluator_ = Evaluator<Value, Difference<Argument>, degree_>::Singleton();
+  return std::move(*this);
 }
 
 template<typename Value_, typename Argument_, int degree_>

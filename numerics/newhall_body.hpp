@@ -72,7 +72,8 @@ void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
   }
 }
 
-template<typename Value, int degree>
+template<typename Value, int degree,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree> Dehomogeneize(
     std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
@@ -98,7 +99,8 @@ struct Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree> {
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
-template<typename Value, int degree>
+template<typename Value, int degree,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree> Dehomogeneize(
     std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
@@ -110,7 +112,7 @@ PolynomialInMonomialBasis<Value, Instant, degree> Dehomogeneize(
       scale,
       /*scale_k=*/1.0,
       dehomogeneized_coefficients);
-  return P(dehomogeneized_coefficients, origin);
+  return P(dehomogeneized_coefficients, origin, with_evaluator<Evaluator>);
 }
 
 template<typename Value,
@@ -147,7 +149,8 @@ struct NewhallЧебышёвApproximator {
       Value& error_estimate);
 };
 
-template<typename Value, int degree>
+template<typename Value, int degree,
+         template<typename, typename, int> class Evaluator>
 struct NewhallMonomialApproximator {
   static std::array<Value, degree + 1> HomogeneousCoefficients(
       QV<Value> const& qv,
@@ -172,23 +175,23 @@ struct NewhallMonomialApproximator {
 
 // The error estimate must be computed in the Чебышёв basis because the elements
 // of the monomial basis are not bounded.
-#define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree) \
-  template<typename Value>                                             \
-  struct NewhallMonomialApproximator<Value, (degree)> {                \
-    static std::array<Value, (degree) + 1> HomogeneousCoefficients(    \
-        QV<Value> const& qv,                                           \
-        Value& error_estimate) {                                       \
-      error_estimate = DotProduct<>::Compute(                          \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04   \
-              .row<(degree)>(),                                        \
-          qv);                                                         \
-      std::array<Value, (degree) + 1> result;                          \
-      Multiply<(degree)>(                                              \
-          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, \
-          qv,                                                          \
-          result);                                                     \
-      return result;                                                   \
-    }                                                                  \
+#define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree)        \
+  template<typename Value, template<typename, typename, int> class Evaluator> \
+  struct NewhallMonomialApproximator<Value, (degree), Evaluator> {            \
+    static std::array<Value, (degree) + 1> HomogeneousCoefficients(           \
+        QV<Value> const& qv,                                                  \
+        Value& error_estimate) {                                              \
+      error_estimate = DotProduct<>::Compute(                                 \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
+              .row<(degree)>(),                                               \
+          qv);                                                                \
+      std::array<Value, (degree) + 1> result;                                 \
+      Multiply<(degree)>(                                                     \
+          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04,        \
+          qv,                                                                 \
+          result);                                                            \
+      return result;                                                          \
+    }                                                                         \
   }
 
 PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(3);
@@ -294,7 +297,8 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE
 
-template<typename Value, int degree>
+template<typename Value, int degree,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree>
 NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                                     std::vector<Variation<Value>> const& v,
@@ -318,22 +322,25 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
   }
 
   Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
-  return origin +
-         Dehomogeneize<Difference<Value>, degree>(
-             NewhallMonomialApproximator<Difference<Value>, degree>::
-                 HomogeneousCoefficients(qv, error_estimate),
-             /*scale=*/1.0 / duration_over_two,
-             t_mid);
+  return (origin +
+          Dehomogeneize<Difference<Value>, degree, Evaluator>(
+              NewhallMonomialApproximator<
+                  Difference<Value>,
+                  degree,
+                  Evaluator>::HomogeneousCoefficients(qv, error_estimate),
+              /*scale=*/1.0 / duration_over_two,
+              t_mid))
+      .WithEvaluator<Evaluator>();
 }
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)   \
   case (degree):                                                         \
     return make_not_null_unique<                                         \
-        PolynomialInMonomialBasis<Value, Instant, (degree)>>( \
-        NewhallApproximationInMonomialBasis<Value, (degree)>( \
+        PolynomialInMonomialBasis<Value, Instant, (degree)>>(            \
+        NewhallApproximationInMonomialBasis<Value, (degree), Evaluator>( \
             q, v, t_min, t_max, error_estimate))
 
-template<typename Value>
+template<typename Value, template<typename, typename, int> class Evaluator>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
                                     std::vector<Value> const& q,
