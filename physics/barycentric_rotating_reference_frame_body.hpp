@@ -277,9 +277,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
           orthonormal, 𝛛orthonormal, 𝛛²orthonormal);
 
   Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
-      Barycentre(std::pair{r̈₁, r̈₂},
-                 std::pair{primary_gravitational_parameter_,
-                           secondary_gravitational_parameter_});
+      Barycentre({r̈₁, r̈₂},
+                 {primary_gravitational_parameter_,
+                  secondary_gravitational_parameter_});
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
              to_this_frame,
              angular_acceleration_of_to_frame,
@@ -308,10 +308,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
       angular_velocity);
 
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
-      Barycentre(
-          std::pair{primary_degrees_of_freedom, secondary_degrees_of_freedom},
-          std::pair{primary_gravitational_parameter_,
-                    secondary_gravitational_parameter_});
+      Barycentre({primary_degrees_of_freedom, secondary_degrees_of_freedom},
+                 {primary_gravitational_parameter_,
+                  secondary_gravitational_parameter_});
   RigidTransformation<InertialFrame, ThisFrame> const rigid_transformation(
       barycentre_degrees_of_freedom.position(),
       ThisFrame::origin,

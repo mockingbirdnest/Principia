@@ -151,8 +151,7 @@ class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
     period = 2 * π *
              Sqrt(Pow<3>(semi_major_axis) / (earth->gravitational_parameter() +
                                              moon->gravitational_parameter()));
-    centre_of_mass = Barycentre<Position<ICRS>, Mass>(
-        {q1, q2}, {earth->mass(), moon->mass()});
+    centre_of_mass = Barycentre({q1, q2}, {earth->mass(), moon->mass()});
     Velocity<ICRS> const v1({-2 * π * (q1 - centre_of_mass).Norm() / period,
                              0 * si::Unit<Speed>,
                              0 * si::Unit<Speed>});
@@ -199,8 +198,7 @@ TEST_P(EphemerisTest, ProlongSpecialCases) {
   EXPECT_OK(ephemeris.Prolong(t0_ + period / 2));
   EXPECT_EQ(t_max, ephemeris.t_max());
 
-  Instant const last_t =
-      Barycentre<Instant, double>({t0_ + period, t_max}, {0.5, 0.5});
+  Instant const last_t = Barycentre({t0_ + period, t_max}, {0.5, 0.5});
   ephemeris.Prolong(last_t).IgnoreError();
   EXPECT_EQ(t_max, ephemeris.t_max());
 }

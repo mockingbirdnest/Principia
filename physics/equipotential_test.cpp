@@ -259,8 +259,8 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
       [](Position<World> const& l4, Position<World> const& l5) {
         std::vector<Position<World>> positions;
         for (int i = 0; i <= 10; ++i) {
-          positions.push_back(Barycentre(
-              std::pair{l4, l5}, std::pair{i / 10.0, (10.0 - i) / 10.0}));
+          positions.push_back(
+              Barycentre({l4, l5}, {i / 10.0, (10.0 - i) / 10.0}));
         }
         return positions;
       });

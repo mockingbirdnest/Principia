@@ -117,10 +117,9 @@ void ComputeApsides(Trajectory<Frame> const& reference,
         // Something went wrong when finding the extrema of
         // |squared_distance_approximation|. Use a linear interpolation of
         // |squared_distance_derivative| instead.
-        apsis_time = Barycentre<Instant, Variation<Square<Length>>>(
-            {time, *previous_time},
-            {*previous_squared_distance_derivative,
-             -squared_distance_derivative});
+        apsis_time = Barycentre({time, *previous_time},
+                                {*previous_squared_distance_derivative,
+                                 -squared_distance_derivative});
       }
 
       // This can happen for instance if the square distance is stationary.
@@ -451,8 +450,7 @@ absl::Status ComputeNodes(
           Sign(z_approximation.Evaluate(time))) {
         // The Hermite approximation is poorly conditioned, let's use a linear
         // approximation
-        node_time = Barycentre<Instant, Length>({*previous_time, time},
-                                                {z, -*previous_z});
+        node_time = Barycentre({*previous_time, time}, {z, -*previous_z});
       } else {
         // The normal case, find the intersection with z = 0 using Brent's
         // method.

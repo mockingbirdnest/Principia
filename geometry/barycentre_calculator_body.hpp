@@ -56,7 +56,7 @@ std::conditional_t<additive_group<Point>, std::nullopt_t, Point> const
     BarycentreCalculator<Point, Weight>::reference_;
 
 
-template<typename Point, typename Weight, std::size_t size>
+template<affine Point, typename Weight, std::size_t size>
   requires(std::is_convertible_v<Weight, double> &&
            real_vector_space<Difference<Point>>) ||
           homogeneous_vector_space<Difference<Point>, Weight>

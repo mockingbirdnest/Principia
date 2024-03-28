@@ -206,8 +206,7 @@ TEST_F(VesselTest, PrepareHistory) {
       .Times(AnyNumber());
   vessel_.CreateTrajectoryIfNeeded(t0_ + 1 * Second);
 
-  auto const expected_dof = Barycentre<DegreesOfFreedom<Barycentric>, Mass>(
-      {p1_dof_, p2_dof_}, {mass1_, mass2_});
+  auto const expected_dof = Barycentre({p1_dof_, p2_dof_}, {mass1_, mass2_});
 
   EXPECT_EQ(1, vessel_.psychohistory()->size());
   EXPECT_EQ(t0_ + 1 * Second,
@@ -253,8 +252,7 @@ TEST_F(VesselTest, AdvanceTime) {
   vessel_.AdvanceTime();
 
   auto const expected_vessel_psychohistory = NewLinearTrajectoryTimeline(
-      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
-                                                      {mass1_, mass2_}),
+      Barycentre({p1_dof_, p2_dof_}, {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
       /*t1=*/t0_,
       /*t2=*/t0_ + 1.1 * Second);
@@ -282,8 +280,7 @@ TEST_F(VesselTest, Prediction) {
 
   // The call to fill the prognostication until t_max.
   auto const expected_vessel_prediction = NewLinearTrajectoryTimeline(
-      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
-                                                      {mass1_, mass2_}),
+      Barycentre({p1_dof_, p2_dof_}, {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
       /*t1=*/t0_,
       /*t2=*/t0_ + 2 * Second);
@@ -332,8 +329,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
 
   // The call to fill the prognostication until t_max.
   auto const expected_vessel_prediction1 = NewLinearTrajectoryTimeline(
-      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
-                                                      {mass1_, mass2_}),
+      Barycentre({p1_dof_, p2_dof_}, {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
       /*t1=*/t0_,
       /*t2=*/t0_ + 5.5 * Second);
@@ -346,8 +342,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
 
   // The call to extend the exphemeris by many points.
   auto const expected_vessel_prediction2 = NewLinearTrajectoryTimeline(
-      Barycentre<DegreesOfFreedom<Barycentric>, Mass>({p1_dof_, p2_dof_},
-                                                      {mass1_, mass2_}),
+      Barycentre({p1_dof_, p2_dof_}, {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
       /*t1=*/t0_ + 5.5 * Second,
       /*t2=*/t0_ + FlightPlan::max_ephemeris_steps_per_frame * Second);

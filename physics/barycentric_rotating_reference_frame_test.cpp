@@ -94,11 +94,9 @@ class BarycentricRotatingReferenceFrameTest : public ::testing::Test {
         small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)),
-        centre_of_mass_initial_state_(
-            Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
-                {big_initial_state_, small_initial_state_},
-                {big_gravitational_parameter_,
-                 small_gravitational_parameter_})) {
+        centre_of_mass_initial_state_(Barycentre(
+            {big_initial_state_, small_initial_state_},
+            {big_gravitational_parameter_, small_gravitational_parameter_})) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
     big_small_frame_ = std::make_unique<
         BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
