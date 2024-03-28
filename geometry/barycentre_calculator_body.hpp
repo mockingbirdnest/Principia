@@ -59,8 +59,7 @@ template<affine Point, homogeneous_field Weight, std::size_t size>
   requires homogeneous_vector_space<Difference<Point>, Weight>
 Point Barycentre(Point const (&points)[size], Weight const (&weights)[size]) {
   static_assert(size != 0);
-  BarycentreCalculator<Point, Weight>
-      calculator;
+  BarycentreCalculator<Point, Weight> calculator;
   for (int i = 0; i < size; ++i) {
     calculator.Add(points[i], weights[i]);
   }
