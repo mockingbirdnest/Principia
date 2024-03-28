@@ -304,5 +304,8 @@
     <ClCompile Include="push_pull_callback_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="traits_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

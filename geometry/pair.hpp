@@ -1,10 +1,14 @@
 #pragma once
 
+#include <string>
+
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
+#include "geometry/space.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -24,6 +28,8 @@ namespace internal {
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
@@ -58,6 +64,27 @@ struct enable_if_affine<
 template<typename T>
 using enable_if_affine_t = typename enable_if_affine<T>::type;
 
+template<typename T>
+struct is_position : std::false_type {};
+template<typename Frame>
+struct is_position<Position<Frame>> : std::true_type {};
+template<typename T>
+constexpr bool is_position_v = is_position<T>::value;
+
+template<typename T>
+struct is_displacement : std::false_type {};
+template<typename Frame>
+struct is_displacement<Displacement<Frame>> : std::true_type {};
+template<typename T>
+constexpr bool is_displacement_v = is_displacement<T>::value;
+
+template<typename T>
+struct is_velocity : std::false_type {};
+template<typename Frame>
+struct is_velocity<Velocity<Frame>> : std::true_type {};
+template<typename T>
+constexpr bool is_velocity_v = is_velocity<T>::value;
+
 // A template to enable declarations on vector pairs (i.e., when both of the
 // components are vectors).
 template<typename T, typename U = T, typename = void>
@@ -79,10 +106,12 @@ using enable_if_vector_t = typename enable_if_vector<T, U>::type;
 // Bivector or Trivector).  Only the operations that make sense are defined,
 // depending on the nature of the parameters T1 and T2.
 template<typename T1, typename T2>
-class Pair {
+class Pair final {
  public:
+  Pair()
+    requires std::default_initializable<T1> && std::default_initializable<T2> =
+      default;
   Pair(T1 const& t1, T2 const& t2);
-  virtual ~Pair() = default;
 
   friend bool operator==(Pair const& left, Pair const& right) = default;
   friend bool operator!=(Pair const& left, Pair const& right) = default;
@@ -97,24 +126,26 @@ class Pair {
   template<typename U1 = T1, typename U2 = T2>
   enable_if_vector_t<Pair<U1, U2>>& operator/=(double right);
 
+  T1 const& position() const
+    requires is_position_v<T1>;
+  T1 const& displacement() const
+    requires is_displacement_v<T1>;
+
+  T2 const& velocity() const
+    requires is_velocity_v<T2>;
+
   void WriteToMessage(not_null<serialization::Pair*> message) const;
   static Pair ReadFromMessage(serialization::Pair const& message)
     requires serializable<T1> && serializable<T2>;
 
- protected:
-  // The subclasses can access the members directly to implement accessors.
+ private:
   T1 t1_;
   T2 t2_;
 
- private:
   // This is needed so that different instantiations of Pair can access the
   // members.
   template<typename U1, typename U2>
   friend class Pair;
-
-  // This is needed to specialize BarycentreCalculator.
-  template<typename V, typename S>
-  friend class _barycentre_calculator::BarycentreCalculator;
 
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
@@ -153,6 +184,9 @@ class Pair {
       Pair<U1, U2>,
       Pair<Quotient<U1, Scalar>, Quotient<U2, Scalar>>>::type
   operator/(Pair<U1, U2> const& left, Scalar right);
+
+  template<typename U1, typename U2>
+  friend std::string DebugString(Pair<U1, U2> const& pair);
 
   template<typename U1, typename U2>
   friend std::ostream& operator<<(std::ostream& out, Pair<U1, U2> const& pair);
@@ -197,38 +231,6 @@ using internal::Pair;
 using internal::vector_of;
 
 }  // namespace _pair
-
-// Specialize BarycentreCalculator to make it applicable to Pairs.
-namespace _barycentre_calculator {
-namespace internal {
-
-using namespace principia::geometry::_pair;
-
-template<typename T1, typename T2, typename Weight>
-class BarycentreCalculator<Pair<T1, T2>, Weight> final {
- public:
-  BarycentreCalculator() = default;
-
-  void Add(Pair<T1, T2> const& pair, Weight const& weight);
-  Pair<T1, T2> Get() const;
-
-  Weight const& weight() const;
-
- private:
-  bool empty_ = true;
-  Product<Difference<T1>, Weight> t1_weighted_sum_;
-  Product<Difference<T2>, Weight> t2_weighted_sum_;
-  Weight weight_;
-
-  // We need reference values to convert points into vectors, if needed.  We
-  // pick default-constructed objects as they don't introduce any inaccuracies
-  // in the computations.
-  static T1 const reference_t1_;
-  static T2 const reference_t2_;
-};
-
-}  // namespace internal
-}  // namespace _barycentre_calculator
 }  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.

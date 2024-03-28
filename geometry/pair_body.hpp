@@ -2,6 +2,8 @@
 
 #include "geometry/pair.hpp"
 
+#include <string>
+
 #include "geometry/serialization.hpp"
 
 namespace principia {
@@ -56,6 +58,24 @@ enable_if_vector_t<Pair<U1, U2>>& Pair<T1, T2>::operator/=(double const right) {
   t1_ /= right;
   t2_ /= right;
   return *this;
+}
+
+template<typename T1, typename T2>
+T1 const& Pair<T1, T2>::position() const
+  requires is_position_v<T1> {
+  return t1_;
+}
+
+template<typename T1, typename T2>
+T1 const& Pair<T1, T2>::displacement() const
+  requires is_displacement_v<T1> {
+  return t1_;
+}
+
+template<typename T1, typename T2>
+T2 const& Pair<T1, T2>::velocity() const
+  requires is_velocity_v<T2> {
+  return t2_;
 }
 
 template<typename T1, typename T2>
@@ -123,6 +143,11 @@ operator/(Pair<T1, T2> const& left, Scalar const right) {
 }
 
 template<typename T1, typename T2>
+std::string DebugString(Pair<T1, T2> const& pair) {
+  return "{" + DebugString(pair.t1_) + ", " + DebugString(pair.t2_) + "}";
+}
+
+template<typename T1, typename T2>
 std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
   out << "{" << pair.t1_ << ", " << pair.t2_ << "}";
   return out;
@@ -130,47 +155,6 @@ std::ostream& operator<<(std::ostream& out, Pair<T1, T2> const& pair) {
 
 }  // namespace internal
 }  // namespace _pair
-
-namespace _barycentre_calculator {
-namespace internal {
-
-template<typename T1, typename T2, typename Weight>
-void BarycentreCalculator<Pair<T1, T2>, Weight>::Add(Pair<T1, T2> const& pair,
-                                                     Weight const& weight) {
-  auto const t1_weighted_sum_diff = (pair.t1_ - reference_t1_) * weight;
-  auto const t2_weighted_sum_diff = (pair.t2_ - reference_t2_) * weight;
-  if (empty_) {
-    t1_weighted_sum_ = t1_weighted_sum_diff;
-    t2_weighted_sum_ = t2_weighted_sum_diff;
-    weight_ = weight;
-    empty_ = false;
-  } else {
-    t1_weighted_sum_ += t1_weighted_sum_diff;
-    t2_weighted_sum_ += t2_weighted_sum_diff;
-    weight_ += weight;
-  }
-}
-
-template<typename T1, typename T2, typename Weight>
-Pair<T1, T2> BarycentreCalculator<Pair<T1, T2>, Weight>::Get() const {
-  CHECK(!empty_) << "Empty BarycentreCalculator";
-  return Pair<T1, T2>(reference_t1_ + (t1_weighted_sum_ / weight_),
-                      reference_t2_ + (t2_weighted_sum_ / weight_));
-}
-
-template<typename T1, typename T2, typename Weight>
-Weight const& BarycentreCalculator<Pair<T1, T2>, Weight>::weight() const {
-  return weight_;
-}
-
-template<typename T1, typename T2, typename Weight>
-T1 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t1_;
-
-template<typename T1, typename T2, typename Weight>
-T2 const BarycentreCalculator<Pair<T1, T2>, Weight>::reference_t2_;
-
-}  // namespace internal
-}  // namespace _barycentre_calculator
 }  // namespace geometry
 
 namespace base {

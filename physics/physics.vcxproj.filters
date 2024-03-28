@@ -20,9 +20,6 @@
     <ClInclude Include="degrees_of_freedom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="degrees_of_freedom_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="massive_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
