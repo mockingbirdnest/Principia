@@ -57,11 +57,10 @@ class HarmonicDamping final {
   // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
   // following coefficients in monomial basis.
   // The constant term is always 0, and is thus ignored in the evaluation.
-  // TODO(phl): We have to specify an evaluator, but we do not use it; we use a
-  // custom evaluation that ignores the constant term instead.  See #1922.
-  PolynomialInMonomialBasis<
-      double, Length, 3,
-      EstrinEvaluator>::Coefficients sigmoid_coefficients_;
+  // TODO(phl): We don't use an evaluator; we use a custom evaluation that
+  // ignores the constant term instead.  See #1922.
+  PolynomialInMonomialBasis<double, Length, 3>::Coefficients
+      sigmoid_coefficients_;
 };
 }  // namespace internal
 

@@ -298,7 +298,7 @@ TEST_F(RootFindersTest, SmoothMaximum) {
   // The composition of the 16th degree Taylor series for the cosine with the
   // polynomial x ↦ 3(x-1); this function approximates cos(3(x-1)) near 1, where
   // it has a local maximum.
-  PolynomialInMonomialBasis<double, double, 16, EstrinEvaluatorWithoutFMA> const
+  PolynomialInMonomialBasis<double, double, 16> const
       p({-4059064033.0 / 4100096000,
          759417921.0 / 1793792000,
          3196519569.0 / 717516800,
@@ -315,7 +315,8 @@ TEST_F(RootFindersTest, SmoothMaximum) {
          -19683.0 / 51251200,
          19683.0 / 102502400,
          -59049.0 / 1793792000,
-         59049.0 / 28700672000});
+         59049.0 / 28700672000},
+        with_evaluator<EstrinWithoutFMA>);
   auto const f = [&evaluations, &p](double const x) {
     ++evaluations;
     return p(x);

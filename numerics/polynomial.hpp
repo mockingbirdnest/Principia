@@ -6,6 +6,7 @@
 
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -15,6 +16,7 @@ namespace _polynomial {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_named_quantities;
 
 // |Value_| must belong to an affine space.  |Argument_| must belong to a ring
@@ -52,6 +54,7 @@ class Polynomial {
 
   // The evaluator is not part of the serialization because it's fine to read
   // with a different evaluator than the one the polynomial was written with.
+  // TODO(phl): Revisit when we deserialize the evaluator.
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);

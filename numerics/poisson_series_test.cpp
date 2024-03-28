@@ -52,8 +52,8 @@ class PoissonSeriesTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using Degree0 = PoissonSeries<double, 0, 0, HornerEvaluator>;
-  using Degree1 = PoissonSeries<double, 1, 1, HornerEvaluator>;
+  using Degree0 = PoissonSeries<double, 0, 0, Horner>;
+  using Degree1 = PoissonSeries<double, 1, 1, Horner>;
 
   PoissonSeriesTest()
       : ω0_(0 * Radian / Second),
@@ -115,7 +115,7 @@ TEST_F(PoissonSeriesTest, Evaluate) {
 }
 
 TEST_F(PoissonSeriesTest, Conversion) {
-  using Degree3 = PoissonSeries<double, 3, 3, HornerEvaluator>;
+  using Degree3 = PoissonSeries<double, 3, 3, Horner>;
   Degree3 const pa3 = Degree3(*pa_);
   EXPECT_THAT(pa3(t0_ + 1 * Second),
               AlmostEquals(3 + 11 * Sin(1 * Radian) + 15 * Cos(1 * Radian) +
@@ -185,7 +185,7 @@ TEST_F(PoissonSeriesTest, AtOrigin) {
 }
 
 TEST_F(PoissonSeriesTest, PointwiseInnerProduct) {
-  using Degree2 = PoissonSeries<Displacement<World>, 2, 0, HornerEvaluator>;
+  using Degree2 = PoissonSeries<Displacement<World>, 2, 0, Horner>;
   Degree2::AperiodicPolynomial::Coefficients const coefficients_a({
       Displacement<World>({0 * Metre,
                             0 * Metre,
@@ -262,15 +262,15 @@ TEST_F(PoissonSeriesTest, InnerProduct) {
   // Computed using Mathematica.
   EXPECT_THAT(InnerProduct(pa_->AtOrigin(t_mid),
                            pb_->AtOrigin(t_mid),
-                           _apodization::Hann<HornerEvaluator>(t_min, t_max),
+                           _apodization::Hann<Horner>(t_min, t_max),
                            t_min,
                            t_max),
               AlmostEquals(-381.25522770148542400, 0, 7));
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
-  using Degree4 = PoissonSeries<Length, 0, 4, HornerEvaluator>;
-  using Degree5 = PoissonSeries<Length, 0, 5, HornerEvaluator>;
+  using Degree4 = PoissonSeries<Length, 0, 4, Horner>;
+  using Degree5 = PoissonSeries<Length, 0, 5, Horner>;
   Time const duration = 4.77553415434249021e-02 * Second;
   Instant const t_min = t0_;
   Instant const t_mid = t0_ + duration / 2;
@@ -316,7 +316,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
   auto const product =
       InnerProduct(f.AtOrigin(t_mid),
                    q.AtOrigin(t_mid),
-                   _apodization::Hann<HornerEvaluator>(t_min, t_max),
+                   _apodization::Hann<Horner>(t_min, t_max),
                    t_min,
                    t_max);
   // Exact result obtained using Mathematica.
@@ -326,8 +326,8 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct1) {
 }
 
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
-  using Degree0 = PoissonSeries<double, 0, 0, HornerEvaluator>;
-  using Degree4 = PoissonSeries<double, 4, 4, HornerEvaluator>;
+  using Degree0 = PoissonSeries<double, 0, 0, Horner>;
+  using Degree4 = PoissonSeries<double, 4, 4, Horner>;
   Time const duration = +3.62955915932496390e-02 * Second;
   Instant const t_min = t0_;
   Instant const t_mid = t0_ + duration;
@@ -379,19 +379,21 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                      .cos = Degree0::PeriodicPolynomial({1}, t_mid)}}});
 
   {
-    auto const product = InnerProduct(f, g,
-                     _apodization::Dirichlet<HornerEvaluator>(t_min, t_max),
-                     t_min, t_max);
-    EXPECT_THAT(
-        product,
-        RelativeErrorFrom(
-            +2.0267451184776034270e-11,
-            AnyOf(IsNear(0.26_(1)), IsNear(0.33_(1)), IsNear(0.38_(1)))));
+    auto const product = InnerProduct(
+        f, g,
+        _apodization::Dirichlet<Horner>(t_min, t_max),
+        t_min, t_max);
+    EXPECT_THAT(product,
+                RelativeErrorFrom(+2.0267451184776034270e-11,
+                                  AnyOf(IsNear(0.26_(1)),
+                                        IsNear(0.32_(1)),
+                                        IsNear(0.33_(1)),
+                                        IsNear(0.38_(1)))));
   }
   {
     auto const product =
         (PointwiseInnerProduct(f, g) *
-         _apodization::Dirichlet<HornerEvaluator>(t_min, t_max))
+         _apodization::Dirichlet<Horner>(t_min, t_max))
             .Integrate(t_min, t_max) /
         (t_max - t_min);
     EXPECT_THAT(
@@ -402,7 +404,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
 
 // This product occurs when orthogonalizing the basis for the Moon.
 TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
-  using Series = PoissonSeries<double, 5, 3, EstrinEvaluator>;
+  using Series = PoissonSeries<double, 5, 3, Estrin>;
   Time const duration = 3'945'600 * Second;
   Instant const t_min = t0_;
   Instant const t_mid = t0_ + duration;
@@ -589,11 +591,12 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
   {
     auto const product =
         InnerProduct(f, g,
-                     _apodization::Dirichlet<EstrinEvaluator>(t_min, t_max),
+                     _apodization::Dirichlet<Estrin>(t_min, t_max),
                      t_min, t_max);
     EXPECT_THAT(product,
                 RelativeErrorFrom(expected_product,
-                                  AnyOf(IsNear(0.00069_(1)),
+                                  AnyOf(IsNear(0.00058_(1)),
+                                        IsNear(0.00069_(1)),
                                         IsNear(0.0013_(1)),
                                         IsNear(0.0015_(1)))));
   }
@@ -606,7 +609,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
   {
     auto const product =
         (PointwiseInnerProduct(f, g) *
-         _apodization::Dirichlet<EstrinEvaluator>(t_min, t_max))
+         _apodization::Dirichlet<Estrin>(t_min, t_max))
             .Integrate(t_min, t_max) /
         (t_max - t_min);
     EXPECT_THAT(

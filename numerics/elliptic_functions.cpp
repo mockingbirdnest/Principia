@@ -34,11 +34,11 @@ void JacobiSNCNDNReduced(Angle const& u,
 // Maclaurin series for Fukushima b₀.  These are polynomials in m that are used
 // as coefficients of a polynomial in u₀².  The index gives the corresponding
 // power of u₀².
-PolynomialInMonomialBasis<double, double, 0, HornerEvaluator>
+PolynomialInMonomialBasis<double, double, 0>
     fukushima_b₀_maclaurin_m_1(std::make_tuple(1.0 / 2.0));
-PolynomialInMonomialBasis<double, double, 1, HornerEvaluator>
+PolynomialInMonomialBasis<double, double, 1>
     fukushima_b₀_maclaurin_m_2(std::make_tuple(-1.0 / 24.0, -1.0 / 6.0));
-PolynomialInMonomialBasis<double, double, 2, HornerEvaluator>
+PolynomialInMonomialBasis<double, double, 2>
     fukushima_b₀_maclaurin_m_3(std::make_tuple(1.0 / 720.0,
                                                11.0 / 180.0,
                                                1.0 / 45.0));
@@ -80,7 +80,7 @@ void JacobiSNCNDNReduced(Angle const& u,
   double const b₀1 = fukushima_b₀_maclaurin_m_1(m);
   double const b₀2 = fukushima_b₀_maclaurin_m_2(m);
   double const b₀3 = fukushima_b₀_maclaurin_m_3(m);
-  PolynomialInMonomialBasis<double, double, 3, HornerEvaluator>
+  PolynomialInMonomialBasis<double, double, 3>
       fukushima_b₀_maclaurin_u₀²_3(std::make_tuple(0.0, b₀1, b₀2, b₀3));
   double const u₀² = (u₀ * u₀) / Pow<2>(Radian);
 

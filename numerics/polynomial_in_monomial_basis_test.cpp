@@ -48,14 +48,10 @@ class PolynomialInMonomialBasisTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2,
-                                        HornerEvaluator>;
-  using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2,
-                                        HornerEvaluator>;
-  using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2,
-                                        HornerEvaluator>;
-  using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17,
-                                        EstrinEvaluator>;
+  using P2V = PolynomialInMonomialBasis<Displacement<World>, Time, 2>;
+  using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
+  using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2>;
+  using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17>;
 
   PolynomialInMonomialBasisTest()
       : coefficients_({
@@ -103,7 +99,7 @@ TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
 
 // Check that a polynomial can be constructed and evaluated.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate2V) {
-  P2V const p(coefficients_);
+  P2V const p(coefficients_, with_evaluator<Horner>);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
@@ -222,8 +218,8 @@ TEST_F(PolynomialInMonomialBasisTest, VectorSpace) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Ring) {
-  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
-  using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2>;
+  using P3 = PolynomialInMonomialBasis<Current, Time, 3>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
   P3 const p3({2 * Ampere,
                -4 * Ampere / Second,
@@ -253,8 +249,8 @@ TEST_F(PolynomialInMonomialBasisTest, Ring) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Affine) {
-  using P0A = PolynomialInMonomialBasis<Instant, Time, 0, HornerEvaluator>;
-  using P0V = PolynomialInMonomialBasis<Time, Time, 0, HornerEvaluator>;
+  using P0A = PolynomialInMonomialBasis<Instant, Time, 0>;
+  using P0V = PolynomialInMonomialBasis<Time, Time, 0>;
 
   P0A const p0a(std::tuple{Instant() + 1 * Second});
   P0V const p0v(std::tuple{2 * Second});
@@ -284,14 +280,10 @@ TEST_F(PolynomialInMonomialBasisTest, Affine) {
 // the bug would be hard, we ifdef out the test.
 #if PRINCIPIA_COMPILER_MSVC
 TEST_F(PolynomialInMonomialBasisTest, Monoid) {
-  using P0 =
-      PolynomialInMonomialBasis<Current, Temperature, 0, HornerEvaluator>;
-  using P2A =
-      PolynomialInMonomialBasis<Temperature, Instant, 2, HornerEvaluator>;
-  using P2V =
-      PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
-  using P3 =
-      PolynomialInMonomialBasis<Current, Temperature, 3, HornerEvaluator>;
+  using P0 = PolynomialInMonomialBasis<Current, Temperature, 0>;
+  using P2A = PolynomialInMonomialBasis<Temperature, Instant, 2>;
+  using P2V = PolynomialInMonomialBasis<Temperature, Time, 2>;
+  using P3 = PolynomialInMonomialBasis<Current, Temperature, 3>;
   Instant const t0;
   P0 const p0(std::tuple{9 * Ampere});
   P2A const p2a({1 * Kelvin,
@@ -392,8 +384,8 @@ TEST_F(PolynomialInMonomialBasisTest, AtOrigin) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Derivative) {
-  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
-  using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2>;
+  using P3 = PolynomialInMonomialBasis<Current, Time, 3>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
   P3 const p3({2 * Ampere,
                -4 * Ampere / Second,
@@ -414,7 +406,7 @@ TEST_F(PolynomialInMonomialBasisTest, Derivative) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
-  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
 
   EXPECT_THAT(p2.Primitive()(0 * Second),
@@ -431,10 +423,10 @@ TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
-  PolynomialInMonomialBasis<Entropy, Time, 0, HornerEvaluator> const
-      horner_boltzmann(std::make_tuple(BoltzmannConstant));
-  PolynomialInMonomialBasis<Entropy, Time, 0, EstrinEvaluator> const
-      estrin_boltzmann(std::make_tuple(BoltzmannConstant));
+  PolynomialInMonomialBasis<Entropy, Time, 0> const horner_boltzmann(
+      std::make_tuple(BoltzmannConstant), with_evaluator<Horner>);
+  PolynomialInMonomialBasis<Entropy, Time, 0> const estrin_boltzmann(
+      std::make_tuple(BoltzmannConstant), with_evaluator<Estrin>);
   EXPECT_THAT(horner_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(estrin_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),
@@ -444,10 +436,10 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
-  PolynomialInMonomialBasis<Length, Time, 1, HornerEvaluator> const
-      horner_light({0 * Metre, SpeedOfLight});
-  PolynomialInMonomialBasis<Length, Time, 1, EstrinEvaluator> const
-      estrin_light({0 * Metre, SpeedOfLight});
+  PolynomialInMonomialBasis<Length, Time, 1> const
+      horner_light({0 * Metre, SpeedOfLight}, with_evaluator<Horner>);
+  PolynomialInMonomialBasis<Length, Time, 1> const
+      estrin_light({0 * Metre, SpeedOfLight}, with_evaluator<Estrin>);
   constexpr Length light_second = Second * SpeedOfLight;
   EXPECT_THAT(horner_light(1729 * Second), Eq(1729 * light_second));
   EXPECT_THAT(estrin_light(1729 * Second), Eq(1729 * light_second));
@@ -473,8 +465,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
-            message);
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<Horner>(message);
     EXPECT_EQ(2, polynomial_read->degree());
     EXPECT_THAT(
         (*polynomial_read)(0.5 * Second),
@@ -501,9 +492,15 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.point().has_scalar());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>,
-                   Instant>::ReadFromMessage<HornerEvaluator>(message);
+        Polynomial<Displacement<World>, Instant>::ReadFromMessage<Horner>(
+            message);
     EXPECT_EQ(2, polynomial_read->degree());
+    *polynomial_read =
+        std::move(
+            dynamic_cast<
+                PolynomialInMonomialBasis<Displacement<World>, Instant, 2>&>(
+                *polynomial_read))
+            .WithEvaluator<Horner>();
     EXPECT_THAT(
         (*polynomial_read)(Instant() + 0.5 * Second),
         AlmostEquals(
@@ -529,9 +526,14 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
-            message);
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<Horner>(message);
     EXPECT_EQ(17, polynomial_read->degree());
+    *polynomial_read =
+        std::move(
+            dynamic_cast<
+                PolynomialInMonomialBasis<Displacement<World>, Time, 17>&>(
+                *polynomial_read))
+            .WithEvaluator<Estrin>();
     EXPECT_THAT((*polynomial_read)(0.5 * Second),
                 AlmostEquals(
                     Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));

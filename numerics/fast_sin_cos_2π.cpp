@@ -20,8 +20,7 @@ namespace {
 
 using P3 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
-                                     /*degree=*/3,
-                                     /*Evaluator=*/EstrinEvaluator>;
+                                     /*degree=*/3>;
 
 // 2nd-degree polynomials that minimize the absolute error on sin and cos over
 // the interval [0, 1/8].  The minimization algorithm is run on

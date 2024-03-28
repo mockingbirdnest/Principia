@@ -12,7 +12,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/legendre.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -39,7 +38,6 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_legendre;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -135,12 +133,10 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   Variation<double> max_derivative_error{};
   for (ODE::State const& state : solution) {
     double const x = (state.time.value - t_initial) / (1 * Second);
-    double const error =
-        AbsoluteError(LegendrePolynomial<degree, EstrinEvaluator>()(x),
-                      state.positions[0].value);
+    double const error = AbsoluteError(LegendrePolynomial<degree>()(x),
+                                       state.positions[0].value);
     Variation<double> const derivative_error = AbsoluteError(
-        LegendrePolynomial<degree, EstrinEvaluator>().Derivative()(x) /
-            (1 * Second),
+        LegendrePolynomial<degree>().Derivative()(x) / (1 * Second),
         state.velocities[0].value);
     max_error = std::max(max_error, error);
     max_derivative_error = std::max(max_derivative_error, derivative_error);
