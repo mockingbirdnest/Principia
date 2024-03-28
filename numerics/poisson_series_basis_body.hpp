@@ -173,7 +173,7 @@ std::array<Series, sizeof...(indices)> AperiodicSeriesGenerator<
     degree, dimension,
     std::index_sequence<indices...>>::BasisElements(Instant const& t_min,
                                                     Instant const& t_max) {
-  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre({t_min, t_max}, {1, 1});
   return {(Series(
       PolynomialGenerator<typename Series::AperiodicPolynomial,
                           dimension>::template UnitPolynomial<indices>(t_min,
@@ -221,7 +221,7 @@ std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
     std::index_sequence<indices...>>::BasisElements(AngularFrequency const& ω,
                                                     Instant const& t_min,
                                                     Instant const& t_max) {
-  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre({t_min, t_max}, {1, 1});
   typename Series::AperiodicPolynomial const aperiodic_zero{{}, t_mid};
   return {Series(
       aperiodic_zero,

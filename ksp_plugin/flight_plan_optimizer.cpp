@@ -598,7 +598,7 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
     // Try to nudge the desired final time.  This may not succeed, in which case
     // we give up.
     auto const previous_actual_final_time = flight_plan_->actual_final_time();
-    auto const new_desired_final_time = Barycentre<Instant, double>(
+    auto const new_desired_final_time = Barycentre(
         {flight_plan_->initial_time(), flight_plan_->desired_final_time()},
         {1 - flight_plan_extension_factor, flight_plan_extension_factor});
     flight_plan_->SetDesiredFinalTime(new_desired_final_time).IgnoreError();

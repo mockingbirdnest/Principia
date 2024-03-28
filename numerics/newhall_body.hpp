@@ -321,7 +321,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre({t_min, t_max}, {1, 1});
   return (origin +
           Dehomogeneize<Difference<Value>, degree, Evaluator>(
               NewhallMonomialApproximator<

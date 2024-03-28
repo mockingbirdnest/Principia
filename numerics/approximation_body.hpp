@@ -56,7 +56,7 @@ not_null<std::unique_ptr<
     FixedVector<Value<Argument, Function>, N / 2 + 1> const& previous_aⱼ,
     Difference<Value<Argument, Function>>* const error_estimate) {
   // This implementation follows [Boy13], section 4 and appendix A.
-  auto const midpoint = Barycentre(std::pair{a, b}, std::pair{0.5, 0.5});
+  auto const midpoint = Barycentre({a, b}, {0.5, 0.5});
 
   auto чебышёв_lobato_point =
       [&a, &b, &midpoint](std::int64_t const k) -> Argument {
@@ -149,8 +149,7 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
             << full_error_estimate;
     Difference<Value<Argument, Function>> upper_error_estimate;
     Difference<Value<Argument, Function>> lower_error_estimate;
-    auto const midpoint =
-        Barycentre(std::pair(lower_bound, upper_bound), std::pair(1.0, 1.0));
+    auto const midpoint = Barycentre({lower_bound, upper_bound}, {1, 1});
     bool const lower_interpolants_stop =
         StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
             f,

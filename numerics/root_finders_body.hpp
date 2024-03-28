@@ -43,8 +43,7 @@ Argument Bisect(Function f,
   Argument lower = lower_bound;
   Argument upper = upper_bound;
   for (;;) {
-    Argument const middle =
-        Barycentre<Argument, double>({lower, upper}, {1, 1});
+    Argument const middle = Barycentre({lower, upper}, {1, 1});
     // The size of the interval has reached one ULP.
     if (middle == lower || middle == upper) {
       return middle;
@@ -170,12 +169,12 @@ Argument GoldenSectionSearch(Function f,
   Argument lower = lower_bound;
   Value f_lower = f(lower);
 
-  Argument lower_interior = Barycentre<Argument, double>(
-      {lower, upper}, {upper_interior_ratio, lower_interior_ratio});
+  Argument lower_interior =
+      Barycentre({lower, upper}, {upper_interior_ratio, lower_interior_ratio});
   Value f_lower_interior = f(lower_interior);
 
-  Argument upper_interior = Barycentre<Argument, double>(
-      {lower, upper}, {lower_interior_ratio, upper_interior_ratio});
+  Argument upper_interior =
+      Barycentre({lower, upper}, {lower_interior_ratio, upper_interior_ratio});
   Value f_upper_interior = f(upper_interior);
 
   while (lower < lower_interior &&
@@ -206,7 +205,7 @@ Argument GoldenSectionSearch(Function f,
       f_upper_interior = f(upper_interior);
     }
   }
-  return Barycentre<Argument, double>({lower, upper}, {1, 1});
+  return Barycentre({lower, upper}, {1, 1});
 }
 
 // The implementation is translated from the ALGOL 60 in [Bre73], chapter 5,
@@ -267,7 +266,7 @@ Argument Brent(Function f,
     Difference<Argument> e{};
     f_v = f_w = f_x = f(x);
     for (;;) {
-      Argument const m = Barycentre<Argument, double>({a, b}, {1, 1});
+      Argument const m = Barycentre({a, b}, {1, 1});
       Difference<Argument> const tol = eps * Abs(x - Argument{}) + t;
       Difference<Argument> const t2 = 2 * tol;
       // Check stopping criterion.

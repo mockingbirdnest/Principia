@@ -183,8 +183,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
   // maximum of the potential.
   auto const potential_on_primary_secondary_segment = [&](double const x) {
     return potential(
-        Barycentre(std::pair(secondary_position, primary_position),
-                    std::pair(x, 1 - x)));
+        Barycentre({secondary_position, primary_position}, {x, 1 - x}));
   };
   double const arg_approx_l1 = Brent(
       potential_on_primary_secondary_segment,
@@ -195,11 +194,11 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
   // the barycentre.  We look for it between the smaller body and a point as far
   // from the second body as the barycentre, but in the other direction.
   auto const potential_on_secondary_outward_segment = [&](double x) {
-    return potential(Barycentre(
-        std::pair(secondary_position,
-                  RotatingPulsating::origin +
-                      2 * (secondary_position - RotatingPulsating::origin)),
-        std::pair(x, 1 - x)));
+    return potential(
+        Barycentre({secondary_position,
+                    RotatingPulsating::origin +
+                        2 * (secondary_position - RotatingPulsating::origin)},
+                   {x, 1 - x}));
   };
   double const arg_approx_l2 = Brent(
       potential_on_secondary_outward_segment,

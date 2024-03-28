@@ -54,8 +54,7 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
         double const split = *it_split;
         CHECK_LE(0, split);
         CHECK_LE(split, 1);
-        t_split = Barycentre<Instant, double>({t_min, t_max},
-                                              {1 - split, split});
+        t_split = Barycentre({t_min, t_max}, {1 - split, split});
       }
     }
     if (t >= t_split) {
