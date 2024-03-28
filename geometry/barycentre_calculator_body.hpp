@@ -55,21 +55,21 @@ template<affine Point, homogeneous_field Weight>
 std::conditional_t<additive_group<Point>, std::nullopt_t, Point> const
     BarycentreCalculator<Point, Weight>::reference_;
 
-
-template<affine Point, typename Weight, std::size_t size>
-  requires(std::is_convertible_v<Weight, double> &&
-           real_vector_space<Difference<Point>>) ||
-          homogeneous_vector_space<Difference<Point>, Weight>
+template<affine Point, homogeneous_field Weight, std::size_t size>
+  requires homogeneous_vector_space<Difference<Point>, Weight>
 Point Barycentre(Point const (&points)[size], Weight const (&weights)[size]) {
   static_assert(size != 0);
-  BarycentreCalculator<
-      Point,
-      std::conditional_t<std::is_convertible_v<Weight, double>, double, Weight>>
+  BarycentreCalculator<Point, Weight>
       calculator;
   for (int i = 0; i < size; ++i) {
     calculator.Add(points[i], weights[i]);
   }
   return calculator.Get();
+}
+
+template<real_affine_space Point, std::size_t size>
+Point Barycentre(Point const (&points)[size], double const (&weights)[size]) {
+  return Barycentre<Point, double>(points, weights);
 }
 
 template<typename T, typename Scalar, template<typename...> class Container>
