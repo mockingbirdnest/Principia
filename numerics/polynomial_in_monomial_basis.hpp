@@ -163,6 +163,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       serialization::Polynomial const& message);
 
  private:
+  // TODO(egg): This function should return |not_null|, but that's not
+  // constexpr.
   static constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
   DefaultEvaluator();
 
@@ -173,7 +175,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   Coefficients coefficients_;
   Argument origin_;
-  Evaluator<Value_, Difference<Argument_>, degree_> const* evaluator_;
+  not_null<Evaluator<Value_, Difference<Argument_>, degree_>> const* evaluator_;
 
   template<typename V, typename A, int r>
   constexpr PolynomialInMonomialBasis<V, A, r>

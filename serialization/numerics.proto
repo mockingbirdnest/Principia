@@ -95,9 +95,14 @@ message PolynomialInMonomialBasis {
   extend Polynomial {
     optional PolynomialInMonomialBasis extension = 10000;
   }
-  enum Evaluator {
-    ESTRIN = 0;
-    HORNER = 1;
+  message Evaluator {
+    enum Kind {
+      ESTRIN = 0;
+      HORNER = 1;
+      ESTRIN_WITHOUT_FMA = 2;
+      HORNER_WITHOUT_FMA = 3;
+    }
+    required Kind kind = 1;
   }
   message Coefficient {
     oneof message {
