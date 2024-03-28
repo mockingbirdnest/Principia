@@ -446,6 +446,12 @@ Derivative() const {
 }
 
 template<typename Value_, typename Argument_, int degree_>
+template<template<typename, typename, int> typename Evaluator_>
+void PolynomialInMonomialBasis<Value_, Argument_, degree_>::SetEvaluator() {
+  evaluator_ = Evaluator_<Value, Difference<Argument>, degree_>::Singleton();
+}
+
+template<typename Value_, typename Argument_, int degree_>
 PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::Primitive() const
   requires additive_group<Value> {
@@ -509,18 +515,6 @@ ReadFromMessage(serialization::Polynomial const& message) {
                                 serialization::PolynomialInMonomialBasis>::
                                 ReadFromMessage(extension);
   return PolynomialInMonomialBasis(coefficients, origin);
-}
-
-template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
-    serialization::Polynomial const& message,
-    with_evaluator_t<Evaluator_> evaluator_tag) {
-  auto const polynomial_without_evaluator = ReadFromMessage(message);
-  return PolynomialInMonomialBasis(polynomial_without_evaluator.coefficients_,
-                                   polynomial_without_evaluator.origin_,
-                                   evaluator_tag);
 }
 
 template<typename Value_, typename Argument_, int degree_>

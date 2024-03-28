@@ -5,8 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "absl/strings/str_cat.h"
-#include "absl/strings/str_join.h"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
@@ -22,14 +20,6 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
         PolynomialInMonomialBasis<Value, Argument, value>>(                 \
         PolynomialInMonomialBasis<Value, Argument, value>::ReadFromMessage( \
             message))
-
-#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(value,         \
-                                                              evaluator_tag) \
-  case value:                                                                \
-    return make_not_null_unique<                                             \
-        PolynomialInMonomialBasis<Value, Argument, value>>(                  \
-        PolynomialInMonomialBasis<Value, Argument, value>::ReadFromMessage(  \
-            message, evaluator_tag))
 
 template<typename Value_, typename Argument_>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
@@ -67,45 +57,6 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
   }
 }
 
-template<typename Value_, typename Argument_>
-template<template<typename, typename, int> typename Evaluator_>
-not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
-Polynomial<Value_, Argument_>::ReadFromMessage(
-    serialization::Polynomial const& message,
-    with_evaluator_t<Evaluator_> evaluator_tag) {
-  // 24 is the largest exponent that we can serialize for Quantity.
-  switch (message.degree()) {
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(1, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(2, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(3, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(4, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(5, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(6, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(7, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(8, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(9, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(10, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(11, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(12, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(13, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(14, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(15, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(16, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(17, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(18, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(19, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(20, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(21, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(22, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(23, evaluator_tag);
-    PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR(24, evaluator_tag);
-    default:
-      LOG(FATAL) << "Unexpected degree " << message.degree();
-      break;
-  }
-}
-
-#undef PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE_WITH_EVALUATOR
 #undef PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE
 
 }  // namespace internal

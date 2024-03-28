@@ -54,10 +54,6 @@ class Polynomial {
 
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
-  template<template<typename, typename, int> typename Evaluator_>
-  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
-      serialization::Polynomial const& message,
-      with_evaluator_t<Evaluator_>);
 };
 
 }  // namespace internal

@@ -147,14 +147,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       Argument const& argument2) const
     requires additive_group<Value>;
 
+  // Changes the evaluator of this object.  Useful on the result of an operator
+  // or of `ReadFromMessage`, as these functions use the default evaluator.
+  template<template<typename, typename, int> typename Evaluator_>
+  void SetEvaluator();
+
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
-  template<template<typename, typename, int> typename Evaluator_>
-  static PolynomialInMonomialBasis ReadFromMessage(
-      serialization::Polynomial const& message,
-      with_evaluator_t<Evaluator_>);
 
  private:
   static constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
