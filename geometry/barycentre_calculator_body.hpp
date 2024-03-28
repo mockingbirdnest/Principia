@@ -71,6 +71,24 @@ Point Barycentre(Point const (&points)[size], double const (&weights)[size]) {
   return Barycentre<Point, double>(points, weights);
 }
 
+template<real_affine_space Point, std::size_t size>
+Point Barycentre(Point const (&points)[size]) {
+  static_assert(size != 0);
+  Difference<Point> total{};
+  for (int i = 0; i < size; ++i) {
+    if constexpr (additive_group<Point>) {
+      total += points[i];
+    } else {
+      total += points[i] - Point{};
+    }
+  }
+  if constexpr (additive_group<Point>) {
+    return total / size;
+  } else {
+    return total / size + Point{};
+  }
+}
+
 template<typename T, typename Scalar, template<typename...> class Container>
 T Barycentre(Container<T> const& ts, Container<Scalar> const& weights) {
   CHECK_EQ(ts.size(), weights.size()) << "Ts and weights of unequal sizes";

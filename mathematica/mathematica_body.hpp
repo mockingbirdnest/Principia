@@ -125,7 +125,7 @@ std::string ToMathematicaBody(
     OptionalExpressIn express_in) {
   auto const& a = polynomial.lower_bound();
   auto const& b = polynomial.upper_bound();
-  auto const midpoint = Barycentre({a, b}, {0.5, 0.5});
+  auto const midpoint = Barycentre({a, b});
   std::string const argument = RawApply(
       "Divide",
       {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),

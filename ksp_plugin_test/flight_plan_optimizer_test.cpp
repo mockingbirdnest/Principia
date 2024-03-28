@@ -533,7 +533,7 @@ class MetricTest
     EXPECT_OK(ephemeris_->Prolong(desired_final_time));
     auto const earth_dof = solar_system_1950_.degrees_of_freedom("Earth");
     auto const mars_dof = solar_system_1950_.degrees_of_freedom("Mars");
-    auto const midway = Barycentre({earth_dof, mars_dof}, {1, 1});
+    auto const midway = Barycentre({earth_dof, mars_dof});
     EXPECT_OK(root_.Append(epoch_, midway));
     flight_plan_ = std::make_unique<FlightPlan>(
         /*initial_mass=*/1 * Kilogram,
