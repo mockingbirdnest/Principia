@@ -98,7 +98,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                                       Argument const& origin,
                                       with_evaluator_t<Evaluator>);
 
-  constexpr explicit PolynomialInMonomialBasis(Coefficients coefficients)
+  constexpr PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
   template<template<typename, typename, int> typename Evaluator>
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,

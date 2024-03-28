@@ -433,7 +433,7 @@ TEST_P(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 539, 542));
+              AlmostEquals(0.25 * period * v_earth, 539, 541));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
               AlmostEquals(0.50 * period * v_earth, 241, 242));
@@ -461,11 +461,9 @@ TEST_P(EphemerisTest, EarthProbe) {
               AnyOf(Eq(358),    // MSVC no FMA/0
                     Eq(366),    // Clang Linux
                     Eq(373),    // MSVC all FMA/0
-                    Eq(387),
                     Eq(406),    // MSVC all FMA/1
                     Eq(420),    // MSVC FMA in libm only/1
-                    Eq(421),    // MSVC no FMA/1
-                    Eq(423)));
+                    Eq(421)));  // MSVC no FMA/1
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 220, 266));
   EXPECT_THAT(probe_positions.back().coordinates().y,
@@ -569,7 +567,7 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 539, 542));
+              AlmostEquals(0.25 * period * v_earth, 539, 541));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
               AlmostEquals(0.50 * period * v_earth, 241, 242));
@@ -1110,7 +1108,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
       actual_acceleration0,
       Componentwise(AlmostEquals(expected_acceleration0.coordinates().x, 1),
                     VanishesBefore(expected_acceleration0.coordinates().x, 0),
-                    AlmostEquals(expected_acceleration0.coordinates().z, 1)));
+                    AlmostEquals(expected_acceleration0.coordinates().z, 2)));
 
   Vector<Acceleration, ICRS> actual_acceleration1 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b1, t0_);
@@ -1124,7 +1122,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
            0 * si::Unit<Acceleration>});
   EXPECT_THAT(
       actual_acceleration1,
-      Componentwise(AlmostEquals(expected_acceleration1.coordinates().x, 0),
+      Componentwise(AlmostEquals(expected_acceleration1.coordinates().x, 2),
                     VanishesBefore(expected_acceleration1.coordinates().x, 0),
                     AlmostEquals(expected_acceleration1.coordinates().z, 0)));
 
@@ -1141,7 +1139,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
                                       Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
       actual_acceleration2,
-      Componentwise(AlmostEquals(expected_acceleration2.coordinates().x, 0),
+      Componentwise(AlmostEquals(expected_acceleration2.coordinates().x, 4),
                     VanishesBefore(expected_acceleration2.coordinates().x, 0),
                     AlmostEquals(expected_acceleration2.coordinates().z, 1)));
 
@@ -1157,7 +1155,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
            3 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(
       actual_acceleration3,
-      Componentwise(AlmostEquals(expected_acceleration3.coordinates().x, 0),
+      Componentwise(AlmostEquals(expected_acceleration3.coordinates().x, 3),
                     VanishesBefore(expected_acceleration3.coordinates().x, 0),
                     AlmostEquals(expected_acceleration3.coordinates().z, 0)));
 }

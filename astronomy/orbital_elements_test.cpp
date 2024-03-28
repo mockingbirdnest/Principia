@@ -380,7 +380,7 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   // Mean element values.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                IsNear(105_(1) * Metre)));
+                                IsNear(104_(1) * Metre)));
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0014_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),

@@ -259,7 +259,7 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
             {ICRS::origin, ICRS::unmoving});
     EXPECT_THAT(
         (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
-        VanishesBefore(1 * Kilo(Metre), 0, 16));
+        VanishesBefore(1 * Kilo(Metre), 0, 15));
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
         VanishesBefore(1 * Kilo(Metre) / Second, 0, 93));
