@@ -330,7 +330,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                   Evaluator>::HomogeneousCoefficients(qv, error_estimate),
               /*scale=*/1.0 / duration_over_two,
               t_mid))
-      .WithEvaluator<Evaluator>();
+      .template WithEvaluator<Evaluator>();
 }
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)   \

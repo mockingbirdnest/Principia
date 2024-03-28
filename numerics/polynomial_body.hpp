@@ -20,7 +20,7 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
         PolynomialInMonomialBasis<Value, Argument, value>>(                 \
         PolynomialInMonomialBasis<Value, Argument, value>::ReadFromMessage( \
             message)                                                        \
-            .WithEvaluator<Evaluator>())
+            .template WithEvaluator<Evaluator>())
 
 template<typename Value_, typename Argument_>
 template<template<typename, typename, int> typename Evaluator>
