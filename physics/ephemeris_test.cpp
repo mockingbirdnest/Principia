@@ -462,6 +462,8 @@ TEST_P(EphemerisTest, EarthProbe) {
                     Eq(366),    // Clang Linux
                     Eq(373),    // MSVC all FMA/0
                     Eq(387),
+                    Eq(393),
+                    Eq(398),
                     Eq(406),    // MSVC all FMA/1
                     Eq(420),    // MSVC FMA in libm only/1
                     Eq(421),    // MSVC no FMA/1
