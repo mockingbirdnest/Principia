@@ -65,5 +65,3 @@ using internal::Sine;
 }  // namespace _apodization
 }  // namespace numerics
 }  // namespace principia
-
-#include "numerics/apodization_body.hpp"
