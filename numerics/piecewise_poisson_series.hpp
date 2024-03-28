@@ -111,7 +111,7 @@ class PiecewisePoissonSeries {
   template<int aperiodic_wdegree, int periodic_wdegree>
   typename Hilbert<Value>::NormType Norm(
       PoissonSeries<double,
-                    aperiodic_wdegree, periodic_wdegreer> const& weight,
+                    aperiodic_wdegree, periodic_wdegree> const& weight,
       Instant const& t_min,
       Instant const& t_max) const;
 
@@ -139,86 +139,70 @@ class PiecewisePoissonSeries {
   // copies remain cheap.
   mutable std::shared_ptr<std::vector<Value>> gauss_legendre_cache_;
 
-  template<typename V, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, ar, pr, E>
-  friend operator-(PiecewisePoissonSeries<V, ar, pr, E> const& right);
-  template<typename S, typename V, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<Product<S, V>, ar, pr, E>
+  template<typename V, int ar, int pr>
+  PiecewisePoissonSeries<V, ar, pr>
+  friend operator-(PiecewisePoissonSeries<V, ar, pr> const& right);
+  template<typename S, typename V, int ar, int pr>
+  PiecewisePoissonSeries<Product<S, V>, ar, pr>
   friend operator*(S const& left,
-                   PiecewisePoissonSeries<V, ar, pr, E> const& right);
-  template<typename S, typename V, int al, int pl,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<Product<V, S>, al, pl, E>
-  friend operator*(PiecewisePoissonSeries<V, al, pl, E> const& left,
+                   PiecewisePoissonSeries<V, ar, pr> const& right);
+  template<typename S, typename V, int al, int pl>
+  PiecewisePoissonSeries<Product<V, S>, al, pl>
+  friend operator*(PiecewisePoissonSeries<V, al, pl> const& left,
                    S const& right);
-  template<typename S, typename V, int al, int pl,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<Quotient<V, S>, al, pl, E>
-  friend operator/(PiecewisePoissonSeries<V, al, pl, E> const& left,
+  template<typename S, typename V, int al, int pl>
+  PiecewisePoissonSeries<Quotient<V, S>, al, pl>
+  friend operator/(PiecewisePoissonSeries<V, al, pl> const& left,
                    S const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr), E>
-  friend operator+(PoissonSeries<V, al, pl, E> const& left,
-                   PiecewisePoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr), E>
-  friend operator+(PiecewisePoissonSeries<V, al, pl, E> const& left,
-                   PoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr), E>
-  friend operator-(PoissonSeries<V, al, pl, E> const& left,
-                   PiecewisePoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr), E>
-  friend operator-(PiecewisePoissonSeries<V, al, pl, E> const& left,
-                   PoissonSeries<V, ar, pr, E> const& right);
-  template<typename L, typename R, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr)>
+  friend operator+(PoissonSeries<V, al, pl> const& left,
+                   PiecewisePoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr)>
+  friend operator+(PiecewisePoissonSeries<V, al, pl> const& left,
+                   PoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr)>
+  friend operator-(PoissonSeries<V, al, pl> const& left,
+                   PiecewisePoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, PRINCIPIA_MAX(al, ar), PRINCIPIA_MAX(pl, pr)>
+  friend operator-(PiecewisePoissonSeries<V, al, pl> const& left,
+                   PoissonSeries<V, ar, pr> const& right);
+  template<typename L, typename R, int al, int pl, int ar, int pr>
   PiecewisePoissonSeries<Product<L, R>,
                          PRINCIPIA_MAX4(al + ar, al + pr, pl + ar, pl + pr),
-                         PRINCIPIA_MAX3(al + pr, pl + ar, pl + pr),
-                         E>
-  friend operator*(PoissonSeries<L, al, pl, E> const& left,
-                   PiecewisePoissonSeries<R, ar, pr, E> const& right);
-  template<typename L, typename R, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
+                         PRINCIPIA_MAX3(al + pr, pl + ar, pl + pr)>
+  friend operator*(PoissonSeries<L, al, pl> const& left,
+                   PiecewisePoissonSeries<R, ar, pr> const& right);
+  template<typename L, typename R, int al, int pl, int ar, int pr>
   PiecewisePoissonSeries<Product<L, R>,
                          PRINCIPIA_MAX4(al + ar, al + pr, pl + ar, pl + pr),
-                         PRINCIPIA_MAX3(al + pr, pl + ar, pl + pr),
-                         E>
-  friend operator*(PiecewisePoissonSeries<L, al, pl, E> const& left,
-                   PoissonSeries<R, ar, pr, E> const& right);
+                         PRINCIPIA_MAX3(al + pr, pl + ar, pl + pr)>
+  friend operator*(PiecewisePoissonSeries<L, al, pl> const& left,
+                   PoissonSeries<R, ar, pr> const& right);
   template<typename L, typename R,
-           int al, int pl, int ar, int pr, int aw, int pw,
-           template<typename, typename, int> class E>
+           int al, int pl, int ar, int pr, int aw, int pw>
   typename Hilbert<L, R>::InnerProductType
-  friend InnerProduct(PoissonSeries<L, al, pl, E> const& left,
-                      PiecewisePoissonSeries<R, ar, pr, E> const& right,
-                      PoissonSeries<double, aw, pw, E> const& weight,
+  friend InnerProduct(PoissonSeries<L, al, pl> const& left,
+                      PiecewisePoissonSeries<R, ar, pr> const& right,
+                      PoissonSeries<double, aw, pw> const& weight,
                       Instant const& t_min,
                       Instant const& t_max,
                       std::optional<int> max_points);
   template<typename L, typename R,
-           int al, int pl, int ar, int pr, int aw, int pw,
-           template<typename, typename, int> class E>
+           int al, int pl, int ar, int pr, int aw, int pw>
   typename Hilbert<L, R>::InnerProductType
-  friend InnerProduct(PiecewisePoissonSeries<L, al, pl, E> const& left,
-                      PoissonSeries<R, ar, pr, E> const& right,
-                      PoissonSeries<double, aw, pw, E> const& weight,
+  friend InnerProduct(PiecewisePoissonSeries<L, al, pl> const& left,
+                      PoissonSeries<R, ar, pr> const& right,
+                      PoissonSeries<double, aw, pw> const& weight,
                       Instant const& t_min,
                       Instant const& t_max,
                       std::optional<int> max_points);
-  template<typename V, int ad, int pd,
-           template<typename, typename, int> class E,
-           typename O>
+  template<typename V, int ad, int pd, typename O>
   friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
-      PiecewisePoissonSeries<V, ad, pd, E> const& polynomial,
+      PiecewisePoissonSeries<V, ad, pd> const& polynomial,
       O express_in);
 };
 

@@ -28,25 +28,22 @@ constexpr int clenshaw_curtis_points_per_period = 4;
 constexpr double clenshaw_curtis_relative_error = 0x1p-32;
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+         int aperiodic_degree_, int periodic_degree_>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 PiecewisePoissonSeries(Interval<Instant> const& interval,
-                        Series const& series)
+                       Series const& series)
     : bounds_({interval.min, interval.max}),
       series_(/*count=*/1, series) {
   CHECK_LT(Time{}, interval.measure());
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 template<int aperiodic_rdegree, int periodic_rdegree>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>&
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 operator+=(PoissonSeries<Value,
-                         aperiodic_rdegree, periodic_rdegree,
-                         Evaluator> const& right) {
+                         aperiodic_rdegree, periodic_rdegree> const& right) {
   static_assert(aperiodic_rdegree <= aperiodic_degree_);
   static_assert(periodic_rdegree <= periodic_degree_);
   if (addend_.has_value()) {
@@ -58,14 +55,12 @@ operator+=(PoissonSeries<Value,
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 template<int aperiodic_rdegree, int periodic_rdegree>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>&
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>&
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 operator-=(PoissonSeries<Value,
-                         aperiodic_rdegree, periodic_rdegree,
-                         Evaluator> const& right) {
+                         aperiodic_rdegree, periodic_rdegree> const& right) {
   static_assert(aperiodic_rdegree <= aperiodic_degree_);
   static_assert(periodic_rdegree <= periodic_degree_);
   if (addend_.has_value()) {
@@ -77,10 +72,9 @@ operator-=(PoissonSeries<Value,
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 void
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 Append(Interval<Instant> const& interval,
        Series const& series) {
   CHECK_LT(Time{}, interval.measure());
@@ -90,28 +84,25 @@ Append(Interval<Instant> const& interval,
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 Instant
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 t_min() const {
   return bounds_.front();
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 Instant
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 t_max() const {
   return bounds_.back();
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 AngularFrequency
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 max_ω() const {
   AngularFrequency max_ω =
       addend_.has_value() ? addend_->max_ω() : AngularFrequency{};
@@ -122,10 +113,9 @@ max_ω() const {
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 Value
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 operator()(Instant const& t) const {
   Value const addend = EvaluateAddend(t);
   if (t == bounds_.back()) {
@@ -147,10 +137,9 @@ operator()(Instant const& t) const {
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 auto
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 FourierTransform() const -> Spectrum {
   static constexpr int gauss_legendre_points =
       std::max(1, (std::max(aperiodic_degree_, periodic_degree_) + 1) / 2);
@@ -189,14 +178,12 @@ FourierTransform() const -> Spectrum {
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 template<int aperiodic_wdegree, int periodic_wdegree>
 typename Hilbert<Value>::NormType
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 Norm(PoissonSeries<double,
-                   aperiodic_wdegree, periodic_wdegree,
-                   Evaluator> const& weight,
+                   aperiodic_wdegree, periodic_wdegree> const& weight,
      Instant const& t_min,
      Instant const& t_max) const {
   AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
@@ -219,10 +206,9 @@ Norm(PoissonSeries<double,
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 void
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 WriteToMessage(not_null<serialization::PiecewisePoissonSeries*> message) const {
   for (Instant const& bound : bounds_) {
     bound.WriteToMessage(message->add_bounds());
@@ -236,10 +222,9 @@ WriteToMessage(not_null<serialization::PiecewisePoissonSeries*> message) const {
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+         int aperiodic_degree_, int periodic_degree_>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 ReadFromMessage(serialization::PiecewisePoissonSeries const& message) {
   CHECK_NE(0, message.series_size());
   CHECK_EQ(message.bounds_size(), message.series_size() + 1);
@@ -261,48 +246,41 @@ ReadFromMessage(serialization::PiecewisePoissonSeries const& message) {
 }
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
-PiecewisePoissonSeries(std::vector<Instant> const& bounds,
-                       std::vector<PoissonSeries<Value,
-                                                 aperiodic_degree_,
-                                                 periodic_degree_,
-                                                 Evaluator>> const& series,
-                       std::optional<Series> const& addend)
+         int aperiodic_degree_, int periodic_degree_>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
+PiecewisePoissonSeries(
+    std::vector<Instant> const& bounds,
+    std::vector<PoissonSeries<Value,
+                              aperiodic_degree_,
+                              periodic_degree_>> const& series,
+    std::optional<Series> const& addend)
     : bounds_(bounds),
       series_(series),
       addend_(addend) {}
 
 template<typename Value,
-         int aperiodic_degree_, int periodic_degree_,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_degree_, int periodic_degree_>
 Value
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_, Evaluator>::
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 EvaluateAddend(Instant const& t) const {
   return addend_.has_value() ? addend_.value()(t) : Value{};
 }
 
 template<typename Value,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, aperiodic_rdegree, periodic_rdegree, Evaluator>
-operator+(PiecewisePoissonSeries<Value,
-                                 aperiodic_rdegree, periodic_rdegree,
-                                 Evaluator> const& right) {
+         int aperiodic_rdegree, int periodic_rdegree>
+PiecewisePoissonSeries<Value, aperiodic_rdegree, periodic_rdegree>
+operator+(PiecewisePoissonSeries<
+              Value, aperiodic_rdegree, periodic_rdegree> const& right) {
   return right;
 }
 
 template<typename Value,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
-PiecewisePoissonSeries<Value, aperiodic_rdegree, periodic_rdegree, Evaluator>
-operator-(PiecewisePoissonSeries<Value,
-                                 aperiodic_rdegree, periodic_rdegree,
-                                 Evaluator> const& right) {
+         int aperiodic_rdegree, int periodic_rdegree>
+PiecewisePoissonSeries<Value, aperiodic_rdegree, periodic_rdegree>
+operator-(PiecewisePoissonSeries<
+              Value, aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result = PiecewisePoissonSeries<Value,
-                                        aperiodic_rdegree, periodic_rdegree,
-                                        Evaluator>;
+                                        aperiodic_rdegree, periodic_rdegree>;
   std::vector<typename Result::Series> series;
   series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
@@ -317,18 +295,14 @@ operator-(PiecewisePoissonSeries<Value,
 
 template<typename Scalar,
          typename Value,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Product<Scalar, Value>,
-                       aperiodic_rdegree, periodic_rdegree,
-                       Evaluator>
+                       aperiodic_rdegree, periodic_rdegree>
 operator*(Scalar const& left,
-          PiecewisePoissonSeries<Value,
-                                 aperiodic_rdegree, periodic_rdegree,
-                                 Evaluator> const& right) {
+          PiecewisePoissonSeries<
+              Value, aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result = PiecewisePoissonSeries<Product<Scalar, Value>,
-                                        aperiodic_rdegree, periodic_rdegree,
-                                        Evaluator>;
+                                        aperiodic_rdegree, periodic_rdegree>;
   std::vector<typename Result::Series> series;
   series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
@@ -343,18 +317,14 @@ operator*(Scalar const& left,
 
 template<typename Scalar,
          typename Value,
-         int aperiodic_ldegree, int periodic_ldegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_ldegree, int periodic_ldegree>
 PiecewisePoissonSeries<Product<Value, Scalar>,
-                       aperiodic_ldegree, periodic_ldegree,
-                       Evaluator>
-operator*(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       aperiodic_ldegree, periodic_ldegree>
+operator*(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           Scalar const& right) {
   using Result = PiecewisePoissonSeries<Product<Value, Scalar>,
-                                        aperiodic_ldegree, periodic_ldegree,
-                                        Evaluator>;
+                                        aperiodic_ldegree, periodic_ldegree>;
   std::vector<typename Result::Series> series;
   series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
@@ -369,18 +339,14 @@ operator*(PiecewisePoissonSeries<Value,
 
 template<typename Scalar,
          typename Value,
-         int aperiodic_ldegree, int periodic_ldegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_ldegree, int periodic_ldegree>
 PiecewisePoissonSeries<Quotient<Value, Scalar>,
-                       aperiodic_ldegree, periodic_ldegree,
-                       Evaluator>
-operator/(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       aperiodic_ldegree, periodic_ldegree>
+operator/(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           Scalar const& right) {
   using Result = PiecewisePoissonSeries<Quotient<Value, Scalar>,
-                                        aperiodic_ldegree, periodic_ldegree,
-                                        Evaluator>;
+                                        aperiodic_ldegree, periodic_ldegree>;
   std::vector<typename Result::Series> series;
   series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
@@ -395,23 +361,18 @@ operator/(PiecewisePoissonSeries<Value,
 
 template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
+                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
 operator+(PoissonSeries<Value,
-                        aperiodic_ldegree, periodic_ldegree,
-                        Evaluator> const& left,
-          PiecewisePoissonSeries<Value,
-                                 aperiodic_rdegree, periodic_rdegree,
-                                 Evaluator> const& right) {
+                        aperiodic_ldegree, periodic_ldegree> const& left,
+          PiecewisePoissonSeries<
+              Value, aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
       PiecewisePoissonSeries<Value,
                              std::max(aperiodic_ldegree, aperiodic_rdegree),
-                             std::max(periodic_ldegree, periodic_rdegree),
-                             Evaluator>;
+                             std::max(periodic_ldegree, periodic_rdegree)>;
   std::optional<typename Result::Series> addend;
   if (right.addend_.has_value()) {
     addend = left + right.addend_.value();
@@ -423,23 +384,18 @@ operator+(PoissonSeries<Value,
 
 template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
-operator+(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
+operator+(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
-                        aperiodic_rdegree, periodic_rdegree,
-                        Evaluator> const& right) {
+                        aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
       PiecewisePoissonSeries<Value,
                              std::max(aperiodic_ldegree, aperiodic_rdegree),
-                             std::max(periodic_ldegree, periodic_rdegree),
-                             Evaluator>;
+                             std::max(periodic_ldegree, periodic_rdegree)>;
   std::optional<typename Result::Series> addend;
   if (left.addend_.has_value()) {
     addend = left.addend_.value() + right;
@@ -451,23 +407,18 @@ operator+(PiecewisePoissonSeries<Value,
 
 template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
+                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
 operator-(PoissonSeries<Value,
-                        aperiodic_ldegree, periodic_ldegree,
-                        Evaluator> const& left,
-          PiecewisePoissonSeries<Value,
-                                 aperiodic_rdegree, periodic_rdegree,
-                                 Evaluator> const& right) {
+                        aperiodic_ldegree, periodic_ldegree> const& left,
+          PiecewisePoissonSeries<
+              Value, aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
       PiecewisePoissonSeries<Value,
                              std::max(aperiodic_ldegree, aperiodic_rdegree),
-                             std::max(periodic_ldegree, periodic_rdegree),
-                             Evaluator>;
+                             std::max(periodic_ldegree, periodic_rdegree)>;
   std::vector<typename Result::Series> series;
   series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
@@ -484,23 +435,18 @@ operator-(PoissonSeries<Value,
 
 template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
-operator-(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
+operator-(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
-                        aperiodic_rdegree, periodic_rdegree,
-                        Evaluator> const& right) {
+                        aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
       PiecewisePoissonSeries<Value,
                              std::max(aperiodic_ldegree, aperiodic_rdegree),
-                             std::max(periodic_ldegree, periodic_rdegree),
-                             Evaluator>;
+                             std::max(periodic_ldegree, periodic_rdegree)>;
   std::vector<typename Result::Series> series;
   series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
@@ -517,8 +463,7 @@ operator-(PiecewisePoissonSeries<Value,
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Product<LValue, RValue>,
                        PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
                                       aperiodic_ldegree + periodic_rdegree,
@@ -526,14 +471,11 @@ PiecewisePoissonSeries<Product<LValue, RValue>,
                                       periodic_ldegree + periodic_rdegree),
                        PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
                                       periodic_ldegree + aperiodic_rdegree,
-                                      periodic_ldegree + periodic_rdegree),
-                       Evaluator>
+                                      periodic_ldegree + periodic_rdegree)>
 operator*(PoissonSeries<LValue,
-                        aperiodic_ldegree, periodic_ldegree,
-                        Evaluator> const& left,
-          PiecewisePoissonSeries<RValue,
-                                 aperiodic_rdegree, periodic_rdegree,
-                                 Evaluator> const& right) {
+                        aperiodic_ldegree, periodic_ldegree> const& left,
+          PiecewisePoissonSeries<
+              RValue, aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
       PiecewisePoissonSeries<Product<LValue, RValue>,
                              std::max({aperiodic_ldegree + aperiodic_rdegree,
@@ -542,8 +484,7 @@ operator*(PoissonSeries<LValue,
                                        periodic_ldegree + periodic_rdegree}),
                              std::max({aperiodic_ldegree + periodic_rdegree,
                                        periodic_ldegree + aperiodic_rdegree,
-                                       periodic_ldegree + periodic_rdegree}),
-                             Evaluator>;
+                                       periodic_ldegree + periodic_rdegree})>;
   std::vector<typename Result::Series> series;
   series.reserve(right.series_.size());
   for (int i = 0; i < right.series_.size(); ++i) {
@@ -559,8 +500,7 @@ operator*(PoissonSeries<LValue,
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
-         int aperiodic_rdegree, int periodic_rdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Product<LValue, RValue>,
                        PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
                                       aperiodic_ldegree + periodic_rdegree,
@@ -568,14 +508,11 @@ PiecewisePoissonSeries<Product<LValue, RValue>,
                                       periodic_ldegree + periodic_rdegree),
                        PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
                                       periodic_ldegree + aperiodic_rdegree,
-                                      periodic_ldegree + periodic_rdegree),
-                       Evaluator>
-operator*(PiecewisePoissonSeries<LValue,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                                      periodic_ldegree + periodic_rdegree)>
+operator*(PiecewisePoissonSeries<
+              LValue, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<RValue,
-                        aperiodic_rdegree, periodic_rdegree,
-                        Evaluator> const& right) {
+                        aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
       PiecewisePoissonSeries<Product<LValue, RValue>,
                              std::max({aperiodic_ldegree + aperiodic_rdegree,
@@ -584,8 +521,7 @@ operator*(PiecewisePoissonSeries<LValue,
                                        periodic_ldegree + periodic_rdegree}),
                              std::max({aperiodic_ldegree + periodic_rdegree,
                                        periodic_ldegree + aperiodic_rdegree,
-                                       periodic_ldegree + periodic_rdegree}),
-                             Evaluator>;
+                                       periodic_ldegree + periodic_rdegree})>;
   std::vector<typename Result::Series> series;
   series.reserve(left.series_.size());
   for (int i = 0; i < left.series_.size(); ++i) {
@@ -602,42 +538,33 @@ operator*(PiecewisePoissonSeries<LValue,
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue,
-                           aperiodic_ldegree, periodic_ldegree,
-                           Evaluator> const& left,
-             PiecewisePoissonSeries<RValue,
-                                    aperiodic_rdegree, periodic_rdegree,
-                                    Evaluator> const& right,
+                           aperiodic_ldegree, periodic_ldegree> const& left,
+             PiecewisePoissonSeries<
+                 RValue, aperiodic_rdegree, periodic_rdegree> const& right,
              PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight,
+                           aperiodic_wdegree, periodic_wdegree> const& weight,
              std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
-                      aperiodic_wdegree, periodic_wdegree,
-                      Evaluator>(
+                      aperiodic_wdegree, periodic_wdegree>(
       left, right, weight, right.t_min(), right.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 typename Hilbert<LValue, RValue>::InnerProductType
 InnerProduct(PoissonSeries<LValue,
-                           aperiodic_ldegree, periodic_ldegree,
-                           Evaluator> const& left,
-             PiecewisePoissonSeries<RValue,
-                                    aperiodic_rdegree, periodic_rdegree,
-                                    Evaluator> const& right,
+                           aperiodic_ldegree, periodic_ldegree> const& left,
+             PiecewisePoissonSeries<
+                 RValue, aperiodic_rdegree, periodic_rdegree> const& right,
              PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight,
+                           aperiodic_wdegree, periodic_wdegree> const& weight,
              Instant const& t_min,
              Instant const& t_max,
              std::optional<int> max_points) {
@@ -647,42 +574,33 @@ InnerProduct(PoissonSeries<LValue,
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PiecewisePoissonSeries<LValue,
-                                    aperiodic_ldegree, periodic_ldegree,
-                                    Evaluator> const& left,
+InnerProduct(PiecewisePoissonSeries<
+                 LValue, aperiodic_ldegree, periodic_ldegree> const& left,
              PoissonSeries<RValue,
-                           aperiodic_rdegree, periodic_rdegree,
-                           Evaluator> const& right,
+                           aperiodic_rdegree, periodic_rdegree> const& right,
              PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight,
+                           aperiodic_wdegree, periodic_wdegree> const& weight,
              std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
-                      aperiodic_wdegree, periodic_wdegree,
-                      Evaluator>(
+                      aperiodic_wdegree, periodic_wdegree>(
        left, right, weight, left.t_min(), left.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PiecewisePoissonSeries<LValue,
-                                    aperiodic_ldegree, periodic_ldegree,
-                                    Evaluator> const& left,
+InnerProduct(PiecewisePoissonSeries<
+                 LValue, aperiodic_ldegree, periodic_ldegree> const& left,
              PoissonSeries<RValue,
-                           aperiodic_rdegree, periodic_rdegree,
-                           Evaluator> const& right,
+                           aperiodic_rdegree, periodic_rdegree> const& right,
              PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree,
-                           Evaluator> const& weight,
+                           aperiodic_wdegree, periodic_wdegree> const& weight,
              Instant const& t_min,
              Instant const& t_max,
              std::optional<int> max_points) {

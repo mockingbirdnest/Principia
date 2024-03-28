@@ -122,11 +122,11 @@ auto Multiply(PoissonSeries<LValue,
       typename std::invoke_result_t<
           Product,
           typename PoissonSeries<LValue,
-                                  aperiodic_ldegree, periodic_ldegree,
-                                  Evaluator>::AperiodicPolynomial,
+                                 aperiodic_ldegree, periodic_ldegree>::
+              AperiodicPolynomial,
           typename PoissonSeries<RValue,
-                                  aperiodic_rdegree, periodic_rdegree,
-                                  Evaluator>::AperiodicPolynomial>::
+                                 aperiodic_rdegree, periodic_rdegree>::
+              AperiodicPolynomial>::
           Value,
       std::max({aperiodic_ldegree + aperiodic_rdegree,
                 aperiodic_ldegree + periodic_rdegree,
@@ -134,8 +134,7 @@ auto Multiply(PoissonSeries<LValue,
                 periodic_ldegree + periodic_rdegree}),
       std::max({aperiodic_ldegree + periodic_rdegree,
                 periodic_ldegree + aperiodic_rdegree,
-                periodic_ldegree + periodic_rdegree}),
-      Evaluator>;
+                periodic_ldegree + periodic_rdegree})>;
 
   auto aperiodic = typename Result::AperiodicPolynomial(
       product(left.aperiodic_, right.aperiodic_));
@@ -208,8 +207,7 @@ operator PoissonSeries<Value, higher_aperiodic_degree, higher_periodic_degree>()
   static_assert(aperiodic_degree_ <= higher_aperiodic_degree);
   static_assert(periodic_degree_ <= higher_periodic_degree);
   using Result = PoissonSeries<Value,
-                               higher_aperiodic_degree, higher_periodic_degree,
-                               HigherEvaluator>;
+                               higher_aperiodic_degree, higher_periodic_degree>;
   auto aperiodic = typename Result::AperiodicPolynomial(aperiodic_);
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(periodic_.size());
@@ -314,8 +312,7 @@ PoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 Primitive() const {
   using Result =
       PoissonSeries<quantities::_named_quantities::Primitive<Value, Time>,
-                    aperiodic_degree_ + 1, periodic_degree_ + 1,
-                    Evaluator>;
+                    aperiodic_degree_ + 1, periodic_degree_ + 1>;
   typename Result::AperiodicPolynomial aperiodic = aperiodic_.Primitive();
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(periodic_.size());
@@ -323,8 +320,8 @@ Primitive() const {
     periodic.emplace_back(
         ω,
         AngularFrequencyPrimitive<Value,
-                                  aperiodic_degree_, periodic_degree_,
-                                  Evaluator>(ω, polynomials));
+                                  aperiodic_degree_, periodic_degree_>(
+            ω, polynomials));
   }
   return Result{aperiodic, periodic};
 }
@@ -559,8 +556,7 @@ PoissonSeries<Value, aperiodic_rdegree, periodic_rdegree>
 operator-(PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result = PoissonSeries<Value,
-                               aperiodic_rdegree, periodic_rdegree,
-                               Evaluator>;
+                               aperiodic_rdegree, periodic_rdegree>;
   auto aperiodic = -right.aperiodic_;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(right.periodic_.size());
@@ -588,8 +584,7 @@ operator+(PoissonSeries<Value,
   using Result =
       PoissonSeries<Value,
                     std::max(aperiodic_ldegree, aperiodic_rdegree),
-                    std::max(periodic_ldegree, periodic_rdegree),
-                    Evaluator>;
+                    std::max(periodic_ldegree, periodic_rdegree)>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
   auto aperiodic = left.aperiodic_ + right.aperiodic_;
@@ -653,8 +648,7 @@ operator-(PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result = PoissonSeries<Value,
                                std::max(aperiodic_ldegree, aperiodic_rdegree),
-                               std::max(periodic_ldegree, periodic_rdegree),
-                               Evaluator>;
+                               std::max(periodic_ldegree, periodic_rdegree)>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
   auto aperiodic = left.aperiodic_ - right.aperiodic_;
@@ -714,8 +708,7 @@ operator*(Scalar const& left,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result = PoissonSeries<Product<Scalar, Value>,
-                               aperiodic_rdegree, periodic_rdegree,
-                               Evaluator>;
+                               aperiodic_rdegree, periodic_rdegree>;
   auto aperiodic = left * right.aperiodic_;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(right.periodic_.size());
@@ -761,8 +754,7 @@ operator/(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           Scalar const& right) {
   using Result = PoissonSeries<Quotient<Value, Scalar>,
-                               aperiodic_ldegree, periodic_ldegree,
-                               Evaluator>;
+                               aperiodic_ldegree, periodic_ldegree>;
   auto aperiodic = left.aperiodic_ / right;
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(left.periodic_.size());
@@ -798,8 +790,7 @@ operator*(PoissonSeries<LValue,
 
   return Multiply<LValue, RValue,
                   aperiodic_ldegree, periodic_ldegree,
-                  aperiodic_rdegree, periodic_rdegree,
-                  Evaluator>(left, right, product);
+                  aperiodic_rdegree, periodic_rdegree>(left, right, product);
 }
 
 template<typename LValue, typename RValue,
@@ -822,8 +813,7 @@ PointwiseInnerProduct(
 
   return Multiply<LValue, RValue,
                   aperiodic_ldegree,  periodic_ldegree,
-                  aperiodic_rdegree, periodic_rdegree,
-                  Evaluator>(left, right, product);
+                  aperiodic_rdegree, periodic_rdegree>(left, right, product);
 }
 
 template<typename Value,
