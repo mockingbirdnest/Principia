@@ -2,6 +2,8 @@
 
 #include "geometry/pair.hpp"
 
+#include <string>
+
 #include "geometry/serialization.hpp"
 
 namespace principia {
@@ -56,6 +58,24 @@ enable_if_vector_t<Pair<U1, U2>>& Pair<T1, T2>::operator/=(double const right) {
   t1_ /= right;
   t2_ /= right;
   return *this;
+}
+
+template<typename T1, typename T2>
+T1 const& Pair<T1, T2>::position() const
+  requires is_position_v<T1> {
+  return t1_;
+}
+
+template<typename T1, typename T2>
+T1 const& Pair<T1, T2>::displacement() const
+  requires is_displacement_v<T1> {
+  return t1_;
+}
+
+template<typename T1, typename T2>
+T2 const& Pair<T1, T2>::velocity() const
+  requires is_velocity_v<T2> {
+  return t2_;
 }
 
 template<typename T1, typename T2>

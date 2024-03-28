@@ -1,9 +1,12 @@
 #pragma once
 
+#include <string>
+
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/space.hpp"
 #include "quantities/concepts.hpp"
@@ -23,9 +26,9 @@ namespace _pair {
 namespace internal {
 
 using namespace principia::base::_concepts;
-using namespace principia::base::_traits;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_space;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
@@ -109,7 +112,6 @@ class Pair final {
     requires std::default_initializable<T1> && std::default_initializable<T2> =
       default;
   Pair(T1 const& t1, T2 const& t2);
-  virtual ~Pair() = default;
 
   friend bool operator==(Pair const& left, Pair const& right) = default;
   friend bool operator!=(Pair const& left, Pair const& right) = default;
@@ -125,28 +127,18 @@ class Pair final {
   enable_if_vector_t<Pair<U1, U2>>& operator/=(double right);
 
   T1 const& position() const
-    requires is_position_v<T1>
-  {
-    return t1_;
-  }
+    requires is_position_v<T1>;
   T1 const& displacement() const
-    requires is_displacement_v<T1>
-  {
-    return t1_;
-  }
+    requires is_displacement_v<T1>;
 
   T2 const& velocity() const
-    requires is_velocity_v<T2>
-  {
-    return t2_;
-  }
+    requires is_velocity_v<T2>;
 
   void WriteToMessage(not_null<serialization::Pair*> message) const;
   static Pair ReadFromMessage(serialization::Pair const& message)
     requires serializable<T1> && serializable<T2>;
 
  private:
-  // The subclasses can access the members directly to implement accessors.
   T1 t1_;
   T2 t2_;
 
