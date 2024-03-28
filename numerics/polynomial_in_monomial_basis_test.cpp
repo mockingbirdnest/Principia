@@ -491,7 +491,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_point());
     EXPECT_TRUE(extension.point().has_scalar());
 
-    // Simulate a compatibility read.
+    // Simulate a pre-Καραθεοδωρή compatibility read.
     serialization::Polynomial compatibility_message = message;
     compatibility_message
         .MutableExtension(serialization::PolynomialInMonomialBasis::extension)

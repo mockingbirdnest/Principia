@@ -1,9 +1,10 @@
 #pragma once
 
+#include "numerics/polynomial.hpp"
+
 #include <memory>
 #include <utility>
 
-#include "numerics/polynomial.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
