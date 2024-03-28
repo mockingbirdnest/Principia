@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <vector>
 #include <utility>
 
@@ -23,6 +24,7 @@ class BarycentreCalculator final {
   void Add(Point const& point, Weight const& weight);
   Point Get() const;
 
+  // The sum of the weights added so far.
   Weight const& weight() const;
 
  private:
@@ -33,28 +35,12 @@ class BarycentreCalculator final {
   // We need reference values to convert points into vectors, if needed.  We
   // pick default-constructed objects as they don't introduce any inaccuracies
   // in the computations.
-  static Point const reference_;
+  // If we have an additive group, Point the same as Difference<Point>, which is
+  // a vector, so no reference is needed.
+  static std::conditional_t<additive_group<Point>, std::nullopt_t, Point> const
+      reference_;
 };
-/*
-template<typename Vector, typename Weight>
-  requires homogeneous_vector_space<Vector, Weight>
-class BarycentreCalculator<Vector, Weight> final {
- public:
-  BarycentreCalculator() = default;
 
-  void Add(Vector const& vector, Weight const& weight);
-  Vector Get() const;
-
-  // The sum of the weights added so far.
-  Weight const& weight() const;
-
- private:
-  bool empty_ = true;
-  Product<Vector, Weight> weighted_sum_;
-  Weight weight_;
-};
-*/
-// |T| is anything for which a specialization of BarycentreCalculator exists.
 template<typename T, typename Weight>
 T Barycentre(std::pair<T, T> const& ts,
              std::pair<Weight, Weight> const& weights);

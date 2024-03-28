@@ -16,7 +16,13 @@ template<affine Point, homogeneous_field Weight>
   requires homogeneous_vector_space<Difference<Point>, Weight>
 void BarycentreCalculator<Point, Weight>::Add(Point const& point,
                                               Weight const& weight) {
-  auto const weighted_sum_diff = (point - reference_) * weight;
+  auto const weighted_sum_diff = [&]() {
+    if constexpr (additive_group<Point>) {
+      return point * weight;
+    } else {
+      return (point - reference_) * weight;
+    }
+  }();
   if (empty_) {
     weighted_sum_ = weighted_sum_diff;
     weight_ = weight;
@@ -31,7 +37,11 @@ template<affine Point, homogeneous_field Weight>
   requires homogeneous_vector_space<Difference<Point>, Weight>
 Point BarycentreCalculator<Point, Weight>::Get() const {
   CHECK(!empty_) << "Empty BarycentreCalculator";
-  return reference_ + weighted_sum_ / weight_;
+  if constexpr (additive_group<Point>) {
+    return weighted_sum_ / weight_;
+  } else {
+    return reference_ + weighted_sum_ / weight_;
+  }
 }
 
 template<affine Point, homogeneous_field Weight>
@@ -42,7 +52,8 @@ Weight const& BarycentreCalculator<Point, Weight>::weight() const {
 
 template<affine Point, homogeneous_field Weight>
   requires homogeneous_vector_space<Difference<Point>, Weight>
-Point const BarycentreCalculator<Point, Weight>::reference_;
+std::conditional_t<additive_group<Point>, std::nullopt_t, Point> const
+    BarycentreCalculator<Point, Weight>::reference_;
 
 template<typename T, typename Scalar>
 T Barycentre(std::pair<T, T> const& ts,
