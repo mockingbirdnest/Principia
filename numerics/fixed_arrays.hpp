@@ -125,6 +125,10 @@ class FixedMatrix final {
   constexpr FixedMatrix& operator*=(double right);
   constexpr FixedMatrix& operator/=(double right);
 
+  constexpr FixedMatrix& operator*=(
+      FixedMatrix<double, rows_, columns_> const& right)
+    requires(rows_ == columns_);
+
   template<int r>
   Scalar const* row() const;
 
@@ -274,6 +278,14 @@ constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
     FixedVector<Scalar, size> const& vector);
 
 // Additive groups.
+
+template<typename Scalar, int size>
+constexpr FixedVector<Scalar, size> operator+(
+    FixedVector<Scalar, size> const& right);
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns> operator+(
+    FixedMatrix<Scalar, rows, columns> const& right);
 
 template<typename Scalar, int size>
 constexpr FixedVector<Scalar, size> operator-(

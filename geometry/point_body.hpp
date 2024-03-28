@@ -161,38 +161,5 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point) {
 
 }  // namespace internal
 }  // namespace _point
-
-namespace _barycentre_calculator {
-namespace internal {
-
-template<typename Vector, typename Weight>
-void BarycentreCalculator<Point<Vector>, Weight>::Add(
-    Point<Vector> const& point,
-    Weight const& weight) {
-  if (empty_) {
-    weighted_sum_ = point.coordinates_ * weight;
-    weight_ = weight;
-    empty_ = false;
-  } else {
-    weighted_sum_ += point.coordinates_ * weight;
-    weight_ += weight;
-  }
-}
-
-template<typename Vector, typename Weight>
-Point<Vector> BarycentreCalculator<Point<Vector>, Weight>::Get() const {
-  CHECK(!empty_) << "Empty BarycentreCalculator";
-  Point<Vector> const origin;
-  return origin + weighted_sum_ / weight_;
-}
-
-template<typename Vector, typename Weight>
-Weight const& BarycentreCalculator<Point<Vector>, Weight>::weight() const {
-  return weight_;
-}
-
-}  // namespace internal
-}  // namespace _barycentre_calculator
-
 }  // namespace geometry
 }  // namespace principia
