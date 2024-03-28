@@ -7,7 +7,6 @@
 
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
-#include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -89,10 +88,6 @@ class Point final {
 
   template<typename V>
   friend std::string DebugString(Point<V> const& point);
-
-  template<affine P, homogeneous_field S>
-    requires homogeneous_vector_space<Difference<P>, S>
-  friend class _barycentre_calculator::BarycentreCalculator;
 };
 
 template<typename Vector>

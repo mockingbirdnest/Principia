@@ -155,11 +155,6 @@ class Pair final {
   template<typename U1, typename U2>
   friend class Pair;
 
-  // This is needed to specialize BarycentreCalculator.
-  template<affine P, homogeneous_field S>
-    requires homogeneous_vector_space<Difference<P>, S>
-  friend class _barycentre_calculator::BarycentreCalculator;
-
   // This is needed to make Pair mappable.
   template<typename Functor, typename T, typename>
   friend struct base::_mappable::internal::Mappable;
