@@ -52,9 +52,10 @@ class Polynomial {
   virtual void WriteToMessage(
       not_null<serialization::Polynomial*> message) const = 0;
 
-  // The evaluator is not part of the serialization because it's fine to read
-  // with a different evaluator than the one the polynomial was written with.
-  // TODO(phl): Revisit when we deserialize the evaluator.
+  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+      serialization::Polynomial const& message);
+  // Compatibility deserialization, when the evaluator is not present in
+  // |message|.
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
