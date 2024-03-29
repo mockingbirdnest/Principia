@@ -25,14 +25,12 @@ using namespace principia::quantities::_quantities;
 // obtained using FFT).  The |Function| must have a member |FourierTransform|
 // that returns its spectrum.  See [Cha95].
 template<typename Function,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double,
-                  aperiodic_wdegree, periodic_wdegree,
-                  Evaluator> const& weight);
+                  aperiodic_wdegree, periodic_wdegree> const& weight);
 
 // In the projection functions the |Function| must have an |InnerProduct| with
 // |PoissonSeries| or |PiecewisePoissonSeries|.
@@ -42,16 +40,13 @@ AngularFrequency PreciseMode(
 // See [Kud07].
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 PoissonSeries<std::invoke_result_t<Function, Instant>,
-              aperiodic_degree, periodic_degree,
-              Evaluator>
+              aperiodic_degree, periodic_degree>
 Projection(Function const& function,
            AngularFrequency const& ω,
            PoissonSeries<double,
-                         aperiodic_wdegree, periodic_wdegree,
-                         Evaluator> const& weight,
+                         aperiodic_wdegree, periodic_wdegree> const& weight,
            Instant const& t_min,
            Instant const& t_max);
 
@@ -76,18 +71,16 @@ Projection(Function const& function,
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
          typename AngularFrequencyCalculator,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 PoissonSeries<std::invoke_result_t<Function, Instant>,
-              aperiodic_degree, periodic_degree,
-              Evaluator>
-IncrementalProjection(Function const& function,
-                      AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double,
-                                    aperiodic_wdegree, periodic_wdegree,
-                                    Evaluator> const& weight,
-                      Instant const& t_min,
-                      Instant const& t_max);
+              aperiodic_degree, periodic_degree>
+IncrementalProjection(
+    Function const& function,
+    AngularFrequencyCalculator const& calculator,
+    PoissonSeries<double,
+                  aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max);
 
 }  // namespace internal
 

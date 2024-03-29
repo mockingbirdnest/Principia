@@ -24,19 +24,17 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> Dirichlet(Instant const& t_min,
-                                                 Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> Dirichlet(Instant const& t_min,
+                                      Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   Instant const t_mid = Barycentre({t_min, t_max});
   return Result(AperiodicPolynomial({1}, t_mid), {});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> Sine(Instant const& t_min,
-                                            Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> Sine(Instant const& t_min,
+                                 Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = π * Radian / (t_max - t_min);
@@ -47,10 +45,9 @@ PoissonSeries<double, 0, 0, Evaluator> Sine(Instant const& t_min,
                    .cos = PeriodicPolynomial({1}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> Hann(Instant const& t_min,
-                                            Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> Hann(Instant const& t_min,
+                                 Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
@@ -61,10 +58,9 @@ PoissonSeries<double, 0, 0, Evaluator> Hann(Instant const& t_min,
                    .cos = PeriodicPolynomial({0.5}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> Hamming(Instant const& t_min,
-                                               Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> Hamming(Instant const& t_min,
+                                    Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
@@ -75,10 +71,9 @@ PoissonSeries<double, 0, 0, Evaluator> Hamming(Instant const& t_min,
                    .cos = PeriodicPolynomial({21.0 / 46.0}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> Blackman(Instant const& t_min,
-                                                Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> Blackman(Instant const& t_min,
+                                     Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
@@ -92,10 +87,9 @@ PoissonSeries<double, 0, 0, Evaluator> Blackman(Instant const& t_min,
                    .cos = PeriodicPolynomial({0.08}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> ExactBlackman(Instant const& t_min,
-                                                     Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> ExactBlackman(Instant const& t_min,
+                                          Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
@@ -109,10 +103,9 @@ PoissonSeries<double, 0, 0, Evaluator> ExactBlackman(Instant const& t_min,
                    .cos = PeriodicPolynomial({715.0 / 9304.0}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> Nuttall(Instant const& t_min,
-                                               Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> Nuttall(Instant const& t_min,
+                                    Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
@@ -129,10 +122,9 @@ PoissonSeries<double, 0, 0, Evaluator> Nuttall(Instant const& t_min,
                    .cos = PeriodicPolynomial({0.012604}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
-                                                       Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> BlackmanNuttall(Instant const& t_min,
+                                            Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
@@ -149,10 +141,9 @@ PoissonSeries<double, 0, 0, Evaluator> BlackmanNuttall(Instant const& t_min,
                    .cos = PeriodicPolynomial({0.0106411}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> BlackmanHarris(Instant const& t_min,
-                                                      Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> BlackmanHarris(Instant const& t_min,
+                                           Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);
@@ -169,10 +160,9 @@ PoissonSeries<double, 0, 0, Evaluator> BlackmanHarris(Instant const& t_min,
                    .cos = PeriodicPolynomial({0.01168}, t_mid)}}});
 }
 
-template<template<typename, typename, int> class Evaluator>
-PoissonSeries<double, 0, 0, Evaluator> ISO18431_2(Instant const& t_min,
-                                                  Instant const& t_max) {
-  using Result = PoissonSeries<double, 0, 0, Evaluator>;
+PoissonSeries<double, 0, 0> ISO18431_2(Instant const& t_min,
+                                       Instant const& t_max) {
+  using Result = PoissonSeries<double, 0, 0>;
   using AperiodicPolynomial = typename Result::AperiodicPolynomial;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
   AngularFrequency const ω = 2 * π * Radian / (t_max - t_min);

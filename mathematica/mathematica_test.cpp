@@ -275,7 +275,7 @@ TEST_F(MathematicaTest, ToMathematica) {
               ToMathematica(series, PreserveUnits));
   }
   {
-    using Series = PoissonSeries<double, 0, 0, Horner>;
+    using Series = PoissonSeries<double, 0, 0>;
     Instant const t0 = Instant() + 3 * Second;
     Series::AperiodicPolynomial secular({1.5}, t0);
     Series::PeriodicPolynomial sin({0.5}, t0);
@@ -297,7 +297,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(series, PreserveUnits));
   }
   {
-    using PiecewiseSeries = PiecewisePoissonSeries<double, 0, 0, Horner>;
+    using PiecewiseSeries = PiecewisePoissonSeries<double, 0, 0>;
     using Series = PiecewiseSeries::Series;
     Instant const t0 = Instant() + 3 * Second;
     Series series(Series::AperiodicPolynomial({1.5}, t0),
