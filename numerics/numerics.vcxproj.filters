@@ -74,9 +74,6 @@
     <ClInclude Include="cbrt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fast_sin_cos_2π.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="legendre.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -296,12 +293,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cbrt_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fast_sin_cos_2π.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fast_sin_cos_2π_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="legendre_test.cpp">

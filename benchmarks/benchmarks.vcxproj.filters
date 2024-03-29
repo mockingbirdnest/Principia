@@ -41,9 +41,6 @@
     <ClCompile Include="planetarium_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fast_sin_cos_2π_benchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="geopotential_benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
