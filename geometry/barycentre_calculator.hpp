@@ -46,6 +46,8 @@ template<affine Point, homogeneous_field Weight, std::size_t size>
 Point Barycentre(Point const (&points)[size], Weight const (&weights)[size]);
 template<real_affine_space Point, std::size_t size>
 Point Barycentre(Point const (&points)[size], double const (&weights)[size]);
+template<real_affine_space Point, std::size_t size>
+Point Barycentre(Point const (&points)[size]);
 
 template<typename T, typename Weight, template<typename...> class Container>
 T Barycentre(Container<T> const& ts, Container<Weight> const& weights);
