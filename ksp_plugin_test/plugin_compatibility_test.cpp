@@ -119,8 +119,6 @@ class PluginCompatibilityTest
   int const stderrthreshold_;
 };
 
-INSTANTIATE_TEST_SUITE_P(FMA, PluginCompatibilityTest, Bool());
-
 TEST_F(PluginCompatibilityTest, PreCartan) {
   // This space for rent.
 }
@@ -141,6 +139,8 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 }
 
 #if !_DEBUG
+INSTANTIATE_TEST_SUITE_P(FMA, PluginCompatibilityTest, Bool());
+
 TEST_P(PluginCompatibilityTest, Reach) {
   std::optional<FMAPreventer> fma_preventer;
   if (!GetParam()) {
