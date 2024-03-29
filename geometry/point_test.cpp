@@ -160,20 +160,6 @@ TEST_F(PointTest, SerializationSuccess) {
 }
 
 TEST_F(PointDeathTest, BarycentreError) {
-  // The <> seem to confuse EXPECT_DEATH, hence the lambda.
-  auto barycentre =
-      [](std::vector<Instant> const& instants,
-         std::vector<Volume> const& weights) -> Instant {
-    return Barycentre<Instant, Volume, std::vector>(instants, weights);
-  };
-  EXPECT_DEATH({
-    Instant const t1 = mjd0 + 1 * Day;
-    Instant const t2 = mjd0 - 3 * Day;
-    barycentre({t1, t2}, {3 * Litre, 4 * Litre, 5 * Litre});
-  }, "unequal sizes");
-  EXPECT_DEATH({
-    barycentre({}, {});
-  }, "Empty input");
   using InstantBarycentreCalculator = BarycentreCalculator<Instant, Volume>;
   EXPECT_DEATH({
     InstantBarycentreCalculator calculator;

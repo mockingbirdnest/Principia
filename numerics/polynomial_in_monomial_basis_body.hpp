@@ -86,25 +86,15 @@ struct PolynomialAtOrigin<Value, Argument, degree,
       typename Polynomial::Coefficients const& coefficients,
       Argument const& from_origin,
       Argument const& to_origin);
-
-#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
-  using PolynomialAlias = Polynomial;
-#endif
 };
 
 template<typename Value, typename Argument, int degree,
          std::size_t ...indices>
 auto PolynomialAtOrigin<Value, Argument, degree,
                         std::index_sequence<indices...>>::
-#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
-MakePolynomial(typename PolynomialAlias::Coefficients const& coefficients,
-               Argument const& from_origin,
-               Argument const& to_origin) -> PolynomialAlias {
-#else
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
                Argument const& from_origin,
                Argument const& to_origin) -> Polynomial {
-#endif
   using vector_space::operator+;
   Difference<Argument> const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
@@ -585,7 +575,7 @@ constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_> operator-(
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, PRINCIPIA_MAX(ldegree_, rdegree_)>
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree_, rdegree_)>
 operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
   using vector_space::operator+;
@@ -598,7 +588,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, PRINCIPIA_MAX(ldegree_, rdegree_)>
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree_, rdegree_)>
 operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
   using vector_space::operator-;

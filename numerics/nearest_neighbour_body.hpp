@@ -81,14 +81,11 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Initialize() {
   // Compute the centroid of the values.
-  std::vector<Value> values_for_barycentre;
-  values_for_barycentre.reserve(values_.size());
+  BarycentreCalculator<Value, double> centroid;
   for (auto const value : values_) {
-    values_for_barycentre.push_back(*value);
+    centroid.Add(*value, 1);
   }
-  centroid_ = Barycentre<Value, double, std::vector>(
-      values_for_barycentre,
-      std::vector<double>(values_for_barycentre.size(), 1));
+  centroid_ = centroid.Get();
 
   // Compute the displacements from the centroid.
   displacements_.reserve(values_.size());

@@ -363,8 +363,8 @@ template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
-                       PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
+                       std::max(aperiodic_ldegree, aperiodic_rdegree),
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -386,8 +386,8 @@ template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
-                       PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
+                       std::max(aperiodic_ldegree, aperiodic_rdegree),
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator+(PiecewisePoissonSeries<
               Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
@@ -409,8 +409,8 @@ template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
-                       PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
+                       std::max(aperiodic_ldegree, aperiodic_rdegree),
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -437,8 +437,8 @@ template<typename Value,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
-                       PRINCIPIA_MAX(aperiodic_ldegree, aperiodic_rdegree),
-                       PRINCIPIA_MAX(periodic_ldegree, periodic_rdegree)>
+                       std::max(aperiodic_ldegree, aperiodic_rdegree),
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator-(PiecewisePoissonSeries<
               Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
@@ -465,13 +465,13 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Product<LValue, RValue>,
-                       PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
-                                      aperiodic_ldegree + periodic_rdegree,
-                                      periodic_ldegree + aperiodic_rdegree,
-                                      periodic_ldegree + periodic_rdegree),
-                       PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
-                                      periodic_ldegree + aperiodic_rdegree,
-                                      periodic_ldegree + periodic_rdegree)>
+                       std::max({aperiodic_ldegree + aperiodic_rdegree,
+                                 aperiodic_ldegree + periodic_rdegree,
+                                 periodic_ldegree + aperiodic_rdegree,
+                                 periodic_ldegree + periodic_rdegree}),
+                       std::max({aperiodic_ldegree + periodic_rdegree,
+                                 periodic_ldegree + aperiodic_rdegree,
+                                 periodic_ldegree + periodic_rdegree})>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -502,13 +502,13 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Product<LValue, RValue>,
-                       PRINCIPIA_MAX4(aperiodic_ldegree + aperiodic_rdegree,
-                                      aperiodic_ldegree + periodic_rdegree,
-                                      periodic_ldegree + aperiodic_rdegree,
-                                      periodic_ldegree + periodic_rdegree),
-                       PRINCIPIA_MAX3(aperiodic_ldegree + periodic_rdegree,
-                                      periodic_ldegree + aperiodic_rdegree,
-                                      periodic_ldegree + periodic_rdegree)>
+                       std::max({aperiodic_ldegree + aperiodic_rdegree,
+                                 aperiodic_ldegree + periodic_rdegree,
+                                 periodic_ldegree + aperiodic_rdegree,
+                                 periodic_ldegree + periodic_rdegree}),
+                       std::max({aperiodic_ldegree + periodic_rdegree,
+                                 periodic_ldegree + aperiodic_rdegree,
+                                 periodic_ldegree + periodic_rdegree})>
 operator*(PiecewisePoissonSeries<
               LValue, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<RValue,
