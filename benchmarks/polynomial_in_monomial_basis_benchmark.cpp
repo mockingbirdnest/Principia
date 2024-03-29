@@ -128,18 +128,12 @@ void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   }
 }
 
-using VectorDouble = Multivector<double, ICRS, 1>;
-
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    double, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    Length, Estrin)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   VectorDouble, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
@@ -156,10 +150,6 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   VectorDouble, Horner)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    Displacement<ICRS>, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
@@ -173,10 +163,6 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   VectorDouble, EstrinWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    Displacement<ICRS>, EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
@@ -187,10 +173,6 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    Length, HornerWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   VectorDouble, HornerWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
