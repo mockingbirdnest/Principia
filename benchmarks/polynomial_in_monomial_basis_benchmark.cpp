@@ -93,33 +93,34 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   }
 }
 
-template<template<typename, typename, int> class Evaluator>
-void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
+template<typename Value,
+         template<typename, typename, int> class Evaluator>
+void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   int const degree = state.range(0);
   switch (degree) {
     case 2:
-      EvaluatePolynomialInMonomialBasis<double, Time, 2, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 2, Evaluator>(state);
       break;
     case 4:
-      EvaluatePolynomialInMonomialBasis<double, Time, 4, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 4, Evaluator>(state);
       break;
     case 6:
-      EvaluatePolynomialInMonomialBasis<double, Time, 6, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 6, Evaluator>(state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<double, Time, 8, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 8, Evaluator>(state);
       break;
     case 10:
-      EvaluatePolynomialInMonomialBasis<double, Time, 10, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 10, Evaluator>(state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<double, Time, 12, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 12, Evaluator>(state);
       break;
     case 14:
-      EvaluatePolynomialInMonomialBasis<double, Time, 14, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 14, Evaluator>(state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<double, Time, 16, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 16, Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -127,213 +128,73 @@ void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
   }
 }
 
-template<template<typename, typename, int> class Evaluator>
-void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
-  int const degree = state.range(0);
-  switch (degree) {
-    case 2:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 2, Evaluator>(state);
-      break;
-    case 4:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 4, Evaluator>(state);
-      break;
-    case 6:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 6, Evaluator>(state);
-      break;
-    case 8:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 8, Evaluator>(state);
-      break;
-    case 10:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 10, Evaluator>(state);
-      break;
-    case 12:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 12, Evaluator>(state);
-      break;
-    case 14:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 14, Evaluator>(state);
-      break;
-    case 16:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 16, Evaluator>(state);
-      break;
-    default:
-      LOG(FATAL) << "Degree " << degree
-                 << " in BM_EvaluatePolynomialInMonomialBasisQuantity";
-  }
-}
+using VectorDouble = Multivector<double, ICRS, 1>;
 
-template<template<typename, typename, int> class Evaluator>
-void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
-  int const degree = state.range(0);
-  switch (degree) {
-    case 2:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        2,
-                                        Evaluator>(state);
-      break;
-    case 4:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        4,
-                                        Evaluator>(state);
-      break;
-    case 6:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        6,
-                                        Evaluator>(state);
-      break;
-    case 8:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        8,
-                                        Evaluator>(state);
-      break;
-    case 10:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        10,
-                                        Evaluator>(state);
-      break;
-    case 12:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        12,
-                                        Evaluator>(state);
-      break;
-    case 14:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        14,
-                                        Evaluator>(state);
-      break;
-    case 16:
-      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
-                                        Time,
-                                        16,
-                                        Evaluator>(state);
-      break;
-    default:
-      LOG(FATAL) << "Degree " << degree
-                 << " in BM_EvaluatePolynomialInMonomialBasisVectorDouble";
-  }
-}
-
-template<template<typename, typename, int> class Evaluator>
-void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
-  int const degree = state.range(0);
-  switch (degree) {
-    case 2:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        2,
-                                        Evaluator>(state);
-      break;
-    case 4:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        4,
-                                        Evaluator>(state);
-      break;
-    case 6:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        6,
-                                        Evaluator>(state);
-      break;
-    case 8:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        8,
-                                        Evaluator>(state);
-      break;
-    case 10:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        10,
-                                        Evaluator>(state);
-      break;
-    case 12:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        12,
-                                        Evaluator>(state);
-      break;
-    case 14:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        14,
-                                        Evaluator>(state);
-      break;
-    case 16:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
-                                        Time,
-                                        16,
-                                        Evaluator>(state);
-      break;
-    default:
-      LOG(FATAL) << "Degree " << degree
-                 << " in BM_EvaluatePolynomialInMonomialBasisDisplacement";
-  }
-}
-
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, Estrin)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity, Estrin)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble, Estrin)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   VectorDouble, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement, Estrin)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, Horner)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity, Horner)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble, Horner)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   VectorDouble, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement, Horner)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
-                    EstrinWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
-                    EstrinWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
-                    EstrinWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
-                    EstrinWithoutFMA)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
-                    HornerWithoutFMA)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
-                    HornerWithoutFMA)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
-                    HornerWithoutFMA)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   VectorDouble, EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
-                    HornerWithoutFMA)
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   VectorDouble, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, HornerWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
