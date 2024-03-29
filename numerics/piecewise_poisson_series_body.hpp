@@ -364,8 +364,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -388,11 +387,9 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
-operator+(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       std::max(periodic_ldegree, periodic_rdegree)>
+operator+(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
@@ -413,8 +410,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -442,11 +438,9 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
-operator-(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       std::max(periodic_ldegree, periodic_rdegree)>
+operator-(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =
@@ -477,8 +471,7 @@ PiecewisePoissonSeries<Product<LValue, RValue>,
                                  periodic_ldegree + periodic_rdegree}),
                        std::max({aperiodic_ldegree + periodic_rdegree,
                                  periodic_ldegree + aperiodic_rdegree,
-                                 periodic_ldegree + periodic_rdegree}),
-                       Evaluator>
+                                 periodic_ldegree + periodic_rdegree})>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -515,11 +508,9 @@ PiecewisePoissonSeries<Product<LValue, RValue>,
                                  periodic_ldegree + periodic_rdegree}),
                        std::max({aperiodic_ldegree + periodic_rdegree,
                                  periodic_ldegree + aperiodic_rdegree,
-                                 periodic_ldegree + periodic_rdegree}),
-                       Evaluator>
-operator*(PiecewisePoissonSeries<LValue,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                                 periodic_ldegree + periodic_rdegree})>
+operator*(PiecewisePoissonSeries<
+              LValue, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<RValue,
                         aperiodic_rdegree, periodic_rdegree> const& right) {
   using Result =

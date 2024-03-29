@@ -576,8 +576,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PoissonSeries<Value,
               std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
-              Evaluator>
+              std::max(periodic_ldegree, periodic_rdegree)>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
@@ -642,8 +641,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PoissonSeries<Value,
               std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
-              Evaluator>
+              std::max(periodic_ldegree, periodic_rdegree)>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
@@ -781,8 +779,7 @@ PoissonSeries<Product<LValue, RValue>,
                         periodic_ldegree + periodic_rdegree}),
               std::max({aperiodic_ldegree + periodic_rdegree,
                         periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              Evaluator>
+                        periodic_ldegree + periodic_rdegree})>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<RValue,
@@ -806,14 +803,12 @@ PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
                         periodic_ldegree + periodic_rdegree}),
               std::max({aperiodic_ldegree + periodic_rdegree,
                         periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              Evaluator>
-PointwiseInnerProduct(PoissonSeries<LValue,
-                                    aperiodic_ldegree, periodic_ldegree,
-                                    Evaluator> const& left,
-                      PoissonSeries<RValue,
-                                    aperiodic_rdegree, periodic_rdegree,
-                                    Evaluator> const& right) {
+                        periodic_ldegree + periodic_rdegree})>
+PointwiseInnerProduct(
+    PoissonSeries<LValue,
+                  aperiodic_ldegree, periodic_ldegree> const& left,
+    PoissonSeries<RValue,
+                  aperiodic_rdegree, periodic_rdegree> const& right) {
   auto product = [](auto const& left, auto const& right) {
     return PointwiseInnerProduct(left, right);
   };

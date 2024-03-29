@@ -154,42 +154,34 @@ class PiecewisePoissonSeries {
   PiecewisePoissonSeries<Quotient<V, S>, al, pl>
   friend operator/(PiecewisePoissonSeries<V, al, pl> const& left,
                    S const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
-  friend operator+(PoissonSeries<V, al, pl, E> const& left,
-                   PiecewisePoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
-  friend operator+(PiecewisePoissonSeries<V, al, pl, E> const& left,
-                   PoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
-  friend operator-(PoissonSeries<V, al, pl, E> const& left,
-                   PiecewisePoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
-  friend operator-(PiecewisePoissonSeries<V, al, pl, E> const& left,
-                   PoissonSeries<V, ar, pr, E> const& right);
-  template<typename L, typename R, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr)>
+  friend operator+(PoissonSeries<V, al, pl> const& left,
+                   PiecewisePoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr)>
+  friend operator+(PiecewisePoissonSeries<V, al, pl> const& left,
+                   PoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr)>
+  friend operator-(PoissonSeries<V, al, pl> const& left,
+                   PiecewisePoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PiecewisePoissonSeries<V, std::max(al, ar), std::max(pl, pr)>
+  friend operator-(PiecewisePoissonSeries<V, al, pl> const& left,
+                   PoissonSeries<V, ar, pr> const& right);
+  template<typename L, typename R, int al, int pl, int ar, int pr>
   PiecewisePoissonSeries<Product<L, R>,
                          std::max({al + ar, al + pr, pl + ar, pl + pr}),
-                         std::max({al + pr, pl + ar, pl + pr}),
-                         E>
-  friend operator*(PoissonSeries<L, al, pl, E> const& left,
-                   PiecewisePoissonSeries<R, ar, pr, E> const& right);
-  template<typename L, typename R, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
+                         std::max({al + pr, pl + ar, pl + pr})>
+  friend operator*(PoissonSeries<L, al, pl> const& left,
+                   PiecewisePoissonSeries<R, ar, pr> const& right);
+  template<typename L, typename R, int al, int pl, int ar, int pr>
   PiecewisePoissonSeries<Product<L, R>,
                          std::max({al + ar, al + pr, pl + ar, pl + pr}),
-                         std::max({al + pr, pl + ar, pl + pr}),
-                         E>
-  friend operator*(PiecewisePoissonSeries<L, al, pl, E> const& left,
-                   PoissonSeries<R, ar, pr, E> const& right);
+                         std::max({al + pr, pl + ar, pl + pr})>
+  friend operator*(PiecewisePoissonSeries<L, al, pl> const& left,
+                   PoissonSeries<R, ar, pr> const& right);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
   typename Hilbert<L, R>::InnerProductType
@@ -263,8 +255,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -275,11 +266,9 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
-operator+(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       std::max(periodic_ldegree, periodic_rdegree)>
+operator+(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right);
 
@@ -288,8 +277,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
+                       std::max(periodic_ldegree, periodic_rdegree)>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
@@ -300,11 +288,9 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PiecewisePoissonSeries<Value,
                        std::max(aperiodic_ldegree, aperiodic_rdegree),
-                       std::max(periodic_ldegree, periodic_rdegree),
-                       Evaluator>
-operator-(PiecewisePoissonSeries<Value,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                       std::max(periodic_ldegree, periodic_rdegree)>
+operator-(PiecewisePoissonSeries<
+              Value, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
                         aperiodic_rdegree, periodic_rdegree> const& right);
 
@@ -318,13 +304,11 @@ PiecewisePoissonSeries<Product<LValue, RValue>,
                                  periodic_ldegree + periodic_rdegree}),
                        std::max({aperiodic_ldegree + periodic_rdegree,
                                  periodic_ldegree + aperiodic_rdegree,
-                                 periodic_ldegree + periodic_rdegree}),
-                       Evaluator>
+                                 periodic_ldegree + periodic_rdegree})>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PiecewisePoissonSeries<
-              RValue,
-              aperiodic_rdegree, periodic_rdegree> const& right);
+              RValue, aperiodic_rdegree, periodic_rdegree> const& right);
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
@@ -336,11 +320,9 @@ PiecewisePoissonSeries<Product<LValue, RValue>,
                                  periodic_ldegree + periodic_rdegree}),
                        std::max({aperiodic_ldegree + periodic_rdegree,
                                  periodic_ldegree + aperiodic_rdegree,
-                                 periodic_ldegree + periodic_rdegree}),
-                       Evaluator>
-operator*(PiecewisePoissonSeries<LValue,
-                                 aperiodic_ldegree, periodic_ldegree,
-                                 Evaluator> const& left,
+                                 periodic_ldegree + periodic_rdegree})>
+operator*(PiecewisePoissonSeries<
+              LValue, aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<RValue,
                         aperiodic_rdegree, periodic_rdegree> const& right);
 

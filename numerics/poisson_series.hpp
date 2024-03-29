@@ -155,23 +155,19 @@ class PoissonSeries {
   // order.
   PolynomialsByAngularFrequency periodic_;
 
-  template<typename V, int ar, int pr,
-           template<typename, typename, int> class E>
-  PoissonSeries<V, ar, pr, E>
-  friend operator-(PoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
-  friend operator+(PoissonSeries<V, al, pl, E> const& left,
-                   PoissonSeries<V, ar, pr, E> const& right);
-  template<typename V, int al, int pl, int ar, int pr,
-           template<typename, typename, int> class E>
-  PoissonSeries<V, std::max(al, ar), std::max(pl, pr), E>
-  friend operator-(PoissonSeries<V, al, pl, E> const& left,
-                   PoissonSeries<V, ar, pr, E> const& right);
-  template<typename S, typename V, int ar, int pr,
-           template<typename, typename, int> class E>
-  PoissonSeries<Product<S, V>, ar, pr, E>
+  template<typename V, int ar, int pr>
+  PoissonSeries<V, ar, pr>
+  friend operator-(PoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PoissonSeries<V, std::max(al, ar), std::max(pl, pr)>
+  friend operator+(PoissonSeries<V, al, pl> const& left,
+                   PoissonSeries<V, ar, pr> const& right);
+  template<typename V, int al, int pl, int ar, int pr>
+  PoissonSeries<V, std::max(al, ar), std::max(pl, pr)>
+  friend operator-(PoissonSeries<V, al, pl> const& left,
+                   PoissonSeries<V, ar, pr> const& right);
+  template<typename S, typename V, int ar, int pr>
+  PoissonSeries<Product<S, V>, ar, pr>
   friend operator*(S const& left,
                    PoissonSeries<V, ar, pr> const& right);
   template<typename S, typename V, int al, int pl>
@@ -224,8 +220,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PoissonSeries<Value,
               std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
-              Evaluator>
+              std::max(periodic_ldegree, periodic_rdegree)>
 operator+(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
@@ -236,8 +231,7 @@ template<typename Value,
          int aperiodic_rdegree, int periodic_rdegree>
 PoissonSeries<Value,
               std::max(aperiodic_ldegree, aperiodic_rdegree),
-              std::max(periodic_ldegree, periodic_rdegree),
-              Evaluator>
+              std::max(periodic_ldegree, periodic_rdegree)>
 operator-(PoissonSeries<Value,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<Value,
@@ -282,8 +276,7 @@ PoissonSeries<Product<LValue, RValue>,
                         periodic_ldegree + periodic_rdegree}),
               std::max({aperiodic_ldegree + periodic_rdegree,
                         periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              Evaluator>
+                        periodic_ldegree + periodic_rdegree})>
 operator*(PoissonSeries<LValue,
                         aperiodic_ldegree, periodic_ldegree> const& left,
           PoissonSeries<RValue,
@@ -301,14 +294,12 @@ PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
                         periodic_ldegree + periodic_rdegree}),
               std::max({aperiodic_ldegree + periodic_rdegree,
                         periodic_ldegree + aperiodic_rdegree,
-                        periodic_ldegree + periodic_rdegree}),
-              Evaluator>
-PointwiseInnerProduct(PoissonSeries<LValue,
-                                    aperiodic_ldegree, periodic_ldegree,
-                                    Evaluator> const& left,
-                      PoissonSeries<RValue,
-                                    aperiodic_rdegree, periodic_rdegree,
-                                    Evaluator> const& right);
+                        periodic_ldegree + periodic_rdegree})>
+PointwiseInnerProduct(
+    PoissonSeries<LValue,
+                  aperiodic_ldegree, periodic_ldegree> const& left,
+    PoissonSeries<RValue,
+                  aperiodic_rdegree, periodic_rdegree> const& right);
 
 // Output.
 
