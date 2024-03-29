@@ -126,7 +126,7 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
                                    PolynomialInЧебышёвBasis const& right) =
       default;
 
-  Value operator()(Argument argument) const override;
+  Value __vectorcall operator()(Argument argument) const override;
   Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const override;
 

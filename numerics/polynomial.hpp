@@ -38,7 +38,7 @@ class Polynomial {
   friend constexpr bool operator!=(Polynomial const& left,
                                    Polynomial const& right) = default;
 
-  virtual Value operator()(Argument argument) const = 0;
+  virtual Value __vectorcall operator()(Argument argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
