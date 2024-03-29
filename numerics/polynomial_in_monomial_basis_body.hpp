@@ -488,35 +488,25 @@ void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
       Argument,
       serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
                                                                 extension);
+  Evaluator<Value, Difference<Argument>, degree_>::WriteToMessage(
+      extension->mutable_evaluator(), evaluator_);
 }
 
 template<typename Value_, typename Argument_, int degree_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 ReadFromMessage(serialization::Polynomial const& message) {
-  CHECK_EQ(degree_, message.degree()) << message.DebugString();
-  CHECK(message.HasExtension(
-           serialization::PolynomialInMonomialBasis::extension))
-      << message.DebugString();
-  auto const& extension =
-      message.GetExtension(
-          serialization::PolynomialInMonomialBasis::extension);
+  return ReadFromMessage(message, /*evaluator=*/nullptr);
+}
 
-  bool const is_pre_gröbner = extension.origin_case() ==
-    serialization::PolynomialInMonomialBasis::ORIGIN_NOT_SET;
-  LOG_IF(WARNING, is_pre_gröbner)
-      << "Reading pre-Gröbner PolynomialInMonomialBasis";
-
-  Coefficients coefficients;
-  TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
-
-  auto const origin = is_pre_gröbner
-                          ? Argument{}
-                          : DoubleOrQuantityOrPointOrMultivectorSerializer<
-                                Argument,
-                                serialization::PolynomialInMonomialBasis>::
-                                ReadFromMessage(extension);
-  return PolynomialInMonomialBasis(coefficients, origin);
+template<typename Value_, typename Argument_, int degree_>
+template<template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+ReadFromMessage(serialization::Polynomial const& message) {
+  return ReadFromMessage(
+      message,
+      Evaluator<Value, Difference<Argument>, degree_>::Singleton());
 }
 
 template<typename Value_, typename Argument_, int degree_>
@@ -527,6 +517,55 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::DefaultEvaluator() {
   } else {
     return Estrin<Value_, Difference<Argument_>, degree_>::Singleton();
   }
+}
+
+template<typename Value_, typename Argument_, int degree_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
+    serialization::Polynomial const& message,
+    Evaluator<Value, Difference<Argument>, degree_> const* const evaluator) {
+  CHECK_EQ(degree_, message.degree()) << message.DebugString();
+  CHECK(message.HasExtension(
+           serialization::PolynomialInMonomialBasis::extension))
+      << message.DebugString();
+  auto const& extension =
+      message.GetExtension(
+          serialization::PolynomialInMonomialBasis::extension);
+
+  bool const is_pre_gröbner = extension.origin_case() ==
+    serialization::PolynomialInMonomialBasis::ORIGIN_NOT_SET;
+  bool const is_pre_καραθεοδωρή = !extension.has_evaluator();
+  LOG_IF(WARNING, is_pre_καραθεοδωρή)
+      << "Reading pre-"
+      << (is_pre_gröbner ? "Gröbner" : "Καραθεοδωρή")
+      << " PolynomialInMonomialBasis";
+
+
+  Coefficients coefficients;
+  TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
+
+  auto const origin = is_pre_gröbner
+                          ? Argument{}
+                          : DoubleOrQuantityOrPointOrMultivectorSerializer<
+                                Argument,
+                                serialization::PolynomialInMonomialBasis>::
+                                ReadFromMessage(extension);
+  auto polynomial = PolynomialInMonomialBasis(coefficients, origin);
+
+  if (is_pre_καραθεοδωρή) {
+    CHECK_NE(evaluator, nullptr)
+        << "No evaluator specified for pre-Καραθεοδωρή deserialization "
+        << extension.DebugString();
+    polynomial.evaluator_ = evaluator;
+  } else {
+    CHECK_EQ(evaluator, nullptr)
+        << "Evaluator should not be specified for post-Καραθεοδωρή "
+        << "deserialization" << extension.DebugString();
+    polynomial.evaluator_ =
+        Evaluator<Value, Difference<Argument>, degree_>::ReadFromMessage(
+            extension.evaluator());
+  }
+  return polynomial;
 }
 
 template<typename Value, typename Argument, int rdegree_>

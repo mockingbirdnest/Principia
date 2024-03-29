@@ -211,6 +211,18 @@ class ContinuousTrajectoryTest : public testing::Test {
     return pre_gröbner;
   }
 
+  serialization::ContinuousTrajectory MakePreΚαραθεοδωρή(
+      serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory pre_καραθεοδωρή = message;
+    for (auto& pair : *pre_καραθεοδωρή.mutable_instant_polynomial_pair()) {
+      pair.mutable_polynomial()
+          ->MutableExtension(
+              serialization::PolynomialInMonomialBasis::extension)
+          ->clear_evaluator();
+    }
+    return pre_καραθεοδωρή;
+  }
+
   Instant const t0_;
 };
 
@@ -896,7 +908,8 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   trajectory1->WriteToMessage(&message1);
 
   serialization::ContinuousTrajectory const pre_grassmann =
-      MakePreGrassmann(MakePreGröbner(message1), checkpoint_time);
+     MakePreGrassmann(MakePreGröbner(MakePreΚαραθεοδωρή(message1)),
+                      checkpoint_time);
 
   // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
@@ -944,7 +957,7 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   trajectory1->WriteToMessage(&message1);
 
   serialization::ContinuousTrajectory const pre_gröbner =
-      MakePreGröbner(message1);
+      MakePreGröbner(MakePreΚαραθεοδωρή(message1));
 
   // Read from the pre-Gröbner message, write to a second message, and check
   // that we get the same result.

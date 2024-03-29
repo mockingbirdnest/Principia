@@ -154,16 +154,30 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
+
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message);
+  // Compatibility deserialization, when the evaluator is not present in
+  // |message|.
+  template<template<typename, typename, int> typename Evaluator>
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
  private:
+  // TODO(egg): This function should return |not_null|, but that's not
+  // constexpr.
   static constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
   DefaultEvaluator();
 
+  // The evaluator is only nonnull on the compatibility path.
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message,
+      Evaluator<Value, Difference<Argument>, degree_> const* evaluator);
+
   Coefficients coefficients_;
   Argument origin_;
-  Evaluator<Value_, Difference<Argument_>, degree_> const* evaluator_;
+  // TODO(phl): The |Evaluator| class should be able to take a |Point|.
+  not_null<Evaluator<Value_, Difference<Argument_>, degree_> const*> evaluator_;
 
   template<typename V, typename A, int r>
   constexpr PolynomialInMonomialBasis<V, A, r>

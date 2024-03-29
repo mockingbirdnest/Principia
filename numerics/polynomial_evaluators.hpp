@@ -1,14 +1,17 @@
 #pragma once
 
+#include "base/not_null.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
+#include "serialization/numerics.pb.h"
 
 namespace principia {
 namespace numerics {
 namespace _polynomial_evaluators {
 namespace internal {
 
+using namespace principia::base::_not_null;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
@@ -30,12 +33,18 @@ struct Evaluator {
   Value Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
-      Evaluator const* evaluator);
+      not_null<Evaluator const*> evaluator);
   FORCE_INLINE(static)
   Derivative<Value, Argument> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
-      Evaluator const* evaluator);
+      not_null<Evaluator const*> evaluator);
+
+  static void WriteToMessage(
+      not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message,
+      not_null<Evaluator const*> evaluator);
+  static not_null<Evaluator const*> ReadFromMessage(
+      serialization::PolynomialInMonomialBasis::Evaluator const& message);
 };
 
 template<typename Value, typename Argument, int degree, bool allow_fma>
