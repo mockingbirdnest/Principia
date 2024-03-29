@@ -806,7 +806,7 @@ PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
                              periodic_ldegree + periodic_rdegree)>
 PointwiseInnerProduct(
     PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
-    PoissonSeries<RValue,aperiodic_rdegree, periodic_rdegree> const& right) {
+    PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right) {
   auto product = [](auto const& left, auto const& right) {
     return PointwiseInnerProduct(left, right);
   };
