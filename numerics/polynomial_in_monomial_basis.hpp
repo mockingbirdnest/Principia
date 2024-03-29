@@ -121,8 +121,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
 
   Value __vectorcall operator()(Argument argument) const override;
-  Derivative<Value, Argument> EvaluateDerivative(
-      Argument const& argument) const override;
+  Derivative<Value, Argument> __vectorcall EvaluateDerivative(
+      Argument argument) const override;
 
   constexpr int degree() const override;
   bool is_zero() const override;

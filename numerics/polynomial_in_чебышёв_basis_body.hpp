@@ -166,7 +166,7 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
 template<typename Value_, typename Argument_, int degree_>
 Derivative<Value_, Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
-    Argument const& argument) const {
+    Argument const argument) const {
   // See comments above.
   double const scaled_argument =
       ((argument - upper_bound_) + (argument - lower_bound_)) * one_over_width_;

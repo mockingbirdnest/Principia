@@ -39,8 +39,8 @@ class Polynomial {
                                    Polynomial const& right) = default;
 
   virtual Value __vectorcall operator()(Argument argument) const = 0;
-  virtual Derivative<Value, Argument> EvaluateDerivative(
-      Argument const& argument) const = 0;
+  virtual Derivative<Value, Argument> __vectorcall EvaluateDerivative(
+      Argument argument) const = 0;
 
   // Only useful for benchmarking, analyzing performance or for downcasting.  Do
   // not use in other circumstances.
