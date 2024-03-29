@@ -134,7 +134,7 @@ PolynomialInЧебышёвBasis(Coefficients coefficients,
 
 template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
-    Argument const& argument) const {
+    Argument const argument) const {
   // This formula ensures continuity at the edges by producing -1 or +1 within
   // 2 ulps for |lower_bound_| and |upper_bound_|.
   double const scaled_argument =

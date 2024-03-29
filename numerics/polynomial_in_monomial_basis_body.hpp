@@ -390,7 +390,7 @@ operator-=(PolynomialInMonomialBasis const& right) {
 
 template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_>::
-operator()(Argument const& argument) const {
+operator()(Argument const argument) const {
   return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
       coefficients_, argument - origin_, evaluator_);
 }
