@@ -155,8 +155,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   auto const mid_lower = std::max_element(begin, mid_upper, projection_less);
 
   auto const anchor = Barycentre(
-      {displacements_[mid_lower->index], displacements_[mid_upper->index]},
-      {1, 1});
+      {displacements_[mid_lower->index], displacements_[mid_upper->index]});
 
   auto first_child = BuildTree(begin, mid_upper, size / 2);
   auto second_child = BuildTree(mid_upper, end, size - size / 2);

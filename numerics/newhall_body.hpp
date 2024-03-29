@@ -321,7 +321,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  Instant const t_mid = Barycentre({t_min, t_max}, {1, 1});
+  Instant const t_mid = Barycentre({t_min, t_max});
   return (origin +
           Dehomogeneize<Difference<Value>, degree, Evaluator>(
               NewhallMonomialApproximator<
@@ -330,7 +330,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                   Evaluator>::HomogeneousCoefficients(qv, error_estimate),
               /*scale=*/1.0 / duration_over_two,
               t_mid))
-      .WithEvaluator<Evaluator>();
+      .template WithEvaluator<Evaluator>();
 }
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)   \

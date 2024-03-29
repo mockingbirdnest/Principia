@@ -465,7 +465,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Time>::ReadFromMessage<Horner>(message);
+        Polynomial<Displacement<World>, Time>::ReadFromMessage(message);
     EXPECT_EQ(2, polynomial_read->degree());
     EXPECT_THAT(
         (*polynomial_read)(0.5 * Second),
@@ -491,16 +491,21 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_point());
     EXPECT_TRUE(extension.point().has_scalar());
 
+    // Simulate a pre-Καραθεοδωρή compatibility read.
+    serialization::Polynomial compatibility_message = message;
+    compatibility_message
+        .MutableExtension(serialization::PolynomialInMonomialBasis::extension)
+        ->clear_evaluator();
     auto const polynomial_read =
         Polynomial<Displacement<World>, Instant>::ReadFromMessage<Horner>(
-            message);
+            compatibility_message);
     EXPECT_EQ(2, polynomial_read->degree());
     *polynomial_read =
         std::move(
             dynamic_cast<
                 PolynomialInMonomialBasis<Displacement<World>, Instant, 2>&>(
                 *polynomial_read))
-            .WithEvaluator<Horner>();
+            .template WithEvaluator<Horner>();
     EXPECT_THAT(
         (*polynomial_read)(Instant() + 0.5 * Second),
         AlmostEquals(
@@ -526,14 +531,14 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_TRUE(extension.has_quantity());
 
     auto const polynomial_read =
-        Polynomial<Displacement<World>, Time>::ReadFromMessage<Horner>(message);
+        Polynomial<Displacement<World>, Time>::ReadFromMessage(message);
     EXPECT_EQ(17, polynomial_read->degree());
     *polynomial_read =
         std::move(
             dynamic_cast<
                 PolynomialInMonomialBasis<Displacement<World>, Time, 17>&>(
                 *polynomial_read))
-            .WithEvaluator<Estrin>();
+            .template WithEvaluator<Estrin>();
     EXPECT_THAT((*polynomial_read)(0.5 * Second),
                 AlmostEquals(
                     Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));

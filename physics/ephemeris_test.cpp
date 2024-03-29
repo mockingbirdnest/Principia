@@ -198,7 +198,7 @@ TEST_P(EphemerisTest, ProlongSpecialCases) {
   EXPECT_OK(ephemeris.Prolong(t0_ + period / 2));
   EXPECT_EQ(t_max, ephemeris.t_max());
 
-  Instant const last_t = Barycentre({t0_ + period, t_max}, {0.5, 0.5});
+  Instant const last_t = Barycentre({t0_ + period, t_max});
   ephemeris.Prolong(last_t).IgnoreError();
   EXPECT_EQ(t_max, ephemeris.t_max());
 }

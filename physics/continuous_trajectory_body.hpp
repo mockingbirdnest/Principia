@@ -431,10 +431,26 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
                 Estrin>(polynomial));
       } else {
-        continuous_trajectory->polynomials_.emplace_back(
-            Instant::ReadFromMessage(pair.t_max()),
-            Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                Estrin>(pair.polynomial()));
+        serialization::Polynomial const& polynomial = pair.polynomial();
+        if (polynomial.HasExtension(
+                serialization::PolynomialInMonomialBasis::extension) &&
+            polynomial
+                .GetExtension(
+                    serialization::PolynomialInMonomialBasis::extension)
+                .has_evaluator()) {
+          // The post-Καραθεοδωρή path, do not specify an evaluator when calling
+          // |ReadFromMessage|.
+          continuous_trajectory->polynomials_.emplace_back(
+              Instant::ReadFromMessage(pair.t_max()),
+              Polynomial<Position<Frame>, Instant>::ReadFromMessage(
+                  polynomial));
+        } else {
+          // The pre-Καραθεοδωρή path.
+          continuous_trajectory->polynomials_.emplace_back(
+              Instant::ReadFromMessage(pair.t_max()),
+              Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
+                  Estrin>(polynomial));
+        }
       }
     }
   }
