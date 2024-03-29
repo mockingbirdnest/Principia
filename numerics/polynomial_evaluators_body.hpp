@@ -324,20 +324,31 @@ Value Evaluator<Value, Argument, degree>::Evaluate(
   // Instead we dispatch by hand.  We use the singleton as an identity for the
   // types since the constructors are hidden and there is only ever one object
   // of each evaluator type.  There are no calls in this code.
-  if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
-    return Estrin<Value, Argument, degree>::Evaluate(
-        coefficients, argument);
-  } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
-    return Horner<Value, Argument, degree>::Evaluate(
-        coefficients, argument);
-  } else if (evaluator ==
-             EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
-    return EstrinWithoutFMA<Value, Argument, degree>::Evaluate(
-        coefficients, argument);
+  if constexpr (degree <= 2) {
+    // Horner and Estrin are identical.
+    if (evaluator == Estrin<Value, Argument, degree>::Singleton() ||
+        evaluator == Horner<Value, Argument, degree>::Singleton()) {
+      return Horner<Value, Argument, degree>::Evaluate(coefficients, argument);
+    } else {
+      /*evaluator == EstrinWithoutFMA<Value, Argument, degree>::Singleton() ||
+        evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
+      return HornerWithoutFMA<Value, Argument, degree>::Evaluate(
+          coefficients, argument);
+    }
   } else {
-    /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
-    return HornerWithoutFMA<Value, Argument, degree>::Evaluate(
-        coefficients, argument);
+    if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
+      return Estrin<Value, Argument, degree>::Evaluate(coefficients, argument);
+    } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
+      return Horner<Value, Argument, degree>::Evaluate(coefficients, argument);
+    } else if (evaluator ==
+               EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
+      return EstrinWithoutFMA<Value, Argument, degree>::Evaluate(
+          coefficients, argument);
+    } else {
+      /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
+      return HornerWithoutFMA<Value, Argument, degree>::Evaluate(
+          coefficients, argument);
+    }
   }
 }
 
@@ -348,6 +359,8 @@ Evaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument,
     not_null<Evaluator const*> const evaluator) {
+  // For some reason using a simpler control flow for |degree <= 3|, like we do
+  // above, degrades the performance of |Evaluate|.  So let's not do that.
   if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
     return Estrin<Value, Argument, degree>::EvaluateDerivative(
         coefficients, argument);
