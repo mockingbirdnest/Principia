@@ -281,29 +281,25 @@ std::string ToMathematica(
     OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(
-    PoissonSeries<V, ad, pd, E> const& series,
+    PoissonSeries<V, ad, pd> const& series,
     OptionalExpressIn express_in);
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
+std::string ToMathematica(PoissonSeries<V, ad, pd> const& series,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(
-    PiecewisePoissonSeries<V, ad, pd, E> const& series,
+    PiecewisePoissonSeries<V, ad, pd> const& series,
     OptionalExpressIn express_in);
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
+std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd> const& series,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename OptionalExpressIn = std::nullopt_t>

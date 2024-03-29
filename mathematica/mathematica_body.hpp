@@ -142,10 +142,9 @@ std::string ToMathematicaBody(
 }
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn>
 std::string ToMathematicaBody(
-    PoissonSeries<V, ad, pd, E> const& series,
+    PoissonSeries<V, ad, pd> const& series,
     OptionalExpressIn express_in) {
   std::vector<std::string> components = {
       ToMathematicaBody(series.aperiodic_, express_in)};
@@ -168,10 +167,9 @@ std::string ToMathematicaBody(
 }
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn>
 std::string ToMathematicaBody(
-    PiecewisePoissonSeries<V, ad, pd, E> const& series,
+    PiecewisePoissonSeries<V, ad, pd> const& series,
     OptionalExpressIn express_in) {
   std::vector<std::string> conditions_and_functions;
   for (int i = 0; i < series.series_.size(); ++i) {
@@ -552,17 +550,15 @@ std::string ToMathematica(
 }
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematica(PoissonSeries<V, ad, pd, E> const& series,
+std::string ToMathematica(PoissonSeries<V, ad, pd> const& series,
                           OptionalExpressIn express_in) {
   return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }
 
 template<typename V, int ad, int pd,
-         template<typename, typename, int> class E,
          typename OptionalExpressIn>
-std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd, E> const& series,
+std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd> const& series,
                           OptionalExpressIn express_in) {
   return RawApply("Function", {ToMathematicaBody(series, express_in)});
 }

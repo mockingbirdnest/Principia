@@ -75,12 +75,11 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
 // quasimatrix constructed so far, and |subspaces| specify the subspaces spanned
 // by the |q|s and by |aₘ|.
 template<typename BasisSeries,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 absl::Status NormalGramSchmidtStep(
     BasisSeries const& aₘ,
     PoissonSeries<double,
-                  aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
+                  aperiodic_wdegree, periodic_wdegree> const& weight,
     Instant const& t_min,
     Instant const& t_max,
     std::vector<PoissonSeriesSubspace> const& subspaces,
@@ -157,12 +156,11 @@ absl::Status NormalGramSchmidtStep(
 // doesn't return |qₘ₊₁| because it's not needed for the solution.  It also
 // doesn't return |ρ|.
 template<typename Function, typename BasisSeries, typename Norm,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 absl::Status AugmentedGramSchmidtStep(
     Function& b,
     PoissonSeries<double,
-                  aperiodic_wdegree, periodic_wdegree, Evaluator> const& weight,
+                  aperiodic_wdegree, periodic_wdegree> const& weight,
     Instant const& t_min,
     Instant const& t_max,
     std::vector<BasisSeries> const& q,
@@ -190,14 +188,12 @@ absl::Status AugmentedGramSchmidtStep(
 }
 
 template<typename Function,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 AngularFrequency PreciseMode(
     Interval<AngularFrequency> const& fft_mode,
     Function const& function,
     PoissonSeries<double,
-                  aperiodic_wdegree, periodic_wdegree,
-                  Evaluator> const& weight) {
+                  aperiodic_wdegree, periodic_wdegree> const& weight) {
   auto const weighted_function = weight * function;
   auto const weighted_function_spectrum = weighted_function.FourierTransform();
 
@@ -214,16 +210,13 @@ AngularFrequency PreciseMode(
 
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 PoissonSeries<std::invoke_result_t<Function, Instant>,
-              aperiodic_degree, periodic_degree,
-              Evaluator>
+              aperiodic_degree, periodic_degree>
 Projection(Function const& function,
            AngularFrequency const& ω,
            PoissonSeries<double,
-                         aperiodic_wdegree, periodic_wdegree,
-                         Evaluator> const& weight,
+                         aperiodic_wdegree, periodic_wdegree> const& weight,
            Instant const& t_min,
            Instant const& t_max) {
   std::optional<AngularFrequency> optional_ω = ω;
@@ -245,36 +238,32 @@ Projection(Function const& function,
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
          typename AngularFrequencyCalculator,
-         int aperiodic_wdegree, int periodic_wdegree,
-         template<typename, typename, int> class Evaluator>
+         int aperiodic_wdegree, int periodic_wdegree>
 PoissonSeries<std::invoke_result_t<Function, Instant>,
-              aperiodic_degree, periodic_degree,
-              Evaluator>
-IncrementalProjection(Function const& function,
-                      AngularFrequencyCalculator const& calculator,
-                      PoissonSeries<double,
-                                    aperiodic_wdegree, periodic_wdegree,
-                                    Evaluator> const& weight,
-                      Instant const& t_min,
-                      Instant const& t_max) {
+              aperiodic_degree, periodic_degree>
+IncrementalProjection(
+    Function const& function,
+    AngularFrequencyCalculator const& calculator,
+    PoissonSeries<double,
+                  aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
   using Norm = typename Hilbert<Value>::NormType;
   using Normalized = typename Hilbert<Value>::NormalizedType;
   using BasisSeries = PoissonSeries<Normalized,
-                                    aperiodic_degree, periodic_degree,
-                                    Evaluator>;
+                                    aperiodic_degree, periodic_degree>;
   using ResultSeries = PoissonSeries<Value,
-                                     aperiodic_degree, periodic_degree,
-                                     Evaluator>;
+                                     aperiodic_degree, periodic_degree>;
 
   Instant const& t0 = weight.origin();
   auto const basis_zero = static_cast<
       typename BasisSeries::AperiodicPolynomial>(
-      typename PoissonSeries<Normalized, 0, 0, Evaluator>::AperiodicPolynomial(
+      typename PoissonSeries<Normalized, 0, 0>::AperiodicPolynomial(
           {Normalized{}}, t0));
   auto const result_zero =
       static_cast<typename ResultSeries::AperiodicPolynomial>(
-          typename PoissonSeries<Value, 0, 0, Evaluator>::AperiodicPolynomial(
+          typename PoissonSeries<Value, 0, 0>::AperiodicPolynomial(
               {Value{}}, t0));
 
   std::optional<AngularFrequency> ω = calculator(function);
