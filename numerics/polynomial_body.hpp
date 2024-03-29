@@ -21,12 +21,12 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
         PolynomialInMonomialBasis<Value, Argument, value>::ReadFromMessage( \
             message))
 
-#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_COMPATIBILITY_CASE(value)         \
-  case value:                                                               \
-    return make_not_null_unique<                                            \
-        PolynomialInMonomialBasis<Value, Argument, value>>(                 \
-        PolynomialInMonomialBasis<Value, Argument, value>::ReadFromMessage< \
-            Evaluator>(message))
+#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_COMPATIBILITY_CASE(value) \
+  case value:                                                       \
+    return make_not_null_unique<                                    \
+        PolynomialInMonomialBasis<Value, Argument, value>>(         \
+        PolynomialInMonomialBasis<Value, Argument, value>::         \
+            template ReadFromMessage<Evaluator>(message))
 
 template<typename Value_, typename Argument_>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
