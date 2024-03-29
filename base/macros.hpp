@@ -191,20 +191,6 @@ inline void noreturn() { std::exit(0); }
 // For templates in macro parameters.
 #define TEMPLATE(...) template<__VA_ARGS__>
 
-// For circumventing
-// https://developercommunity.visualstudio.com/content/problem/1256363/operator-call-incorrectly-marked-as-ambiguous-with.html.
-#if PRINCIPIA_COMPILER_MSVC_HAS_CXX20
-#define PRINCIPIA_MAX(l, r) ((l) > (r) ? (l) : (r))
-#define PRINCIPIA_MAX3(x1, x2, x3) \
-  PRINCIPIA_MAX((x1), PRINCIPIA_MAX((x2), (x3)))
-#define PRINCIPIA_MAX4(x1, x2, x3, x4) \
-  PRINCIPIA_MAX((x1), PRINCIPIA_MAX((x2), PRINCIPIA_MAX((x3), (x4))))
-#else
-#define PRINCIPIA_MAX(l, r) std::max((l), (r))
-#define PRINCIPIA_MAX3(x1, x2, x3) std::max({(x1), (x2), (x3)})
-#define PRINCIPIA_MAX4(x1, x2, x3, x4) std::max({(x1), (x2), (x3), (x4)})
-#endif
-
 // The macro magic is inspired from http://jhnet.co.uk/articles/cpp_magic.  Note
 // that we are using __VA_OPT__ to stop the recursion and detect empty argument
 // lists because we are modern.

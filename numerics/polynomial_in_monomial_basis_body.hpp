@@ -585,7 +585,7 @@ constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_> operator-(
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, PRINCIPIA_MAX(ldegree_, rdegree_)>
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree_, rdegree_)>
 operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
   using vector_space::operator+;
@@ -598,7 +598,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, PRINCIPIA_MAX(ldegree_, rdegree_)>
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree_, rdegree_)>
 operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
   using vector_space::operator-;
