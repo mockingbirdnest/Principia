@@ -85,7 +85,7 @@ Point Barycentre(Point const (&points)[size]) {
   if constexpr (additive_group<Point>) {
     return total / size;
   } else {
-    return total / size + Point{};
+    return Point{} + total / size;
   }
 }
 
