@@ -282,13 +282,12 @@ TEST_P(PluginCompatibilityTest, Reach) {
   } else {
     EXPECT_THAT(
         subsequent_flybys,
-        ElementsAre(
-            Pair(
-                // The video has 21:57.
-                ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime), "Earth"),
-            Pair(
-                // The video has 07:52.
-                ResultOf(&TTSecond, "1980-02-17T22:18:43"_DateTime), "Jupiter")));
+        ElementsAre(Pair(  // The video has            21:57.
+                        ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime),
+                        "Earth"),
+                    Pair(  // The video has             07:52.
+                        ResultOf(&TTSecond, "1980-02-17T22:18:43"_DateTime),
+                        "Jupiter")));
   }
 
   // Make sure that we can upgrade, save, and reload.
