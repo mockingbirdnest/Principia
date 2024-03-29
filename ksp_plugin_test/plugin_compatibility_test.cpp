@@ -31,7 +31,6 @@
 
 namespace principia {
 namespace interface {
-namespace {
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -54,6 +53,7 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::numerics::_fma;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
@@ -68,7 +68,7 @@ using namespace std::chrono_literals;
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
-class PRINCIPIA_CONFIGURABLE_TEST_NAME(PluginCompatibilityTest)
+class PluginCompatibilityTest
     : public testing::Test {
  protected:
   PluginCompatibilityTest()
@@ -135,6 +135,127 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 
 #if !_DEBUG
 TEST_F(PluginCompatibilityTest, Reach) {
+  StringLogSink log_warning(google::WARNING);
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
+      /*compressor=*/"gipfeli",
+      /*decoder=*/"base64");
+  EXPECT_THAT(log_warning.string(),
+              AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
+  auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
+  EXPECT_THAT(test->name(), Eq("TEST"));
+  EXPECT_THAT(TTSecond(test->trajectory().front().time),
+              Eq("1970-08-14T08:03:18"_DateTime));
+  EXPECT_THAT(TTSecond(test->psychohistory()->back().time),
+              Eq("1970-08-14T08:47:05"_DateTime));
+  EXPECT_FALSE(test->has_flight_plan());
+
+  auto const ifnity = plugin->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
+  EXPECT_THAT(ifnity->name(), Eq("IFNITY-5.2"));
+  EXPECT_THAT(TTSecond(ifnity->trajectory().front().time),
+              Eq("1970-08-14T08:03:46"_DateTime));
+  EXPECT_THAT(TTSecond(ifnity->psychohistory()->back().time),
+              Eq("1970-08-14T08:47:05"_DateTime));
+  ASSERT_TRUE(ifnity->has_flight_plan());
+  ifnity->ReadFlightPlanFromMessage();
+  FlightPlan const& flight_plan = ifnity->flight_plan();
+  EXPECT_THAT(
+      flight_plan.adaptive_step_parameters().length_integration_tolerance(),
+      Eq(1 * Metre));
+  EXPECT_THAT(flight_plan.adaptive_step_parameters().max_steps(), Eq(16'000));
+  EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
+  std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
+  for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
+    manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
+        TTSecond(flight_plan.GetManœuvre(i).initial_time()),
+        flight_plan.GetManœuvre(i).Δv().Norm());
+  }
+  // The flight plan only covers the inner solar system (this is probably
+  // because of #3035).
+  // It also differs from https://youtu.be/7BDxZV7UD9I?t=439.
+  EXPECT_THAT(manœuvre_ignition_tt_seconds_and_Δvs,
+              ElementsAre(Pair("1970-08-14T09:34:49"_DateTime,
+                               3.80488671073918022e+03 * (Metre / Second)),
+                          Pair("1970-08-15T13:59:24"_DateTime,
+                               3.04867185471741759e-04 * (Metre / Second)),
+                          Pair("1970-12-22T07:48:21"_DateTime,
+                               1.58521291818444873e-03 * (Metre / Second)),
+                          Pair("1971-01-08T17:36:55"_DateTime,
+                               1.40000000034068623e-03 * (Metre / Second)),
+                          Pair("1971-07-02T17:16:00"_DateTime,
+                               1.00000000431022681e-04 * (Metre / Second)),
+                          Pair("1971-09-06T03:27:33"_DateTime,
+                               1.78421858738381537e-03 * (Metre / Second)),
+                          Pair("1972-02-13T22:47:26"_DateTime,
+                               7.72606625794511597e-04 * (Metre / Second)),
+                          Pair("1972-03-25T16:30:19"_DateTime,
+                               5.32846131747503372e-03 * (Metre / Second)),
+                          Pair("1972-12-24T04:09:32"_DateTime,
+                               3.45000000046532824e-03 * (Metre / Second)),
+                          Pair("1973-06-04T01:59:07"_DateTime,
+                               9.10695453328359134e-03 * (Metre / Second)),
+                          Pair("1973-07-09T06:07:17"_DateTime,
+                               4.49510921430966881e-01 * (Metre / Second)),
+                          Pair("1973-09-10T03:59:44"_DateTime,
+                               1.00000000431022681e-04 * (Metre / Second)),
+                          Pair("1974-11-20T17:34:27"_DateTime,
+                               5.10549409572428781e-01 * (Metre / Second)),
+                          Pair("1975-10-07T01:29:45"_DateTime,
+                               2.86686518692948443e-02 * (Metre / Second)),
+                          Pair("1975-12-29T21:27:13"_DateTime,
+                               1.00404183285598275e-03 * (Metre / Second)),
+                          Pair("1977-07-28T22:47:53"_DateTime,
+                               1.39666705839172456e-01 * (Metre / Second))));
+
+  // Compute the flybys.
+  std::map<Instant, std::string> flybys;
+  for (Index index = 0; plugin->HasCelestial(index); ++index) {
+    Celestial const& celestial = plugin->GetCelestial(index);
+    auto const& celestial_trajectory = celestial.trajectory();
+    auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
+    DiscreteTrajectory<Barycentric> apoapsides;
+    DiscreteTrajectory<Barycentric> periapsides;
+
+    // The begin time avoid spurious periapsides right after the launch.
+    ComputeApsides(celestial_trajectory,
+                   flight_plan_trajectory,
+                   flight_plan_trajectory.upper_bound("1970-08-15T00:00:00"_TT),
+                   flight_plan_trajectory.end(),
+                   /*max_points=*/100,
+                   apoapsides,
+                   periapsides);
+    auto const radius = celestial.body()->mean_radius();
+    for (auto const& [time, _] : periapsides) {
+      if ((celestial_trajectory.EvaluatePosition(time) -
+           flight_plan_trajectory.EvaluatePosition(time))
+              .Norm() < 50 * radius) {
+        flybys[time] = celestial.body()->name();
+      }
+    }
+  }
+
+  // The flybys are reasonably similar to https://youtu.be/7BDxZV7UD9I?t=439,
+  // but not identical.
+  EXPECT_THAT(
+      flybys,
+      ElementsAre(
+          Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1971-08-29T23:33:54"_DateTime), "Mars"),
+          Pair(ResultOf(&TTSecond, "1972-03-26T11:23:30"_DateTime), "Earth"),
+          Pair(ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime), "Moon"),
+          Pair(ResultOf(&TTSecond, "1972-11-02T21:15:50"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1973-06-15T13:17:25"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1974-07-25T22:45:52"_DateTime), "Mercury"),
+          Pair(ResultOf(&TTSecond, "1974-09-05T08:27:45"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1975-04-18T00:42:26"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1976-04-26T17:38:08"_DateTime), "Venus")));
+
+  // Make sure that we can upgrade, save, and reload.
+  WriteAndReadBack(std::move(plugin));
+}
+
+TEST_F(PluginCompatibilityTest, ReachNoFMA) {
+  FMAPreventer run_this_test_without_fma;
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
@@ -456,6 +577,5 @@ TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
       /*decoder=*/"base64");
 }
 
-}  // namespace
 }  // namespace interface
 }  // namespace principia

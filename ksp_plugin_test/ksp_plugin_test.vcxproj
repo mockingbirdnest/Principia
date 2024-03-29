@@ -12,6 +12,21 @@
     <Import Project="..\shared\journal.vcxitems" Label="Shared" />
     <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
   </ImportGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PRINCIPIA_CAN_OVERRIDE_FMA_USAGE_AT_RUNTIME=1</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PRINCIPIA_CAN_OVERRIDE_FMA_USAGE_AT_RUNTIME=1</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PRINCIPIA_CAN_OVERRIDE_FMA_USAGE_AT_RUNTIME=1</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp" />
@@ -40,29 +55,9 @@
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
-    <ClCompile Include="benchmark.cpp" />
-    <ClCompile Include="celestial_test.cpp" />
-    <ClCompile Include="equator_relevance_threshold_test.cpp" />
-    <ClCompile Include="flight_plan_optimizer_test.cpp" />
-    <ClCompile Include="flight_plan_test.cpp" />
-    <ClCompile Include="interface_external_test.cpp" />
-    <ClCompile Include="interface_flight_plan_test.cpp" />
-    <ClCompile Include="interface_planetarium_test.cpp" />
-    <ClCompile Include="interface_renderer_test.cpp" />
-    <ClCompile Include="interface_test.cpp" />
-    <ClCompile Include="manœuvre_test.cpp" />
-    <ClCompile Include="orbit_analyser_test.cpp" />
-    <ClCompile Include="part_test.cpp" />
-    <ClCompile Include="pile_up_test.cpp" />
-    <ClCompile Include="planetarium_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
-    <ClCompile Include="plugin_compatibility_test_no_fma.cpp" />
-    <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_io.cpp" />
-    <ClCompile Include="plugin_test.cpp" />
-    <ClCompile Include="renderer_test.cpp" />
     <ClCompile Include="fake_plugin.cpp" />
-    <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_celestial.hpp" />

@@ -135,7 +135,7 @@ inline void noreturn() { std::exit(0); }
 #define PRINCIPIA_CONFIGURABLE_TEST_SUFFIX
 #endif
 #define PRINCIPIA_CONFIGURABLE_TEST_NAME(Fixture) \
-  Fixture##PRINCIPIA_CONFIGURABLE_TEST_SUFFIX
+  Fixture##(PRINCIPIA_CONFIGURABLE_TEST_SUFFIX)
 
 // Set this to 1 to test analytical series based on piecewise Poisson series.
 #define PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES 0
