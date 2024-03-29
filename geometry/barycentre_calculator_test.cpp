@@ -4,6 +4,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -15,9 +16,11 @@ namespace geometry {
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_space;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
+using ::testing::Eq;
 
 class BarycentreCalculatorTest : public testing::Test {
  protected:
@@ -68,6 +71,19 @@ TEST_F(BarycentreCalculatorTest, Scalar) {
   barycentre_calculator.Add(k2_, 7);
   EXPECT_THAT(barycentre_calculator.Get(),
               AlmostEquals((23.0 / 4.0) * si::Unit<KinematicViscosity>, 0));
+}
+
+TEST_F(BarycentreCalculatorTest, Function) {
+  Displacement<World> r({1 * Metre, 2 * Metre, 5 * Metre});
+  Position<World> q = World::origin + r;
+  EXPECT_THAT(Barycentre({World::origin, q}, {2 * Kilogram, 3 * Kilogram}),
+              Eq(World::origin + 3 * r / 5));
+  EXPECT_THAT(Barycentre({World::origin, q}, {2, 3}),
+              Eq(World::origin + 3 * r / 5));
+  EXPECT_THAT(Barycentre({World::origin, q}, {0.5, 0.75}),
+              Eq(World::origin + 3 * r / 5));
+  EXPECT_THAT(Barycentre({World::origin, q}, {1, 1.5}),
+              Eq(World::origin + 3 * r / 5));
 }
 
 }  // namespace geometry

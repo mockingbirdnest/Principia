@@ -128,7 +128,7 @@ TEST_F(LagrangeEquipotentialsTest,
   Velocity<World> const v_earth = earth_world_dof.velocity();
   Velocity<World> const v_moon = moon_world_dof.velocity();
   Position<World> const initial_earth_moon_l5 =
-      Barycentre(std::pair(q_earth, q_moon), std::pair(1.0, 1.0)) +
+      Barycentre({q_earth, q_moon}, {1.0, 1.0}) +
       (q_earth - q_moon).Norm() *
           Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
   using MEO = Frame<struct MEOTag, Arbitrary>;

@@ -41,9 +41,12 @@ class BarycentreCalculator final {
       reference_;
 };
 
-template<typename T, typename Weight>
-T Barycentre(std::pair<T, T> const& ts,
-             std::pair<Weight, Weight> const& weights);
+template<affine Point, homogeneous_field Weight, std::size_t size>
+  requires homogeneous_vector_space<Difference<Point>, Weight>
+Point Barycentre(Point const (&points)[size], Weight const (&weights)[size]);
+template<real_affine_space Point, std::size_t size>
+Point Barycentre(Point const (&points)[size], double const (&weights)[size]);
+
 template<typename T, typename Weight, template<typename...> class Container>
 T Barycentre(Container<T> const& ts, Container<Weight> const& weights);
 

@@ -79,8 +79,7 @@ Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
     // λ determines where the segment intersects the focal plane.
     double const λ = (focal_ - z2) / (z1 - z2);
     auto const intercept =
-        Barycentre<Position<FromFrame>, double>(segment,
-                                                {λ, 1.0 - λ});
+        Barycentre({segment.first, segment.second}, {λ, 1.0 - λ});
     if (first_is_visible) {
       return std::make_optional<Segment<FromFrame>>(segment.first, intercept);
     } else {

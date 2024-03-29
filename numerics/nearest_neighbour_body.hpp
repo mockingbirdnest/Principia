@@ -157,7 +157,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   // halfway between these points.  Cost: 0.25 * N.
   auto const mid_lower = std::max_element(begin, mid_upper, projection_less);
 
-  auto const anchor = Barycentre<Displacement, double>(
+  auto const anchor = Barycentre(
       {displacements_[mid_lower->index], displacements_[mid_upper->index]},
       {1, 1});
 

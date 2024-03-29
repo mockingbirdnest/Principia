@@ -140,8 +140,8 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         Length const r = (peak - well.position).Norm();
         if (reference_frame_->GeometricPotential(
                 t,
-                Barycentre(std::pair(peak, well.position),
-                           std::pair(well.radius, r - well.radius))) >=
+                Barycentre({peak, well.position},
+                           {well.radius, r - well.radius})) >=
             energy) {
           // The point at the edge of the well in the direction of the peak is
           // above the energy; this should not happen (the edge of the well
@@ -159,15 +159,13 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         Length const x = Brent(
             [&](Length const& x) {
               return reference_frame_->GeometricPotential(
-                         t,
-                         Barycentre(std::pair(peak, well.position),
-                                    std::pair(x, r - x))) -
+                         t, Barycentre({peak, well.position}, {x, r - x})) -
                      energy;
             },
             well.radius,
             r);
         Position<Frame> const equipotential_position =
-            Barycentre(std::pair(peak, well.position), std::pair(x, r - x));
+            Barycentre({peak, well.position}, {x, r - x});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
         // Try to delineate |peak| from the well at infinity; this works as for
@@ -186,15 +184,13 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         double const x = Brent(
             [&](double const& x) {
               return reference_frame_->GeometricPotential(
-                         t,
-                         Barycentre(std::pair(peak, far_away),
-                                    std::pair(x, 1 - x))) -
+                         t, Barycentre({peak, far_away}, {x, 1 - x})) -
                      energy;
             },
             0.0,
             1.0);
         Position<Frame> const equipotential_position =
-            Barycentre(std::pair(peak, far_away), std::pair(x, 1 - x));
+            Barycentre({peak, far_away}, {x, 1 - x});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       }
       std::vector<Position<Frame>> positions;

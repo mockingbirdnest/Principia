@@ -234,11 +234,9 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
         ephemeris_->trajectory(big_)->EvaluateDegreesOfFreedom(t0_ + t);
     auto const small_dof =
         ephemeris_->trajectory(small_)->EvaluateDegreesOfFreedom(t0_ + t);
-    auto const barycentre =
-        Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
-            {big_dof, small_dof},
-            {big_->gravitational_parameter(),
-             small_->gravitational_parameter()});
+    auto const barycentre = Barycentre(
+        {big_dof, small_dof},
+        {big_->gravitational_parameter(), small_->gravitational_parameter()});
     EXPECT_THAT(barycentre.velocity().Norm(),
                 VanishesBefore(1 * Kilo(Metre) / Second, 0, 50));
     EXPECT_OK(barycentre_trajectory.Append(t0_ + t, barycentre));
