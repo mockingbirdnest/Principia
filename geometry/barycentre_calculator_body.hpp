@@ -75,17 +75,18 @@ template<real_affine_space Point, std::size_t size>
 Point Barycentre(Point const (&points)[size]) {
   static_assert(size != 0);
   Difference<Point> total{};
+  static const Point origin{};
   for (int i = 0; i < size; ++i) {
     if constexpr (additive_group<Point>) {
       total += points[i];
     } else {
-      total += points[i] - Point{};
+      total += points[i] - origin;
     }
   }
   if constexpr (additive_group<Point>) {
     return total / size;
   } else {
-    return Point{} + total / size;
+    return origin + total / size;
   }
 }
 
