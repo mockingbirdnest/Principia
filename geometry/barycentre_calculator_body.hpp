@@ -71,21 +71,6 @@ Point Barycentre(Point const (&points)[size], double const (&weights)[size]) {
   return Barycentre<Point, double>(points, weights);
 }
 
-template<typename T, typename Scalar, template<typename...> class Container>
-T Barycentre(Container<T> const& ts, Container<Scalar> const& weights) {
-  CHECK_EQ(ts.size(), weights.size()) << "Ts and weights of unequal sizes";
-  CHECK(!ts.empty()) << "Empty input";
-  BarycentreCalculator<T, Scalar> calculator;
-  auto ts_it = ts.begin();
-  auto weights_it = weights.begin();
-  for (;
-       ts_it != ts.end() && weights_it != weights.end();
-       ++ts_it, ++weights_it) {
-    calculator.Add(*ts_it, *weights_it);
-  }
-  return calculator.Get();
-}
-
 }  // namespace internal
 }  // namespace _barycentre_calculator
 }  // namespace geometry

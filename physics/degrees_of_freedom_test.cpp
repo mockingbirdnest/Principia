@@ -57,19 +57,6 @@ class DegreesOfFreedomTest : public testing::Test {
 using DegreesOfFreedomDeathTest = DegreesOfFreedomTest;
 
 TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
-  // The <> seem to confuse EXPECT_DEATH, hence the lambda.
-  auto barycentre =
-      [](std::vector<DegreesOfFreedom<World>> const& degrees_of_freedom,
-         std::vector<Entropy> const& weights) -> DegreesOfFreedom<World> {
-    return Barycentre<DegreesOfFreedom<World>, Entropy, std::vector>(
-               degrees_of_freedom, weights);
-  };
-  EXPECT_DEATH({
-    barycentre({d1_, d2_, d3_}, {3 * si::Unit<Entropy>, 4 * si::Unit<Entropy>});
-  }, "unequal sizes");
-  EXPECT_DEATH({
-    barycentre({}, {});
-  }, "Empty input");
   using DegreesOfFreedomBarycentreCalculator =
       BarycentreCalculator<DegreesOfFreedom<World>, Entropy>;
   EXPECT_DEATH({
@@ -98,7 +85,7 @@ TEST_F(DegreesOfFreedomTest, Output) {\
 
 TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
-      Barycentre<DegreesOfFreedom<World>, Entropy, std::vector>(
+      Barycentre(
           {d1_, d2_, d3_},
           {3 * si::Unit<Entropy>,
            4 * si::Unit<Entropy>,
