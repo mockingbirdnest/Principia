@@ -179,9 +179,6 @@
     <ClCompile Include="..\ksp_plugin\interface_collision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_compatibility_test_no_fma.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
