@@ -90,20 +90,13 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   auto const max = ValueGenerator<Argument>::Get(random);
   auto argument = min;
   auto const Δargument = (max - min) * 1e-9;
-  auto result = Value{};
 
   for (auto _ : state) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
-      result += p(argument);
+      benchmark::DoNotOptimize(p(argument));
       argument += Δargument;
     }
   }
-
-  // This weird call to |SetLabel| has no effect except that it uses |result|
-  // and therefore prevents the loop from being optimized away.
-  std::stringstream ss;
-  ss << result;
-  state.SetLabel(ss.str().substr(0, 0));
 }
 
 template<template<typename, typename, int> class Evaluator>
