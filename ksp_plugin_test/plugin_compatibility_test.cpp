@@ -31,6 +31,7 @@
 
 namespace principia {
 namespace interface {
+namespace {
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -67,7 +68,8 @@ using namespace std::chrono_literals;
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
-class PluginCompatibilityTest : public testing::Test {
+class PRINCIPIA_CONFIGURABLE_TEST_NAME(PluginCompatibilityTest)
+    : public testing::Test {
  protected:
   PluginCompatibilityTest()
       : stderrthreshold_(FLAGS_stderrthreshold) {
@@ -454,5 +456,6 @@ TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
       /*decoder=*/"base64");
 }
 
+}  // namespace
 }  // namespace interface
 }  // namespace principia
