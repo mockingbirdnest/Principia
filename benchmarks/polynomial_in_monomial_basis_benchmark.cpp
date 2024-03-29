@@ -26,10 +26,6 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-namespace {
-constexpr int evaluations_per_iteration = 1000;
-}  // namespace
-
 template<typename T>
 struct ValueGenerator;
 
@@ -92,10 +88,8 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   auto const Δargument = (max - min) * 1e-9;
 
   for (auto _ : state) {
-    for (int i = 0; i < evaluations_per_iteration; ++i) {
-      benchmark::DoNotOptimize(p(argument));
-      argument += Δargument;
-    }
+    benchmark::DoNotOptimize(p(argument));
+    argument += Δargument;
   }
 }
 
@@ -285,63 +279,63 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
 
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     EstrinWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     HornerWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     HornerWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     HornerWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     HornerWithoutFMA)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kMicrosecond);
+    ->Unit(benchmark::kNanosecond);
 
 }  // namespace numerics
 }  // namespace principia
