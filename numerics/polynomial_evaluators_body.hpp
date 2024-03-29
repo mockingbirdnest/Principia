@@ -18,48 +18,6 @@ using namespace principia::base::_bits;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
 
-// Generator for repeated squaring:
-//   SquareGenerator<Length, 0>::Type is Exponentiation<Length, 2>
-//   SquareGenerator<Length, 1>::Type is Exponentiation<Length, 4>
-//   SquareGenerator<Length, n>::Type is Exponentiation<Length, 2^(n + 1)>
-// etc.
-template<typename Argument, int n>
-struct SquareGenerator {
-  using Type = Square<typename SquareGenerator<Argument, n - 1>::Type>;
-  static Type Evaluate(Argument const& argument);
-};
-template<typename Argument>
-struct SquareGenerator<Argument, 0> {
-  using Type = Square<Argument>;
-  static Type Evaluate(Argument const& argument);
-};
-
-template<typename Argument, typename>
-struct SquaresGenerator;
-template<typename Argument, std::size_t... orders>
-struct SquaresGenerator<Argument, std::index_sequence<orders...>> {
-  using Type = std::tuple<typename SquareGenerator<Argument, orders>::Type...>;
-  static Type Evaluate(Argument const& argument);
-};
-
-template<typename Argument, int n>
-auto SquareGenerator<Argument, n>::Evaluate(Argument const& argument) -> Type {
-  auto const argument_n_minus_1 =
-      SquareGenerator<Argument, n - 1>::Evaluate(argument);
-  return argument_n_minus_1 * argument_n_minus_1;
-}
-
-template<typename Argument>
-auto SquareGenerator<Argument, 0>::Evaluate(Argument const& argument) -> Type {
-  return argument * argument;
-}
-
-template<typename Argument, std::size_t... orders>
-auto SquaresGenerator<Argument, std::index_sequence<orders...>>::
-    Evaluate(Argument const& argument) -> Type {
-  return std::make_tuple(
-      SquareGenerator<Argument, orders>::Evaluate(argument)...);
-}
 
 // Internal helper for Estrin evaluation.  |degree| is the degree of the overall
 // polynomial, |low| and |subdegree| defines the subpolynomial that we currently
@@ -68,56 +26,41 @@ auto SquaresGenerator<Argument, std::index_sequence<orders...>>::
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 struct InternalEstrinEvaluator {
-  using ArgumentSquaresGenerator =
-      SquaresGenerator<Argument, std::make_index_sequence<FloorLog2(degree)>>;
-  using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename Evaluator<Value, Argument, degree>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
-      Argument const& argument,
-      ArgumentSquares const& argument_squares);
+      Argument const& argument);
   FORCE_INLINE(static) Derivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
-      Argument const& argument,
-      ArgumentSquares const& argument_squares);
+      Argument const& argument);
 };
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1> {
-  using ArgumentSquaresGenerator =
-      SquaresGenerator<Argument, std::make_index_sequence<FloorLog2(degree)>>;
-  using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename Evaluator<Value, Argument, degree>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
-      Argument const& argument,
-      ArgumentSquares const& argument_squares);
+      Argument const& argument);
   FORCE_INLINE(static) Derivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
-      Argument const& argument,
-      ArgumentSquares const& argument_squares);
+      Argument const& argument);
 };
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
-  using ArgumentSquaresGenerator =
-      SquaresGenerator<Argument, std::make_index_sequence<FloorLog2(degree)>>;
-  using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename Evaluator<Value, Argument, degree>::Coefficients;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
-      Argument const& argument,
-      ArgumentSquares const& argument_squares);
+      Argument const& argument);
   FORCE_INLINE(static) Derivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
-      Argument const& argument,
-      ArgumentSquares const& argument_squares);
+      Argument const& argument);
 };
 
 template<typename Value, typename Argument,
@@ -125,27 +68,32 @@ template<typename Value, typename Argument,
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
     Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
+    Argument const& argument) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
   // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
   constexpr int n = FloorLog2(subdegree) - 1;
   // |m| is |2^(n + 1)|.
   constexpr int m = PowerOf2Le(subdegree);
-  auto const& xᵐ = std::get<n>(argument_squares);
+
   auto const a =
       InternalEstrinEvaluator<Value, Argument,
                               degree, fma, low + m, subdegree - m>::
-          Evaluate(coefficients, argument, argument_squares);
+          Evaluate(coefficients, argument);
   auto const b =
       InternalEstrinEvaluator<Value, Argument, degree, fma, low, m - 1>::
-          Evaluate(coefficients, argument, argument_squares);
+          Evaluate(coefficients, argument);
+
+  // Because this function is heavily inline (including the recursive calls) we
+  // rely on common subexpression elimination to detect that we repeatedly
+  // compute x², x⁴, etc. and to only compute each power once.  Inspecting the
+  // generated code, we verified that the right thing actually happens.
+  auto const xᵐ = Pow<m>(argument);
   if constexpr (fma) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, xᵐ, b);
   } else {
-    return  a * xᵐ + b;
+    return a * xᵐ + b;
   }
 }
 
@@ -154,8 +102,7 @@ template<typename Value, typename Argument,
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
 EvaluateDerivative(Coefficients const& coefficients,
-                   Argument const& argument,
-                   ArgumentSquares const& argument_squares) {
+                   Argument const& argument) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
@@ -163,14 +110,16 @@ EvaluateDerivative(Coefficients const& coefficients,
   constexpr int n = FloorLog2(subdegree) - 1;
   // |m| is |2^(n + 1)|.
   constexpr int m = PowerOf2Le(subdegree);
-  auto const& xᵐ = std::get<n>(argument_squares);
+
   auto const a =
       InternalEstrinEvaluator<Value, Argument,
                               degree, fma, low + m, subdegree - m>::
-          EvaluateDerivative(coefficients, argument, argument_squares);
+          EvaluateDerivative(coefficients, argument);
   auto const b =
       InternalEstrinEvaluator<Value, Argument, degree, fma, low, m - 1>::
-          EvaluateDerivative(coefficients, argument, argument_squares);
+          EvaluateDerivative(coefficients, argument);
+
+  auto const xᵐ = Pow<m>(argument);
   if constexpr (fma) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, xᵐ, b);
@@ -183,8 +132,7 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::Evaluate(
     Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
+    Argument const& argument) {
   auto const& x = argument;
   auto const& a = std::get<low + 1>(coefficients);
   auto const& b = std::get<low>(coefficients);
@@ -200,17 +148,15 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::Evaluate(
     Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
+    Argument const& argument) {
   return std::get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
-    EvaluateDerivative(Coefficients const& coefficients,
-                       Argument const& argument,
-                       ArgumentSquares const& argument_squares) {
+EvaluateDerivative(Coefficients const& coefficients,
+                    Argument const& argument) {
   auto const& x = argument;
   auto const& a = (low + 1) * std::get<low + 1>(coefficients);
   auto const& b = low * std::get<low>(coefficients);
@@ -225,9 +171,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
-    EvaluateDerivative(Coefficients const& coefficients,
-                       Argument const& argument,
-                       ArgumentSquares const& argument_squares) {
+EvaluateDerivative(Coefficients const& coefficients,
+                    Argument const& argument) {
   return low * std::get<low>(coefficients);
 }
 
@@ -457,10 +402,7 @@ Value EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
                                                       /*fma=*/true,
                                                       /*low=*/0,
                                                       /*subdegree=*/degree>;
-    return InternalEvaluator::Evaluate(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    return InternalEvaluator::Evaluate(coefficients, argument);
   } else {
     using InternalEvaluator = InternalEstrinEvaluator<Value,
                                                       Argument,
@@ -468,10 +410,7 @@ Value EstrinEvaluator<Value, Argument, degree, allow_fma>::Evaluate(
                                                       /*fma=*/false,
                                                       /*low=*/0,
                                                       /*subdegree=*/degree>;
-    return InternalEvaluator::Evaluate(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    return InternalEvaluator::Evaluate(coefficients, argument);
   }
 }
 
@@ -490,10 +429,7 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
                                 true,
                                 /*low=*/1,
                                 /*subdegree=*/degree - 1>;
-    return InternalEvaluator::EvaluateDerivative(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    return InternalEvaluator::EvaluateDerivative(coefficients, argument);
   } else {
     using InternalEvaluator =
         InternalEstrinEvaluator<Value,
@@ -502,10 +438,7 @@ EstrinEvaluator<Value, Argument, degree, allow_fma>::EvaluateDerivative(
                                 false,
                                 /*low=*/1,
                                 /*subdegree=*/degree - 1>;
-    return InternalEvaluator::EvaluateDerivative(
-        coefficients,
-        argument,
-        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+    return InternalEvaluator::EvaluateDerivative(coefficients, argument);
   }
 }
 
