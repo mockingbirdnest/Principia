@@ -4,7 +4,6 @@
 
 #include <algorithm>
 
-#include "base/macros.hpp"  // 🧙 For noreturn.
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/sign.hpp"

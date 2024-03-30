@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.hpp"  // 🧙 For noreturn.
 #include "base/map_util.hpp"
 #include "glog/logging.h"
 #include "serialization/journal.pb.h"

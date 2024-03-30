@@ -5,7 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.hpp"  // 🧙 For noreturn.
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
 #include "base/traits.hpp"
