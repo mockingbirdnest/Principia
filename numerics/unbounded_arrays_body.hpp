@@ -235,7 +235,7 @@ UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator+=(
     UnboundedMatrix const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < size(); ++i) {
+  for (int i = 0; i < data_.size(); ++i) {
     data_[i] += right.data_[i];
   }
   return *this;
@@ -246,7 +246,7 @@ UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator-=(
     UnboundedMatrix const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < size(); ++i) {
+  for (int i = 0; i < data_.size(); ++i) {
     data_[i] -= right.data_[i];
   }
   return *this;
@@ -284,11 +284,6 @@ int UnboundedMatrix<Scalar_>::rows() const {
 template<typename Scalar_>
 int UnboundedMatrix<Scalar_>::columns() const {
   return columns_;
-}
-
-template<typename Scalar_>
-int UnboundedMatrix<Scalar_>::size() const {
-  return rows_ * columns_;
 }
 
 template<typename Scalar_>
@@ -381,11 +376,6 @@ int UnboundedLowerTriangularMatrix<Scalar_>::rows() const {
 template<typename Scalar_>
 int UnboundedLowerTriangularMatrix<Scalar_>::columns() const {
   return rows_;
-}
-
-template<typename Scalar_>
-int UnboundedLowerTriangularMatrix<Scalar_>::size() const {
-  return data_.size();
 }
 
 template<typename Scalar_>
@@ -503,11 +493,6 @@ int UnboundedUpperTriangularMatrix<Scalar_>::rows() const {
 template<typename Scalar_>
 int UnboundedUpperTriangularMatrix<Scalar_>::columns() const {
   return columns_;
-}
-
-template<typename Scalar_>
-int UnboundedUpperTriangularMatrix<Scalar_>::size() const {
-  return data_.size();
 }
 
 template<typename Scalar_>

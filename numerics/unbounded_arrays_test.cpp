@@ -196,7 +196,6 @@ TEST_F(UnboundedArraysTest, MatrixIndexing) {
 }
 
 TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
-  EXPECT_EQ(10, l4_.size());
   EXPECT_EQ(1, l4_(0, 0));
   EXPECT_EQ(2, l4_(1, 0));
   EXPECT_EQ(3, l4_(1, 1));
@@ -215,7 +214,6 @@ TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
 }
 
 TEST_F(UnboundedArraysTest, UpperTriangularMatrixIndexing) {
-  EXPECT_EQ(10, u4_.size());
   EXPECT_EQ(1, u4_(0, 0));
   EXPECT_EQ(2, u4_(0, 1));
   EXPECT_EQ(3, u4_(0, 2));

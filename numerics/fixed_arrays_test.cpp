@@ -201,7 +201,6 @@ TEST_F(FixedArraysTest, MatrixIndexing) {
 }
 
 TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
-  EXPECT_EQ(6, (FixedStrictlyLowerTriangularMatrix<double, 4>::size()));
   EXPECT_EQ(1, sl4_(1, 0));
   EXPECT_EQ(2, sl4_(2, 0));
   EXPECT_EQ(3, sl4_(2, 1));
@@ -216,7 +215,6 @@ TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
 }
 
 TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
-  EXPECT_EQ(10, (FixedLowerTriangularMatrix<double, 4>::size()));
   EXPECT_EQ(1, l4_(0, 0));
   EXPECT_EQ(2, l4_(1, 0));
   EXPECT_EQ(3, l4_(1, 1));
@@ -235,7 +233,6 @@ TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
 }
 
 TEST_F(FixedArraysTest, UpperTriangularMatrixIndexing) {
-  EXPECT_EQ(10, (FixedUpperTriangularMatrix<double, 4>::size()));
   EXPECT_EQ(1, u4_(0, 0));
   EXPECT_EQ(2, u4_(0, 1));
   EXPECT_EQ(3, u4_(0, 2));

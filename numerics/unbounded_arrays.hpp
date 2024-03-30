@@ -145,8 +145,6 @@ class UnboundedMatrix final {
 
   int rows() const;
   int columns() const;
-  // TODO(phl): The meaning of |size| for matrices is unclear.
-  int size() const;
 
   Scalar FrobeniusNorm() const;
 
@@ -191,7 +189,6 @@ class UnboundedLowerTriangularMatrix final {
 
   int rows() const;
   int columns() const;
-  int size() const;
 
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
   // If i and j do not satisfy these conditions, the expression |a(i, j)|
@@ -244,7 +241,6 @@ class UnboundedUpperTriangularMatrix final {
 
   int rows() const;
   int columns() const;
-  int size() const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
