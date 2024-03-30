@@ -87,8 +87,10 @@ std::string ProcessorBrandString() {
 }
 
 std::string CPUFeatures() {
-  return absl::StrJoin(
-      std::ranges::transform_view(CPUIDFlags(), &CPUIDFeatureFlag::name), " ");
+  return absl::StrJoin(CPUIDFlags() |
+                           std::views::filter(&CPUIDFeatureFlag::IsSet) |
+                           std::views::transform(&CPUIDFeatureFlag::name),
+                       " ");
 }
 
 }  // namespace internal
