@@ -74,7 +74,7 @@ std::string CPUVendorIdentificationString() {
 
 std::string ProcessorBrandString() {
   std::string result(48, '\0');
-  for (int n = 0; n < 4; ++n) {
+  for (int n = 0; n < 3; ++n) {
     auto const piece = CPUID(0x80000002 + n, 0);
     std::memcpy(&result[n * 16], &piece.eax, 4);
     std::memcpy(&result[n * 16 + 4], &piece.ebx, 4);

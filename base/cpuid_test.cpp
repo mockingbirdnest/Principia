@@ -1,5 +1,6 @@
 #include "base/cpuid.hpp"
 
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -12,7 +13,12 @@ using ::testing::Not;
 using ::testing::Test;
 using namespace principia::base::_cpuid;
 
-class CPUIDTest : public Test {};
+class CPUIDTest : public Test {
+ protected:
+  CPUIDTest() {
+    google::LogToStderr();
+  }
+};
 
 TEST_F(CPUIDTest, Vendor) {
   // This mostly checks that we are getting something from CPUID, since it is
@@ -20,6 +26,7 @@ TEST_F(CPUIDTest, Vendor) {
   // AnyOf as needed if the tests are run on non-Intel processors.
   EXPECT_THAT(CPUVendorIdentificationString(),
               AnyOf("AuthenticAMD", "GenuineIntel"));
+  LOG(INFO) << CPUVendorIdentificationString();
 }
 
 TEST_F(CPUIDTest, Brand) {
@@ -27,6 +34,7 @@ TEST_F(CPUIDTest, Brand) {
               AnyOf(HasSubstr("Intel(R) Xeon(R)"),
                     HasSubstr("AMD Ryzen"),
                     HasSubstr("VirtualApple")));
+  LOG(INFO) << ProcessorBrandString();
 }
 
 TEST_F(CPUIDTest, CPUFeatureFlags) {
@@ -42,6 +50,7 @@ TEST_F(CPUIDTest, CPUFeatureFlags) {
   EXPECT_THAT(
       CPUFeatures(),
       AllOf(HasSubstr("FPU"), HasSubstr("SSE2"), Not(HasSubstr("PSN"))));
+  LOG(INFO) << CPUFeatures();
 }
 
 }  // namespace base
