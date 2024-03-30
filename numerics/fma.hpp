@@ -43,7 +43,11 @@ inline bool const& UseHardwareFMA = FMAPreventer::use_hardware_fma;
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
 inline bool const UseHardwareFMA = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
+#if PRINCIPIA_COMPILER_MSVC
 class FMAPreventer;  // Undefined.
+#else
+class FMAPreventer {};  // Nothing to prevent.
+#endif
 #endif
 
 #undef PRINCIPIA_USE_HARDWARE_FMA_DEFAULT
