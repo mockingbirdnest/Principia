@@ -145,6 +145,8 @@ TEST_P(PluginCompatibilityTest, Reach) {
   std::optional<FMAPreventer> fma_preventer;
   if (!GetParam()) {
     fma_preventer.emplace();
+  } else if (!UseHardwareFMA) {
+    GTEST_SKIP() << "FMA not used by default";
   }
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
