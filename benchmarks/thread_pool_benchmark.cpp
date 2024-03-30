@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe  --benchmark_repetitions=10 --benchmark_filter=ThreadPool  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_filter=ThreadPool  // NOLINT(whitespace/line_length)
 
 #include <cmath>
 #include <cstdint>

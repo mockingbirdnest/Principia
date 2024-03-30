@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Apsides   // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Apsides  // NOLINT(whitespace/line_length)
 
 #include <cstdint>
 #include <limits>

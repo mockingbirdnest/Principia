@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=10  --benchmark_filter=Geopotential  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_filter=Geopotential  // NOLINT(whitespace/line_length)
 
 #include <random>
 #include <vector>

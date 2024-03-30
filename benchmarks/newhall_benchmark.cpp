@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=10  --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
 
 #include <memory>
 #include <random>
