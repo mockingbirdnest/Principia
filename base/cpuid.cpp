@@ -90,7 +90,7 @@ std::string CPUFeatures() {
 #if PRINCIPIA_COMPILER_MSVC
   return CPUIDFlags()
       | std::views::filter(&CPUIDFeatureFlag::IsSet)
-      | std::views::transform(&CPUIDFeatureFlag::name)
+      | std::views::transform(&CPUIDFeatureFlag::name)  // NOLINT
       | std::views::join_with(' ')
       | std::ranges::to<std::string>();
 #else  // TODO(egg): Get rid of this once clang really has C++23.
