@@ -4,22 +4,18 @@
 #include <vector>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "base/not_null.hpp"
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
 #else
 #include <cpuid.h>
 #endif
 
-#include "base/not_null.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace base {
 namespace _cpuid {
 namespace internal {
-
-using namespace principia::base::_not_null;
 
 namespace {
 
