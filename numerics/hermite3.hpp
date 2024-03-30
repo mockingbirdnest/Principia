@@ -21,7 +21,7 @@ using namespace principia::quantities::_named_quantities;
 // bounds of some interval.
 template<typename Value_, typename Argument_>
 class Hermite3 final {
-  using NormType = typename Hilbert<Difference<Value>>::NormType;
+  using NormType = typename Hilbert<Difference<Value_>>::NormType;
 
  public:
   using Argument = Argument_;

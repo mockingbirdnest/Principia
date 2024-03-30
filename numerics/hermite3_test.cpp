@@ -42,7 +42,7 @@ class Hermite3Test : public ::testing::Test {
 };
 
 TEST_F(Hermite3Test, Precomputed) {
-  Hermite3<Instant, Length> h({t0_ + 1 * Second, t0_ + 2 * Second},
+  Hermite3<Length, Instant> h({t0_ + 1 * Second, t0_ + 2 * Second},
                               {33 * Metre, 40 * Metre},
                               {-5 * Metre / Second, 6 * Metre / Second});
 
@@ -66,7 +66,7 @@ TEST_F(Hermite3Test, Precomputed) {
 
 TEST_F(Hermite3Test, Typed) {
   // Just here to check that the types work in the presence of affine spaces.
-  Hermite3<Instant, Position<World>> h({t0_ + 1 * Second, t0_ + 2 * Second},
+  Hermite3<Position<World>, Instant> h({t0_ + 1 * Second, t0_ + 2 * Second},
                                        {World::origin, World::origin},
                                        {World::unmoving, World::unmoving});
 
@@ -78,7 +78,7 @@ TEST_F(Hermite3Test, Typed) {
 // the end of the interpolation interval is different from the expected one.
 // In particular, the computed position is negative at both ends.
 TEST_F(Hermite3Test, Conditioning) {
-  Hermite3<Instant, Length> h(
+  Hermite3<Length, Instant> h(
       {t0_ + 19418861.806896236 * Second, t0_ + 19418869.842261545 * Second},
       {-2.1383610158805017e-12 * Metre, 0 * Metre},
       {2.3308208035605881e-12 * Metre / Second,
@@ -129,7 +129,7 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
                                                  Sin(ω * (t - t0_)) * Metre,
                                                  0 * Metre})});
   }
-  const auto not_a_circle = Hermite3<Instant, Position<World>>(
+  const auto not_a_circle = Hermite3<Position<World>, Instant>(
       /*arguments=*/{t0_, tmax},
       /*values=*/
       {World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),

@@ -25,7 +25,7 @@ using namespace principia::quantities::_named_quantities;
 // not all of |samples| is fitted maximally.  This function further guarantees
 // that the |Hermite3| interpolation of (*itᵣ, *(samples.end() - 1)) fits
 // |samples| within |tolerance|.
-template<typename Argument, typename Value, typename Samples>
+template<typename Value, typename Argument, typename Samples>
 absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&

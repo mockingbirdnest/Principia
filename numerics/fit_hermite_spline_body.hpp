@@ -1,5 +1,7 @@
 #pragma once
 
+#include "numerics/fit_hermite_spline.hpp"
+
 #include <list>
 #include <type_traits>
 
@@ -15,7 +17,7 @@ namespace internal {
 using namespace principia::base::_ranges;
 using namespace principia::numerics::_hermite3;
 
-template<typename Argument, typename Value, typename Samples>
+template<typename Value, typename Argument, typename Samples>
 absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
@@ -30,7 +32,7 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
   auto interpolation_error_is_within_tolerance =
       [get_argument, get_derivative, get_value, tolerance](
           Iterator const begin, Iterator const last) {
-        return Hermite3<Argument, Value>(
+        return Hermite3<Value, Argument>(
                    {get_argument(*begin), get_argument(*last)},
                    {get_value(*begin), get_value(*last)},
                    {get_derivative(*begin), get_derivative(*last)})
