@@ -4,7 +4,6 @@
 #include <ranges>
 #include <vector>
 
-#include "absl/strings/str_join.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
 
@@ -87,10 +86,11 @@ std::string ProcessorBrandString() {
 }
 
 std::string CPUFeatures() {
-  return absl::StrJoin(CPUIDFlags() |
-                           std::views::filter(&CPUIDFeatureFlag::IsSet) |
-                           std::views::transform(&CPUIDFeatureFlag::name),
-                       " ");
+  return CPUIDFlags()
+      | std::views::filter(&CPUIDFeatureFlag::IsSet)
+      | std::views::transform(&CPUIDFeatureFlag::name)
+      | std::views::join_with(' ')
+      | std::ranges::to<std::string>();
 }
 
 }  // namespace internal
