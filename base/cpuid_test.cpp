@@ -1,5 +1,6 @@
 #include "base/cpuid.hpp"
 
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -7,10 +8,17 @@ namespace principia {
 namespace base {
 
 using ::testing::AnyOf;
+using ::testing::HasSubstr;
+using ::testing::Not;
 using ::testing::Test;
 using namespace principia::base::_cpuid;
 
-class CPUIDTest : public Test {};
+class CPUIDTest : public Test {
+ protected:
+  CPUIDTest() {
+    google::LogToStderr();
+  }
+};
 
 TEST_F(CPUIDTest, Vendor) {
   // This mostly checks that we are getting something from CPUID, since it is
@@ -18,19 +26,31 @@ TEST_F(CPUIDTest, Vendor) {
   // AnyOf as needed if the tests are run on non-Intel processors.
   EXPECT_THAT(CPUVendorIdentificationString(),
               AnyOf("AuthenticAMD", "GenuineIntel"));
+  LOG(INFO) << CPUVendorIdentificationString();
+}
+
+TEST_F(CPUIDTest, Brand) {
+  EXPECT_THAT(ProcessorBrandString(),
+              AnyOf(HasSubstr("Intel(R) Xeon(R)"),
+                    HasSubstr("AMD Ryzen"),
+                    HasSubstr("VirtualApple")));
+  LOG(INFO) << ProcessorBrandString();
 }
 
 TEST_F(CPUIDTest, CPUFeatureFlags) {
   // We require Prescott or later.
-  EXPECT_TRUE(HasCPUFeatures(CPUFeatureFlags::FPU | CPUFeatureFlags::SSE |
-                             CPUFeatureFlags::SSE2 | CPUFeatureFlags::SSE3));
+  EXPECT_TRUE(cpuid_feature_flags::FPU.IsSet());
+  EXPECT_TRUE(cpuid_feature_flags::SSE.IsSet());
+  EXPECT_TRUE(cpuid_feature_flags::SSE2.IsSet());
+  EXPECT_TRUE(cpuid_feature_flags::SSE3.IsSet());
   // Check that we don’t always return true.
   // We are not running these tests on a Pentium III, so we do not have the
   // Processor Serial Number feature.
-  EXPECT_FALSE(HasCPUFeatures(CPUFeatureFlags::PSN));
-  EXPECT_FALSE(HasCPUFeatures(CPUFeatureFlags::FPU | CPUFeatureFlags::SSE |
-                              CPUFeatureFlags::SSE2 | CPUFeatureFlags::SSE3 |
-                              CPUFeatureFlags::PSN));
+  EXPECT_FALSE(cpuid_feature_flags::PSN.IsSet());
+  EXPECT_THAT(
+      CPUFeatures(),
+      AllOf(HasSubstr("FPU"), HasSubstr("SSE2"), Not(HasSubstr("PSN"))));
+  LOG(INFO) << CPUFeatures();
 }
 
 }  // namespace base

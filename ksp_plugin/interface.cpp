@@ -23,6 +23,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
 #include "base/base64.hpp"
+#include "base/cpuid.hpp"
 #include "base/encoder.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/flags.hpp"
@@ -83,6 +84,7 @@ using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_array;
 using namespace principia::base::_base64;
+using namespace principia::base::_cpuid;
 using namespace principia::base::_encoder;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_flags;
@@ -730,8 +732,11 @@ void __cdecl principia__InitGoogleLogging() {
                << " built on " << BuildDate
                << " by " << principia::base::CompilerName
                << " version " << principia::base::CompilerVersion
-               << " for " << principia::base::OperatingSystem
-               << " " << principia::base::Architecture;
+               << " for " << principia::base::OperatingSystem << " "
+               << principia::base::Architecture;
+    LOG(ERROR) << "Running on " << ProcessorBrandString() << " ("
+               << CPUVendorIdentificationString() << ")";
+    LOG(ERROR) << "with " << CPUFeatures();
 #if OS_WIN
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));

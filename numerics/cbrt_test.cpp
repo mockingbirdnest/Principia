@@ -101,7 +101,7 @@ class CubeRootTest : public ::testing::Test {
           cbrt_y.rounded_to_nearest) {
         ++method_3²ᴄZ5¹_misroundings;
       }
-      if (CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA)) {
+      if (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet()) {
         EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>(y),
                     AnyOf(cbrt_y.rounded_down, cbrt_y.rounded_up));
         EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y),
@@ -113,7 +113,7 @@ class CubeRootTest : public ::testing::Test {
       }
     }
     EXPECT_THAT(method_3²ᴄZ5¹_misroundings, Eq(expected_3²ᴄZ5¹_misroundings));
-    if (CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA)) {
+    if (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet()) {
       EXPECT_THAT(method_5²Z4¹FMA_misroundings,
                   Eq(expected_5²Z4¹FMA_misroundings));
     }
@@ -140,7 +140,7 @@ TEST_F(CubeRootTest, Rescaling) {
               Eq(Cbrt(2)));
   EXPECT_THAT(0x1p358 * method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(0x1p-1073),
               Eq(Cbrt(2)));
-  if (CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA)) {
+  if (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet()) {
     EXPECT_THAT(0x1p-340 * method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1p1021),
                 Eq(Cbrt(2)));
     EXPECT_THAT(0x1p341 * method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1p-1022),
@@ -206,7 +206,7 @@ TEST_F(CubeRootTest, BoundsOfTheRescalingRange) {
               Eq(0x1p113 * Cbrt(4)));
   EXPECT_THAT(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(0x1.0'0000'0000'0002p341),
               Eq(0x1p113 * Cbrt(0x1.0'0000'0000'0002p2)));
-  if (CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA)) {
+  if (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet()) {
     EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Correct>(0x1p-438),
                 Eq(0x1p-146));
     EXPECT_THAT(
@@ -237,7 +237,7 @@ TEST_F(CubeRootTest, ParticularlyDifficultRounding) {
               Eq(cbrt_y.rounded_to_nearest));
   EXPECT_THAT(method_3²ᴄZ5¹::Cbrt<Rounding::Faithful>(y),
               AllOf(Ne(cbrt_y.rounded_to_nearest), Eq(cbrt_y.rounded_down)));
-  if (CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA)) {
+  if (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet()) {
     EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y),
                 Eq(cbrt_y.rounded_to_nearest));
     EXPECT_THAT(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>(y),
