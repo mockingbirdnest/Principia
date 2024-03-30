@@ -134,7 +134,7 @@ PolynomialInЧебышёвBasis(Coefficients coefficients,
 
 template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
-    Argument const& argument) const {
+    Argument const argument) const {
   // This formula ensures continuity at the edges by producing -1 or +1 within
   // 2 ulps for |lower_bound_| and |upper_bound_|.
   double const scaled_argument =
@@ -166,7 +166,7 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
 template<typename Value_, typename Argument_, int degree_>
 Derivative<Value_, Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
-    Argument const& argument) const {
+    Argument const argument) const {
   // See comments above.
   double const scaled_argument =
       ((argument - upper_bound_) + (argument - lower_bound_)) * one_over_width_;

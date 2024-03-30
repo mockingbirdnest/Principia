@@ -38,9 +38,9 @@ class Polynomial {
   friend constexpr bool operator!=(Polynomial const& left,
                                    Polynomial const& right) = default;
 
-  virtual Value operator()(Argument const& argument) const = 0;
-  virtual Derivative<Value, Argument> EvaluateDerivative(
-      Argument const& argument) const = 0;
+  virtual Value PRINCIPIA_VECTORCALL operator()(Argument argument) const = 0;
+  virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
+      Argument argument) const = 0;
 
   // Only useful for benchmarking, analyzing performance or for downcasting.  Do
   // not use in other circumstances.
