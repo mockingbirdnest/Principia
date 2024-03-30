@@ -221,7 +221,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
       break;
     case serialization::OblateBody::OblatenessCase::OBLATENESS_NOT_SET:
       LOG(FATAL) << message.DebugString();
-      base::noreturn();
+      std::abort();
   }
   return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
                                              rotating_body_parameters,

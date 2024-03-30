@@ -61,7 +61,7 @@ Scalar& R3Element<Scalar>::operator[](int const index) {
       return z;
     default:
       DLOG(FATAL) << FUNCTION_SIGNATURE << ": index = " << index;
-      base::noreturn();
+      std::abort();
   }
 }
 
@@ -77,7 +77,7 @@ Scalar const& R3Element<Scalar>::operator[](
       return z;
     default:
       DLOG(FATAL) << FUNCTION_SIGNATURE << ": index = " << index;
-      base::noreturn();
+      std::abort();
   }
 }
 

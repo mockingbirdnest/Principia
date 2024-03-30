@@ -1948,7 +1948,7 @@ std::string JournalProtoProcessor::MarshalAs(
   LOG(FATAL) << "Bad marshaler for " << descriptor->name();
 #if PRINCIPIA_COMPILER_MSVC && \
     _MSC_FULL_VER == 193'933'523
-  base::noreturn();
+  std::abort();
 #endif
 }
 

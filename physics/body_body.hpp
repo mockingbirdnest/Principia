@@ -31,7 +31,7 @@ inline not_null<std::unique_ptr<Body>> Body::ReadFromMessage(
     return MassiveBody::ReadFromMessage(message.massive_body());
   } else {
     LOG(FATAL) << "Body is neither massive nor massless";
-    base::noreturn();
+    std::abort();
   }
 }
 

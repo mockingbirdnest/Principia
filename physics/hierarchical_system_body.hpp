@@ -96,7 +96,7 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
              right->jacobi_osculating_elements.period;
     }
     LOG(FATAL) << "improperly initialized elements";
-    base::noreturn();
+    std::abort();
   };
 
   std::sort(system.satellites.begin(),

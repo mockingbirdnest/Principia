@@ -633,7 +633,7 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
     case serialization::GravityModel::Body::OblatenessCase::OBLATENESS_NOT_SET:
     default:
       LOG(FATAL) << body.DebugString();
-      base::noreturn();
+      std::abort();
   }
 }
 

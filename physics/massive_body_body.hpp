@@ -200,7 +200,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
       }
     }
     LOG(FATAL) << enum_descriptor->name();
-    base::noreturn();
+    std::abort();
   } else {
     return std::make_unique<MassiveBody>(parameters);
   }

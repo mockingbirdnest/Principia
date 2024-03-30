@@ -19,7 +19,7 @@ namespace numerics {
 namespace _global_optimization {
 namespace internal {
 
-using base::noreturn;
+using std::abort;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_gradient_descent;
