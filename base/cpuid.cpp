@@ -1,7 +1,7 @@
 #include "base/cpuid.hpp"
 
-#include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #if PRINCIPIA_COMPILER_MSVC
@@ -10,15 +10,22 @@
 #include <cpuid.h>
 #endif
 
+#include "base/not_null.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace base {
 namespace _cpuid {
 namespace internal {
+
+using namespace principia::base::_not_null;
+
 namespace {
 
-std::vector<CPUIDFeatureFlag> CPUIDFlags;
+std::vector<CPUIDFeatureFlag>& CPUIDFlags() {
+  static std::vector<CPUIDFeatureFlag> result;
+  return result;
+}
 
 CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
 #if PRINCIPIA_COMPILER_MSVC
@@ -45,7 +52,7 @@ CPUIDFeatureFlag::CPUIDFeatureFlag(std::string_view const name,
     : name_(name), leaf_(leaf), sub_leaf_(sub_leaf), field_(field), bit_(bit) {
   CHECK_GE(bit, 0);
   CHECK_LT(bit, 32);
-  CPUIDFlags.emplace_back(*this);
+  CPUIDFlags().push_back(*this);
 }
 
 std::string_view CPUIDFeatureFlag::name() const {
@@ -79,7 +86,7 @@ std::string ProcessorBrandString() {
 
 std::string CPUFeatures() {
   std::string result;
-  for (auto const& flag : CPUIDFlags) {
+  for (auto const flag : CPUIDFlags()) {
     if (flag.IsSet()) {
       if (!result.empty()) {
         result += " ";
