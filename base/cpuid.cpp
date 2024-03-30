@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "base/not_null.hpp"
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
 #else
