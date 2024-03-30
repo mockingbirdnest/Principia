@@ -10,7 +10,7 @@ jobs:
   check-remove-before-flight:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Check source tree
       shell: pwsh
       run: |
@@ -26,7 +26,7 @@ jobs:
   check-cpp:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download cpplint
       shell: pwsh
       run: |
@@ -100,7 +100,7 @@ jobs:
   check-iwyu:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Restore Release
       uses: mockingbirdnest/actions/windows/restore@main
       with:
