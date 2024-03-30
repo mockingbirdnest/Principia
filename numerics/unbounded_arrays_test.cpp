@@ -55,7 +55,7 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedVector<double> u2({1, 2});
     UnboundedVector<double> v2 = {{1, 2}};
     UnboundedVector<double> w2(2);
-    w2 = {{1, 2}};
+    w2 = {1, 2};
     EXPECT_EQ(u2, v2);
     EXPECT_EQ(u2, w2);
   }
@@ -69,8 +69,8 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedMatrix<double> n23 = {2, 3,
                                    {0, 0, 0,
                                     0, 0, 0}};
-    n23 = {{1, 2, 3,
-            4, 5, 6}};
+    n23 = {1, 2, 3,
+           4, 5, 6};
     EXPECT_EQ(l23, m23);
     EXPECT_EQ(l23, n23);
   }
@@ -86,9 +86,9 @@ TEST_F(UnboundedArraysTest, Assignment) {
                                                   0, 0, 0}};
     UnboundedLowerTriangularMatrix<double> o3(3);
     EXPECT_EQ(o3, n3);
-    n3 = {{1,
-           2, 3,
-           4, 5, 6}};
+    n3 = {1,
+          2, 3,
+          4, 5, 6};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }
@@ -104,9 +104,9 @@ TEST_F(UnboundedArraysTest, Assignment) {
                                                         0}};
     UnboundedUpperTriangularMatrix<double> o3(3);
     EXPECT_EQ(o3, n3);
-    n3 = {{1, 2, 3,
-              4, 5,
-                 6}};
+    n3 = {1, 2, 3,
+             4, 5,
+                6};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }

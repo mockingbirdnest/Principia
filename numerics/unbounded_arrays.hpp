@@ -70,6 +70,8 @@ class UnboundedVector final {
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
 
+  UnboundedVector& operator=(std::initializer_list<Scalar> right);
+
   UnboundedVector& operator+=(UnboundedVector const& right);
   UnboundedVector& operator-=(UnboundedVector const& right);
   UnboundedVector& operator*=(double right);
@@ -136,6 +138,8 @@ class UnboundedMatrix final {
       operator()(UnboundedVector<LScalar> const& left,
                  UnboundedVector<RScalar> const& right) const;
 
+  UnboundedMatrix& operator=(std::initializer_list<Scalar> right);
+
   UnboundedMatrix& operator+=(UnboundedMatrix const& right);
   UnboundedMatrix& operator-=(UnboundedMatrix const& right);
   UnboundedMatrix& operator*=(double right);
@@ -179,6 +183,15 @@ class UnboundedLowerTriangularMatrix final {
   friend bool operator!=(UnboundedLowerTriangularMatrix const& left,
                          UnboundedLowerTriangularMatrix const& right) = default;
 
+  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
+  // If i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  Scalar& operator()(int row, int column);
+  Scalar const& operator()(int row, int column) const;
+
+  UnboundedLowerTriangularMatrix& operator=(
+      std::initializer_list<Scalar> right);
+
   void Extend(int extra_rows);
   void Extend(int extra_rows, uninitialized_t);
 
@@ -189,12 +202,6 @@ class UnboundedLowerTriangularMatrix final {
 
   int rows() const;
   int columns() const;
-
-  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
-  // If i and j do not satisfy these conditions, the expression |a(i, j)|
-  // implies undefined behaviour.
-  Scalar& operator()(int row, int column);
-  Scalar const& operator()(int row, int column) const;
 
  private:
   int rows_;
@@ -230,6 +237,9 @@ class UnboundedUpperTriangularMatrix final {
   // implies undefined behaviour.
   Scalar& operator()(int row, int column);
   Scalar const& operator()(int row, int column) const;
+
+  UnboundedUpperTriangularMatrix& operator=(
+      std::initializer_list<Scalar> right);
 
   void Extend(int extra_columns);
   void Extend(int extra_columns, uninitialized_t);
