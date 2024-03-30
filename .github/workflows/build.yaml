@@ -8,9 +8,6 @@ on:
     branches: [ '*' ]
 
 env:
-  PRINCIPIA_BUILD_DEBUG_VM: casanova
-  PRINCIPIA_BUILD_RELEASE_VM: marco-polo
-  PRINCIPIA_BUILD_RESOURCE_GROUP: venezia
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
 
@@ -23,25 +20,12 @@ jobs:
     if: github.repository == 'mockingbirdnest/Principia'
     runs-on: windows-latest
     steps:
-    - name: Azure login
-      uses: azure/login@v1
+    - name: Start runners
+      uses: mockingbirdnest/actions/windows/start_runners@main
       with:
-        client-id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
-        tenant-id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
-        subscription-id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
-        enable-AzPSSession: true
-
-    - name: Start Azure VMs
-      uses: azure/powershell@v1
-      with:
-        inlineScript: |
-          Start-AzVM                                `
-          -Name ${{ env.PRINCIPIA_BUILD_DEBUG_VM }} `
-          -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
-          Start-AzVM                                  `
-          -Name ${{ env.PRINCIPIA_BUILD_RELEASE_VM }} `
-          -ResourceGroupName ${{ env.PRINCIPIA_BUILD_RESOURCE_GROUP }}
-        azPSVersion: 'latest'
+        client_id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
+        tenant_id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
+        subscription_id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
 
   build:
     if: github.repository == 'mockingbirdnest/Principia'
