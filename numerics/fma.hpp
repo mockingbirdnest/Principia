@@ -37,7 +37,7 @@ class FMAPreventer {
   }
   static bool use_hardware_fma;
 };
-bool FMAPreventer::use_hardware_fma = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
+inline bool FMAPreventer::use_hardware_fma = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
 inline bool const& UseHardwareFMA = FMAPreventer::use_hardware_fma;
 #else
 // The functions in this file unconditionally wrap the appropriate intrinsics.
