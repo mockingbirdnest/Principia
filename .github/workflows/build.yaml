@@ -26,7 +26,6 @@ jobs:
         client_id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
         tenant_id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
         subscription_id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
-        enable-AzPSSession: true
 
   build:
     if: github.repository == 'mockingbirdnest/Principia'
