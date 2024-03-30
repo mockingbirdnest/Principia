@@ -69,11 +69,8 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedMatrix<double> n23 = {2, 3,
                                    {0, 0, 0,
                                     0, 0, 0}};
-    // TODO(phl): It would be convenient to have an operator= taking an
-    // initializer list.
-    n23 = UnboundedMatrix<double>(2, 3,
-                                  {1, 2, 3,
-                                   4, 5, 6});
+    n23 = {{1, 2, 3,
+            4, 5, 6}};
     EXPECT_EQ(l23, m23);
     EXPECT_EQ(l23, n23);
   }
