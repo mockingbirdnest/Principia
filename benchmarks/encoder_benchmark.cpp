@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_min_time=2 --benchmark_repetitions=10 --benchmark_filter=(Encode|Decode)  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe  --benchmark_repetitions=10 --benchmark_filter=(Encode|Decode)  // NOLINT(whitespace/line_length)
 
 #include <cstdint>
 #include <random>
