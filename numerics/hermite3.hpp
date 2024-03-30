@@ -19,12 +19,13 @@ using namespace principia::quantities::_named_quantities;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
-// TODO(phl): Invert the two template arguments for consistency with Derivative.
-template<typename Argument, typename Value>
+template<typename Value_, typename Argument_>
 class Hermite3 final {
   using NormType = typename Hilbert<Difference<Value>>::NormType;
 
  public:
+  using Argument = Argument_;
+  using Value = Value_;
   using Derivative1 = Derivative<Value, Argument>;
 
   Hermite3(std::pair<Argument, Argument> arguments,

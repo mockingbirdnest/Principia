@@ -33,8 +33,6 @@ class FixedVector final {
   constexpr FixedVector();
   explicit FixedVector(uninitialized_t);
 
-  // TODO(egg): Figure out why we have a move-conversion for |FixedVector| but
-  // not the matrices.
   constexpr FixedVector(
       std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
   constexpr FixedVector(
@@ -105,6 +103,8 @@ class FixedMatrix final {
   // The |data| must be in row-major format.
   constexpr FixedMatrix(
       std::array<Scalar, size()> const& data);  // NOLINT(runtime/explicit)
+  constexpr FixedMatrix(
+      std::array<Scalar, size()>&& data);  // NOLINT(runtime/explicit)
 
   constexpr explicit FixedMatrix(
       TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view);

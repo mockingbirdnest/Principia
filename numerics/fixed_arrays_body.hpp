@@ -163,6 +163,11 @@ constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
 
 template<typename Scalar_, int rows_, int columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
+    std::array<Scalar, size()>&& data)
+    : data_(std::move(data)) {}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
     TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view)
     : FixedMatrix(uninitialized) {
   for (int i = 0; i < rows_; ++i) {
