@@ -28,8 +28,6 @@ using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-// TODO(phl): The tests should be more similar to those for fixed arrays.
-
 // An allocator that does not initialize the allocated objects.
 template<class T>
 class uninitialized_allocator : public std::allocator<T> {
