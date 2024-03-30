@@ -120,8 +120,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
 
-  Value __vectorcall operator()(Argument argument) const override;
-  Derivative<Value, Argument> __vectorcall EvaluateDerivative(
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const override;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const override;
 
   constexpr int degree() const override;

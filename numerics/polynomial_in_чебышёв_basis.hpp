@@ -11,6 +11,7 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/concepts.hpp"
@@ -126,8 +127,8 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
                                    PolynomialInЧебышёвBasis const& right) =
       default;
 
-  Value __vectorcall operator()(Argument argument) const override;
-  Derivative<Value, Argument> __vectorcall EvaluateDerivative(
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const override;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const override;
 
   constexpr int degree() const override;
