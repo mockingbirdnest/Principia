@@ -27,26 +27,27 @@ constexpr bool CanEmitFMAInstructions = false;
 #endif
 
 #if PRINCIPIA_CAN_OVERRIDE_FMA_USAGE_AT_RUNTIME
-inline bool InternalUseHardwareFMA = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
 class FMAPreventer {
  public:
   FMAPreventer() {
-    InternalUseHardwareFMA = false;
+    use_hardware_fma = false;
   }
   ~FMAPreventer() {
-    InternalUseHardwareFMA = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
+    use_hardware_fma = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
   }
+  static bool use_hardware_fma;
 };
-inline bool const& UseHardwareFMA = InternalUseHardwareFMA;
+bool FMAPreventer::use_hardware_fma = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
+inline bool const& UseHardwareFMA = FMAPreventer::use_hardware_fma;
 #else
+// The functions in this file unconditionally wrap the appropriate intrinsics.
+// The caller may only use them if |UseHardwareFMA| is true.
 inline bool const UseHardwareFMA = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
 class FMAPreventer;  // Undefined.
 #endif
 
 #undef PRINCIPIA_USE_HARDWARE_FMA_DEFAULT
 
-// The functions in this file unconditionally wrap the appropriate intrinsics.
-// The caller may only use them if |UseHardwareFMA| is true.
 
 // ⟦ab + c⟧.
 inline double FusedMultiplyAdd(double a, double b, double c);
