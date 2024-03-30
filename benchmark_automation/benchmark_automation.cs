@@ -122,11 +122,12 @@ class BenchmarkAutomation {
     mathematica_stream.WriteLine("}");
     mathematica_stream.Close();
     var unseen_benchmarks = (from seen in seen_benchmarks
-                             where seen.Value
+                             where !seen.Value
                              select seen.Key).ToArray();
     if (unseen_benchmarks.Length > 0 ) {
       throw new ArgumentException(
-          "The following benchmarks were not run: " + unseen_benchmarks);
+          "The following benchmarks were not run:\n" +
+          string.Join("\n", unseen_benchmarks));
     }
   }
 
