@@ -1,5 +1,6 @@
 #include "base/cpuid.hpp"
 
+#include <map>
 #include <string>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
@@ -9,18 +10,15 @@
 #include <cpuid.h>
 #endif
 
+#include "glog/logging.h"
+
 namespace principia {
 namespace base {
 namespace _cpuid {
 namespace internal {
 namespace {
 
-struct CPUIDResult {
-  std::uint32_t eax;
-  std::uint32_t ebx;
-  std::uint32_t ecx;
-  std::uint32_t edx;
-};
+std::vector<CPUIDFeatureFlag const&> CPUIDFlags;
 
 CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
 #if PRINCIPIA_COMPILER_MSVC
@@ -39,6 +37,25 @@ CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
 
 }  // namespace
 
+CPUIDFeatureFlag::CPUIDFeatureFlag(std::string_view const name,
+                                   std::uint32_t const leaf,
+                                   std::uint32_t const sub_leaf,
+                                   std::uint32_t CPUIDResult::*const field,
+                                   std::int8_t const bit)
+    : name_(name), leaf_(leaf), sub_leaf_(sub_leaf), field_(field), bit_(bit) {
+  CHECK_GE(bit, 0);
+  CHECK_LT(bit, 32);
+  CPUIDFlags.emplace_back(*this);
+}
+
+std::string_view CPUIDFeatureFlag::name() const {
+  return name_;
+}
+
+bool CPUIDFeatureFlag::IsSet() const {
+  return CPUID(leaf_, sub_leaf_).*field_ & (1 << bit_);
+}
+
 std::string CPUVendorIdentificationString() {
   auto const leaf_0 = CPUID(0, 0);
   std::string result(12, '\0');
@@ -48,17 +65,28 @@ std::string CPUVendorIdentificationString() {
   return result;
 }
 
-CPUFeatureFlags operator|(CPUFeatureFlags const left,
-                          CPUFeatureFlags const right) {
-  return static_cast<CPUFeatureFlags>(static_cast<std::uint64_t>(left) |
-                                      static_cast<std::uint64_t>(right));
+std::string ProcessorBrandString() {
+  std::string result(48, '\0');
+  for (int n = 0; n < 4; ++n) {
+    auto const piece = CPUID(0x80000002 + n, 0);
+    std::memcpy(&result[n * 16], &piece.eax, 4);
+    std::memcpy(&result[n * 16 + 4], &piece.ebx, 4);
+    std::memcpy(&result[n * 16 + 8], &piece.ecx, 4);
+    std::memcpy(&result[n * 16 + 12], &piece.edx, 4);
+  }
+  return result;
 }
 
-bool HasCPUFeatures(CPUFeatureFlags const flags) {
-  auto const leaf_1 = CPUID(1, 0);
-  return static_cast<CPUFeatureFlags>(
-             (ecx_bit * leaf_1.ecx | edx_bit * leaf_1.edx) &
-             static_cast<std::uint64_t>(flags)) == flags;
+std::string CPUFeatures() {
+  std::string result = "";
+  for (auto const& flag : CPUIDFlags) {
+    if (flag.IsSet()) {
+      if (!result.empty()) {
+        result += " ";
+      }
+      result += flag.name();
+    }
+  }
 }
 
 }  // namespace internal

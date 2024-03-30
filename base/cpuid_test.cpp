@@ -22,15 +22,14 @@ TEST_F(CPUIDTest, Vendor) {
 
 TEST_F(CPUIDTest, CPUFeatureFlags) {
   // We require Prescott or later.
-  EXPECT_TRUE(HasCPUFeatures(CPUFeatureFlags::FPU | CPUFeatureFlags::SSE |
-                             CPUFeatureFlags::SSE2 | CPUFeatureFlags::SSE3));
+  EXPECT_TRUE(cpuid_feature_flags::FPU.IsSet());
+  EXPECT_TRUE(cpuid_feature_flags::SSE.IsSet());
+  EXPECT_TRUE(cpuid_feature_flags::SSE2.IsSet());
+  EXPECT_TRUE(cpuid_feature_flags::SSE3.IsSet());
   // Check that we don’t always return true.
   // We are not running these tests on a Pentium III, so we do not have the
   // Processor Serial Number feature.
-  EXPECT_FALSE(HasCPUFeatures(CPUFeatureFlags::PSN));
-  EXPECT_FALSE(HasCPUFeatures(CPUFeatureFlags::FPU | CPUFeatureFlags::SSE |
-                              CPUFeatureFlags::SSE2 | CPUFeatureFlags::SSE3 |
-                              CPUFeatureFlags::PSN));
+  EXPECT_FALSE(cpuid_feature_flags::PSN.IsSet());
 }
 
 }  // namespace base
