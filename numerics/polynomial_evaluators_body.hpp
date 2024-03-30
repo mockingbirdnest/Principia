@@ -88,6 +88,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
   // rely on common subexpression elimination to detect that we repeatedly
   // compute x², x⁴, etc. and to only compute each power once.  Inspecting the
   // generated code, we verified that the right thing actually happens.
+  // This relies on the fact that `Pow` is computed using the Russian peasant
+  // algorithm.
   auto const xᵐ = Pow<m>(argument);
   if constexpr (fma) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
