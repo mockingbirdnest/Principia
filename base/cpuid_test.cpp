@@ -7,6 +7,8 @@ namespace principia {
 namespace base {
 
 using ::testing::AnyOf;
+using ::testing::HasSubstr;
+using ::testing::Not;
 using ::testing::Test;
 using namespace principia::base::_cpuid;
 
@@ -20,6 +22,10 @@ TEST_F(CPUIDTest, Vendor) {
               AnyOf("AuthenticAMD", "GenuineIntel"));
 }
 
+TEST_F(CPUIDTest, Brand) {
+  EXPECT_THAT(ProcessorBrandString(), AnyOf(HasSubstr("Intel(R) Xeon(R)")));
+}
+
 TEST_F(CPUIDTest, CPUFeatureFlags) {
   // We require Prescott or later.
   EXPECT_TRUE(cpuid_feature_flags::FPU.IsSet());
@@ -30,6 +36,9 @@ TEST_F(CPUIDTest, CPUFeatureFlags) {
   // We are not running these tests on a Pentium III, so we do not have the
   // Processor Serial Number feature.
   EXPECT_FALSE(cpuid_feature_flags::PSN.IsSet());
+  EXPECT_THAT(
+      CPUFeatures(),
+      AllOf(HasSubstr("FPU"), HasSubstr("SSE2"), Not(HasSubstr("PSN"))));
 }
 
 }  // namespace base

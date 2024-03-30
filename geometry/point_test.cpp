@@ -48,7 +48,7 @@ class PointTest : public testing::Test {
 using PointDeathTest = PointTest;
 
 TEST_F(PointTest, FMA) {
-  if (!CanEmitFMAInstructions || !HasCPUFeatures(CPUFeatureFlags::FMA)) {
+  if (!CanEmitFMAInstructions || !cpuid_feature_flags::FPU.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   EXPECT_THAT(FusedMultiplyAdd(3 * Litre, 5 * Second / Litre, mjd0),

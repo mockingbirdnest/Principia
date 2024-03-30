@@ -18,7 +18,7 @@ namespace _cpuid {
 namespace internal {
 namespace {
 
-std::vector<CPUIDFeatureFlag const&> CPUIDFlags;
+std::vector<CPUIDFeatureFlag> CPUIDFlags;
 
 CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
 #if PRINCIPIA_COMPILER_MSVC
@@ -78,7 +78,7 @@ std::string ProcessorBrandString() {
 }
 
 std::string CPUFeatures() {
-  std::string result = "";
+  std::string result;
   for (auto const& flag : CPUIDFlags) {
     if (flag.IsSet()) {
       if (!result.empty()) {
@@ -87,6 +87,7 @@ std::string CPUFeatures() {
       result += flag.name();
     }
   }
+  return result;
 }
 
 }  // namespace internal
