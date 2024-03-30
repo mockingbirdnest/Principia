@@ -1,16 +1,19 @@
 #include "base/cpuid.hpp"
 
 #include <string>
+#include <ranges>
 #include <vector>
 
+#include "absl/strings/str_join.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "glog/logging.h"
+
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
 #else
 #include <cpuid.h>
 #endif
 
-#include "glog/logging.h"
 
 namespace principia {
 namespace base {
@@ -19,6 +22,8 @@ namespace internal {
 
 namespace {
 
+// This vector is not a static member variable of CPUIDFeatureFlag because we do
+// not want to include <vector> in the header.
 std::vector<CPUIDFeatureFlag>& CPUIDFlags() {
   static std::vector<CPUIDFeatureFlag> result;
   return result;
@@ -82,16 +87,8 @@ std::string ProcessorBrandString() {
 }
 
 std::string CPUFeatures() {
-  std::string result;
-  for (auto const flag : CPUIDFlags()) {
-    if (flag.IsSet()) {
-      if (!result.empty()) {
-        result += " ";
-      }
-      result += flag.name();
-    }
-  }
-  return result;
+  return absl::StrJoin(
+      std::ranges::transform_view(CPUIDFlags(), &CPUIDFeatureFlag::name), " ");
 }
 
 }  // namespace internal

@@ -21,7 +21,7 @@ constexpr bool CanEmitFMAInstructions = false;
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
 #define PRINCIPIA_USE_HARDWARE_FMA_DEFAULT \
-  (CanEmitFMAInstructions && cpuid_feature_flags::FPU.IsSet());
+  (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet());
 #else
 #define PRINCIPIA_USE_HARDWARE_FMA_DEFAULT false;
 #endif
