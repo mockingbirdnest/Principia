@@ -157,7 +157,7 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(si::Steradian);
   } else {
     LOG(FATAL) << "Unsupported unit " << s;
-    base::noreturn();
+    std::abort();
   }
 }
 

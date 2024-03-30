@@ -36,7 +36,7 @@ FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
     default:
       DLOG(FATAL) << FUNCTION_SIGNATURE
                   << " indices = {" << r << ", " << c << "}";
-      base::noreturn();
+      std::abort();
   }
 }
 
@@ -50,7 +50,7 @@ Scalar& R3x3Matrix<Scalar>::operator()(int r, int c) {
     default:
       DLOG(FATAL) << FUNCTION_SIGNATURE
                   << " indices = {" << r << ", " << c << "}";
-      base::noreturn();
+      std::abort();
   }
 }
 

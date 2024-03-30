@@ -19,7 +19,6 @@ namespace numerics {
 namespace _global_optimization {
 namespace internal {
 
-using base::noreturn;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_gradient_descent;
@@ -40,7 +39,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   } else if constexpr (dimensions == 3) {
     return 8 * Wedge(vertices[0], Wedge(vertices[1], vertices[2])).Norm();
   }
-  noreturn();
+  std::abort();
 }
 
 template<typename Scalar, typename Argument, int dimensions>
@@ -315,7 +314,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
   } else if constexpr (dimensions == 3) {
     return Cbrt(Pow<2>(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN)));
   }
-  noreturn();
+  std::abort();
 }
 
 }  // namespace internal

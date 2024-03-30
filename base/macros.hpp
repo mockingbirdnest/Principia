@@ -89,19 +89,6 @@ char const* const Architecture = "x86-64";
 #  endif
 #endif
 
-// A function for use on control paths that don't return a value, typically
-// because they end with a |LOG(FATAL)|.
-#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
-[[noreturn]]
-#elif PRINCIPIA_COMPILER_MSVC
-__declspec(noreturn)
-#elif PRINCIPIA_COMPILER_ICC
-__attribute__((noreturn))
-#else
-#error "What compiler is this?"
-#endif
-inline void noreturn() { std::exit(0); }
-
 // Used to force inlining.
 #if PRINCIPIA_COMPILER_CLANG    ||  \
     PRINCIPIA_COMPILER_CLANG_CL ||  \

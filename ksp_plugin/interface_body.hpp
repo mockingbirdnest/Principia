@@ -567,7 +567,7 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
       return plugin.NewBodySurfaceNavigationFrame(parameters.centre_index);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;
-      base::noreturn();
+      std::abort();
   }
 }
 

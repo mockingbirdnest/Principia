@@ -808,7 +808,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
       return Vector<ReducedAcceleration, Frame>{};
     default:
       LOG(FATAL) << "Unexpected degree " << max_degree << " " << body_->name();
-      base::noreturn();
+      std::abort();
   }
 }
 
@@ -890,7 +890,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsPotential(
       return ReducedPotential{};
     default:
       LOG(FATAL) << "Unexpected degree " << max_degree << " " << body_->name();
-      base::noreturn();
+      std::abort();
   }
 }
 

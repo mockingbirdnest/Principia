@@ -686,7 +686,7 @@ TEST_F(PileUpTest, Serialization) {
       return &p2_;
     }
     LOG(FATAL) << "Unexpected part id " << part_id;
-    base::noreturn();
+    std::abort();
   };
   auto const p = PileUp::ReadFromMessage(message,
                                          part_id_to_part,
@@ -728,7 +728,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
       return &p2_;
     }
     LOG(FATAL) << "Unexpected part id " << part_id;
-    base::noreturn();
+    std::abort();
   };
   auto const p = PileUp::ReadFromMessage(message,
                                          part_id_to_part,
