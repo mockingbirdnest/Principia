@@ -4,6 +4,7 @@
 #include <ranges>
 #include <vector>
 
+#include "absl/strings/str_join.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
 
@@ -86,11 +87,21 @@ std::string ProcessorBrandString() {
 }
 
 std::string CPUFeatures() {
+#if PRINCIPIA_COMPILER_MSVC
   return CPUIDFlags()
       | std::views::filter(&CPUIDFeatureFlag::IsSet)
       | std::views::transform(&CPUIDFeatureFlag::name)
       | std::views::join_with(' ')
       | std::ranges::to<std::string>();
+#else  // TODO(egg): Get rid of this once clang really has C++23.
+  std::vector<std::string_view> set_flags;
+  for (auto const& flag : CPUIDFlags()) {
+    if (flag.IsSet()) {
+      set_flags.push_back(flag.name());
+    }
+  }
+  return absl::StrJoin(set_flags, " ");
+#endif
 }
 
 }  // namespace internal
