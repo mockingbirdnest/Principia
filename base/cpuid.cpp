@@ -1,7 +1,7 @@
 #include "base/cpuid.hpp"
 
-#include <string>
 #include <ranges>
+#include <string>
 #include <vector>
 
 #include "absl/strings/str_join.h"
