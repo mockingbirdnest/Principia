@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 
 namespace principia {
 namespace benchmark_automation {
@@ -23,11 +26,26 @@ class BenchmarkAutomation {
     StreamWriter mathematica_stream =
         new StreamWriter(
             File.Open(mathematica_output_file, FileMode.CreateNew));
-    string csv_benchmark_names = "";
-    string csv_means = "";
     mathematica_stream.WriteLine("{");
     mathematica_stream.WriteLine(mathematica_date);
     FileInfo[] files = benchmark_directory.GetFiles("*.cpp");
+    Process list_benchmarks_process = new Process {
+      StartInfo = new ProcessStartInfo {
+        FileName = benchmark_executable,
+        Arguments = "--benchmark_list_tests",
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        CreateNoWindow = true
+      }
+    };
+    var seen_benchmarks = new Dictionary<String, bool>();
+    list_benchmarks_process.Start();
+    while (!list_benchmarks_process.StandardOutput.EndOfStream) {
+      seen_benchmarks.Add(list_benchmarks_process.StandardOutput.ReadLine().
+          Replace(", ", ",").
+          Replace(",\n", ",").
+          Replace(",\r\n", ","), false);
+    }
     string last_benchmark_name = "";
     foreach (FileInfo file in files) {
       StreamReader stream = file.OpenText();
@@ -66,70 +84,49 @@ class BenchmarkAutomation {
             string[] words =
                 line.Split(separator : new char[]{' '},
                            options   : StringSplitOptions.RemoveEmptyEntries);
-            const string mean_suffix = "_mean";
-            const string median_suffix = "_median";
-            const string stddev_suffix = "_stddev";
-            if (words[0].StartsWith("BM_")) {
-              if (has_repetitions && words[0].EndsWith(mean_suffix)) {
-                string benchmark_name =
-                    words[0].Substring(
-                        startIndex : 0,
-                        length     : words[0].Length - mean_suffix.Length);
-                double μ = double.Parse(words[1]) *
-                    TimeConversionFactor(words[2]);
-                Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
-                CommaSeparatedAppend(
-                    ref csv_benchmark_names,
-                    "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
-                CommaSeparatedAppend(ref csv_means, μ.ToString());
-              } else if (!has_repetitions) {
-                string benchmark_name = words[0];
-                double μ = double.Parse(words[1]) *
-                    TimeConversionFactor(words[2]);
-                CommaSeparatedAppend(
-                    ref csv_benchmark_names,
-                    "\"" + benchmark_name.Replace("\"", "\"\"") + "\"");
-                CommaSeparatedAppend(ref csv_means, μ.ToString());
-                Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
-              }
-              if (!words[0].EndsWith(mean_suffix) &&
-                  !words[0].EndsWith(median_suffix) &&
-                  !words[0].EndsWith(stddev_suffix)) {
-                string benchmark_name = words[0];
-                if (last_benchmark_name != benchmark_name) {
-                  if (last_benchmark_name != "") {
-                    mathematica_stream.WriteLine("}},");
-                  }
-                  last_benchmark_name = benchmark_name;
-                  mathematica_stream.Flush();
-                  mathematica_stream.Write("{");
-                  mathematica_stream.Write("\"" + benchmark_name + "\", {");
-                } else {
-                  mathematica_stream.Write(", ");
+            if (seen_benchmarks.Keys.Contains(words[0])) {
+              string benchmark_name = words[0];
+              string mathematica = "";
+              if (last_benchmark_name != benchmark_name) {
+                if (seen_benchmarks[benchmark_name]) {
+                  throw new ArgumentException("Benchmark " + benchmark_name +
+                                              " matches multiple filters");
                 }
-                mathematica_stream.Write(
-                    (double.Parse(words[1]) * TimeConversionFactor(words[2]))
-                        .ToString().Replace("e", "*^"));
+                seen_benchmarks[benchmark_name] = true;
+                if (last_benchmark_name != "") {
+                  mathematica += "}}," + mathematica_stream.NewLine;
+                }
+                last_benchmark_name = benchmark_name;
+                mathematica_stream.Flush();
+                mathematica += "{";
+                mathematica += "\"" + benchmark_name + "\", {";
+              } else {
+                mathematica += ", ";
               }
+              mathematica += (double.Parse(words[1]) *
+                              TimeConversionFactor(words[2]))
+                      .ToString().Replace("e", "*^");
+              mathematica_stream.Write(mathematica);
+              Console.WriteLine(
+                  line + " " +
+                  mathematica.Replace(mathematica_stream.NewLine,
+                                      mathematica_stream.NewLine +
+                                          new string(' ', line.Length + 1)));
             }
           }
         }
       }
     }
+    Console.WriteLine("}}");
     mathematica_stream.WriteLine("}}");
     mathematica_stream.WriteLine("}");
     mathematica_stream.Close();
-    File.WriteAllText(
-        Path.Combine(jenkins_directory.FullName,
-                     "jenkins_benchmark_results.csv"),
-        csv_benchmark_names + "\n" + csv_means);
-  }
-
-  private static void CommaSeparatedAppend(ref string csv, string value) {
-    if (csv == "") {
-      csv = value;
-    } else {
-      csv = csv + ", " + value;
+    var unseen_benchmarks = (from seen in seen_benchmarks
+                             where seen.Value
+                             select seen.Key).ToArray();
+    if (unseen_benchmarks.Length > 0 ) {
+      throw new ArgumentException(
+          "The following benchmarks were not run: " + unseen_benchmarks);
     }
   }
 
