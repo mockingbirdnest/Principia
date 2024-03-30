@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -19,6 +20,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "numerics/fma.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/named_quantities.hpp"
@@ -33,9 +35,12 @@ namespace principia {
 namespace interface {
 
 using ::testing::AllOf;
+using ::testing::Bool;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Ge;
 using ::testing::HasSubstr;
+using ::testing::IsEmpty;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pair;
@@ -53,6 +58,7 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::numerics::_fma;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
@@ -67,7 +73,8 @@ using namespace std::chrono_literals;
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
-class PluginCompatibilityTest : public testing::Test {
+class PluginCompatibilityTest
+    : public testing::TestWithParam<bool> {
  protected:
   PluginCompatibilityTest()
       : stderrthreshold_(FLAGS_stderrthreshold) {
@@ -132,7 +139,13 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 }
 
 #if !_DEBUG
-TEST_F(PluginCompatibilityTest, Reach) {
+INSTANTIATE_TEST_SUITE_P(FMA, PluginCompatibilityTest, Bool());
+
+TEST_P(PluginCompatibilityTest, Reach) {
+  std::optional<FMAPreventer> fma_preventer;
+  if (!GetParam()) {
+    fma_preventer.emplace();
+  }
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
@@ -157,6 +170,10 @@ TEST_F(PluginCompatibilityTest, Reach) {
   ASSERT_TRUE(ifnity->has_flight_plan());
   ifnity->ReadFlightPlanFromMessage();
   FlightPlan const& flight_plan = ifnity->flight_plan();
+  EXPECT_THAT(flight_plan.desired_final_time(),
+              ResultOf(&TTSecond, Eq("1980-03-14T09:37:01"_DateTime)));
+  EXPECT_THAT(flight_plan.actual_final_time(),
+              ResultOf(&TTSecond, Eq("1980-03-14T09:37:01"_DateTime)));
   EXPECT_THAT(
       flight_plan.adaptive_step_parameters().length_integration_tolerance(),
       Eq(1 * Metre));
@@ -170,7 +187,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
   }
   // The flight plan only covers the inner solar system (this is probably
   // because of #3035).
-  // It also differs from https://youtu.be/7BDxZV7UD9I?t=439.
+  // The manœuvres differ from those in https://youtu.be/7BDxZV7UD9I?t=439.
   EXPECT_THAT(manœuvre_ignition_tt_seconds_and_Δvs,
               ElementsAre(Pair("1970-08-14T09:34:49"_DateTime,
                                3.80488671073918022e+03 * (Metre / Second)),
@@ -206,7 +223,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
                                1.39666705839172456e-01 * (Metre / Second))));
 
   // Compute the flybys.
-  std::map<Instant, std::string> flybys;
+  std::map<Instant, std::string> flyby_map;
   for (Index index = 0; plugin->HasCelestial(index); ++index) {
     Celestial const& celestial = plugin->GetCelestial(index);
     auto const& celestial_trajectory = celestial.trajectory();
@@ -227,15 +244,26 @@ TEST_F(PluginCompatibilityTest, Reach) {
       if ((celestial_trajectory.EvaluatePosition(time) -
            flight_plan_trajectory.EvaluatePosition(time))
               .Norm() < 50 * radius) {
-        flybys[time] = celestial.body()->name();
+        flyby_map[time] = celestial.body()->name();
       }
     }
   }
+  std::vector<std::pair<Instant, std::string>> flybys(flyby_map.begin(),
+                                                      flyby_map.end());
 
-  // The flybys are reasonably similar to https://youtu.be/7BDxZV7UD9I?t=439,
-  // but not identical.
+  // The save was created prior to the introduction of FMA in Principia.
+  // When FMA is not used, the flybys match https://youtu.be/7BDxZV7UD9I?t=439
+  // until the second Earth flyby, and are close for the second Earth flyby and
+  // Jupiter flyby.
+  // When using FMA, we lose these last two flybys.
+  // The flight plan desired and actual final time are before the time of the
+  // Saturn flyby from the video; however, the Saturn flyby seems to be missing
+  // from this flight plan even if it is extended further.
+  EXPECT_THAT(flybys, SizeIs(Ge(10)));
+  std::span const first_10_flybys(flybys.begin(), 10);
+  std::span const subsequent_flybys(flybys.begin() + 10, flybys.end());
   EXPECT_THAT(
-      flybys,
+      first_10_flybys,
       ElementsAre(
           Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
           Pair(ResultOf(&TTSecond, "1971-08-29T23:33:54"_DateTime), "Mars"),
@@ -246,7 +274,22 @@ TEST_F(PluginCompatibilityTest, Reach) {
           Pair(ResultOf(&TTSecond, "1974-07-25T22:45:52"_DateTime), "Mercury"),
           Pair(ResultOf(&TTSecond, "1974-09-05T08:27:45"_DateTime), "Venus"),
           Pair(ResultOf(&TTSecond, "1975-04-18T00:42:26"_DateTime), "Venus"),
-          Pair(ResultOf(&TTSecond, "1976-04-26T17:38:08"_DateTime), "Venus")));
+          Pair(ResultOf(&TTSecond,
+                        UseHardwareFMA ? "1976-04-26T17:38:08"_DateTime
+                                       : "1976-04-26T17:36:24"_DateTime),
+               "Venus")));
+  if (UseHardwareFMA) {
+    EXPECT_THAT(subsequent_flybys, IsEmpty());
+  } else {
+    EXPECT_THAT(
+        subsequent_flybys,
+        ElementsAre(Pair(  // The video has             21:57.
+                        ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime),
+                        "Earth"),
+                    Pair(  // The video has             07:52.
+                        ResultOf(&TTSecond, "1980-02-17T22:18:43"_DateTime),
+                        "Jupiter")));
+  }
 
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));

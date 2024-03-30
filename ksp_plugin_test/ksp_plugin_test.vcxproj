@@ -12,6 +12,11 @@
     <Import Project="..\shared\journal.vcxitems" Label="Shared" />
     <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
   </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>PRINCIPIA_CAN_OVERRIDE_FMA_USAGE_AT_RUNTIME=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp" />
