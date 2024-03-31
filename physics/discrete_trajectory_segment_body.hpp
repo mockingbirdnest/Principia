@@ -529,7 +529,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     absl::StatusOr<std::list<typename ConstIterators::const_iterator>>
-        right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
+        right_endpoints = FitHermiteSpline<Position<Frame>, Instant>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->time; },
             [](auto&& it) -> auto&& {
@@ -573,14 +573,14 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
 }
 
 template<typename Frame>
-Hermite3<Instant, Position<Frame>>
+Hermite3<Position<Frame>, Instant>
 DiscreteTrajectorySegment<Frame>::GetInterpolation(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
   auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  return Hermite3<Instant, Position<Frame>>{
+  return Hermite3<Position<Frame>, Instant>{
       {lower_time, upper_time},
       {lower_degrees_of_freedom.position(),
        upper_degrees_of_freedom.position()},

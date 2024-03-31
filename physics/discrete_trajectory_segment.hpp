@@ -195,7 +195,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory segment bounded above by |upper|.
-  Hermite3<Instant, Position<Frame>> GetInterpolation(
+  Hermite3<Position<Frame>, Instant> GetInterpolation(
       typename Timeline::const_iterator upper) const;
 
   typename Timeline::const_iterator timeline_begin() const;

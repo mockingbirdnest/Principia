@@ -55,7 +55,7 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedVector<double> u2({1, 2});
     UnboundedVector<double> v2 = {{1, 2}};
     UnboundedVector<double> w2(2);
-    w2 = {{1, 2}};
+    w2 = {1, 2};
     EXPECT_EQ(u2, v2);
     EXPECT_EQ(u2, w2);
   }
@@ -69,11 +69,8 @@ TEST_F(UnboundedArraysTest, Assignment) {
     UnboundedMatrix<double> n23 = {2, 3,
                                    {0, 0, 0,
                                     0, 0, 0}};
-    // TODO(phl): It would be convenient to have an operator= taking an
-    // initializer list.
-    n23 = UnboundedMatrix<double>(2, 3,
-                                  {1, 2, 3,
-                                   4, 5, 6});
+    n23 = {1, 2, 3,
+           4, 5, 6};
     EXPECT_EQ(l23, m23);
     EXPECT_EQ(l23, n23);
   }
@@ -89,9 +86,9 @@ TEST_F(UnboundedArraysTest, Assignment) {
                                                   0, 0, 0}};
     UnboundedLowerTriangularMatrix<double> o3(3);
     EXPECT_EQ(o3, n3);
-    n3 = {{1,
-           2, 3,
-           4, 5, 6}};
+    n3 = {1,
+          2, 3,
+          4, 5, 6};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }
@@ -107,9 +104,9 @@ TEST_F(UnboundedArraysTest, Assignment) {
                                                         0}};
     UnboundedUpperTriangularMatrix<double> o3(3);
     EXPECT_EQ(o3, n3);
-    n3 = {{1, 2, 3,
-              4, 5,
-                 6}};
+    n3 = {1, 2, 3,
+             4, 5,
+                6};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }
@@ -196,7 +193,6 @@ TEST_F(UnboundedArraysTest, MatrixIndexing) {
 }
 
 TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
-  EXPECT_EQ(10, l4_.size());
   EXPECT_EQ(1, l4_(0, 0));
   EXPECT_EQ(2, l4_(1, 0));
   EXPECT_EQ(3, l4_(1, 1));
@@ -215,7 +211,6 @@ TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
 }
 
 TEST_F(UnboundedArraysTest, UpperTriangularMatrixIndexing) {
-  EXPECT_EQ(10, u4_.size());
   EXPECT_EQ(1, u4_(0, 0));
   EXPECT_EQ(2, u4_(0, 1));
   EXPECT_EQ(3, u4_(0, 2));

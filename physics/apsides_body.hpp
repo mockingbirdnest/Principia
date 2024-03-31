@@ -93,7 +93,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 
       // The derivative of |squared_distance| changed sign.  Construct a Hermite
       // approximation of |squared_distance| and find its extrema.
-      Hermite3<Instant, Square<Length>> const
+      Hermite3<Square<Length>, Instant> const
           squared_distance_approximation(
               {*previous_time, time},
               {*previous_squared_distance, squared_distance},
@@ -440,7 +440,7 @@ absl::Status ComputeNodes(
 
       // |z| changed sign.  Construct a Hermite approximation of |z| and find
       // its zeros.
-      Hermite3<Instant, Length> const z_approximation(
+      Hermite3<Length, Instant> const z_approximation(
           {*previous_time, time},
           {*previous_z, z},
           {*previous_z_speed, z_speed});

@@ -33,8 +33,6 @@ class FixedVector final {
   constexpr FixedVector();
   explicit FixedVector(uninitialized_t);
 
-  // TODO(egg): Figure out why we have a move-conversion for |FixedVector| but
-  // not the matrices.
   constexpr FixedVector(
       std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
   constexpr FixedVector(
@@ -50,6 +48,8 @@ class FixedVector final {
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
+
+  constexpr FixedVector& operator=(Scalar const (&right)[size_]);
 
   constexpr FixedVector& operator+=(FixedVector const& right);
   constexpr FixedVector& operator-=(FixedVector const& right);
@@ -93,18 +93,21 @@ class FixedVector final {
 
 template<typename Scalar_, int rows_, int columns_>
 class FixedMatrix final {
+  static constexpr int size_ = rows_ * columns_;
+
  public:
   using Scalar = Scalar_;
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return columns_; }
-  static constexpr int size() { return rows_ * columns_; }
 
   constexpr FixedMatrix();
   explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedMatrix(
-      std::array<Scalar, size()> const& data);  // NOLINT(runtime/explicit)
+      std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
+  constexpr FixedMatrix(
+      std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
   constexpr explicit FixedMatrix(
       TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view);
@@ -119,6 +122,8 @@ class FixedMatrix final {
   // |a(i, j)| implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
+
+  constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
 
   constexpr FixedMatrix& operator+=(FixedMatrix const& right);
   constexpr FixedMatrix& operator-=(FixedMatrix const& right);
@@ -144,7 +149,7 @@ class FixedMatrix final {
   static FixedMatrix Identity();
 
  private:
-  std::array<Scalar, size()> data_;
+  std::array<Scalar, size_> data_;
 
   template<typename L, typename R, int r, int c>
   friend constexpr FixedVector<Product<L, R>, r> operator*(
@@ -154,18 +159,19 @@ class FixedMatrix final {
 
 template<typename Scalar_, int rows_>
 class FixedStrictlyLowerTriangularMatrix final {
+  static constexpr int size_ = rows_ * (rows_ - 1) / 2;
+
  public:
   using Scalar = Scalar_;
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return rows_; }
-  static constexpr int size() { return rows_ * (rows_ - 1) / 2; }
 
   constexpr FixedStrictlyLowerTriangularMatrix();
   explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedStrictlyLowerTriangularMatrix(
-      std::array<Scalar, size()> const& data);
+      std::array<Scalar, size_> const& data);
 
   friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
                          FixedStrictlyLowerTriangularMatrix const& right) =
@@ -180,27 +186,31 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
+
   template<int r>
   Scalar const* row() const;
 
  private:
-  std::array<Scalar, size()> data_;
+  std::array<Scalar, size_> data_;
 };
 
 template<typename Scalar_, int rows_>
 class FixedLowerTriangularMatrix final {
+  static constexpr int size_ = rows_ * (rows_ + 1) / 2;
+
  public:
   using Scalar = Scalar_;
   static constexpr int rows() { return rows_; }
   static constexpr int columns() { return rows_; }
-  static constexpr int size() { return rows_ * (rows_ + 1) / 2; }
 
   constexpr FixedLowerTriangularMatrix();
   explicit FixedLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedLowerTriangularMatrix(
-      std::array<Scalar, size()> const& data);
+      std::array<Scalar, size_> const& data);
 
   explicit FixedLowerTriangularMatrix(
       TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view);
@@ -216,24 +226,28 @@ class FixedLowerTriangularMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  constexpr FixedLowerTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
+
  private:
-  std::array<Scalar, size()> data_;
+  std::array<Scalar, size_> data_;
 };
 
 template<typename Scalar_, int columns_>
 class FixedUpperTriangularMatrix final {
+  static constexpr int size_ = columns_ * (columns_ + 1) / 2;
+
  public:
   using Scalar = Scalar_;
   static constexpr int rows() { return columns_; }
   static constexpr int columns() { return columns_; }
-  static constexpr int size() { return columns_ * (columns_ + 1) / 2; }
 
   constexpr FixedUpperTriangularMatrix();
   explicit FixedUpperTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr FixedUpperTriangularMatrix(
-      std::array<Scalar, size()> const& data);
+      std::array<Scalar, size_> const& data);
 
   explicit FixedUpperTriangularMatrix(
       TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view);
@@ -249,13 +263,16 @@ class FixedUpperTriangularMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  constexpr FixedUpperTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
+
  private:
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This transposes a trapezoidal slice to make it column-major.
-  static std::array<Scalar, size()> Transpose(
-      std::array<Scalar, size()> const& data);
+  static std::array<Scalar, size_> Transpose(
+      std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size()> data_;
+  std::array<Scalar, size_> data_;
 };
 
 // Prefer using the operator* that takes a TransposedView.

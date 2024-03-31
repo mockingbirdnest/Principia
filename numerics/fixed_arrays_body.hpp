@@ -82,6 +82,13 @@ constexpr Scalar_ const& FixedVector<Scalar_, size_>::operator[](
 }
 
 template<typename Scalar_, int size_>
+constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator=(
+    Scalar const (&right)[size_]) {
+  std::copy(right, right + size_, data_.data());
+  return *this;
+}
+
+template<typename Scalar_, int size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator+=(
     FixedVector const& right) {
   for (int i = 0; i < size(); ++i) {
@@ -158,8 +165,13 @@ FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(uninitialized_t) {}
 
 template<typename Scalar_, int rows_, int columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
-    std::array<Scalar, size()> const& data)
+    std::array<Scalar, size_> const& data)
     : data_(data) {}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
+    std::array<Scalar, size_>&& data)
+    : data_(std::move(data)) {}
 
 template<typename Scalar_, int rows_, int columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
@@ -194,8 +206,16 @@ constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_>::operator()(
 
 template<typename Scalar_, int rows_, int columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
+FixedMatrix<Scalar_, rows_, columns_>::operator=(
+    Scalar const (&right)[size_]) {
+  std::copy(right, right + size_, data_.data());
+  return *this;
+}
+
+template<typename Scalar_, int rows_, int columns_>
+constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator+=(FixedMatrix const& right) {
-  for (int i = 0; i < size(); ++i) {
+  for (int i = 0; i < size_; ++i) {
     data_[i] += right.data_[i];
   }
   return *this;
@@ -204,7 +224,7 @@ FixedMatrix<Scalar_, rows_, columns_>::operator+=(FixedMatrix const& right) {
 template<typename Scalar_, int rows_, int columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator-=(FixedMatrix const& right) {
-  for (int i = 0; i < size(); ++i) {
+  for (int i = 0; i < size_; ++i) {
     data_[i] -= right.data_[i];
   }
   return *this;
@@ -285,7 +305,7 @@ FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
 
 template<typename Scalar_, int rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
-FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size()> const& data)
+FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
 template<typename Scalar_, int rows_>
@@ -307,6 +327,14 @@ operator()(int const row, int const column) const {
 }
 
 template<typename Scalar_, int rows_>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>&
+FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::operator=(
+    Scalar const (&right)[size_]) {
+  std::copy(right, right + size_, data_.data());
+  return *this;
+}
+
+template<typename Scalar_, int rows_>
 template<int r>
 Scalar_ const* FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::row() const {
   static_assert(r < rows_);
@@ -324,7 +352,7 @@ FixedLowerTriangularMatrix(uninitialized_t) {}
 
 template<typename Scalar_, int rows_>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_>::
-FixedLowerTriangularMatrix(std::array<Scalar, size()> const& data)
+FixedLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
 template<typename Scalar_, int rows_>
@@ -356,6 +384,14 @@ operator()(int const row, int const column) const {
   return data_[row * (row + 1) / 2 + column];
 }
 
+template<typename Scalar_, int rows_>
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_>&
+FixedLowerTriangularMatrix<Scalar_, rows_>::operator=(
+    Scalar const (&right)[size_]) {
+  std::copy(right, right + size_, data_.data());
+  return *this;
+}
+
 template<typename Scalar_, int columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
 FixedUpperTriangularMatrix()
@@ -367,7 +403,7 @@ FixedUpperTriangularMatrix<Scalar_, columns_>::FixedUpperTriangularMatrix(
 
 template<typename Scalar_, int columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
-FixedUpperTriangularMatrix(std::array<Scalar, size()> const& data)
+FixedUpperTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(Transpose(data)) {}
 
 template<typename Scalar_, int columns_>
@@ -400,9 +436,18 @@ operator()(int const row, int const column) const {
 }
 
 template<typename Scalar_, int columns_>
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_>&
+FixedUpperTriangularMatrix<Scalar_, columns_>::operator=(
+    Scalar const (&right)[size_]) {
+  std::copy(right, right + size_, data_.data());
+  data_ = Transpose(data_);
+  return *this;
+}
+
+template<typename Scalar_, int columns_>
 auto FixedUpperTriangularMatrix<Scalar_, columns_>::Transpose(
-    std::array<Scalar, size()> const& data)
-    -> std::array<Scalar, size()> {
+    std::array<Scalar, size_> const& data)
+    -> std::array<Scalar, size_> {
   std::array<Scalar, rows() * columns()> full;
   int index = 0;
   for (int row = 0; row < rows(); ++row) {
@@ -412,7 +457,7 @@ auto FixedUpperTriangularMatrix<Scalar_, columns_>::Transpose(
     }
   }
 
-  std::array<Scalar, size()> result;
+  std::array<Scalar, size_> result;
   index = 0;
   for (int column = 0; column < columns(); ++column) {
     for (int row = 0; row <= column; ++row) {
