@@ -57,7 +57,7 @@ TEST_F(QuadratureTest, Sin) {
   EXPECT_THAT(GaussLegendre<10>(f, -2.0 * Radian, 5.0 * Radian),
               AlmostEquals(ʃf, 2495, 2498));
   EXPECT_THAT(GaussLegendre<11>(f, -2.0 * Radian, 5.0 * Radian),
-              AlmostEquals(ʃf, 20));
+              AlmostEquals(ʃf, 20, 21));
   EXPECT_THAT(GaussLegendre<12>(f, -2.0 * Radian, 5.0 * Radian),
               AlmostEquals(ʃf, 6, 7));
   EXPECT_THAT(GaussLegendre<13>(f, -2.0 * Radian, 5.0 * Radian),

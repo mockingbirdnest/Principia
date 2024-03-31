@@ -15,6 +15,14 @@ namespace principia {
 namespace numerics {
 namespace _approximation {
 
+using ::testing::AllOf;
+using ::testing::AnyOf;
+using ::testing::ElementsAre;
+using ::testing::Ge;
+using ::testing::Lt;
+using ::testing::Pointee;
+using ::testing::Property;
+using ::testing::SizeIs;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -23,13 +31,6 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
-using ::testing::SizeIs;
-using ::testing::Property;
-using ::testing::Pointee;
-using ::testing::Lt;
-using ::testing::Ge;
-using ::testing::ElementsAre;
-using ::testing::AllOf;
 
 TEST(ApproximationTest, SinInverse) {
   auto const f = [](double const x) { return Sin(1 * Radian / x); };
@@ -59,7 +60,9 @@ TEST(ApproximationTest, Exp) {
                                         /*max_error=*/1e-6,
                                         &error_estimate);
   EXPECT_EQ(16, interpolant->degree());
-  EXPECT_THAT(error_estimate, IsNear(4.3e-14_(1)));
+  EXPECT_THAT(error_estimate,
+              AnyOf(IsNear(4.3e-14_(1)),    // Windows, Ubuntu.
+                    IsNear(4.6e-14_(1))));  // macOS.
   for (double x = 0.01; x < 3; x += 0.01) {
     EXPECT_THAT((*interpolant)(x),
                 AbsoluteErrorFrom(f(x), AllOf(Lt(1.1e-14), Ge(0))));

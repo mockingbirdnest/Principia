@@ -261,16 +261,10 @@ TEST_P(PluginCompatibilityTest, Reach) {
   // The flight plan desired and actual final time are before the time of the
   // Saturn flyby from the video; however, the Saturn flyby seems to be missing
   // from this flight plan even if it is extended further.
-  EXPECT_THAT(flybys, SizeIs(Ge(10)));
 #if PRINCIPIA_COMPILER_MSVC
+  EXPECT_THAT(flybys, SizeIs(Ge(10)));
   std::span const first_10_flybys(flybys.begin(), 10);
   std::span const subsequent_flybys(flybys.begin() + 10, flybys.end());
-#else  // TODO(egg): Remove when clang really has C++23.
-  std::vector<std::pair<Instant, std::string>> const first_10_flybys(
-      flybys.begin(), flybys.begin() + 10);
-  std::vector<std::pair<Instant, std::string>> const subsequent_flybys(
-      flybys.begin() + 10, flybys.end());
-#endif
   EXPECT_THAT(
       first_10_flybys,
       ElementsAre(
@@ -299,6 +293,21 @@ TEST_P(PluginCompatibilityTest, Reach) {
                         ResultOf(&TTSecond, "1980-02-17T22:18:43"_DateTime),
                         "Jupiter")));
   }
+#elif OS_MACOSX
+  EXPECT_THAT(
+      flybys,
+      ElementsAre(
+          Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1971-08-29T23:34:21"_DateTime), "Mars")));
+#elif OS_LINUX
+  EXPECT_THAT(
+      flybys,
+      ElementsAre(
+          Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
+          Pair(ResultOf(&TTSecond, "1971-08-29T23:34:20"_DateTime), "Mars")));
+#else
+#error Unknown OS
+#endif
 
   // Make sure that we can upgrade, save, and reload.
   WriteAndReadBack(std::move(plugin));

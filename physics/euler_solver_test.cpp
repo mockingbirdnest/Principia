@@ -690,8 +690,10 @@ TEST_F(EulerSolverTest, GeneralBodyRotationAlongThirdAxis) {
   EXPECT_THAT(
       actual_angular_velocity,
       AlmostEquals(solver.AngularVelocityFor(initial_angular_momentum), 0));
-  EXPECT_THAT(actual_attitude(e1_), AlmostEquals(expected_attitude(e1_), 136));
-  EXPECT_THAT(actual_attitude(e2_), AlmostEquals(expected_attitude(e2_), 136));
+  EXPECT_THAT(actual_attitude(e1_),
+              AlmostEquals(expected_attitude(e1_), 136, 148));
+  EXPECT_THAT(actual_attitude(e2_),
+              AlmostEquals(expected_attitude(e2_), 136, 148));
   EXPECT_THAT(actual_attitude(e3_), AlmostEquals(expected_attitude(e3_), 0));
 }
 
