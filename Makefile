@@ -109,6 +109,7 @@ SHARED_ARGS   := \
 	-fbracket-depth=257                                           \
 	-fexceptions                                                  \
 	-ferror-limit=1000                                            \
+	-ffp-contract=off                                              \
 	-fno-omit-frame-pointer                                       \
 	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
