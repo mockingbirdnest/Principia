@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/strings/str_join.h"
+#include "base/not_null.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
 
@@ -20,12 +21,14 @@ namespace base {
 namespace _cpuid {
 namespace internal {
 
+using namespace principia::base::_not_null;
+
 namespace {
 
 // This vector is not a static member variable of CPUIDFeatureFlag because we do
 // not want to include <vector> in the header.
-std::vector<CPUIDFeatureFlag>& CPUIDFlags() {
-  static std::vector<CPUIDFeatureFlag> result;
+std::vector<not_null<CPUIDFeatureFlag const*>>& CPUIDFlags() {
+  static std::vector<not_null<CPUIDFeatureFlag const*>> result;
   return result;
 }
 
@@ -46,6 +49,35 @@ CPUIDResult CPUID(std::uint32_t const eax, std::uint32_t const ecx) {
 
 }  // namespace
 
+std::string_view CPUIDFeatureFlag::name() const {
+  return name_;
+}
+
+bool CPUIDFeatureFlag::IsSet() const {
+  return CPUID(leaf_, sub_leaf_).*field_ & (1 << bit_);
+}
+
+#define PRINCIPIA_CPUID_FLAG(name, ...) \
+  CPUIDFeatureFlag const CPUIDFeatureFlag::name(#name, __VA_ARGS__);
+
+// Table 3-11.
+PRINCIPIA_CPUID_FLAG(FPU, 0x01, EDX, 0);  // x87 Floating Point Unit on chip.
+
+PRINCIPIA_CPUID_FLAG(PSN, 0x01, EDX, 18);     // Processor Serial Number.
+PRINCIPIA_CPUID_FLAG(SSE, 0x01, EDX, 25);     // Streaming SIMD Extensions.
+PRINCIPIA_CPUID_FLAG(SSE2, 0x01, EDX, 26);    // Streaming SIMD Extensions 2.
+PRINCIPIA_CPUID_FLAG(SSE3, 0x01, ECX, 0);     // Streaming SIMD Extensions 3.
+PRINCIPIA_CPUID_FLAG(FMA, 0x01, ECX, 12);     // Fused Multiply Add.
+PRINCIPIA_CPUID_FLAG(SSE4_1, 0x01, ECX, 19);  // Streaming SIMD Extensions 4.1.
+PRINCIPIA_CPUID_FLAG(AVX, 0x01, ECX, 28);     // Advanced Vector eXtensions.
+
+// Table 3-8, Structured Extended Feature Flags Enumeration Leaf.
+PRINCIPIA_CPUID_FLAG(AVX2, 0x07, EBX, 5);       // Advanced Vector eXtensions 2.
+PRINCIPIA_CPUID_FLAG(AVX512F, 0x07, EBX, 16);   // AVX-512 Foundation.
+PRINCIPIA_CPUID_FLAG(AVX512DQ, 0x07, EBX, 17);  // DWORD and QWORD instructions.
+PRINCIPIA_CPUID_FLAG(AVX512VL, 0x07, EBX, 31);  // Vector Length Extensions.
+PRINCIPIA_CPUID_FLAG(AVX512_FP16, 0x07, ECX, 23);  // IEEE-754 binary16.
+
 CPUIDFeatureFlag::CPUIDFeatureFlag(std::string_view const name,
                                    std::uint32_t const leaf,
                                    std::uint32_t const sub_leaf,
@@ -54,15 +86,7 @@ CPUIDFeatureFlag::CPUIDFeatureFlag(std::string_view const name,
     : name_(name), leaf_(leaf), sub_leaf_(sub_leaf), field_(field), bit_(bit) {
   CHECK_GE(bit, 0);
   CHECK_LT(bit, 32);
-  CPUIDFlags().push_back(*this);
-}
-
-std::string_view CPUIDFeatureFlag::name() const {
-  return name_;
-}
-
-bool CPUIDFeatureFlag::IsSet() const {
-  return CPUID(leaf_, sub_leaf_).*field_ & (1 << bit_);
+  CPUIDFlags().push_back(this);
 }
 
 std::string CPUVendorIdentificationString() {
@@ -95,9 +119,9 @@ std::string CPUFeatures() {
       | std::ranges::to<std::string>();
 #else  // TODO(egg): Get rid of this once clang really has C++23.
   std::vector<std::string_view> set_flags;
-  for (auto const& flag : CPUIDFlags()) {
-    if (flag.IsSet()) {
-      set_flags.push_back(flag.name());
+  for (not_null const flag : CPUIDFlags()) {
+    if (flag->IsSet()) {
+      set_flags.push_back(flag->name());
     }
   }
   return absl::StrJoin(set_flags, " ");
