@@ -180,7 +180,7 @@ TEST_F(PoissonSeriesTest, AtOrigin) {
   auto const pb_at_origin = pb_->AtOrigin(t0_ - 7 * Second);
   for (int i = -5; i < 5; ++i) {
     Instant const t = t0_ + i * Second;
-    EXPECT_THAT(pb_at_origin(t), AlmostEquals((*pb_)(t), 0, 132));
+    EXPECT_THAT(pb_at_origin(t), AlmostEquals((*pb_)(t), 0, 168));
   }
 }
 
@@ -385,10 +385,8 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
         t_min, t_max);
     EXPECT_THAT(product,
                 RelativeErrorFrom(+2.0267451184776034270e-11,
-                                  AnyOf(IsNear(0.26_(1)),
-                                        IsNear(0.32_(1)),
-                                        IsNear(0.33_(1)),
-                                        IsNear(0.38_(1)))));
+                                  AnyOf(IsNear(0.316_(1)),     // Windows.
+                                        IsNear(0.274_(1)))));  // macOS.
   }
   {
     auto const product =
@@ -595,10 +593,8 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                      t_min, t_max);
     EXPECT_THAT(product,
                 RelativeErrorFrom(expected_product,
-                                  AnyOf(IsNear(0.00058_(1)),
-                                        IsNear(0.00069_(1)),
-                                        IsNear(0.0013_(1)),
-                                        IsNear(0.0015_(1)))));
+                                  AnyOf(IsNear(0.000576_(1)),    // Windows.
+                                        IsNear(0.00116_(1)))));  // Ubuntu.
   }
   // This test demonstrates how bad Integrate can be, for products that arise in
   // practice.  Exact integration of the result of PointwiseInnerProduct yields

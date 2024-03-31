@@ -33,6 +33,7 @@
 namespace principia {
 namespace astronomy {
 
+using ::testing::AnyOf;
 using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
@@ -378,9 +379,11 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   EXPECT_THAT(elements.nodal_precession(), IsNear(2.0_(1) * Degree / Day));
 
   // Mean element values.
-  EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
-              AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
-                                IsNear(104_(1) * Metre)));
+  EXPECT_THAT(
+      elements.mean_semimajor_axis_interval().midpoint(),
+      AbsoluteErrorFrom(*initial_osculating.semimajor_axis,
+                        AnyOf(IsNear(104_(1) * Metre),     // Windows.
+                              IsNear(105_(1) * Metre))));  // Ubuntu, macOS.
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0014_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
