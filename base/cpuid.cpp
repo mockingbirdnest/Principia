@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "absl/strings/str_join.h"
-#include "base/not_null.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "base/not_null.hpp"
 #include "glog/logging.h"
 
 #if PRINCIPIA_COMPILER_MSVC
