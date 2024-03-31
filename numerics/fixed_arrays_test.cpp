@@ -55,7 +55,7 @@ TEST_F(FixedArraysTest, Assignment) {
     FixedVector<double, 2> u2({1, 2});
     FixedVector<double, 2> v2 = {{1, 2}};
     FixedVector<double, 2> w2;
-    w2 = {{1, 2}};
+    w2 = {1, 2};
     EXPECT_EQ(u2, v2);
     EXPECT_EQ(u2, w2);
   }
@@ -67,8 +67,8 @@ TEST_F(FixedArraysTest, Assignment) {
                                       4, 5, 6}};
     FixedMatrix<double, 2, 3> n23 = {{0, 0, 0,
                                       0, 0, 0}};
-    n23 = {{1, 2, 3,
-            4, 5, 6}};
+    n23 = {1, 2, 3,
+           4, 5, 6};
     EXPECT_EQ(l23, m23);
     EXPECT_EQ(l23, n23);
   }
@@ -84,9 +84,9 @@ TEST_F(FixedArraysTest, Assignment) {
                                                          0, 0}};
     FixedStrictlyLowerTriangularMatrix<double, 3> o3;
     EXPECT_EQ(o3, n3);
-    n3 = {{
-           1,
-           2, 3}};
+    n3 = {
+          1,
+          2, 3};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }
@@ -102,9 +102,9 @@ TEST_F(FixedArraysTest, Assignment) {
                                                  0, 0, 0}};
     FixedLowerTriangularMatrix<double, 3> o3;
     EXPECT_EQ(o3, n3);
-    n3 = {{1,
-           2, 3,
-           4, 5, 6}};
+    n3 = {1,
+          2, 3,
+          4, 5, 6};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }
@@ -120,9 +120,9 @@ TEST_F(FixedArraysTest, Assignment) {
                                                        0}};
     FixedUpperTriangularMatrix<double, 3> o3;
     EXPECT_EQ(o3, n3);
-    n3 = {{1, 2, 3,
-              4, 5,
-                 6}};
+    n3 = {1, 2, 3,
+             4, 5,
+                6};
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }

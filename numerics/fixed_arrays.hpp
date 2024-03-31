@@ -49,6 +49,8 @@ class FixedVector final {
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
+  constexpr FixedVector& operator=(Scalar const (&right)[size_]);
+
   constexpr FixedVector& operator+=(FixedVector const& right);
   constexpr FixedVector& operator-=(FixedVector const& right);
   constexpr FixedVector& operator*=(double right);
@@ -121,6 +123,8 @@ class FixedMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
+
   constexpr FixedMatrix& operator+=(FixedMatrix const& right);
   constexpr FixedMatrix& operator-=(FixedMatrix const& right);
   constexpr FixedMatrix& operator*=(double right);
@@ -182,6 +186,9 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
+
   template<int r>
   Scalar const* row() const;
 
@@ -219,6 +226,9 @@ class FixedLowerTriangularMatrix final {
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
 
+  constexpr FixedLowerTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
+
  private:
   std::array<Scalar, size_> data_;
 };
@@ -252,6 +262,9 @@ class FixedUpperTriangularMatrix final {
   // implies undefined behaviour.
   constexpr Scalar& operator()(int row, int column);
   constexpr Scalar const& operator()(int row, int column) const;
+
+  constexpr FixedUpperTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-

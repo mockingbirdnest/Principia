@@ -67,7 +67,7 @@ template<typename Scalar_>
 UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator=(
     std::initializer_list<Scalar> right) {
   DCHECK_EQ(data_.size(), right.size());
-  data_ = right;
+  data_ = std::move(right);
   return *this;
 }
 
@@ -240,9 +240,9 @@ UnboundedMatrix<Scalar_>::operator()(
 
 template<typename Scalar_>
 UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator=(
-    std::initializer_list<Scalar> const right) {
+    std::initializer_list<Scalar> right) {
   DCHECK_EQ(data_.size(), right.size());
-  data_ = right;
+  data_ = std::move(right);
   return *this;
 }
 
@@ -378,7 +378,7 @@ UnboundedLowerTriangularMatrix<Scalar_>&
 UnboundedLowerTriangularMatrix<Scalar_>::operator=(
     std::initializer_list<Scalar> right) {
   DCHECK_EQ(data_.size(), right.size());
-  data_ = right;
+  data_ = std::move(right);
   return *this;
 }
 
@@ -479,7 +479,7 @@ UnboundedUpperTriangularMatrix<Scalar_>&
 UnboundedUpperTriangularMatrix<Scalar_>::operator=(
     std::initializer_list<Scalar> right) {
   DCHECK_EQ(data_.size(), right.size());
-  data_ = Transpose(right,
+  data_ = Transpose(std::move(right),
                     /*current_columns=*/0,
                     /*extra_columns=*/columns_);
 return *this;
