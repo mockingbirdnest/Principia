@@ -500,7 +500,7 @@ ReadFromMessage(serialization::Polynomial const& message) {
 }
 
 template<typename Value_, typename Argument_, int degree_>
-constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
+constexpr not_null<Evaluator<Value_, Difference<Argument_>, degree_> const*>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::DefaultEvaluator() {
   if constexpr (degree_ <= 3) {
     return Horner<Value_, Difference<Argument_>, degree_>::Singleton();

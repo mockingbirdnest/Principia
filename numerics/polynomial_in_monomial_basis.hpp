@@ -164,9 +164,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       serialization::Polynomial const& message);
 
  private:
-  // TODO(egg): This function should return |not_null|, but that's not
-  // constexpr.
-  static constexpr Evaluator<Value_, Difference<Argument_>, degree_> const*
+  static constexpr not_null<
+      Evaluator<Value_, Difference<Argument_>, degree_> const*>
   DefaultEvaluator();
 
   // The evaluator is only nonnull on the compatibility path.
