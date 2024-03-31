@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=RigidReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=RotatingReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <utility>
 #include <vector>
