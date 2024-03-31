@@ -503,7 +503,7 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
                               IsNear(0.0534_(1) * Kilo(Metre)))));  // macOS.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               AnyOf(IsNear(00'000.101_(1) * Kilo(Metre)),    // Windows.
-                    IsNear(00'000.099_(1)),                  // Ubuntu.
+                    IsNear(00'000.099_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(00'000.098_(1) * Kilo(Metre))));  // macOS.
 
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
