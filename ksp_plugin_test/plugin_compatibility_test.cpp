@@ -291,7 +291,7 @@ TEST_P(PluginCompatibilityTest, Reach) {
     EXPECT_THAT(subsequent_flybys, IsEmpty());
   } else {
     EXPECT_THAT(
-        first_10_flybys,
+        subsequent_flybys,
         ElementsAre(Pair(  // The video has             21:57.
                         ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime),
                         "Earth"),
