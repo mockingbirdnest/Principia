@@ -3,7 +3,6 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include <algorithm>
-#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -85,7 +84,6 @@ constexpr Scalar_ const& FixedVector<Scalar_, size_>::operator[](
 template<typename Scalar_, int size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator=(
     Scalar const (&right)[size_]) {
-  //std::ranges::copy(right, data_);
   std::copy(right, right + size_, data_.data());
   return *this;
 }
