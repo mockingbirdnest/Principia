@@ -21,7 +21,7 @@ constexpr bool CanEmitFMAInstructions = false;
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
 #define PRINCIPIA_USE_HARDWARE_FMA_DEFAULT \
-  (CanEmitFMAInstructions && HasCPUFeatures(CPUFeatureFlags::FMA));
+  (CanEmitFMAInstructions && cpuid_feature_flags::FMA.IsSet());
 #else
 #define PRINCIPIA_USE_HARDWARE_FMA_DEFAULT false;
 #endif
@@ -43,7 +43,10 @@ inline bool const& UseHardwareFMA = FMAPreventer::use_hardware_fma;
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
 inline bool const UseHardwareFMA = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
-class FMAPreventer;  // Undefined.
+struct TrivialFMAPreventer {};
+using FMAPreventer = std::conditional_t<CanEmitFMAInstructions,
+                                        struct UndefinedFMAPreventer,
+                                        TrivialFMAPreventer>;
 #endif
 
 #undef PRINCIPIA_USE_HARDWARE_FMA_DEFAULT

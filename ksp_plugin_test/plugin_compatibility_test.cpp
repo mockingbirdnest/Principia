@@ -145,6 +145,8 @@ TEST_P(PluginCompatibilityTest, Reach) {
   std::optional<FMAPreventer> fma_preventer;
   if (!GetParam()) {
     fma_preventer.emplace();
+  } else if (!UseHardwareFMA) {
+    GTEST_SKIP() << "FMA not used by default";
   }
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -260,8 +262,15 @@ TEST_P(PluginCompatibilityTest, Reach) {
   // Saturn flyby from the video; however, the Saturn flyby seems to be missing
   // from this flight plan even if it is extended further.
   EXPECT_THAT(flybys, SizeIs(Ge(10)));
+#if PRINCIPIA_COMPILER_MSVC
   std::span const first_10_flybys(flybys.begin(), 10);
   std::span const subsequent_flybys(flybys.begin() + 10, flybys.end());
+#else  // TODO(egg): Remove when clang really has C++23.
+  std::vector<std::pair<Instant, std::string>> const first_10_flybys(
+      flybys.begin(), flybys.begin() + 10);
+  std::vector<std::pair<Instant, std::string>> const subsequent_flybys(
+      flybys.begin() + 10, flybys.end());
+#endif
   EXPECT_THAT(
       first_10_flybys,
       ElementsAre(
@@ -282,7 +291,7 @@ TEST_P(PluginCompatibilityTest, Reach) {
     EXPECT_THAT(subsequent_flybys, IsEmpty());
   } else {
     EXPECT_THAT(
-        subsequent_flybys,
+        first_10_flybys,
         ElementsAre(Pair(  // The video has             21:57.
                         ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime),
                         "Earth"),
