@@ -167,35 +167,35 @@ class not_null final {
   not_null() = delete;
 
   // Copy constructor from an other |not_null<Pointer>|.
-  not_null(not_null const&) = default;
+  constexpr not_null(not_null const&) = default;
   // Copy contructor for implicitly convertible pointers.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
-  not_null(not_null<OtherPointer> const& other);
+  constexpr not_null(not_null<OtherPointer> const& other);
   // Constructor from a nullable pointer, performs a null check.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value &&
                !is_instance_of_not_null_v<pointer>>::type>
-  not_null(OtherPointer other);  // NOLINT(runtime/explicit)
+  constexpr not_null(OtherPointer other);  // NOLINT(runtime/explicit)
   // Explicit copy constructor for static_cast'ing.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                !std::is_convertible<OtherPointer, pointer>::value>::type,
            typename = decltype(static_cast<pointer>(
                                    std::declval<OtherPointer>()))>
-  explicit not_null(not_null<OtherPointer> const& other);
+  constexpr explicit not_null(not_null<OtherPointer> const& other);
 
   // Move constructor from an other |not_null<Pointer>|.  This constructor may
   // invalidate its argument.
-  not_null(not_null&&) = default;
+  constexpr not_null(not_null&&) = default;
   // Move contructor for implicitly convertible pointers. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
-  not_null(not_null<OtherPointer>&& other);
+  constexpr not_null(not_null<OtherPointer>&& other);
   // Explicit move constructor for static_cast'ing. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
@@ -203,14 +203,14 @@ class not_null final {
                !std::is_convertible<OtherPointer, pointer>::value>::type,
            typename = decltype(static_cast<pointer>(
                                    std::declval<OtherPointer>()))>
-  explicit not_null(not_null<OtherPointer>&& other);
+  constexpr explicit not_null(not_null<OtherPointer>&& other);
 
   // Copy assigment operators.
   not_null& operator=(not_null const&) = default;
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
-  not_null& operator=(not_null<OtherPointer> const& other);
+  constexpr not_null& operator=(not_null<OtherPointer> const& other);
 
   // Move assignment operators.
   not_null& operator=(not_null&& other) = default;
@@ -218,7 +218,7 @@ class not_null final {
   template<typename OtherPointer,
            typename = typename std::enable_if<
                std::is_convertible<OtherPointer, pointer>::value>::type>
-  not_null& operator=(not_null<OtherPointer>&& other);
+  constexpr not_null& operator=(not_null<OtherPointer>&& other);
 
   // Returns |storage_.pointer|, by const reference to avoid a copy if |pointer|
   // is |unique_ptr|.
@@ -231,68 +231,68 @@ class not_null final {
   // GCC nevertheless incorrectly prefers |T&&| in that case, while clang and
   // MSVC recognize the ambiguity.
   // The |RValue| test gives two examples of this.
-  operator pointer const&&() const&;
+  constexpr operator pointer const&&() const&;
 
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
                !std::is_same<pointer, OtherPointer>::value &&
                !is_instance_of_not_null_v<OtherPointer>>>
-  operator OtherPointer() const&;
+  constexpr operator OtherPointer() const&;
 
   // Used to convert a |not_null<unique_ptr<>>| to |unique_ptr<>|.
-  operator pointer&&() &&;
+  constexpr operator pointer&&() &&;
 
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
                !is_instance_of_not_null_v<OtherPointer>>>
-  operator OtherPointer() &&;  // NOLINT(whitespace/operators)
+  constexpr operator OtherPointer() &&;  // NOLINT(whitespace/operators)
 
   // Returns |*storage_.pointer|.
-  std::add_lvalue_reference_t<element_type> operator*() const;
-  std::add_pointer_t<element_type> operator->() const;
+  constexpr std::add_lvalue_reference_t<element_type> operator*() const;
+  constexpr std::add_pointer_t<element_type> operator->() const;
 
   // When |pointer| has a |get()| member function, this returns
   // |storage_.pointer.get()|.
   template<typename P = pointer, typename = decltype(std::declval<P>().get())>
-  not_null<decltype(std::declval<P>().get())> get() const;
+  constexpr not_null<decltype(std::declval<P>().get())> get() const;
 
   // When |pointer| has a |release()| member function, this returns
   // |storage_.pointer.release()|.  May invalidate its argument.
   template<typename P = pointer,
            typename = decltype(std::declval<P>().release())>
-  not_null<decltype(std::declval<P>().release())> release();
+  constexpr not_null<decltype(std::declval<P>().release())> release();
 
   // When |pointer| has a |reset()| member function, this calls
   // |storage_.pointer.reset()|.
   template<typename Q,
            typename P = pointer,
            typename = decltype(std::declval<P>().reset())>
-  void reset(not_null<Q> ptr);
+  constexpr void reset(not_null<Q> ptr);
 
   // The following operators are redundant for valid |not_null<Pointer>|s with
   // the implicit conversion to |pointer|, but they should allow some
   // optimization.
 
   // Returns |false|.
-  bool operator==(std::nullptr_t other) const;
+  constexpr bool operator==(std::nullptr_t other) const;
   // Returns |true|.
-  bool operator!=(std::nullptr_t other) const;
+  constexpr bool operator!=(std::nullptr_t other) const;
   // Returns |true|.
-  operator bool() const;
+  constexpr operator bool() const;
 
   // Equality.
-  bool operator==(pointer other) const;
-  bool operator==(not_null other) const;
-  bool operator!=(pointer other) const;
-  bool operator!=(not_null other) const;
+  constexpr bool operator==(pointer other) const;
+  constexpr bool operator==(not_null other) const;
+  constexpr bool operator!=(pointer other) const;
+  constexpr bool operator!=(not_null other) const;
 
   // Ordering.
-  bool operator<(not_null other) const;
-  bool operator<=(not_null other) const;
-  bool operator>=(not_null other) const;
-  bool operator>(not_null other) const;
+  constexpr bool operator<(not_null other) const;
+  constexpr bool operator<=(not_null other) const;
+  constexpr bool operator>=(not_null other) const;
+  constexpr bool operator>(not_null other) const;
 
  private:
   struct unchecked_tag final {};
@@ -300,7 +300,7 @@ class not_null final {
   // Creates a |not_null<Pointer>| whose |storage_.pointer| equals the given
   // |pointer|, dawg.  The constructor does *not* perform a null check.  Callers
   // must perform one if needed before using it.
-  explicit not_null(pointer other, unchecked_tag tag);
+  constexpr explicit not_null(pointer other, unchecked_tag tag);
 
   NotNullStorage<Pointer> storage_;
 
