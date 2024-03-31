@@ -266,8 +266,10 @@ TEST_P(PluginCompatibilityTest, Reach) {
   std::span const first_10_flybys(flybys.begin(), 10);
   std::span const subsequent_flybys(flybys.begin() + 10, flybys.end());
 #else  // TODO(egg): Remove when clang really has C++23.
-  std::vector const first_10_flybys(flybys.begin(), flybys.begin() + 10);
-  std::vector const subsequent_flybys(flybys.begin() + 10, flybys.end());
+  std::vector<std::pair<Instant, std::string>> const first_10_flybys(
+      flybys.begin(), flybys.begin() + 10);
+  std::vector<std::pair<Instant, std::string>> const subsequent_flybys(
+      flybys.begin() + 10, flybys.end());
 #endif
   EXPECT_THAT(
       first_10_flybys,
