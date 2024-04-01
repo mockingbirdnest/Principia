@@ -224,7 +224,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
           /*declination_of_pole=*/π / 2 * Radian));
 
   // The apsides do not oscillate in altitude because of the ill-conditioning,
-  // so we give up.
+  // so we give up.  This used to fail, see #3925.
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
                                                    vessel_trajectory,

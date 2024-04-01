@@ -6,7 +6,6 @@
 #include <optional>
 #include <vector>
 
-#include "absl/strings/str_cat.h"
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
