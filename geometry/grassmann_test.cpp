@@ -71,7 +71,7 @@ class GrassmannTest : public testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-protected:
+ protected:
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
                                                 0 * Metre};
