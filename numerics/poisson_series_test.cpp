@@ -387,6 +387,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                 RelativeErrorFrom(+2.0267451184776034270e-11,
                                   AnyOf(IsNear(0.316_(1)),     // Windows.
                                         IsNear(0.318_(1)),     // Windows.
+                                        IsNear(0.372_(1)),     // Ubuntu.
                                         IsNear(0.274_(1)))));  // macOS.
   }
   {
@@ -596,7 +597,8 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                 RelativeErrorFrom(expected_product,
                                   AnyOf(IsNear(0.000576_(1)),    // Windows.
                                         IsNear(0.00124_(1)),     // Windows.
-                                        IsNear(0.00116_(1)))));  // Ubuntu.
+                                        IsNear(0.00116_(1)),     // Ubuntu.
+                                        IsNear(0.00131_(1)))));  // macOS.
   }
   // This test demonstrates how bad Integrate can be, for products that arise in
   // practice.  Exact integration of the result of PointwiseInnerProduct yields
