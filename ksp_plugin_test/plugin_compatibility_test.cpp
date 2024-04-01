@@ -87,28 +87,23 @@ class PluginCompatibilityTest
 
   static void WriteAndReadBack(
       not_null<std::unique_ptr<Plugin const>> plugin1) {
-    // Write the plugin to a new file with the preferred format.
-    WritePluginToFile(
-        TEMP_DIR /
-            absl::StrCat(
-                testing::UnitTest::GetInstance()->current_test_info()->name(),
-                "_serialized_plugin.proto.b64"),
-        preferred_compressor,
-        preferred_encoder,
-        std::move(plugin1));
-
-    // Read the plugin from the new file to make sure that it's fine.  Note that
-    // there may be solidi in the path due to parameterized tests, so we remove
+    // There may be solidi in the path due to parameterized tests, so we remove
     // them.
-    auto plugin2 = ReadPluginFromFile(
-        TEMP_DIR /
-            absl::StrCat(absl::StrReplaceAll(testing::UnitTest::GetInstance()
-                                                 ->current_test_info()
-                                                 ->name(),
-                                             {{"/", "__"}}),
-                         "_serialized_plugin.proto.b64"),
-        preferred_compressor,
-        preferred_encoder);
+    std::string const sanitized_name = absl::StrCat(
+        absl::StrReplaceAll(
+            testing::UnitTest::GetInstance()->current_test_info()->name(),
+            {{"/", "__"}}),
+        "_serialized_plugin.proto.b64");
+    // Write the plugin to a new file with the preferred format.
+    WritePluginToFile(TEMP_DIR / sanitized_name,
+                      preferred_compressor,
+                      preferred_encoder,
+                      std::move(plugin1));
+
+    // Read the plugin from the new file to make sure that it's fine.
+    auto plugin2 = ReadPluginFromFile(TEMP_DIR / sanitized_name,
+                                      preferred_compressor,
+                                      preferred_encoder);
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
