@@ -20,6 +20,7 @@
 #include "quantities/uk.hpp"
 #include "testing_utilities/algebra.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 
 namespace principia {
 namespace geometry {
@@ -64,12 +65,13 @@ struct TransparentWedge final {
 };
 
 class GrassmannTest : public testing::Test {
- protected:
+ public:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
+protected:
   R3Element<Length> const null_displacement_ = {0 * Metre,
                                                 0 * Metre,
                                                 0 * Metre};
@@ -290,15 +292,32 @@ TEST_F(GrassmannTest, Normalize) {
   EXPECT_THAT(Normalize(u), Eq(Trivector<double, World>(-1)));
 }
 
-// Uncomment to check that non-serializable frames are detected at compile-time.
-#if 0
-TEST_F(GrassmannTest, SerializationCompilationError) {
-  using F = Frame<struct FrameTag>;
-  Vector<Length, F> v;
-  serialization::Multivector message;
-  v.WriteToMessage(&message);
-}
-#endif
+// Check that non-serializable frames are detected at compile-time.
+
+using F = Frame<struct FrameTag>;
+
+PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
+                            WITH<Vector<Length, GrassmannTest::World>> v,
+                            WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_ILL_FORMED(v.WriteToMessage(&message),
+                           WITH<Vector<Length, F>> v,
+                           WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_ILL_FORMED(v.WriteToMessage(&message),
+                           WITH<Bivector<Length, F>> v,
+                           WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_ILL_FORMED(v.WriteToMessage(&message),
+                           WITH<Trivector<Length, F>> v,
+                           WITH<serialization::Multivector> message);
+
+PRINCIPIA_CHECK_WELL_FORMED(
+    (Vector<Length, GrassmannTest::World>::ReadFromMessage(message)),
+    WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_ILL_FORMED((Vector<Length, F>::ReadFromMessage(message)),
+                           WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_ILL_FORMED((Bivector<Length, F>::ReadFromMessage(message)),
+                           WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_ILL_FORMED((Trivector<Length, F>::ReadFromMessage(message)),
+                           WITH<serialization::Multivector> message);
 
 TEST_F(GrassmannDeathTest, SerializationError) {
   using V = Vector<Length, World>;

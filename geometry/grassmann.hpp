@@ -59,7 +59,8 @@ class Multivector<Scalar, Frame, 1> final {
       Multivector<S, Frame, 1> const& multivector) const;
 
   void WriteToMessage(
-      not_null<serialization::Multivector*> message) const;
+      not_null<serialization::Multivector*> message) const
+    requires serializable<Frame>;
   static Multivector ReadFromMessage(serialization::Multivector const& message)
     requires serializable<Frame>;
 
@@ -96,7 +97,8 @@ class Multivector<Scalar, Frame, 2> final {
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 2> const& multivector) const;
 
-  void WriteToMessage(not_null<serialization::Multivector*> message) const;
+  void WriteToMessage(not_null<serialization::Multivector*> message) const
+    requires serializable<Frame>;
   static Multivector ReadFromMessage(serialization::Multivector const& message)
     requires serializable<Frame>;
 
@@ -129,7 +131,8 @@ class Multivector<Scalar, Frame, 3> final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  void WriteToMessage(not_null<serialization::Multivector*> message) const;
+  void WriteToMessage(not_null<serialization::Multivector*> message) const
+    requires serializable<Frame>;
   static Multivector ReadFromMessage(serialization::Multivector const& message)
     requires serializable<Frame>;
 

@@ -16,6 +16,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 #include "testing_utilities/matchers.hpp"
 
 #define PRINCIPIA_USE_IACA 0
@@ -42,7 +43,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 
 class PolynomialInMonomialBasisTest : public ::testing::Test {
- protected:
+ public:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
                       Handedness::Right,
@@ -53,6 +54,7 @@ class PolynomialInMonomialBasisTest : public ::testing::Test {
   using P2P = PolynomialInMonomialBasis<Position<World>, Instant, 2>;
   using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17>;
 
+ protected:
   PolynomialInMonomialBasisTest()
       : coefficients_({
             Displacement<World>({0 * Metre,
@@ -146,12 +148,12 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
-
-  // This doesn't compile (and rightly so).
-#if 0
-  p.Primitive();
-#endif
 }
+
+PRINCIPIA_CHECK_WELL_FORMED(p.Primitive(),
+                            WITH<PolynomialInMonomialBasisTest::P2A> p);
+PRINCIPIA_CHECK_ILL_FORMED(p.Primitive(),
+                           WITH<PolynomialInMonomialBasisTest::P2P> p);
 
 // Check that a polynomial of high order may be declared.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate17) {
