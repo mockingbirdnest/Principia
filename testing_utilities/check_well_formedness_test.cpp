@@ -1,6 +1,7 @@
 #include "testing_utilities/check_well_formedness.hpp"
 
 #include <string>
+#include <utility>
 
 PRINCIPIA_CHECK_ILL_FORMED(s + 3, WITH<std::string> s);
 PRINCIPIA_CHECK_ILL_FORMED(s + "3", WITH<std::pair<double, double>> s);
