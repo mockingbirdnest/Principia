@@ -97,12 +97,16 @@ class PluginCompatibilityTest
         preferred_encoder,
         std::move(plugin1));
 
-    // Read the plugin from the new file to make sure that it's fine.
+    // Read the plugin from the new file to make sure that it's fine.  Note that
+    // there may be solidi in the path due to parameterized tests, so we remove
+    // them.
     auto plugin2 = ReadPluginFromFile(
         TEMP_DIR /
-            absl::StrCat(
-                testing::UnitTest::GetInstance()->current_test_info()->name(),
-                "_serialized_plugin.proto.b64"),
+            absl::StrCat(absl::StrReplaceAll(testing::UnitTest::GetInstance()
+                                                 ->current_test_info()
+                                                 ->name(),
+                                             {{"/", "__"}}),
+                         "_serialized_plugin.proto.b64"),
         preferred_compressor,
         preferred_encoder);
   }

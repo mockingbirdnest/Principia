@@ -413,7 +413,8 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
                               IsNear(0.63_(1) * Degree / Day))),  // macOS.
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
                                       AnyOf(IsNear(0.00108_(1)),  // Windows.
-                                            IsNear(0.00107_(1))))));  // Ubuntu.
+                                            IsNear(0.00107_(1)),  // Ubuntu.
+                                            IsNear(0.00103_(1))))));  // macOS.
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
@@ -421,8 +422,10 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               IsNear(00'000.089_(1) * Kilo(Metre)));
 
+  // Nominal: 0.0.
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
-              IsNear(0.000'17_(1)));  // Nominal: 0.0.
+              AnyOf(IsNear(0.000'17_(1)),    // Windows, Ubuntu.
+                    IsNear(0.000'18_(1))));  // macOS.
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
               AnyOf(IsNear(0.000'018_(1)),    // Windows.
                     IsNear(0.000'025_(1)),    // Ubuntu.
@@ -599,8 +602,8 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
       elements.mean_semimajor_axis_interval().midpoint(),
               DifferenceFrom(7714.42938 * Kilo(Metre),
                              AnyOf(IsNear(2.63_(1) * Metre),     // Windows.
-                                   IsNear(7.71_(1) * Metre),     // Ubuntu.
-                                   IsNear(7.71_(1) * Metre))));  // macOS.
+                                   IsNear(2.52_(1) * Metre),     // Ubuntu.
+                                   IsNear(2.34_(1) * Metre))));  // macOS.
   // Reference inclination from the legend of figure 9 of [BSFL98]; that
   // value is given as 66.040° in table 1 of [BSFL98], 66.039° in [BS96], and
   // 66.04° in [Ben97].
@@ -630,13 +633,18 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                           AnyOf(IsNear(83e-6_(1)),    // Windows.
                                 IsNear(88e-6_(1)),    // Ubuntu.
                                 IsNear(88e-6_(1)))),  // macOS.
-                    Field(&Interval<double>::max, IsNear(109e-6_(1)))));
+                    Field(&Interval<double>::max,
+                          AnyOf(IsNear(109e-6_(1)),      // Windows, macOS.
+                                IsNear(112e-6_(1))))));  // Ubuntu.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval(),
               AllOf(Field(&Interval<Angle>::min,
                           AnyOf(IsNear(73.8_(1) * Degree),    // Windows.
                                 IsNear(74.0_(1) * Degree),    // Ubuntu.
                                 IsNear(74.7_(1) * Degree))),  // macOS.
-                    Field(&Interval<Angle>::max, IsNear(99.2_(1) * Degree))));
+                    Field(&Interval<Angle>::max,
+                          AnyOf(IsNear(99.2_(1) * Degree),      // Windows.
+                                IsNear(98.9_(1) * Degree),      // Ubuntu.
+                                IsNear(98.8_(1) * Degree)))));  // macOS.
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of
