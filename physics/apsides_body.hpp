@@ -120,6 +120,11 @@ void ComputeApsides(Trajectory<Frame> const& reference,
         apsis_time = Barycentre({time, *previous_time},
                                 {*previous_squared_distance_derivative,
                                  -squared_distance_derivative});
+        // This happens if |*previous_squared_distance_derivative| is 0.  It is
+        // indicative of ill-conditioning, but not in and of itself a problem.
+        LOG_IF(WARNING, apsis_time == previous_time)
+            << "Suspicious apsis at the beginning of a time interval: "
+            << apsis_time;
       }
 
       // This can happen for instance if the square distance is stationary.
@@ -206,17 +211,58 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     }
   }
 
+  // Verify that the apoapsides and periapsides alternate in distance from the
+  // centre.  This is a critical assumption made by the algorithm below.  If
+  // they don't, just give up.
+  {
+    bool at_apoapsis = false;
+    bool at_periapsis = false;
+    bool is_anomalous = false;
+
+    auto it = apsides_times.begin();
+    Square<Length> distance = squared_distance_from_centre(*it);
+    Square<Length> previous_distance;
+
+    for (++it; it != apsides_times.end(); ++it) {
+      previous_distance = distance;
+      distance = squared_distance_from_centre(*it);
+      if (previous_distance < distance) {
+        if (at_apoapsis) {
+          is_anomalous = true;
+          break;
+        }
+        at_apoapsis = true;
+        at_periapsis = false;
+      } else if (distance < previous_distance) {
+        if (at_periapsis) {
+          is_anomalous = true;
+          break;
+        }
+        at_apoapsis = false;
+        at_periapsis = true;
+      } else {  // distance == previous_distance
+        is_anomalous = true;
+        break;
+      }
+    }
+    if (is_anomalous) {
+      LOG(WARNING) << "Anomalous apsides, not computing collisions";
+      return {};
+    }
+  }
+
   std::vector<Interval<Instant>> intervals;
   for (; it != apsides_times.end(); previous_it = it, ++it) {
     // Here |it| designates a periapsis, and |previous_it| the previous
-    // apoapsis, if any.
+    // apoapsis, or is past-the-end if there is no previous apoapsis (only the
+    // first time through the outer loop).
     Instant const periapsis_time = *it;
 
     // No collision is possible if the periapsis is above |max_radius|.
     if (squared_distance_from_centre(periapsis_time) < max_radius²) {
       Interval<Instant> interval;
       if (previous_it == apsides_times.end()) {
-        // No previous periapsis can only happen the first time through the
+        // No previous apoapsis can only happen the first time through the outer
         // loop.
         CHECK_EQ(periapsis_time, trajectory.t_min());
         interval.min = periapsis_time;
@@ -242,20 +288,24 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
           interval.min = apoapsis_time;
         }
       }
+      // Here |interval.min| has been computed and is the time where the
+      // trajectory descends below |max_radius|.
 
       // Loop until we find an apoapsis above |max_radius|, or we reach the end
-      // of |apsides_time|.  When entering this loop |it| denotes a periapsis
-      // and |previous_it| the preceding apoapsis, if any.
+      // of |apsides_time|.
       do {
+        // Here |it| denotes a periapsis below |max_radius| and |previous_it|
+        // the preceding apoapsis or is past-the-end if there is no previous
+        // apoapsis (only the first time through the outer and inner loops).
         Instant const periapsis_time = *it;
         previous_it = it;
         ++it;
+
+        // Here |it| denotes an apoapsis or is past-the-end.  |previous_it| is
+        // the previous periapsis, which is below |max_radius|.
         if (it == apsides_times.end()) {
-          interval.max = periapsis_time;
           break;
         }
-        // Here |it| designates an apoapsis, and |previous_it| the previous
-        // periapsis.
         Instant const apoapsis_time = *it;
         CHECK_LE(periapsis_time, apoapsis_time);
 
@@ -272,29 +322,44 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
           break;
         }
 
-        // Fill the end of the interval with the current apoapsis time.  This
-        // will yield the right value if we reach the end of |apsides_times| in
-        // the while below.
-        interval.max = apoapsis_time;
         previous_it = it;
         ++it;
+
+        // Here |it| denotes a periapsis or is past-the end.  |previous_it| is
+        // the previous apoapsis, which is below |max_radius|.  Therefore, the
+        // periapsis denoted by |it| is below |max_radius|.
       } while (it != apsides_times.end());
 
-      intervals.push_back(interval);
-
       if (it == apsides_times.end()) {
+        // If we reach the end of the set, the last element, denoted by
+        // |previous_it|, may be a periapsis (first break in the loop above) or
+        // an apoapsis (while condition).  In both cases, |previous_it| denotes
+        // the extremity of the trajectory.
+        interval.max = *previous_it;
+        intervals.push_back(interval);
         break;
       }
 
-      // The outer loop increment will move us to the periapsis right after the
-      // apoapsis that we used to compute |interval.max| using Brent.
+      // |interval.max| has been computed using Brent (second break in the loop
+      // above).
+      intervals.push_back(interval);
+
+      // Here |it| designates an apoapsis above |max_radius|.  |previous_it| is
+      // the previous periapsis, which is below |max_radius|.  The outer loop
+      // increment moves |previous_it| to denote the apoapsis and |it| to denote
+      // the next periapsis or to be past-the-end.
     } else {
-      // Go to the next pair periapsis, apoapsis (in this order).
+      // Here |it| designates a periapsis above |max_radius|, and |previous_it|
+      // the previous apoapsis, or is past-the-end if there is no previous
+      // apoapsis (only the first time through the outer loop).
       previous_it = it;
       ++it;
+      // Here |it| denotes an apoapsis or is past-the-end.  |previous_it| is
+      // the previous periapsis, which is above |max_radius|.  Therefore, the
+      // apoapsis denoted by |it| is above |max_radius|.
       if (it == apsides_times.end()) {
         // Reached the end of |apsides_times| with a periapsis above
-        // |max_radius|.
+        // |max_radius|.  No interval to produce.
         break;
       }
     }

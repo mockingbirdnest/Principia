@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,12 +37,14 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
+#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
 
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
@@ -72,6 +75,7 @@ using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_string_log_sink;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -175,6 +179,64 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     previous_time = time;
     previous_position = position;
   }
+}
+
+TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
+  Instant const t0;
+  Instant const t1 = t0 + 1e-15 * Second;
+  Instant const t2 = t1 + 3 * Second;
+  Time const Δt = 1.0 / 128.0 * Second;
+
+  DiscreteTrajectory<World> reference_trajectory;
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewMotionlessTrajectoryTimeline(World::origin, Δt, t1, t2),
+      reference_trajectory);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(/*period=*/1 * Second,
+                                           /*r=*/1 * Metre,
+                                           Δt,
+                                           t1,
+                                           t2),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(reference_trajectory,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_points=*/10,
+                 apoapsides,
+                 periapsides);
+
+  // This is a "suspicious" apsis, located at the beginning of a time interval,
+  // because the circular trajectory leads to ill-conditioning.
+  auto it = apoapsides.begin();
+  EXPECT_THAT(it->time, AlmostEquals(t1 + 4 * Δt, 0));
+
+  RotatingBody<World> const body(
+      1 * Kilogram,
+      RotatingBody<World>::Parameters(
+          /*min_radius=*/1 * Metre,
+          /*mean_radius=*/1 * Metre,
+          /*max_radius=*/1 * Metre,
+          /*reference_angle=*/0 * Radian,
+          /*reference_instant=*/t0,
+          /*angular_frequency=*/2 * π * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Radian,
+          /*declination_of_pole=*/π / 2 * Radian));
+
+  // The apsides do not oscillate in altitude because of the ill-conditioning,
+  // so we give up.  This used to fail, see #3925.
+  StringLogSink log_warning(google::WARNING);
+  const auto intervals = ComputeCollisionIntervals(body,
+                                                   reference_trajectory,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals, IsEmpty());
+  EXPECT_THAT(log_warning.string(), HasSubstr("Anomalous apsides"));
 }
 
 #endif
