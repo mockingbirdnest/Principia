@@ -121,6 +121,11 @@ void ComputeApsides(Trajectory<Frame> const& reference,
         apsis_time = Barycentre({time, *previous_time},
                                 {*previous_squared_distance_derivative,
                                  -squared_distance_derivative});
+        // This happens if |*previous_squared_distance_derivative| is 0.  It is
+        // indicative of ill-conditioning, but not in and of itself a problem.
+        LOG_IF(WARNING, apsis_time == previous_time)
+            << "Suspicious apsis at the beginning of a time interval: "
+            << apsis_time;
       }
 
       // This can happen for instance if the square distance is stationary.
@@ -207,6 +212,9 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     }
   }
 
+  // Verify that the apoapsides and periapsides alternate in distance from the
+  // centre.  This is a critical assumption made by the algorithm below.  If
+  // they don't, just give up.
   {
     bool at_apoapsis = false;
     bool at_periapsis = false;
@@ -216,39 +224,30 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     Square<Length> distance = squared_distance_from_centre(*it);
     Square<Length> previous_distance;
 
-    for (;;) {
-      ++it;
-      if (it == apsides_times.end()) {
-        break;
-      }
+    for (++it; it != apsides_times.end(); ++it) {
       previous_distance = distance;
       distance = squared_distance_from_centre(*it);
-      if (previous_distance <= distance) {
+      if (previous_distance < distance) {
         if (at_apoapsis) {
           is_anomalous = true;
           break;
         }
         at_apoapsis = true;
         at_periapsis = false;
-      } else {
+      } else if (distance < previous_distance) {
         if (at_periapsis) {
           is_anomalous = true;
           break;
         }
         at_apoapsis = false;
         at_periapsis = true;
+      } else {  // distance == previous_distance
+        is_anomalous = true;
+        break;
       }
     }
     if (is_anomalous) {
-      std::string message;
-      for (const auto t : apsides_times) {
-        absl::StrAppend(&message,
-                        "Time: ",
-                        DebugString(t),
-                        "Distance: ",
-                        DebugString(squared_distance_from_centre(t)));
-      }
-      LOG(FATAL) << message;
+      return {};
     }
   }
 

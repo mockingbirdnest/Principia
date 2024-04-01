@@ -177,6 +177,62 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   }
 }
 
+TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
+  Instant const t0;
+  Instant const t1 = t0 + 1e-15 * Second;
+  Instant const t2 = t1 + 3 * Second;
+  Time const Δt = 1.0 / 128.0 * Second;
+
+  DiscreteTrajectory<World> reference_trajectory;
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewMotionlessTrajectoryTimeline(World::origin, Δt, t1, t2),
+      reference_trajectory);
+  AppendTrajectoryTimeline(
+      NewCircularTrajectoryTimeline<World>(/*period=*/1 * Second,
+                                           /*r=*/1 * Metre,
+                                           Δt,
+                                           t1,
+                                           t2),
+      vessel_trajectory);
+
+  DiscreteTrajectory<World> apoapsides;
+  DiscreteTrajectory<World> periapsides;
+  ComputeApsides(reference_trajectory,
+                 vessel_trajectory,
+                 vessel_trajectory.begin(),
+                 vessel_trajectory.end(),
+                 /*max_points=*/10,
+                 apoapsides,
+                 periapsides);
+
+  // This is a "suspicious" apsis, located at the beginning of a time interval,
+  // because the circular trajectory leads to ill-conditioning.
+  auto it = apoapsides.begin();
+  EXPECT_THAT(it->time, AlmostEquals(t1 + 4 * Δt, 0));
+
+  RotatingBody<World> const body(
+      1 * Kilogram,
+      RotatingBody<World>::Parameters(
+          /*min_radius=*/1 * Metre,
+          /*mean_radius=*/1 * Metre,
+          /*max_radius=*/1 * Metre,
+          /*reference_angle=*/0 * Radian,
+          /*reference_instant=*/t0,
+          /*angular_frequency=*/2 * π * Radian / Second,
+          /*right_ascension_of_pole=*/0 * Radian,
+          /*declination_of_pole=*/π / 2 * Radian));
+
+  // The apsides do not oscillate in altitude because of the ill-conditioning,
+  // so we give up.
+  const auto intervals = ComputeCollisionIntervals(body,
+                                                   reference_trajectory,
+                                                   vessel_trajectory,
+                                                   apoapsides,
+                                                   periapsides);
+  EXPECT_THAT(intervals, IsEmpty());
+}
+
 #endif
 
 TEST_F(ApsidesTest, ComputeFirstCollision) {
