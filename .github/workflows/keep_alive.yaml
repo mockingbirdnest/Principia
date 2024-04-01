@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   start:
+    if: github.repository == 'mockingbirdnest/Principia'
     runs-on: windows-latest
     steps:
     - name: Start runners
