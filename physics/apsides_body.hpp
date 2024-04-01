@@ -246,6 +246,7 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
       }
     }
     if (is_anomalous) {
+      LOG(WARNING) << "Anomalous apsides, not computing collisions";
       return {};
     }
   }

@@ -36,12 +36,14 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
+#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
 
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
@@ -72,6 +74,7 @@ using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_string_log_sink;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -225,12 +228,14 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
 
   // The apsides do not oscillate in altitude because of the ill-conditioning,
   // so we give up.  This used to fail, see #3925.
+  StringLogSink log_warning(google::WARNING);
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
                                                    vessel_trajectory,
                                                    apoapsides,
                                                    periapsides);
   EXPECT_THAT(intervals, IsEmpty());
+  EXPECT_THAT(log_warning.string(), HasSubstr("Anomalous apsides"));
 }
 
 #endif
