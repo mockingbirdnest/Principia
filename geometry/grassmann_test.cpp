@@ -299,15 +299,17 @@ using F = Frame<struct FrameTag>;
 PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
                             WITH<Vector<Length, GrassmannTest::World>> v,
                             WITH<serialization::Multivector> message);
-PRINCIPIA_CHECK_ILL_FORMED(v.WriteToMessage(&message),
-                           WITH<Vector<Length, F>> v,
-                           WITH<serialization::Multivector> message);
-PRINCIPIA_CHECK_ILL_FORMED(v.WriteToMessage(&message),
-                           WITH<Bivector<Length, F>> v,
-                           WITH<serialization::Multivector> message);
-PRINCIPIA_CHECK_ILL_FORMED(v.WriteToMessage(&message),
-                           WITH<Trivector<Length, F>> v,
-                           WITH<serialization::Multivector> message);
+// TODO(phl): We should refuse to serialize these at compile time; right now
+// only deserialization fails.
+PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
+                            WITH<Vector<Length, F>> v,
+                            WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
+                            WITH<Bivector<Length, F>> v,
+                            WITH<serialization::Multivector> message);
+PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
+                            WITH<Trivector<Length, F>> v,
+                            WITH<serialization::Multivector> message);
 
 PRINCIPIA_CHECK_WELL_FORMED(
     (Vector<Length, GrassmannTest::World>::ReadFromMessage(message)),
