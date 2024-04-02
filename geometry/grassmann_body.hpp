@@ -179,24 +179,21 @@ Multivector<Scalar, Frame, 2>::OrthogonalizationAgainst(
 
 template<quantity Scalar, typename Frame>
 void Multivector<Scalar, Frame, 1>::WriteToMessage(
-    not_null<serialization::Multivector*> const message) const
-  requires serializable<Frame> {
+      not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
   coordinates_.WriteToMessage(message->mutable_vector());
 }
 
 template<quantity Scalar, typename Frame>
 void Multivector<Scalar, Frame, 2>::WriteToMessage(
-    not_null<serialization::Multivector*> const message) const
-  requires serializable<Frame> {
+      not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
   coordinates_.WriteToMessage(message->mutable_bivector());
 }
 
 template<quantity Scalar, typename Frame>
 void Multivector<Scalar, Frame, 3>::WriteToMessage(
-    not_null<serialization::Multivector*> const message) const
-  requires serializable<Frame> {
+      not_null<serialization::Multivector*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
   coordinates_.WriteToMessage(message->mutable_trivector());
 }
