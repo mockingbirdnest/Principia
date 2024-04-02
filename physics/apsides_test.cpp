@@ -213,7 +213,9 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
   // This is a "suspicious" apsis, located at the beginning of a time interval,
   // because the circular trajectory leads to ill-conditioning.
   auto it = apoapsides.begin();
-  EXPECT_THAT(it->time, AlmostEquals(t1 + 4 * Δt, 0));
+  EXPECT_THAT(it->time,
+              AnyOf(AlmostEquals(t1 + 4 * Δt, 0),    // Windows, Ubuntu.
+                    AlmostEquals(t1 + 2 * Δt, 0)));  // macOS.
 
   RotatingBody<World> const body(
       1 * Kilogram,
