@@ -43,10 +43,7 @@ Instance::WriteToMessage(
 template<typename Method, typename ODE_>
 SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 SymplecticPartitionedRungeKuttaIntegrator() {
-  // TODO(phl): This might be turned into a static_assert.
-  if (first_same_as_last) {
-    CHECK_EQ(0.0, a_[stages_ - 1]);
-  }
+  static_assert(!first_same_as_last || a_[stages_ - 1] == 0.0);
   if (time_reversible) {
     CHECK(first_same_as_last);
     for (int i = 0; i < stages_ - 1; ++i) {

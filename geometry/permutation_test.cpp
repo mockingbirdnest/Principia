@@ -51,6 +51,26 @@ class PermutationTest : public testing::Test {
         bivector_({1 * Metre, 2 * Metre, 3 * Metre}),
         trivector_(4 * Metre) {}
 
+  template<typename Vector, typename LPermutations, typename RPermutations>
+  void TestComposition(LPermutations const& lhs, RPermutations const& rhs) {
+    for (auto const& left : lhs) {
+      for (auto const& right : rhs) {
+        auto const composition = left * right;
+        auto const composition_as_orthogonal_maps =
+            left.template Forget<OrthogonalMap>() *
+            right.template Forget<OrthogonalMap>();
+        for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
+          Vector const modified_vector(
+              {l, vector_.coordinates().y, vector_.coordinates().z});
+          EXPECT_THAT(
+              composition(modified_vector),
+              AlmostEquals(
+                  composition_as_orthogonal_maps(modified_vector), 0, 12));
+        }
+      }
+    }
+  }
+
   Vector<Length, R1> const vector_;
   Bivector<Length, R1> const bivector_;
   Trivector<Length, R1> const trivector_;
@@ -202,33 +222,11 @@ TEST_F(PermutationTest, Compose) {
   std::array<Perm2L, 3> const all_2l = {Perm2L(OddPermutation::XZY),
                                         Perm2L(OddPermutation::ZYX),
                                         Perm2L(OddPermutation::YXZ)};
-  auto const test_composition_for = [&](auto const& lhs,
-                                        auto const& rhs,
-                                        auto const from_vector) {
-    for (auto const& left : lhs) {
-      for (auto const& right : rhs) {
-        auto const composition = left * right;
-        auto const composition_as_orthogonal_maps =
-            left.template Forget<OrthogonalMap>() *
-            right.template Forget<OrthogonalMap>();
-        for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
-          // TODO(egg): In C++20 we could have template parameters on the lambda
-          // which would allow us to deduce this type, instead of having to pass
-          // an otherwise unused value which we feed to the decltype.
-          decltype(from_vector) const modified_vector(
-              {l, vector_.coordinates().y, vector_.coordinates().z});
-          EXPECT_THAT(
-              composition(modified_vector),
-              AlmostEquals(
-                  composition_as_orthogonal_maps(modified_vector), 0, 12));
-        }
-      }
-    }
-  };
-  test_composition_for(all_21, all_12, Vector<Length, R1>{});
-  test_composition_for(all_2l, all_12, Vector<Length, R1>{});
-  test_composition_for(all_21, all_l2, Vector<Length, L>{});
-  test_composition_for(all_2l, all_l2, Vector<Length, L>{});
+
+  TestComposition<Vector<Length, R1>>(all_21, all_12);
+  TestComposition<Vector<Length, R1>>(all_2l, all_12);
+  TestComposition<Vector<Length, L>>(all_21, all_l2);
+  TestComposition<Vector<Length, L>>(all_2l, all_l2);
 }
 
 TEST_F(PermutationDeathTest, SerializationError) {
