@@ -10,9 +10,7 @@ namespace base {
 #define STRINGIFY_EXPANSION(X) STRINGIFY(X)
 
 // See http://goo.gl/2EVxN4 for a partial overview of compiler detection and
-// version macros.  We cannot use |COMPILER_MSVC| because it conflicts with
-// a macro in the benchmark library, so the macros have obnoxiously long names.
-// TODO(phl): See whether that |COMPILER_MSVC| macro can be removed from port.h.
+// version macros.
 #if defined(_MSC_VER) && defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG_CL 1
 #define PRINCIPIA_VECTORCALL
