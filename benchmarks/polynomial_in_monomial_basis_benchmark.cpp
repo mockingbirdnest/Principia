@@ -6,6 +6,7 @@
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "glog/logging.h"
@@ -19,10 +20,12 @@ namespace numerics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
@@ -87,10 +90,109 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   auto argument = min;
   auto const Δargument = (max - min) * 1e-9;
 
-  for (auto _ : state) {
-    benchmark::DoNotOptimize(p(argument));
+#if 0
+  while (state.KeepRunningBatch(10)) {
+    auto const a0 = p(argument);
     argument += Δargument;
+    auto const a1 = p(argument);
+    argument += Δargument;
+    auto const a2 = p(argument);
+    argument += Δargument;
+    auto const a3 = p(argument);
+    argument += Δargument;
+    auto const a4 = p(argument);
+    argument += Δargument;
+    auto const a5 = p(argument);
+    argument += Δargument;
+    auto const a6 = p(argument);
+    argument += Δargument;
+    auto const a7 = p(argument);
+    argument += Δargument;
+    auto const a8 = p(argument);
+    argument += Δargument;
+    auto const a9 = p(argument);
+    auto const s = a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9;
+    benchmark::DoNotOptimize(s);
   }
+#else
+  using H = Hilbert<Value>;
+  auto const scale = 1 / si::Unit<typename H::Norm²Type>;
+  while (state.KeepRunningBatch(10)) {
+#if 0
+    auto const a0 = p(argument);
+    argument += H::Norm²(a0) * scale * Δargument;
+    auto const a1 = p(argument);
+    argument += H::Norm²(a1) * scale * Δargument;
+    auto const a2 = p(argument);
+    argument += H::Norm²(a2) * scale * Δargument;
+    auto const a3 = p(argument);
+    argument += H::Norm²(a3) * scale * Δargument;
+    auto const a4 = p(argument);
+    argument += H::Norm²(a4) * scale * Δargument;
+    auto const a5 = p(argument);
+    argument += H::Norm²(a5) * scale * Δargument;
+    auto const a6 = p(argument);
+    argument += H::Norm²(a6) * scale * Δargument;
+    auto const a7 = p(argument);
+    argument += H::Norm²(a7) * scale * Δargument;
+    auto const a8 = p(argument);
+    argument += H::Norm²(a8) * scale * Δargument;
+    auto const a9 = p(argument);
+#elif 1
+    auto const a0 = p(argument);
+    benchmark::DoNotOptimize(a0);
+    argument += Δargument;
+    auto const a1 = p(argument);
+    benchmark::DoNotOptimize(a1);
+    argument += Δargument;
+    auto const a2 = p(argument);
+    benchmark::DoNotOptimize(a2);
+    argument += Δargument;
+    auto const a3 = p(argument);
+    benchmark::DoNotOptimize(a3);
+    argument += Δargument;
+    auto const a4 = p(argument);
+    benchmark::DoNotOptimize(a4);
+    argument += Δargument;
+    auto const a5 = p(argument);
+    benchmark::DoNotOptimize(a5);
+    argument += Δargument;
+    auto const a6 = p(argument);
+    benchmark::DoNotOptimize(a6);
+    argument += Δargument;
+    auto const a7 = p(argument);
+    benchmark::DoNotOptimize(a7);
+    argument += Δargument;
+    auto const a8 = p(argument);
+    benchmark::DoNotOptimize(a8);
+    argument += Δargument;
+    auto const a9 = p(argument);
+    benchmark::DoNotOptimize(a9);
+#else
+    auto const a0 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a0) * Δargument;
+    auto const a1 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a1) * Δargument;
+    auto const a2 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a2) * Δargument;
+    auto const a3 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a3) * Δargument;
+    auto const a4 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a4) * Δargument;
+    auto const a5 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a5) * Δargument;
+    auto const a6 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a6) * Δargument;
+    auto const a7 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a7) * Δargument;
+    auto const a8 = p(argument);
+    argument += *reinterpret_cast<double const*>(&a8) * Δargument;
+    auto const a9 = p(argument);
+    benchmark::DoNotOptimize(a9);
+#endif
+  }
+
+#endif
 }
 
 template<typename Value,
