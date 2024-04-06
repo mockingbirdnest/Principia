@@ -6,7 +6,7 @@
     <ItemsProjectGuid>{a82cb04c-42e1-4ebe-9816-6fc033a9c2b5}</ItemsProjectGuid>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="..\third_party_zfp.props" />
+    <Import Project="..\llnl_zfp.props" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
