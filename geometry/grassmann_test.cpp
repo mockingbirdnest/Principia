@@ -296,9 +296,10 @@ TEST_F(GrassmannTest, Normalize) {
 
 using F = Frame<struct FrameTag>;
 
-PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
-                            with_variable<Vector<Length, GrassmannTest::World>> v,
-                            with_variable<serialization::Multivector> message);
+PRINCIPIA_CHECK_WELL_FORMED(
+    v.WriteToMessage(&message),
+    with_variable<Vector<Length, GrassmannTest::World>> v,
+    with_variable<serialization::Multivector> message);
 // TODO(phl): We should refuse to serialize these at compile time; right now
 // only deserialization fails.
 PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),

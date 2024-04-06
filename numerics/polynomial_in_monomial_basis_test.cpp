@@ -150,8 +150,9 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
                                                0 * Metre / Second}), 0));
 }
 
-PRINCIPIA_CHECK_WELL_FORMED(p.Primitive(),
-                            with_variable<PolynomialInMonomialBasisTest::P2A> p);
+PRINCIPIA_CHECK_WELL_FORMED(
+    p.Primitive(),
+    with_variable<PolynomialInMonomialBasisTest::P2A> p);
 PRINCIPIA_CHECK_ILL_FORMED(p.Primitive(),
                            with_variable<PolynomialInMonomialBasisTest::P2P> p);
 
