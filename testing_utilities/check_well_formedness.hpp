@@ -9,7 +9,7 @@
                                         expected_well_formedness_description, \
                                         expression,                           \
                                         ...)                                  \
-  template<template<typename> typename WITH = std::type_identity_t>           \
+  template<template<typename> typename with_variable = std::type_identity_t>  \
   concept unique_concept_name = requires(__VA_ARGS__) { (expression); };      \
   static_assert(expected_well_formedness unique_concept_name<>,               \
                 "Expected\n  " #expression                                    \

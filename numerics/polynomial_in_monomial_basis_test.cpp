@@ -151,9 +151,9 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
 }
 
 PRINCIPIA_CHECK_WELL_FORMED(p.Primitive(),
-                            WITH<PolynomialInMonomialBasisTest::P2A> p);
+                            with_variable<PolynomialInMonomialBasisTest::P2A> p);
 PRINCIPIA_CHECK_ILL_FORMED(p.Primitive(),
-                           WITH<PolynomialInMonomialBasisTest::P2P> p);
+                           with_variable<PolynomialInMonomialBasisTest::P2P> p);
 
 // Check that a polynomial of high order may be declared.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate17) {

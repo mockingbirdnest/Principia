@@ -47,13 +47,13 @@ using FrameDeathTest = FrameTest;
 
 // Check that non-serializable frames are detected at compile-time.
 PRINCIPIA_CHECK_WELL_FORMED(FrameTest::World1::ReadFromMessage(message),
-                            WITH<serialization::Frame> message);
+                            with_variable<serialization::Frame> message);
 PRINCIPIA_CHECK_ILL_FORMED(FrameTest::F1::ReadFromMessage(message),
-                           WITH<serialization::Frame> message);
+                           with_variable<serialization::Frame> message);
 PRINCIPIA_CHECK_ILL_FORMED(FrameTest::F2::ReadFromMessage(message),
-                           WITH<serialization::Frame> message);
+                           with_variable<serialization::Frame> message);
 PRINCIPIA_CHECK_ILL_FORMED(FrameTest::F3::ReadFromMessage(message),
-                           WITH<serialization::Frame> message);
+                           with_variable<serialization::Frame> message);
 
 TEST_F(FrameDeathTest, SerializationError) {
   EXPECT_DEATH({

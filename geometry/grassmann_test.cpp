@@ -297,29 +297,29 @@ TEST_F(GrassmannTest, Normalize) {
 using F = Frame<struct FrameTag>;
 
 PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
-                            WITH<Vector<Length, GrassmannTest::World>> v,
-                            WITH<serialization::Multivector> message);
+                            with_variable<Vector<Length, GrassmannTest::World>> v,
+                            with_variable<serialization::Multivector> message);
 // TODO(phl): We should refuse to serialize these at compile time; right now
 // only deserialization fails.
 PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
-                            WITH<Vector<Length, F>> v,
-                            WITH<serialization::Multivector> message);
+                            with_variable<Vector<Length, F>> v,
+                            with_variable<serialization::Multivector> message);
 PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
-                            WITH<Bivector<Length, F>> v,
-                            WITH<serialization::Multivector> message);
+                            with_variable<Bivector<Length, F>> v,
+                            with_variable<serialization::Multivector> message);
 PRINCIPIA_CHECK_WELL_FORMED(v.WriteToMessage(&message),
-                            WITH<Trivector<Length, F>> v,
-                            WITH<serialization::Multivector> message);
+                            with_variable<Trivector<Length, F>> v,
+                            with_variable<serialization::Multivector> message);
 
 PRINCIPIA_CHECK_WELL_FORMED(
     (Vector<Length, GrassmannTest::World>::ReadFromMessage(message)),
-    WITH<serialization::Multivector> message);
+    with_variable<serialization::Multivector> message);
 PRINCIPIA_CHECK_ILL_FORMED((Vector<Length, F>::ReadFromMessage(message)),
-                           WITH<serialization::Multivector> message);
+                           with_variable<serialization::Multivector> message);
 PRINCIPIA_CHECK_ILL_FORMED((Bivector<Length, F>::ReadFromMessage(message)),
-                           WITH<serialization::Multivector> message);
+                           with_variable<serialization::Multivector> message);
 PRINCIPIA_CHECK_ILL_FORMED((Trivector<Length, F>::ReadFromMessage(message)),
-                           WITH<serialization::Multivector> message);
+                           with_variable<serialization::Multivector> message);
 
 TEST_F(GrassmannDeathTest, SerializationError) {
   using V = Vector<Length, World>;
