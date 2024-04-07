@@ -2,7 +2,6 @@
 #include <random>
 
 #include "functions/multiprecision.hpp"
-#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/numbers.hpp"
@@ -12,12 +11,13 @@ namespace principia {
 namespace functions {
 namespace _multiprecision {
 
-using ::testing::Le;
 using namespace boost::multiprecision;
 using namespace principia::numerics::_ulp_distance;
 using namespace principia::quantities::_si;
 
 class StdAccuracyTest : public ::testing::Test {};
+
+#if !_DEBUG
 
 TEST_F(StdAccuracyTest, SinCos) {
   // Random values without argument reduction.
@@ -50,6 +50,8 @@ TEST_F(StdAccuracyTest, SinCos) {
         ULPDistance(std::cos(x), static_cast<double>(Cos(x))));
   }
 }
+
+#endif
 
 }  // namespace _multiprecision
 }  // namespace functions

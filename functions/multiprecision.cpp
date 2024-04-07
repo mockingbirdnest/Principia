@@ -18,17 +18,13 @@ cpp_rational const two_π(
     "548");
 
 cpp_bin_float_50 Sin(cpp_rational const& α) {
-  auto const n = numerator(two_π);
-  auto const d = denominator(two_π);
-  auto const k = static_cast<cpp_int>(α * d / n);
+  auto const k = static_cast<cpp_int>(α / two_π);
   auto const α_mod_2π = α - k * two_π;
   return sin(static_cast<cpp_bin_float_50>(α_mod_2π));
 }
 
 cpp_bin_float_50 Cos(cpp_rational const& α) {
-  auto const n = numerator(two_π);
-  auto const d = denominator(two_π);
-  auto const k = static_cast<cpp_int>(α * d / n);
+  auto const k = static_cast<cpp_int>(α / two_π);
   auto const α_mod_2π = α - k * two_π;
   return cos(static_cast<cpp_bin_float_50>(α_mod_2π));
 }
