@@ -5,7 +5,8 @@ namespace functions {
 namespace _multiprecision {
 namespace internal {
 
-gmp_float<20> Sin(mpq_rational const& angle) {
+cpp_bin_float_50 Sin(cpp_rational const& angle) {
+  return static_cast<cpp_bin_float_50>(angle);
 }
 
 }  // namespace internal

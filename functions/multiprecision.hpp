@@ -1,6 +1,7 @@
 #pragma once
 
-#include "boost/multiprecision/gmp.hpp"
+#include "boost/multiprecision/cpp_bin_float.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 
 namespace principia {
 namespace functions {
@@ -9,7 +10,7 @@ namespace internal {
 
 using namespace boost::multiprecision;
 
-gmp_float<20> Sin(mpq_rational const& angle);
+cpp_bin_float_50 Sin(cpp_rational const& angle);
 
 }  // namespace internal
 
