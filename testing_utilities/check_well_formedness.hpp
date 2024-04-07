@@ -1,14 +1,12 @@
 #pragma once
 #include <type_traits>
 
-#include "base/macros.hpp"
-
 #define PRINCIPIA_EXPAND(...) __VA_ARGS__
 
 #define PRINCIPIA_CONCATENATE(s1, s2) s1##s2
 #define PRINCIPIA_CONCATENATE_EXPANSION(s1, s2) PRINCIPIA_CONCATENATE(s1, s2)
 
-#define PRINCIPIA_COMMA_IF_NONEMPTY(...) __VA_OPT__(,)
+#define PRINCIPIA_COMMA_IF_NONEMPTY(...) __VA_OPT__(,)  // NOLINT
 
 #define PRINCIPIA_CHECK_WELL_FORMEDNESS(unique_concept_name,                  \
                                         expected_well_formedness,             \
