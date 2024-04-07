@@ -5,8 +5,8 @@ namespace functions {
 namespace _multiprecision {
 namespace internal {
 
-// The designers of the Boost multiprecision library, in their wisdom, have
-// decided that nobody would use angle greater than about 1 / ε, so here I am,
+// The designers of the Boost multiprecision library, in their confusion, have
+// decided that nobody would use angles greater than about 1 / ε, so here I am,
 // using a 1000-bit rational approximation of 2π to do a first round of
 // reduction before calling their library.  Sigh.
 cpp_rational const two_π(
