@@ -19,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 		google_protobuf.props = google_protobuf.props
 		include_solution.props = include_solution.props
 		principia.props = principia.props
+		llnl_zfp.props = llnl_zfp.props
 		profiling.props = profiling.props
 		suppress_useless_warnings.props = suppress_useless_warnings.props
 	EndProjectSection

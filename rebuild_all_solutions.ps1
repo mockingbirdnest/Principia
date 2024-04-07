@@ -9,55 +9,37 @@ $dependencies = @(".\Google\glog\msvc\glog.sln",
                   ".\Google\benchmark\msvc\google-benchmark.sln",
                   ".\Google\gipfeli\msvc\gipfeli.sln",
                   ".\Google\abseil-cpp\msvc\abseil-cpp.sln",
-                  ".\Third Party\zfp\msvc\zfp.sln")
+                  ".\LLNL\zfp\msvc\zfp.sln")
 
-New-Item -ItemType Directory -Force -Path "Google"
-New-Item -ItemType Directory -Force -Path "Third Party"
-
-push-location -path "Google"
-foreach ($repository in @("glog", "googletest", "protobuf", "benchmark",
-                          "gipfeli", "abseil-cpp", "chromium")) {
-  if (!(test-path -path $repository)) {
-    git clone ("https://github.com/mockingbirdnest/" + $repository + ".git")
-  }
-  push-location $repository
-  git checkout master
-  git pull
-  if (!$?) {
-    if ($args[0] -eq "--force") {
-      git reset --hard origin/master
-      git clean -fdx
-    } else {
-      pop-location
-      pop-location
-      exit 1
+foreach ($directory_and_repositories in @(
+         @("Boost",  @("multiprecision")),
+         @("Google", @("glog", "googletest", "protobuf", "benchmark",
+                       "gipfeli", "abseil-cpp", "chromium")),
+         @("LLNL",   @("zfp")))) {
+  $directory, $repositories = $directory_and_repositories
+  New-Item -ItemType Directory -Force -Path $directory
+  Push-Location -Path $directory
+  foreach ($repository in $repositories) {
+    if (!(Test-Path -Path $repository)) {
+      git clone ("https://github.com/mockingbirdnest/" + $repository + ".git")
     }
-  }
-  pop-location
-}
-pop-location
-
-push-location -path "Third Party"
-foreach ($repository in @("zfp")) {
-  if (!(test-path -path $repository)) {
-    git clone ("https://github.com/mockingbirdnest/" + $repository + ".git")
-  }
-  push-location $repository
-  git checkout master
-  git pull
-  if (!$?) {
-    if ($args[0] -eq "--force") {
-      git reset --hard origin/master
-      git clean -fdx
-    } else {
-      pop-location
-      pop-location
-      exit 1
+    Push-Location $repository
+    git fetch
+    git checkout origin/HEAD
+    if (!$?) {
+      if ($args[0] -eq "--force") {
+        git reset --hard origin/HEAD
+        git clean -fdx
+      } else {
+        Pop-Location
+        Pop-Location
+        exit 1
+      }
     }
+    Pop-Location
   }
-  pop-location
+  Pop-Location
 }
-pop-location
 
 function build_solutions($solutions) {
   foreach ($configuration in "Debug", "Release") {
