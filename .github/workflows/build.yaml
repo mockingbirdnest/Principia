@@ -101,7 +101,7 @@ jobs:
       with:
         name: zfp
         configuration: ${{ matrix.configuration }}
-        directory: 'Third Party'
+        directory: 'LLNL'
 
     - name: Restore ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/restore@main

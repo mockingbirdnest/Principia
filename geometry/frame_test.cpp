@@ -5,6 +5,7 @@
 #include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 
 namespace principia {
 namespace geometry {
@@ -13,7 +14,7 @@ using namespace principia::base::_concepts;
 using namespace principia::geometry::_frame;
 
 class FrameTest : public testing::Test {
- protected:
+ public:
   using World1 = Frame<serialization::Frame::TestTag,
                        Inertial,
                        Handedness::Right,
@@ -44,15 +45,23 @@ class FrameTest : public testing::Test {
 
 using FrameDeathTest = FrameTest;
 
-// Uncomment to check that non-serializable frames are detected at compile-time.
-#if 0
-TEST_F(FrameTest, SerializationCompilationError) {
-  serialization::Frame message;
-  F1::ReadFromMessage(&message);
-  F2::ReadFromMessage(&message);
-  F3::ReadFromMessage(&message);
-}
-#endif
+// Check that non-serializable frames are detected at compile-time.
+PRINCIPIA_CHECK_WELL_FORMED_WITH_TYPES(
+    World1::ReadFromMessage(message),
+    (typename World1 = FrameTest::World1),
+    with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    F1::ReadFromMessage(message),
+    (typename F1 = FrameTest::F1),
+    with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    F2::ReadFromMessage(message),
+    (typename F2 = FrameTest::F2),
+    with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    F3::ReadFromMessage(message),
+    (typename F3 = FrameTest::F3),
+    with_variable<serialization::Frame> message);
 
 TEST_F(FrameDeathTest, SerializationError) {
   EXPECT_DEATH({
