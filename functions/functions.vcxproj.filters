@@ -21,6 +21,9 @@
     <ClCompile Include="multiprecision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="std_accuracy_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="multiprecision.hpp">

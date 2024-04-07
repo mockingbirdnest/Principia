@@ -732,6 +732,7 @@ Global
 		shared\geometry.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\testing_utilities.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
+		shared\base.vcxitems*{7cca653c-2e8f-4ffd-9e9f-bee590f3efab}*SharedItemsImports = 4
 		shared\base.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
 		shared\geometry.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{83a31da7-3f62-464d-9f6b-09cce07a865a}*SharedItemsImports = 4

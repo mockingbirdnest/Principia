@@ -10,7 +10,7 @@ namespace internal {
 
 using namespace boost::multiprecision;
 
-cpp_bin_float_50 Sin(cpp_rational const& angle);
+cpp_bin_float_50 Sin(cpp_rational const& α);
 
 }  // namespace internal
 
