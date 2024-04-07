@@ -12,7 +12,7 @@ $dependencies = @(".\Google\glog\msvc\glog.sln",
                   ".\LLNL\zfp\msvc\zfp.sln")
 
 foreach ($directory_and_repositories in @(
-         @("Boost",  @("multiprecision")),
+         @("Boost",  @("config", "multiprecision")),
          @("Google", @("glog", "googletest", "protobuf", "benchmark",
                        "gipfeli", "abseil-cpp", "chromium")),
          @("LLNL",   @("zfp")))) {
