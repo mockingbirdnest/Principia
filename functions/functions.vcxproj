@@ -4,6 +4,12 @@
     <ProjectGuid>{7cca653c-2e8f-4ffd-9e9f-bee590f3efab}</ProjectGuid>
     <RootNamespace>functions</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="multiprecision.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="multiprecision.cpp" />
+  </ItemGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="..\boost_multiprecision.props" />
