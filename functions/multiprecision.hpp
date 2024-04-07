@@ -11,9 +11,11 @@ namespace internal {
 using namespace boost::multiprecision;
 
 cpp_bin_float_50 Sin(cpp_rational const& α);
+cpp_bin_float_50 Cos(cpp_rational const& α);
 
 }  // namespace internal
 
+using internal::Cos;
 using internal::Sin;
 
 }  // namespace _multiprecision
