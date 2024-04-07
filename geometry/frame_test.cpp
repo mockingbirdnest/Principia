@@ -46,14 +46,22 @@ class FrameTest : public testing::Test {
 using FrameDeathTest = FrameTest;
 
 // Check that non-serializable frames are detected at compile-time.
-PRINCIPIA_CHECK_WELL_FORMED(FrameTest::World1::ReadFromMessage(message),
-                            with_variable<serialization::Frame> message);
-PRINCIPIA_CHECK_ILL_FORMED(FrameTest::F1::ReadFromMessage(message),
-                           with_variable<serialization::Frame> message);
-PRINCIPIA_CHECK_ILL_FORMED(FrameTest::F2::ReadFromMessage(message),
-                           with_variable<serialization::Frame> message);
-PRINCIPIA_CHECK_ILL_FORMED(FrameTest::F3::ReadFromMessage(message),
-                           with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_WELL_FORMED_WITH_TYPES(
+    World1::ReadFromMessage(message),
+    (typename World1 = FrameTest::World1),
+    with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    F1::ReadFromMessage(message),
+    (typename F1 = FrameTest::F1),
+    with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    F2::ReadFromMessage(message),
+    (typename F2 = FrameTest::F2),
+    with_variable<serialization::Frame> message);
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    F3::ReadFromMessage(message),
+    (typename F3 = FrameTest::F3),
+    with_variable<serialization::Frame> message);
 
 TEST_F(FrameDeathTest, SerializationError) {
   EXPECT_DEATH({
