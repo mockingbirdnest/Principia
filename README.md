@@ -2,7 +2,7 @@
 
 **&lrm;[Καραθεοδωρή](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%CE%BA%CE%B1%CF%81%CE%B1%CE%B8%CE%B5%CE%BF%CE%B4%CF%89%CF%81%CE%AE), the April version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/c4r4th30d0ry).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Канторович for 1.8.1—1.12.5](https://share.weiyun.com/0ci5U0AS).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Καραθεοδωρή for 1.8.1—1.12.5](https://share.weiyun.com/0ci5U0AS).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
