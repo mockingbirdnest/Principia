@@ -94,7 +94,9 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)protobuf/src \
 	-I$(DEP_DIR)gipfeli/include \
 	-I$(DEP_DIR)abseil-cpp \
-	-I$(DEP_DIR)zfp/include
+	-I$(DEP_DIR)zfp/include \
+	-I$(DEP_DIR)boost/config/include \
+	-I$(DEP_DIR)boost/multiprecision/include
 SHARED_ARGS   := \
 	-std=c++20 -stdlib=libc++ -O3 -g                              \
 	--system-header-prefix=serialization/                         \
