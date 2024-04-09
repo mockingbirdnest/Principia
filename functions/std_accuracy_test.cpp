@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <random>
 
 #include "functions/multiprecision.hpp"
