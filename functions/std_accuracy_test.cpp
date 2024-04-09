@@ -3,6 +3,7 @@
 #include <random>
 
 #include "functions/multiprecision.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/numbers.hpp"
@@ -12,6 +13,8 @@ namespace principia {
 namespace functions {
 namespace _multiprecision {
 
+using ::testing::AnyOf;
+using ::testing::Eq;
 using namespace boost::multiprecision;
 using namespace principia::numerics::_ulp_distance;
 using namespace principia::quantities::_si;
@@ -46,9 +49,9 @@ TEST_F(StdAccuracyTest, SinCos) {
     EXPECT_EQ(
         0,
         ULPDistance(std::sin(x), static_cast<double>(Sin(x))));
-    EXPECT_EQ(
-        0,
-        ULPDistance(std::cos(x), static_cast<double>(Cos(x))));
+    EXPECT_THAT(ULPDistance(std::cos(x), static_cast<double>(Cos(x))),
+                AnyOf(Eq(0),    // Windows, macOS.
+                      Eq(8)));  // Linux.
   }
 }
 
