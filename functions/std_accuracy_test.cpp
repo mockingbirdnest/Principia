@@ -3,11 +3,14 @@
 #include <random>
 
 #include "functions/multiprecision.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/ulp_distance.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace functions {
@@ -16,10 +19,35 @@ namespace _multiprecision {
 using ::testing::AnyOf;
 using ::testing::Eq;
 using namespace boost::multiprecision;
-using namespace principia::numerics::_ulp_distance;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 
-class StdAccuracyTest : public ::testing::Test {};
+class StdAccuracyTest : public ::testing::Test {
+ protected:
+  static double ULPDistance(cpp_bin_float_50 const& actual,
+                            cpp_bin_float_50 const& expected) {
+    std::int64_t actual_exponent;
+    std::int64_t expected_exponent;
+    auto actual_mantissa = frexp(actual, &actual_exponent);
+    auto expected_mantissa = frexp(expected, &expected_exponent);
+    if (actual_exponent == expected_exponent) {
+    } else if (actual_exponent == expected_exponent + 1) {
+      --actual_exponent;
+      actual_mantissa *= 2.0;
+    } else if (actual_exponent == expected_exponent - 1) {
+      ++actual_exponent;
+      actual_mantissa /= 2.0;
+    } else {
+      LOG(FATAL) << actual_exponent << " " << actual_mantissa << " "
+                 << expected_exponent << " " << expected_mantissa;
+    }
+    return 2.0 *
+           std::abs(static_cast<double>(actual_mantissa - expected_mantissa)) /
+           std::numeric_limits<double>::epsilon();
+  }
+};
 
 #if !_DEBUG
 
@@ -28,30 +56,26 @@ TEST_F(StdAccuracyTest, SinCos) {
   {
     std::mt19937_64 random(42);
     std::uniform_real_distribution<> angle_distribution(0, π / 4);
-    std::int64_t max_sin_ulp_distance = 0;
-    std::int64_t max_cos_ulp_distance = 0;
+    double max_sin_ulp_distance = 0;
+    double max_cos_ulp_distance = 0;
     for (int i = 0; i < 1e5; ++i) {
       double const α = angle_distribution(random);
       max_sin_ulp_distance =
-          std::max(max_sin_ulp_distance,
-                   ULPDistance(std::sin(α), static_cast<double>(Sin(α))));
+          std::max(max_sin_ulp_distance, ULPDistance(std::sin(α), Sin(α)));
       max_cos_ulp_distance =
-          std::max(max_cos_ulp_distance,
-                   ULPDistance(std::cos(α), static_cast<double>(Cos(α))));
+          std::max(max_cos_ulp_distance, ULPDistance(std::cos(α), Cos(α)));
     }
-    EXPECT_EQ(1, max_sin_ulp_distance);
-    EXPECT_EQ(1, max_cos_ulp_distance);
+    EXPECT_THAT(max_sin_ulp_distance, IsNear(0.727_(1)));
+    EXPECT_THAT(max_cos_ulp_distance, IsNear(0.834_(1)));
   }
 
   // Hardest argument reduction, [Mul+10] table 11.1.
   {
     double const x = 0x16ac5b262ca1ffp797;
-    EXPECT_EQ(
-        0,
-        ULPDistance(std::sin(x), static_cast<double>(Sin(x))));
-    EXPECT_THAT(ULPDistance(std::cos(x), static_cast<double>(Cos(x))),
-                AnyOf(Eq(0),    // Windows, macOS.
-                      Eq(8)));  // Linux.
+    EXPECT_THAT(ULPDistance(std::sin(x), Sin(x)), IsNear(9.89e-22_(1)));
+    EXPECT_THAT(ULPDistance(std::cos(x), Cos(x)),
+                AnyOf(IsNear(0.0454_(1)),  // Windows, macOS.
+                      Eq(8)));             // Linux.
   }
 }
 
