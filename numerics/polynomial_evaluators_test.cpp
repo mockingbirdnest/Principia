@@ -26,7 +26,6 @@ class PolynomialEvaluatorTest : public ::testing::Test {
            int degree>
   void Test() {
     using E = Evaluator<double, double, degree>;
-    auto const* const e = E::Singleton();
     auto const binomial_coefficients =
         MakeBinomialTuple<typename E::Coefficients, degree>(
             std::make_index_sequence<degree + 1>());

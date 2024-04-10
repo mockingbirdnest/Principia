@@ -125,8 +125,6 @@ TEST_F(LagrangeEquipotentialsTest,
       reference_frame.ToThisFrameAtTimeSimilarly(t0_)(moon_dof);
   Position<World> const q_earth = earth_world_dof.position();
   Position<World> const q_moon = moon_world_dof.position();
-  Velocity<World> const v_earth = earth_world_dof.velocity();
-  Velocity<World> const v_moon = moon_world_dof.velocity();
   Position<World> const initial_earth_moon_l5 =
       Barycentre({q_earth, q_moon}, {1.0, 1.0}) +
       (q_earth - q_moon).Norm() *
