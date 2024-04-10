@@ -43,9 +43,8 @@ class StdAccuracyTest : public ::testing::Test {
       LOG(FATAL) << actual_exponent << " " << actual_mantissa << " "
                  << expected_exponent << " " << expected_mantissa;
     }
-    return 2.0 *
-           std::abs(static_cast<double>(actual_mantissa - expected_mantissa)) /
-           std::numeric_limits<double>::epsilon();
+    return std::abs(static_cast<double>(actual_mantissa - expected_mantissa)) *
+           (1LL << std::numeric_limits<double>::digits);
   }
 };
 
