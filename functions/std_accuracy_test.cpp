@@ -18,7 +18,6 @@ namespace functions {
 namespace _multiprecision {
 
 using ::testing::AnyOf;
-using ::testing::Eq;
 using namespace boost::multiprecision;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
