@@ -1,6 +1,7 @@
 #include "functions/accurate_table_generator.hpp"
 
 #include <iomanip>
+#include <string>
 
 #include "boost/multiprecision/cpp_int.hpp"
 #include "functions/multiprecision.hpp"

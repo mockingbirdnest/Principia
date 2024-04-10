@@ -2,6 +2,8 @@
 
 #include "functions/accurate_table_generator.hpp"
 
+#include <limits>
+
 #include "glog/logging.h"
 
 namespace principia {
