@@ -26,15 +26,15 @@ cpp_rational ExhaustiveSearch(AccurateFunction const& function,
   CHECK_LT(0, start);
 
   // We will look for candidates both above and below |start|.  Note that if
-  // start is a power of 2, the increments above and below |start| are not the
+  // |start| is a power of 2, the increments above and below |start| are not the
   // same.
   std::int64_t exponent;
   auto const start_mantissa =
       frexp(static_cast<cpp_bin_float_50>(start), &exponent);
   cpp_rational const high_increment =
       exp2(exponent - std::numeric_limits<double>::digits);
-  cpp_rational const low_increment = start_mantissa ==
-      0.5 ? high_increment / 2 : high_increment;
+  cpp_rational const low_increment =
+      start_mantissa == 0.5 ? high_increment / 2 : high_increment;
 
   cpp_rational high_x = start;
   cpp_rational low_x = start - low_increment;

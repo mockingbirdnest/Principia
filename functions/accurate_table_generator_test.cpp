@@ -13,11 +13,10 @@
 
 namespace principia {
 namespace functions {
-namespace _multiprecision {
+namespace _accurate_table_generator {
 
 using ::testing::AnyOf;
 using namespace boost::multiprecision;
-using namespace principia::functions::_accurate_table_generator;
 using namespace principia::functions::_multiprecision;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
@@ -49,6 +48,6 @@ TEST_F(AccurateTableGeneratorTest, Sin5) {
   EXPECT_EQ(s[14], '3');
 }
 
-}  // namespace _multiprecision
+}  // namespace _accurate_table_generator
 }  // namespace functions
 }  // namespace principia
