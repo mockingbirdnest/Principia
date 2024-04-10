@@ -66,8 +66,13 @@ TEST_F(StdAccuracyTest, SinCos) {
       max_cos_ulp_distance =
           std::max(max_cos_ulp_distance, ULPDistance(std::cos(α), Cos(α)));
     }
-    EXPECT_THAT(max_sin_ulp_distance, IsNear(0.727_(1)));
-    EXPECT_THAT(max_cos_ulp_distance, IsNear(0.834_(1)));
+    EXPECT_THAT(max_sin_ulp_distance,
+                AnyOf(IsNear(0.727_(1)),    // Windows.
+                      IsNear(0.654_(1)),    // macOS.
+                      IsNear(0.513_(1))));  // Ubuntu.
+    EXPECT_THAT(max_cos_ulp_distance,
+                AnyOf(IsNear(0.834_(1)),    // Windows, macOS.
+                      IsNear(0.502_(1))));  // Ubuntu.
   }
 
   // Hardest argument reduction, [Mul+10] table 11.1.
@@ -76,7 +81,7 @@ TEST_F(StdAccuracyTest, SinCos) {
     EXPECT_THAT(ULPDistance(std::sin(x), Sin(x)), IsNear(9.89e-22_(1)));
     EXPECT_THAT(ULPDistance(std::cos(x), Cos(x)),
                 AnyOf(IsNear(0.0454_(1)),  // Windows, macOS.
-                      Eq(8)));             // Linux.
+                      IsNear(7.95_(1))));  // Linux.
   }
 }
 

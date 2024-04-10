@@ -83,7 +83,6 @@ FlightPlan::FlightPlan(FlightPlan const& other)
       desired_final_time_(other.desired_final_time_),
       anomalous_segments_(other.anomalous_segments_),
       manœuvres_(other.manœuvres_),
-      coast_analysers_(),
       ephemeris_(other.ephemeris_),
       analysis_is_enabled_(other.analysis_is_enabled_),
       adaptive_step_parameters_(other.adaptive_step_parameters_),

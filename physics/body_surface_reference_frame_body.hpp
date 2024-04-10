@@ -106,8 +106,6 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
-      centre_trajectory_->EvaluateDegreesOfFreedom(t);
   Vector<Acceleration, InertialFrame> const centre_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(centre_, t);
 
