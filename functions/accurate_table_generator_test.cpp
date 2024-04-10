@@ -13,7 +13,9 @@ using namespace principia::functions::_multiprecision;
 class AccurateTableGeneratorTest : public ::testing::Test {};
 
 TEST_F(AccurateTableGeneratorTest, Smoke) {
-  ExhaustiveSearch<5>({Sin}, 1.0 / 256.0);
+  for (int i = 1; i < 8; ++i) {
+    ExhaustiveSearch<5>({Sin}, i / 256.0);
+  }
 }
 
 }  // namespace _multiprecision
