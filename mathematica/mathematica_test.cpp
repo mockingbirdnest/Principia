@@ -109,6 +109,9 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     EXPECT_EQ("Times[16^^13456789ABCDEF,Power[2,Subtract[-163,52]]]",
               ToMathematica(0x1.3'4567'89AB'CDEFp-163));
+    EXPECT_EQ("Times[2^^10011010001010110011110001001101010111100110111101111,"
+              "Power[2,Subtract[-163,52]]]",
+              ToMathematica(0x1.3'4567'89AB'CDEFp-163, std::nullopt, 2));
     EXPECT_EQ("Minus[Times[16^^10000000000000,Power[2,Subtract[-1074,52]]]]",
               ToMathematica(-0x1p-1074));
     EXPECT_EQ("Minus[Times[16^^1FFFFFFFFFFFFF,Power[2,Subtract[1023,52]]]]",
@@ -125,10 +128,16 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("Times[16^^1C7005218FCD2A07288057EE16EDA202D8B6BE36DC4,"
               "Power[2,Subtract[-542,168]]]",
               ToMathematica(cpp_bin_float_50("1.23456789e-163")));
-    EXPECT_EQ(
-        "Times[16^^1000000000000000000000000000000000000000000,"
-        "Power[2,Subtract[-1024,168]]]",
-        ToMathematica(cpp_bin_float_50(ldexp(cpp_bin_float_50("1"), -1024))));
+    EXPECT_EQ("Times[2^^1110001110000000001010010000110001111110011010010101000"
+              "0001110010100010000000010101111110111000010110111011011010001000"
+              "00001011011000101101101011111000110110110111000100,"
+              "Power[2,Subtract[-542,168]]]",
+              ToMathematica(
+                  cpp_bin_float_50("1.23456789e-163"), std::nullopt, 2));
+    EXPECT_EQ("Times[16^^1000000000000000000000000000000000000000000,"
+              "Power[2,Subtract[-1024,168]]]",
+              ToMathematica(
+                  cpp_bin_float_50(ldexp(cpp_bin_float_50("1"), -1024))));
     EXPECT_EQ("0", ToMathematica(cpp_bin_float_50("0.0")));
     EXPECT_EQ("Minus[0]",
               ToMathematica(
