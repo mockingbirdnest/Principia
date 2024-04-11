@@ -24,10 +24,19 @@
     <ClCompile Include="std_accuracy_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="accurate_table_generator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="multiprecision.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="accurate_table_generator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="accurate_table_generator_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
