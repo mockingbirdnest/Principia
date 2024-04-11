@@ -6,6 +6,7 @@
 
 #include "absl/strings/str_replace.h"
 #include "astronomy/orbital_elements.hpp"
+#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -36,6 +37,7 @@
 namespace principia {
 namespace mathematica {
 
+using namespace boost::multiprecision;
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -118,6 +120,21 @@ TEST_F(MathematicaTest, ToMathematica) {
     EXPECT_EQ("Infinity", ToMathematica(Infinity<double>));
     EXPECT_EQ("Minus[Infinity]", ToMathematica(-Infinity<double>));
     EXPECT_EQ("Minus[Indeterminate]", ToMathematica(Sqrt(-1)));
+  }
+  {
+    EXPECT_EQ("Times[16^^1C7005218FCD2A07288057EE16EDA202D8B6BE36DC4,"
+              "Power[2,Subtract[-542,168]]]",
+              ToMathematica(cpp_bin_float_50("1.23456789e-163")));
+    EXPECT_EQ(
+        "Times[16^^1000000000000000000000000000000000000000000,"
+        "Power[2,Subtract[-1024,168]]]",
+        ToMathematica(cpp_bin_float_50(ldexp(cpp_bin_float_50("1"), -1024))));
+    EXPECT_EQ("0", ToMathematica(cpp_bin_float_50("0.0")));
+    EXPECT_EQ("Minus[0]",
+              ToMathematica(
+                  -cpp_bin_float_50("0.0")));  // Note that "-0.0" parses as 0.
+    EXPECT_EQ("Infinity", ToMathematica(cpp_bin_float_50("inf")));
+    EXPECT_EQ("Minus[Infinity]", ToMathematica(cpp_bin_float_50("-inf")));
   }
   {
     EXPECT_EQ(ToMathematica(std::tuple{2.0, 3.0}),
