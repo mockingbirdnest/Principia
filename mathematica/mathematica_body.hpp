@@ -325,41 +325,15 @@ std::string ToMathematicaImpl(R const real,
 template<typename T, typename, typename OptionalExpressIn, typename>
 std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/) {
-  std::string absolute_value;
-  if (std::isinf(real)) {
-    absolute_value = "Infinity";
-  } else if (std::isnan(real)) {
-    absolute_value = "Indeterminate";
-  } else if (real == 0) {
-    absolute_value = "0";
-  } else {
-    constexpr int τ = std::numeric_limits<T>::digits;
-    int const exponent = std::ilogb(real);
-    // This offset makes n an integer in [β^(τ-1), β^τ[, i.e., a τ-digit
-    // integer.
-    int exponent_offset = τ - 1;
-    if (std::numeric_limits<T>::radix == 2) {
-      // For binary floating point, push the leading 1 to the least significant
-      // bit of a hex digit.
-      exponent_offset += mod(1 - τ, 4);
-    }
-    std::int64_t const n =
-        std::scalbln(std::abs(real), exponent_offset - exponent);
-    absolute_value =
-        RawApply("Times",
-                 {std::numeric_limits<T>::radix == 10
-                      ? ToMathematica(n)
-                      : (std::stringstream()
-                         << "16^^" << std::uppercase << std::hex << n)
-                            .str(),
-                  RawApply("Power",
-                           {"2",
-                            RawApply("Subtract",
-                                     {ToMathematica(std::ilogb(real)),
-                                      ToMathematica(exponent_offset)})})});
-  }
-  return std::signbit(real) ? RawApply("Minus", {absolute_value})
-                            : absolute_value;
+  return ToMathematicaImpl<T, std::int64_t>(
+      real,
+      [](T const& x) { return std::abs(x); },
+      [](T const& x) { return std::ilogb(x); },
+      [](T const& x) { return std::isinf(x); },
+      [](T const& x) { return std::isnan(x); },
+      [](T const& x, int const n) { return std::scalbln(x, n); },
+      [](T const& x) { return std::signbit(x); },
+      [](T const& x) { return std::int64_t(x); });
 }
 
 template<unsigned digits,
