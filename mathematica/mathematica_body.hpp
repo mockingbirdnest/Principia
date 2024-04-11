@@ -286,6 +286,7 @@ std::string ToMathematicaImpl(R const real,
                               std::function<R(R, int)> const& scalbln,
                               std::function<bool(R)> const& signbit,
                               std::function<I(R)> const& static_cast_to_int) {
+  static_assert(std::numeric_limits<R>::radix == 2);
   std::string absolute_value;
   if (isinf(real)) {
     absolute_value = "Infinity";
@@ -306,18 +307,15 @@ std::string ToMathematicaImpl(R const real,
     }
     auto const n =
         static_cast_to_int(scalbln(abs(real), exponent_offset - exponent));
-    absolute_value =
-        RawApply("Times",
-                 {std::numeric_limits<R>::radix == 10
-                      ? "NYI"//ToMathematica(n)
-                      : (std::stringstream()
-                         << "16^^" << std::uppercase << std::hex << n)
-                            .str(),
-                  RawApply("Power",
-                           {"2",
-                            RawApply("Subtract",
-                                     {ToMathematica(ilogb(real)),
-                                      ToMathematica(exponent_offset)})})});
+    absolute_value = RawApply(
+        "Times",
+        {(std::stringstream() << "16^^" << std::uppercase << std::hex << n)
+             .str(),
+         RawApply("Power",
+                  {"2",
+                   RawApply("Subtract",
+                            {ToMathematica(exponent),
+                             ToMathematica(exponent_offset)})})});
   }
   return signbit(real) ? RawApply("Minus", {absolute_value}) : absolute_value;
 }
