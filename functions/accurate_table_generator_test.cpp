@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "absl/strings/strip.h"
 #include "boost/multiprecision/cpp_int.hpp"
