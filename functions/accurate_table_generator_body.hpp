@@ -8,12 +8,15 @@
 #include <thread>
 #include <vector>
 
+#include "base/thread_pool.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
 namespace internal {
+
+using namespace principia::base::_thread_pool;
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -27,20 +30,20 @@ bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
 }
 
 template<std::int64_t zeroes>
-std::vector<cpp_rational> ExhaustiveMultiSearch(
+std::vector<cpp_rational> ExhaustiveMultisearch(
     std::vector<AccurateFunction> const& functions,
     std::vector<cpp_rational> const& starting_arguments) {
   ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
 
   std::vector<std::future<cpp_rational>> futures;
-  for (std::int64_t i = 0; i < starting_arguments.sive(); ++i) {
+  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
     futures.push_back(search_pool.Add([i, &functions, &starting_arguments]() {
-      return ExhaustiveSearch(functions, {starting_arguments[i]});
+      return ExhaustiveSearch<zeroes>(functions, starting_arguments[i]);
     }));
   }
 
   std::vector<cpp_rational> results;
-  for (auto const& future : futures) {
+  for (auto& future : futures) {
     results.push_back(future.get());
   }
   return results;
