@@ -1,9 +1,10 @@
 #pragma once
 
+#include "functions/accurate_table_generator.hpp"
+
 #include <algorithm>
 #include <limits>
 
-#include "functions/accurate_table_generator.hpp"
 #include "glog/logging.h"
 
 namespace principia {
