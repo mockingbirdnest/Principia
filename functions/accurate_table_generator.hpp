@@ -17,7 +17,12 @@ using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
 
 template<std::int64_t zeroes>
 cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
-                              cpp_rational const& start);
+                              cpp_rational const& starting_argument);
+
+template<std::int64_t zeroes>
+std::vector<cpp_rational> ExhaustiveMultiSearch(
+    std::vector<AccurateFunction> const& functions,
+    std::vector<cpp_rational> const& starting_arguments);
 
 }  // namespace internal
 
