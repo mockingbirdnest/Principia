@@ -47,6 +47,30 @@ TEST_F(AccurateTableGeneratorTest, Sin5) {
   EXPECT_EQ("1000001", mantissa.substr(52, 7));
 }
 
+TEST_F(AccurateTableGeneratorTest, SinCos3) {
+  auto const x = ExhaustiveSearch<3>({Sin, Cos}, 23.0 / 128.0);
+  EXPECT_EQ(x, cpp_rational(6473924464345083, 36028797018963968));
+  EXPECT_THAT(static_cast<double>(x),
+              RelativeErrorFrom(23.0 / 128.0, IsNear(7.7e-16_(1))));
+
+  {
+    std::string const mathematica = ToMathematica(Sin(x),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("10001", mantissa.substr(52, 5));
+  }
+  {
+    std::string const mathematica = ToMathematica(Cos(x),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("00000", mantissa.substr(52, 5));
+  }
+}
+
 }  // namespace _accurate_table_generator
 }  // namespace functions
 }  // namespace principia
