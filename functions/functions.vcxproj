@@ -23,16 +23,4 @@
   <ImportGroup Label="Shared">
     <Import Project="..\shared\base.vcxitems" Label="Shared" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <Import Project="..\boost_config.props" />
-    <Import Project="..\boost_multiprecision.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
-    <Import Project="..\boost_config.props" />
-    <Import Project="..\boost_multiprecision.props" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Import Project="..\boost_config.props" />
-    <Import Project="..\boost_multiprecision.props" />
-  </ImportGroup>
 </Project>

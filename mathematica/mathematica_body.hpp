@@ -10,10 +10,12 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/strings/str_replace.h"
 #include "astronomy/epoch.hpp"
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "geometry/barycentre_calculator.hpp"
 
 namespace principia {
@@ -116,6 +118,84 @@ std::string ToMathematicaBody(
     }
   }
   return RawApply("Plus", monomials);
+}
+
+template<typename R, typename I>
+std::string ToMathematica(R const real,
+                          std::int64_t base,
+                          std::function<R(R)> const& abs,
+                          std::function<int(R)> const& ilogb,
+                          std::function<bool(R)> const& isinf,
+                          std::function<bool(R)> const& isnan,
+                          std::function<R(R, int)> const& scalbln,
+                          std::function<bool(R)> const& signbit,
+                          std::function<I(R)> const& static_cast_to_int) {
+  static_assert(std::numeric_limits<R>::radix == 2);
+  CHECK(base == 2 || base == 16);
+
+  std::string absolute_value;
+  if (isinf(real)) {
+    absolute_value = "Infinity";
+  } else if (isnan(real)) {
+    absolute_value = "Indeterminate";
+  } else if (real == 0) {
+    absolute_value = "0";
+  } else {
+    constexpr int τ = std::numeric_limits<R>::digits;
+    int const exponent = ilogb(real);
+    // This offset makes n an integer in [β^(τ-1), β^τ[, i.e., a τ-digit
+    // integer.
+    int exponent_offset = τ - 1;
+    if (std::numeric_limits<R>::radix == 2) {
+      // For binary floating point, push the leading 1 to the least significant
+      // bit of a hex digit.
+      exponent_offset += mod(1 - τ, 4);
+    }
+    auto const n =
+        static_cast_to_int(scalbln(abs(real), exponent_offset - exponent));
+
+    // Since we are only interested in base 2 and 16 output, we produce base 2
+    // from string substitution and strip the leading zeroes.  We choose to go
+    // with string substitution and do the other things, not because they are
+    // hard, but because they are easy.
+    std::string n_image =
+        (std::stringstream() << std::uppercase << std::hex << n).str();
+    if (base == 2) {
+      absl::StrReplaceAll({{"0", "0000"},
+                           {"1", "0001"},
+                           {"2", "0010"},
+                           {"3", "0011"},
+                           {"4", "0100"},
+                           {"5", "0101"},
+                           {"6", "0110"},
+                           {"7", "0111"},
+                           {"8", "1000"},
+                           {"9", "1001"},
+                           {"A", "1010"},
+                           {"B", "1011"},
+                           {"C", "1100"},
+                           {"D", "1101"},
+                           {"E", "1110"},
+                           {"F", "1111"}},
+                          &n_image);
+      for (int i = 0; i < n_image.size(); ++i) {
+        if (n_image[i] == '1') {
+          n_image.erase(0, i);
+          break;
+        }
+      }
+    }
+
+    absolute_value = RawApply(
+        "Times",
+        {absl::StrCat(base, "^^", n_image),
+         RawApply("Power",
+                  {"2",
+                   RawApply("Subtract",
+                            {ToMathematica(exponent),
+                             ToMathematica(exponent_offset)})})});
+  }
+  return signbit(real) ? RawApply("Minus", {absolute_value}) : absolute_value;
 }
 
 template<typename V, typename A, int d,
@@ -278,42 +358,38 @@ std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
 
 template<typename T, typename, typename OptionalExpressIn, typename>
 std::string ToMathematica(T const real,
-                          OptionalExpressIn /*express_in*/) {
-  std::string absolute_value;
-  if (std::isinf(real)) {
-    absolute_value = "Infinity";
-  } else if (std::isnan(real)) {
-    absolute_value = "Indeterminate";
-  } else if (real == 0) {
-    absolute_value = "0";
-  } else {
-    constexpr int τ = std::numeric_limits<T>::digits;
-    int const exponent = std::ilogb(real);
-    // This offset makes n an integer in [β^(τ-1), β^τ[, i.e., a τ-digit
-    // integer.
-    int exponent_offset = τ - 1;
-    if (std::numeric_limits<T>::radix == 2) {
-      // For binary floating point, push the leading 1 to the least significant
-      // bit of a hex digit.
-      exponent_offset += mod(1 - τ, 4);
-    }
-    std::int64_t const n =
-        std::scalbln(std::abs(real), exponent_offset - exponent);
-    absolute_value =
-        RawApply("Times",
-                 {std::numeric_limits<T>::radix == 10
-                      ? ToMathematica(n)
-                      : (std::stringstream()
-                         << "16^^" << std::uppercase << std::hex << n)
-                            .str(),
-                  RawApply("Power",
-                           {"2",
-                            RawApply("Subtract",
-                                     {ToMathematica(std::ilogb(real)),
-                                      ToMathematica(exponent_offset)})})});
-  }
-  return std::signbit(real) ? RawApply("Minus", {absolute_value})
-                            : absolute_value;
+                          OptionalExpressIn /*express_in*/,
+                          std::int64_t const base) {
+  return ToMathematica<T, std::int64_t>(
+      real,
+      base,
+      [](T const& x) { return std::abs(x); },
+      [](T const& x) { return std::ilogb(x); },
+      [](T const& x) { return std::isinf(x); },
+      [](T const& x) { return std::isnan(x); },
+      [](T const& x, int const n) { return std::scalbln(x, n); },
+      [](T const& x) { return std::signbit(x); },
+      [](T const& x) { return std::int64_t(x); });
+}
+
+template<unsigned digits,
+         typename OptionalExpressIn>
+std::string ToMathematica(
+    number<backends::cpp_bin_float<digits>> const& cpp_bin_float,
+    OptionalExpressIn /*express_in*/,
+    std::int64_t const base) {
+  using Float = number<backends::cpp_bin_float<digits>>;
+  using Int = cpp_int;
+  return ToMathematica<Float, Int>(
+      cpp_bin_float,
+      base,
+      [](Float const& x) { return abs(x); },
+      [](Float const& x) { return ilogb(x); },
+      [](Float const& x) { return isinf(x); },
+      [](Float const& x) { return isnan(x); },
+      [](Float const& x, int const n) { return scalbln(x, n); },
+      [](Float const& x) { return signbit(x); },
+      [](Float const& x) { return cpp_int(x); });
 }
 
 template<typename OptionalExpressIn>
