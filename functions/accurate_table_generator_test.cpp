@@ -27,6 +27,8 @@ using namespace principia::testing_utilities::_numerics_matchers;
 
 class AccurateTableGeneratorTest : public ::testing::Test {};
 
+#if !_DEBUG
+
 TEST_F(AccurateTableGeneratorTest, Sin5) {
   auto const x = ExhaustiveSearch<5>({Sin}, 5.0 / 128.0);
   EXPECT_EQ(x, cpp_rational(2814749767106647, 72057594037927936));
@@ -46,6 +48,31 @@ TEST_F(AccurateTableGeneratorTest, Sin5) {
   CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
   EXPECT_EQ("1000001", mantissa.substr(52, 7));
 }
+
+TEST_F(AccurateTableGeneratorTest, SinCos5) {
+  auto const x = ExhaustiveSearch<5>({Sin, Cos}, 95.0 / 128.0);
+  EXPECT_EQ(x, cpp_rational(6685030696878177, 9007199254740992));
+  EXPECT_THAT(static_cast<double>(x),
+              RelativeErrorFrom(95.0 / 128.0, IsNear(1.5e-14_(1))));
+  {
+    std::string const mathematica = ToMathematica(Sin(x),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("1000001", mantissa.substr(52, 7));
+  }
+  {
+    std::string const mathematica = ToMathematica(Cos(x),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("1000001", mantissa.substr(52, 7));
+  }
+}
+
+#endif
 
 }  // namespace _accurate_table_generator
 }  // namespace functions

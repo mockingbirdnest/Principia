@@ -2,7 +2,9 @@
 
 #include "functions/accurate_table_generator.hpp"
 
+#include <algorithm>
 #include <limits>
+#include <vector>
 
 #include "glog/logging.h"
 
@@ -23,7 +25,7 @@ bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
 }
 
 template<std::int64_t zeroes>
-cpp_rational ExhaustiveSearch(AccurateFunction const& function,
+cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
                               cpp_rational const& start) {
   CHECK_LT(0, start);
 
@@ -41,11 +43,17 @@ cpp_rational ExhaustiveSearch(AccurateFunction const& function,
   cpp_rational high_x = start;
   cpp_rational low_x = start - low_increment;
   for (;;) {
-    if (HasDesiredZeroes<zeroes>(function(high_x))) {
+    if (std::all_of(functions.begin(), functions.end(),
+                    [&high_x](AccurateFunction const& f) {
+                      return HasDesiredZeroes<zeroes>(f(high_x));
+                    })) {
       return high_x;
     }
     high_x += high_increment;
-    if (HasDesiredZeroes<zeroes>(function(low_x))) {
+    if (std::all_of(functions.begin(), functions.end(),
+                    [&low_x](AccurateFunction const& f) {
+                      return HasDesiredZeroes<zeroes>(f(low_x));
+                    })) {
       return low_x;
     }
     low_x -= low_increment;
