@@ -2,6 +2,7 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "absl/strings/strip.h"
 #include "boost/multiprecision/cpp_int.hpp"
@@ -18,6 +19,8 @@ namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
 
+using ::testing::Lt;
+using ::testing::SizeIs;
 using namespace boost::multiprecision;
 using namespace principia::functions::_multiprecision;
 using namespace principia::mathematica::_mathematica;
@@ -69,6 +72,38 @@ TEST_F(AccurateTableGeneratorTest, SinCos5) {
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
     EXPECT_EQ("1000001", mantissa.substr(52, 7));
+  }
+}
+
+TEST_F(AccurateTableGeneratorTest, SinCos5Multisearch) {
+  static constexpr std::int64_t index_begin = 17;
+  static constexpr std::int64_t index_end = 100;
+  std::vector<cpp_rational> starting_arguments;
+  for (std::int64_t i = index_begin; i < index_end; ++i) {
+    starting_arguments.push_back(i / 128.0);
+  }
+  auto const xs = ExhaustiveMultisearch<5>({Sin, Cos}, starting_arguments);
+  EXPECT_THAT(xs, SizeIs(index_end - index_begin));
+  for (std::int64_t i = 0; i < xs.size(); ++i) {
+    auto const& x = xs[i];
+    EXPECT_THAT(static_cast<double>(x),
+                RelativeErrorFrom((i + index_begin) / 128.0, Lt(8.6e-13)));
+    {
+      std::string const mathematica = ToMathematica(Sin(x),
+                                                    /*express_in=*/std::nullopt,
+                                                    /*base=*/2);
+      std::string_view mantissa = mathematica;
+      CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+      EXPECT_EQ("00000", mantissa.substr(53, 5));
+    }
+    {
+      std::string const mathematica = ToMathematica(Cos(x),
+                                                    /*express_in=*/std::nullopt,
+                                                    /*base=*/2);
+      std::string_view mantissa = mathematica;
+      CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+      EXPECT_EQ("00000", mantissa.substr(53, 5));
+    }
   }
 }
 

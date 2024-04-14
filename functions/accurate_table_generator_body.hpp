@@ -3,15 +3,20 @@
 #include "functions/accurate_table_generator.hpp"
 
 #include <algorithm>
+#include <future>
 #include <limits>
+#include <thread>
 #include <vector>
 
+#include "base/thread_pool.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
 namespace internal {
+
+using namespace principia::base::_thread_pool;
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -25,23 +30,43 @@ bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
 }
 
 template<std::int64_t zeroes>
-cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
-                              cpp_rational const& start) {
-  CHECK_LT(0, start);
+std::vector<cpp_rational> ExhaustiveMultisearch(
+    std::vector<AccurateFunction> const& functions,
+    std::vector<cpp_rational> const& starting_arguments) {
+  ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
 
-  // We will look for candidates both above and below |start|.  Note that if
-  // |start| is a power of 2, the increments above and below |start| are not the
-  // same.
+  std::vector<std::future<cpp_rational>> futures;
+  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
+    futures.push_back(search_pool.Add([i, &functions, &starting_arguments]() {
+      return ExhaustiveSearch<zeroes>(functions, starting_arguments[i]);
+    }));
+  }
+
+  std::vector<cpp_rational> results;
+  for (auto& future : futures) {
+    results.push_back(future.get());
+  }
+  return results;
+}
+
+template<std::int64_t zeroes>
+cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
+                              cpp_rational const& starting_argument) {
+  CHECK_LT(0, starting_argument);
+
+  // We will look for candidates both above and below |starting_argument|.
+  // Note that if |starting_argument| is a power of 2, the increments above
+  // and below |starting_argument| are not the same.
   std::int64_t exponent;
-  auto const start_mantissa =
-      frexp(static_cast<cpp_bin_float_50>(start), &exponent);
+  auto const starting_mantissa =
+      frexp(static_cast<cpp_bin_float_50>(starting_argument), &exponent);
   cpp_rational const high_increment =
       exp2(exponent - std::numeric_limits<double>::digits);
   cpp_rational const low_increment =
-      start_mantissa == 0.5 ? high_increment / 2 : high_increment;
+      starting_mantissa == 0.5 ? high_increment / 2 : high_increment;
 
-  cpp_rational high_x = start;
-  cpp_rational low_x = start - low_increment;
+  cpp_rational high_x = starting_argument;
+  cpp_rational low_x = starting_argument - low_increment;
   for (;;) {
     if (std::all_of(functions.begin(), functions.end(),
                     [&high_x](AccurateFunction const& f) {
