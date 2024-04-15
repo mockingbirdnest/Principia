@@ -919,6 +919,22 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
+  // Pre-Gröbner messages use Estrin without FMA.  Recent messages use whatever
+  // they like.  Check and clear the evaluator kind before comparing the
+  // messages.
+  for (auto& pair : *message1.mutable_instant_polynomial_pair()) {
+    auto* const extension = pair.mutable_polynomial()->MutableExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    extension->mutable_evaluator()->clear_kind();
+  }
+  for (auto& pair : *message2.mutable_instant_polynomial_pair()) {
+    auto* const extension = pair.mutable_polynomial()->MutableExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(
+        serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN_WITHOUT_FMA,
+        extension->evaluator().kind());
+    extension->mutable_evaluator()->clear_kind();
+  }
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
@@ -967,6 +983,22 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
+  // Pre-Gröbner messages use Estrin without FMA.  Recent messages use whatever
+  // they like.  Check and clear the evaluator kind before comparing the
+  // messages.
+  for (auto& pair : *message1.mutable_instant_polynomial_pair()) {
+    auto* const extension = pair.mutable_polynomial()->MutableExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    extension->mutable_evaluator()->clear_kind();
+  }
+  for (auto& pair : *message2.mutable_instant_polynomial_pair()) {
+    auto* const extension = pair.mutable_polynomial()->MutableExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(
+        serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN_WITHOUT_FMA,
+        extension->evaluator().kind());
+    extension->mutable_evaluator()->clear_kind();
+  }
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
