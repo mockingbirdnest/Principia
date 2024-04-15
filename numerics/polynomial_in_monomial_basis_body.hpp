@@ -325,28 +325,28 @@ PolynomialInMonomialBasis<Value, Argument, degree>&& Policy::WithEvaluator(
   LOG(FATAL) << "Unexpected policy " << kind_;
 }
 
-constexpr Policy Policy::AlwaysEstrin() {
+inline constexpr Policy Policy::AlwaysEstrin() {
   return Policy(
       serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN);
 }
 
-constexpr Policy Policy::AlwaysEstrinWithoutFMA() {
+inline constexpr Policy Policy::AlwaysEstrinWithoutFMA() {
   return Policy(
       serialization::PolynomialInMonomialBasis::Policy::
                     ALWAYS_ESTRIN_WITHOUT_FMA);
 }
 
-void Policy::WriteToMessage(
+inline void Policy::WriteToMessage(
     not_null<serialization::PolynomialInMonomialBasis::Policy*> message) const {
   message->set_kind(kind_);
 }
 
-Policy Policy::ReadFromMessage(
+inline Policy Policy::ReadFromMessage(
     serialization::PolynomialInMonomialBasis::Policy const& message) {
   return Policy(message.kind());
 }
 
-constexpr Policy::Policy(
+inline constexpr Policy::Policy(
     serialization::PolynomialInMonomialBasis::Policy::Kind const kind)
     : kind_(kind) {}
 
