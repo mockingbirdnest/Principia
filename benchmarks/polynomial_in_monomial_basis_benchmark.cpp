@@ -29,20 +29,26 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
+enum class Metric {
+  Latency,
+  Throughput
+};
+
 template<typename T>
 struct ValueGenerator;
 
 template<>
 struct ValueGenerator<double> {
   static double Get(std::mt19937_64& random) {
-    return static_cast<double>(random());
+    std::uniform_real_distribution<> uniformly_at(-1.0, 1.0);
+    return static_cast<double>(uniformly_at(random));
   }
 };
 
 template<typename D>
 struct ValueGenerator<Quantity<D>> {
   static Quantity<D> Get(std::mt19937_64& random) {
-    return static_cast<double>(random()) * si::Unit<Quantity<D>>;
+    return ValueGenerator<double>::Get(random) * si::Unit<Quantity<D>>;
   }
 };
 
@@ -76,153 +82,95 @@ struct RandomTupleGenerator<Tuple, size, size> {
   static void Fill(Tuple& t, std::mt19937_64& random) {}
 };
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree, Metric metric,
          template<typename, typename, int> class Evaluator>
 void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   using P = PolynomialInMonomialBasis<Value, Argument, degree>;
   std::mt19937_64 random(42);
   typename P::Coefficients coefficients;
   RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients, random);
-  P const p(coefficients, with_evaluator<Evaluator>);
+  P p(coefficients, with_evaluator<Evaluator>);
+  auto const initial_argument = ValueGenerator<Argument>::Get(random);
+  auto argument = initial_argument;
+  do {
+    RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients,
+                                                            random);
+    p = P(coefficients, with_evaluator<Evaluator>);
+    argument = initial_argument;
+    for (std::int64_t i = 0; i < 100; ++i) {
+      Value v;
+      v = p(argument);
+      if constexpr (std::is_same_v<Value, double>) {
+        argument = v * Second;
+      } else {
+        argument = v.coordinates().x * (Second / Metre);
+      }
+    }
+  } while (!IsFinite(argument));
 
-  auto const min = ValueGenerator<Argument>::Get(random);
-  auto const max = ValueGenerator<Argument>::Get(random);
-  auto argument = min;
-  auto const Δargument = (max - min) * 1e-9;
+  argument = initial_argument;
 
-#if 0
-  while (state.KeepRunningBatch(10)) {
-    auto const a0 = p(argument);
-    //argument += Δargument;
-    auto const a1 = p(argument);
-    //argument += Δargument;
-    auto const a2 = p(argument);
-    //argument += Δargument;
-    auto const a3 = p(argument);
-    //argument += Δargument;
-    auto const a4 = p(argument);
-    //argument += Δargument;
-    auto const a5 = p(argument);
-    //argument += Δargument;
-    auto const a6 = p(argument);
-    //argument += Δargument;
-    auto const a7 = p(argument);
-    //argument += Δargument;
-    auto const a8 = p(argument);
-    //argument += Δargument;
-    auto const a9 = p(argument);
-    auto const s = a0 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9;
-    benchmark::DoNotOptimize(s);
+  if constexpr (metric == Metric::Throughput) {
+    Value v[100];
+    while (state.KeepRunningBatch(100)) {
+      for (std::int64_t i = 0; i < 100; ++i) {
+        v[i] = p(argument);
+      }
+      benchmark::DoNotOptimize(v);
+    }
+  } else {
+    Value v;
+    while (state.KeepRunningBatch(100)) {
+      for (std::int64_t i = 0; i < 100 ; ++i) {
+        v = p(argument);
+        if constexpr (std::is_same_v<Value, double>) {
+          argument = v * Second;
+        } else {
+          argument = v.coordinates().x * (Second / Metre);
+        }
+      }
+    }
   }
-#else
-  using H = Hilbert<Value>;
-  auto const scale = 1 / si::Unit<typename H::Norm²Type>;
-  while (state.KeepRunningBatch(10)) {
-#if 0
-    auto const a0 = p(argument);
-    argument += H::Norm²(a0) * scale * Δargument;
-    auto const a1 = p(argument);
-    argument += H::Norm²(a1) * scale * Δargument;
-    auto const a2 = p(argument);
-    argument += H::Norm²(a2) * scale * Δargument;
-    auto const a3 = p(argument);
-    argument += H::Norm²(a3) * scale * Δargument;
-    auto const a4 = p(argument);
-    argument += H::Norm²(a4) * scale * Δargument;
-    auto const a5 = p(argument);
-    argument += H::Norm²(a5) * scale * Δargument;
-    auto const a6 = p(argument);
-    argument += H::Norm²(a6) * scale * Δargument;
-    auto const a7 = p(argument);
-    argument += H::Norm²(a7) * scale * Δargument;
-    auto const a8 = p(argument);
-    argument += H::Norm²(a8) * scale * Δargument;
-    auto const a9 = p(argument);
-#elif 1
-    auto const a0 = p(argument);
-    benchmark::DoNotOptimize(a0);
-    //argument += Δargument;
-    auto const a1 = p(argument);
-    benchmark::DoNotOptimize(a1);
-    //argument += Δargument;
-    auto const a2 = p(argument);
-    benchmark::DoNotOptimize(a2);
-    //argument += Δargument;
-    auto const a3 = p(argument);
-    benchmark::DoNotOptimize(a3);
-    //argument += Δargument;
-    auto const a4 = p(argument);
-    benchmark::DoNotOptimize(a4);
-    //argument += Δargument;
-    auto const a5 = p(argument);
-    benchmark::DoNotOptimize(a5);
-    //argument += Δargument;
-    auto const a6 = p(argument);
-    benchmark::DoNotOptimize(a6);
-    //argument += Δargument;
-    auto const a7 = p(argument);
-    benchmark::DoNotOptimize(a7);
-    //argument += Δargument;
-    auto const a8 = p(argument);
-    benchmark::DoNotOptimize(a8);
-    //argument += Δargument;
-    auto const a9 = p(argument);
-    benchmark::DoNotOptimize(a9);
-#else
-    auto const a0 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a0) * Δargument;
-    auto const a1 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a1) * Δargument;
-    auto const a2 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a2) * Δargument;
-    auto const a3 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a3) * Δargument;
-    auto const a4 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a4) * Δargument;
-    auto const a5 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a5) * Δargument;
-    auto const a6 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a6) * Δargument;
-    auto const a7 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a7) * Δargument;
-    auto const a8 = p(argument);
-    argument += *reinterpret_cast<double const*>(&a8) * Δargument;
-    auto const a9 = p(argument);
-    benchmark::DoNotOptimize(a9);
-#endif
-  }
-
-#endif
 }
 
 template<typename Value,
-         template<typename, typename, int> class Evaluator>
+         Metric metric,
+         template<typename, typename, int>
+         class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   int const degree = state.range(0);
   switch (degree) {
     case 2:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 2, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 2, metric, Evaluator>(
+          state);
       break;
     case 4:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 4, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 4, metric, Evaluator>(
+          state);
       break;
     case 6:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 6, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 6, metric, Evaluator>(
+          state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 8, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 8, metric, Evaluator>(
+          state);
       break;
     case 10:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 10, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 10, metric, Evaluator>(
+          state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 12, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 12, metric, Evaluator>(
+          state);
       break;
     case 14:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 14, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 14, metric, Evaluator>(
+          state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<Value, Time, 16, Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Value, Time, 16, metric, Evaluator>(
+          state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -231,56 +179,75 @@ void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
 }
 
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   double, Estrin)
+                   double, Metric::Latency, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Length, Estrin)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Displacement<ICRS>, Estrin)
+                   double, Metric::Throughput, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   double, Horner)
+                   double, Metric::Latency, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Length, Horner)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Displacement<ICRS>, Horner)
+                   double, Metric::Throughput, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   Length, Estrin)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   Length, Horner)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   double, EstrinWithoutFMA)
+                   Displacement<ICRS>, Metric::Latency, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Length, EstrinWithoutFMA)
+                   Displacement<ICRS>, Metric::Throughput, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Displacement<ICRS>, EstrinWithoutFMA)
+                   Displacement<ICRS>, Metric::Latency, Horner)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Metric::Throughput, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   double, HornerWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Length, HornerWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-                   Displacement<ICRS>, HornerWithoutFMA)
-    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-    ->Unit(benchmark::kNanosecond);
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   double, EstrinWithoutFMA)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   Length, EstrinWithoutFMA)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   Displacement<ICRS>, EstrinWithoutFMA)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+//
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   double, HornerWithoutFMA)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   Length, HornerWithoutFMA)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
+//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+//                   Displacement<ICRS>, HornerWithoutFMA)
+//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+//    ->Unit(benchmark::kNanosecond);
 
 }  // namespace numerics
 }  // namespace principia

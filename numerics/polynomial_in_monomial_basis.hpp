@@ -144,7 +144,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
 
-  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const override;
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const final;
   Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const override;
 
