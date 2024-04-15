@@ -81,7 +81,10 @@ class Policy {
  public:
   template<typename Value, typename Argument, int degree>
   PolynomialInMonomialBasis<Value, Argument, degree>&& WithEvaluator(
-      PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial);
+      PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial) const;
+
+  static constexpr Policy AlwaysEstrin();
+  static constexpr Policy AlwaysEstrinWithoutFMA();
 
   void WriteToMessage(
       not_null<serialization::PolynomialInMonomialBasis::Policy*> message)
@@ -90,7 +93,8 @@ class Policy {
       serialization::PolynomialInMonomialBasis::Policy const& message);
 
  private:
-  explicit Policy(serialization::PolynomialInMonomialBasis::Policy::Kind kind);
+  explicit constexpr Policy(
+      serialization::PolynomialInMonomialBasis::Policy::Kind kind);
 
   serialization::PolynomialInMonomialBasis::Policy::Kind kind_;
 };

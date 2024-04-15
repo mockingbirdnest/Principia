@@ -314,14 +314,26 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 template<typename Value, typename Argument, int degree>
 PolynomialInMonomialBasis<Value, Argument, degree>&& Policy::WithEvaluator(
-    PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial) {
+    PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial) const {
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
         ALWAYS_ESTRIN_WITHOUT_FMA:
-      return polynomial.WithEvaluator<EstrinWithoutFMA>();
+      return std::move(polynomial).WithEvaluator<EstrinWithoutFMA>();
     case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN:
-      return polynomial.WithEvaluator<Estrin>();
+      return std::move(polynomial).WithEvaluator<Estrin>();
   }
+  LOG(FATAL) << "Unexpected policy " << kind_;
+}
+
+constexpr Policy Policy::AlwaysEstrin() {
+  return Policy(
+      serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN);
+}
+
+constexpr Policy Policy::AlwaysEstrinWithoutFMA() {
+  return Policy(
+      serialization::PolynomialInMonomialBasis::Policy::
+                    ALWAYS_ESTRIN_WITHOUT_FMA);
 }
 
 void Policy::WriteToMessage(
@@ -334,7 +346,7 @@ Policy Policy::ReadFromMessage(
   return Policy(message.kind());
 }
 
-Policy::Policy(
+constexpr Policy::Policy(
     serialization::PolynomialInMonomialBasis::Policy::Kind const kind)
     : kind_(kind) {}
 
