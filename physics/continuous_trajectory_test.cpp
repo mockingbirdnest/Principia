@@ -223,6 +223,13 @@ class ContinuousTrajectoryTest : public testing::Test {
     return pre_καραθεοδωρή;
   }
 
+  serialization::ContinuousTrajectory MakePreکاشانی(
+      serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory pre_کاشانی = message;
+    pre_کاشانی.clear_policy();
+    return pre_کاشانی;
+  }
+
   Instant const t0_;
 };
 
@@ -908,8 +915,9 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   trajectory1->WriteToMessage(&message1);
 
   serialization::ContinuousTrajectory const pre_grassmann =
-     MakePreGrassmann(MakePreGröbner(MakePreΚαραθεοδωρή(message1)),
-                      checkpoint_time);
+      MakePreGrassmann(
+          MakePreGröbner(MakePreΚαραθεοδωρή(MakePreکاشانی(message1))),
+          checkpoint_time);
 
   // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
@@ -919,14 +927,15 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
-  // Pre-Gröbner messages use Estrin without FMA.  Recent messages use whatever
-  // they like.  Check and clear the evaluator kind before comparing the
-  // messages.
+  // Pre-Grassmann messages use Estrin without FMA.  Recent messages use
+  // whatever they like.  Check and clear the evaluator kind and policy before
+  // comparing the messages.
   for (auto& pair : *message1.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
     extension->mutable_evaluator()->clear_kind();
   }
+  message1.clear_policy();
   for (auto& pair : *message2.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
@@ -935,6 +944,10 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
         extension->evaluator().kind());
     extension->mutable_evaluator()->clear_kind();
   }
+  EXPECT_EQ(serialization::PolynomialInMonomialBasis::Policy::
+                ALWAYS_ESTRIN_WITHOUT_FMA,
+            message2.policy().kind());
+  message2.clear_policy();
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
@@ -973,7 +986,7 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   trajectory1->WriteToMessage(&message1);
 
   serialization::ContinuousTrajectory const pre_gröbner =
-      MakePreGröbner(MakePreΚαραθεοδωρή(message1));
+      MakePreGröbner(MakePreΚαραθεοδωρή(MakePreکاشانی(message1)));
 
   // Read from the pre-Gröbner message, write to a second message, and check
   // that we get the same result.
@@ -984,13 +997,14 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   trajectory2->WriteToMessage(&message2);
 
   // Pre-Gröbner messages use Estrin without FMA.  Recent messages use whatever
-  // they like.  Check and clear the evaluator kind before comparing the
-  // messages.
+  // they like.  Check and clear the evaluator kind and policy before comparing
+  // the messages.
   for (auto& pair : *message1.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
     extension->mutable_evaluator()->clear_kind();
   }
+  message1.clear_policy();
   for (auto& pair : *message2.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
@@ -999,6 +1013,10 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
         extension->evaluator().kind());
     extension->mutable_evaluator()->clear_kind();
   }
+  EXPECT_EQ(serialization::PolynomialInMonomialBasis::Policy::
+                ALWAYS_ESTRIN_WITHOUT_FMA,
+            message2.policy().kind());
+  message2.clear_policy();
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 

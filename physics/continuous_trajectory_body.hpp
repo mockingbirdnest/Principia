@@ -466,6 +466,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     }
   }
   if (is_pre_کاشانی) {
+    // See the comment above for the defaults here.
     if (is_pre_gröbner) {
       continuous_trajectory->polynomial_evaluator_policy_ =
           Policy::AlwaysEstrinWithoutFMA();
