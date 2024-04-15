@@ -122,9 +122,10 @@ MonomialAdapter<Value, degree>::NewhallApproximation(
     Instant const& t_max,
     Difference<Value>& error_estimate) {
   return MonomialAdapter(
-      NewhallApproximationInMonomialBasis<Value, degree, Estrin>(
+      NewhallApproximationInMonomialBasis<Value, degree>(
           q, v,
           t_min, t_max,
+          Policy::AlwaysEstrin(),
           error_estimate));
 }
 
@@ -806,9 +807,11 @@ TEST_F(NewhallTest, NonConstantDegree) {
 
     Length length_error_estimate;
     auto const approximation =
-        NewhallApproximationInMonomialBasis<Length, Estrin>(
+        NewhallApproximationInMonomialBasis<Length>(
             /*degree=*/10,
-            lengths, speeds, t_min_, t_max_, length_error_estimate);
+            lengths, speeds, t_min_, t_max_,
+            Policy::AlwaysEstrin(),
+            length_error_estimate);
 
     EXPECT_THAT(RelativeError((*approximation)(t_min_),
                               length_function_1_(t_min_)), IsNear(9e-13_(1)));

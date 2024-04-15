@@ -13,6 +13,7 @@
 #include "geometry/space.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/polynomial.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "physics/checkpointer.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -36,6 +37,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_checkpointer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_trajectory;
@@ -228,6 +230,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The polynomials are in increasing time order.
   InstantPolynomialPairs polynomials_ GUARDED_BY(lock_);
+  Policy polynomial_evaluator_policy_;
 
   // Lookups into |polynomials_| are expensive because they entail a binary
   // search into a vector that grows over time.  In benchmarks, this can be as

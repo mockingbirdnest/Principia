@@ -71,9 +71,6 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
     Argument const& argument) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
-  // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
-  constexpr int n = FloorLog2(subdegree) - 1;
-  // |m| is |2^(n + 1)|.
   constexpr int m = PowerOf2Le(subdegree);
 
   auto const a =
@@ -108,9 +105,6 @@ EvaluateDerivative(Coefficients const& coefficients,
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
-  // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
-  constexpr int n = FloorLog2(subdegree) - 1;
-  // |m| is |2^(n + 1)|.
   constexpr int m = PowerOf2Le(subdegree);
 
   auto const a =

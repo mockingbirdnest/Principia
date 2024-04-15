@@ -68,6 +68,13 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: Google
 
+    - name: Download config artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: config
+        configuration: ${{ matrix.configuration }}
+        directory: Boost
+
     - name: Download gipfeli artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
@@ -89,6 +96,13 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: Google
 
+    - name: Download multiprecision artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: multiprecision
+        configuration: ${{ matrix.configuration }}
+        directory: Boost
+
     - name: Download protobuf artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
@@ -101,7 +115,7 @@ jobs:
       with:
         name: zfp
         configuration: ${{ matrix.configuration }}
-        directory: 'Third Party'
+        directory: 'LLNL'
 
     - name: Restore ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/restore@main

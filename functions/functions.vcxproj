@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7cca653c-2e8f-4ffd-9e9f-bee590f3efab}</ProjectGuid>
+    <RootNamespace>functions</RootNamespace>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>BOOST_MP_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="accurate_table_generator.hpp" />
+    <ClInclude Include="accurate_table_generator_body.hpp" />
+    <ClInclude Include="multiprecision.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="accurate_table_generator_test.cpp" />
+    <ClCompile Include="multiprecision.cpp" />
+    <ClCompile Include="std_accuracy_test.cpp" />
+  </ItemGroup>
+  <Import Project="$(SolutionDir)principia.props" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+  </ImportGroup>
+</Project>

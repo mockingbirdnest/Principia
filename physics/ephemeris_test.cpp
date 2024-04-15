@@ -994,7 +994,6 @@ TEST_P(EphemerisTest, ComputeGravitationalJerkOnMassiveBody) {
   CHECK_OK(ephemeris->Prolong(j2000));
 
   auto const earth = ephemeris->bodies()[solar_system_2000.index("Earth")];
-  auto const earth_trajectory = ephemeris->trajectory(earth);
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<double> delay_distribution(1, 5);

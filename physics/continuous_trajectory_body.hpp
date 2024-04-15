@@ -50,7 +50,8 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
       adjusted_tolerance_(tolerance_),
       is_unstable_(false),
       degree_(min_degree),
-      degree_age_(0) {
+      degree_age_(0),
+      polynomial_evaluator_policy_(Policy::AlwaysEstrin()) {
   CHECK_LT(0 * Metre, tolerance_);
 }
 
@@ -333,6 +334,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   step_.WriteToMessage(message->mutable_step());
   tolerance_.WriteToMessage(message->mutable_tolerance());
+  polynomial_evaluator_policy_.WriteToMessage(message->mutable_policy());
 
   // There should be no polynomials before the oldest checkpoint in recent
   // saves, see Ephemeris::AppendMassiveBodiesState.  This has probably been
@@ -373,12 +375,14 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
        message.instant_polynomial_pair(0).polynomial()
            .GetExtension(serialization::PolynomialInMonomialBasis::extension)
            .coefficient(0).has_multivector());
-  LOG_IF(WARNING, is_pre_gröbner)
+  bool const is_pre_کاشانی = !message.has_policy();
+  LOG_IF(WARNING, is_pre_کاشانی)
       << "Reading pre-"
       << (is_pre_cohen       ? "Cohen"
           : is_pre_fatou     ? "Fatou"
           : is_pre_grassmann ? "Grassmann"
-                             : "Gröbner") << " ContinuousTrajectory";
+          : is_pre_gröbner   ? "Gröbner"
+                             : "کاشانی") << " ContinuousTrajectory";
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -426,10 +430,17 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             mutable_coefficient(0)->mutable_point();
         *coefficient0_point->mutable_multivector() = coefficient0_multivector;
 
+        // Note the use of |EstrinWithoutFMA| below.  FMA was introduced in
+        // Grossmann, but unfortunately we didn't notice that it was affecting
+        // existing flight plans, and we have no way to tell that a save is
+        // exactly pre-Grossmann.  On the other hand, we are sure that pre-
+        // Gröbner saves didn't have FMA.  So deserialization is technically
+        // incorrect for Gröbner saves, as we will use FMA when reading, even
+        // though we didn't have FMA when the save was created.
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                Estrin>(polynomial));
+                EstrinWithoutFMA>(polynomial));
       } else {
         serialization::Polynomial const& polynomial = pair.polynomial();
         if (polynomial.HasExtension(
@@ -453,6 +464,19 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         }
       }
     }
+  }
+  if (is_pre_کاشانی) {
+    // See the comment above for the defaults here.
+    if (is_pre_gröbner) {
+      continuous_trajectory->polynomial_evaluator_policy_ =
+          Policy::AlwaysEstrinWithoutFMA();
+    } else {
+      continuous_trajectory->polynomial_evaluator_policy_ =
+          Policy::AlwaysEstrin();
+    }
+  } else {
+    continuous_trajectory->polynomial_evaluator_policy_ =
+        Policy::ReadFromMessage(message.policy());
   }
   if (message.has_first_time()) {
     continuous_trajectory->first_time_ =
@@ -655,7 +679,8 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory()
           make_not_null_unique<
               Checkpointer<serialization::ContinuousTrajectory>>(
           /*reader=*/nullptr,
-          /*writer=*/nullptr)) {}
+          /*writer=*/nullptr)),
+          polynomial_evaluator_policy_(Policy::AlwaysEstrin()) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
@@ -675,10 +700,11 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::_newhall::NewhallApproximationInMonomialBasis<
-             Position<Frame>, Estrin>(degree,
-                                      q, v,
-                                      t_min, t_max,
-                                      error_estimate);
+             Position<Frame>>(degree,
+                              q, v,
+                              t_min, t_max,
+                              polynomial_evaluator_policy_,
+                              error_estimate);
 }
 
 template<typename Frame>
