@@ -426,10 +426,17 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             mutable_coefficient(0)->mutable_point();
         *coefficient0_point->mutable_multivector() = coefficient0_multivector;
 
+        // Note the use of |EstrinWithoutFMA| below.  FMA was introduced in
+        // Grossmann, but unfortunately we didn't notice that it was affecting
+        // existing flight plans, and we have no way to tell that a save is
+        // exactly pre-Grossmann.  On the other hand, we are sure that pre-
+        // Gröbner saves didn't have FMA.  So deserialization is technically
+        // incorrect for Gröbner saves, as we will use FMA when reading, even
+        // though we didn't have FMA when the save was created.
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                Estrin>(polynomial));
+                EstrinWithoutFMA>(polynomial));
       } else {
         serialization::Polynomial const& polynomial = pair.polynomial();
         if (polynomial.HasExtension(
