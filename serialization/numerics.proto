@@ -95,6 +95,16 @@ message PolynomialInMonomialBasis {
   extend Polynomial {
     optional PolynomialInMonomialBasis extension = 10000;
   }
+  // Added in کاشانی.  Not used in the representation of polynomials, but in
+  // code that constructs them.
+  message Policy {
+    enum Kind {
+      ALWAYS_ESTRIN_WITHOUT_FMA = 0;
+      ALWAYS_ESTRIN = 1;
+    }
+    required Kind kind = 1;
+  }
+
   message Evaluator {
     enum Kind {
       ESTRIN = 0;

@@ -312,6 +312,33 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 }
 
 
+template<typename Value, typename Argument, int degree>
+PolynomialInMonomialBasis<Value, Argument, degree>&& Policy::WithEvaluator(
+    PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial) {
+  switch (kind_) {
+    case serialization::PolynomialInMonomialBasis::Policy::
+        ALWAYS_ESTRIN_WITHOUT_FMA:
+      return polynomial.WithEvaluator<EstrinWithoutFMA>();
+    case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN:
+      return polynomial.WithEvaluator<Estrin>();
+  }
+}
+
+void Policy::WriteToMessage(
+    not_null<serialization::PolynomialInMonomialBasis::Policy*> message) const {
+  message->set_kind(kind_);
+}
+
+Policy Policy::ReadFromMessage(
+    serialization::PolynomialInMonomialBasis::Policy const& message) {
+  return Policy(message.kind());
+}
+
+Policy::Policy(
+    serialization::PolynomialInMonomialBasis::Policy::Kind const kind)
+    : kind_(kind) {}
+
+
 template<typename Value_, typename Argument_, int degree_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
