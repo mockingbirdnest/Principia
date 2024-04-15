@@ -318,9 +318,9 @@ PolynomialInMonomialBasis<Value, Argument, degree>&& Policy::WithEvaluator(
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
         ALWAYS_ESTRIN_WITHOUT_FMA:
-      return std::move(polynomial).WithEvaluator<EstrinWithoutFMA>();
+      return std::move(polynomial).template WithEvaluator<EstrinWithoutFMA>();
     case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN:
-      return std::move(polynomial).WithEvaluator<Estrin>();
+      return std::move(polynomial).template WithEvaluator<Estrin>();
   }
   LOG(FATAL) << "Unexpected policy " << kind_;
 }
