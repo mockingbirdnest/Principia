@@ -12,7 +12,7 @@
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "numerics/polynomial_in_чебышёв_basis.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -26,17 +26,10 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::numerics::_polynomial_in_чебышёв_basis;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-template<typename Result,
-         Result (*newhall)(int degree,
-                           std::vector<double> const& q,
-                           std::vector<Variation<double>> const& v,
-                           Instant const& t_min,
-                           Instant const& t_max,
-                           double& error_estimate)>
 void BM_NewhallApproximationDouble(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
@@ -56,17 +49,11 @@ void BM_NewhallApproximationDouble(benchmark::State& state) {
       v.push_back(static_cast<double>(static_cast<double>(random())) / Second);
     }
     state.ResumeTiming();
-    auto const series = newhall(degree, p, v, t_min, t_max, error_estimate);
+    auto const series = NewhallApproximationInMonomialBasis<double>(
+        degree, p, v, t_min, t_max, Policy::AlwaysEstrin(), error_estimate);
   }
 }
 
-template<typename Result,
-         Result (*newhall)(int degree,
-                           std::vector<Displacement<ICRS>> const& q,
-                           std::vector<Variation<Displacement<ICRS>>> const& v,
-                           Instant const& t_min,
-                           Instant const& t_max,
-                           Displacement<ICRS>& error_estimate)>
 void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
@@ -91,39 +78,18 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
            static_cast<double>(random()) * Metre / Second}));
     }
     state.ResumeTiming();
-    auto const series = newhall(degree, p, v, t_min, t_max, error_estimate);
+    auto const series = NewhallApproximationInMonomialBasis<Displacement<ICRS>>(
+        degree, p, v, t_min, t_max, Policy::AlwaysEstrin(), error_estimate);
   }
 }
 
-using ResultЧебышёвDouble =
-    not_null<std::unique_ptr<PolynomialInЧебышёвBasis<double, Instant>>>;
-using ResultЧебышёвDisplacement = not_null<
-    std::unique_ptr<PolynomialInЧебышёвBasis<Displacement<ICRS>, Instant>>>;
 using ResultMonomialDouble =
     not_null<std::unique_ptr<Polynomial<double, Instant>>>;
 using ResultMonomialDisplacement =
     not_null<std::unique_ptr<Polynomial<Displacement<ICRS>, Instant>>>;
 
-BENCHMARK_TEMPLATE(
-    BM_NewhallApproximationDouble,
-    ResultЧебышёвDouble,
-    &NewhallApproximationInЧебышёвBasis<double>)
-    ->Arg(4)->Arg(8)->Arg(16);
-BENCHMARK_TEMPLATE(
-    BM_NewhallApproximationDisplacement,
-    ResultЧебышёвDisplacement,
-    &NewhallApproximationInЧебышёвBasis<Displacement<ICRS>>)
-    ->Arg(4)->Arg(8)->Arg(16);
-BENCHMARK_TEMPLATE(
-    BM_NewhallApproximationDouble,
-    ResultMonomialDouble,
-    (&NewhallApproximationInMonomialBasis<double, Estrin>))
-    ->Arg(4)->Arg(8)->Arg(16);
-BENCHMARK_TEMPLATE(
-    BM_NewhallApproximationDisplacement,
-    ResultMonomialDisplacement,
-    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>, Estrin>))
-    ->Arg(4)->Arg(8)->Arg(16);
+BENCHMARK(BM_NewhallApproximationDouble)->Arg(4)->Arg(8)->Arg(16);
+BENCHMARK(BM_NewhallApproximationDisplacement)->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics
 }  // namespace principia

@@ -76,6 +76,30 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
 
+// Used to decide which evaluator to use for a particular polynomial.
+class Policy {
+ public:
+  template<typename Value, typename Argument, int degree>
+  PolynomialInMonomialBasis<Value, Argument, degree>&& WithEvaluator(
+      PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial) const;
+
+  static constexpr Policy AlwaysEstrin();
+  static constexpr Policy AlwaysEstrinWithoutFMA();
+
+  void WriteToMessage(
+      not_null<serialization::PolynomialInMonomialBasis::Policy*> message)
+      const;
+  static Policy ReadFromMessage(
+      serialization::PolynomialInMonomialBasis::Policy const& message);
+
+ private:
+  explicit constexpr Policy(
+      serialization::PolynomialInMonomialBasis::Policy::Kind kind);
+
+  serialization::PolynomialInMonomialBasis::Policy::Kind kind_;
+};
+
+
 template<typename Value_, typename Argument_, int degree_>
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  public:
@@ -356,6 +380,7 @@ std::ostream& operator<<(
 
 }  // namespace internal
 
+using internal::Policy;
 using internal::PolynomialInMonomialBasis;
 using internal::with_evaluator;
 

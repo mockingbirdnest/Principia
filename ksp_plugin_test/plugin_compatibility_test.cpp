@@ -73,8 +73,7 @@ using namespace std::chrono_literals;
 const char preferred_compressor[] = "gipfeli";
 const char preferred_encoder[] = "base64";
 
-class PluginCompatibilityTest
-    : public testing::TestWithParam<bool> {
+class PluginCompatibilityTest : public testing::Test {
  protected:
   PluginCompatibilityTest()
       : stderrthreshold_(FLAGS_stderrthreshold) {
@@ -138,15 +137,8 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 }
 
 #if !_DEBUG
-INSTANTIATE_TEST_SUITE_P(FMA, PluginCompatibilityTest, Bool());
 
-TEST_P(PluginCompatibilityTest, Reach) {
-  std::optional<FMAPreventer> fma_preventer;
-  if (!GetParam()) {
-    fma_preventer.emplace();
-  } else if (!UseHardwareFMA) {
-    GTEST_SKIP() << "FMA not used by default";
-  }
+TEST_F(PluginCompatibilityTest, Reach) {
   StringLogSink log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
@@ -252,20 +244,9 @@ TEST_P(PluginCompatibilityTest, Reach) {
   std::vector<std::pair<Instant, std::string>> flybys(flyby_map.begin(),
                                                       flyby_map.end());
 
-  // The save was created prior to the introduction of FMA in Principia.
-  // When FMA is not used, the flybys match https://youtu.be/7BDxZV7UD9I?t=439
-  // until the second Earth flyby, and are close for the second Earth flyby and
-  // Jupiter flyby.
-  // When using FMA, we lose these last two flybys.
-  // The flight plan desired and actual final time are before the time of the
-  // Saturn flyby from the video; however, the Saturn flyby seems to be missing
-  // from this flight plan even if it is extended further.
 #if PRINCIPIA_COMPILER_MSVC
-  EXPECT_THAT(flybys, SizeIs(Ge(10)));
-  std::span const first_10_flybys(flybys.begin(), 10);
-  std::span const subsequent_flybys(flybys.begin() + 10, flybys.end());
   EXPECT_THAT(
-      first_10_flybys,
+      flybys,
       ElementsAre(
           Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
           Pair(ResultOf(&TTSecond, "1971-08-29T23:33:54"_DateTime), "Mars"),
@@ -276,22 +257,13 @@ TEST_P(PluginCompatibilityTest, Reach) {
           Pair(ResultOf(&TTSecond, "1974-07-25T22:45:52"_DateTime), "Mercury"),
           Pair(ResultOf(&TTSecond, "1974-09-05T08:27:45"_DateTime), "Venus"),
           Pair(ResultOf(&TTSecond, "1975-04-18T00:42:26"_DateTime), "Venus"),
-          Pair(ResultOf(&TTSecond,
-                        UseHardwareFMA ? "1976-04-26T17:38:08"_DateTime
-                                       : "1976-04-26T17:36:24"_DateTime),
-               "Venus")));
-  if (UseHardwareFMA) {
-    EXPECT_THAT(subsequent_flybys, IsEmpty());
-  } else {
-    EXPECT_THAT(
-        subsequent_flybys,
-        ElementsAre(Pair(  // The video has             21:57.
-                        ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime),
-                        "Earth"),
-                    Pair(  // The video has             07:52.
-                        ResultOf(&TTSecond, "1980-02-17T22:18:43"_DateTime),
-                        "Jupiter")));
-  }
+          Pair(ResultOf(&TTSecond, "1976-04-26T17:36:24"_DateTime), "Venus"),
+          Pair(  // The video has             21:57.
+              ResultOf(&TTSecond, "1978-08-07T21:58:49"_DateTime),
+              "Earth"),
+          Pair(  // The video has             07:52.
+              ResultOf(&TTSecond, "1980-02-17T22:18:43"_DateTime),
+              "Jupiter")));
 #elif OS_MACOSX
   EXPECT_THAT(
       flybys,
