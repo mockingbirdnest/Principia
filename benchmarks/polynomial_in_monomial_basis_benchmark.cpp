@@ -6,7 +6,6 @@
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
-#include "geometry/hilbert.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "glog/logging.h"
@@ -21,7 +20,6 @@ namespace numerics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial_evaluators;
@@ -157,8 +155,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   }
 }
 
-template<typename Value,
-         Metric metric,
+template<typename Value, Metric metric,
          template<typename, typename, int> typename Evaluator>
 void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   int const degree = state.range(0);
