@@ -12,6 +12,7 @@
 #include "glog/logging.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -25,9 +26,12 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+
+static constexpr std::int64_t number_of_iterations = 100;
 
 enum class Metric {
   Latency,
@@ -82,49 +86,69 @@ struct RandomTupleGenerator<Tuple, size, size> {
   static void Fill(Tuple& t, std::mt19937_64& random) {}
 };
 
-template<typename Value, typename Argument, int degree, Metric metric,
+// Constructs a polynomial and an argument so that the iteration performed for
+// the latency benchmark does not generate nonfinite values.  Note that the
+// iteration here must be identical to the one used in the benchmark.
+template<typename Value, typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
-void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
+void PickPolynomialAndArgument(
+    std::mt19937_64& random,
+    PolynomialInMonomialBasis<Value, Argument, degree>& polynomial,
+    Argument& initial_argument) {
   using P = PolynomialInMonomialBasis<Value, Argument, degree>;
-  std::mt19937_64 random(42);
-  typename P::Coefficients coefficients;
-  RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients, random);
-  P p(coefficients, with_evaluator<Evaluator>);
-  auto const initial_argument = ValueGenerator<Argument>::Get(random);
-  auto argument = initial_argument;
-  do {
+
+  initial_argument = ValueGenerator<Argument>::Get(random);
+  for (;;) {
+    typename P::Coefficients coefficients;
     RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients,
                                                             random);
-    p = P(coefficients, with_evaluator<Evaluator>);
-    argument = initial_argument;
-    for (std::int64_t i = 0; i < 100; ++i) {
-      Value v;
-      v = p(argument);
-      if constexpr (std::is_same_v<Value, double>) {
-        argument = v * Second;
+    polynomial = P(coefficients, with_evaluator<Evaluator>);
+    auto argument = initial_argument;
+    Value v;
+    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+      v = polynomial(argument);
+      if constexpr (convertible_to_quantity<Value>) {
+        argument = v * (Second / si::Unit<Value>);
       } else {
         argument = v.coordinates().x * (Second / Metre);
       }
     }
-  } while (!IsFinite(argument));
+    if (IsFinite(argument)) {
+      break;
+    }
+  }
+}
 
-  argument = initial_argument;
+template<typename Value, typename Argument, int degree, Metric metric,
+         template<typename, typename, int> class Evaluator>
+void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
+  using P = PolynomialInMonomialBasis<Value, Argument, degree>;
+
+  std::mt19937_64 random(42);
+  P polynomial(typename P::Coefficients{});
+  Argument argument;
+
+  // We do this even for the throughput benchmark to make sure that we use the
+  // same polynomial and argument in both cases.
+  PickPolynomialAndArgument<Value, Argument, degree, Evaluator>(
+      random, polynomial, argument);
 
   if constexpr (metric == Metric::Throughput) {
-    Value v[100];
-    while (state.KeepRunningBatch(100)) {
-      for (std::int64_t i = 0; i < 100; ++i) {
-        v[i] = p(argument);
+    Value v[number_of_iterations];
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v[i] = polynomial(argument);
       }
       benchmark::DoNotOptimize(v);
     }
   } else {
+    static_assert(metric == Metric::Latency);
     Value v;
-    while (state.KeepRunningBatch(100)) {
-      for (std::int64_t i = 0; i < 100 ; ++i) {
-        v = p(argument);
-        if constexpr (std::is_same_v<Value, double>) {
-          argument = v * Second;
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      for (std::int64_t i = 0; i < number_of_iterations ; ++i) {
+        v = polynomial(argument);
+        if constexpr (convertible_to_quantity<Value>) {
+          argument = v * (Second / si::Unit<Value>);
         } else {
           argument = v.coordinates().x * (Second / Metre);
         }
@@ -135,8 +159,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
 
 template<typename Value,
          Metric metric,
-         template<typename, typename, int>
-         class Evaluator>
+         template<typename, typename, int> typename Evaluator>
 void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   int const degree = state.range(0);
   switch (degree) {
@@ -174,7 +197,7 @@ void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
       break;
     default:
       LOG(FATAL) << "Degree " << degree
-                 << " in BM_EvaluatePolynomialInMonomialBasisDouble";
+                 << " in BM_EvaluatePolynomialInMonomialBasis";
   }
 }
 
@@ -186,7 +209,6 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    double, Metric::Throughput, Estrin)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    double, Metric::Latency, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
@@ -195,16 +217,55 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    double, Metric::Throughput, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, Metric::Latency, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, Metric::Throughput, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, Metric::Latency, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   double, Metric::Throughput, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
 
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   Length, Estrin)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
-
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   Length, Horner)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Latency, Estrin)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Throughput, Estrin)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Latency, Horner)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Throughput, Horner)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Latency, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Throughput, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Latency, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Length, Metric::Throughput, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
 
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    Displacement<ICRS>, Metric::Latency, Estrin)
@@ -222,32 +283,22 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    Displacement<ICRS>, Metric::Throughput, Horner)
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
-
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   double, EstrinWithoutFMA)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   Length, EstrinWithoutFMA)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   Displacement<ICRS>, EstrinWithoutFMA)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
-//
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   double, HornerWithoutFMA)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   Length, HornerWithoutFMA)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
-//BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
-//                   Displacement<ICRS>, HornerWithoutFMA)
-//    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
-//    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Metric::Latency, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Metric::Throughput, EstrinWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Metric::Latency, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
+                   Displacement<ICRS>, Metric::Throughput, HornerWithoutFMA)
+    ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
+    ->Unit(benchmark::kNanosecond);
 
 }  // namespace numerics
 }  // namespace principia
