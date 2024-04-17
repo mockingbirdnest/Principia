@@ -18,7 +18,7 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
   using Argument = double;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(-1.0, 1.0);
+  std::uniform_real_distribution<> uniformly_at(-10.0, 10.0);
   Argument argument = uniformly_at(random);
 
   if constexpr (metric == Metric::Throughput) {
