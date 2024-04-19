@@ -27,6 +27,9 @@
     <ClCompile Include="accurate_table_generator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="sin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="multiprecision.hpp">
