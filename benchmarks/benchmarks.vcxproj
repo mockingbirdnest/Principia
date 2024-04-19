@@ -11,6 +11,7 @@
     <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
     <Import Project="..\shared\testing_utilities.vcxitems" Label="Shared" />
     <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
+    <Import Project="..\shared\functions.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />

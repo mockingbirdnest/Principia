@@ -4,9 +4,12 @@
 #include <random>
 
 #include "benchmark/benchmark.h"
+#include "functions/sin.hpp"
 
 namespace principia {
 namespace functions {
+
+using namespace principia::functions::_sin;
 
 static constexpr std::int64_t number_of_iterations = 1000;
 
@@ -44,6 +47,11 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, std::sin)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, std::sin)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, cr_sin)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, cr_sin)
     ->Unit(benchmark::kNanosecond);
 
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, std::cos)
