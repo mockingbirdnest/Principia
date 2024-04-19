@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cmath>
 #include <limits>
 #include <random>
 
@@ -9,8 +8,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
-#include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
+#include "quantities/quantities.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
@@ -21,8 +19,7 @@ namespace _multiprecision {
 using ::testing::AnyOf;
 using namespace boost::multiprecision;
 using namespace principia::functions::_sin;
-using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
@@ -68,10 +65,7 @@ TEST_F(CoreMathAccuracyTest, SinCos) {
           std::max(max_cos_ulp_distance, ULPDistance(std::cos(α), Cos(α)));
 #endif
     }
-    EXPECT_THAT(max_sin_ulp_distance,
-                AnyOf(IsNear(0.727_(1)),    // Windows.
-                      IsNear(0.654_(1)),    // macOS.
-                      IsNear(0.513_(1))));  // Ubuntu.
+    EXPECT_THAT(max_sin_ulp_distance, IsNear(0.49999_(1)));
 #if 0
     EXPECT_THAT(max_cos_ulp_distance,
                 AnyOf(IsNear(0.834_(1)),    // Windows, macOS.
@@ -82,7 +76,7 @@ TEST_F(CoreMathAccuracyTest, SinCos) {
   // Hardest argument reduction, [Mul+10] table 11.1.
   {
     double const x = 0x16ac5b262ca1ffp797;
-    EXPECT_THAT(ULPDistance(std::sin(x), Sin(x)), IsNear(9.89e-22_(1)));
+    EXPECT_THAT(ULPDistance(cr_sin(x), Sin(x)), IsNear(9.89e-22_(1)));
 #if 0
     EXPECT_THAT(ULPDistance(std::cos(x), Cos(x)),
                 AnyOf(IsNear(0.0454_(1)),  // Windows, macOS.

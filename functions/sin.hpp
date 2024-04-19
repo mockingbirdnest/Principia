@@ -3,7 +3,7 @@ namespace functions {
 namespace _sin {
 namespace internal {
 
-double cr_sin(double x);
+double __cdecl cr_sin(double x);
 
 }  // namespace internal
 

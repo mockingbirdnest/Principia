@@ -26,6 +26,8 @@ SOFTWARE.
 
 /* stdio.h and stdlib.h are needed in case the rounding test of the accurate
    step fails, to print the corresponding input and exit. */
+#include "functions/sin.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -41,11 +43,11 @@ SOFTWARE.
 #endif
 
 //#pragma STDC FENV_ACCESS ON
-#define __builtin_clzl __lzcnt64
-#define __builtin_expect
-#define __builtin_fabs std::abs
-#define __builtin_floor std::floor
-#define __builtin_fma principia::numerics::_fma::FusedMultiplyAdd
+#define __builtin_clzl(x) __lzcnt64(x)
+#define __builtin_expect(x, y) x
+#define __builtin_fabs(x) std::abs(x)
+#define __builtin_floor(x) std::floor(x)
+#define __builtin_fma(x, y, z) principia::numerics::_fma::FusedMultiplyAdd(x, y, z)
 
 /******************** code copied from dint.h and pow.[ch] *******************/
 
@@ -299,7 +301,7 @@ mul_dint_21 (dint64_t *r, const dint64_t *a, const dint64_t *b) {
 static inline void dint_fromd (dint64_t *a, double b) {
   fast_extract (&a->ex, &a->hi, b);
 
-  /* |b| = 2^(ex-52)*hi */
+  /* |b| = 2^(ex-52)*hi */  // TODO(phl): 53?
 
   uint32_t t = __builtin_clzl (a->hi);
 
@@ -318,7 +320,7 @@ static inline void subnormalize_dint(dint64_t *a) {
 
   uint64_t hi = a->hi >> ex;
   uint64_t md = (a->hi >> (ex - 1)) & 0x1;
-  uint64_t lo = (a->hi & (~0ul >> ex)) || a->lo;
+  uint64_t lo = (a->hi & (~0ull >> ex)) || a->lo;
 
   switch (fegetround()) {
   case FE_TONEAREST:
@@ -1531,7 +1533,7 @@ reduce2 (dint64_t *X)
     return 0;
   int sh = 64 - 11 - X->ex;
   int i = X->hi >> sh;
-  X->hi = X->hi & ((1ul << sh) - 1);
+  X->hi = X->hi & ((1ull << sh) - 1);
   normalize (X);
   return i;
 }
@@ -2000,7 +2002,7 @@ sin_accurate (double x)
   return y;
 }
 
-double
+double __cdecl
 cr_sin (double x)
 {
   b64u64_u t = {.f = x};
@@ -2008,7 +2010,7 @@ cr_sin (double x)
 
   if (__builtin_expect (e == 0x7ff, 0)) [[unlikely]] /* NaN, +Inf and -Inf. */
     {
-      t.u = ~0ul;
+      t.u = ~0ull;
       return t.f;
     }
 
