@@ -30,13 +30,22 @@ SOFTWARE.
 #include <stdlib.h>
 #include <stdint.h>
 #include <fenv.h>
+#include <intrin.h>
+
+#include "absl/numeric/int128.h"
+#include "numerics/fma.hpp"
 
 // Warning: clang also defines __GNUC__
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
-#pragma STDC FENV_ACCESS ON
+//#pragma STDC FENV_ACCESS ON
+#define __builtin_clzl __lzcnt64
+#define __builtin_expect
+#define __builtin_fabs std::abs
+#define __builtin_floor std::floor
+#define __builtin_fma principia::numerics::_fma::FusedMultiplyAdd
 
 /******************** code copied from dint.h and pow.[ch] *******************/
 
@@ -45,7 +54,7 @@ namespace functions {
 namespace _sin {
 namespace internal {
 
-typedef unsigned __int128 u128;
+typedef absl::uint128 u128;
 
 typedef union {
   struct {
@@ -79,7 +88,7 @@ static inline void fast_extract (int64_t *e, uint64_t *m, double x) {
   f64_u _x = {.f = x};
 
   *e = (_x.u >> 52) & 0x7ff;
-  *m = (_x.u & (~0ul >> 12)) + (*e ? (1ul << 52) : 0);
+  *m = (_x.u & (~0ull >> 12)) + (*e ? (1ull << 52) : 0);
   *e = *e - 0x3fe;
 }
 
@@ -96,9 +105,9 @@ static inline int cmpu128 (u128 a, u128 b) { return (a > b) - (a < b); }
 
 /* ZERO is a dint64_t representation of 0, which ensures that
    dint_tod(ZERO) = 0 */
-static const dint64_t ZERO = {.hi = 0x0, .lo = 0x0, .ex = -1076, .sgn = 0x0};
+static const dint64_t ZERO = {.lo = 0x0, .hi = 0x0, .ex = -1076, .sgn = 0x0};
 // MAGIC is a dint64_t representation of 1/2^11
-static const dint64_t MAGIC = {.hi = 0x8000000000000000, .lo = 0x0, .ex = -10, .sgn = 0x0};
+static const dint64_t MAGIC = {.lo = 0x0, .hi = 0x8000000000000000, .ex = -10, .sgn = 0x0};
 
 // Compare the absolute values of a and b
 // Return -1 if |a| < |b|
@@ -176,10 +185,10 @@ add_dint (dint64_t *r, const dint64_t *a, const dint64_t *b) {
        * k=1 and ex>0 below: then we ensure C is exact
      */
     C = A - B;
-    uint64_t ch = C >> 64;
+    uint64_t ch = absl::Uint128High64(C);
     /* We can't have C=0 here since we excluded the case |A| = |B|,
        thus __builtin_clzl(C) is well-defined below. */
-    uint64_t ex = ch ? __builtin_clzl(ch) : 64 + __builtin_clzl(C);
+    uint64_t ex = ch ? __builtin_clzl(ch) : 64 + __builtin_clzl(absl::Uint128Low64(C));
     /* The error from the truncated part of B (1 ulp) is multiplied by 2^ex,
        thus by 2 ulps when ex <= 1. */
     if (ex > 0)
@@ -198,7 +207,7 @@ add_dint (dint64_t *r, const dint64_t *a, const dint64_t *b) {
          one (as if no truncation); moreover in some rare cases we need to
          shift by 1 bit to the left. */
       r->ex -= ex;
-      ex = __builtin_clzl (C >> 64);
+      ex = __builtin_clzl (absl::Uint128High64(C));
       /* Fall through with the code for ex = 0. */
     }
     C = C << ex;
@@ -328,7 +337,7 @@ static inline void subnormalize_dint(dint64_t *a) {
 
   if (!a->hi) {
     a->ex++;
-    a->hi = (1l << 63);
+    a->hi = (1ll << 63);
   }
 }
 
@@ -336,7 +345,7 @@ static inline void subnormalize_dint(dint64_t *a) {
 static inline double dint_tod(dint64_t *a) {
   subnormalize_dint (a);
 
-  f64_u r = {.u = (a->hi >> 11) | (0x3ffl << 52)};
+  f64_u r = {.u = (a->hi >> 11) | (0x3ffll << 52)};
 
   double rd = 0.0;
   if ((a->hi >> 10) & 0x1)
@@ -374,7 +383,7 @@ static inline double dint_tod(dint64_t *a) {
         e.f = 0x0.0000000000001p-1022;
       }
     } else {
-      e.u = 1l << (a->ex + 1073);
+      e.u = 1ll << (a->ex + 1073);
     }
   }
 
@@ -416,262 +425,262 @@ static const uint64_t T[20] = {
    Each entry is to be interpreted as (hi/2^64+lo/2^128)*2^ex*(-1)*sgn.
    Generated with computeS() from sin.sage. */
 static const dint64_t S[256] = {
-  {.hi = 0x0, .lo = 0x0, .ex = 128, .sgn=0},
-  {.hi = 0xc90fc5f66525d257, .lo = 0x480f7956b6470765, .ex = -8, .sgn=0},
-  {.hi = 0xc90f87f3380388d5, .lo = 0xcb3ff35bd4d81baa, .ex = -7, .sgn=0},
-  {.hi = 0x96cb587284b81770, .lo = 0xb767005691b9d9d1, .ex = -6, .sgn=0},
-  {.hi = 0xc90e8fe6f63c2330, .lo = 0xf1d7d06db39ea9fc, .ex = -6, .sgn=0},
-  {.hi = 0xfb514b55ccbe541a, .lo = 0xd784e031f9af76d6, .ex = -6, .sgn=0},
-  {.hi = 0x96c9b5df1877e9b5, .lo = 0xf91ee371d6467dca, .ex = -5, .sgn=0},
-  {.hi = 0xafea690fd5912ef3, .lo = 0xf56e3c87ae3c56df, .ex = -5, .sgn=0},
-  {.hi = 0xc90aafbd1b33efc9, .lo = 0xc539edcbfda0cf2c, .ex = -5, .sgn=0},
-  {.hi = 0xe22a7a6729d8e453, .lo = 0x850021e392744a4f, .ex = -5, .sgn=0},
-  {.hi = 0xfb49b98e8e7807f6, .lo = 0xb21ccebc9caac3, .ex = -5, .sgn=0},
-  {.hi = 0x8a342eda160bf5ae, .lo = 0xde5b1068d174be9c, .ex = -4, .sgn=0},
-  {.hi = 0x96c32baca2ae68b4, .lo = 0x37b2dd49d5fca3c0, .ex = -4, .sgn=0},
-  {.hi = 0xa351cb7fc30bc889, .lo = 0xb56007d16d4ad5a3, .ex = -4, .sgn=0},
-  {.hi = 0xafe00694866a1b44, .lo = 0xcd34d2751c2e1da7, .ex = -4, .sgn=0},
-  {.hi = 0xbc6dd52c3a342eb5, .lo = 0xf10bfca3d6464012, .ex = -4, .sgn=0},
-  {.hi = 0xc8fb2f886ec09f37, .lo = 0x6a17954b2b7c5171, .ex = -4, .sgn=0},
-  {.hi = 0xd5880deafc18b534, .lo = 0x73d1472472f4a390, .ex = -4, .sgn=0},
-  {.hi = 0xe214689606bf1676, .lo = 0x438b4a73aecd2541, .ex = -4, .sgn=0},
-  {.hi = 0xeea037cc04764844, .lo = 0xc4e92d01a2f42935, .ex = -4, .sgn=0},
-  {.hi = 0xfb2b73cfc106ff68, .lo = 0xf0a0e36a000c7350, .ex = -4, .sgn=0},
-  {.hi = 0x83db0a7231831d8f, .lo = 0x60e782313f6161af, .ex = -3, .sgn=0},
-  {.hi = 0x8a2009a6b84d9402, .lo = 0x77724a2b2a669bc4, .ex = -3, .sgn=0},
-  {.hi = 0x9064b3a76a22640c, .lo = 0x56e0a8b0d177b55d, .ex = -3, .sgn=0},
-  {.hi = 0x96a9049670cfae65, .lo = 0xf77574094d3c35c4, .ex = -3, .sgn=0},
-  {.hi = 0x9cecf8962d14c822, .lo = 0x50ffe4f5caa7f1fa, .ex = -3, .sgn=0},
-  {.hi = 0xa3308bc93904ad69, .lo = 0xdec1b7f2768bdafa, .ex = -3, .sgn=0},
-  {.hi = 0xa973ba526a6850d9, .lo = 0x76f8c63986598c79, .ex = -3, .sgn=0},
-  {.hi = 0xafb68054d520c60b, .lo = 0xfdd2fc0936594c2d, .ex = -3, .sgn=0},
-  {.hi = 0xb5f8d9f3cd8945d6, .lo = 0x924bef13600f9852, .ex = -3, .sgn=0},
-  {.hi = 0xbc3ac352ead90abe, .lo = 0xeb13e106732687f1, .ex = -3, .sgn=0},
-  {.hi = 0xc27c389609850433, .lo = 0xb228a03916371f6f, .ex = -3, .sgn=0},
-  {.hi = 0xc8bd35e14da15f0e, .lo = 0xc7396c894bbf7389, .ex = -3, .sgn=0},
-  {.hi = 0xcefdb7592542e1e9, .lo = 0x6b47b8c44e5b037e, .ex = -3, .sgn=0},
-  {.hi = 0xd53db9224ae01bca, .lo = 0x7337412cf70716cb, .ex = -3, .sgn=0},
-  {.hi = 0xdb7d3761c7b263b6, .lo = 0xbb286d23e11c8337, .ex = -3, .sgn=0},
-  {.hi = 0xe1bc2e3cf616a7ac, .lo = 0x31883b30137c6e62, .ex = -3, .sgn=0},
-  {.hi = 0xe7fa99d983ee098f, .lo = 0xeeb8f9c33340a2f2, .ex = -3, .sgn=0},
-  {.hi = 0xee38765d74fe4897, .lo = 0xed16b994af6c18ae, .ex = -3, .sgn=0},
-  {.hi = 0xf475bfef2551f5b9, .lo = 0x14e1a5488eaeab96, .ex = -3, .sgn=0},
-  {.hi = 0xfab272b54b9871a2, .lo = 0x704729ae56d78a37, .ex = -3, .sgn=0},
-  {.hi = 0x8077456b7dc2d967, .lo = 0x3eac8308f1113e5e, .ex = -2, .sgn=0},
-  {.hi = 0x8395023dd418e919, .lo = 0xdb1f70118c9c2198, .ex = -2, .sgn=0},
-  {.hi = 0x86b26de5933c2e8e, .lo = 0xc5a9decdfaad4db5, .ex = -2, .sgn=0},
-  {.hi = 0x89cf8676d7abb55b, .lo = 0x97965c9860c34e44, .ex = -2, .sgn=0},
-  {.hi = 0x8cec4a05f12739e8, .lo = 0xdcdca90cc73b116a, .ex = -2, .sgn=0},
-  {.hi = 0x9008b6a763de75b7, .lo = 0xa6e3df5975cca9da, .ex = -2, .sgn=0},
-  {.hi = 0x9324ca6fe9a04b4e, .lo = 0x899c4de737feec22, .ex = -2, .sgn=0},
-  {.hi = 0x964083747309d113, .lo = 0xa89a11e07c1fe, .ex = -2, .sgn=0},
-  {.hi = 0x995bdfca28b53a54, .lo = 0x49c4863de522b217, .ex = -2, .sgn=0},
-  {.hi = 0x9c76dd866c689dcc, .lo = 0xe7bc08111d0bfca4, .ex = -2, .sgn=0},
-  {.hi = 0x9f917abeda4498df, .lo = 0xf3ff913a4aadb85e, .ex = -2, .sgn=0},
-  {.hi = 0xa2abb58949f2ced7, .lo = 0xa5dbee6084ee1260, .ex = -2, .sgn=0},
-  {.hi = 0xa5c58bfbcfd4436a, .lo = 0x69fcb11e19f58619, .ex = -2, .sgn=0},
-  {.hi = 0xa8defc2cbe2f8fcc, .lo = 0xcd12a1f6ab6b095, .ex = -2, .sgn=0},
-  {.hi = 0xabf80432a65ef190, .lo = 0x8c95c4c91179176b, .ex = -2, .sgn=0},
-  {.hi = 0xaf10a22459fe32a6, .lo = 0x3feef3bb58b1f10d, .ex = -2, .sgn=0},
-  {.hi = 0xb228d418ec1869ad, .lo = 0x16031a34d4fc855d, .ex = -2, .sgn=0},
-  {.hi = 0xb5409827b25591f0, .lo = 0xcd73fb5d8d45d302, .ex = -2, .sgn=0},
-  {.hi = 0xb857ec684627fa4c, .lo = 0x187e26d290714d70, .ex = -2, .sgn=0},
-  {.hi = 0xbb6ecef285f98a3a, .lo = 0xbddd8a0365d6b1d3, .ex = -2, .sgn=0},
-  {.hi = 0xbe853dde9658dc60, .lo = 0xdfe1b074e22fc666, .ex = -2, .sgn=0},
-  {.hi = 0xc19b3744e3262dcd, .lo = 0xad5a41de48f6b26f, .ex = -2, .sgn=0},
-  {.hi = 0xc4b0b93e20c0213f, .lo = 0xdab4e426409b23a0, .ex = -2, .sgn=0},
-  {.hi = 0xc7c5c1e34d3055b2, .lo = 0x5cc8c00e4fccd850, .ex = -2, .sgn=0},
-  {.hi = 0xcada4f4db157cf77, .lo = 0xfa6171200ab2efc3, .ex = -2, .sgn=0},
-  {.hi = 0xcdee5f96e21b332c, .lo = 0x65a3132adfb7dfd5, .ex = -2, .sgn=0},
-  {.hi = 0xd101f0d8c18ed1c1, .lo = 0xaadb580a1eba209f, .ex = -2, .sgn=0},
-  {.hi = 0xd415012d802284f0, .lo = 0xdf4005ef6a64aa02, .ex = -2, .sgn=0},
-  {.hi = 0xd7278eaf9dcd5b55, .lo = 0x1779df36d1cc8912, .ex = -2, .sgn=0},
-  {.hi = 0xda399779eb391377, .lo = 0xcbabaeb97af8e8aa, .ex = -2, .sgn=0},
-  {.hi = 0xdd4b19a78aed6515, .lo = 0xece7f445cecf1e28, .ex = -2, .sgn=0},
-  {.hi = 0xe05c1353f27b17e5, .lo = 0xebc61ade6ca83cd, .ex = -2, .sgn=0},
-  {.hi = 0xe36c829aeba6e720, .lo = 0x26a0eecdb4f16266, .ex = -2, .sgn=0},
-  {.hi = 0xe67c659895943123, .lo = 0x82b0aecadf808123, .ex = -2, .sgn=0},
-  {.hi = 0xe98bba6965ef725f, .lo = 0xb91caf23416e7e80, .ex = -2, .sgn=0},
-  {.hi = 0xec9a7f2a2a188aeb, .lo = 0x7244ee20f591983b, .ex = -2, .sgn=0},
-  {.hi = 0xefa8b1f8084ccdfc, .lo = 0x1050cdf22f34182f, .ex = -2, .sgn=0},
-  {.hi = 0xf2b650f080d0da8d, .lo = 0x587f3fa044e2d27d, .ex = -2, .sgn=0},
-  {.hi = 0xf5c35a316f1a3c80, .lo = 0x643720de93ba81bd, .ex = -2, .sgn=0},
-  {.hi = 0xf8cfcbd90af8d57a, .lo = 0x4221dc4ba772598d, .ex = -2, .sgn=0},
-  {.hi = 0xfbdba405e9c00cca, .lo = 0xd24d3023da491920, .ex = -2, .sgn=0},
-  {.hi = 0xfee6e0d6ff6fc5a4, .lo = 0x8b74fe2508ab8fc2, .ex = -2, .sgn=0},
-  {.hi = 0x80f8c035cfee8d76, .lo = 0xfd958d68e8b49e6b, .ex = -1, .sgn=0},
-  {.hi = 0x827dc071bfed6ffa, .lo = 0xfb4c92369f0cf008, .ex = -1, .sgn=0},
-  {.hi = 0x8402702f5b30f2a9, .lo = 0xcb07b25a7b0372a7, .ex = -1, .sgn=0},
-  {.hi = 0x8586ce7ededc809d, .lo = 0x9d3dc689006896f4, .ex = -1, .sgn=0},
-  {.hi = 0x870ada70ba4e6d49, .lo = 0x9d52755ece3f70, .ex = -1, .sgn=0},
-  {.hi = 0x888e93158fb3bb04, .lo = 0x984156f553344306, .ex = -1, .sgn=0},
-  {.hi = 0x8a11f77e349bc245, .lo = 0xa66d1d936c38c329, .ex = -1, .sgn=0},
-  {.hi = 0x8b9506bbb28bb922, .lo = 0x575f33366be0afef, .ex = -1, .sgn=0},
-  {.hi = 0x8d17bfdf47921ac8, .lo = 0xcb590d74f64e77c9, .ex = -1, .sgn=0},
-  {.hi = 0x8e9a21fa66d9ee8d, .lo = 0xf2be3ecae62789d4, .ex = -1, .sgn=0},
-  {.hi = 0x901c2c1eb93dee39, .lo = 0x632b9cff5cfee724, .ex = -1, .sgn=0},
-  {.hi = 0x919ddd5e1ddb8b33, .lo = 0x609c464b3dd676ec, .ex = -1, .sgn=0},
-  {.hi = 0x931f34caaaa5d23a, .lo = 0x6a1ff8bfe6396e28, .ex = -1, .sgn=0},
-  {.hi = 0x94a03176acf82d45, .lo = 0xae4ba773da6bf754, .ex = -1, .sgn=0},
-  {.hi = 0x9620d274aa290339, .lo = 0xe06a955a5b8e301d, .ex = -1, .sgn=0},
-  {.hi = 0x97a116d7601c3515, .lo = 0xfc8b7184b21f2d50, .ex = -1, .sgn=0},
-  {.hi = 0x9920fdb1c5d5783d, .lo = 0x9dd1eedf18a2e4df, .ex = -1, .sgn=0},
-  {.hi = 0x9aa086170c0a8d86, .lo = 0x9ffa0d23f3c26c62, .ex = -1, .sgn=0},
-  {.hi = 0x9c1faf1a9db554af, .lo = 0xdab6b478577e7be5, .ex = -1, .sgn=0},
-  {.hi = 0x9d9e77d020a5bbe6, .lo = 0xdb895384528d0d60, .ex = -1, .sgn=0},
-  {.hi = 0x9f1cdf4b76138b02, .lo = 0x98dbd3555ebcdefe, .ex = -1, .sgn=0},
-  {.hi = 0xa09ae4a0bb300a19, .lo = 0x2f895f44a303cc0b, .ex = -1, .sgn=0},
-  {.hi = 0xa21886e449b78316, .lo = 0xd29d23a624acd00c, .ex = -1, .sgn=0},
-  {.hi = 0xa395c52ab8829dfc, .lo = 0x2be036401ba87cc2, .ex = -1, .sgn=0},
-  {.hi = 0xa5129e88dc17976a, .lo = 0x82d9495ead5be348, .ex = -1, .sgn=0},
-  {.hi = 0xa68f1213c73b5124, .lo = 0x17218792857f4c5a, .ex = -1, .sgn=0},
-  {.hi = 0xa80b1ee0cb823c27, .lo = 0x3269f4702b88324a, .ex = -1, .sgn=0},
-  {.hi = 0xa986c40579e11c0a, .lo = 0x8e3bdf8085321556, .ex = -1, .sgn=0},
-  {.hi = 0xab020097a33da341, .lo = 0xc1654b64a0081b46, .ex = -1, .sgn=0},
-  {.hi = 0xac7cd3ad58fee7f0, .lo = 0x811f953984eff83e, .ex = -1, .sgn=0},
-  {.hi = 0xadf73c5ced9db0f3, .lo = 0x9a5318ac6fe94e4d, .ex = -1, .sgn=0},
-  {.hi = 0xaf7139bcf5349ac6, .lo = 0x9fe5f4ea48965e2c, .ex = -1, .sgn=0},
-  {.hi = 0xb0eacae4461013ed, .lo = 0x63c66682bae74898, .ex = -1, .sgn=0},
-  {.hi = 0xb263eee9f93e3088, .lo = 0x695a5332090bb09b, .ex = -1, .sgn=0},
-  {.hi = 0xb3dca4e56b1e54bb, .lo = 0x992d96e5021e3c37, .ex = -1, .sgn=0},
-  {.hi = 0xb554ebee3bf0b58e, .lo = 0x971f4da709ad4378, .ex = -1, .sgn=0},
-  {.hi = 0xb6ccc31c5065afee, .lo = 0x35ebacd79f209137, .ex = -1, .sgn=0},
-  {.hi = 0xb8442987d22cf576, .lo = 0x9cc3ef36746de3b8, .ex = -1, .sgn=0},
-  {.hi = 0xb9bb1e4930848ead, .lo = 0xcdb0531c4e58484b, .ex = -1, .sgn=0},
-  {.hi = 0xbb31a07920c7b256, .lo = 0x55b92083658bb897, .ex = -1, .sgn=0},
-  {.hi = 0xbca7af309efd7182, .lo = 0xa4b0d21fc5036a5, .ex = -1, .sgn=0},
-  {.hi = 0xbe1d4988ee67380c, .lo = 0xd1f90f79f46c7e01, .ex = -1, .sgn=0},
-  {.hi = 0xbf926e9b9a0f2127, .lo = 0x91a1b5eb79658c67, .ex = -1, .sgn=0},
-  {.hi = 0xc1071d8275561f9b, .lo = 0x721853f8e528a934, .ex = -1, .sgn=0},
-  {.hi = 0xc27b55579c81f96d, .lo = 0xcdc2bd470675104d, .ex = -1, .sgn=0},
-  {.hi = 0xc3ef1535754b168d, .lo = 0x3122c2a59efddc37, .ex = -1, .sgn=0},
-  {.hi = 0xc5625c36af6a222f, .lo = 0xf4ff2895ab6ebe89, .ex = -1, .sgn=0},
-  {.hi = 0xc6d5297645257e8d, .lo = 0x14d24739de27e2e9, .ex = -1, .sgn=0},
-  {.hi = 0xc8477c0f7bde8a98, .lo = 0x4ce0246ad4fa74, .ex = -1, .sgn=0},
-  {.hi = 0xc9b9531de49eb968, .lo = 0x4319e5ad5b0dcb84, .ex = -1, .sgn=0},
-  {.hi = 0xcb2aadbd5ca47af5, .lo = 0xfaa3dfe675a65ee2, .ex = -1, .sgn=0},
-  {.hi = 0xcc9b8b0a0deff5d4, .lo = 0x2e663b3c7555a6c3, .ex = -1, .sgn=0},
-  {.hi = 0xce0bea206fcf9192, .lo = 0x3c540a9eec47af38, .ex = -1, .sgn=0},
-  {.hi = 0xcf7bca1d476c516d, .lo = 0xa81290bdbaad62e4, .ex = -1, .sgn=0},
-  {.hi = 0xd0eb2a1da855fefd, .lo = 0xb9302788604e88f1, .ex = -1, .sgn=0},
-  {.hi = 0xd25a093ef50f2482, .lo = 0x721fc87ba1d42456, .ex = -1, .sgn=0},
-  {.hi = 0xd3c8669edf98d680, .lo = 0x87967926fdcecec4, .ex = -1, .sgn=0},
-  {.hi = 0xd536415b69fe4c54, .lo = 0x1df22346611c6b4b, .ex = -1, .sgn=0},
-  {.hi = 0xd6a39892e6e04764, .lo = 0x3090d44db12c418c, .ex = -1, .sgn=0},
-  {.hi = 0xd8106b63fa0048a0, .lo = 0xa573f2aa90434ba5, .ex = -1, .sgn=0},
-  {.hi = 0xd97cb8ed98cb93f5, .lo = 0x2e349483e3fb2a6a, .ex = -1, .sgn=0},
-  {.hi = 0xdae8804f0ae6015b, .lo = 0x362cb974182e3030, .ex = -1, .sgn=0},
-  {.hi = 0xdc53c0a7eab49b35, .lo = 0x3ccca3982328ed8b, .ex = -1, .sgn=0},
-  {.hi = 0xddbe791825e8099e, .lo = 0x1a5bd9269d408d7e, .ex = -1, .sgn=0},
-  {.hi = 0xdf28a8bffe06ca56, .lo = 0xcce2634be2bf54df, .ex = -1, .sgn=0},
-  {.hi = 0xe0924ec008f734fd, .lo = 0x8aa895d5bf3e84ea, .ex = -1, .sgn=0},
-  {.hi = 0xe1fb6a3931894b38, .lo = 0xf7a1f9bd9ba13b6b, .ex = -1, .sgn=0},
-  {.hi = 0xe363fa4cb8005482, .lo = 0x7b32c72e31824e51, .ex = -1, .sgn=0},
-  {.hi = 0xe4cbfe1c329c453a, .lo = 0xd40e9e6b989f89e5, .ex = -1, .sgn=0},
-  {.hi = 0xe63374c98e22f0b4, .lo = 0x2872ce1bfc7ad1cd, .ex = -1, .sgn=0},
-  {.hi = 0xe79a5d770e6905dc, .lo = 0xf1b65cc5fd780262, .ex = -1, .sgn=0},
-  {.hi = 0xe900b7474edad637, .lo = 0x431626c10485bdda, .ex = -1, .sgn=0},
-  {.hi = 0xea66815d4304e6c8, .lo = 0xcc39cfcc29960b1, .ex = -1, .sgn=0},
-  {.hi = 0xebcbbadc371c4aaa, .lo = 0x1d90f780ae951140, .ex = -1, .sgn=0},
-  {.hi = 0xed3062e7d086c6f0, .lo = 0xc71debc372b6f9d4, .ex = -1, .sgn=0},
-  {.hi = 0xee9478a40e62bf86, .lo = 0x2a24164daec85ccb, .ex = -1, .sgn=0},
-  {.hi = 0xeff7fb354a0eecb1, .lo = 0x527233b40d3432bb, .ex = -1, .sgn=0},
-  {.hi = 0xf15ae9c037b1d8f0, .lo = 0x6c48e9e3420b0f1e, .ex = -1, .sgn=0},
-  {.hi = 0xf2bd4369e6c126d3, .lo = 0x7f232aee178c6323, .ex = -1, .sgn=0},
-  {.hi = 0xf41f0757c2889e84, .lo = 0x3c7f10db458c337c, .ex = -1, .sgn=0},
-  {.hi = 0xf58034af92b102a7, .lo = 0x93fa6107c4327527, .ex = -1, .sgn=0},
-  {.hi = 0xf6e0ca977bc6ac45, .lo = 0xe1079824233fef46, .ex = -1, .sgn=0},
-  {.hi = 0xf840c835ffbfed66, .lo = 0xa9a56012067c570c, .ex = -1, .sgn=0},
-  {.hi = 0xf9a02cb1fe833a0d, .lo = 0x8da894471de1a18, .ex = -1, .sgn=0},
-  {.hi = 0xfafef732b66d1742, .lo = 0x343fbf4a7d42af3, .ex = -1, .sgn=0},
-  {.hi = 0xfc5d26dfc4d5cfda, .lo = 0x27c07c911290b8d1, .ex = -1, .sgn=0},
-  {.hi = 0xfdbabae12696eea4, .lo = 0x2377c3799c052fa, .ex = -1, .sgn=0},
-  {.hi = 0xff17b25f38907dad, .lo = 0xa9c6ba50490539f, .ex = -1, .sgn=0},
-  {.hi = 0x803a06415c170525, .lo = 0x6f53873e2f1477ff, .ex = 0, .sgn=0},
-  {.hi = 0x80e7e43a61f5b6cb, .lo = 0x5ca183dc973abc22, .ex = 0, .sgn=0},
-  {.hi = 0x819572af6decac84, .lo = 0x9fba97fdf0c4d24c, .ex = 0, .sgn=0},
-  {.hi = 0x8242b1357110d372, .lo = 0x6fb2123fedfa6e22, .ex = 0, .sgn=0},
-  {.hi = 0x82ef9f618dc5b70e, .lo = 0x91a965931f1a200a, .ex = 0, .sgn=0},
-  {.hi = 0x839c3cc917ff6cb4, .lo = 0xbfd79717f2880abf, .ex = 0, .sgn=0},
-  {.hi = 0x8448890195846099, .lo = 0x246efcff30cb064a, .ex = 0, .sgn=0},
-  {.hi = 0x84f483a0be2f0403, .lo = 0x51917cac857fd5f5, .ex = 0, .sgn=0},
-  {.hi = 0x85a02c3c7c2f5ca5, .lo = 0x327888fe4b62687b, .ex = 0, .sgn=0},
-  {.hi = 0x864b826aec4c74e5, .lo = 0x85043222c9bdd18d, .ex = 0, .sgn=0},
-  {.hi = 0x86f685c25e25acf5, .lo = 0x7e0b9b07548471a2, .ex = 0, .sgn=0},
-  {.hi = 0x87a135d95473ec89, .lo = 0x4e091160e2430712, .ex = 0, .sgn=0},
-  {.hi = 0x884b9246854ab50b, .lo = 0x4f14c8afe4560291, .ex = 0, .sgn=0},
-  {.hi = 0x88f59aa0da591421, .lo = 0xb892ca8361d8c84c, .ex = 0, .sgn=0},
-  {.hi = 0x899f4e7f712a765e, .lo = 0xc88302a31afce54a, .ex = 0, .sgn=0},
-  {.hi = 0x8a48ad799b6759f3, .lo = 0x660558a02136130a, .ex = 0, .sgn=0},
-  {.hi = 0x8af1b726df15e13c, .lo = 0x545f7d79ead8fa19, .ex = 0, .sgn=0},
-  {.hi = 0x8b9a6b1ef6da4502, .lo = 0x21a6675f51580bc4, .ex = 0, .sgn=0},
-  {.hi = 0x8c42c8f9d2372644, .lo = 0x101a5adbcb9ffb43, .ex = 0, .sgn=0},
-  {.hi = 0x8cead04f95cdbf66, .lo = 0x4d49cbaf15aecd80, .ex = 0, .sgn=0},
-  {.hi = 0x8d9280b89b9df49b, .lo = 0xde2d43c6b67a7cbe, .ex = 0, .sgn=0},
-  {.hi = 0x8e39d9cd73464364, .lo = 0xbba4cfecbff54867, .ex = 0, .sgn=0},
-  {.hi = 0x8ee0db26e24390f8, .lo = 0xaf0e2345f3bd24b4, .ex = 0, .sgn=0},
-  {.hi = 0x8f87845de430d777, .lo = 0x9311a82459aa0f72, .ex = 0, .sgn=0},
-  {.hi = 0x902dd50bab06b1b7, .lo = 0xb144016c7a30b39a, .ex = 0, .sgn=0},
-  {.hi = 0x90d3ccc99f5ac58b, .lo = 0x9d1072e09b72292, .ex = 0, .sgn=0},
-  {.hi = 0x91796b31609f0c54, .lo = 0x6714fe6925b78cc4, .ex = 0, .sgn=0},
-  {.hi = 0x921eafdcc560f9c5, .lo = 0x33d0a284a8c954ad, .ex = 0, .sgn=0},
-  {.hi = 0x92c39a65db88809d, .lo = 0x1f8481e704e4a767, .ex = 0, .sgn=0},
-  {.hi = 0x93682a66e896f544, .lo = 0xb17821911e71c16e, .ex = 0, .sgn=0},
-  {.hi = 0x940c5f7a69e5ce1c, .lo = 0x1489a97671a42, .ex = 0, .sgn=0},
-  {.hi = 0x94b0393b14e54156, .lo = 0xd6c7af02d5c16fd9, .ex = 0, .sgn=0},
-  {.hi = 0x9553b743d75ac03f, .lo = 0xac0106650f4ef023, .ex = 0, .sgn=0},
-  {.hi = 0x95f6d92fd79f4fba, .lo = 0xd9f8e1a446e973b9, .ex = 0, .sgn=0},
-  {.hi = 0x96999e9a74ddbde3, .lo = 0xa7a7556c3b33abc1, .ex = 0, .sgn=0},
-  {.hi = 0x973c071f4750b49c, .lo = 0xc0a03934f0cce19b, .ex = 0, .sgn=0},
-  {.hi = 0x97de125a2080a8ed, .lo = 0xd243aa0843a2c144, .ex = 0, .sgn=0},
-  {.hi = 0x987fbfe70b81a708, .lo = 0x19cec845ac87a5c6, .ex = 0, .sgn=0},
-  {.hi = 0x99210f624d30facb, .lo = 0xc4b992a37fb9b9bd, .ex = 0, .sgn=0},
-  {.hi = 0x99c200686472b4a8, .lo = 0x1ab42d43235757b6, .ex = 0, .sgn=0},
-  {.hi = 0x9a6292960a6f0ab0, .lo = 0x7e92c655656e6b85, .ex = 0, .sgn=0},
-  {.hi = 0x9b02c58832cf95c0, .lo = 0x698b94f50326a043, .ex = 0, .sgn=0},
-  {.hi = 0x9ba298dc0bfc6a88, .lo = 0x9a5614e8ffbeac6f, .ex = 0, .sgn=0},
-  {.hi = 0x9c420c2eff590e5f, .lo = 0xc7fd954194e6d8aa, .ex = 0, .sgn=0},
-  {.hi = 0x9ce11f1eb18147b1, .lo = 0x3e93627de8fd5779, .ex = 0, .sgn=0},
-  {.hi = 0x9d7fd1490285c9e3, .lo = 0xe25e39549638ae68, .ex = 0, .sgn=0},
-  {.hi = 0x9e1e224c0e28bc94, .lo = 0x2cad377d5c9c35d8, .ex = 0, .sgn=0},
-  {.hi = 0x9ebc11c62c1a1dfb, .lo = 0xcc141e10c6460c8b, .ex = 0, .sgn=0},
-  {.hi = 0x9f599f55f0340061, .lo = 0xa88d5f46834bbf8d, .ex = 0, .sgn=0},
-  {.hi = 0x9ff6ca9a2ab6a26d, .lo = 0x22cc118a0c118aa0, .ex = 0, .sgn=0},
-  {.hi = 0xa0939331e8846237, .lo = 0x7cec6df5bea167cf, .ex = 0, .sgn=0},
-  {.hi = 0xa12ff8bc735d8af6, .lo = 0x71acea2819360c35, .ex = 0, .sgn=0},
-  {.hi = 0xa1cbfad9521bfd1b, .lo = 0x166c36e7bb3c402f, .ex = 0, .sgn=0},
-  {.hi = 0xa267992848eeb0c0, .lo = 0x3b5167ee359a234e, .ex = 0, .sgn=0},
-  {.hi = 0xa302d34959951243, .lo = 0x9443372e20d4377c, .ex = 0, .sgn=0},
-  {.hi = 0xa39da8dcc39a38e5, .lo = 0xca9a8a720d4c69c, .ex = 0, .sgn=0},
-  {.hi = 0xa4381983048ff747, .lo = 0xbf623cf5301a2dde, .ex = 0, .sgn=0},
-  {.hi = 0xa4d224dcd849c5b0, .lo = 0x23d251cc8d7975cc, .ex = 0, .sgn=0},
-  {.hi = 0xa56bca8b391785db, .lo = 0x189d39ffe11aaa2b, .ex = 0, .sgn=0},
-  {.hi = 0xa6050a2f60002049, .lo = 0x8c33ebf3aa8501fb, .ex = 0, .sgn=0},
-  {.hi = 0xa69de36ac4fbfadc, .lo = 0x9b3ad6e4022183d9, .ex = 0, .sgn=0},
-  {.hi = 0xa73655df1f2f489e, .lo = 0x149f6e75993468a3, .ex = 0, .sgn=0},
-  {.hi = 0xa7ce612e65243291, .lo = 0x6b2a39f856a69781, .ex = 0, .sgn=0},
-  {.hi = 0xa86604facd04d969, .lo = 0x3463a2c2e6e9cc55, .ex = 0, .sgn=0},
-  {.hi = 0xa8fd40e6ccd52ffd, .lo = 0x6cc14c4f53e2e82d, .ex = 0, .sgn=0},
-  {.hi = 0xa99414951aacae5e, .lo = 0xd147625fda929af8, .ex = 0, .sgn=0},
-  {.hi = 0xaa2a7fa8acefdd63, .lo = 0xb714ee81b53b4b9d, .ex = 0, .sgn=0},
-  {.hi = 0xaac081c4ba89ba8a, .lo = 0xe1b3dfc4dbda9bfd, .ex = 0, .sgn=0},
-  {.hi = 0xab561a8cbb24f410, .lo = 0xf17cee69b0d2ecde, .ex = 0, .sgn=0},
-  {.hi = 0xabeb49a46764fd15, .lo = 0x1becda8089c1a94c, .ex = 0, .sgn=0},
-  {.hi = 0xac800eafb91ef9a9, .lo = 0xf86ba0dde982fb59, .ex = 0, .sgn=0},
-  {.hi = 0xad146952eb9282af, .lo = 0x44bf16268608db96, .ex = 0, .sgn=0},
-  {.hi = 0xada859327ba24151, .lo = 0x9d30d4cfeb04f1fb, .ex = 0, .sgn=0},
-  {.hi = 0xae3bddf3280c620d, .lo = 0x3d53817865422565, .ex = 0, .sgn=0},
-  {.hi = 0xaecef739f1a2df10, .lo = 0xf74d099042e8f326, .ex = 0, .sgn=0},
-  {.hi = 0xaf61a4ac1b83a1de, .lo = 0xa89a9b8f726b95bf, .ex = 0, .sgn=0},
-  {.hi = 0xaff3e5ef2b507c06, .lo = 0x8c679e67fc462d51, .ex = 0, .sgn=0},
-  {.hi = 0xb085baa8e966f6da, .lo = 0xe4cad00d5c94bcd2, .ex = 0, .sgn=0},
-  {.hi = 0xb117227f6117f9f9, .lo = 0x8d8be132d576e614, .ex = 0, .sgn=0},
-  {.hi = 0xb1a81d18e0df4889, .lo = 0x24784f32c3e3e5bd, .ex = 0, .sgn=0},
-  {.hi = 0xb238aa1bfa9ad507, .lo = 0x8cc7d4bd05ffd5ae, .ex = 0, .sgn=0},
-  {.hi = 0xb2c8c92f83c1eb87, .lo = 0xac9f7ebbc469ef59, .ex = 0, .sgn=0},
-  {.hi = 0xb35879fa959c323c, .lo = 0x5d6635109164f740, .ex = 0, .sgn=0},
-  {.hi = 0xb3e7bc248d78802e, .lo = 0xa156468ef6c18c60, .ex = 0, .sgn=0},
-  {.hi = 0xb4768f550ce389fd, .lo = 0x4a85350f69018c55, .ex = 0, .sgn=0},
+  {.lo = 0x0, .hi = 0x0, .ex = 128, .sgn=0},
+  {.lo = 0x480f7956b6470765, .hi = 0xc90fc5f66525d257, .ex = -8, .sgn=0},
+  {.lo = 0xcb3ff35bd4d81baa, .hi = 0xc90f87f3380388d5, .ex = -7, .sgn=0},
+  {.lo = 0xb767005691b9d9d1, .hi = 0x96cb587284b81770, .ex = -6, .sgn=0},
+  {.lo = 0xf1d7d06db39ea9fc, .hi = 0xc90e8fe6f63c2330, .ex = -6, .sgn=0},
+  {.lo = 0xd784e031f9af76d6, .hi = 0xfb514b55ccbe541a, .ex = -6, .sgn=0},
+  {.lo = 0xf91ee371d6467dca, .hi = 0x96c9b5df1877e9b5, .ex = -5, .sgn=0},
+  {.lo = 0xf56e3c87ae3c56df, .hi = 0xafea690fd5912ef3, .ex = -5, .sgn=0},
+  {.lo = 0xc539edcbfda0cf2c, .hi = 0xc90aafbd1b33efc9, .ex = -5, .sgn=0},
+  {.lo = 0x850021e392744a4f, .hi = 0xe22a7a6729d8e453, .ex = -5, .sgn=0},
+  {.lo = 0xb21ccebc9caac3, .hi = 0xfb49b98e8e7807f6, .ex = -5, .sgn=0},
+  {.lo = 0xde5b1068d174be9c, .hi = 0x8a342eda160bf5ae, .ex = -4, .sgn=0},
+  {.lo = 0x37b2dd49d5fca3c0, .hi = 0x96c32baca2ae68b4, .ex = -4, .sgn=0},
+  {.lo = 0xb56007d16d4ad5a3, .hi = 0xa351cb7fc30bc889, .ex = -4, .sgn=0},
+  {.lo = 0xcd34d2751c2e1da7, .hi = 0xafe00694866a1b44, .ex = -4, .sgn=0},
+  {.lo = 0xf10bfca3d6464012, .hi = 0xbc6dd52c3a342eb5, .ex = -4, .sgn=0},
+  {.lo = 0x6a17954b2b7c5171, .hi = 0xc8fb2f886ec09f37, .ex = -4, .sgn=0},
+  {.lo = 0x73d1472472f4a390, .hi = 0xd5880deafc18b534, .ex = -4, .sgn=0},
+  {.lo = 0x438b4a73aecd2541, .hi = 0xe214689606bf1676, .ex = -4, .sgn=0},
+  {.lo = 0xc4e92d01a2f42935, .hi = 0xeea037cc04764844, .ex = -4, .sgn=0},
+  {.lo = 0xf0a0e36a000c7350, .hi = 0xfb2b73cfc106ff68, .ex = -4, .sgn=0},
+  {.lo = 0x60e782313f6161af, .hi = 0x83db0a7231831d8f, .ex = -3, .sgn=0},
+  {.lo = 0x77724a2b2a669bc4, .hi = 0x8a2009a6b84d9402, .ex = -3, .sgn=0},
+  {.lo = 0x56e0a8b0d177b55d, .hi = 0x9064b3a76a22640c, .ex = -3, .sgn=0},
+  {.lo = 0xf77574094d3c35c4, .hi = 0x96a9049670cfae65, .ex = -3, .sgn=0},
+  {.lo = 0x50ffe4f5caa7f1fa, .hi = 0x9cecf8962d14c822, .ex = -3, .sgn=0},
+  {.lo = 0xdec1b7f2768bdafa, .hi = 0xa3308bc93904ad69, .ex = -3, .sgn=0},
+  {.lo = 0x76f8c63986598c79, .hi = 0xa973ba526a6850d9, .ex = -3, .sgn=0},
+  {.lo = 0xfdd2fc0936594c2d, .hi = 0xafb68054d520c60b, .ex = -3, .sgn=0},
+  {.lo = 0x924bef13600f9852, .hi = 0xb5f8d9f3cd8945d6, .ex = -3, .sgn=0},
+  {.lo = 0xeb13e106732687f1, .hi = 0xbc3ac352ead90abe, .ex = -3, .sgn=0},
+  {.lo = 0xb228a03916371f6f, .hi = 0xc27c389609850433, .ex = -3, .sgn=0},
+  {.lo = 0xc7396c894bbf7389, .hi = 0xc8bd35e14da15f0e, .ex = -3, .sgn=0},
+  {.lo = 0x6b47b8c44e5b037e, .hi = 0xcefdb7592542e1e9, .ex = -3, .sgn=0},
+  {.lo = 0x7337412cf70716cb, .hi = 0xd53db9224ae01bca, .ex = -3, .sgn=0},
+  {.lo = 0xbb286d23e11c8337, .hi = 0xdb7d3761c7b263b6, .ex = -3, .sgn=0},
+  {.lo = 0x31883b30137c6e62, .hi = 0xe1bc2e3cf616a7ac, .ex = -3, .sgn=0},
+  {.lo = 0xeeb8f9c33340a2f2, .hi = 0xe7fa99d983ee098f, .ex = -3, .sgn=0},
+  {.lo = 0xed16b994af6c18ae, .hi = 0xee38765d74fe4897, .ex = -3, .sgn=0},
+  {.lo = 0x14e1a5488eaeab96, .hi = 0xf475bfef2551f5b9, .ex = -3, .sgn=0},
+  {.lo = 0x704729ae56d78a37, .hi = 0xfab272b54b9871a2, .ex = -3, .sgn=0},
+  {.lo = 0x3eac8308f1113e5e, .hi = 0x8077456b7dc2d967, .ex = -2, .sgn=0},
+  {.lo = 0xdb1f70118c9c2198, .hi = 0x8395023dd418e919, .ex = -2, .sgn=0},
+  {.lo = 0xc5a9decdfaad4db5, .hi = 0x86b26de5933c2e8e, .ex = -2, .sgn=0},
+  {.lo = 0x97965c9860c34e44, .hi = 0x89cf8676d7abb55b, .ex = -2, .sgn=0},
+  {.lo = 0xdcdca90cc73b116a, .hi = 0x8cec4a05f12739e8, .ex = -2, .sgn=0},
+  {.lo = 0xa6e3df5975cca9da, .hi = 0x9008b6a763de75b7, .ex = -2, .sgn=0},
+  {.lo = 0x899c4de737feec22, .hi = 0x9324ca6fe9a04b4e, .ex = -2, .sgn=0},
+  {.lo = 0xa89a11e07c1fe, .hi = 0x964083747309d113, .ex = -2, .sgn=0},
+  {.lo = 0x49c4863de522b217, .hi = 0x995bdfca28b53a54, .ex = -2, .sgn=0},
+  {.lo = 0xe7bc08111d0bfca4, .hi = 0x9c76dd866c689dcc, .ex = -2, .sgn=0},
+  {.lo = 0xf3ff913a4aadb85e, .hi = 0x9f917abeda4498df, .ex = -2, .sgn=0},
+  {.lo = 0xa5dbee6084ee1260, .hi = 0xa2abb58949f2ced7, .ex = -2, .sgn=0},
+  {.lo = 0x69fcb11e19f58619, .hi = 0xa5c58bfbcfd4436a, .ex = -2, .sgn=0},
+  {.lo = 0xcd12a1f6ab6b095, .hi = 0xa8defc2cbe2f8fcc, .ex = -2, .sgn=0},
+  {.lo = 0x8c95c4c91179176b, .hi = 0xabf80432a65ef190, .ex = -2, .sgn=0},
+  {.lo = 0x3feef3bb58b1f10d, .hi = 0xaf10a22459fe32a6, .ex = -2, .sgn=0},
+  {.lo = 0x16031a34d4fc855d, .hi = 0xb228d418ec1869ad, .ex = -2, .sgn=0},
+  {.lo = 0xcd73fb5d8d45d302, .hi = 0xb5409827b25591f0, .ex = -2, .sgn=0},
+  {.lo = 0x187e26d290714d70, .hi = 0xb857ec684627fa4c, .ex = -2, .sgn=0},
+  {.lo = 0xbddd8a0365d6b1d3, .hi = 0xbb6ecef285f98a3a, .ex = -2, .sgn=0},
+  {.lo = 0xdfe1b074e22fc666, .hi = 0xbe853dde9658dc60, .ex = -2, .sgn=0},
+  {.lo = 0xad5a41de48f6b26f, .hi = 0xc19b3744e3262dcd, .ex = -2, .sgn=0},
+  {.lo = 0xdab4e426409b23a0, .hi = 0xc4b0b93e20c0213f, .ex = -2, .sgn=0},
+  {.lo = 0x5cc8c00e4fccd850, .hi = 0xc7c5c1e34d3055b2, .ex = -2, .sgn=0},
+  {.lo = 0xfa6171200ab2efc3, .hi = 0xcada4f4db157cf77, .ex = -2, .sgn=0},
+  {.lo = 0x65a3132adfb7dfd5, .hi = 0xcdee5f96e21b332c, .ex = -2, .sgn=0},
+  {.lo = 0xaadb580a1eba209f, .hi = 0xd101f0d8c18ed1c1, .ex = -2, .sgn=0},
+  {.lo = 0xdf4005ef6a64aa02, .hi = 0xd415012d802284f0, .ex = -2, .sgn=0},
+  {.lo = 0x1779df36d1cc8912, .hi = 0xd7278eaf9dcd5b55, .ex = -2, .sgn=0},
+  {.lo = 0xcbabaeb97af8e8aa, .hi = 0xda399779eb391377, .ex = -2, .sgn=0},
+  {.lo = 0xece7f445cecf1e28, .hi = 0xdd4b19a78aed6515, .ex = -2, .sgn=0},
+  {.lo = 0xebc61ade6ca83cd, .hi = 0xe05c1353f27b17e5, .ex = -2, .sgn=0},
+  {.lo = 0x26a0eecdb4f16266, .hi = 0xe36c829aeba6e720, .ex = -2, .sgn=0},
+  {.lo = 0x82b0aecadf808123, .hi = 0xe67c659895943123, .ex = -2, .sgn=0},
+  {.lo = 0xb91caf23416e7e80, .hi = 0xe98bba6965ef725f, .ex = -2, .sgn=0},
+  {.lo = 0x7244ee20f591983b, .hi = 0xec9a7f2a2a188aeb, .ex = -2, .sgn=0},
+  {.lo = 0x1050cdf22f34182f, .hi = 0xefa8b1f8084ccdfc, .ex = -2, .sgn=0},
+  {.lo = 0x587f3fa044e2d27d, .hi = 0xf2b650f080d0da8d, .ex = -2, .sgn=0},
+  {.lo = 0x643720de93ba81bd, .hi = 0xf5c35a316f1a3c80, .ex = -2, .sgn=0},
+  {.lo = 0x4221dc4ba772598d, .hi = 0xf8cfcbd90af8d57a, .ex = -2, .sgn=0},
+  {.lo = 0xd24d3023da491920, .hi = 0xfbdba405e9c00cca, .ex = -2, .sgn=0},
+  {.lo = 0x8b74fe2508ab8fc2, .hi = 0xfee6e0d6ff6fc5a4, .ex = -2, .sgn=0},
+  {.lo = 0xfd958d68e8b49e6b, .hi = 0x80f8c035cfee8d76, .ex = -1, .sgn=0},
+  {.lo = 0xfb4c92369f0cf008, .hi = 0x827dc071bfed6ffa, .ex = -1, .sgn=0},
+  {.lo = 0xcb07b25a7b0372a7, .hi = 0x8402702f5b30f2a9, .ex = -1, .sgn=0},
+  {.lo = 0x9d3dc689006896f4, .hi = 0x8586ce7ededc809d, .ex = -1, .sgn=0},
+  {.lo = 0x9d52755ece3f70, .hi = 0x870ada70ba4e6d49, .ex = -1, .sgn=0},
+  {.lo = 0x984156f553344306, .hi = 0x888e93158fb3bb04, .ex = -1, .sgn=0},
+  {.lo = 0xa66d1d936c38c329, .hi = 0x8a11f77e349bc245, .ex = -1, .sgn=0},
+  {.lo = 0x575f33366be0afef, .hi = 0x8b9506bbb28bb922, .ex = -1, .sgn=0},
+  {.lo = 0xcb590d74f64e77c9, .hi = 0x8d17bfdf47921ac8, .ex = -1, .sgn=0},
+  {.lo = 0xf2be3ecae62789d4, .hi = 0x8e9a21fa66d9ee8d, .ex = -1, .sgn=0},
+  {.lo = 0x632b9cff5cfee724, .hi = 0x901c2c1eb93dee39, .ex = -1, .sgn=0},
+  {.lo = 0x609c464b3dd676ec, .hi = 0x919ddd5e1ddb8b33, .ex = -1, .sgn=0},
+  {.lo = 0x6a1ff8bfe6396e28, .hi = 0x931f34caaaa5d23a, .ex = -1, .sgn=0},
+  {.lo = 0xae4ba773da6bf754, .hi = 0x94a03176acf82d45, .ex = -1, .sgn=0},
+  {.lo = 0xe06a955a5b8e301d, .hi = 0x9620d274aa290339, .ex = -1, .sgn=0},
+  {.lo = 0xfc8b7184b21f2d50, .hi = 0x97a116d7601c3515, .ex = -1, .sgn=0},
+  {.lo = 0x9dd1eedf18a2e4df, .hi = 0x9920fdb1c5d5783d, .ex = -1, .sgn=0},
+  {.lo = 0x9ffa0d23f3c26c62, .hi = 0x9aa086170c0a8d86, .ex = -1, .sgn=0},
+  {.lo = 0xdab6b478577e7be5, .hi = 0x9c1faf1a9db554af, .ex = -1, .sgn=0},
+  {.lo = 0xdb895384528d0d60, .hi = 0x9d9e77d020a5bbe6, .ex = -1, .sgn=0},
+  {.lo = 0x98dbd3555ebcdefe, .hi = 0x9f1cdf4b76138b02, .ex = -1, .sgn=0},
+  {.lo = 0x2f895f44a303cc0b, .hi = 0xa09ae4a0bb300a19, .ex = -1, .sgn=0},
+  {.lo = 0xd29d23a624acd00c, .hi = 0xa21886e449b78316, .ex = -1, .sgn=0},
+  {.lo = 0x2be036401ba87cc2, .hi = 0xa395c52ab8829dfc, .ex = -1, .sgn=0},
+  {.lo = 0x82d9495ead5be348, .hi = 0xa5129e88dc17976a, .ex = -1, .sgn=0},
+  {.lo = 0x17218792857f4c5a, .hi = 0xa68f1213c73b5124, .ex = -1, .sgn=0},
+  {.lo = 0x3269f4702b88324a, .hi = 0xa80b1ee0cb823c27, .ex = -1, .sgn=0},
+  {.lo = 0x8e3bdf8085321556, .hi = 0xa986c40579e11c0a, .ex = -1, .sgn=0},
+  {.lo = 0xc1654b64a0081b46, .hi = 0xab020097a33da341, .ex = -1, .sgn=0},
+  {.lo = 0x811f953984eff83e, .hi = 0xac7cd3ad58fee7f0, .ex = -1, .sgn=0},
+  {.lo = 0x9a5318ac6fe94e4d, .hi = 0xadf73c5ced9db0f3, .ex = -1, .sgn=0},
+  {.lo = 0x9fe5f4ea48965e2c, .hi = 0xaf7139bcf5349ac6, .ex = -1, .sgn=0},
+  {.lo = 0x63c66682bae74898, .hi = 0xb0eacae4461013ed, .ex = -1, .sgn=0},
+  {.lo = 0x695a5332090bb09b, .hi = 0xb263eee9f93e3088, .ex = -1, .sgn=0},
+  {.lo = 0x992d96e5021e3c37, .hi = 0xb3dca4e56b1e54bb, .ex = -1, .sgn=0},
+  {.lo = 0x971f4da709ad4378, .hi = 0xb554ebee3bf0b58e, .ex = -1, .sgn=0},
+  {.lo = 0x35ebacd79f209137, .hi = 0xb6ccc31c5065afee, .ex = -1, .sgn=0},
+  {.lo = 0x9cc3ef36746de3b8, .hi = 0xb8442987d22cf576, .ex = -1, .sgn=0},
+  {.lo = 0xcdb0531c4e58484b, .hi = 0xb9bb1e4930848ead, .ex = -1, .sgn=0},
+  {.lo = 0x55b92083658bb897, .hi = 0xbb31a07920c7b256, .ex = -1, .sgn=0},
+  {.lo = 0xa4b0d21fc5036a5, .hi = 0xbca7af309efd7182, .ex = -1, .sgn=0},
+  {.lo = 0xd1f90f79f46c7e01, .hi = 0xbe1d4988ee67380c, .ex = -1, .sgn=0},
+  {.lo = 0x91a1b5eb79658c67, .hi = 0xbf926e9b9a0f2127, .ex = -1, .sgn=0},
+  {.lo = 0x721853f8e528a934, .hi = 0xc1071d8275561f9b, .ex = -1, .sgn=0},
+  {.lo = 0xcdc2bd470675104d, .hi = 0xc27b55579c81f96d, .ex = -1, .sgn=0},
+  {.lo = 0x3122c2a59efddc37, .hi = 0xc3ef1535754b168d, .ex = -1, .sgn=0},
+  {.lo = 0xf4ff2895ab6ebe89, .hi = 0xc5625c36af6a222f, .ex = -1, .sgn=0},
+  {.lo = 0x14d24739de27e2e9, .hi = 0xc6d5297645257e8d, .ex = -1, .sgn=0},
+  {.lo = 0x4ce0246ad4fa74, .hi = 0xc8477c0f7bde8a98, .ex = -1, .sgn=0},
+  {.lo = 0x4319e5ad5b0dcb84, .hi = 0xc9b9531de49eb968, .ex = -1, .sgn=0},
+  {.lo = 0xfaa3dfe675a65ee2, .hi = 0xcb2aadbd5ca47af5, .ex = -1, .sgn=0},
+  {.lo = 0x2e663b3c7555a6c3, .hi = 0xcc9b8b0a0deff5d4, .ex = -1, .sgn=0},
+  {.lo = 0x3c540a9eec47af38, .hi = 0xce0bea206fcf9192, .ex = -1, .sgn=0},
+  {.lo = 0xa81290bdbaad62e4, .hi = 0xcf7bca1d476c516d, .ex = -1, .sgn=0},
+  {.lo = 0xb9302788604e88f1, .hi = 0xd0eb2a1da855fefd, .ex = -1, .sgn=0},
+  {.lo = 0x721fc87ba1d42456, .hi = 0xd25a093ef50f2482, .ex = -1, .sgn=0},
+  {.lo = 0x87967926fdcecec4, .hi = 0xd3c8669edf98d680, .ex = -1, .sgn=0},
+  {.lo = 0x1df22346611c6b4b, .hi = 0xd536415b69fe4c54, .ex = -1, .sgn=0},
+  {.lo = 0x3090d44db12c418c, .hi = 0xd6a39892e6e04764, .ex = -1, .sgn=0},
+  {.lo = 0xa573f2aa90434ba5, .hi = 0xd8106b63fa0048a0, .ex = -1, .sgn=0},
+  {.lo = 0x2e349483e3fb2a6a, .hi = 0xd97cb8ed98cb93f5, .ex = -1, .sgn=0},
+  {.lo = 0x362cb974182e3030, .hi = 0xdae8804f0ae6015b, .ex = -1, .sgn=0},
+  {.lo = 0x3ccca3982328ed8b, .hi = 0xdc53c0a7eab49b35, .ex = -1, .sgn=0},
+  {.lo = 0x1a5bd9269d408d7e, .hi = 0xddbe791825e8099e, .ex = -1, .sgn=0},
+  {.lo = 0xcce2634be2bf54df, .hi = 0xdf28a8bffe06ca56, .ex = -1, .sgn=0},
+  {.lo = 0x8aa895d5bf3e84ea, .hi = 0xe0924ec008f734fd, .ex = -1, .sgn=0},
+  {.lo = 0xf7a1f9bd9ba13b6b, .hi = 0xe1fb6a3931894b38, .ex = -1, .sgn=0},
+  {.lo = 0x7b32c72e31824e51, .hi = 0xe363fa4cb8005482, .ex = -1, .sgn=0},
+  {.lo = 0xd40e9e6b989f89e5, .hi = 0xe4cbfe1c329c453a, .ex = -1, .sgn=0},
+  {.lo = 0x2872ce1bfc7ad1cd, .hi = 0xe63374c98e22f0b4, .ex = -1, .sgn=0},
+  {.lo = 0xf1b65cc5fd780262, .hi = 0xe79a5d770e6905dc, .ex = -1, .sgn=0},
+  {.lo = 0x431626c10485bdda, .hi = 0xe900b7474edad637, .ex = -1, .sgn=0},
+  {.lo = 0xcc39cfcc29960b1, .hi = 0xea66815d4304e6c8, .ex = -1, .sgn=0},
+  {.lo = 0x1d90f780ae951140, .hi = 0xebcbbadc371c4aaa, .ex = -1, .sgn=0},
+  {.lo = 0xc71debc372b6f9d4, .hi = 0xed3062e7d086c6f0, .ex = -1, .sgn=0},
+  {.lo = 0x2a24164daec85ccb, .hi = 0xee9478a40e62bf86, .ex = -1, .sgn=0},
+  {.lo = 0x527233b40d3432bb, .hi = 0xeff7fb354a0eecb1, .ex = -1, .sgn=0},
+  {.lo = 0x6c48e9e3420b0f1e, .hi = 0xf15ae9c037b1d8f0, .ex = -1, .sgn=0},
+  {.lo = 0x7f232aee178c6323, .hi = 0xf2bd4369e6c126d3, .ex = -1, .sgn=0},
+  {.lo = 0x3c7f10db458c337c, .hi = 0xf41f0757c2889e84, .ex = -1, .sgn=0},
+  {.lo = 0x93fa6107c4327527, .hi = 0xf58034af92b102a7, .ex = -1, .sgn=0},
+  {.lo = 0xe1079824233fef46, .hi = 0xf6e0ca977bc6ac45, .ex = -1, .sgn=0},
+  {.lo = 0xa9a56012067c570c, .hi = 0xf840c835ffbfed66, .ex = -1, .sgn=0},
+  {.lo = 0x8da894471de1a18, .hi = 0xf9a02cb1fe833a0d, .ex = -1, .sgn=0},
+  {.lo = 0x343fbf4a7d42af3, .hi = 0xfafef732b66d1742, .ex = -1, .sgn=0},
+  {.lo = 0x27c07c911290b8d1, .hi = 0xfc5d26dfc4d5cfda, .ex = -1, .sgn=0},
+  {.lo = 0x2377c3799c052fa, .hi = 0xfdbabae12696eea4, .ex = -1, .sgn=0},
+  {.lo = 0xa9c6ba50490539f, .hi = 0xff17b25f38907dad, .ex = -1, .sgn=0},
+  {.lo = 0x6f53873e2f1477ff, .hi = 0x803a06415c170525, .ex = 0, .sgn=0},
+  {.lo = 0x5ca183dc973abc22, .hi = 0x80e7e43a61f5b6cb, .ex = 0, .sgn=0},
+  {.lo = 0x9fba97fdf0c4d24c, .hi = 0x819572af6decac84, .ex = 0, .sgn=0},
+  {.lo = 0x6fb2123fedfa6e22, .hi = 0x8242b1357110d372, .ex = 0, .sgn=0},
+  {.lo = 0x91a965931f1a200a, .hi = 0x82ef9f618dc5b70e, .ex = 0, .sgn=0},
+  {.lo = 0xbfd79717f2880abf, .hi = 0x839c3cc917ff6cb4, .ex = 0, .sgn=0},
+  {.lo = 0x246efcff30cb064a, .hi = 0x8448890195846099, .ex = 0, .sgn=0},
+  {.lo = 0x51917cac857fd5f5, .hi = 0x84f483a0be2f0403, .ex = 0, .sgn=0},
+  {.lo = 0x327888fe4b62687b, .hi = 0x85a02c3c7c2f5ca5, .ex = 0, .sgn=0},
+  {.lo = 0x85043222c9bdd18d, .hi = 0x864b826aec4c74e5, .ex = 0, .sgn=0},
+  {.lo = 0x7e0b9b07548471a2, .hi = 0x86f685c25e25acf5, .ex = 0, .sgn=0},
+  {.lo = 0x4e091160e2430712, .hi = 0x87a135d95473ec89, .ex = 0, .sgn=0},
+  {.lo = 0x4f14c8afe4560291, .hi = 0x884b9246854ab50b, .ex = 0, .sgn=0},
+  {.lo = 0xb892ca8361d8c84c, .hi = 0x88f59aa0da591421, .ex = 0, .sgn=0},
+  {.lo = 0xc88302a31afce54a, .hi = 0x899f4e7f712a765e, .ex = 0, .sgn=0},
+  {.lo = 0x660558a02136130a, .hi = 0x8a48ad799b6759f3, .ex = 0, .sgn=0},
+  {.lo = 0x545f7d79ead8fa19, .hi = 0x8af1b726df15e13c, .ex = 0, .sgn=0},
+  {.lo = 0x21a6675f51580bc4, .hi = 0x8b9a6b1ef6da4502, .ex = 0, .sgn=0},
+  {.lo = 0x101a5adbcb9ffb43, .hi = 0x8c42c8f9d2372644, .ex = 0, .sgn=0},
+  {.lo = 0x4d49cbaf15aecd80, .hi = 0x8cead04f95cdbf66, .ex = 0, .sgn=0},
+  {.lo = 0xde2d43c6b67a7cbe, .hi = 0x8d9280b89b9df49b, .ex = 0, .sgn=0},
+  {.lo = 0xbba4cfecbff54867, .hi = 0x8e39d9cd73464364, .ex = 0, .sgn=0},
+  {.lo = 0xaf0e2345f3bd24b4, .hi = 0x8ee0db26e24390f8, .ex = 0, .sgn=0},
+  {.lo = 0x9311a82459aa0f72, .hi = 0x8f87845de430d777, .ex = 0, .sgn=0},
+  {.lo = 0xb144016c7a30b39a, .hi = 0x902dd50bab06b1b7, .ex = 0, .sgn=0},
+  {.lo = 0x9d1072e09b72292, .hi = 0x90d3ccc99f5ac58b, .ex = 0, .sgn=0},
+  {.lo = 0x6714fe6925b78cc4, .hi = 0x91796b31609f0c54, .ex = 0, .sgn=0},
+  {.lo = 0x33d0a284a8c954ad, .hi = 0x921eafdcc560f9c5, .ex = 0, .sgn=0},
+  {.lo = 0x1f8481e704e4a767, .hi = 0x92c39a65db88809d, .ex = 0, .sgn=0},
+  {.lo = 0xb17821911e71c16e, .hi = 0x93682a66e896f544, .ex = 0, .sgn=0},
+  {.lo = 0x1489a97671a42, .hi = 0x940c5f7a69e5ce1c, .ex = 0, .sgn=0},
+  {.lo = 0xd6c7af02d5c16fd9, .hi = 0x94b0393b14e54156, .ex = 0, .sgn=0},
+  {.lo = 0xac0106650f4ef023, .hi = 0x9553b743d75ac03f, .ex = 0, .sgn=0},
+  {.lo = 0xd9f8e1a446e973b9, .hi = 0x95f6d92fd79f4fba, .ex = 0, .sgn=0},
+  {.lo = 0xa7a7556c3b33abc1, .hi = 0x96999e9a74ddbde3, .ex = 0, .sgn=0},
+  {.lo = 0xc0a03934f0cce19b, .hi = 0x973c071f4750b49c, .ex = 0, .sgn=0},
+  {.lo = 0xd243aa0843a2c144, .hi = 0x97de125a2080a8ed, .ex = 0, .sgn=0},
+  {.lo = 0x19cec845ac87a5c6, .hi = 0x987fbfe70b81a708, .ex = 0, .sgn=0},
+  {.lo = 0xc4b992a37fb9b9bd, .hi = 0x99210f624d30facb, .ex = 0, .sgn=0},
+  {.lo = 0x1ab42d43235757b6, .hi = 0x99c200686472b4a8, .ex = 0, .sgn=0},
+  {.lo = 0x7e92c655656e6b85, .hi = 0x9a6292960a6f0ab0, .ex = 0, .sgn=0},
+  {.lo = 0x698b94f50326a043, .hi = 0x9b02c58832cf95c0, .ex = 0, .sgn=0},
+  {.lo = 0x9a5614e8ffbeac6f, .hi = 0x9ba298dc0bfc6a88, .ex = 0, .sgn=0},
+  {.lo = 0xc7fd954194e6d8aa, .hi = 0x9c420c2eff590e5f, .ex = 0, .sgn=0},
+  {.lo = 0x3e93627de8fd5779, .hi = 0x9ce11f1eb18147b1, .ex = 0, .sgn=0},
+  {.lo = 0xe25e39549638ae68, .hi = 0x9d7fd1490285c9e3, .ex = 0, .sgn=0},
+  {.lo = 0x2cad377d5c9c35d8, .hi = 0x9e1e224c0e28bc94, .ex = 0, .sgn=0},
+  {.lo = 0xcc141e10c6460c8b, .hi = 0x9ebc11c62c1a1dfb, .ex = 0, .sgn=0},
+  {.lo = 0xa88d5f46834bbf8d, .hi = 0x9f599f55f0340061, .ex = 0, .sgn=0},
+  {.lo = 0x22cc118a0c118aa0, .hi = 0x9ff6ca9a2ab6a26d, .ex = 0, .sgn=0},
+  {.lo = 0x7cec6df5bea167cf, .hi = 0xa0939331e8846237, .ex = 0, .sgn=0},
+  {.lo = 0x71acea2819360c35, .hi = 0xa12ff8bc735d8af6, .ex = 0, .sgn=0},
+  {.lo = 0x166c36e7bb3c402f, .hi = 0xa1cbfad9521bfd1b, .ex = 0, .sgn=0},
+  {.lo = 0x3b5167ee359a234e, .hi = 0xa267992848eeb0c0, .ex = 0, .sgn=0},
+  {.lo = 0x9443372e20d4377c, .hi = 0xa302d34959951243, .ex = 0, .sgn=0},
+  {.lo = 0xca9a8a720d4c69c, .hi = 0xa39da8dcc39a38e5, .ex = 0, .sgn=0},
+  {.lo = 0xbf623cf5301a2dde, .hi = 0xa4381983048ff747, .ex = 0, .sgn=0},
+  {.lo = 0x23d251cc8d7975cc, .hi = 0xa4d224dcd849c5b0, .ex = 0, .sgn=0},
+  {.lo = 0x189d39ffe11aaa2b, .hi = 0xa56bca8b391785db, .ex = 0, .sgn=0},
+  {.lo = 0x8c33ebf3aa8501fb, .hi = 0xa6050a2f60002049, .ex = 0, .sgn=0},
+  {.lo = 0x9b3ad6e4022183d9, .hi = 0xa69de36ac4fbfadc, .ex = 0, .sgn=0},
+  {.lo = 0x149f6e75993468a3, .hi = 0xa73655df1f2f489e, .ex = 0, .sgn=0},
+  {.lo = 0x6b2a39f856a69781, .hi = 0xa7ce612e65243291, .ex = 0, .sgn=0},
+  {.lo = 0x3463a2c2e6e9cc55, .hi = 0xa86604facd04d969, .ex = 0, .sgn=0},
+  {.lo = 0x6cc14c4f53e2e82d, .hi = 0xa8fd40e6ccd52ffd, .ex = 0, .sgn=0},
+  {.lo = 0xd147625fda929af8, .hi = 0xa99414951aacae5e, .ex = 0, .sgn=0},
+  {.lo = 0xb714ee81b53b4b9d, .hi = 0xaa2a7fa8acefdd63, .ex = 0, .sgn=0},
+  {.lo = 0xe1b3dfc4dbda9bfd, .hi = 0xaac081c4ba89ba8a, .ex = 0, .sgn=0},
+  {.lo = 0xf17cee69b0d2ecde, .hi = 0xab561a8cbb24f410, .ex = 0, .sgn=0},
+  {.lo = 0x1becda8089c1a94c, .hi = 0xabeb49a46764fd15, .ex = 0, .sgn=0},
+  {.lo = 0xf86ba0dde982fb59, .hi = 0xac800eafb91ef9a9, .ex = 0, .sgn=0},
+  {.lo = 0x44bf16268608db96, .hi = 0xad146952eb9282af, .ex = 0, .sgn=0},
+  {.lo = 0x9d30d4cfeb04f1fb, .hi = 0xada859327ba24151, .ex = 0, .sgn=0},
+  {.lo = 0x3d53817865422565, .hi = 0xae3bddf3280c620d, .ex = 0, .sgn=0},
+  {.lo = 0xf74d099042e8f326, .hi = 0xaecef739f1a2df10, .ex = 0, .sgn=0},
+  {.lo = 0xa89a9b8f726b95bf, .hi = 0xaf61a4ac1b83a1de, .ex = 0, .sgn=0},
+  {.lo = 0x8c679e67fc462d51, .hi = 0xaff3e5ef2b507c06, .ex = 0, .sgn=0},
+  {.lo = 0xe4cad00d5c94bcd2, .hi = 0xb085baa8e966f6da, .ex = 0, .sgn=0},
+  {.lo = 0x8d8be132d576e614, .hi = 0xb117227f6117f9f9, .ex = 0, .sgn=0},
+  {.lo = 0x24784f32c3e3e5bd, .hi = 0xb1a81d18e0df4889, .ex = 0, .sgn=0},
+  {.lo = 0x8cc7d4bd05ffd5ae, .hi = 0xb238aa1bfa9ad507, .ex = 0, .sgn=0},
+  {.lo = 0xac9f7ebbc469ef59, .hi = 0xb2c8c92f83c1eb87, .ex = 0, .sgn=0},
+  {.lo = 0x5d6635109164f740, .hi = 0xb35879fa959c323c, .ex = 0, .sgn=0},
+  {.lo = 0xa156468ef6c18c60, .hi = 0xb3e7bc248d78802e, .ex = 0, .sgn=0},
+  {.lo = 0x4a85350f69018c55, .hi = 0xb4768f550ce389fd, .ex = 0, .sgn=0},
 };
 
 /* Table containing 128-bit approximations of cos2pi(i/2^11) for 0 <= i < 256
@@ -679,262 +688,262 @@ static const dint64_t S[256] = {
    Each entry is to be interpreted as (hi/2^64+lo/2^128)*2^ex*(-1)*sgn.
    Generated with computeC() from sin.sage. */
 static const dint64_t C[256] = {
-  {.hi = 0x8000000000000000, .lo = 0x0, .ex = 1, .sgn=0},
-  {.hi = 0xffffb10b10e80e95, .lo = 0x3031437d7eccb9df, .ex = 0, .sgn=0},
-  {.hi = 0xfffec42c7454926b, .lo = 0x38e310779edfec68, .ex = 0, .sgn=0},
-  {.hi = 0xfffd3964bc6275ba, .lo = 0x69fff9ae0dedb047, .ex = 0, .sgn=0},
-  {.hi = 0xfffb10b4dc96dabb, .lo = 0xb47903f7a19f8ee2, .ex = 0, .sgn=0},
-  {.hi = 0xfff84a1e29de8571, .lo = 0x8cc193c5d508e13f, .ex = 0, .sgn=0},
-  {.hi = 0xfff4e5a25a8d095b, .lo = 0x43366df666fd54ff, .ex = 0, .sgn=0},
-  {.hi = 0xfff0e343865bbb13, .lo = 0x5428ed0647c9e5d1, .ex = 0, .sgn=0},
-  {.hi = 0xffec4304266865d9, .lo = 0x5657552366961732, .ex = 0, .sgn=0},
-  {.hi = 0xffe704e71533c508, .lo = 0x53aa9423bb0adc21, .ex = 0, .sgn=0},
-  {.hi = 0xffe128ef8e9fc17a, .lo = 0x7d209f32d42d864e, .ex = 0, .sgn=0},
-  {.hi = 0xffdaaf212fed72db, .lo = 0x4fd8f038449ec436, .ex = 0, .sgn=0},
-  {.hi = 0xffd3977ff7bae4e9, .lo = 0x664649b4d541b9c5, .ex = 0, .sgn=0},
-  {.hi = 0xffcbe2104600a0a9, .lo = 0x5595ca3f421ae09c, .ex = 0, .sgn=0},
-  {.hi = 0xffc38ed6dc0ef98b, .lo = 0x1c676208aa3be545, .ex = 0, .sgn=0},
-  {.hi = 0xffba9dd8dc8b1e83, .lo = 0xccfed60a91097c48, .ex = 0, .sgn=0},
-  {.hi = 0xffb10f1bcb6bef1d, .lo = 0x421e8edaaf59453e, .ex = 0, .sgn=0},
-  {.hi = 0xffa6e2a58df6947d, .lo = 0xd2c665c2da3e7844, .ex = 0, .sgn=0},
-  {.hi = 0xff9c187c6abade6a, .lo = 0x1e1862cca089938b, .ex = 0, .sgn=0},
-  {.hi = 0xff90b0a7098f6443, .lo = 0x2dabd3195a05710f, .ex = 0, .sgn=0},
-  {.hi = 0xff84ab2c738d6a03, .lo = 0x519c314973ccae6b, .ex = 0, .sgn=0},
-  {.hi = 0xff780814130c893c, .lo = 0x3ea4f30adda3016f, .ex = 0, .sgn=0},
-  {.hi = 0xff6ac765b39e1e19, .lo = 0x1b9d5851979f28fb, .ex = 0, .sgn=0},
-  {.hi = 0xff5ce92982087867, .lo = 0x50a7bb6a6ee3b0f1, .ex = 0, .sgn=0},
-  {.hi = 0xff4e6d680c41d0a9, .lo = 0xf668633f1ab858a, .ex = 0, .sgn=0},
-  {.hi = 0xff3f542a416b0134, .lo = 0xb085c1828f69296a, .ex = 0, .sgn=0},
-  {.hi = 0xff2f9d7971ca0364, .lo = 0x27e31939e2eec09c, .ex = 0, .sgn=0},
-  {.hi = 0xff1f495f4ec430d7, .lo = 0xf5971326a3540ea9, .ex = 0, .sgn=0},
-  {.hi = 0xff0e57e5ead848d1, .lo = 0x1f1901544271c3f8, .ex = 0, .sgn=0},
-  {.hi = 0xfefcc917b99839a5, .lo = 0xe0abd3a9b64df725, .ex = 0, .sgn=0},
-  {.hi = 0xfeea9cff8fa2ae54, .lo = 0xec34413e87ef2740, .ex = 0, .sgn=0},
-  {.hi = 0xfed7d3a8a29c603b, .lo = 0x2f88b949a72ff96c, .ex = 0, .sgn=0},
-  {.hi = 0xfec46d1e89292cf0, .lo = 0x41390efdc726e9ef, .ex = 0, .sgn=0},
-  {.hi = 0xfeb0696d3ae4f04d, .lo = 0xb7b6cc53c3abc817, .ex = 0, .sgn=0},
-  {.hi = 0xfe9bc8a1105c22a5, .lo = 0xd3af6ee4f2101c20, .ex = 0, .sgn=0},
-  {.hi = 0xfe868ac6c3043b2e, .lo = 0xb4f70c910505e10, .ex = 0, .sgn=0},
-  {.hi = 0xfe70afeb6d33d6a2, .lo = 0x2907cf2b3f6feac2, .ex = 0, .sgn=0},
-  {.hi = 0xfe5a381c8a1aa224, .lo = 0xd54faa364b7da8f6, .ex = 0, .sgn=0},
-  {.hi = 0xfe432367f5b90a62, .lo = 0x87b8875373a818a4, .ex = 0, .sgn=0},
-  {.hi = 0xfe2b71dbecd7aefc, .lo = 0x8598c2c429caf7, .ex = 0, .sgn=0},
-  {.hi = 0xfe1323870cfe9a3d, .lo = 0x90cd1d959db674ef, .ex = 0, .sgn=0},
-  {.hi = 0xfdfa3878546c3d28, .lo = 0x9bfe5c51e91cbdcd, .ex = 0, .sgn=0},
-  {.hi = 0xfde0b0bf220c2fd4, .lo = 0xe276d247626a23fd, .ex = 0, .sgn=0},
-  {.hi = 0xfdc68c6b356db62f, .lo = 0x499ddb331d19539d, .ex = 0, .sgn=0},
-  {.hi = 0xfdabcb8caeba091b, .lo = 0xfac7397cc07a6470, .ex = 0, .sgn=0},
-  {.hi = 0xfd906e340eaa6401, .lo = 0xd6e270740a186977, .ex = 0, .sgn=0},
-  {.hi = 0xfd747472367dd6c5, .lo = 0x61beb8cd2696fc78, .ex = 0, .sgn=0},
-  {.hi = 0xfd57de5867eedc39, .lo = 0x6c696582f346fd91, .ex = 0, .sgn=0},
-  {.hi = 0xfd3aabf84528b50b, .lo = 0xeae6bd951c1dabbe, .ex = 0, .sgn=0},
-  {.hi = 0xfd1cdd63d0bc8735, .lo = 0x863b87258f11ad7e, .ex = 0, .sgn=0},
-  {.hi = 0xfcfe72ad6d9641f2, .lo = 0xa06fab9f9d106709, .ex = 0, .sgn=0},
-  {.hi = 0xfcdf6be7def1464c, .lo = 0xa4e064308f4999f4, .ex = 0, .sgn=0},
-  {.hi = 0xfcbfc926484cd43a, .lo = 0xa3e22b4d38917e73, .ex = 0, .sgn=0},
-  {.hi = 0xfc9f8a7c2d603c60, .lo = 0x5d582cac7cb4391c, .ex = 0, .sgn=0},
-  {.hi = 0xfc7eaffd720ed673, .lo = 0x2880268f2e62955, .ex = 0, .sgn=0},
-  {.hi = 0xfc5d39be5a5bbc4b, .lo = 0x1c0d254b6c8da4bd, .ex = 0, .sgn=0},
-  {.hi = 0xfc3b27d38a5d49ab, .lo = 0x256778ffcb5c1769, .ex = 0, .sgn=0},
-  {.hi = 0xfc187a52063060c2, .lo = 0x9433b49289417ea2, .ex = 0, .sgn=0},
-  {.hi = 0xfbf5314f31eb7375, .lo = 0x25aafd7fdba12c5f, .ex = 0, .sgn=0},
-  {.hi = 0xfbd14ce0d191516e, .lo = 0x7190c94899dff1b8, .ex = 0, .sgn=0},
-  {.hi = 0xfbaccd1d0903bb09, .lo = 0xe63ae8632b84473c, .ex = 0, .sgn=0},
-  {.hi = 0xfb87b21a5bf5b917, .lo = 0x75df66f0ec3dd459, .ex = 0, .sgn=0},
-  {.hi = 0xfb61fbefadddb985, .lo = 0x61ce9d5ef5a81487, .ex = 0, .sgn=0},
-  {.hi = 0xfb3baab441e770f7, .lo = 0xb4b54683879c9c17, .ex = 0, .sgn=0},
-  {.hi = 0xfb14be7fbae58156, .lo = 0x2172a361fd2a722f, .ex = 0, .sgn=0},
-  {.hi = 0xfaed376a1b42e559, .lo = 0x2079880c450348ac, .ex = 0, .sgn=0},
-  {.hi = 0xfac5158bc4f4211f, .lo = 0x4a188aa367f90ab1, .ex = 0, .sgn=0},
-  {.hi = 0xfa9c58fd796837d4, .lo = 0x10655ecd5cc771d8, .ex = 0, .sgn=0},
-  {.hi = 0xfa7301d859796671, .lo = 0x1fe196a53fb5b237, .ex = 0, .sgn=0},
-  {.hi = 0xfa491035e55da3a3, .lo = 0xd24377c77a591e24, .ex = 0, .sgn=0},
-  {.hi = 0xfa1e842ffc96e4e0, .lo = 0x431c393c7f62da65, .ex = 0, .sgn=0},
-  {.hi = 0xf9f35de0dde328ab, .lo = 0xba5dbf4510eddc8f, .ex = 0, .sgn=0},
-  {.hi = 0xf9c79d63272c4628, .lo = 0x4504ae08d19b2980, .ex = 0, .sgn=0},
-  {.hi = 0xf99b42d1d57781eb, .lo = 0x78685d850f80ecdc, .ex = 0, .sgn=0},
-  {.hi = 0xf96e4e4844d4e82a, .lo = 0x80e8c17bf80e8f02, .ex = 0, .sgn=0},
-  {.hi = 0xf940bfe2304e6c45, .lo = 0xc0e2a1352ed7f292, .ex = 0, .sgn=0},
-  {.hi = 0xf91297bbb1d6cdbe, .lo = 0x68fc6e4d6a920bd2, .ex = 0, .sgn=0},
-  {.hi = 0xf8e3d5f1423842a0, .lo = 0x9701914c7f8fbcd7, .ex = 0, .sgn=0},
-  {.hi = 0xf8b47a9fb902e76c, .lo = 0xac9f07f54ff5bc14, .ex = 0, .sgn=0},
-  {.hi = 0xf88485e44c7af48a, .lo = 0xb36a9dfaadafc1e1, .ex = 0, .sgn=0},
-  {.hi = 0xf853f7dc9186b952, .lo = 0xc7adc6b4988891bb, .ex = 0, .sgn=0},
-  {.hi = 0xf822d0a67b9c5cb5, .lo = 0xa776175bd284fe05, .ex = 0, .sgn=0},
-  {.hi = 0xf7f110605caf6390, .lo = 0xa76f7efc19aed41c, .ex = 0, .sgn=0},
-  {.hi = 0xf7beb728e51dfcb8, .lo = 0x730785813f78aa1e, .ex = 0, .sgn=0},
-  {.hi = 0xf78bc51f239e12c6, .lo = 0x214cffcee9dd33ca, .ex = 0, .sgn=0},
-  {.hi = 0xf7583a62852a23b2, .lo = 0x4becad887680c197, .ex = 0, .sgn=0},
-  {.hi = 0xf7241712d4edde49, .lo = 0xf99107e50d631330, .ex = 0, .sgn=0},
-  {.hi = 0xf6ef5b503c328589, .lo = 0x50ca117eb18beed7, .ex = 0, .sgn=0},
-  {.hi = 0xf6ba073b424b19e8, .lo = 0x2c791f59cc1ffc23, .ex = 0, .sgn=0},
-  {.hi = 0xf6841af4cc8048a4, .lo = 0xce8c455197cdf8a7, .ex = 0, .sgn=0},
-  {.hi = 0xf64d969e1dfc2119, .lo = 0x119d358de0493956, .ex = 0, .sgn=0},
-  {.hi = 0xf6167a58d7b59026, .lo = 0x9dc7e5954c5a8f24, .ex = 0, .sgn=0},
-  {.hi = 0xf5dec646f85ba1c6, .lo = 0xc8c615e72768d6b5, .ex = 0, .sgn=0},
-  {.hi = 0xf5a67a8adc4088ca, .lo = 0xed0dd4bf62edd13f, .ex = 0, .sgn=0},
-  {.hi = 0xf56d97473d446cda, .lo = 0x275a2bbb2bab6c8a, .ex = 0, .sgn=0},
-  {.hi = 0xf5341c9f32bffeb9, .lo = 0x8da64484aaa0febc, .ex = 0, .sgn=0},
-  {.hi = 0xf4fa0ab6316ed2ec, .lo = 0x163c5c7f03b718c5, .ex = 0, .sgn=0},
-  {.hi = 0xf4bf61b00b5982b7, .lo = 0x890ac4aafa6a37bf, .ex = 0, .sgn=0},
-  {.hi = 0xf48421b0efbf939b, .lo = 0xf8f9d3b87d11fd52, .ex = 0, .sgn=0},
-  {.hi = 0xf4484add6b01254b, .lo = 0x667e06866c07c369, .ex = 0, .sgn=0},
-  {.hi = 0xf40bdd5a6688662f, .lo = 0x5019794a1f5896e5, .ex = 0, .sgn=0},
-  {.hi = 0xf3ced94d28b2ce8a, .lo = 0x18ef535a7ffa7a3d, .ex = 0, .sgn=0},
-  {.hi = 0xf3913edb54ba2242, .lo = 0x50f29b4b49f31c37, .ex = 0, .sgn=0},
-  {.hi = 0xf3530e2aea9d3966, .lo = 0xd981acdcf6bc3e4, .ex = 0, .sgn=0},
-  {.hi = 0xf314476247088f74, .lo = 0xa5486bdc455d56a2, .ex = 0, .sgn=0},
-  {.hi = 0xf2d4eaa8233e997d, .lo = 0x431be53f92ece9e6, .ex = 0, .sgn=0},
-  {.hi = 0xf294f82394ffe320, .lo = 0xebadcdbf915e8f6c, .ex = 0, .sgn=0},
-  {.hi = 0xf2546ffc0e72f286, .lo = 0xaf0eed81e8c51e55, .ex = 0, .sgn=0},
-  {.hi = 0xf21352595e0bf350, .lo = 0xe7112e89103cc0c7, .ex = 0, .sgn=0},
-  {.hi = 0xf1d19f63ae7428a2, .lo = 0x844e6a35ddc2b713, .ex = 0, .sgn=0},
-  {.hi = 0xf18f574386712643, .lo = 0x8f6bac72988088b0, .ex = 0, .sgn=0},
-  {.hi = 0xf14c7a21c8cbd0f4, .lo = 0x2730081c758fb42b, .ex = 0, .sgn=0},
-  {.hi = 0xf1090827b43725fd, .lo = 0x67127db35b287316, .ex = 0, .sgn=0},
-  {.hi = 0xf0c5017ee336ca0f, .lo = 0xc4e557b119ef3185, .ex = 0, .sgn=0},
-  {.hi = 0xf08066514c055f7e, .lo = 0x973ea9903ed5125f, .ex = 0, .sgn=0},
-  {.hi = 0xf03b36c9407aa3e8, .lo = 0x992d39ec5c561d28, .ex = 0, .sgn=0},
-  {.hi = 0xeff573116df1555d, .lo = 0x62aef7b55319d1d4, .ex = 0, .sgn=0},
-  {.hi = 0xefaf1b54dd2cdf0f, .lo = 0xf03a18a5e16ab641, .ex = 0, .sgn=0},
-  {.hi = 0xef682fbef23ecda6, .lo = 0x767c0e8ad33bc085, .ex = 0, .sgn=0},
-  {.hi = 0xef20b07b6c6c0b37, .lo = 0xe2398bf0eeb28cde, .ex = 0, .sgn=0},
-  {.hi = 0xeed89db66611e307, .lo = 0x86f8c20fb664b01b, .ex = 0, .sgn=0},
-  {.hi = 0xee8ff79c548acd0f, .lo = 0xa1d2c3d018a9279f, .ex = 0, .sgn=0},
-  {.hi = 0xee46be5a0813016b, .lo = 0x7872773830d368be, .ex = 0, .sgn=0},
-  {.hi = 0xedfcf21cabacd3b1, .lo = 0xfee6a1eebfa13b4a, .ex = 0, .sgn=0},
-  {.hi = 0xedb29311c504d652, .lo = 0x11815196b9fbf5df, .ex = 0, .sgn=0},
-  {.hi = 0xed67a1673455c601, .lo = 0x7289102076a125e5, .ex = 0, .sgn=0},
-  {.hi = 0xed1c1d4b344c3d4f, .lo = 0xddffe98c4f8aa031, .ex = 0, .sgn=0},
-  {.hi = 0xecd006ec59ea306f, .lo = 0xa8392eb238578ab0, .ex = 0, .sgn=0},
-  {.hi = 0xec835e79946a3145, .lo = 0x7e610231ac1d6181, .ex = 0, .sgn=0},
-  {.hi = 0xec3624222d227bd1, .lo = 0x278047ae3dd0889, .ex = 0, .sgn=0},
-  {.hi = 0xebe85815c767cb00, .lo = 0x1e99ccb9adc62ca6, .ex = 0, .sgn=0},
-  {.hi = 0xeb99fa84606ff5ff, .lo = 0xdae311e656e0661, .ex = 0, .sgn=0},
-  {.hi = 0xeb4b0b9e4f345617, .lo = 0x39e39c6c2ab3655d, .ex = 0, .sgn=0},
-  {.hi = 0xeafb8b944453f52f, .lo = 0x3383bbb5156bf1d7, .ex = 0, .sgn=0},
-  {.hi = 0xeaab7a9749f584fe, .lo = 0x24db98ad3a0647a1, .ex = 0, .sgn=0},
-  {.hi = 0xea5ad8d8c3a91f05, .lo = 0x4a0ca5ea449b1c83, .ex = 0, .sgn=0},
-  {.hi = 0xea09a68a6e49cd62, .lo = 0x15ad45b4a1b5e823, .ex = 0, .sgn=0},
-  {.hi = 0xe9b7e3de5fdedc8b, .lo = 0xcd24d4bd1056c826, .ex = 0, .sgn=0},
-  {.hi = 0xe9659107077cf60f, .lo = 0x89a92b199adfbafa, .ex = 0, .sgn=0},
-  {.hi = 0xe912ae372d27045d, .lo = 0xacb1c26a06e5ae02, .ex = 0, .sgn=0},
-  {.hi = 0xe8bf3ba1f1aedfbb, .lo = 0xf8972affb3d98e1f, .ex = 0, .sgn=0},
-  {.hi = 0xe86b397ace95c46f, .lo = 0x9fec1e78c4376186, .ex = 0, .sgn=0},
-  {.hi = 0xe816a7f595ec9232, .lo = 0xbfe8378abfb87b6f, .ex = 0, .sgn=0},
-  {.hi = 0xe7c187467233d508, .lo = 0xdbfb0fe56c6f80fe, .ex = 0, .sgn=0},
-  {.hi = 0xe76bd7a1e63b9786, .lo = 0x125129529d48a92f, .ex = 0, .sgn=0},
-  {.hi = 0xe715993ccd02fe9c, .lo = 0xe2ba81b9ce96e02e, .ex = 0, .sgn=0},
-  {.hi = 0xe6becc4c5997af06, .lo = 0x82fcedb4c6434d76, .ex = 0, .sgn=0},
-  {.hi = 0xe667710616f4fc59, .lo = 0xdd2a3e32c3859960, .ex = 0, .sgn=0},
-  {.hi = 0xe60f879fe7e2e1e5, .lo = 0x7613b68f6ab03130, .ex = 0, .sgn=0},
-  {.hi = 0xe5b7105006d4c560, .lo = 0x9b695cd67c93bd79, .ex = 0, .sgn=0},
-  {.hi = 0xe55e0b4d05c80388, .lo = 0x5a7c210a3a15e7ea, .ex = 0, .sgn=0},
-  {.hi = 0xe50478cdce2246bc, .lo = 0xe1f5a58c80292554, .ex = 0, .sgn=0},
-  {.hi = 0xe4aa5909a08fa7b4, .lo = 0x122785ae67f5515d, .ex = 0, .sgn=0},
-  {.hi = 0xe44fac3814e09856, .lo = 0x20d63b5b9e3cd6ac, .ex = 0, .sgn=0},
-  {.hi = 0xe3f4729119e798d9, .lo = 0x56992551ae074e99, .ex = 0, .sgn=0},
-  {.hi = 0xe398ac4cf556b732, .lo = 0xd1197dc12c63176, .ex = 0, .sgn=0},
-  {.hi = 0xe33c59a4439cd8ec, .lo = 0x36563e2ffad8351a, .ex = 0, .sgn=0},
-  {.hi = 0xe2df7acff7c2cf83, .lo = 0xd6fe4dd22e60a4a2, .ex = 0, .sgn=0},
-  {.hi = 0xe28210095b483751, .lo = 0xfd39138aa2d508ed, .ex = 0, .sgn=0},
-  {.hi = 0xe224198a0e002123, .lo = 0xe0521df01a1be6f5, .ex = 0, .sgn=0},
-  {.hi = 0xe1c5978c05ed8691, .lo = 0xf4e8a8372f8c5810, .ex = 0, .sgn=0},
-  {.hi = 0xe1668a498f1f892c, .lo = 0xe2f9d4600f4d0325, .ex = 0, .sgn=0},
-  {.hi = 0xe106f1fd4b8d7c96, .lo = 0x6ba8a9d9ba877899, .ex = 0, .sgn=0},
-  {.hi = 0xe0a6cee232f2bb9c, .lo = 0x6d6c98fe79817946, .ex = 0, .sgn=0},
-  {.hi = 0xe046213392aa486c, .lo = 0x55ff6038a5197367, .ex = 0, .sgn=0},
-  {.hi = 0xdfe4e92d0d8a37f5, .lo = 0x720588ff6547d884, .ex = 0, .sgn=0},
-  {.hi = 0xdf83270a9bbee890, .lo = 0xab01350f013d78dd, .ex = 0, .sgn=0},
-  {.hi = 0xdf20db088aa60404, .lo = 0x64a58b2f103485dd, .ex = 0, .sgn=0},
-  {.hi = 0xdebe05637ca94cfb, .lo = 0x4b19aa71fec3ae6d, .ex = 0, .sgn=0},
-  {.hi = 0xde5aa65869193805, .lo = 0x4248f15548f69ca, .ex = 0, .sgn=0},
-  {.hi = 0xddf6be249c075037, .lo = 0xd597b10a01676659, .ex = 0, .sgn=0},
-  {.hi = 0xdd924d05b620678a, .lo = 0x739c45b982193b5e, .ex = 0, .sgn=0},
-  {.hi = 0xdd2d5339ac8692fd, .lo = 0x49c6e0ea76cbcaac, .ex = 0, .sgn=0},
-  {.hi = 0xdcc7d0fec8aaf2aa, .lo = 0xb2069fd0b482b4e8, .ex = 0, .sgn=0},
-  {.hi = 0xdc61c693a82745d5, .lo = 0xaca8017e375b64e5, .ex = 0, .sgn=0},
-  {.hi = 0xdbfb34373c974b0e, .lo = 0xccb7fd40d543f4a1, .ex = 0, .sgn=0},
-  {.hi = 0xdb941a28cb71ec87, .lo = 0x2c19b63253da43fc, .ex = 0, .sgn=0},
-  {.hi = 0xdb2c78a7ede238a9, .lo = 0x5a98479cbef2ecbc, .ex = 0, .sgn=0},
-  {.hi = 0xdac44ff490a02710, .lo = 0x5b267c1bcff0ab62, .ex = 0, .sgn=0},
-  {.hi = 0xda5ba04ef3c929f4, .lo = 0xe257bde73d83dc1a, .ex = 0, .sgn=0},
-  {.hi = 0xd9f269f7aab88c29, .lo = 0x28e81dcb6dab91ac, .ex = 0, .sgn=0},
-  {.hi = 0xd988ad2f9bdf9bbb, .lo = 0xc4e4dc69fc2fff6f, .ex = 0, .sgn=0},
-  {.hi = 0xd91e6a38009da15a, .lo = 0x1bb35ad6d2e74b67, .ex = 0, .sgn=0},
-  {.hi = 0xd8b3a1526517a48b, .lo = 0x1ed1a8ff78f1b632, .ex = 0, .sgn=0},
-  {.hi = 0xd84852c0a80ffcdb, .lo = 0x24b9fe00663574a4, .ex = 0, .sgn=0},
-  {.hi = 0xd7dc7ec4fabdb011, .lo = 0xced12d2899b803db, .ex = 0, .sgn=0},
-  {.hi = 0xd77025a1e0a39d8b, .lo = 0xcb78e80e67ba1b8, .ex = 0, .sgn=0},
-  {.hi = 0xd703479a2f6776cc, .lo = 0x6cb3bfd65b38562b, .ex = 0, .sgn=0},
-  {.hi = 0xd695e4f10ea88570, .lo = 0x83f082b570611d7, .ex = 0, .sgn=0},
-  {.hi = 0xd627fde9f7d63e7e, .lo = 0x7afbefc05e9f7d99, .ex = 0, .sgn=0},
-  {.hi = 0xd5b992c8b606a351, .lo = 0x7190b755535d4f18, .ex = 0, .sgn=0},
-  {.hi = 0xd54aa3d165cc7018, .lo = 0x7d00ae97abaa4096, .ex = 0, .sgn=0},
-  {.hi = 0xd4db3148750d1819, .lo = 0xf630e8b6dac83e69, .ex = 0, .sgn=0},
-  {.hi = 0xd46b3b72a2d68fc9, .lo = 0xdc4663a3168698d2, .ex = 0, .sgn=0},
-  {.hi = 0xd3fac294ff34e4d0, .lo = 0xb77d4f6bd0ee8591, .ex = 0, .sgn=0},
-  {.hi = 0xd389c6f4eb07a41c, .lo = 0xa8faac741a6394dc, .ex = 0, .sgn=0},
-  {.hi = 0xd31848d817d70e16, .lo = 0xeeeaddb72f00e0dd, .ex = 0, .sgn=0},
-  {.hi = 0xd2a6488487a91918, .lo = 0x4300fd1c1ce507e5, .ex = 0, .sgn=0},
-  {.hi = 0xd233c6408cd64236, .lo = 0x981ba7e42537275f, .ex = 0, .sgn=0},
-  {.hi = 0xd1c0c252c9de2c86, .lo = 0xda7485a5aeffeb4c, .ex = 0, .sgn=0},
-  {.hi = 0xd14d3d02313c0eed, .lo = 0x744fea20e8abef92, .ex = 0, .sgn=0},
-  {.hi = 0xd0d93696053af098, .lo = 0x77a18eb13d2ecde5, .ex = 0, .sgn=0},
-  {.hi = 0xd064af55d7c9b43e, .lo = 0x6b8a685f6cb61c21, .ex = 0, .sgn=0},
-  {.hi = 0xcfefa7898a4ef23c, .lo = 0xdaf200dd81212d10, .ex = 0, .sgn=0},
-  {.hi = 0xcf7a1f794d7ca1b1, .lo = 0xdfcb60445c1bf973, .ex = 0, .sgn=0},
-  {.hi = 0xcf04176da12390ac, .lo = 0x4d27090f10c454e, .ex = 0, .sgn=0},
-  {.hi = 0xce8d8faf5406ab8b, .lo = 0xf5babff66def7892, .ex = 0, .sgn=0},
-  {.hi = 0xce16888783ae13b3, .lo = 0x93e391861a034684, .ex = 0, .sgn=0},
-  {.hi = 0xcd9f023f9c3a059e, .lo = 0x23af31db7179a4aa, .ex = 0, .sgn=0},
-  {.hi = 0xcd26fd2158358e7d, .lo = 0x649474e36b8db9d3, .ex = 0, .sgn=0},
-  {.hi = 0xccae7976c0691177, .lo = 0x83e907fbd7aaf0b0, .ex = 0, .sgn=0},
-  {.hi = 0xcc35778a2bac9ca1, .lo = 0xf839ce18e08bfb50, .ex = 0, .sgn=0},
-  {.hi = 0xcbbbf7a63eba0dd5, .lo = 0x70cbb7f3343451be, .ex = 0, .sgn=0},
-  {.hi = 0xcb41fa15ebff0777, .lo = 0x2293661be51140ab, .ex = 0, .sgn=0},
-  {.hi = 0xcac77f24736eb553, .lo = 0xd9944be1631846d8, .ex = 0, .sgn=0},
-  {.hi = 0xca4c871d625361a9, .lo = 0x5328edeb3e6784de, .ex = 0, .sgn=0},
-  {.hi = 0xc9d1124c931fda7a, .lo = 0x8335241be1693225, .ex = 0, .sgn=0},
-  {.hi = 0xc95520fe2d40a74b, .lo = 0x83b0e96e1249c2b0, .ex = 0, .sgn=0},
-  {.hi = 0xc8d8b37ea4ed0f62, .lo = 0xb562c00b34ee771, .ex = 0, .sgn=0},
-  {.hi = 0xc85bca1abaf7f0a7, .lo = 0x65862939b83382e0, .ex = 0, .sgn=0},
-  {.hi = 0xc7de651f7ca06749, .lo = 0x2b31bc86877fd2c, .ex = 0, .sgn=0},
-  {.hi = 0xc76084da43624634, .lo = 0xd5c149509e9059f1, .ex = 0, .sgn=0},
-  {.hi = 0xc6e22998b4c6608e, .lo = 0xcfe6c1b1a6b4e2a4, .ex = 0, .sgn=0},
-  {.hi = 0xc66353a8c232a43c, .lo = 0xe993503baf5afb41, .ex = 0, .sgn=0},
-  {.hi = 0xc5e40358a8ba05a7, .lo = 0x43da25d99267326b, .ex = 0, .sgn=0},
-  {.hi = 0xc56438f6f0ec3cca, .lo = 0xab4906075507e74, .ex = 0, .sgn=0},
-  {.hi = 0xc4e3f4d26ea553b6, .lo = 0xdd40950cf1ed92fa, .ex = 0, .sgn=0},
-  {.hi = 0xc463373a40dd06a3, .lo = 0x9dd768f30ca8e85c, .ex = 0, .sgn=0},
-  {.hi = 0xc3e2007dd175f5a4, .lo = 0xa87e78136665cdb2, .ex = 0, .sgn=0},
-  {.hi = 0xc36050ecd50ca830, .lo = 0x8ac9e1386e4cbabb, .ex = 0, .sgn=0},
-  {.hi = 0xc2de28d74ac6628b, .lo = 0x74c8f010d986a9e0, .ex = 0, .sgn=0},
-  {.hi = 0xc25b888d7c1fcd38, .lo = 0xb7041e9bc8c18b0d, .ex = 0, .sgn=0},
-  {.hi = 0xc1d8705ffcbb6e90, .lo = 0xbdf0715cb8b20bd7, .ex = 0, .sgn=0},
-  {.hi = 0xc154e09faa2ff69a, .lo = 0x17858573216e0a22, .ex = 0, .sgn=0},
-  {.hi = 0xc0d0d99dabd65d44, .lo = 0x2bda5328933c854a, .ex = 0, .sgn=0},
-  {.hi = 0xc04c5bab7297d322, .lo = 0x6dd06968e0ed1957, .ex = 0, .sgn=0},
-  {.hi = 0xbfc7671ab8bb84c6, .lo = 0xe4e62d86dd136e78, .ex = 0, .sgn=0},
-  {.hi = 0xbf41fc3d81b430db, .lo = 0xd46655d6b012455, .ex = 0, .sgn=0},
-  {.hi = 0xbebc1b6619ed9116, .lo = 0x2715ef03f8543355, .ex = 0, .sgn=0},
-  {.hi = 0xbe35c4e716999630, .lo = 0x29d7f7b67d43b177, .ex = 0, .sgn=0},
-  {.hi = 0xbdaef913557d76f0, .lo = 0xac85320f528d6d5d, .ex = 0, .sgn=0},
-  {.hi = 0xbd27b83dfcbe9279, .lo = 0x2ea36923d5d8e213, .ex = 0, .sgn=0},
-  {.hi = 0xbca002ba7aaf25ea, .lo = 0x4a48496734be336d, .ex = 0, .sgn=0},
-  {.hi = 0xbc17d8dc859ad583, .lo = 0x727c405ffc73af56, .ex = 0, .sgn=0},
-  {.hi = 0xbb8f3af81b93095c, .lo = 0xfce8d84068e825b6, .ex = 0, .sgn=0},
-  {.hi = 0xbb062961823b1ddc, .lo = 0x5120e35e1c1a250c, .ex = 0, .sgn=0},
-  {.hi = 0xba7ca46d46946802, .lo = 0x33201477347447d8, .ex = 0, .sgn=0},
-  {.hi = 0xb9f2ac703cca0db3, .lo = 0x39db32d014440024, .ex = 0, .sgn=0},
-  {.hi = 0xb96841bf7ffcb21a, .lo = 0x9de1e3b22b8bf4db, .ex = 0, .sgn=0},
-  {.hi = 0xb8dd64b0720df647, .lo = 0xa726f4f0828585c9, .ex = 0, .sgn=0},
-  {.hi = 0xb8521598bb6bce26, .lo = 0x1c041d1ea5fb3fdb, .ex = 0, .sgn=0},
-  {.hi = 0xb7c654ce4adba9f2, .lo = 0x2e7a35723f3ed035, .ex = 0, .sgn=0},
-  {.hi = 0xb73a22a755457448, .lo = 0x7f86f63bb23f496a, .ex = 0, .sgn=0},
-  {.hi = 0xb6ad7f7a557e64f2, .lo = 0xeb2d28ef943dc88c, .ex = 0, .sgn=0},
-  {.hi = 0xb6206b9e0c13a892, .lo = 0xea7c015f12b987f7, .ex = 0, .sgn=0},
-  {.hi = 0xb592e7697f14dd4a, .lo = 0x737dd2824b608d13, .ex = 0, .sgn=0},
+  {.lo = 0x0, .hi = 0x8000000000000000, .ex = 1, .sgn=0},
+  {.lo = 0x3031437d7eccb9df, .hi = 0xffffb10b10e80e95, .ex = 0, .sgn=0},
+  {.lo = 0x38e310779edfec68, .hi = 0xfffec42c7454926b, .ex = 0, .sgn=0},
+  {.lo = 0x69fff9ae0dedb047, .hi = 0xfffd3964bc6275ba, .ex = 0, .sgn=0},
+  {.lo = 0xb47903f7a19f8ee2, .hi = 0xfffb10b4dc96dabb, .ex = 0, .sgn=0},
+  {.lo = 0x8cc193c5d508e13f, .hi = 0xfff84a1e29de8571, .ex = 0, .sgn=0},
+  {.lo = 0x43366df666fd54ff, .hi = 0xfff4e5a25a8d095b, .ex = 0, .sgn=0},
+  {.lo = 0x5428ed0647c9e5d1, .hi = 0xfff0e343865bbb13, .ex = 0, .sgn=0},
+  {.lo = 0x5657552366961732, .hi = 0xffec4304266865d9, .ex = 0, .sgn=0},
+  {.lo = 0x53aa9423bb0adc21, .hi = 0xffe704e71533c508, .ex = 0, .sgn=0},
+  {.lo = 0x7d209f32d42d864e, .hi = 0xffe128ef8e9fc17a, .ex = 0, .sgn=0},
+  {.lo = 0x4fd8f038449ec436, .hi = 0xffdaaf212fed72db, .ex = 0, .sgn=0},
+  {.lo = 0x664649b4d541b9c5, .hi = 0xffd3977ff7bae4e9, .ex = 0, .sgn=0},
+  {.lo = 0x5595ca3f421ae09c, .hi = 0xffcbe2104600a0a9, .ex = 0, .sgn=0},
+  {.lo = 0x1c676208aa3be545, .hi = 0xffc38ed6dc0ef98b, .ex = 0, .sgn=0},
+  {.lo = 0xccfed60a91097c48, .hi = 0xffba9dd8dc8b1e83, .ex = 0, .sgn=0},
+  {.lo = 0x421e8edaaf59453e, .hi = 0xffb10f1bcb6bef1d, .ex = 0, .sgn=0},
+  {.lo = 0xd2c665c2da3e7844, .hi = 0xffa6e2a58df6947d, .ex = 0, .sgn=0},
+  {.lo = 0x1e1862cca089938b, .hi = 0xff9c187c6abade6a, .ex = 0, .sgn=0},
+  {.lo = 0x2dabd3195a05710f, .hi = 0xff90b0a7098f6443, .ex = 0, .sgn=0},
+  {.lo = 0x519c314973ccae6b, .hi = 0xff84ab2c738d6a03, .ex = 0, .sgn=0},
+  {.lo = 0x3ea4f30adda3016f, .hi = 0xff780814130c893c, .ex = 0, .sgn=0},
+  {.lo = 0x1b9d5851979f28fb, .hi = 0xff6ac765b39e1e19, .ex = 0, .sgn=0},
+  {.lo = 0x50a7bb6a6ee3b0f1, .hi = 0xff5ce92982087867, .ex = 0, .sgn=0},
+  {.lo = 0xf668633f1ab858a, .hi = 0xff4e6d680c41d0a9, .ex = 0, .sgn=0},
+  {.lo = 0xb085c1828f69296a, .hi = 0xff3f542a416b0134, .ex = 0, .sgn=0},
+  {.lo = 0x27e31939e2eec09c, .hi = 0xff2f9d7971ca0364, .ex = 0, .sgn=0},
+  {.lo = 0xf5971326a3540ea9, .hi = 0xff1f495f4ec430d7, .ex = 0, .sgn=0},
+  {.lo = 0x1f1901544271c3f8, .hi = 0xff0e57e5ead848d1, .ex = 0, .sgn=0},
+  {.lo = 0xe0abd3a9b64df725, .hi = 0xfefcc917b99839a5, .ex = 0, .sgn=0},
+  {.lo = 0xec34413e87ef2740, .hi = 0xfeea9cff8fa2ae54, .ex = 0, .sgn=0},
+  {.lo = 0x2f88b949a72ff96c, .hi = 0xfed7d3a8a29c603b, .ex = 0, .sgn=0},
+  {.lo = 0x41390efdc726e9ef, .hi = 0xfec46d1e89292cf0, .ex = 0, .sgn=0},
+  {.lo = 0xb7b6cc53c3abc817, .hi = 0xfeb0696d3ae4f04d, .ex = 0, .sgn=0},
+  {.lo = 0xd3af6ee4f2101c20, .hi = 0xfe9bc8a1105c22a5, .ex = 0, .sgn=0},
+  {.lo = 0xb4f70c910505e10, .hi = 0xfe868ac6c3043b2e, .ex = 0, .sgn=0},
+  {.lo = 0x2907cf2b3f6feac2, .hi = 0xfe70afeb6d33d6a2, .ex = 0, .sgn=0},
+  {.lo = 0xd54faa364b7da8f6, .hi = 0xfe5a381c8a1aa224, .ex = 0, .sgn=0},
+  {.lo = 0x87b8875373a818a4, .hi = 0xfe432367f5b90a62, .ex = 0, .sgn=0},
+  {.lo = 0x8598c2c429caf7, .hi = 0xfe2b71dbecd7aefc, .ex = 0, .sgn=0},
+  {.lo = 0x90cd1d959db674ef, .hi = 0xfe1323870cfe9a3d, .ex = 0, .sgn=0},
+  {.lo = 0x9bfe5c51e91cbdcd, .hi = 0xfdfa3878546c3d28, .ex = 0, .sgn=0},
+  {.lo = 0xe276d247626a23fd, .hi = 0xfde0b0bf220c2fd4, .ex = 0, .sgn=0},
+  {.lo = 0x499ddb331d19539d, .hi = 0xfdc68c6b356db62f, .ex = 0, .sgn=0},
+  {.lo = 0xfac7397cc07a6470, .hi = 0xfdabcb8caeba091b, .ex = 0, .sgn=0},
+  {.lo = 0xd6e270740a186977, .hi = 0xfd906e340eaa6401, .ex = 0, .sgn=0},
+  {.lo = 0x61beb8cd2696fc78, .hi = 0xfd747472367dd6c5, .ex = 0, .sgn=0},
+  {.lo = 0x6c696582f346fd91, .hi = 0xfd57de5867eedc39, .ex = 0, .sgn=0},
+  {.lo = 0xeae6bd951c1dabbe, .hi = 0xfd3aabf84528b50b, .ex = 0, .sgn=0},
+  {.lo = 0x863b87258f11ad7e, .hi = 0xfd1cdd63d0bc8735, .ex = 0, .sgn=0},
+  {.lo = 0xa06fab9f9d106709, .hi = 0xfcfe72ad6d9641f2, .ex = 0, .sgn=0},
+  {.lo = 0xa4e064308f4999f4, .hi = 0xfcdf6be7def1464c, .ex = 0, .sgn=0},
+  {.lo = 0xa3e22b4d38917e73, .hi = 0xfcbfc926484cd43a, .ex = 0, .sgn=0},
+  {.lo = 0x5d582cac7cb4391c, .hi = 0xfc9f8a7c2d603c60, .ex = 0, .sgn=0},
+  {.lo = 0x2880268f2e62955, .hi = 0xfc7eaffd720ed673, .ex = 0, .sgn=0},
+  {.lo = 0x1c0d254b6c8da4bd, .hi = 0xfc5d39be5a5bbc4b, .ex = 0, .sgn=0},
+  {.lo = 0x256778ffcb5c1769, .hi = 0xfc3b27d38a5d49ab, .ex = 0, .sgn=0},
+  {.lo = 0x9433b49289417ea2, .hi = 0xfc187a52063060c2, .ex = 0, .sgn=0},
+  {.lo = 0x25aafd7fdba12c5f, .hi = 0xfbf5314f31eb7375, .ex = 0, .sgn=0},
+  {.lo = 0x7190c94899dff1b8, .hi = 0xfbd14ce0d191516e, .ex = 0, .sgn=0},
+  {.lo = 0xe63ae8632b84473c, .hi = 0xfbaccd1d0903bb09, .ex = 0, .sgn=0},
+  {.lo = 0x75df66f0ec3dd459, .hi = 0xfb87b21a5bf5b917, .ex = 0, .sgn=0},
+  {.lo = 0x61ce9d5ef5a81487, .hi = 0xfb61fbefadddb985, .ex = 0, .sgn=0},
+  {.lo = 0xb4b54683879c9c17, .hi = 0xfb3baab441e770f7, .ex = 0, .sgn=0},
+  {.lo = 0x2172a361fd2a722f, .hi = 0xfb14be7fbae58156, .ex = 0, .sgn=0},
+  {.lo = 0x2079880c450348ac, .hi = 0xfaed376a1b42e559, .ex = 0, .sgn=0},
+  {.lo = 0x4a188aa367f90ab1, .hi = 0xfac5158bc4f4211f, .ex = 0, .sgn=0},
+  {.lo = 0x10655ecd5cc771d8, .hi = 0xfa9c58fd796837d4, .ex = 0, .sgn=0},
+  {.lo = 0x1fe196a53fb5b237, .hi = 0xfa7301d859796671, .ex = 0, .sgn=0},
+  {.lo = 0xd24377c77a591e24, .hi = 0xfa491035e55da3a3, .ex = 0, .sgn=0},
+  {.lo = 0x431c393c7f62da65, .hi = 0xfa1e842ffc96e4e0, .ex = 0, .sgn=0},
+  {.lo = 0xba5dbf4510eddc8f, .hi = 0xf9f35de0dde328ab, .ex = 0, .sgn=0},
+  {.lo = 0x4504ae08d19b2980, .hi = 0xf9c79d63272c4628, .ex = 0, .sgn=0},
+  {.lo = 0x78685d850f80ecdc, .hi = 0xf99b42d1d57781eb, .ex = 0, .sgn=0},
+  {.lo = 0x80e8c17bf80e8f02, .hi = 0xf96e4e4844d4e82a, .ex = 0, .sgn=0},
+  {.lo = 0xc0e2a1352ed7f292, .hi = 0xf940bfe2304e6c45, .ex = 0, .sgn=0},
+  {.lo = 0x68fc6e4d6a920bd2, .hi = 0xf91297bbb1d6cdbe, .ex = 0, .sgn=0},
+  {.lo = 0x9701914c7f8fbcd7, .hi = 0xf8e3d5f1423842a0, .ex = 0, .sgn=0},
+  {.lo = 0xac9f07f54ff5bc14, .hi = 0xf8b47a9fb902e76c, .ex = 0, .sgn=0},
+  {.lo = 0xb36a9dfaadafc1e1, .hi = 0xf88485e44c7af48a, .ex = 0, .sgn=0},
+  {.lo = 0xc7adc6b4988891bb, .hi = 0xf853f7dc9186b952, .ex = 0, .sgn=0},
+  {.lo = 0xa776175bd284fe05, .hi = 0xf822d0a67b9c5cb5, .ex = 0, .sgn=0},
+  {.lo = 0xa76f7efc19aed41c, .hi = 0xf7f110605caf6390, .ex = 0, .sgn=0},
+  {.lo = 0x730785813f78aa1e, .hi = 0xf7beb728e51dfcb8, .ex = 0, .sgn=0},
+  {.lo = 0x214cffcee9dd33ca, .hi = 0xf78bc51f239e12c6, .ex = 0, .sgn=0},
+  {.lo = 0x4becad887680c197, .hi = 0xf7583a62852a23b2, .ex = 0, .sgn=0},
+  {.lo = 0xf99107e50d631330, .hi = 0xf7241712d4edde49, .ex = 0, .sgn=0},
+  {.lo = 0x50ca117eb18beed7, .hi = 0xf6ef5b503c328589, .ex = 0, .sgn=0},
+  {.lo = 0x2c791f59cc1ffc23, .hi = 0xf6ba073b424b19e8, .ex = 0, .sgn=0},
+  {.lo = 0xce8c455197cdf8a7, .hi = 0xf6841af4cc8048a4, .ex = 0, .sgn=0},
+  {.lo = 0x119d358de0493956, .hi = 0xf64d969e1dfc2119, .ex = 0, .sgn=0},
+  {.lo = 0x9dc7e5954c5a8f24, .hi = 0xf6167a58d7b59026, .ex = 0, .sgn=0},
+  {.lo = 0xc8c615e72768d6b5, .hi = 0xf5dec646f85ba1c6, .ex = 0, .sgn=0},
+  {.lo = 0xed0dd4bf62edd13f, .hi = 0xf5a67a8adc4088ca, .ex = 0, .sgn=0},
+  {.lo = 0x275a2bbb2bab6c8a, .hi = 0xf56d97473d446cda, .ex = 0, .sgn=0},
+  {.lo = 0x8da64484aaa0febc, .hi = 0xf5341c9f32bffeb9, .ex = 0, .sgn=0},
+  {.lo = 0x163c5c7f03b718c5, .hi = 0xf4fa0ab6316ed2ec, .ex = 0, .sgn=0},
+  {.lo = 0x890ac4aafa6a37bf, .hi = 0xf4bf61b00b5982b7, .ex = 0, .sgn=0},
+  {.lo = 0xf8f9d3b87d11fd52, .hi = 0xf48421b0efbf939b, .ex = 0, .sgn=0},
+  {.lo = 0x667e06866c07c369, .hi = 0xf4484add6b01254b, .ex = 0, .sgn=0},
+  {.lo = 0x5019794a1f5896e5, .hi = 0xf40bdd5a6688662f, .ex = 0, .sgn=0},
+  {.lo = 0x18ef535a7ffa7a3d, .hi = 0xf3ced94d28b2ce8a, .ex = 0, .sgn=0},
+  {.lo = 0x50f29b4b49f31c37, .hi = 0xf3913edb54ba2242, .ex = 0, .sgn=0},
+  {.lo = 0xd981acdcf6bc3e4, .hi = 0xf3530e2aea9d3966, .ex = 0, .sgn=0},
+  {.lo = 0xa5486bdc455d56a2, .hi = 0xf314476247088f74, .ex = 0, .sgn=0},
+  {.lo = 0x431be53f92ece9e6, .hi = 0xf2d4eaa8233e997d, .ex = 0, .sgn=0},
+  {.lo = 0xebadcdbf915e8f6c, .hi = 0xf294f82394ffe320, .ex = 0, .sgn=0},
+  {.lo = 0xaf0eed81e8c51e55, .hi = 0xf2546ffc0e72f286, .ex = 0, .sgn=0},
+  {.lo = 0xe7112e89103cc0c7, .hi = 0xf21352595e0bf350, .ex = 0, .sgn=0},
+  {.lo = 0x844e6a35ddc2b713, .hi = 0xf1d19f63ae7428a2, .ex = 0, .sgn=0},
+  {.lo = 0x8f6bac72988088b0, .hi = 0xf18f574386712643, .ex = 0, .sgn=0},
+  {.lo = 0x2730081c758fb42b, .hi = 0xf14c7a21c8cbd0f4, .ex = 0, .sgn=0},
+  {.lo = 0x67127db35b287316, .hi = 0xf1090827b43725fd, .ex = 0, .sgn=0},
+  {.lo = 0xc4e557b119ef3185, .hi = 0xf0c5017ee336ca0f, .ex = 0, .sgn=0},
+  {.lo = 0x973ea9903ed5125f, .hi = 0xf08066514c055f7e, .ex = 0, .sgn=0},
+  {.lo = 0x992d39ec5c561d28, .hi = 0xf03b36c9407aa3e8, .ex = 0, .sgn=0},
+  {.lo = 0x62aef7b55319d1d4, .hi = 0xeff573116df1555d, .ex = 0, .sgn=0},
+  {.lo = 0xf03a18a5e16ab641, .hi = 0xefaf1b54dd2cdf0f, .ex = 0, .sgn=0},
+  {.lo = 0x767c0e8ad33bc085, .hi = 0xef682fbef23ecda6, .ex = 0, .sgn=0},
+  {.lo = 0xe2398bf0eeb28cde, .hi = 0xef20b07b6c6c0b37, .ex = 0, .sgn=0},
+  {.lo = 0x86f8c20fb664b01b, .hi = 0xeed89db66611e307, .ex = 0, .sgn=0},
+  {.lo = 0xa1d2c3d018a9279f, .hi = 0xee8ff79c548acd0f, .ex = 0, .sgn=0},
+  {.lo = 0x7872773830d368be, .hi = 0xee46be5a0813016b, .ex = 0, .sgn=0},
+  {.lo = 0xfee6a1eebfa13b4a, .hi = 0xedfcf21cabacd3b1, .ex = 0, .sgn=0},
+  {.lo = 0x11815196b9fbf5df, .hi = 0xedb29311c504d652, .ex = 0, .sgn=0},
+  {.lo = 0x7289102076a125e5, .hi = 0xed67a1673455c601, .ex = 0, .sgn=0},
+  {.lo = 0xddffe98c4f8aa031, .hi = 0xed1c1d4b344c3d4f, .ex = 0, .sgn=0},
+  {.lo = 0xa8392eb238578ab0, .hi = 0xecd006ec59ea306f, .ex = 0, .sgn=0},
+  {.lo = 0x7e610231ac1d6181, .hi = 0xec835e79946a3145, .ex = 0, .sgn=0},
+  {.lo = 0x278047ae3dd0889, .hi = 0xec3624222d227bd1, .ex = 0, .sgn=0},
+  {.lo = 0x1e99ccb9adc62ca6, .hi = 0xebe85815c767cb00, .ex = 0, .sgn=0},
+  {.lo = 0xdae311e656e0661, .hi = 0xeb99fa84606ff5ff, .ex = 0, .sgn=0},
+  {.lo = 0x39e39c6c2ab3655d, .hi = 0xeb4b0b9e4f345617, .ex = 0, .sgn=0},
+  {.lo = 0x3383bbb5156bf1d7, .hi = 0xeafb8b944453f52f, .ex = 0, .sgn=0},
+  {.lo = 0x24db98ad3a0647a1, .hi = 0xeaab7a9749f584fe, .ex = 0, .sgn=0},
+  {.lo = 0x4a0ca5ea449b1c83, .hi = 0xea5ad8d8c3a91f05, .ex = 0, .sgn=0},
+  {.lo = 0x15ad45b4a1b5e823, .hi = 0xea09a68a6e49cd62, .ex = 0, .sgn=0},
+  {.lo = 0xcd24d4bd1056c826, .hi = 0xe9b7e3de5fdedc8b, .ex = 0, .sgn=0},
+  {.lo = 0x89a92b199adfbafa, .hi = 0xe9659107077cf60f, .ex = 0, .sgn=0},
+  {.lo = 0xacb1c26a06e5ae02, .hi = 0xe912ae372d27045d, .ex = 0, .sgn=0},
+  {.lo = 0xf8972affb3d98e1f, .hi = 0xe8bf3ba1f1aedfbb, .ex = 0, .sgn=0},
+  {.lo = 0x9fec1e78c4376186, .hi = 0xe86b397ace95c46f, .ex = 0, .sgn=0},
+  {.lo = 0xbfe8378abfb87b6f, .hi = 0xe816a7f595ec9232, .ex = 0, .sgn=0},
+  {.lo = 0xdbfb0fe56c6f80fe, .hi = 0xe7c187467233d508, .ex = 0, .sgn=0},
+  {.lo = 0x125129529d48a92f, .hi = 0xe76bd7a1e63b9786, .ex = 0, .sgn=0},
+  {.lo = 0xe2ba81b9ce96e02e, .hi = 0xe715993ccd02fe9c, .ex = 0, .sgn=0},
+  {.lo = 0x82fcedb4c6434d76, .hi = 0xe6becc4c5997af06, .ex = 0, .sgn=0},
+  {.lo = 0xdd2a3e32c3859960, .hi = 0xe667710616f4fc59, .ex = 0, .sgn=0},
+  {.lo = 0x7613b68f6ab03130, .hi = 0xe60f879fe7e2e1e5, .ex = 0, .sgn=0},
+  {.lo = 0x9b695cd67c93bd79, .hi = 0xe5b7105006d4c560, .ex = 0, .sgn=0},
+  {.lo = 0x5a7c210a3a15e7ea, .hi = 0xe55e0b4d05c80388, .ex = 0, .sgn=0},
+  {.lo = 0xe1f5a58c80292554, .hi = 0xe50478cdce2246bc, .ex = 0, .sgn=0},
+  {.lo = 0x122785ae67f5515d, .hi = 0xe4aa5909a08fa7b4, .ex = 0, .sgn=0},
+  {.lo = 0x20d63b5b9e3cd6ac, .hi = 0xe44fac3814e09856, .ex = 0, .sgn=0},
+  {.lo = 0x56992551ae074e99, .hi = 0xe3f4729119e798d9, .ex = 0, .sgn=0},
+  {.lo = 0xd1197dc12c63176, .hi = 0xe398ac4cf556b732, .ex = 0, .sgn=0},
+  {.lo = 0x36563e2ffad8351a, .hi = 0xe33c59a4439cd8ec, .ex = 0, .sgn=0},
+  {.lo = 0xd6fe4dd22e60a4a2, .hi = 0xe2df7acff7c2cf83, .ex = 0, .sgn=0},
+  {.lo = 0xfd39138aa2d508ed, .hi = 0xe28210095b483751, .ex = 0, .sgn=0},
+  {.lo = 0xe0521df01a1be6f5, .hi = 0xe224198a0e002123, .ex = 0, .sgn=0},
+  {.lo = 0xf4e8a8372f8c5810, .hi = 0xe1c5978c05ed8691, .ex = 0, .sgn=0},
+  {.lo = 0xe2f9d4600f4d0325, .hi = 0xe1668a498f1f892c, .ex = 0, .sgn=0},
+  {.lo = 0x6ba8a9d9ba877899, .hi = 0xe106f1fd4b8d7c96, .ex = 0, .sgn=0},
+  {.lo = 0x6d6c98fe79817946, .hi = 0xe0a6cee232f2bb9c, .ex = 0, .sgn=0},
+  {.lo = 0x55ff6038a5197367, .hi = 0xe046213392aa486c, .ex = 0, .sgn=0},
+  {.lo = 0x720588ff6547d884, .hi = 0xdfe4e92d0d8a37f5, .ex = 0, .sgn=0},
+  {.lo = 0xab01350f013d78dd, .hi = 0xdf83270a9bbee890, .ex = 0, .sgn=0},
+  {.lo = 0x64a58b2f103485dd, .hi = 0xdf20db088aa60404, .ex = 0, .sgn=0},
+  {.lo = 0x4b19aa71fec3ae6d, .hi = 0xdebe05637ca94cfb, .ex = 0, .sgn=0},
+  {.lo = 0x4248f15548f69ca, .hi = 0xde5aa65869193805, .ex = 0, .sgn=0},
+  {.lo = 0xd597b10a01676659, .hi = 0xddf6be249c075037, .ex = 0, .sgn=0},
+  {.lo = 0x739c45b982193b5e, .hi = 0xdd924d05b620678a, .ex = 0, .sgn=0},
+  {.lo = 0x49c6e0ea76cbcaac, .hi = 0xdd2d5339ac8692fd, .ex = 0, .sgn=0},
+  {.lo = 0xb2069fd0b482b4e8, .hi = 0xdcc7d0fec8aaf2aa, .ex = 0, .sgn=0},
+  {.lo = 0xaca8017e375b64e5, .hi = 0xdc61c693a82745d5, .ex = 0, .sgn=0},
+  {.lo = 0xccb7fd40d543f4a1, .hi = 0xdbfb34373c974b0e, .ex = 0, .sgn=0},
+  {.lo = 0x2c19b63253da43fc, .hi = 0xdb941a28cb71ec87, .ex = 0, .sgn=0},
+  {.lo = 0x5a98479cbef2ecbc, .hi = 0xdb2c78a7ede238a9, .ex = 0, .sgn=0},
+  {.lo = 0x5b267c1bcff0ab62, .hi = 0xdac44ff490a02710, .ex = 0, .sgn=0},
+  {.lo = 0xe257bde73d83dc1a, .hi = 0xda5ba04ef3c929f4, .ex = 0, .sgn=0},
+  {.lo = 0x28e81dcb6dab91ac, .hi = 0xd9f269f7aab88c29, .ex = 0, .sgn=0},
+  {.lo = 0xc4e4dc69fc2fff6f, .hi = 0xd988ad2f9bdf9bbb, .ex = 0, .sgn=0},
+  {.lo = 0x1bb35ad6d2e74b67, .hi = 0xd91e6a38009da15a, .ex = 0, .sgn=0},
+  {.lo = 0x1ed1a8ff78f1b632, .hi = 0xd8b3a1526517a48b, .ex = 0, .sgn=0},
+  {.lo = 0x24b9fe00663574a4, .hi = 0xd84852c0a80ffcdb, .ex = 0, .sgn=0},
+  {.lo = 0xced12d2899b803db, .hi = 0xd7dc7ec4fabdb011, .ex = 0, .sgn=0},
+  {.lo = 0xcb78e80e67ba1b8, .hi = 0xd77025a1e0a39d8b, .ex = 0, .sgn=0},
+  {.lo = 0x6cb3bfd65b38562b, .hi = 0xd703479a2f6776cc, .ex = 0, .sgn=0},
+  {.lo = 0x83f082b570611d7, .hi = 0xd695e4f10ea88570, .ex = 0, .sgn=0},
+  {.lo = 0x7afbefc05e9f7d99, .hi = 0xd627fde9f7d63e7e, .ex = 0, .sgn=0},
+  {.lo = 0x7190b755535d4f18, .hi = 0xd5b992c8b606a351, .ex = 0, .sgn=0},
+  {.lo = 0x7d00ae97abaa4096, .hi = 0xd54aa3d165cc7018, .ex = 0, .sgn=0},
+  {.lo = 0xf630e8b6dac83e69, .hi = 0xd4db3148750d1819, .ex = 0, .sgn=0},
+  {.lo = 0xdc4663a3168698d2, .hi = 0xd46b3b72a2d68fc9, .ex = 0, .sgn=0},
+  {.lo = 0xb77d4f6bd0ee8591, .hi = 0xd3fac294ff34e4d0, .ex = 0, .sgn=0},
+  {.lo = 0xa8faac741a6394dc, .hi = 0xd389c6f4eb07a41c, .ex = 0, .sgn=0},
+  {.lo = 0xeeeaddb72f00e0dd, .hi = 0xd31848d817d70e16, .ex = 0, .sgn=0},
+  {.lo = 0x4300fd1c1ce507e5, .hi = 0xd2a6488487a91918, .ex = 0, .sgn=0},
+  {.lo = 0x981ba7e42537275f, .hi = 0xd233c6408cd64236, .ex = 0, .sgn=0},
+  {.lo = 0xda7485a5aeffeb4c, .hi = 0xd1c0c252c9de2c86, .ex = 0, .sgn=0},
+  {.lo = 0x744fea20e8abef92, .hi = 0xd14d3d02313c0eed, .ex = 0, .sgn=0},
+  {.lo = 0x77a18eb13d2ecde5, .hi = 0xd0d93696053af098, .ex = 0, .sgn=0},
+  {.lo = 0x6b8a685f6cb61c21, .hi = 0xd064af55d7c9b43e, .ex = 0, .sgn=0},
+  {.lo = 0xdaf200dd81212d10, .hi = 0xcfefa7898a4ef23c, .ex = 0, .sgn=0},
+  {.lo = 0xdfcb60445c1bf973, .hi = 0xcf7a1f794d7ca1b1, .ex = 0, .sgn=0},
+  {.lo = 0x4d27090f10c454e, .hi = 0xcf04176da12390ac, .ex = 0, .sgn=0},
+  {.lo = 0xf5babff66def7892, .hi = 0xce8d8faf5406ab8b, .ex = 0, .sgn=0},
+  {.lo = 0x93e391861a034684, .hi = 0xce16888783ae13b3, .ex = 0, .sgn=0},
+  {.lo = 0x23af31db7179a4aa, .hi = 0xcd9f023f9c3a059e, .ex = 0, .sgn=0},
+  {.lo = 0x649474e36b8db9d3, .hi = 0xcd26fd2158358e7d, .ex = 0, .sgn=0},
+  {.lo = 0x83e907fbd7aaf0b0, .hi = 0xccae7976c0691177, .ex = 0, .sgn=0},
+  {.lo = 0xf839ce18e08bfb50, .hi = 0xcc35778a2bac9ca1, .ex = 0, .sgn=0},
+  {.lo = 0x70cbb7f3343451be, .hi = 0xcbbbf7a63eba0dd5, .ex = 0, .sgn=0},
+  {.lo = 0x2293661be51140ab, .hi = 0xcb41fa15ebff0777, .ex = 0, .sgn=0},
+  {.lo = 0xd9944be1631846d8, .hi = 0xcac77f24736eb553, .ex = 0, .sgn=0},
+  {.lo = 0x5328edeb3e6784de, .hi = 0xca4c871d625361a9, .ex = 0, .sgn=0},
+  {.lo = 0x8335241be1693225, .hi = 0xc9d1124c931fda7a, .ex = 0, .sgn=0},
+  {.lo = 0x83b0e96e1249c2b0, .hi = 0xc95520fe2d40a74b, .ex = 0, .sgn=0},
+  {.lo = 0xb562c00b34ee771, .hi = 0xc8d8b37ea4ed0f62, .ex = 0, .sgn=0},
+  {.lo = 0x65862939b83382e0, .hi = 0xc85bca1abaf7f0a7, .ex = 0, .sgn=0},
+  {.lo = 0x2b31bc86877fd2c, .hi = 0xc7de651f7ca06749, .ex = 0, .sgn=0},
+  {.lo = 0xd5c149509e9059f1, .hi = 0xc76084da43624634, .ex = 0, .sgn=0},
+  {.lo = 0xcfe6c1b1a6b4e2a4, .hi = 0xc6e22998b4c6608e, .ex = 0, .sgn=0},
+  {.lo = 0xe993503baf5afb41, .hi = 0xc66353a8c232a43c, .ex = 0, .sgn=0},
+  {.lo = 0x43da25d99267326b, .hi = 0xc5e40358a8ba05a7, .ex = 0, .sgn=0},
+  {.lo = 0xab4906075507e74, .hi = 0xc56438f6f0ec3cca, .ex = 0, .sgn=0},
+  {.lo = 0xdd40950cf1ed92fa, .hi = 0xc4e3f4d26ea553b6, .ex = 0, .sgn=0},
+  {.lo = 0x9dd768f30ca8e85c, .hi = 0xc463373a40dd06a3, .ex = 0, .sgn=0},
+  {.lo = 0xa87e78136665cdb2, .hi = 0xc3e2007dd175f5a4, .ex = 0, .sgn=0},
+  {.lo = 0x8ac9e1386e4cbabb, .hi = 0xc36050ecd50ca830, .ex = 0, .sgn=0},
+  {.lo = 0x74c8f010d986a9e0, .hi = 0xc2de28d74ac6628b, .ex = 0, .sgn=0},
+  {.lo = 0xb7041e9bc8c18b0d, .hi = 0xc25b888d7c1fcd38, .ex = 0, .sgn=0},
+  {.lo = 0xbdf0715cb8b20bd7, .hi = 0xc1d8705ffcbb6e90, .ex = 0, .sgn=0},
+  {.lo = 0x17858573216e0a22, .hi = 0xc154e09faa2ff69a, .ex = 0, .sgn=0},
+  {.lo = 0x2bda5328933c854a, .hi = 0xc0d0d99dabd65d44, .ex = 0, .sgn=0},
+  {.lo = 0x6dd06968e0ed1957, .hi = 0xc04c5bab7297d322, .ex = 0, .sgn=0},
+  {.lo = 0xe4e62d86dd136e78, .hi = 0xbfc7671ab8bb84c6, .ex = 0, .sgn=0},
+  {.lo = 0xd46655d6b012455, .hi = 0xbf41fc3d81b430db, .ex = 0, .sgn=0},
+  {.lo = 0x2715ef03f8543355, .hi = 0xbebc1b6619ed9116, .ex = 0, .sgn=0},
+  {.lo = 0x29d7f7b67d43b177, .hi = 0xbe35c4e716999630, .ex = 0, .sgn=0},
+  {.lo = 0xac85320f528d6d5d, .hi = 0xbdaef913557d76f0, .ex = 0, .sgn=0},
+  {.lo = 0x2ea36923d5d8e213, .hi = 0xbd27b83dfcbe9279, .ex = 0, .sgn=0},
+  {.lo = 0x4a48496734be336d, .hi = 0xbca002ba7aaf25ea, .ex = 0, .sgn=0},
+  {.lo = 0x727c405ffc73af56, .hi = 0xbc17d8dc859ad583, .ex = 0, .sgn=0},
+  {.lo = 0xfce8d84068e825b6, .hi = 0xbb8f3af81b93095c, .ex = 0, .sgn=0},
+  {.lo = 0x5120e35e1c1a250c, .hi = 0xbb062961823b1ddc, .ex = 0, .sgn=0},
+  {.lo = 0x33201477347447d8, .hi = 0xba7ca46d46946802, .ex = 0, .sgn=0},
+  {.lo = 0x39db32d014440024, .hi = 0xb9f2ac703cca0db3, .ex = 0, .sgn=0},
+  {.lo = 0x9de1e3b22b8bf4db, .hi = 0xb96841bf7ffcb21a, .ex = 0, .sgn=0},
+  {.lo = 0xa726f4f0828585c9, .hi = 0xb8dd64b0720df647, .ex = 0, .sgn=0},
+  {.lo = 0x1c041d1ea5fb3fdb, .hi = 0xb8521598bb6bce26, .ex = 0, .sgn=0},
+  {.lo = 0x2e7a35723f3ed035, .hi = 0xb7c654ce4adba9f2, .ex = 0, .sgn=0},
+  {.lo = 0x7f86f63bb23f496a, .hi = 0xb73a22a755457448, .ex = 0, .sgn=0},
+  {.lo = 0xeb2d28ef943dc88c, .hi = 0xb6ad7f7a557e64f2, .ex = 0, .sgn=0},
+  {.lo = 0xea7c015f12b987f7, .hi = 0xb6206b9e0c13a892, .ex = 0, .sgn=0},
+  {.lo = 0x737dd2824b608d13, .hi = 0xb592e7697f14dd4a, .ex = 0, .sgn=0},
 };
 
 /* The following is a degree-7 polynomial with odd coefficients
@@ -963,24 +972,24 @@ static const  double PCfast[] = {
    approximating sin2pi(x) for 0 <= x < 2^-11 with relative error 2^-127.75.
    Generated with sin_accurate.sollya. */
 static const dint64_t PS[] = {
-  {.hi = 0xc90fdaa22168c234, .lo = 0xc4c6628b80dc1cd1, .ex = 3, .sgn=0}, // 1
-  {.hi = 0xa55de7312df295f5, .lo = 0x5dc72f712aa57db4, .ex = 6, .sgn=1}, // 3
-  {.hi = 0xa335e33bad570e92, .lo = 0x3f33be0021aa54d2, .ex = 7, .sgn=0}, // 5
-  {.hi = 0x9969667315ec2d9d, .lo = 0xe59d6ab8509a2025, .ex = 7, .sgn=1}, // 7
-  {.hi = 0xa83c1a43bf1c6485, .lo = 0x7d5f8f76fa7d74ed, .ex = 6, .sgn=0}, // 9
-  {.hi = 0xf16ab2898eae62f9, .lo = 0xa7f0339113b8b3c5, .ex = 4, .sgn=1}, // 11
+  {.lo = 0xc4c6628b80dc1cd1, .hi = 0xc90fdaa22168c234, .ex = 3, .sgn=0}, // 1
+  {.lo = 0x5dc72f712aa57db4, .hi = 0xa55de7312df295f5, .ex = 6, .sgn=1}, // 3
+  {.lo = 0x3f33be0021aa54d2, .hi = 0xa335e33bad570e92, .ex = 7, .sgn=0}, // 5
+  {.lo = 0xe59d6ab8509a2025, .hi = 0x9969667315ec2d9d, .ex = 7, .sgn=1}, // 7
+  {.lo = 0x7d5f8f76fa7d74ed, .hi = 0xa83c1a43bf1c6485, .ex = 6, .sgn=0}, // 9
+  {.lo = 0xa7f0339113b8b3c5, .hi = 0xf16ab2898eae62f9, .ex = 4, .sgn=1}, // 11
 };
 
 /* The following is a degree-10 polynomial with even coefficients
    approximating cos2pi(x) for 0 <= x < 2^-11 with relative error 2^-137.246.
    Generated with cos_accurate.sollya. */
 static const dint64_t PC[] = {
-  {.hi = 0x8000000000000000, .lo = 0x0, .ex = 1, .sgn=0}, // degree 0
-  {.hi = 0x9de9e64df22ef2d2, .lo = 0x56e26cd9808c1949, .ex = 5, .sgn=1}, // 2
-  {.hi = 0x81e0f840dad61d9a, .lo = 0x9980f00630cb655e, .ex = 7, .sgn=0}, // 4
-  {.hi = 0xaae9e3f1e5ffcfe2, .lo = 0xa508509534006249, .ex = 7, .sgn=1}, // 6
-  {.hi = 0xf0fa83448dd1e094, .lo = 0xe0603ce7044eeba, .ex = 6, .sgn=0},  // 8
-  {.hi = 0xd368f6f4207cfe49, .lo = 0xec63157807ebffa, .ex = 5, .sgn=1},  // 10
+  {.lo = 0x0, .hi = 0x8000000000000000, .ex = 1, .sgn=0}, // degree 0
+  {.lo = 0x56e26cd9808c1949, .hi = 0x9de9e64df22ef2d2, .ex = 5, .sgn=1}, // 2
+  {.lo = 0x9980f00630cb655e, .hi = 0x81e0f840dad61d9a, .ex = 7, .sgn=0}, // 4
+  {.lo = 0xa508509534006249, .hi = 0xaae9e3f1e5ffcfe2, .ex = 7, .sgn=1}, // 6
+  {.lo = 0xe0603ce7044eeba, .hi = 0xf0fa83448dd1e094, .ex = 6, .sgn=0},  // 8
+  {.lo = 0xec63157807ebffa, .hi = 0xd368f6f4207cfe49, .ex = 5, .sgn=1},  // 10
 };
 
 /* Table generated with ./buildSC 15 using accompanying buildSC.c.
@@ -1398,11 +1407,11 @@ reduce (dint64_t *X)
     /* multiply by T[0]/2^64 + T[1]/2^128, where
        |T[0]/2^64 + T[1]/2^128 - 1/(2pi)| < 2^-130.22 */
     u = (u128) X->hi * (u128) T[1];
-    uint64_t tiny = u;
-    X->lo = u >> 64;
+    uint64_t tiny = absl::Uint128Low64(u);
+    X->lo = absl::Uint128High64(u);
     u = (u128) X->hi * (u128) T[0];
-    X->lo += u;
-    X->hi = (u >> 64) + (X->lo < (uint64_t) u);
+    X->lo += absl::Uint128Low64(u);
+    X->hi = absl::Uint128High64(u) + (X->lo < (uint64_t) u);
     /* hi + lo/2^64 + tiny/2^128 = hi_in * (T[0]/2^64 + T[1]/2^128) thus
        |hi + lo/2^64 + tiny/2^128 - hi_in/(2*pi)| < hi_in * 2^-130.22
        Since X is normalized at input, hi_in >= 2^63, and since T[0] >= 2^61,
@@ -1437,17 +1446,17 @@ reduce (dint64_t *X)
   // 0 <= i <= 15
   uint64_t c[5];
   u = (u128) X->hi * (u128) T[i+3]; // i+3 <= 18
-  c[0] = u;
-  c[1] = u >> 64;
+  c[0] = Uint128Low64(u);
+  c[1] = Uint128High64(u);
   u = (u128) X->hi * (u128) T[i+2];
-  c[1] += u;
-  c[2] = (u >> 64) + (c[1] < (uint64_t) u);
+  c[1] += Uint128Low64(u);
+  c[2] = Uint128High64(u) + (c[1] < (uint64_t) u);
   u = (u128) X->hi * (u128) T[i+1];
-  c[2] += u;
-  c[3] = (u >> 64) + (c[2] < (uint64_t) u);
+  c[2] += Uint128Low64(u);
+  c[3] = Uint128High64(u) + (c[2] < (uint64_t) u);
   u = (u128) X->hi * (u128) T[i];
-  c[3] += u;
-  c[4] = (u >> 64) + (c[3] < (uint64_t) u);
+  c[3] += Uint128Low64(u);
+  c[4] = Uint128High64(u) + (c[3] < (uint64_t) u);
 
   /* up to here, the ignored part hi*(T[i+4]+T[i+5]+...) can contribute by
      less than 2^64 in c[0], thus less than 1 in c[1] */
@@ -1478,7 +1487,7 @@ reduce (dint64_t *X)
     /* we compute an extra term */
     u = (u128) X->hi * (u128) T[i+4]; // i+4 <= 19
     u = u >> 64;
-    c[0] += u;
+    c[0] += Uint128Low64(u);
     c[1] += (c[0] < u);
     c[2] += (c[0] < u) && c[1] == 0;
     c[3] += (c[0] < u) && c[1] == 0 && c[2] == 0;
@@ -1602,7 +1611,7 @@ set_dd (double *h, double *l, uint64_t c1, uint64_t c0)
 static int
 reduce_fast (double *h, double *l, double x, double *err1)
 {
-  if (__builtin_expect(x <= 0x1.921fb54442d17p+2, 1)) // x < 2*pi
+  if (__builtin_expect(x <= 0x1.921fb54442d17p+2, 1)) [[likely]] // x < 2*pi
     {
       /* | CH+CL - 1/(2pi) | < 2^-110.523 */
 #define CH 0x1.45f306dc9c883p-3
@@ -1646,7 +1655,7 @@ reduce_fast (double *h, double *l, double x, double *err1)
          Let i be the smallest integer such that 2^(e-1075)/2^(64*(i+1))
          is not an integer, i.e., e - 1139 - 64i < 0, i.e.,
          i >= (e-1138)/64. */
-      uint64_t m = (1ul << 52) | (t.u & 0xffffffffffffful);
+      uint64_t m = (1ull << 52) | (t.u & 0xffffffffffffful);
       uint64_t c[3];
       u128 u;
       // x = m/2^53 * 2^(e-1022)
@@ -1655,11 +1664,11 @@ reduce_fast (double *h, double *l, double x, double *err1)
           /* In that case the contribution of x*T[2]/2^192 is less than
              2^(52+64-192) <= 2^-76. */
           u = (u128) m * (u128) T[1];
-          c[0] = u;
-          c[1] = u >> 64;
+          c[0] = absl::Uint128Low64(u);
+          c[1] = absl::Uint128High64(u);
           u = (u128) m * (u128) T[0];
-          c[1] += u;
-          c[2] = (u >> 64) + (c[1] < (uint64_t) u);
+          c[1] += absl::Uint128Low64(u);
+          c[2] = absl::Uint128High64(u) + (c[1] < (uint64_t) u);
           /* | c[2]*2^128+c[1]*2^64+c[0] - m/(2pi)*2^128 | < m*T[2]/2^64 < 2^53
              thus:
              | (c[2]*2^128+c[1]*2^64+c[0])*2^(e-1203) - x/(2pi) | < 2^(e-1150)
@@ -1681,13 +1690,13 @@ reduce_fast (double *h, double *l, double x, double *err1)
                       and at most to 2^(-75-f) <= 2^-76
           */
           u = (u128) m * (u128) T[i+2];
-          c[0] = u;
-          c[1] = u >> 64;
+          c[0] = absl::Uint128Low64(u);
+          c[1] = absl::Uint128High64(u);
           u = (u128) m * (u128) T[i+1];
-          c[1] += u;
-          c[2] = (u >> 64) + (c[1] < (uint64_t) u);
+          c[1] += absl::Uint128Low64(u);
+          c[2] = absl::Uint128High64(u) + (c[1] < (uint64_t) u);
           u = (u128) m * (u128) T[i];
-          c[2] += u;
+          c[2] += absl::Uint128Low64(u);
           e = 1139 + (i<<6) - e; // 1 <= e <= 64
           // e is the number of low bits of C[2] contributing to frac(x/(2pi))
         }
@@ -1997,7 +2006,7 @@ cr_sin (double x)
   b64u64_u t = {.f = x};
   int e = (t.u >> 52) & 0x7ff;
 
-  if (__builtin_expect (e == 0x7ff, 0)) /* NaN, +Inf and -Inf. */
+  if (__builtin_expect (e == 0x7ff, 0)) [[unlikely]] /* NaN, +Inf and -Inf. */
     {
       t.u = ~0ul;
       return t.f;
@@ -2033,7 +2042,6 @@ cr_sin (double x)
 
   return sin_accurate (x);
 }
-
 
 }  // namespace internal
 }  // namespace _sin
