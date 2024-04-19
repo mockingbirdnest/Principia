@@ -13,9 +13,11 @@
     <ClInclude Include="accurate_table_generator.hpp" />
     <ClInclude Include="accurate_table_generator_body.hpp" />
     <ClInclude Include="multiprecision.hpp" />
+    <ClInclude Include="sin.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="accurate_table_generator_test.cpp" />
+    <ClCompile Include="core_math_accuracy_test.cpp" />
     <ClCompile Include="multiprecision.cpp" />
     <ClCompile Include="sin.cpp" />
     <ClCompile Include="std_accuracy_test.cpp" />
