@@ -286,6 +286,27 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 };
 
 template<typename Scalar>
+struct GramSchmidtGenerator<UnboundedMatrix<Scalar>> {
+  struct Result {
+    UnboundedUpperTriangularMatrix<Scalar> R;
+    UnboundedMatrix<double> Q;
+  };
+  using Vector = UnboundedVector<Scalar>;
+  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
+};
+
+template<typename Scalar, int dimension>
+struct GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>> {
+  struct Result {
+    FixedUpperTriangularMatrix<Scalar, dimension> R;
+    FixedMatrix<double, dimension, dimension> Q;
+  };
+  using Vector = FixedVector<Scalar, dimension>;
+  static Result Uninitialized(
+      FixedMatrix<Scalar, dimension, dimension> const& m);
+};
+
+template<typename Scalar>
 struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> H;
@@ -601,6 +622,42 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
     x[i] = s / L(i, i);
   }
   return x;
+}
+
+template<typename Matrix>
+typename GramSchmidtGenerator<Matrix>::Result UnitriangularGramSchmidt(
+    Matrix const& A) {
+  using G = GramSchmidtGenerator<Matrix>;
+  auto result = G::Uninitialized(A);
+  auto& Q = result.Q;
+  auto& R = result.R;
+  int const n = A.rows();
+
+  for (int j = 0; j < n; ++j) {
+    auto const aⱼ = ColumnView<Matrix>{.matrix = A,
+                                       .first_row = 0,
+                                       .last_row = n,
+                                       .column = j};
+    for (int i = 0; i < j; ++i) {
+      R(i, j) = ColumnView<Matrix>{.matrix = Q,
+                                   .first_row = 0,
+                                   .last_row = n,
+                                   .column = i} * aⱼ;
+    }
+    typename G::Vector Σrₖⱼqₖ{};
+    for (int k = 0; k < j - 1; ++k) {
+      Σrₖⱼqₖ += R(k, j) * ColumnView<Matrix>{.matrix = Q,
+                                             .first_row = 0,
+                                             .last_row = n,
+                                             .column = k};
+    }
+    auto const qʹⱼ = aⱼ - Σrₖⱼqₖ;
+    R(j, j) = qʹⱼ.Norm();
+    ColumnView<Matrix>{.matrix = Q,
+                       .first_row = 0,
+                       .last_row = n,
+                       .column = j} = qʹⱼ / R(j, j);
+  }
 }
 
 template<typename Matrix>

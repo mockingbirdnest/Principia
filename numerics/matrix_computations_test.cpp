@@ -110,6 +110,15 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
 }
 
+TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({1, 2, 3, -4,
+                   5, 6, 7, 8,
+                   9, 8, -7, 6,
+                   5, 4, 3, 2});
+  auto const gs = UnitriangularGramSchmidt(m4);
+}
+
 TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
   Matrix const m4({1, 2, 3, -4,

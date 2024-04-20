@@ -29,6 +29,10 @@ struct ᵗRDRDecompositionGenerator;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
+//TODO(phl)comment
+template<typename M>
+struct GramSchmidtGenerator;
+
 // Declares:
 //   struct Result {
 //     (matrix) H;
@@ -99,6 +103,10 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+template<typename Matrix>
+typename GramSchmidtGenerator<Matrix>::Result
+UnitriangularGramSchmidt(Matrix const& L);
+
 // If A is a square matrix, returns U and H so that A = ᵗU H U, where H is an
 // upper Hessenberg matrix.
 // TODO(phl): Add support for returning U.
@@ -148,6 +156,7 @@ using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::RealSchurDecomposition;
 using internal::Solve;
+using internal::UnitriangularGramSchmidt;
 using internal::ᵗRDRDecomposition;
 
 }  // namespace _matrix_computations
