@@ -19,9 +19,9 @@
   <ItemGroup>
     <ClCompile Include="accurate_table_generator_test.cpp" />
     <ClCompile Include="core_math_accuracy_test.cpp" />
-    <ClCompile Include="cos.cpp" />
+    <ClCompile Include="cos.cc" />
     <ClCompile Include="multiprecision.cpp" />
-    <ClCompile Include="sin.cpp" />
+    <ClCompile Include="sin.cc" />
     <ClCompile Include="std_accuracy_test.cpp" />
   </ItemGroup>
   <Import Project="$(SolutionDir)principia.props" />

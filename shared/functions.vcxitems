@@ -14,7 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\functions\cos.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\functions\sin.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\functions\cos.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\functions\sin.cc" />
   </ItemGroup>
 </Project>
