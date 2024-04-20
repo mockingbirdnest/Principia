@@ -12,6 +12,7 @@
   <ItemGroup>
     <ClInclude Include="accurate_table_generator.hpp" />
     <ClInclude Include="accurate_table_generator_body.hpp" />
+    <ClInclude Include="cos.hpp" />
     <ClInclude Include="multiprecision.hpp" />
     <ClInclude Include="sin.hpp" />
   </ItemGroup>

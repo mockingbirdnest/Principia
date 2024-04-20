@@ -50,5 +50,8 @@
     <ClInclude Include="sin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cos.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
