@@ -2,6 +2,7 @@
 #include <limits>
 #include <random>
 
+#include "functions/cos.hpp"
 #include "functions/multiprecision.hpp"
 #include "functions/sin.hpp"
 #include "glog/logging.h"
@@ -18,6 +19,7 @@ namespace _multiprecision {
 
 using ::testing::AnyOf;
 using namespace boost::multiprecision;
+using namespace principia::functions::_cos;
 using namespace principia::functions::_sin;
 using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_approximate_quantity;
@@ -60,28 +62,18 @@ TEST_F(CoreMathAccuracyTest, SinCos) {
       double const α = angle_distribution(random);
       max_sin_ulp_distance =
           std::max(max_sin_ulp_distance, ULPDistance(cr_sin(α), Sin(α)));
-#if 0
       max_cos_ulp_distance =
-          std::max(max_cos_ulp_distance, ULPDistance(std::cos(α), Cos(α)));
-#endif
+          std::max(max_cos_ulp_distance, ULPDistance(cr_cos(α), Cos(α)));
     }
     EXPECT_THAT(max_sin_ulp_distance, IsNear(0.49999_(1)));
-#if 0
-    EXPECT_THAT(max_cos_ulp_distance,
-                AnyOf(IsNear(0.834_(1)),    // Windows, macOS.
-                      IsNear(0.502_(1))));  // Ubuntu.
-#endif
+    EXPECT_THAT(max_cos_ulp_distance, IsNear(0.49999_(1)));
   }
 
   // Hardest argument reduction, [Mul+10] table 11.1.
   {
     double const x = 0x16ac5b262ca1ffp797;
     EXPECT_THAT(ULPDistance(cr_sin(x), Sin(x)), IsNear(9.89e-22_(1)));
-#if 0
-    EXPECT_THAT(ULPDistance(std::cos(x), Cos(x)),
-                AnyOf(IsNear(0.0454_(1)),  // Windows, macOS.
-                      IsNear(7.95_(1))));  // Linux.
-#endif
+    EXPECT_THAT(ULPDistance(cr_cos(x), Cos(x)), IsNear(0.0454_(1)));
   }
 }
 
