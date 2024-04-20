@@ -4,9 +4,14 @@
 #include <random>
 
 #include "benchmark/benchmark.h"
+#include "functions/cos.hpp"
+#include "functions/sin.hpp"
 
 namespace principia {
 namespace functions {
+
+using namespace principia::functions::_cos;
+using namespace principia::functions::_sin;
 
 static constexpr std::int64_t number_of_iterations = 1000;
 
@@ -46,9 +51,19 @@ BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, std::sin)
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, std::sin)
     ->Unit(benchmark::kNanosecond);
 
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, cr_sin)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, cr_sin)
+    ->Unit(benchmark::kNanosecond);
+
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, std::cos)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, std::cos)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, cr_cos)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, cr_cos)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
