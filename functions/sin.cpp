@@ -25,6 +25,7 @@ SOFTWARE.
 */
 
 // This code has been adapted to C++ and MSVC.
+// NOLINTBEGIN
 
 /* stdio.h and stdlib.h are needed in case the rounding test of the accurate
    step fails, to print the corresponding input and exit. */
@@ -2055,3 +2056,5 @@ cr_sin (double x)
 #undef __builtin_fabs
 #undef __builtin_floor
 #undef __builtin_fma
+
+// NOLINTEND

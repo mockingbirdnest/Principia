@@ -9,7 +9,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"
-#include "quantities/quantities.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
@@ -17,11 +16,9 @@ namespace principia {
 namespace functions {
 namespace _multiprecision {
 
-using ::testing::AnyOf;
 using namespace boost::multiprecision;
 using namespace principia::functions::_cos;
 using namespace principia::functions::_sin;
-using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
