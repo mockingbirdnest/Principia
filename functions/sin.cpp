@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// This code has been adapted to C++ and MSVC.
+
 /* stdio.h and stdlib.h are needed in case the rounding test of the accurate
    step fails, to print the corresponding input and exit. */
 #include "functions/sin.hpp"
@@ -32,7 +34,6 @@ SOFTWARE.
 #include <stdlib.h>
 #include <stdint.h>
 #include <fenv.h>
-#include <intrin.h>
 
 #include "absl/numeric/int128.h"
 #include "numerics/fma.hpp"
@@ -42,7 +43,6 @@ SOFTWARE.
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
-//#pragma STDC FENV_ACCESS ON
 #define __builtin_clzl(x) __lzcnt64(x)
 #define __builtin_expect(x, y) x
 #define __builtin_fabs(x) std::abs(x)
@@ -301,7 +301,7 @@ mul_dint_21 (dint64_t *r, const dint64_t *a, const dint64_t *b) {
 static inline void dint_fromd (dint64_t *a, double b) {
   fast_extract (&a->ex, &a->hi, b);
 
-  /* |b| = 2^(ex-52)*hi */  // TODO(phl): 53?
+  /* |b| = 2^(ex-52)*hi */
 
   uint32_t t = __builtin_clzl (a->hi);
 
@@ -2049,3 +2049,9 @@ cr_sin (double x)
 }  // namespace _sin
 }  // namespace functions
 }  // namespace principia
+
+#undef __builtin_clzl
+#undef __builtin_expect
+#undef __builtin_fabs
+#undef __builtin_floor
+#undef __builtin_fma
