@@ -33,6 +33,9 @@
     <ClCompile Include="core_math_accuracy_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="cos.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="multiprecision.hpp">
