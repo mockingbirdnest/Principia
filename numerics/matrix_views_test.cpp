@@ -2,6 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -11,6 +12,7 @@ namespace numerics {
 
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_views;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
@@ -186,6 +188,19 @@ TEST_F(MatrixViewsTest, ColumnView_Norm) {
                                             .column = 3};
   EXPECT_EQ(106, cum34.Norm²());
   EXPECT_THAT(cum34.Norm(), AlmostEquals(Sqrt(106), 0));
+}
+
+TEST_F(MatrixViewsTest, ColumnView_DotProduct) {
+  EXPECT_EQ(
+      -60,
+      (TransposedView{.transpose = ColumnView{.matrix = fm34_,
+                                              .first_row = 0,
+                                              .last_row = 2,
+                                              .column = 1}} *
+       ColumnView{.matrix = um34_,
+                  .first_row = 0,
+                  .last_row = 2,
+                  .column = 2}));
 }
 
 }  // namespace numerics

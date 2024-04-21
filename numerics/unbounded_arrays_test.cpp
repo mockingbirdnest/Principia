@@ -228,6 +228,21 @@ TEST_F(UnboundedArraysTest, UpperTriangularMatrixIndexing) {
   EXPECT_EQ(1, u4(0, 0));
 }
 
+TEST_F(UnboundedArraysTest, Conversions) {
+  EXPECT_EQ(UnboundedMatrix<double>(4, 4,
+                                    {1,   0,  0,  0,
+                                     2,   3,  0,  0,
+                                     5,   8, 13,  0,
+                                     21, 34, 55, 89}),
+            UnboundedMatrix<double>(l4_));
+  EXPECT_EQ(UnboundedMatrix<double>(4, 4,
+                                    {1, 2,  3,  5,
+                                     0, 8, 13, 21,
+                                     0, 0, 34, 55,
+                                     0, 0,  0, 89}),
+            UnboundedMatrix<double>(u4_));
+}
+
 TEST_F(UnboundedArraysTest, Extend) {
   {
     UnboundedVector<double> u2({1, 2});

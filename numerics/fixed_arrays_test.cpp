@@ -261,6 +261,25 @@ TEST_F(FixedArraysTest, Row) {
   EXPECT_EQ(-24, r1 * v);
 }
 
+TEST_F(FixedArraysTest, Conversions) {
+  using M = FixedMatrix<double, 4, 4>;
+  EXPECT_EQ(M({0, 0,  0, 0,
+               1, 0,  0, 0,
+               2, 3,  0, 0,
+               5, 8, 13, 0}),
+            M(sl4_));
+  EXPECT_EQ(M({1,   0,  0,  0,
+               2,   3,  0,  0,
+               5,   8, 13,  0,
+               21, 34, 55, 89}),
+            M(l4_));
+  EXPECT_EQ(M({1, 2,  3,  5,
+               0, 8, 13, 21,
+               0, 0, 34, 55,
+               0, 0,  0, 89}),
+            M(u4_));
+}
+
 TEST_F(FixedArraysTest, Transpose) {
   EXPECT_EQ(
       (FixedMatrix<double, 4, 3>({-8,  -4,  6,
