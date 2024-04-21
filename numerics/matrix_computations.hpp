@@ -105,7 +105,7 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 
 template<typename Matrix>
 typename GramSchmidtGenerator<Matrix>::Result
-UnitriangularGramSchmidt(Matrix const& L);
+ClassicalGramSchmidt(Matrix const& L);
 
 // If A is a square matrix, returns U and H so that A = ᵗU H U, where H is an
 // upper Hessenberg matrix.
@@ -149,6 +149,7 @@ Solve(Matrix A, Vector b);
 
 using internal::BackSubstitution;
 using internal::CholeskyDecomposition;
+using internal::ClassicalGramSchmidt;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
 using internal::HessenbergDecomposition;
@@ -156,7 +157,6 @@ using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::RealSchurDecomposition;
 using internal::Solve;
-using internal::UnitriangularGramSchmidt;
 using internal::ᵗRDRDecomposition;
 
 }  // namespace _matrix_computations

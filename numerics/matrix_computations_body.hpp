@@ -643,7 +643,7 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
 }
 
 template<typename Matrix>
-typename GramSchmidtGenerator<Matrix>::Result UnitriangularGramSchmidt(
+typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
     Matrix const& A) {
   using G = GramSchmidtGenerator<Matrix>;
   auto result = G::Uninitialized(A);
@@ -651,6 +651,7 @@ typename GramSchmidtGenerator<Matrix>::Result UnitriangularGramSchmidt(
   auto& R = result.R;
   int const n = A.rows();
 
+  // [Hig02], Algorithm 19.11.
   for (int j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
