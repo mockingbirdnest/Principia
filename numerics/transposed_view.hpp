@@ -8,7 +8,6 @@ namespace _transposed_view {
 namespace internal {
 
 using namespace principia::numerics::_concepts;
-using namespace principia::quantities::_named_quantities;
 
 template<typename T>
 struct TransposedView {

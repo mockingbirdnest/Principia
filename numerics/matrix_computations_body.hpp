@@ -288,8 +288,8 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 template<typename Scalar>
 struct GramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
-    UnboundedUpperTriangularMatrix<Scalar> R;
     UnboundedMatrix<double> Q;
+    UnboundedUpperTriangularMatrix<Scalar> R;
   };
   using AVector = UnboundedVector<Scalar>;
   using QVector = UnboundedVector<double>;
@@ -299,8 +299,8 @@ struct GramSchmidtGenerator<UnboundedMatrix<Scalar>> {
 template<typename Scalar, int dimension>
 struct GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
-    FixedUpperTriangularMatrix<Scalar, dimension> R;
     FixedMatrix<double, dimension, dimension> Q;
+    FixedUpperTriangularMatrix<Scalar, dimension> R;
   };
   using AVector = FixedVector<Scalar, dimension>;
   using QVector = FixedVector<double, dimension>;
@@ -459,16 +459,16 @@ template<typename Scalar>
 auto GramSchmidtGenerator<UnboundedMatrix<Scalar>>::
 Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
   return Result{
-      .R = UnboundedUpperTriangularMatrix<Scalar>(m.columns(), uninitialized),
-      .Q = UnboundedMatrix<double>(m.rows(), m.columns(), uninitialized)};
+      .Q = UnboundedMatrix<double>(m.rows(), m.columns(), uninitialized),
+      .R = UnboundedUpperTriangularMatrix<Scalar>(m.columns(), uninitialized)};
 }
 
 template<typename Scalar, int dimension>
 auto GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>>::
 Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
   return Result{
-      .R = FixedUpperTriangularMatrix<Scalar, dimension>(uninitialized),
-      .Q = FixedMatrix<double, dimension, dimension>(uninitialized)};
+      .Q = FixedMatrix<double, dimension, dimension>(uninitialized),
+      .R = FixedUpperTriangularMatrix<Scalar, dimension>(uninitialized)};
 }
 
 template<typename Scalar>
@@ -654,26 +654,26 @@ typename GramSchmidtGenerator<Matrix>::Result UnitriangularGramSchmidt(
   for (int j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
-                                             .last_row = n,
+                                             .last_row = n - 1,
                                              .column = j};
     for (int i = 0; i < j; ++i) {
       auto const qᵢ= ColumnView{.matrix = Q,
                                 .first_row = 0,
-                                .last_row = n,
+                                .last_row = n - 1,
                                 .column = i};
       R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ;
     }
     typename G::AVector qʹⱼ(aⱼ);
-    for (int k = 0; k < j - 1; ++k) {
+    for (int k = 0; k < j; ++k) {
       qʹⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
                                                       .first_row = 0,
-                                                      .last_row = n,
+                                                      .last_row = n - 1,
                                                       .column = k});
     }
     R(j, j) = qʹⱼ.Norm();
     ColumnView{.matrix = Q,
                .first_row = 0,
-               .last_row = n,
+               .last_row = n - 1,
                .column = j} = qʹⱼ / R(j, j);
   }
   return result;

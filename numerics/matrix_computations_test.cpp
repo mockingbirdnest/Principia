@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -18,6 +19,7 @@ namespace numerics {
 
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
@@ -116,7 +118,21 @@ TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
                    5, 6, 7, 8,
                    9, 8, -7, 6,
                    5, 4, 3, 2});
-  auto const gs = UnitriangularGramSchmidt(m4);
+  auto const qr = UnitriangularGramSchmidt(m4);
+  LOG(ERROR)<<qr.R;
+  LOG(ERROR)<<qr.Q;
+
+  // Check that Q is nearly orthogonal.
+  auto const near_identity = Matrix(TransposedView{.transpose = qr.Q}) * qr.Q;
+  for (int i = 0; i < near_identity.rows(); ++i) {
+    for (int j = 0; j < near_identity.columns(); ++j) {
+      if (i == j) {
+        EXPECT_THAT(near_identity(i, j), AlmostEquals(1, 0, 2));
+      } else {
+        EXPECT_THAT(near_identity(i, j), VanishesBefore(1, 0, 3));
+      }
+    }
+  }
 }
 
 TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
