@@ -759,19 +759,21 @@ operator-(Value const& left,
 }
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree_, int rdegree_>
-constexpr PolynomialInMonomialBasis<LValue, Argument, ldegree_ * rdegree_>
+         typename RArgument, int ldegree_, int rdegree_>
+constexpr PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>
 Compose(PolynomialInMonomialBasis<LValue, RValue, ldegree_> const& left,
-        PolynomialInMonomialBasis<RValue, Argument, rdegree_> const& right) {
+        PolynomialInMonomialBasis<RValue, RArgument, rdegree_> const& right) {
+  using LArgument = RValue;
   using LCoefficients =
-      typename PolynomialInMonomialBasis<LValue, RValue, ldegree_>::
+      typename PolynomialInMonomialBasis<LValue, LArgument, ldegree_>::
           Coefficients;
   using RCoefficients =
-      typename PolynomialInMonomialBasis<RValue, Argument, rdegree_>::
+      typename PolynomialInMonomialBasis<RValue, RArgument, rdegree_>::
           Coefficients;
-  return PolynomialInMonomialBasis<LValue, Argument, ldegree_ * rdegree_>(
+  auto const left_at_origin = left.AtOrigin(LArgument{});
+  return PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>(
       TupleComposition<LCoefficients, RCoefficients>::Compose(
-          left.coefficients_, right.coefficients_),
+          left_at_origin.coefficients_, right.coefficients_),
       right.origin_);
 }
 

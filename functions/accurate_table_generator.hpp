@@ -17,11 +17,9 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
-#if 1
 template<int degree>
 using AccuratePolynomial =
     PolynomialInMonomialBasis<cpp_rational, cpp_rational, degree>;
-#endif
 
 template<std::int64_t zeroes>
 cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
@@ -32,14 +30,15 @@ std::vector<cpp_rational> ExhaustiveMultisearch(
     std::vector<AccurateFunction> const& functions,
     std::vector<cpp_rational> const& starting_arguments);
 
-#if 1
+// |functions| have arguments at distance |T/N| of |near_argument|.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
   std::array<AccuratePolynomial<2>, 2> const& polynomials,
-  std::int64_t const M,
-  std::int64_t const T);
-#endif
+  cpp_rational const& near_argument,
+  std::int64_t M,
+  std::int64_t N,
+  std::int64_t T);
 
 }  // namespace internal
 

@@ -356,10 +356,10 @@ operator-(Value const& left,
 // Application monoid.
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree_, int rdegree_>
-constexpr PolynomialInMonomialBasis<LValue, Argument, ldegree_ * rdegree_>
+         typename RArgument, int ldegree_, int rdegree_>
+constexpr PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>
 Compose(PolynomialInMonomialBasis<LValue, RValue, ldegree_> const& left,
-        PolynomialInMonomialBasis<RValue, Argument, rdegree_> const& right);
+        PolynomialInMonomialBasis<RValue, RArgument, rdegree_> const& right);
 
 // Returns a scalar polynomial obtained by pointwise inner product of two
 // vector-valued polynomials.

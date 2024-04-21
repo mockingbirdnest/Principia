@@ -181,6 +181,11 @@ inline std::string DebugString(double const number, int const precision) {
   return result;
 }
 
+inline std::string DebugString(cpp_rational const& number,
+                               int const precision) {
+  return number.str();
+}
+
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
   return DebugString(quantity / SIUnit<Quantity<D>>(), precision) + " " +

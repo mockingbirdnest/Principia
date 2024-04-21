@@ -103,30 +103,55 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
   std::array<AccuratePolynomial<2>, 2> const& polynomials,
+  cpp_rational const& near_argument,
   std::int64_t const M,
+  std::int64_t const N,
   std::int64_t const T) {
-  auto const& F = functions;
-  auto const& P = polynomials;
 
-  cpp_rational const T_increment = cpp_rational(T) / 100;
+  std::array<AccurateFunction, 2> F;
+  std::array<std::optional<AccuratePolynomial<2>>, 2> P;
+
+  for (std::int64_t i = 0; i < functions.size(); ++i) {
+    F[i] = [&functions, i, N, &near_argument](cpp_rational const& t) {
+      // Here |t| <= |T|.
+      return functions[i](near_argument + t / N);
+    };
+  }
+  for (std::int64_t i = 0; i < polynomials.size(); ++i) {
+LOG(ERROR)<<polynomials[i];
+    P[i] =
+        Compose(polynomials[i], AccuratePolynomial<1>({near_argument, 1.0 / N}));
+LOG(ERROR)<<*P[i];
+LOG(ERROR)<<static_cast<double>(polynomials[i](near_argument));
+LOG(ERROR)<<static_cast<double>((*P[i])(0));
+auto q = AccuratePolynomial<1>({near_argument, 1.0 / N});
+LOG(ERROR)<<static_cast<double>(q(0))<<" "<<static_cast<double>(near_argument);
+  }
+
+  cpp_rational const T_increment = cpp_rational(T, 100);
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
-      ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>(P[i](t))));
+      LOG(ERROR)<<t<<" "<<F[i](t)<<" "<<static_cast<double>((*P[i])(t));
+      ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
     }
   }
+LOG(ERROR)<<ε;
 
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
+LOG(ERROR)<<Mʹ;
   auto const C = 3 * Mʹ;
+LOG(ERROR)<<C;
   std::array<std::optional<AccuratePolynomial<2>>, 2> P̃;
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
-    auto P̃_coefficients = Compose(C * P[i], Tτ).coefficients();
+    auto P̃_coefficients = Compose(C * *P[i], Tτ).coefficients();
     for_all_of(P̃_coefficients).loop([](auto& coefficient) {
       ///Rounding?
       coefficient = static_cast<cpp_int>(coefficient);
     });
     P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
+LOG(ERROR)<<*P̃[i];
   }
 
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
@@ -143,6 +168,7 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
        0, 0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
        0, 0,                            3,                            0,
        0, 0,                            0,                            3});
+LOG(ERROR)<<L;
 
   Lattice const V = LenstraLenstraLovász(L);
 
