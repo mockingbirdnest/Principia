@@ -39,6 +39,14 @@ struct GramSchmidtGenerator;
 
 // Declares:
 //   struct Result {
+//     ⟨upper triangular matrix⟩ R;
+//     ⟨matrix⟩ Q;
+//   };
+template<typename M>
+struct UnitriangularGramSchmidtGenerator;
+
+// Declares:
+//   struct Result {
 //     (matrix) H;
 //     (matrix) U;
 //   }
@@ -107,9 +115,17 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+// Returns Q and R such that A = Q R where R is upper triangular and Q
+// orthogonal.
 template<typename Matrix>
 typename GramSchmidtGenerator<Matrix>::Result
-ClassicalGramSchmidt(Matrix const& L);
+ClassicalGramSchmidt(Matrix const& A);
+
+// Returns Q and R such that A = Q R where R is upper unitriangular and Q
+// has orthogonal columns.
+template<typename Matrix>
+typename UnitriangularGramSchmidtGenerator<Matrix>::Result
+UnitriangularGramSchmidt(Matrix const& A);
 
 // If A is a square matrix, returns U and H so that A = ᵗU H U, where H is an
 // upper Hessenberg matrix.
@@ -161,6 +177,7 @@ using internal::RayleighQuotient;
 using internal::RayleighQuotientIteration;
 using internal::RealSchurDecomposition;
 using internal::Solve;
+using internal::UnitriangularGramSchmidt;
 using internal::ᵗRDRDecomposition;
 
 }  // namespace _matrix_computations

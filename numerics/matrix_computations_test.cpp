@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -19,6 +20,7 @@ namespace numerics {
 
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
@@ -133,6 +135,40 @@ TYPED_TEST(MatrixComputationsTest, ClassicalGramSchmidt) {
       } else {
         EXPECT_THAT(near_identity(i, j), VanishesBefore(1, 0, 3));
       }
+    }
+  }
+}
+
+TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({1, 2, 3, -4,
+                   5, 6, 7, 8,
+                   9, 8, -7, 6,
+                   5, 4, 3, 2});
+  auto const qr = UnitriangularGramSchmidt(m4);
+
+  // Check that the decomposition is correct.
+  auto const near_m4 = qr.Q * Matrix(qr.R);
+  EXPECT_THAT(near_m4, AlmostEquals(m4, 1));
+
+  // Check that R is unitriangular.
+  for (int i = 0; i < qr.R.rows(); ++i) {
+    EXPECT_THAT(qr.R(i, i), AlmostEquals(1, 0));
+  }
+
+  // Check that the columns of Q are approximately orthogonal.
+  for (int c1 = 0; c1 < qr.Q.columns(); ++c1) {
+    auto const column_c1 = ColumnView{.matrix = qr.Q,
+                                      .first_row = 0,
+                                      .last_row = qr.Q.rows() - 1,
+                                      .column = c1};
+    for (int c2 = c1 + 1; c2 < qr.Q.columns(); ++c2) {
+      auto const column_c2 = ColumnView{.matrix = qr.Q,
+                                        .first_row = 0,
+                                        .last_row = qr.Q.rows() - 1,
+                                        .column = c2};
+      EXPECT_THAT(TransposedView{.transpose = column_c1} * column_c2,  // NOLINT
+                  VanishesBefore(1, 24, 176));
     }
   }
 }

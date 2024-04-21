@@ -309,6 +309,28 @@ struct GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>> {
 };
 
 template<typename Scalar>
+struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
+  struct Result {
+    UnboundedMatrix<Scalar> Q;
+    UnboundedUpperTriangularMatrix<double> R;
+  };
+  using QVector = UnboundedVector<Scalar>;
+  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
+};
+
+template<typename Scalar, int dimension>
+struct UnitriangularGramSchmidtGenerator<
+    FixedMatrix<Scalar, dimension, dimension>> {
+  struct Result {
+    FixedMatrix<Scalar, dimension, dimension> Q;
+    FixedUpperTriangularMatrix<double, dimension> R;
+  };
+  using QVector = FixedVector<Scalar, dimension>;
+  static Result Uninitialized(
+      FixedMatrix<Scalar, dimension, dimension> const& m);
+};
+
+template<typename Scalar>
 struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> H;
@@ -469,6 +491,23 @@ Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
   return Result{
       .Q = FixedMatrix<double, dimension, dimension>(uninitialized),
       .R = FixedUpperTriangularMatrix<Scalar, dimension>(uninitialized)};
+}
+
+template<typename Scalar>
+auto UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>>::
+Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
+  return Result{
+      .Q = UnboundedMatrix<Scalar>(m.rows(), m.columns(), uninitialized),
+      .R = UnboundedUpperTriangularMatrix<double>(m.columns(), uninitialized)};
+}
+
+template<typename Scalar, int dimension>
+auto UnitriangularGramSchmidtGenerator<
+    FixedMatrix<Scalar, dimension, dimension>>::
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+  return Result{
+      .Q = FixedMatrix<Scalar, dimension, dimension>(uninitialized),
+      .R = FixedUpperTriangularMatrix<double, dimension>(uninitialized)};
 }
 
 template<typename Scalar>
@@ -676,6 +715,50 @@ typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
                .first_row = 0,
                .last_row = n - 1,
                .column = j} = qʹⱼ / R(j, j);
+  }
+  return result;
+}
+
+template<typename Matrix>
+typename UnitriangularGramSchmidtGenerator<Matrix>::Result
+UnitriangularGramSchmidt(Matrix const& A) {
+  using G = UnitriangularGramSchmidtGenerator<Matrix>;
+  auto result = G::Uninitialized(A);
+  auto& Q = result.Q;
+  auto& R = result.R;
+  int const n = A.rows();
+
+  // The algorithm is derived from [HPS14], Theorem 7.13, but we keep the code
+  // similar to the one for classical Gram-Schmidt, i.e., adopt the conventions
+  // from [Hig02], Algorithm 19.11.
+  // The correspondances are as follows:
+  //   vⱼ  ≘ aⱼ
+  //   v⭑ⱼ ≘ qⱼ
+  //   μᵢⱼ ≘ Rⱼᵢ
+  for (int j = 0; j < n; ++j) {
+    auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
+                                             .first_row = 0,
+                                             .last_row = n - 1,
+                                             .column = j};
+    for (int i = 0; i < j; ++i) {
+      auto const qᵢ = ColumnView{.matrix = Q,
+                                 .first_row = 0,
+                                 .last_row = n - 1,
+                                 .column = i};
+      R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ / qᵢ.Norm²();  // NOLINT
+    }
+    auto qⱼ = ColumnView{.matrix = Q,  // NOLINT
+                         .first_row = 0,
+                         .last_row = n - 1,
+                         .column = j};
+    qⱼ = aⱼ;
+    for (int k = 0; k < j; ++k) {
+      qⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
+                                                     .first_row = 0,
+                                                     .last_row = n - 1,
+                                                     .column = k});
+    }
+    R(j, j) = 1;
   }
   return result;
 }
