@@ -658,11 +658,11 @@ typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
                                              .last_row = n - 1,
                                              .column = j};
     for (int i = 0; i < j; ++i) {
-      auto const qᵢ= ColumnView{.matrix = Q,
-                                .first_row = 0,
-                                .last_row = n - 1,
-                                .column = i};
-      R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ;
+      auto const qᵢ = ColumnView{.matrix = Q,
+                                 .first_row = 0,
+                                 .last_row = n - 1,
+                                 .column = i};
+      R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ;  // NOLINT
     }
     typename G::AVector qʹⱼ(aⱼ);
     for (int k = 0; k < j; ++k) {
@@ -672,7 +672,7 @@ typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
                                                       .column = k});
     }
     R(j, j) = qʹⱼ.Norm();
-    ColumnView{.matrix = Q,
+    ColumnView{.matrix = Q,  // NOLINT
                .first_row = 0,
                .last_row = n - 1,
                .column = j} = qʹⱼ / R(j, j);

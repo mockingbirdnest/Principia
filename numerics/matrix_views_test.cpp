@@ -193,7 +193,7 @@ TEST_F(MatrixViewsTest, ColumnView_Norm) {
 TEST_F(MatrixViewsTest, ColumnView_DotProduct) {
   EXPECT_EQ(
       -60,
-      (TransposedView{.transpose = ColumnView{.matrix = fm34_,
+      (TransposedView{.transpose = ColumnView{.matrix = fm34_,  // NOLINT
                                               .first_row = 0,
                                               .last_row = 2,
                                               .column = 1}} *
