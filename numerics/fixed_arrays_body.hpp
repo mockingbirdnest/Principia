@@ -320,6 +320,18 @@ FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
 template<typename Scalar_, int rows_>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
+operator FixedMatrix<Scalar_, rows_, rows_>() const {
+  FixedMatrix<Scalar, rows_, rows_> result;  // Initialized.
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j < i; ++j) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename Scalar_, int rows_>
 constexpr Scalar_& FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
 operator()(int const row, int const column) {
   CONSTEXPR_DCHECK(0 <= column);
@@ -378,6 +390,18 @@ FixedLowerTriangularMatrix<Scalar_, rows_>::FixedLowerTriangularMatrix(
 }
 
 template<typename Scalar_, int rows_>
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_>::
+operator FixedMatrix<Scalar_, rows_, rows_>() const {
+  FixedMatrix<Scalar, rows_, rows_> result;  // Initialized.
+  for (int i = 0; i < rows_; ++i) {
+    for (int j = 0; j <= i; ++j) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename Scalar_, int rows_>
 constexpr Scalar_& FixedLowerTriangularMatrix<Scalar_, rows_>::
 operator()(int const row, int const column) {
   CONSTEXPR_DCHECK(0 <= column);
@@ -426,6 +450,18 @@ FixedUpperTriangularMatrix<Scalar_, columns_>::FixedUpperTriangularMatrix(
       (*this)(i, j) = view(i, j);
     }
   }
+}
+
+template<typename Scalar_, int columns_>
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
+operator FixedMatrix<Scalar_, columns_, columns_>() const {
+  FixedMatrix<Scalar, columns_, columns_> result;  // Initialized.
+  for (int j = 0; j < columns_; ++j) {
+    for (int i = 0; i <= j; ++i) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
 }
 
 template<typename Scalar_, int columns_>

@@ -119,8 +119,10 @@ TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
                    9, 8, -7, 6,
                    5, 4, 3, 2});
   auto const qr = UnitriangularGramSchmidt(m4);
-  LOG(ERROR)<<qr.R;
-  LOG(ERROR)<<qr.Q;
+
+  // Check that the decomposition is correct.
+  auto const near_m4 = qr.Q * Matrix(qr.R);
+  EXPECT_THAT(near_m4, AlmostEquals(m4, 1));
 
   // Check that Q is nearly orthogonal.
   auto const near_identity = Matrix(TransposedView{.transpose = qr.Q}) * qr.Q;

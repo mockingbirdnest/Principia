@@ -181,6 +181,8 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_>() const;
+
   friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
                          FixedStrictlyLowerTriangularMatrix const& right) =
       default;
@@ -223,6 +225,8 @@ class FixedLowerTriangularMatrix final {
   explicit FixedLowerTriangularMatrix(
       TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view);
 
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_>() const;
+
   friend bool operator==(FixedLowerTriangularMatrix const& left,
                          FixedLowerTriangularMatrix const& right) = default;
   friend bool operator!=(FixedLowerTriangularMatrix const& left,
@@ -259,6 +263,8 @@ class FixedUpperTriangularMatrix final {
 
   explicit FixedUpperTriangularMatrix(
       TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view);
+
+  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_>() const;
 
   friend bool operator==(FixedUpperTriangularMatrix const& left,
                          FixedUpperTriangularMatrix const& right) = default;
