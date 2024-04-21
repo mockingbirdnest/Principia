@@ -314,7 +314,6 @@ struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
     UnboundedMatrix<Scalar> Q;
     UnboundedUpperTriangularMatrix<double> R;
   };
-  using AVector = UnboundedVector<double>;
   using QVector = UnboundedVector<Scalar>;
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
@@ -326,7 +325,6 @@ struct UnitriangularGramSchmidtGenerator<
     FixedMatrix<Scalar, dimension, dimension> Q;
     FixedUpperTriangularMatrix<double, dimension> R;
   };
-  using AVector = FixedVector<double, dimension>;
   using QVector = FixedVector<Scalar, dimension>;
   static Result Uninitialized(
       FixedMatrix<Scalar, dimension, dimension> const& m);
