@@ -66,7 +66,7 @@ template<typename T>
 constexpr FixedVector<Scalar_, size_>::FixedVector(
     ColumnView<T> const& view) : FixedVector(uninitialized) {
   CONSTEXPR_DCHECK(view.size() == size_);
-  for (int i = 0; i < view.size(); ++i) {
+  for (int i = 0; i < size_; ++i) {
     (*this)[i] = view[i];
   }
 }

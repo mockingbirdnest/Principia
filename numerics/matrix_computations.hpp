@@ -29,7 +29,11 @@ struct ᵗRDRDecompositionGenerator;
 template<typename M, typename V>
 struct SubstitutionGenerator;
 
-//TODO(phl)comment
+// Declares:
+//   struct Result {
+//     ⟨upper triangular matrix⟩ R;
+//     ⟨matrix⟩ Q;
+//   };
 template<typename M>
 struct GramSchmidtGenerator;
 
