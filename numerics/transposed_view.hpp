@@ -1,8 +1,6 @@
 #pragma once
 
 #include "numerics/concepts.hpp"
-#include "numerics/matrix_views.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -10,7 +8,6 @@ namespace _transposed_view {
 namespace internal {
 
 using namespace principia::numerics::_concepts;
-using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_named_quantities;
 
 template<typename T>
@@ -34,11 +31,6 @@ struct TransposedView {
 
 template<class T>
 TransposedView(T) -> TransposedView<T>;
-
-template<typename LMatrix, typename RMatrix>
-Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
-    TransposedView<ColumnView<LMatrix>> const& left,
-    ColumnView<RMatrix> const& right);
 
 }  // namespace internal
 

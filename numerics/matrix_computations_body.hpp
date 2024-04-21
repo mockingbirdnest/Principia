@@ -287,25 +287,23 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 
 template<typename Scalar>
 struct GramSchmidtGenerator<UnboundedMatrix<Scalar>> {
-  using AVector = UnboundedVector<Scalar>;
-  using QMatrix = UnboundedMatrix<double>;
-  using QVector = UnboundedVector<double>;
   struct Result {
     UnboundedUpperTriangularMatrix<Scalar> R;
-    QMatrix Q;
+    UnboundedMatrix<double> Q;
   };
+  using AVector = UnboundedVector<Scalar>;
+  using QVector = UnboundedVector<double>;
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
 template<typename Scalar, int dimension>
 struct GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>> {
-  using AVector = FixedVector<Scalar, dimension>;
-  using QMatrix = FixedMatrix<double, dimension, dimension>;
-  using QVector = FixedVector<double, dimension>;
   struct Result {
     FixedUpperTriangularMatrix<Scalar, dimension> R;
-    QMatrix Q;
+    FixedMatrix<double, dimension, dimension> Q;
   };
+  using AVector = FixedVector<Scalar, dimension>;
+  using QVector = FixedVector<double, dimension>;
   static Result Uninitialized(
       FixedMatrix<Scalar, dimension, dimension> const& m);
 };
@@ -455,6 +453,22 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar>,
                            UnboundedVector<RScalar>>::
 Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
+}
+
+template<typename Scalar>
+auto GramSchmidtGenerator<UnboundedMatrix<Scalar>>::
+Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
+  return Result{
+      .R = UnboundedUpperTriangularMatrix<Scalar>(m.columns(), uninitialized),
+      .Q = UnboundedMatrix<double>(m.rows(), m.columns(), uninitialized)};
+}
+
+template<typename Scalar, int dimension>
+auto GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>>::
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+  return Result{
+      .R = FixedUpperTriangularMatrix<Scalar, dimension>(uninitialized),
+      .Q = FixedMatrix<double, dimension, dimension>(uninitialized)};
 }
 
 template<typename Scalar>

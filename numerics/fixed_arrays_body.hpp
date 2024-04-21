@@ -61,6 +61,17 @@ constexpr FixedVector<Scalar_, size_>::FixedVector(
     : data_(std::move(data)) {}
 
 template<typename Scalar_, int size_>
+template<typename T>
+  requires std::same_as<typename T::Scalar, Scalar_>
+constexpr FixedVector<Scalar_, size_>::FixedVector(
+    ColumnView<T> const& view) : FixedVector(uninitialized) {
+  CONSTEXPR_DCHECK(view.size() == size_);
+  for (int i = 0; i < view.size(); ++i) {
+    (*this)[i] = view[i];
+  }
+}
+
+template<typename Scalar_, int size_>
 constexpr FixedVector<Scalar_, size_>::operator std::array<Scalar_, size_>()
     const {
   return data_;

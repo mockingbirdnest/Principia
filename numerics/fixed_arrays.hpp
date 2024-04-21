@@ -44,7 +44,7 @@ class FixedVector final {
   // result is fixed even if the matrix being viewed is an UnboundedMatrix.
   template<typename T>
     requires std::same_as<typename T::Scalar, Scalar_>
-  explicit FixedVector(ColumnView<T> const& view);
+  constexpr explicit FixedVector(ColumnView<T> const& view);
 
   // Convertible to an array.
   explicit constexpr operator std::array<Scalar, size_>() const;
