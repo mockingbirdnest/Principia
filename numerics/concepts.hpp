@@ -16,6 +16,8 @@ concept one_dimensional = requires(T& t, int index) {
 template<typename T>
 concept two_dimensional = requires(T& t, int row, int column) {
   { t(row, column) } -> std::same_as<typename T::Scalar&>;
+} || requires(T const& t, int row, int column) {
+  { t(row, column) } -> std::same_as<typename T::Scalar const&>;
 };
 
 template<typename T1, typename T2>

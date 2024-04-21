@@ -101,10 +101,10 @@ inline ApproximateQuantity<double> ApproximateQuantity<double>::Parse(
     }
   }
   if (ulp <= 9) {
-    error_representation[*last_digit_index] = '0' + ulp;
+    error_representation[*last_digit_index] = static_cast<char>('0' + ulp);
   } else {
     CHECK(is_hexadecimal);
-    error_representation[*last_digit_index] = 'A' + ulp - 10;
+    error_representation[*last_digit_index] = static_cast<char>('A' + ulp - 10);
   }
 
   // Apparently the stupid language doesn't know how to parse literals with

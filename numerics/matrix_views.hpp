@@ -4,7 +4,6 @@
 #include <utility>
 
 #include "numerics/concepts.hpp"
-#include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -13,7 +12,6 @@ namespace _matrix_views {
 namespace internal {
 
 using namespace principia::numerics::_concepts;
-using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 
 // A view of a rectangular block of a matrix.  This view is |two_dimensional|.
@@ -58,6 +56,13 @@ struct ColumnView {
 
   constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
+
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator=(T const& right);
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator=(T&& right);
 
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
