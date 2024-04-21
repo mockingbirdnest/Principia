@@ -167,7 +167,7 @@ TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
                                         .first_row = 0,
                                         .last_row = qr.Q.rows() - 1,
                                         .column = c2};
-      EXPECT_THAT(TransposedView{.transpose = column_c1} * column_c2,
+      EXPECT_THAT(TransposedView{.transpose = column_c1} * column_c2,  // NOLINT
                   VanishesBefore(1, 24, 176));
     }
   }
