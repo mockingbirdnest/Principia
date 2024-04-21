@@ -730,8 +730,13 @@ UnitriangularGramSchmidt(Matrix const& A) {
   auto& R = result.R;
   int const n = A.rows();
 
-  //TODO(phl)fix
-  // [Hig02], Algorithm 19.11.
+  // The algorithm is derived from [HPS14], Theorem 7.13, but we keep the code
+  // similar to the one for classical Gram-Schmidt, i.e., adopt the conventions
+  // from [Hig02], Algorithm 19.11.
+  // The correspondances are as follows:
+  //   vⱼ  ≘ aⱼ
+  //   v⭑ⱼ ≘ qⱼ
+  //   μᵢⱼ ≘ Rⱼᵢ
   for (int j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
