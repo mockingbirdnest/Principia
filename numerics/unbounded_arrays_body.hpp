@@ -356,6 +356,18 @@ UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
 }
 
 template<typename Scalar_>
+UnboundedLowerTriangularMatrix<Scalar_>::operator UnboundedMatrix<
+    Scalar_>() const {
+  UnboundedMatrix<Scalar> result(rows_, rows_);  // Initialized.
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j <= i; ++j) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename Scalar_>
 Scalar_& UnboundedLowerTriangularMatrix<Scalar_>::operator()(
     int const row, int const column) {
   DCHECK_LE(0, column);
@@ -454,6 +466,18 @@ UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
       (*this)(i, j) = view(i, j);
     }
   }
+}
+
+template<typename Scalar_>
+UnboundedUpperTriangularMatrix<Scalar_>::
+operator UnboundedMatrix<Scalar_>() const {
+  UnboundedMatrix<Scalar> result(columns_, columns_);  // Initialized.
+  for (int j = 0; j < columns_; ++j) {
+    for (int i = 0; i <= j; ++i) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
 }
 
 template<typename Scalar_>

@@ -5,6 +5,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -18,6 +19,7 @@ namespace numerics {
 
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
@@ -108,6 +110,31 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
 
   auto const x4_actual = ForwardSubstitution(m4, b4);
   EXPECT_THAT(x4_actual, AlmostEquals(x4_expected, 0));
+}
+
+TYPED_TEST(MatrixComputationsTest, ClassicalGramSchmidt) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({1, 2, 3, -4,
+                   5, 6, 7, 8,
+                   9, 8, -7, 6,
+                   5, 4, 3, 2});
+  auto const qr = ClassicalGramSchmidt(m4);
+
+  // Check that the decomposition is correct.
+  auto const near_m4 = qr.Q * Matrix(qr.R);
+  EXPECT_THAT(near_m4, AlmostEquals(m4, 1));
+
+  // Check that Q is nearly orthogonal.
+  auto const near_identity = Matrix(TransposedView{.transpose = qr.Q}) * qr.Q;
+  for (int i = 0; i < near_identity.rows(); ++i) {
+    for (int j = 0; j < near_identity.columns(); ++j) {
+      if (i == j) {
+        EXPECT_THAT(near_identity(i, j), AlmostEquals(1, 0, 2));
+      } else {
+        EXPECT_THAT(near_identity(i, j), VanishesBefore(1, 0, 3));
+      }
+    }
+  }
 }
 
 TYPED_TEST(MatrixComputationsTest, HessenbergForm) {

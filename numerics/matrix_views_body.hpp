@@ -2,6 +2,8 @@
 
 #include "numerics/matrix_views.hpp"
 
+#include <utility>
+
 #include "base/tags.hpp"
 #include "quantities/elementary_functions.hpp"
 
@@ -30,6 +32,36 @@ constexpr auto BlockView<Matrix>::operator()(
   CONSTEXPR_DCHECK(row <= last_row - first_row);
   CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator=(T const& right) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      matrix(first_row + i, first_column + j) = right(i, j);
+    }
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires two_dimensional<T> && same_elements_as<T, Matrix>
+BlockView<Matrix>& BlockView<Matrix>::operator=(T&& right) {
+  DCHECK_EQ(rows(), right.rows());
+  DCHECK_EQ(columns(), right.columns());
+  for (int i = 0; i < rows(); ++i) {
+    for (int j = 0; j < columns(); ++j) {
+      matrix(first_row + i, first_column + j) = std::move(right(i, j));
+    }
+  }
+  return *this;
 }
 
 template<typename Matrix>
@@ -116,6 +148,30 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 template<typename T>
   requires one_dimensional<T> && same_elements_as<T, Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator=(T const& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < size(); ++i) {
+    matrix(first_row + i, column) = right[i];
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
+ColumnView<Matrix>& ColumnView<Matrix>::operator=(T&& right) {
+  DCHECK_EQ(size(), right.size());
+  for (int i = 0; i < size(); ++i) {
+    matrix(first_row + i, column) = std::move(right[i]);
+  }
+  return *this;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+template<typename T>
+  requires one_dimensional<T> && same_elements_as<T, Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator+=(T const& right) {
   DCHECK_EQ(size(), right.size());
   for (int i = 0; i < size(); ++i) {
@@ -174,6 +230,18 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto ColumnView<Matrix>::size() const -> int {
   return last_row - first_row + 1;
+}
+
+template<typename LMatrix, typename RMatrix>
+Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
+    TransposedView<ColumnView<LMatrix>> const& left,
+    ColumnView<RMatrix> const& right) {
+  DCHECK_EQ(left.size(), right.size());
+  Product<typename LMatrix::Scalar, typename RMatrix::Scalar> result{};
+  for (int i = 0; i < left.size(); ++i) {
+    result += left[i] * right[i];
+  }
+  return result;
 }
 
 template<typename Matrix, typename T>

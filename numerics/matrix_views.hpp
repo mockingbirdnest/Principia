@@ -33,6 +33,13 @@ struct BlockView {
 
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
+  BlockView& operator=(T const& right);
+  template<typename T>
+    requires two_dimensional<T> && same_elements_as<T, Matrix>
+  BlockView& operator=(T&& right);
+
+  template<typename T>
+    requires two_dimensional<T> && same_elements_as<T, Matrix>
   BlockView& operator+=(T const& right);
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
@@ -61,6 +68,13 @@ struct ColumnView {
 
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator=(T const& right);
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
+  ColumnView& operator=(T&& right);
+
+  template<typename T>
+    requires one_dimensional<T> && same_elements_as<T, Matrix>
   ColumnView& operator+=(T const& right);
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
@@ -73,6 +87,11 @@ struct ColumnView {
   Square<Scalar> Norm²() const;
   constexpr int size() const;
 };
+
+template<typename LMatrix, typename RMatrix>
+Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
+    TransposedView<ColumnView<LMatrix>> const& left,
+    ColumnView<RMatrix> const& right);
 
 // The declarations below also declare the symmetric operator== and
 // operator!=.

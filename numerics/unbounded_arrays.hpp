@@ -178,6 +178,8 @@ class UnboundedLowerTriangularMatrix final {
   explicit UnboundedLowerTriangularMatrix(
       TransposedView<UnboundedUpperTriangularMatrix<Scalar>> const& view);
 
+  explicit operator UnboundedMatrix<Scalar>() const;
+
   friend bool operator==(UnboundedLowerTriangularMatrix const& left,
                          UnboundedLowerTriangularMatrix const& right) = default;
   friend bool operator!=(UnboundedLowerTriangularMatrix const& left,
@@ -226,6 +228,8 @@ class UnboundedUpperTriangularMatrix final {
 
   explicit UnboundedUpperTriangularMatrix(
       TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view);
+
+  explicit operator UnboundedMatrix<Scalar>() const;
 
   friend bool operator==(UnboundedUpperTriangularMatrix const& left,
                          UnboundedUpperTriangularMatrix const& right) = default;

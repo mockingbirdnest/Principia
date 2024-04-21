@@ -31,6 +31,14 @@ struct SubstitutionGenerator;
 
 // Declares:
 //   struct Result {
+//     ⟨upper triangular matrix⟩ R;
+//     ⟨matrix⟩ Q;
+//   };
+template<typename M>
+struct GramSchmidtGenerator;
+
+// Declares:
+//   struct Result {
 //     (matrix) H;
 //     (matrix) U;
 //   }
@@ -99,6 +107,10 @@ typename SubstitutionGenerator<LowerTriangularMatrix, Vector>::Result
 ForwardSubstitution(LowerTriangularMatrix const& L,
                     Vector const& b);
 
+template<typename Matrix>
+typename GramSchmidtGenerator<Matrix>::Result
+ClassicalGramSchmidt(Matrix const& L);
+
 // If A is a square matrix, returns U and H so that A = ᵗU H U, where H is an
 // upper Hessenberg matrix.
 // TODO(phl): Add support for returning U.
@@ -141,6 +153,7 @@ Solve(Matrix A, Vector b);
 
 using internal::BackSubstitution;
 using internal::CholeskyDecomposition;
+using internal::ClassicalGramSchmidt;
 using internal::ClassicalJacobi;
 using internal::ForwardSubstitution;
 using internal::HessenbergDecomposition;

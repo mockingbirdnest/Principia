@@ -28,20 +28,21 @@ constexpr int TransposedView<T>::size() const
 }
 
 template<typename T>
-constexpr typename T::Scalar& TransposedView<T>::operator[](int index)
+constexpr typename T::Scalar& TransposedView<T>::operator[](int const index)
   requires one_dimensional<T> {
   return transpose[index];
 }
 
 template<typename T>
 constexpr typename T::Scalar const& TransposedView<T>::operator[](
-    int index) const
+    int const index) const
   requires one_dimensional<T> {
   return transpose[index];
 }
 
 template<typename T>
-constexpr typename T::Scalar& TransposedView<T>::operator()(int row, int column)
+constexpr typename T::Scalar& TransposedView<T>::operator()(int const row,
+                                                            int const column)
   requires two_dimensional<T> {
   // Note the transposition.
   return transpose(column, row);
@@ -49,8 +50,8 @@ constexpr typename T::Scalar& TransposedView<T>::operator()(int row, int column)
 
 template<typename T>
 constexpr typename T::Scalar const& TransposedView<T>::operator()(
-    int row,
-    int column) const
+    int const row,
+    int const column) const
   requires two_dimensional<T> {
   // Note the transposition.
   return transpose(column, row);

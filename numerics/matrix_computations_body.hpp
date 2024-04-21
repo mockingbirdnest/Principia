@@ -286,6 +286,29 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 };
 
 template<typename Scalar>
+struct GramSchmidtGenerator<UnboundedMatrix<Scalar>> {
+  struct Result {
+    UnboundedMatrix<double> Q;
+    UnboundedUpperTriangularMatrix<Scalar> R;
+  };
+  using AVector = UnboundedVector<Scalar>;
+  using QVector = UnboundedVector<double>;
+  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
+};
+
+template<typename Scalar, int dimension>
+struct GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>> {
+  struct Result {
+    FixedMatrix<double, dimension, dimension> Q;
+    FixedUpperTriangularMatrix<Scalar, dimension> R;
+  };
+  using AVector = FixedVector<Scalar, dimension>;
+  using QVector = FixedVector<double, dimension>;
+  static Result Uninitialized(
+      FixedMatrix<Scalar, dimension, dimension> const& m);
+};
+
+template<typename Scalar>
 struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> H;
@@ -430,6 +453,22 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar>,
                            UnboundedVector<RScalar>>::
 Uninitialized(TriangularMatrix<LScalar> const& m) -> Result {
   return Result(m.columns(), uninitialized);
+}
+
+template<typename Scalar>
+auto GramSchmidtGenerator<UnboundedMatrix<Scalar>>::
+Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
+  return Result{
+      .Q = UnboundedMatrix<double>(m.rows(), m.columns(), uninitialized),
+      .R = UnboundedUpperTriangularMatrix<Scalar>(m.columns(), uninitialized)};
+}
+
+template<typename Scalar, int dimension>
+auto GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>>::
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+  return Result{
+      .Q = FixedMatrix<double, dimension, dimension>(uninitialized),
+      .R = FixedUpperTriangularMatrix<Scalar, dimension>(uninitialized)};
 }
 
 template<typename Scalar>
@@ -601,6 +640,44 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
     x[i] = s / L(i, i);
   }
   return x;
+}
+
+template<typename Matrix>
+typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
+    Matrix const& A) {
+  using G = GramSchmidtGenerator<Matrix>;
+  auto result = G::Uninitialized(A);
+  auto& Q = result.Q;
+  auto& R = result.R;
+  int const n = A.rows();
+
+  // [Hig02], Algorithm 19.11.
+  for (int j = 0; j < n; ++j) {
+    auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
+                                             .first_row = 0,
+                                             .last_row = n - 1,
+                                             .column = j};
+    for (int i = 0; i < j; ++i) {
+      auto const qᵢ = ColumnView{.matrix = Q,
+                                 .first_row = 0,
+                                 .last_row = n - 1,
+                                 .column = i};
+      R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ;  // NOLINT
+    }
+    typename G::AVector qʹⱼ(aⱼ);
+    for (int k = 0; k < j; ++k) {
+      qʹⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
+                                                      .first_row = 0,
+                                                      .last_row = n - 1,
+                                                      .column = k});
+    }
+    R(j, j) = qʹⱼ.Norm();
+    ColumnView{.matrix = Q,  // NOLINT
+               .first_row = 0,
+               .last_row = n - 1,
+               .column = j} = qʹⱼ / R(j, j);
+  }
+  return result;
 }
 
 template<typename Matrix>

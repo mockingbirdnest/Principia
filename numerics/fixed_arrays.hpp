@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/tags.hpp"
+#include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -15,6 +16,7 @@ namespace _fixed_arrays {
 namespace internal {
 
 using namespace principia::base::_tags;
+using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -37,6 +39,12 @@ class FixedVector final {
       std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
   constexpr FixedVector(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
+
+  // Constructs a fixed vector by copying data from the view.  Note that the
+  // result is fixed even if the matrix being viewed is an UnboundedMatrix.
+  template<typename T>
+    requires std::same_as<typename T::Scalar, Scalar_>
+  constexpr explicit FixedVector(ColumnView<T> const& view);
 
   // Convertible to an array.
   explicit constexpr operator std::array<Scalar, size_>() const;
@@ -173,6 +181,8 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_>() const;
+
   friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
                          FixedStrictlyLowerTriangularMatrix const& right) =
       default;
@@ -215,6 +225,8 @@ class FixedLowerTriangularMatrix final {
   explicit FixedLowerTriangularMatrix(
       TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view);
 
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_>() const;
+
   friend bool operator==(FixedLowerTriangularMatrix const& left,
                          FixedLowerTriangularMatrix const& right) = default;
   friend bool operator!=(FixedLowerTriangularMatrix const& left,
@@ -251,6 +263,8 @@ class FixedUpperTriangularMatrix final {
 
   explicit FixedUpperTriangularMatrix(
       TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view);
+
+  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_>() const;
 
   friend bool operator==(FixedUpperTriangularMatrix const& left,
                          FixedUpperTriangularMatrix const& right) = default;
