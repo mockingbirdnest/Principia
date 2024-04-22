@@ -232,6 +232,15 @@ constexpr auto ColumnView<Matrix>::size() const -> int {
   return last_row - first_row + 1;
 }
 
+template<typename Matrix>
+void SwapColumns(ColumnView<Matrix>& m1, ColumnView<Matrix>& m2) {
+  DCHECK_EQ(m1.first_row, m2.first_row);
+  DCHECK_EQ(m1.last_row, m2.last_row);
+  for (int i = 0; i < m1.size(); ++i) {
+    std::swap(m1[i], m2[i]);
+  }
+}
+
 template<typename LMatrix, typename RMatrix>
 Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
     TransposedView<ColumnView<LMatrix>> const& left,

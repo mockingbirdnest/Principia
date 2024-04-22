@@ -88,6 +88,9 @@ struct ColumnView {
   constexpr int size() const;
 };
 
+template<typename Matrix>
+void SwapColumns(ColumnView<Matrix>& m1, ColumnView<Matrix>& m2);
+
 template<typename LMatrix, typename RMatrix>
 Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
     TransposedView<ColumnView<LMatrix>> const& left,
@@ -117,6 +120,7 @@ std::ostream& operator<<(std::ostream& out,
 
 using internal::BlockView;
 using internal::ColumnView;
+using internal::SwapColumns;
 
 }  // namespace _matrix_views
 }  // namespace numerics

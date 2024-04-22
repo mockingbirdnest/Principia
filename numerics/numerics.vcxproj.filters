@@ -394,6 +394,9 @@
     <ClCompile Include="apodization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lattices_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
