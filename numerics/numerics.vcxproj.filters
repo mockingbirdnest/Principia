@@ -263,8 +263,11 @@
     <ClInclude Include="matrix_views_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="lattice.hpp">
+    <ClInclude Include="lattices.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lattices_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
