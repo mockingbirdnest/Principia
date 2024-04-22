@@ -24,6 +24,7 @@
     <ClInclude Include="gradient_descent_body.hpp" />
     <ClInclude Include="hermite2.hpp" />
     <ClInclude Include="hermite2_body.hpp" />
+    <ClInclude Include="lattice.hpp" />
     <ClInclude Include="matrix_computations.hpp" />
     <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
