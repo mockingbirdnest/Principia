@@ -251,6 +251,10 @@ $(VERSION_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
+$(CORE_MATH_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
+
 $(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $< -o $@
