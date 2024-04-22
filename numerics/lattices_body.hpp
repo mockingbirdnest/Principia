@@ -38,14 +38,12 @@ struct LenstraLenstraLovászGenerator<
 template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász(Matrix const& L) {
-  //TODO(phl):Rows/columns confusion.
   using G = LenstraLenstraLovászGenerator<Matrix>;
   auto const n = L.columns();
   auto const m = L.rows();
   auto v = L;
   for (int k = 1; k < n;) {
-LOG(ERROR)<<"k = "<<k;
-    auto const qr = UnitriangularGramSchmidt(v);
+    auto qr = UnitriangularGramSchmidt(v);
     auto vₖ = ColumnView{.matrix = v,
                         .first_row = 0,
                         .last_row = m - 1,
@@ -57,6 +55,7 @@ LOG(ERROR)<<"k = "<<k;
                            .last_row = m - 1,
                            .column = j};
       vₖ -= std::round(μₖⱼ) * typename G::Vector(vⱼ);
+      qr = UnitriangularGramSchmidt(v);
     }
     auto const μₖₖ₋₁ = qr.R(k - 1, k);
     auto v𐌟ₖ = ColumnView{.matrix = qr.Q,
@@ -70,7 +69,6 @@ LOG(ERROR)<<"k = "<<k;
     if (v𐌟ₖ.Norm²() >= (0.75 - Pow<2>(μₖₖ₋₁)) * v𐌟ₖ₋₁.Norm²()) {
       ++k;
     } else {
-LOG(ERROR)<<"Swap";
       auto vₖ₋₁ = ColumnView{.matrix = v,
                             .first_row = 0,
                             .last_row = m - 1,
