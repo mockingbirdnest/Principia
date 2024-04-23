@@ -14,9 +14,14 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász(Matrix const& L);
 
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+Matrix LenstraLenstraLovász2(Matrix const& L);
+
 }  // namespace internal
 
 using internal::LenstraLenstraLovász;
+using internal::LenstraLenstraLovász2;
 
 }  // namespace _lattices
 }  // namespace numerics
