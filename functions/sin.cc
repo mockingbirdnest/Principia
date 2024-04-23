@@ -36,6 +36,7 @@ SOFTWARE.
 #include <fenv.h>
 
 #include "absl/numeric/int128.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "numerics/fma.hpp"
 
 // Warning: clang also defines __GNUC__
@@ -43,7 +44,9 @@ SOFTWARE.
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #endif
 
+#if PRINCIPIA_COMPILER_MSVC
 #define __builtin_clzl(x) __lzcnt64(x)
+#endif
 #define __builtin_expect(x, y) x
 #define __builtin_fabs(x) std::abs(x)
 #define __builtin_floor(x) std::floor(x)
@@ -2050,7 +2053,9 @@ cr_sin (double x)
 }  // namespace functions
 }  // namespace principia
 
+#if PRINCIPIA_COMPILER_MSVC
 #undef __builtin_clzl
+#endif
 #undef __builtin_expect
 #undef __builtin_fabs
 #undef __builtin_floor
