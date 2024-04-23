@@ -2055,8 +2055,8 @@ cr_sin (double x)
 
 #if PRINCIPIA_COMPILER_MSVC
 #undef __builtin_clzl
+#endif
 #undef __builtin_expect
 #undef __builtin_fabs
 #undef __builtin_floor
-#endif
 #undef __builtin_fma
