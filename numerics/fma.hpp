@@ -28,6 +28,7 @@ inline bool const UseHardwareFMA = false;
 
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
+
 // ⟦ab + c⟧.
 inline double FusedMultiplyAdd(double a, double b, double c);
 
