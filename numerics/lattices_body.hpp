@@ -100,7 +100,7 @@ Matrix LenstraLenstraLovász2(Matrix const& L) {
   typename G::Norm²Vector B(uninitialized);
   int k_max = 0;
 
-  auto Red = [&](int const k, int const l) {
+  auto Red = [rows, &v, &μ](int const k, int const l) {
     if (Abs(μ(k, l)) <= 0.5) {
       return;
     }
@@ -120,7 +120,7 @@ Matrix LenstraLenstraLovász2(Matrix const& L) {
     }
   };
 
-  auto Swap = [&](int const k) {
+  auto Swap = [&B, k_max, &v, &μ](int const k) {
     auto vₖ = ColumnView{.matrix = v,
                         .first_row = 0,
                         .last_row = rows - 1,
