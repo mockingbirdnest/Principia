@@ -145,11 +145,11 @@ Matrix LenstraLenstraLovász2(Matrix const& L) {
     }
   };
 
-  ColumnView<Matrix> v𐌟₀ = ColumnView{.matrix = v𐌟,
+  auto v𐌟₀ = ColumnView{.matrix = v𐌟,
                         .first_row = 0,
                         .last_row = rows - 1,
                         .column = 0};
-  ColumnView<Matrix> v₀ = ColumnView{.matrix = v,
+  auto v₀ = ColumnView{.matrix = v,
                        .first_row = 0,
                        .last_row = rows - 1,
                        .column = 0};

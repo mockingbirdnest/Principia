@@ -53,21 +53,6 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 template<typename T>
   requires two_dimensional<T> && same_elements_as<T, Matrix>
-BlockView<Matrix>& BlockView<Matrix>::operator=(T&& right) {
-  DCHECK_EQ(rows(), right.rows());
-  DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
-      matrix(first_row + i, first_column + j) = std::move(right(i, j));
-    }
-  }
-  return *this;
-}
-
-template<typename Matrix>
-  requires two_dimensional<Matrix>
-template<typename T>
-  requires two_dimensional<T> && same_elements_as<T, Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator+=(T const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
@@ -158,12 +143,10 @@ ColumnView<Matrix>& ColumnView<Matrix>::operator=(T const& right) {
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-template<typename T>
-  requires one_dimensional<T> && same_elements_as<T, Matrix>
-ColumnView<Matrix>& ColumnView<Matrix>::operator=(T&& right) {
+ColumnView<Matrix>& ColumnView<Matrix>::operator=(ColumnView const& right) {
   DCHECK_EQ(size(), right.size());
   for (int i = 0; i < size(); ++i) {
-    matrix(first_row + i, column) = std::move(right[i]);
+    matrix(first_row + i, column) = right[i];
   }
   return *this;
 }

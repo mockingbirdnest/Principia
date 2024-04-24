@@ -152,8 +152,8 @@ TEST_F(MatrixViewsTest, ColumnView_Assignment) {
                                             .last_row = 2,
                                             .column = 3};
   cum34 = cfm34;
-  EXPECT_EQ(-10, cum34[1]);
-  EXPECT_EQ(-3, cum34[2]);
+  EXPECT_EQ(9, cum34[0]);
+  EXPECT_EQ(-2, cum34[1]);
 
   cfm34 = cfm34;
 }

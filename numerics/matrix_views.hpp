@@ -34,9 +34,6 @@ struct BlockView {
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
   BlockView& operator=(T const& right);
-  template<typename T>
-    requires two_dimensional<T> && same_elements_as<T, Matrix>
-  BlockView& operator=(T&& right);
 
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
@@ -69,11 +66,7 @@ struct ColumnView {
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
   ColumnView& operator=(T const& right);
-  template<typename T>
-    requires one_dimensional<T> && same_elements_as<T, Matrix>
-  ColumnView& operator=(T&& right);
   ColumnView& operator=(ColumnView const& right);
-  ColumnView& operator=(ColumnView&& right);
 
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
