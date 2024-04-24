@@ -83,6 +83,9 @@ struct ColumnView {
   constexpr int size() const;
 };
 
+// TODO(phl): This should probably be just |swap|.  The semantics of BlockView
+// and ColumnView do imply an implicit dereferencing, so swapping should work
+// the same.
 template<typename Matrix>
 void SwapColumns(ColumnView<Matrix>& m1, ColumnView<Matrix>& m2);
 
