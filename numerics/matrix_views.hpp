@@ -72,6 +72,8 @@ struct ColumnView {
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
   ColumnView& operator=(T&& right);
+  ColumnView& operator=(ColumnView const& right);
+  ColumnView& operator=(ColumnView&& right);
 
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>

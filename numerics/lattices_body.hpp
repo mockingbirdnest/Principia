@@ -89,79 +89,69 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
 }
 
 template<typename Matrix>
-void Red(int const k,
-         int const l,
-         Matrix& v,
-         typename LenstraLenstraLovászGenerator<Matrix>::DoubleMatrix& μ) {
-  if (Abs(μ(k, l)) <= 0.5) {
-    return;
-  }
-  auto const m = std::round(μ(k, l));
-  auto vₖ = {.matrix = v,
-             .first_row = 0,
-             .last_row = m - 1,
-             .column = k};
-  auto vₗ = {.matrix = v,
-             .first_row = 0,
-             .last_row = m - 1,
-             .column = l};
-  vₖ -= m * vₗ;
-  μ(k, l) -= m;
-  for (int i = 0; i < l - 1; ++i) {
-    μ(k, i) -= m * μ(l, i);
-  }
-}
-
-template<typename Matrix>
-void Swap(int const k,
-          int const k_max,
-          Matrix& v,
-          typename LenstraLenstraLovászGenerator<Matrix>::DoubleMatrix& μ,
-          typename LenstraLenstraLovászGenerator<Matrix>::Norm²Vector& B) {
-  auto const n = v.columns();
-  auto const m = v.rows();//TODO(phl)naming
-  auto vₖ = ColumnView{.matrix = v,
-                      .first_row = 0,
-                      .last_row = m - 1,
-                      .column = k};
-  auto vₖ₋₁ = ColumnView{.matrix = v,
-                        .first_row = 0,
-                        .last_row = m - 1,
-                        .column = k - 1};
-  SwapColumns(vₖ, vₖ₋₁);
-  for (int j = 0; j < k - 2; ++j) {
-    std::swap(μ(k - 1, j), μ(k, j));
-  }
-  auto μ = μ(k, k - 1);
-  auto B = B[k] + Pow<2>(μ) * B[k - 1];
-  μ(k, k - 1) = μ * B[k - 1] / B;
-  B[k] = B[k - 1] * B[k] / B;
-  B[k - 1] = B;
-  for (int i = k + 1; i < k_max; ++i) {
-    auto const m = μ(i, k);
-    μ(i, k) = μ(i, k - 1) - μ * m;
-    μ(i, k - 1) = m + μ(k, k - 1) * μ(i, k);
-  }
-}
-
-template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász2(Matrix const& L) {
   using G = LenstraLenstraLovászGenerator<Matrix>;
   auto const n = L.columns();
-  auto const m = L.rows();
+  auto const rows = L.rows();
   Matrix v = L;
-  int k_max = 0;
   Matrix v𐌟;
   typename G::DoubleMatrix μ(uninitialized);
   typename G::Norm²Vector B(uninitialized);
-  auto v𐌟₀ = ColumnView{.matrix = v𐌟,
+  int k_max = 0;
+
+  auto Red = [&](int const k, int const l) {
+    if (Abs(μ(k, l)) <= 0.5) {
+      return;
+    }
+    auto const m = std::round(μ(k, l));
+    auto vₖ = ColumnView{.matrix = v,
                         .first_row = 0,
-                        .last_row = m - 1,
+                        .last_row = rows - 1,
+                        .column = k};
+    auto vₗ = ColumnView{.matrix = v,
+                        .first_row = 0,
+                        .last_row = rows - 1,
+                        .column = l};
+    vₖ -= m * typename G::Vector(vₗ);
+    μ(k, l) -= m;
+    for (int i = 0; i < l - 1; ++i) {
+      μ(k, i) -= m * μ(l, i);
+    }
+  };
+
+  auto Swap = [&](int const k) {
+    auto vₖ = ColumnView{.matrix = v,
+                        .first_row = 0,
+                        .last_row = rows - 1,
+                        .column = k};
+    auto vₖ₋₁ = ColumnView{.matrix = v,
+                          .first_row = 0,
+                          .last_row = rows - 1,
+                          .column = k - 1};
+    SwapColumns(vₖ, vₖ₋₁);
+    for (int j = 0; j < k - 2; ++j) {
+      std::swap(μ(k - 1, j), μ(k, j));
+    }
+    auto const μ_value = μ(k, k - 1);
+    auto const B_value = B[k] + Pow<2>(μ_value) * B[k - 1];
+    μ(k, k - 1) = μ_value * B[k - 1] / B_value;
+    B[k] = B[k - 1] * B[k] / B_value;
+    B[k - 1] = B_value;
+    for (int i = k + 1; i < k_max; ++i) {
+      auto const m = μ(i, k);
+      μ(i, k) = μ(i, k - 1) - μ_value * m;
+      μ(i, k - 1) = m + μ(k, k - 1) * μ(i, k);
+    }
+  };
+
+  ColumnView<Matrix> v𐌟₀ = ColumnView{.matrix = v𐌟,
+                        .first_row = 0,
+                        .last_row = rows - 1,
                         .column = 0};
-  auto v₀ = ColumnView{.matrix = v,
+  ColumnView<Matrix> v₀ = ColumnView{.matrix = v,
                        .first_row = 0,
-                       .last_row = m - 1,
+                       .last_row = rows - 1,
                        .column = 0};
   v𐌟₀ = v₀;
   B[0] = v₀.Norm²();
@@ -170,31 +160,31 @@ Matrix LenstraLenstraLovász2(Matrix const& L) {
       k_max = k;
       auto v𐌟ₖ = ColumnView{.matrix = v𐌟,
                            .first_row = 0,
-                           .last_row = m - 1,
+                           .last_row = rows - 1,
                            .column = k};
       auto vₖ = ColumnView{.matrix = v,
                            .first_row = 0,
-                           .last_row = m - 1,
+                           .last_row = rows - 1,
                            .column = k};
       v𐌟ₖ = vₖ;
       for (int j = 0; j < k - 1; ++j) {
         auto v𐌟ⱼ = ColumnView{.matrix = v𐌟,
                               .first_row = 0,
-                              .last_row = m - 1,
+                              .last_row = rows - 1,
                               .column = j};
         μ(k, j) = TransposedView{vₖ} * v𐌟ⱼ / B[j];
-        v𐌟ₖ -= typename G::Vector(μ(k, j) * v𐌟ⱼ);
+        v𐌟ₖ -= μ(k, j) * typename G::Vector(v𐌟ⱼ);
       }
       B[k] = v𐌟ₖ.Norm²();
     }
     for (;;) {
-      Red(k, k - 1, v, μ);
+      Red(k, k - 1);
       if (B[k] < (0.75 - Pow<2>(μ(k, k - 1))) * B[k - 1]) {
-        Swap(k, k_max, v, μ, B);
+        Swap(k);
         k = std::max(k - 1, 1);
       } else {
         for (int l = k - 3; l >= 0; --l) {
-          Red(k, l, v, μ);
+          Red(k, l);
         }
         ++k;
         break;
