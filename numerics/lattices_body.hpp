@@ -2,6 +2,8 @@
 
 #include "numerics/lattices.hpp"
 
+#include <algorithm>
+
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
