@@ -47,7 +47,10 @@ SOFTWARE.
 #define __builtin_expect(x, y) x
 #define __builtin_fabs(x) std::abs(x)
 #define __builtin_floor(x) std::floor(x)
-#define __builtin_fma(x, y, z) principia::numerics::_fma::FusedMultiplyAdd(x, y, z)
+#define __builtin_fma(x, y, z)                                \
+  (principia::numerics::_fma::UseHardwareFMA                  \
+       ? principia::numerics::_fma::FusedMultiplyAdd(x, y, z) \
+       : x * y + z)
 
 /******************** code copied from dint.h and pow.[ch] *******************/
 
