@@ -167,7 +167,7 @@ Matrix LenstraLenstraLovász2(Matrix const& L) {
                            .last_row = rows - 1,
                            .column = k};
       v𐌟ₖ = vₖ;
-      for (int j = 0; j < k - 1; ++j) {
+      for (int j = 0; j < k; ++j) {
         auto v𐌟ⱼ = ColumnView{.matrix = v𐌟,
                               .first_row = 0,
                               .last_row = rows - 1,
