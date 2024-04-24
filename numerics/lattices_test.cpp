@@ -55,6 +55,20 @@ TEST_F(LatticesTest, Example_7_75b) {
                   0));
 }
 
+TEST_F(LatticesTest, Compalg) {
+  FixedMatrix<double, 3, 3> l({1, -1, 3,
+                               1,  0, 5,
+                               1,  2, 6});
+
+  auto const reduced = LenstraLenstraLovász(l);
+  EXPECT_THAT(reduced,
+              AlmostEquals(
+                  (FixedMatrix<double, 3, 3>({0, 1, -1,
+                                              1, 0,  0,
+                                              0, 1,  2})),
+                  0));
+}
+
 }  // namespace _lattices
 }  // namespace numerics
 }  // namespace principia
