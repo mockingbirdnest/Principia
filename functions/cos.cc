@@ -46,14 +46,12 @@ SOFTWARE.
 
 #if PRINCIPIA_COMPILER_MSVC
 #define __builtin_clzl(x) __lzcnt64(x)
+#define __builtin_fma(x, y, z) \
+  principia::numerics::_fma::FusedMultiplyAdd(x, y, z)
 #endif
 #define __builtin_expect(x, y) x
 #define __builtin_fabs(x) std::abs(x)
 #define __builtin_floor(x) std::floor(x)
-#define __builtin_fma(x, y, z)                                \
-  (principia::numerics::_fma::UseHardwareFMA                  \
-       ? principia::numerics::_fma::FusedMultiplyAdd(x, y, z) \
-       : x * y + z)
 
 /******************** code copied from dint.h and pow.[ch] *******************/
 
@@ -2062,8 +2060,8 @@ cr_cos (double x)
 
 #if PRINCIPIA_COMPILER_MSVC
 #undef __builtin_clzl
+#undef __builtin_fma
 #endif
 #undef __builtin_expect
 #undef __builtin_fabs
 #undef __builtin_floor
-#undef __builtin_fma
