@@ -113,9 +113,6 @@
     <ClInclude Include="apodization.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="apodization_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="fast_fourier_transform.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -266,6 +263,12 @@
     <ClInclude Include="matrix_views_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="lattices.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lattices_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fixed_arrays_test.cpp">
@@ -386,6 +389,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="matrix_views_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="apodization.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lattices_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

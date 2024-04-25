@@ -34,9 +34,6 @@ struct BlockView {
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
   BlockView& operator=(T const& right);
-  template<typename T>
-    requires two_dimensional<T> && same_elements_as<T, Matrix>
-  BlockView& operator=(T&& right);
 
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
@@ -69,9 +66,7 @@ struct ColumnView {
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
   ColumnView& operator=(T const& right);
-  template<typename T>
-    requires one_dimensional<T> && same_elements_as<T, Matrix>
-  ColumnView& operator=(T&& right);
+  ColumnView& operator=(ColumnView const& right);
 
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
@@ -87,6 +82,12 @@ struct ColumnView {
   Square<Scalar> Norm²() const;
   constexpr int size() const;
 };
+
+// TODO(phl): This should probably be just |swap|.  The semantics of BlockView
+// and ColumnView do imply an implicit dereferencing, so swapping should work
+// the same.
+template<typename Matrix>
+void SwapColumns(ColumnView<Matrix>& m1, ColumnView<Matrix>& m2);
 
 template<typename LMatrix, typename RMatrix>
 Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
@@ -117,6 +118,7 @@ std::ostream& operator<<(std::ostream& out,
 
 using internal::BlockView;
 using internal::ColumnView;
+using internal::SwapColumns;
 
 }  // namespace _matrix_views
 }  // namespace numerics

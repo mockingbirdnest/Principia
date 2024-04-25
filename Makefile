@@ -30,7 +30,7 @@ NUMERICS_LIB_TRANSLATION_UNITS          := $(filter-out $(TEST_OR_FAKE_OR_MOCK_T
 PHYSICS_LIB_TRANSLATION_UNITS           := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard physics/*.cpp))
 PLUGIN_TEST_LIB_TRANSLATION_UNITS       := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard ksp_plugin_test/*.cpp))
 TESTING_UTILITIES_LIB_TRANSLATION_UNITS := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard testing_utilities/*.cpp))
-CORE_MATH_TRANSLATIONS_UNITS            := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard functions/*.cc))
+CORE_MATH_TRANSLATION_UNITS             := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard functions/*.cc))
 PROTO_FILES                             := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS                 := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                           := $(PROTO_FILES:.proto=.pb.h)
@@ -248,6 +248,10 @@ $(LIBRARY_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
 $(VERSION_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
+
+$(CORE_MATH_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
