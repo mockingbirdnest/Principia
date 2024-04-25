@@ -142,6 +142,22 @@ TEST_F(MatrixViewsTest, ColumnView_Indexing) {
   EXPECT_EQ(-9, cum34[1]);
 }
 
+TEST_F(MatrixViewsTest, ColumnView_Assignment) {
+  ColumnView<FixedMatrix<double, 3, 4>> cfm34{.matrix = fm34_,
+                                              .first_row = 1,
+                                              .last_row = 2,
+                                              .column = 2};
+  ColumnView<UnboundedMatrix<double>> cum34{.matrix = um34_,
+                                            .first_row = 1,
+                                            .last_row = 2,
+                                            .column = 3};
+  cum34 = cfm34;
+  EXPECT_EQ(9, cum34[0]);
+  EXPECT_EQ(-2, cum34[1]);
+
+  cfm34 = cfm34;
+}
+
 TEST_F(MatrixViewsTest, ColumnView_Addition) {
   ColumnView<FixedMatrix<double, 3, 4>> cfm34{.matrix = fm34_,
                                               .first_row = 1,
