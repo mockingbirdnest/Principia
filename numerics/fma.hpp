@@ -20,37 +20,14 @@ constexpr bool CanEmitFMAInstructions = false;
 #endif
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
-#define PRINCIPIA_USE_HARDWARE_FMA_DEFAULT \
-  (CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet());
+inline bool const UseHardwareFMA =
+    (CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet());
 #else
-#define PRINCIPIA_USE_HARDWARE_FMA_DEFAULT false;
+inline bool const UseHardwareFMA = false;
 #endif
 
-#if PRINCIPIA_CAN_OVERRIDE_FMA_USAGE_AT_RUNTIME
-class FMAPreventer {
- public:
-  FMAPreventer() {
-    use_hardware_fma = false;
-  }
-  ~FMAPreventer() {
-    use_hardware_fma = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
-  }
-  static bool use_hardware_fma;
-};
-inline bool FMAPreventer::use_hardware_fma = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
-inline bool const& UseHardwareFMA = FMAPreventer::use_hardware_fma;
-#else
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
-inline bool const UseHardwareFMA = PRINCIPIA_USE_HARDWARE_FMA_DEFAULT;
-struct TrivialFMAPreventer {};
-using FMAPreventer = std::conditional_t<CanEmitFMAInstructions,
-                                        struct UndefinedFMAPreventer,
-                                        TrivialFMAPreventer>;
-#endif
-
-#undef PRINCIPIA_USE_HARDWARE_FMA_DEFAULT
-
 
 // ⟦ab + c⟧.
 inline double FusedMultiplyAdd(double a, double b, double c);
@@ -67,7 +44,6 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 }  // namespace internal
 
 using internal::CanEmitFMAInstructions;
-using internal::FMAPreventer;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
