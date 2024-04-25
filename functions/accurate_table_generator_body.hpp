@@ -85,6 +85,30 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
   }
 }
 
+template<std::int64_t zeroes>
+cpp_rational SimultaneousBadCaseSearch(
+  std::array<AccurateFunction, 2> const& functions,
+  std::array<AccuratePolynomial2, 2> const& polynomials,
+  std::int64_t const M,
+  std::int64_t const T) {
+  cpp_rational const T_increment = cpp_rational(T) / 100;
+  auto const& F = functions;
+  auto const& P = polynomials;
+  cpp_bin_float_50 ε = 0;
+  for (std::int64_t i = 0; i < 2; ++i) {
+    for (cpp_rational t = -T; t <= T; t += T_increment) {
+      ε = std::max(ε, abs(F[i](t) - P[i](t)));
+    }
+  }
+  auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
+  auto const C = 3 * Mʹ;
+  std::array<AccuratePolynomial2, 2> P̃;
+  for (std::int64_t i = 0; i < 2; ++i) {
+    P̃[i] = round(C * P[i]);///tau
+  }
+
+}
+
 }  // namespace internal
 }  // namespace _accurate_table_generator
 }  // namespace functions

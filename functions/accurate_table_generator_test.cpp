@@ -107,6 +107,17 @@ TEST_F(AccurateTableGeneratorTest, SinCos5Multisearch) {
   }
 }
 
+TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
+  auto const x = SimultaneousBadCaseSearch<5>(
+      {Sin, Cos},
+      {[](cpp_rational const& x) { return static_cast<cpp_bin_float_50>(x); },
+       [](cpp_rational const& x) {
+         return static_cast<cpp_bin_float_50>(1 - x * x / 2);
+       }},
+      10,
+      20);
+}
+
 #endif
 
 }  // namespace _accurate_table_generator
