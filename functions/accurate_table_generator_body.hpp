@@ -15,6 +15,7 @@
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
+#include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
 
 namespace principia {
@@ -27,6 +28,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
+using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 
 template<std::int64_t zeroes>
@@ -161,6 +163,15 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
       }
     }
   }
+
+  FixedMatrix<cpp_rational, 2, 3> vφ;
+  for (std::int64_t i = 4; i <= 5; ++i) {
+    for (std::int64_t j = 0; j < 3; ++j) {
+      vφ(i - 4, j) = (*v[j])[i];
+    }
+  }
+  FixedVector<cpp_rational, 2> const zero({0, 0});
+  auto const q = Solve(vφ, zero);
 }
 #endif
 
