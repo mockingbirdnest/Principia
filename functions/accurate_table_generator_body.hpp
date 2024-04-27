@@ -89,7 +89,7 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
 template<std::int64_t zeroes>
 cpp_rational SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
-  std::array<AccuratePolynomial2, 2> const& polynomials,
+  std::array<AccuratePolynomial<2>, 2> const& polynomials,
   std::int64_t const M,
   std::int64_t const T) {
   cpp_rational const T_increment = cpp_rational(T) / 100;
@@ -103,9 +103,10 @@ cpp_rational SimultaneousBadCaseSearch(
   }
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
-  std::array<AccuratePolynomial2, 2> P̃;
+  std::array<AccuratePolynomial<2>, 2> P̃;
+  AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
-    P̃[i] = round(C * P[i]);///tau
+    P̃[i] = round(C * Compose(P[i], Tτ));
   }
 
 }

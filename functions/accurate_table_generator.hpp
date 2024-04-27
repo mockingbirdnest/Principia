@@ -17,8 +17,9 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
 #if 1
-using AccuratePolynomial2 =
-    PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2>;
+template<int degree>
+using AccuratePolynomial =
+    PolynomialInMonomialBasis<cpp_rational, cpp_rational, degree>;
 #endif
 
 template<std::int64_t zeroes>
@@ -34,14 +35,14 @@ std::vector<cpp_rational> ExhaustiveMultisearch(
 template<std::int64_t zeroes>
 cpp_rational SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
-  std::array<AccuratePolynomial2, 2> const& polynomials,
+  std::array<AccuratePolynomial<2>, 2> const& polynomials,
   std::int64_t const M,
   std::int64_t const T);
 #endif
 
 }  // namespace internal
 
-using internal::AccuratePolynomial2;
+using internal::AccuratePolynomial;
 using internal::ExhaustiveMultisearch;
 using internal::ExhaustiveSearch;
 #if 1
