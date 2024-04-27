@@ -11,6 +11,8 @@
 #include "base/for_all_of.hpp"
 #include "base/thread_pool.hpp"
 #include "glog/logging.h"
+#include "numerics/fixed_arrays.hpp"
+#include "numerics/lattices.hpp"
 
 namespace principia {
 namespace functions {
@@ -19,6 +21,8 @@ namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_thread_pool;
+using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_lattices;
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -94,15 +98,17 @@ cpp_rational SimultaneousBadCaseSearch(
   std::array<AccuratePolynomial<2>, 2> const& polynomials,
   std::int64_t const M,
   std::int64_t const T) {
-  cpp_rational const T_increment = cpp_rational(T) / 100;
   auto const& F = functions;
   auto const& P = polynomials;
+
+  cpp_rational const T_increment = cpp_rational(T) / 100;
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
       ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>(P[i](t))));
     }
   }
+
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
   std::array<std::unique_ptr<AccuratePolynomial<2>>, 2> P̃;
@@ -115,6 +121,16 @@ cpp_rational SimultaneousBadCaseSearch(
     P̃[i] = std::make_unique<AccuratePolynomial<2>>(P̃_coefficients);
   }
 
+  auto const& P̃₀_coefficients = P̃[0]->coefficients();
+  auto const& P̃₁_coefficients = P̃[1]->coefficients();
+  FixedMatrix<cpp_rational, 5, 4> const L(
+      {C, 0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
+       0, C, std::get<1>(P̃₀_coefficients), std::get<1>(P̃₁_coefficients),
+       0, 0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
+       0, 0,                            3,                            0,
+       0, 0,                            0,                            3});
+
+  auto const V = LenstraLenstraLovász(L);
 }
 #endif
 
