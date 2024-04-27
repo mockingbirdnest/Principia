@@ -5,14 +5,17 @@
 #include <algorithm>
 #include <future>
 #include <limits>
+#include <memory>
 #include <thread>
 #include <vector>
 
 #include "base/for_all_of.hpp"
+#include "base/not_null.hpp"
 #include "base/thread_pool.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
+#include "numerics/matrix_views.hpp"
 
 namespace principia {
 namespace functions {
@@ -20,9 +23,11 @@ namespace _accurate_table_generator {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
+using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
+using namespace principia::numerics::_matrix_views;
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -111,19 +116,20 @@ cpp_rational SimultaneousBadCaseSearch(
 
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
-  std::array<std::unique_ptr<AccuratePolynomial<2>>, 2> P̃;
+  std::array<std::optional<AccuratePolynomial<2>>, 2> P̃;
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
     auto P̃_coefficients = Compose(C * P[i], Tτ).coefficients();
     for_all_of(P̃_coefficients).loop([](auto const& coefficient) {
       coefficient = round(coefficient);
     });
-    P̃[i] = std::make_unique<AccuratePolynomial<2>>(P̃_coefficients);
+    P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
   }
 
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
-  FixedMatrix<cpp_rational, 5, 4> const L(
+  using Lattice = FixedMatrix<cpp_rational, 5, 4>;
+  Lattice const L(
       {C, 0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
        0, C, std::get<1>(P̃₀_coefficients), std::get<1>(P̃₁_coefficients),
        0, 0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
@@ -131,6 +137,20 @@ cpp_rational SimultaneousBadCaseSearch(
        0, 0,                            0,                            3});
 
   auto const V = LenstraLenstraLovász(L);
+
+  std::array<std::unique_ptr<ColumnView<Lattice>>, 5> v;
+  for (std::int64_t i = 0; i < v.size(); ++i) {
+    v[i] = make_not_null_unique<ColumnView<Lattice>>(
+        ColumnView{.matrix = V,
+                   .first_row = 0,
+                   .last_row = V.rows() - 1,
+                   .column = 1});
+  }
+  std::sort(v.begin(), v.end(),
+            [](ColumnView<Lattice> const& left,
+               ColumnView<Lattice> const& right) {
+              return left.Norm²() < right.Norm²();
+            });
 }
 #endif
 
