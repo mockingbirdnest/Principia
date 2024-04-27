@@ -85,6 +85,7 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
   }
 }
 
+#if 1
 template<std::int64_t zeroes>
 cpp_rational SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
@@ -97,7 +98,7 @@ cpp_rational SimultaneousBadCaseSearch(
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
-      ε = std::max(ε, abs(F[i](t) - P[i](t)));
+      ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>(P[i](t))));
     }
   }
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
@@ -108,6 +109,7 @@ cpp_rational SimultaneousBadCaseSearch(
   }
 
 }
+#endif
 
 }  // namespace internal
 }  // namespace _accurate_table_generator

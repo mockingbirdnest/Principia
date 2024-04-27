@@ -16,8 +16,10 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
+#if 1
 using AccuratePolynomial2 =
-    PolynomialInMonomialBasis<cpp_bin_float_50, cpp_rational, 2>;
+    PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2>;
+#endif
 
 template<std::int64_t zeroes>
 cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
@@ -28,18 +30,23 @@ std::vector<cpp_rational> ExhaustiveMultisearch(
     std::vector<AccurateFunction> const& functions,
     std::vector<cpp_rational> const& starting_arguments);
 
+#if 1
 template<std::int64_t zeroes>
 cpp_rational SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
   std::array<AccuratePolynomial2, 2> const& polynomials,
   std::int64_t const M,
   std::int64_t const T);
+#endif
 
 }  // namespace internal
 
+using internal::AccuratePolynomial2;
 using internal::ExhaustiveMultisearch;
 using internal::ExhaustiveSearch;
+#if 1
 using internal::SimultaneousBadCaseSearch;
+#endif
 
 }  // namespace _accurate_table_generator
 }  // namespace functions

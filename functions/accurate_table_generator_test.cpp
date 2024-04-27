@@ -108,14 +108,17 @@ TEST_F(AccurateTableGeneratorTest, SinCos5Multisearch) {
 }
 
 TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
+  AccuratePolynomial2 sin_taylor2(AccuratePolynomial2::Coefficients{
+      cpp_rational(0), cpp_rational(1), cpp_rational(0)});
+  AccuratePolynomial2 cos_taylor2(AccuratePolynomial2::Coefficients{
+      cpp_rational(1), cpp_rational(0), cpp_rational(-1, 2)});
+#if 1
   auto const x = SimultaneousBadCaseSearch<5>(
       {Sin, Cos},
-      {[](cpp_rational const& x) { return static_cast<cpp_bin_float_50>(x); },
-       [](cpp_rational const& x) {
-         return static_cast<cpp_bin_float_50>(1 - x * x / 2);
-       }},
+      {sin_taylor2, cos_taylor2},
       10,
       20);
+#endif
 }
 
 #endif
