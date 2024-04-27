@@ -3,6 +3,7 @@
 #include <functional>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
@@ -33,7 +34,7 @@ std::vector<cpp_rational> ExhaustiveMultisearch(
 
 #if 1
 template<std::int64_t zeroes>
-cpp_rational SimultaneousBadCaseSearch(
+absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
   std::array<AccuratePolynomial<2>, 2> const& polynomials,
   std::int64_t const M,

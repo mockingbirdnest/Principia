@@ -98,7 +98,7 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
 
 #if 1
 template<std::int64_t zeroes>
-cpp_rational SimultaneousBadCaseSearch(
+absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
   std::array<AccuratePolynomial<2>, 2> const& polynomials,
   std::int64_t const M,
@@ -151,6 +151,16 @@ cpp_rational SimultaneousBadCaseSearch(
                ColumnView<Lattice> const& right) {
               return left.Norm²() < right.Norm²();
             });
+
+  for (std::int64_t i = 0; i < 3; ++i) {
+    auto const& v_i = *v[i];
+    for (std::int64_t j = 0; j < v_i.size(); ++j) {
+      //Norm1?
+      if (abs(v_i[j] >= C)) {
+        return absl::NotFoundError("No solution found");
+      }
+    }
+  }
 }
 #endif
 
