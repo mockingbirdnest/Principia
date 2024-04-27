@@ -151,6 +151,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   constexpr int degree() const override;
   bool is_zero() const override;
 
+  Coefficients const& coefficients() const;
   Argument const& origin() const;
 
   // Returns a copy of this polynomial adjusted to the given origin.

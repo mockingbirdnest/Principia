@@ -8,6 +8,7 @@
 #include <thread>
 #include <vector>
 
+#include "base/for_all_of.hpp"
 #include "base/thread_pool.hpp"
 #include "glog/logging.h"
 
@@ -16,6 +17,7 @@ namespace functions {
 namespace _accurate_table_generator {
 namespace internal {
 
+using namespace principia::base::_for_all_of;
 using namespace principia::base::_thread_pool;
 
 template<std::int64_t zeroes>
@@ -103,10 +105,14 @@ cpp_rational SimultaneousBadCaseSearch(
   }
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
-  std::array<AccuratePolynomial<2>, 2> P̃;
+  std::array<std::unique_ptr<AccuratePolynomial<2>>, 2> P̃;
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
-    P̃[i] = round(C * Compose(P[i], Tτ));
+    auto P̃_coefficients = Compose(C * P[i], Tτ).coefficients();
+    for_all_of(P̃_coefficients).loop([](auto const& coefficient) {
+      coefficient = round(coefficient);
+    });
+    P̃[i] = std::make_unique<AccuratePolynomial<2>>(P̃_coefficients);
   }
 
 }
