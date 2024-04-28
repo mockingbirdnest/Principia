@@ -155,9 +155,9 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
                    .column = 1});
   }
   std::sort(v.begin(), v.end(),
-            [](ColumnView<Lattice> const& left,
-               ColumnView<Lattice> const& right) {
-              return left.Norm²() < right.Norm²();
+            [](std::unique_ptr<ColumnView<Lattice const>> const& left,
+               std::unique_ptr<ColumnView<Lattice const>> const& right) {
+              return left->Norm²() < right->Norm²();
             });
 
   for (std::int64_t i = 0; i < 3; ++i) {
@@ -173,11 +173,14 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   FixedMatrix<cpp_rational, 3, 3> vφ;/////??? degQ
   for (std::int64_t i = 3; i <= 5; ++i) {
     for (std::int64_t j = 0; j < 3; ++j) {
-      vφ(i - 3, j) = (*v[j])[i];
+      auto const& v_j = *v[j];
+      vφ(i - 3, j) = v_j[i];
     }
   }
   FixedVector<cpp_rational, 3> const zero({0, 0});
   auto const q = Solve(vφ, zero);
+
+  return cpp_rational(0);
 }
 #endif
 

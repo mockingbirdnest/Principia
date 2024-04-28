@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include "boost/multiprecision/cpp_int.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
@@ -16,7 +15,6 @@ namespace quantities {
 namespace _si {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -26,8 +24,6 @@ template<typename Q>
 constexpr Q Unit = _quantities::internal::SIUnit<Q>();
 template<>
 inline constexpr double Unit<double> = 1;
-template<>
-inline constexpr double Unit<cpp_rational> = 1;
 
 // Prefixes
 template<typename D> constexpr Quantity<D> Yotta(Quantity<D>);

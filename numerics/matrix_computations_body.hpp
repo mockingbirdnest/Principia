@@ -498,7 +498,7 @@ auto UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>>::
 Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
   return Result{
       .Q = UnboundedMatrix<Scalar>(m.rows(), m.columns(), uninitialized),
-      .R = UnboundedUpperTriangularMatrix<double>(m.columns(), uninitialized)};
+      .R = UnboundedUpperTriangularMatrix<Quotient<Scalar, Scalar>>(m.columns(), uninitialized)};
 }
 
 template<typename Scalar, int rows, int columns>
@@ -507,7 +507,7 @@ auto UnitriangularGramSchmidtGenerator<
 Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
   return Result{
       .Q = FixedMatrix<Scalar, rows, columns>(uninitialized),
-      .R = FixedUpperTriangularMatrix<double, columns>(uninitialized)};
+      .R = FixedUpperTriangularMatrix<Quotient<Scalar, Scalar>, columns>(uninitialized)};
 }
 
 template<typename Scalar>

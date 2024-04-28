@@ -5,12 +5,12 @@
 #include <pmmintrin.h>
 
 #include <cmath>
-#include <type_traits>
 
 #include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -22,15 +22,21 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedMultiplyAdd(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (quantity<Q1> && quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> *
+            numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
+                                             y / si::Unit<Q2>,
+                                             z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return x * y + z;
+  }
 }
 
 template<typename Q1, typename Q2>
@@ -61,11 +67,11 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 }
 
 template<typename Q>
-FORCE_INLINE(inline) Q Abs(Q const& quantity) {
-  if constexpr (std::is_same_v<Q, cpp_rational>) {
-    return abs(quantity);
+FORCE_INLINE(inline) Q Abs(Q const& x) {
+  if constexpr (quantity<Q>) {
+    return si::Unit<Q> * std::abs(x / si::Unit<Q>);
   } else {
-    return si::Unit<Q> * std::abs(quantity / si::Unit<Q>);
+    return abs(x);
   }
 }
 
