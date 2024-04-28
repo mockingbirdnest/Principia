@@ -445,6 +445,13 @@ is_zero() const {
 }
 
 template<typename Value_, typename Argument_, int degree_>
+typename PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+Coefficients const&
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::coefficients() const {
+  return coefficients_;
+}
+
+template<typename Value_, typename Argument_, int degree_>
 Argument_ const& PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 origin() const {
   return origin_;

@@ -30,7 +30,7 @@ using namespace principia::testing_utilities::_numerics_matchers;
 
 class AccurateTableGeneratorTest : public ::testing::Test {};
 
-#if !_DEBUG
+#if 1
 
 TEST_F(AccurateTableGeneratorTest, Sin5) {
   auto const x = ExhaustiveSearch<5>({Sin}, 5.0 / 128.0);
