@@ -122,8 +122,9 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
     auto P̃_coefficients = Compose(C * P[i], Tτ).coefficients();
-    for_all_of(P̃_coefficients).loop([](auto const& coefficient) {
-      coefficient = round(coefficient);
+    for_all_of(P̃_coefficients).loop([](auto& coefficient) {
+      ///Rounding?
+      coefficient = static_cast<cpp_int>(coefficient);
     });
     P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
   }
@@ -131,6 +132,11 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
   using Lattice = FixedMatrix<cpp_rational, 5, 4>;
+
+  using T1 = principia::numerics::_matrix_computations::internal::
+      UnitriangularGramSchmidtGenerator<Lattice>;
+  using T2 = T1::Result;
+
   Lattice const L(
       {C, 0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
        0, C, std::get<1>(P̃₀_coefficients), std::get<1>(P̃₁_coefficients),
@@ -138,7 +144,7 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
        0, 0,                            3,                            0,
        0, 0,                            0,                            3});
 
-  auto const V = LenstraLenstraLovász(L);
+  Lattice const V = LenstraLenstraLovász(L);
 
   std::array<std::unique_ptr<ColumnView<Lattice>>, 5> v;
   for (std::int64_t i = 0; i < v.size(); ++i) {

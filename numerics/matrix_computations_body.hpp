@@ -318,16 +318,16 @@ struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar, int dimension>
+template<typename Scalar, int rows, int columns>
 struct UnitriangularGramSchmidtGenerator<
-    FixedMatrix<Scalar, dimension, dimension>> {
+    FixedMatrix<Scalar, rows, columns>> {
   struct Result {
-    FixedMatrix<Scalar, dimension, dimension> Q;
-    FixedUpperTriangularMatrix<double, dimension> R;
+    FixedMatrix<Scalar, rows, columns> Q;
+    FixedUpperTriangularMatrix<double, columns> R;
   };
-  using QVector = FixedVector<Scalar, dimension>;
+  using QVector = FixedVector<Scalar, rows>;
   static Result Uninitialized(
-      FixedMatrix<Scalar, dimension, dimension> const& m);
+      FixedMatrix<Scalar, rows, columns> const& m);
 };
 
 template<typename Scalar>
@@ -423,10 +423,10 @@ template<typename MScalar, typename VScalar>
 struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
   using Scalar = MScalar;
   using Result = UnboundedVector<Quotient<VScalar, MScalar>>;
-  static UnboundedLowerTriangularMatrix<double> UninitializedL(
-      UnboundedMatrix<MScalar> const& m);
-  static UnboundedUpperTriangularMatrix<MScalar> UninitializedU(
-      UnboundedMatrix<MScalar> const& m);
+  static UnboundedLowerTriangularMatrix<Quotient<MScalar, MScalar>>
+  UninitializedL(UnboundedMatrix<MScalar> const& m);
+  static UnboundedUpperTriangularMatrix<MScalar>
+  UninitializedU(UnboundedMatrix<MScalar> const& m);
 };
 
 template<typename MScalar, typename VScalar, int rows, int columns>
@@ -434,10 +434,10 @@ struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                       FixedVector<VScalar, rows>> {
   using Scalar = MScalar;
   using Result = FixedVector<Quotient<VScalar, MScalar>, columns>;
-  static FixedLowerTriangularMatrix<double, rows> UninitializedL(
-      FixedMatrix<MScalar, rows, columns> const& m);
-  static FixedUpperTriangularMatrix<MScalar, columns> UninitializedU(
-      FixedMatrix<MScalar, rows, columns> const& m);
+  static FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>
+  UninitializedL(FixedMatrix<MScalar, rows, columns> const& m);
+  static FixedUpperTriangularMatrix<MScalar, columns>
+  UninitializedU(FixedMatrix<MScalar, rows, columns> const& m);
 };
 
 template<typename Scalar>
@@ -501,13 +501,13 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
       .R = UnboundedUpperTriangularMatrix<double>(m.columns(), uninitialized)};
 }
 
-template<typename Scalar, int dimension>
+template<typename Scalar, int rows, int columns>
 auto UnitriangularGramSchmidtGenerator<
-    FixedMatrix<Scalar, dimension, dimension>>::
-Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+    FixedMatrix<Scalar, rows, columns>>::
+Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
   return Result{
-      .Q = FixedMatrix<Scalar, dimension, dimension>(uninitialized),
-      .R = FixedUpperTriangularMatrix<double, dimension>(uninitialized)};
+      .Q = FixedMatrix<Scalar, rows, columns>(uninitialized),
+      .R = FixedUpperTriangularMatrix<double, columns>(uninitialized)};
 }
 
 template<typename Scalar>
@@ -561,10 +561,11 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 }
 
 template<typename MScalar, typename VScalar>
-UnboundedLowerTriangularMatrix<double>
+UnboundedLowerTriangularMatrix<Quotient<MScalar, MScalar>>
 SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>>::
 UninitializedL(UnboundedMatrix<MScalar> const& m) {
-  return UnboundedLowerTriangularMatrix<double>(m.rows(), uninitialized);
+  return UnboundedLowerTriangularMatrix<Quotient<MScalar, MScalar>>(
+      m.rows(), uninitialized);
 }
 
 template<typename MScalar, typename VScalar>
@@ -575,11 +576,12 @@ UninitializedU(UnboundedMatrix<MScalar> const& m) {
 }
 
 template<typename MScalar, typename VScalar, int rows, int columns>
-FixedLowerTriangularMatrix<double, rows>
+FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>
 SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                FixedVector<VScalar, rows>>::
 UninitializedL(FixedMatrix<MScalar, rows, columns> const& m) {
-  return FixedLowerTriangularMatrix<double, rows>(uninitialized);
+  return FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>(
+      uninitialized);
 }
 
 template<typename MScalar, typename VScalar, int rows, int columns>

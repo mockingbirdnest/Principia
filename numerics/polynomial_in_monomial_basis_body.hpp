@@ -508,17 +508,19 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::WithEvaluator() && {
 template<typename Value_, typename Argument_, int degree_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
-  message->set_degree(degree_);
-  auto* const extension =
-      message->MutableExtension(
-          serialization::PolynomialInMonomialBasis::extension);
-  TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
-  DoubleOrQuantityOrPointOrMultivectorSerializer<
-      Argument,
-      serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
-                                                                extension);
-  Evaluator<Value, Difference<Argument>, degree_>::WriteToMessage(
-      extension->mutable_evaluator(), evaluator_);
+  // No serialization for Boost types.
+  if constexpr (quantity<Value>) {
+    message->set_degree(degree_);
+    auto* const extension = message->MutableExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
+    DoubleOrQuantityOrPointOrMultivectorSerializer<
+        Argument,
+        serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
+                                                                  extension);
+    Evaluator<Value, Difference<Argument>, degree_>::WriteToMessage(
+        extension->mutable_evaluator(), evaluator_);
+  }
 }
 
 template<typename Value_, typename Argument_, int degree_>
