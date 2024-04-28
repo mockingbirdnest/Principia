@@ -119,10 +119,12 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
                                           cpp_rational(-Sin(x₀)),
                                           -0.5 * cpp_rational(Cos(x₀))},
       x₀);
-#if 1
-  auto const x = SimultaneousBadCaseSearch<5>(
-      {Sin, Cos}, {sin_taylor2, cos_taylor2}, x₀, 1 << 12, 1 << 20, 1 << 10);
-#endif
+  auto const x = SimultaneousBadCaseSearch<5>({Sin, Cos},
+                                              {sin_taylor2, cos_taylor2},
+                                              x₀,
+                                              /*M=*/1 << 10,
+                                              /*N=*/1 << 20,
+                                              /*T=*/1 << 10);
 }
 
 #endif

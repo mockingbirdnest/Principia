@@ -98,7 +98,6 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
   }
 }
 
-#if 1
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
@@ -129,10 +128,9 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
       ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
     }
   }
-LOG(ERROR)<<ε;
+LOG(ERROR)<<"ε: "<<ε;
 
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
-LOG(ERROR)<<Mʹ;
   auto const C = 3 * Mʹ;
 LOG(ERROR)<<"C:"<<C;
   std::array<std::optional<AccuratePolynomial<2>>, 2> P̃;
@@ -144,9 +142,7 @@ LOG(ERROR)<<"CPT: "<<Compose(C * *P[i], Tτ);
     auto P̃_coefficients = Compose(C * *P[i], Tτ).coefficients();
     for_all_of(P̃_coefficients).loop([](auto& coefficient) {
       ///Rounding?
-LOG(ERROR)<<static_cast<double>(coefficient);
       coefficient = static_cast<cpp_int>(coefficient);
-LOG(ERROR)<<static_cast<double>(coefficient);
     });
     P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
 LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
@@ -155,10 +151,6 @@ LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
   using Lattice = FixedMatrix<cpp_rational, 5, 4>;
-
-  using T1 = principia::numerics::_matrix_computations::internal::
-      UnitriangularGramSchmidtGenerator<Lattice>;
-  using T2 = T1::Result;
 
   Lattice const L(
       {C, 0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
@@ -192,7 +184,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     for (std::int64_t j = 0; j < v_i.size(); ++j) {
       //Norm1?
       if (abs(v_i[j] >= C)) {
-        return absl::NotFoundError("No solution found");
+        return absl::NotFoundError("Vectors too big");
       }
     }
   }
@@ -203,12 +195,36 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     auto const& v_i2 = *v[(i + 2) % dimension];
     Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
   }
-  LOG(ERROR)<<Q_multipliers[0]<<" "<<Q_multipliers[1]<<" "<<Q_multipliers[2];
 
+  FixedVector<cpp_rational, 2> Q_coefficients{};
+  for (std::int64_t i = 0; i < dimension; ++i) {
+    auto const& v_i = *v[i];
+    for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
+      Q_coefficients[j] += Q_multipliers[i] * v_i[j];
+    }
+  }
+  AccuratePolynomial<1> const Q({C * Q_coefficients[0], C * Q_coefficients[1]});
+  LOG(ERROR)<<"Q: "<<Q;
+  AccuratePolynomial<1> const q =
+      Compose(Q, AccuratePolynomial<1>({0, 1.0 / T}));
+  LOG(ERROR)<<"q: "<<q;
 
-  return cpp_rational(0);
+  auto const t₀ =
+      -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
+LOG(ERROR)<<"t₀: "<<t₀;
+  if (abs(t₀) > T) {
+    return absl::NotFoundError("Out of bounds");
+  }
+
+  for (auto const& Fi : F) {
+    if (fmod(static_cast<cpp_bin_float_50>(Fi(t₀)), 1) >=
+        1 / cpp_bin_float_50(M)) {
+      return absl::NotFoundError("Not enough zeroes");
+    }
+  }
+
+  return t₀ / N + near_argument;
 }
-#endif
 
 }  // namespace internal
 }  // namespace _accurate_table_generator
