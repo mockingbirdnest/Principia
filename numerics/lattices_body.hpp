@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
@@ -15,6 +16,7 @@ namespace numerics {
 namespace _lattices {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
@@ -58,7 +60,8 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
                            .first_row = 0,
                            .last_row = m - 1,
                            .column = j};
-      auto const round_μₖⱼ = std::round(μₖⱼ);
+      auto const round_μₖⱼ =
+          static_cast<cpp_rational>(round(static_cast<cpp_bin_float_50>(μₖⱼ)));
       if (round_μₖⱼ != 0) {
         vₖ -= round_μₖⱼ * typename G::Vector(vⱼ);
         qr = UnitriangularGramSchmidt(v);

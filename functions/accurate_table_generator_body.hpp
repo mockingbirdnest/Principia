@@ -146,9 +146,9 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
 
   Lattice const V = LenstraLenstraLovász(L);
 
-  std::array<std::unique_ptr<ColumnView<Lattice>>, 5> v;
+  std::array<std::unique_ptr<ColumnView<Lattice const>>, 5> v;
   for (std::int64_t i = 0; i < v.size(); ++i) {
-    v[i] = make_not_null_unique<ColumnView<Lattice>>(
+    v[i] = std::make_unique<ColumnView<Lattice const>>(
         ColumnView{.matrix = V,
                    .first_row = 0,
                    .last_row = V.rows() - 1,
@@ -170,13 +170,13 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
     }
   }
 
-  FixedMatrix<cpp_rational, 2, 3> vφ;
-  for (std::int64_t i = 4; i <= 5; ++i) {
+  FixedMatrix<cpp_rational, 3, 3> vφ;/////??? degQ
+  for (std::int64_t i = 3; i <= 5; ++i) {
     for (std::int64_t j = 0; j < 3; ++j) {
-      vφ(i - 4, j) = (*v[j])[i];
+      vφ(i - 3, j) = (*v[j])[i];
     }
   }
-  FixedVector<cpp_rational, 2> const zero({0, 0});
+  FixedVector<cpp_rational, 3> const zero({0, 0});
   auto const q = Solve(vφ, zero);
 }
 #endif

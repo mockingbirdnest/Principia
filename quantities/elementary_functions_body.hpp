@@ -7,6 +7,7 @@
 #include <cmath>
 #include <type_traits>
 
+#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
@@ -17,6 +18,7 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
@@ -60,7 +62,11 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 
 template<typename Q>
 FORCE_INLINE(inline) Q Abs(Q const& quantity) {
-  return si::Unit<Q> * std::abs(quantity / si::Unit<Q>);
+  if constexpr (std::is_same_v<Q, cpp_rational>) {
+    return abs(quantity);
+  } else {
+    return si::Unit<Q> * std::abs(quantity / si::Unit<Q>);
+  }
 }
 
 template<typename Q>
@@ -118,6 +124,11 @@ constexpr double Pow(double x) {
   }
 }
 
+template<int exponent>
+constexpr double Pow(cpp_rational const& x) {
+  return Pow<exponent>(static_cast<double>(x));///???
+}
+
 // Static specializations for frequently-used exponents, so that this gets
 // turned into multiplications at compile time.
 
@@ -143,7 +154,13 @@ inline constexpr double Pow<3>(double x) {
 
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  return si::Unit<Exponentiation<Q, exponent>> * Pow<exponent>(x / si::Unit<Q>);
+  if constexpr (std::is_same_v<Q, cpp_rational>) {
+    return cpp_rational(pow(numerator(x), exponent),
+                        pow(denominator(x), exponent));
+  } else {
+    return si::Unit<Exponentiation<Q, exponent>> *
+           Pow<exponent>(x / si::Unit<Q>);
+  }
 }
 
 inline double Sin(Angle const& α) {

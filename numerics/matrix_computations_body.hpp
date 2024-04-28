@@ -312,7 +312,7 @@ template<typename Scalar>
 struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> Q;
-    UnboundedUpperTriangularMatrix<double> R;
+    UnboundedUpperTriangularMatrix<Quotient<Scalar, Scalar>> R;
   };
   using QVector = UnboundedVector<Scalar>;
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
@@ -323,7 +323,7 @@ struct UnitriangularGramSchmidtGenerator<
     FixedMatrix<Scalar, rows, columns>> {
   struct Result {
     FixedMatrix<Scalar, rows, columns> Q;
-    FixedUpperTriangularMatrix<double, columns> R;
+    FixedUpperTriangularMatrix<Quotient<Scalar, Scalar>, columns> R;
   };
   using QVector = FixedVector<Scalar, rows>;
   static Result Uninitialized(
