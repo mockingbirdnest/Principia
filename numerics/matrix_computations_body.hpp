@@ -728,7 +728,8 @@ UnitriangularGramSchmidt(Matrix const& A) {
   auto result = G::Uninitialized(A);
   auto& Q = result.Q;
   auto& R = result.R;
-  int const n = A.rows();
+  int const m = A.rows();
+  int const n = A.columns();
 
   // The algorithm is derived from [HPS14], Theorem 7.13, but we keep the code
   // similar to the one for classical Gram-Schmidt, i.e., adopt the conventions
@@ -740,24 +741,24 @@ UnitriangularGramSchmidt(Matrix const& A) {
   for (int j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
-                                             .last_row = n - 1,
+                                             .last_row = m - 1,
                                              .column = j};
     for (int i = 0; i < j; ++i) {
       auto const qᵢ = ColumnView{.matrix = Q,
                                  .first_row = 0,
-                                 .last_row = n - 1,
+                                 .last_row = m - 1,
                                  .column = i};
       R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ / qᵢ.Norm²();  // NOLINT
     }
     auto qⱼ = ColumnView{.matrix = Q,  // NOLINT
                          .first_row = 0,
-                         .last_row = n - 1,
+                         .last_row = m - 1,
                          .column = j};
     qⱼ = aⱼ;
     for (int k = 0; k < j; ++k) {
       qⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
                                                      .first_row = 0,
-                                                     .last_row = n - 1,
+                                                     .last_row = m - 1,
                                                      .column = k});
     }
     R(j, j) = 1;
@@ -1027,6 +1028,7 @@ Solve(Matrix A, Vector b) {
       }
       U(k, j) = U_kj;
     }
+LOG(ERROR)<<"U: "<<U;
     for (int i = k + 1; i < A.rows(); ++i) {
       auto L_ik = A(i, k);
       for (int j = 0; j < k; ++j) {

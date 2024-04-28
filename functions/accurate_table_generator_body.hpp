@@ -114,25 +114,18 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   for (std::int64_t i = 0; i < functions.size(); ++i) {
     F[i] = [&functions, i, N, &near_argument](cpp_rational const& t) {
       // Here |t| <= |T|.
-      return functions[i](near_argument + t / N);
+      return N * functions[i](near_argument + t / N);
     };
   }
   for (std::int64_t i = 0; i < polynomials.size(); ++i) {
-LOG(ERROR)<<polynomials[i];
-    P[i] =
-        Compose(polynomials[i], AccuratePolynomial<1>({near_argument, 1.0 / N}));
-LOG(ERROR)<<*P[i];
-LOG(ERROR)<<static_cast<double>(polynomials[i](near_argument));
-LOG(ERROR)<<static_cast<double>((*P[i])(0));
-auto q = AccuratePolynomial<1>({near_argument, 1.0 / N});
-LOG(ERROR)<<static_cast<double>(q(0))<<" "<<static_cast<double>(near_argument);
+    P[i] = N * Compose(polynomials[i],
+                       AccuratePolynomial<1>({near_argument, 1.0 / N}));
   }
 
   cpp_rational const T_increment = cpp_rational(T, 100);
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
-      LOG(ERROR)<<t<<" "<<F[i](t)<<" "<<static_cast<double>((*P[i])(t));
       ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
     }
   }
@@ -141,17 +134,22 @@ LOG(ERROR)<<ε;
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
 LOG(ERROR)<<Mʹ;
   auto const C = 3 * Mʹ;
-LOG(ERROR)<<C;
+LOG(ERROR)<<"C:"<<C;
   std::array<std::optional<AccuratePolynomial<2>>, 2> P̃;
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
+LOG(ERROR)<<"P: "<<*P[i];
+LOG(ERROR)<<"CP: "<<C * *P[i];
+LOG(ERROR)<<"CPT: "<<Compose(C * *P[i], Tτ);
     auto P̃_coefficients = Compose(C * *P[i], Tτ).coefficients();
     for_all_of(P̃_coefficients).loop([](auto& coefficient) {
       ///Rounding?
+LOG(ERROR)<<static_cast<double>(coefficient);
       coefficient = static_cast<cpp_int>(coefficient);
+LOG(ERROR)<<static_cast<double>(coefficient);
     });
     P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
-LOG(ERROR)<<*P̃[i];
+LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
   }
 
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
@@ -168,17 +166,18 @@ LOG(ERROR)<<*P̃[i];
        0, 0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
        0, 0,                            3,                            0,
        0, 0,                            0,                            3});
-LOG(ERROR)<<L;
+LOG(ERROR)<<"L:"<<L;
 
   Lattice const V = LenstraLenstraLovász(L);
+LOG(ERROR)<<"V:"<<V;
 
-  std::array<std::unique_ptr<ColumnView<Lattice const>>, 5> v;
+  std::array<std::unique_ptr<ColumnView<Lattice const>>, V.columns()> v;
   for (std::int64_t i = 0; i < v.size(); ++i) {
     v[i] = std::make_unique<ColumnView<Lattice const>>(
         ColumnView{.matrix = V,
                    .first_row = 0,
                    .last_row = V.rows() - 1,
-                   .column = 1});
+                   .column = static_cast<int>(i)});///??
   }
   std::sort(v.begin(), v.end(),
             [](std::unique_ptr<ColumnView<Lattice const>> const& left,
@@ -186,8 +185,10 @@ LOG(ERROR)<<L;
               return left->Norm²() < right->Norm²();
             });
 
-  for (std::int64_t i = 0; i < 3; ++i) {
+  static constexpr std::int64_t dimension = 3;
+  for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
+LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     for (std::int64_t j = 0; j < v_i.size(); ++j) {
       //Norm1?
       if (abs(v_i[j] >= C)) {
@@ -196,15 +197,14 @@ LOG(ERROR)<<L;
     }
   }
 
-  FixedMatrix<cpp_rational, 3, 3> vφ;/////??? degQ
-  for (std::int64_t i = 3; i <= 5; ++i) {
-    for (std::int64_t j = 0; j < 3; ++j) {
-      auto const& v_j = *v[j];
-      vφ(i - 3, j) = v_j[i];
-    }
+  std::array<cpp_rational, dimension> Q_multipliers;
+  for (std::int64_t i = 0; i < dimension; ++i) {
+    auto const& v_i1 = *v[(i + 1) % dimension];
+    auto const& v_i2 = *v[(i + 2) % dimension];
+    Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
   }
-  FixedVector<cpp_rational, 3> const zero({0, 0});
-  auto const q = Solve(vφ, zero);
+  LOG(ERROR)<<Q_multipliers[0]<<" "<<Q_multipliers[1]<<" "<<Q_multipliers[2];
+
 
   return cpp_rational(0);
 }
