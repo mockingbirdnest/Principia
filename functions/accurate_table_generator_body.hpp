@@ -142,7 +142,8 @@ LOG(ERROR)<<"CPT: "<<Compose(C * *P[i], Tτ);
     auto P̃_coefficients = Compose(C * *P[i], Tτ).coefficients();
     for_all_of(P̃_coefficients).loop([](auto& coefficient) {
       ///Rounding?
-      coefficient = static_cast<cpp_int>(coefficient);
+      coefficient = static_cast<cpp_rational>(
+          round(static_cast<cpp_bin_float_50>(coefficient)));
     });
     P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
 LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
@@ -194,6 +195,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     auto const& v_i1 = *v[(i + 1) % dimension];
     auto const& v_i2 = *v[(i + 2) % dimension];
     Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
+LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
   }
 
   FixedVector<cpp_rational, 2> Q_coefficients{};
@@ -203,7 +205,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
       Q_coefficients[j] += Q_multipliers[i] * v_i[j];
     }
   }
-  AccuratePolynomial<1> const Q({C * Q_coefficients[0], C * Q_coefficients[1]});
+  AccuratePolynomial<1> const Q({Q_coefficients[0], Q_coefficients[1]});
   LOG(ERROR)<<"Q: "<<Q;
   AccuratePolynomial<1> const q =
       Compose(Q, AccuratePolynomial<1>({0, 1.0 / T}));

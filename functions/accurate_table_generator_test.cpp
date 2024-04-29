@@ -122,9 +122,10 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
   auto const x = SimultaneousBadCaseSearch<5>({Sin, Cos},
                                               {sin_taylor2, cos_taylor2},
                                               x₀,
-                                              /*M=*/1 << 10,
-                                              /*N=*/1 << 20,
-                                              /*T=*/1 << 10);
+                                              /*M=*/1ll << 10,
+                                              /*N=*/1ll << 30,
+                                              /*T=*/1ll << 15);
+  LOG(ERROR)<<x.status();
 }
 
 #endif
