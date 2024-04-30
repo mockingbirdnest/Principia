@@ -210,6 +210,9 @@ LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
   AccuratePolynomial<1> const q =
       Compose(Q, AccuratePolynomial<1>({0, 1.0 / T}));
   LOG(ERROR)<<"q: "<<q;
+  if (std::get<1>(q.coefficients()) == 0) {
+      return absl::NotFoundError("No integer zeroes");
+  }
 
   auto const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
@@ -221,6 +224,7 @@ LOG(ERROR)<<"t₀: "<<t₀;
   for (auto const& Fi : F) {
     if (fmod(static_cast<cpp_bin_float_50>(Fi(t₀)), 1) >=
         1 / cpp_bin_float_50(M)) {
+      LOG(ERROR)<<fmod(static_cast<cpp_bin_float_50>(Fi(t₀)), 1);
       return absl::NotFoundError("Not enough zeroes");
     }
   }
