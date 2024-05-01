@@ -130,7 +130,7 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
       u₀,
       /*M=*/1ll << 5,
       /*N=*/1ll << 53,
-      /*T=*/1ll << 5);
+      /*T=*/1ll << 24);
   LOG(ERROR)<<x.status();
 }
 

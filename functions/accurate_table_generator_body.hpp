@@ -171,9 +171,19 @@ LOG(ERROR)<<"V:"<<V;
                    .last_row = V.rows() - 1,
                    .column = static_cast<int>(i)});///??
   }
-  std::sort(v.begin(), v.end(),
-            [](std::unique_ptr<ColumnView<Lattice const>> const& left,
-               std::unique_ptr<ColumnView<Lattice const>> const& right) {
+
+  auto norm1 = [](ColumnView<Lattice const> const& v) {
+    cpp_rational norm1 = 0;
+    for (std::int64_t i = 0; i < v.size(); ++i) {
+      norm1 += abs(v[i]);
+    }
+    return norm1;
+  };
+
+  std::sort(v.begin(),
+            v.end(),
+            [&norm1](std::unique_ptr<ColumnView<Lattice const>> const& left,
+                     std::unique_ptr<ColumnView<Lattice const>> const& right) {
               return left->Norm²() < right->Norm²();
             });
 
@@ -181,11 +191,8 @@ LOG(ERROR)<<"V:"<<V;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
 LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
-    for (std::int64_t j = 0; j < v_i.size(); ++j) {
-      //Norm1?
-      if (abs(v_i[j] >= C)) {
-        return absl::NotFoundError("Vectors too big");
-      }
+    if (norm1(v_i) >= C) {
+      return absl::NotFoundError("Vectors too big");
     }
   }
 
