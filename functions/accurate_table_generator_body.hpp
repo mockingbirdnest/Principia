@@ -137,13 +137,12 @@ LOG(ERROR)<<"C:"<<C;
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
   for (std::int64_t i = 0; i < 2; ++i) {
 LOG(ERROR)<<"P: "<<*P[i];
-LOG(ERROR)<<"CP: "<<C * *P[i];
-LOG(ERROR)<<"CPT: "<<Compose(C * *P[i], Tτ);
     auto P̃_coefficients = Compose(C * *P[i], Tτ).coefficients();
     for_all_of(P̃_coefficients).loop([](auto& coefficient) {
-      ///Rounding?
+      auto c = static_cast<cpp_bin_float_50>(coefficient);
       coefficient = static_cast<cpp_rational>(
           round(static_cast<cpp_bin_float_50>(coefficient)));
+      LOG(ERROR)<<std::setprecision(50)<<c<<"->"<<static_cast<cpp_bin_float_50>(coefficient);
     });
     P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
 LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
@@ -154,11 +153,11 @@ LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
   using Lattice = FixedMatrix<cpp_rational, 5, 4>;
 
   Lattice const L(
-      {C, 0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
-       0, C, std::get<1>(P̃₀_coefficients), std::get<1>(P̃₁_coefficients),
-       0, 0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
-       0, 0,                            3,                            0,
-       0, 0,                            0,                            3});
+      {C,     0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
+       0, C * T, std::get<1>(P̃₀_coefficients), std::get<1>(P̃₁_coefficients),
+       0,     0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
+       0,     0,                            3,                            0,
+       0,     0,                            0,                            3});
 LOG(ERROR)<<"L:"<<L;
 
   Lattice const V = LenstraLenstraLovász(L);

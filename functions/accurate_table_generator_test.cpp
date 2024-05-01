@@ -110,23 +110,27 @@ LOG(ERROR)<<i + index_begin<<" "<<x;
 
 TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
   double const x₀ = 17.0 / 128.0;
+  double const u₀ = 4 * x₀;
+  CHECK(0.5 <= u₀ & u₀ < 1.0);
+  auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
+  auto const cos = [](cpp_rational const& u) { return Cos(u / 4); };
   AccuratePolynomial<2> sin_taylor2(
-      AccuratePolynomial<2>::Coefficients{cpp_rational(4 * Sin(x₀)),
-                                          cpp_rational(4 * Cos(x₀)),
-                                          -0.5 * cpp_rational(4 * Sin(x₀))},
-      x₀);
+      AccuratePolynomial<2>::Coefficients{4 * cpp_rational(Sin(u₀ / 4)),
+                                          cpp_rational(Cos(u₀ / 4)),
+                                          -cpp_rational(Sin(u₀ / 4)) / 8},
+      u₀);
   AccuratePolynomial<2> cos_taylor2(
-      AccuratePolynomial<2>::Coefficients{cpp_rational(Cos(x₀)),
-                                          -cpp_rational(Sin(x₀)),
-                                          -0.5 * cpp_rational(Cos(x₀))},
-      x₀);
+      AccuratePolynomial<2>::Coefficients{cpp_rational(Cos(u₀ / 4)),
+                                          -cpp_rational(Sin(u₀ / 4) / 4),
+                                          -cpp_rational(Cos(u₀ / 4) / 32)},
+      u₀);
   auto const x = SimultaneousBadCaseSearch<5>(
-      {[](cpp_rational const& x) { return 4 * Sin(x); }, Cos},
+      {sin, cos},
       {sin_taylor2, cos_taylor2},
-      x₀,
+      u₀,
       /*M=*/1ll << 5,
       /*N=*/1ll << 53,
-      /*T=*/1ll << 10);
+      /*T=*/1ll << 5);
   LOG(ERROR)<<x.status();
 }
 

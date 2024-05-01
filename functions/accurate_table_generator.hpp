@@ -45,9 +45,7 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
 using internal::AccuratePolynomial;
 using internal::ExhaustiveMultisearch;
 using internal::ExhaustiveSearch;
-#if 1
 using internal::SimultaneousBadCaseSearch;
-#endif
 
 }  // namespace _accurate_table_generator
 }  // namespace functions
