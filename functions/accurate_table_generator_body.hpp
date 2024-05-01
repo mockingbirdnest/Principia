@@ -228,11 +228,11 @@ LOG(ERROR)<<"t₀: "<<t₀;
   }
 
   for (auto const& Fi : F) {
-    if (fmod(static_cast<cpp_bin_float_50>(Fi(t₀)), 1) >=
-        1 / cpp_bin_float_50(M)) {
-      LOG(ERROR)<<fmod(static_cast<cpp_bin_float_50>(Fi(t₀)), 1);
-      return absl::NotFoundError("Not enough zeroes");
-    }
+    auto const Fi_t₀ = static_cast<cpp_bin_float_50>(Fi(t₀));
+    if (abs(Fi_t₀ - round(Fi_t₀)) >= 1 / cpp_bin_float_50(M)) {
+        LOG(ERROR) << Fi_t₀ - round(Fi_t₀);
+        return absl::NotFoundError("Not enough zeroes");
+      }
   }
 
   return t₀ / N + near_argument;
