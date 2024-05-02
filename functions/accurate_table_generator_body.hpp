@@ -216,6 +216,10 @@ LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
 LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
   }
 
+  if (Q_coefficients[1] == 0) {
+      return absl::NotFoundError("No integer zeroes");
+  }
+
   auto const Q_coefficients_gcd =
       gcd(static_cast<cpp_int>(Q_coefficients[0]),
           static_cast<cpp_int>(Q_coefficients[1]));
@@ -226,9 +230,6 @@ LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
   AccuratePolynomial<1> const q =
       Compose(Q, AccuratePolynomial<1>({0, 1.0 / T}));
   LOG(ERROR)<<"q: "<<q;
-  if (std::get<1>(q.coefficients()) == 0) {
-      return absl::NotFoundError("No integer zeroes");
-  }
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
