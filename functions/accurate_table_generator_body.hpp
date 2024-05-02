@@ -132,6 +132,9 @@ LOG(ERROR)<<"ε: "<<ε;
 
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
+  if (C == 0) {
+    return absl::NotFoundError("Error too large");
+  }
 LOG(ERROR)<<"C:"<<C;
   std::array<std::optional<AccuratePolynomial<2>>, 2> P̃;
   AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
@@ -210,8 +213,15 @@ LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
     for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
       Q_coefficients[j] += Q_multipliers[i] * v_i[j];
     }
+LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
   }
-  AccuratePolynomial<1> const Q({Q_coefficients[0], Q_coefficients[1]});
+
+  auto const Q_coefficients_gcd =
+      gcd(static_cast<cpp_int>(Q_coefficients[0]),
+          static_cast<cpp_int>(Q_coefficients[1]));
+
+  AccuratePolynomial<1> const Q({Q_coefficients[0] / Q_coefficients_gcd,
+                                 Q_coefficients[1] / Q_coefficients_gcd});
   LOG(ERROR)<<"Q: "<<Q;
   AccuratePolynomial<1> const q =
       Compose(Q, AccuratePolynomial<1>({0, 1.0 / T}));
@@ -220,11 +230,13 @@ LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
       return absl::NotFoundError("No integer zeroes");
   }
 
-  auto const t₀ =
+  cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
 LOG(ERROR)<<"t₀: "<<t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
+  } else if (denominator(t₀) != 1) {
+    return absl::NotFoundError("Noninteger root");
   }
 
   for (auto const& Fi : F) {
