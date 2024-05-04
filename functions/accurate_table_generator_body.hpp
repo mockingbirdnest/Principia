@@ -33,6 +33,8 @@ using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 
+constexpr std::int64_t ε_computation_points = 16;
+
 template<int rows, int columns>
 FixedMatrix<cpp_int, rows, columns> ToInt(
     FixedMatrix<cpp_rational, rows, columns> const& m) {
@@ -135,9 +137,11 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::int64_t const N,
   std::int64_t const T) {
 
+  // Preliminary: shift and rescale the functions and the polynomial:
+  //   Fᵢ = N fᵢ(t / N)
+  //   Pᵢ = N pᵢ(t / N)
   std::array<AccurateFunction, 2> F;
   std::array<std::optional<AccuratePolynomial<cpp_rational, 2>>, 2> P;
-
   for (std::int64_t i = 0; i < functions.size(); ++i) {
     F[i] = [&functions, i, N, &near_argument](cpp_rational const& t) {
       // Here |t| <= |T|.
@@ -150,25 +154,31 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
     P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
 
-  cpp_rational const T_increment = cpp_rational(T, 100);///???
+  // Step 2: compute ε.  We don't care too much about its accuracy because in
+  // general the largest error is on the boundary of the domain, and anyway ε
+  // has virtually no incidence on the value of Mʹ.
+  cpp_rational const T_increment = cpp_rational(T, ε_computation_points);
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
       ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
     }
   }
-LOG(ERROR)<<"ε: "<<ε;
+  VLOG(1) << "ε = " << ε;
 
+  // Step 3, first part: compute Mʹ and C.  Give up is C is 0, which may happen
+  // if ε is too large.
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
   if (C == 0) {
     return absl::FailedPreconditionError("Error too large");
   }
-LOG(ERROR)<<"C:"<<C;
+  VLOG(1) << "C = " << C;
+
+  // Step 3, second part: compute P̃
   std::array<std::optional<AccuratePolynomial<cpp_int, 2>>, 2> P̃;
   AccuratePolynomial<cpp_rational, 1> const Tτ({0, T});
-  for (std::int64_t i = 0; i < 2; ++i) {
-LOG(ERROR)<<"P: "<<*P[i];
+  for (std::int64_t i = 0; i < P.size(); ++i) {
     auto const composition_coefficients = Compose(C * *P[i], Tτ).coefficients();
     AccuratePolynomial<cpp_int, 2>::Coefficients P̃_coefficients;
     for_all_of(composition_coefficients, P̃_coefficients)
@@ -177,9 +187,11 @@ LOG(ERROR)<<"P: "<<*P[i];
               round(static_cast<cpp_bin_float_50>(composition_coefficient)));
         });
     P̃[i] = AccuratePolynomial<cpp_int, 2>(P̃_coefficients);
-    LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
+    VLOG(1) << "P̃[" << i << "] = " << *P̃[i];
   }
 
+  // Step 5 and 6: form the lattice.  Note that our vectors are in columns, not
+  // in rows as in the paper.
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
 
@@ -191,23 +203,27 @@ LOG(ERROR)<<"P: "<<*P[i];
        0,     0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
        0,     0,                            3,                            0,
        0,     0,                            0,                            3});
-LOG(ERROR)<<"L:"<<L;
+  VLOG(1) << "L = " << L;
 
+  // Step 7: reduce the lattice.
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
   Lattice const V = ToInt(LenstraLenstraLovász(ToRational(L)));
-LOG(ERROR)<<"V:"<<V;
+  VLOG(1) << "V = " << V;
 
+  // Step 8: find the three shortest vectors of the reduced lattice.  We sort
+  // the columns according to the L₂ norm.
   std::array<std::unique_ptr<ColumnView<Lattice const>>, V.columns()> v;
   for (std::int64_t i = 0; i < v.size(); ++i) {
+    // TODO(phl): Switch the matrices to use std::int64_t instead of int, and
+    // the cast below will go away.
     v[i] = std::make_unique<ColumnView<Lattice const>>(
         ColumnView<Lattice const>{.matrix = V,
                                   .first_row = 0,
                                   .last_row = V.rows() - 1,
-                                  .column = static_cast<int>(i)});  ///??
+                                  .column = static_cast<int>(i)});
   }
-
   std::sort(v.begin(),
             v.end(),
             [](std::unique_ptr<ColumnView<Lattice const>> const& left,
@@ -215,6 +231,7 @@ LOG(ERROR)<<"V:"<<V;
               return left->Norm²() < right->Norm²();
             });
 
+  // Step 9: check that the shortest vectors are short enough.
   auto norm1 = [](ColumnView<Lattice const> const& v) {
     cpp_int norm1 = 0;
     for (std::int64_t i = 0; i < v.size(); ++i) {
@@ -227,18 +244,19 @@ LOG(ERROR)<<"V:"<<V;
   FixedMatrix<cpp_rational, 5, dimension> w;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
-LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
+    VLOG(1) << "v[" << i << "] = " << v_i;
     if (norm1(v_i) >= C) {
       return absl::OutOfRangeError("Vectors too big");
     }
   }
 
+  // Step 10: compute Q by eliminating the last two variables.  Give up if the
+  // degree 1 coefficient is 0, there is no solution.
   std::array<cpp_int, dimension> Q_multipliers;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i1 = *v[(i + 1) % dimension];
     auto const& v_i2 = *v[(i + 2) % dimension];
     Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
-    LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
   }
 
   FixedVector<cpp_int, 2> Q_coefficients{};
@@ -247,7 +265,6 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
       Q_coefficients[j] += Q_multipliers[i] * v_i[j];
     }
-LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
   }
 
   if (Q_coefficients[1] == 0) {
@@ -256,14 +273,15 @@ LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
 
   AccuratePolynomial<cpp_rational, 1> const Q({Q_coefficients[0],
                                                Q_coefficients[1]});
-  LOG(ERROR)<<"Q: "<<Q;
+  VLOG(1) << "Q = " << Q;
+
+  // Step 11: compute q and find its integer root (singular), if any.
   AccuratePolynomial<cpp_rational, 1> const q =
       Compose(Q, AccuratePolynomial<cpp_rational, 1>({0, cpp_rational(1, T)}));
-  LOG(ERROR)<<"q: "<<q;
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
-LOG(ERROR)<<"t₀: "<<t₀;
+  VLOG(1) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
   } else if (denominator(t₀) != 1) {
@@ -273,9 +291,9 @@ LOG(ERROR)<<"t₀: "<<t₀;
   for (auto const& Fi : F) {
     auto const Fi_t₀ = Fi(t₀);
     if (M * abs(Fi_t₀ - round(Fi_t₀)) >= 1) {
-        LOG(ERROR) << Fi_t₀ - round(Fi_t₀);
-        return absl::NotFoundError("Not enough zeroes");
-      }
+      LOG(ERROR) << Fi_t₀ - round(Fi_t₀);
+      return absl::NotFoundError("Not enough zeroes");
+    }
   }
 
   return t₀ / N + near_argument;

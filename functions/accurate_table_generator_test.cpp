@@ -13,6 +13,7 @@
 #include "mathematica/mathematica.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
@@ -26,6 +27,7 @@ using namespace principia::functions::_multiprecision;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 class AccurateTableGeneratorTest : public ::testing::Test {};
@@ -125,27 +127,34 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
        -cpp_rational(Sin(u₀ / 4) / 4),
        -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
-#if 1
-  auto const x = SimultaneousBadCaseSearch<5>(
+
+  auto const u = SimultaneousBadCaseSearch<5>(
       {sin, cos},
       {sin_taylor2, cos_taylor2},
       u₀,
       /*M=*/1ll << 15,
       /*N=*/1ll << 53,
       /*T=*/1ll << 21);
-  LOG(ERROR)<<x.status();
-#else
-  for (int k = 40; k >= 10; --k) {
-    auto const x = SimultaneousBadCaseSearch<5>(
-        {sin, cos},
-        {sin_taylor2, cos_taylor2},
-        u₀,
-        /*M=*/1ll << 15,
-        /*N=*/1ll << 53,
-        /*T=*/1ll << k);
-    LOG(ERROR)<<"k: "<<k<<" "<<x.status();
+  EXPECT_THAT(u,
+              IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
+  EXPECT_THAT(static_cast<double>(*u),
+              RelativeErrorFrom(u₀, Lt(1.3e-10)));
+  {
+    std::string const mathematica = ToMathematica(sin(*u),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
   }
-#endif
+  {
+    std::string const mathematica = ToMathematica(cos(*u),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+  }
 }
 
 #endif
