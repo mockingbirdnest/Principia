@@ -134,10 +134,6 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
       /*N=*/1ll << 53,
       /*T=*/1ll << 21);
   LOG(ERROR)<<x.status();
-
-//using T = principia::quantities::_named_quantities::Quotient<cpp_int, cpp_int>;
-//static_assert(std::is_same_v<T, cpp_rational>);
-
 #else
   for (int k = 40; k >= 10; --k) {
     auto const x = SimultaneousBadCaseSearch<5>(

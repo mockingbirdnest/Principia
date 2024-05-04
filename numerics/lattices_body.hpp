@@ -67,7 +67,7 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
         qr = UnitriangularGramSchmidt(v);
       }
     }
-    auto const μₖₖ₋₁ = qr.R(k - 1, k);
+    cpp_rational const μₖₖ₋₁ = qr.R(k - 1, k);
     auto v𐌟ₖ = ColumnView{.matrix = qr.Q,
                          .first_row = 0,
                          .last_row = m - 1,
@@ -76,6 +76,10 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
                            .first_row = 0,
                            .last_row = m - 1,
                            .column = k - 1};
+auto a = 4 * Pow<2>(μₖₖ₋₁);
+auto b = 3 - a;
+auto c = b * v𐌟ₖ₋₁.Norm²();
+auto d = 4 * v𐌟ₖ.Norm²();
     if (4 * v𐌟ₖ.Norm²() >= (3 - 4 * Pow<2>(μₖₖ₋₁)) * v𐌟ₖ₋₁.Norm²()) {
       ++k;
     } else {

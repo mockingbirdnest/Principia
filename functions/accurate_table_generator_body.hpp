@@ -154,7 +154,11 @@ LOG(ERROR)<<"P: "<<*P[i];
 
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
-  using Lattice = FixedMatrix<cpp_int, 5, 4>;
+
+  // The lattice really has integer coefficients, but this is inconvenient to
+  // propagate through the matrix algorithms.  (It would require copies instead
+  // of views.)
+  using Lattice = FixedMatrix<cpp_rational, 5, 4>;
 
   Lattice const L(
       {C,     0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
@@ -170,33 +174,34 @@ LOG(ERROR)<<"V:"<<V;
   std::array<std::unique_ptr<ColumnView<Lattice const>>, V.columns()> v;
   for (std::int64_t i = 0; i < v.size(); ++i) {
     v[i] = std::make_unique<ColumnView<Lattice const>>(
-        ColumnView{.matrix = V,
-                   .first_row = 0,
-                   .last_row = V.rows() - 1,
-                   .column = static_cast<int>(i)});///??
+        ColumnView<Lattice const>{.matrix = V,
+                                  .first_row = 0,
+                                  .last_row = V.rows() - 1,
+                                  .column = static_cast<int>(i)});  ///??
   }
-
-  auto norm1 = [](ColumnView<Lattice const> const& v) {
-    cpp_rational norm1 = 0;
-    for (std::int64_t i = 0; i < v.size(); ++i) {
-      norm1 += abs(v[i]);
-    }
-    return norm1;
-  };
 
   std::sort(v.begin(),
             v.end(),
-            [&norm1](std::unique_ptr<ColumnView<Lattice const>> const& left,
-                     std::unique_ptr<ColumnView<Lattice const>> const& right) {
+            [](std::unique_ptr<ColumnView<Lattice const>> const& left,
+               std::unique_ptr<ColumnView<Lattice const>> const& right) {
               return left->Norm²() < right->Norm²();
             });
+
+  auto norm1 = [](ColumnView<Lattice const> const& v) {
+    cpp_int norm1 = 0;
+    for (std::int64_t i = 0; i < v.size(); ++i) {
+      DCHECK_EQ(1, denominator(v[i]));
+      norm1 += abs(static_cast<cpp_int>(v[i]));
+    }
+    return norm1;
+  };
 
   static constexpr std::int64_t dimension = 3;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
 LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     if (norm1(v_i) >= C) {
-      return absl::NotFoundError("Vectors too big");
+      return absl::OutOfRangeError("Vectors too big");
     }
   }
 
@@ -204,15 +209,16 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i1 = *v[(i + 1) % dimension];
     auto const& v_i2 = *v[(i + 2) % dimension];
-    Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
-LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
+    Q_multipliers[i] =
+        static_cast<cpp_int>(v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3]);
+    LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
   }
 
   FixedVector<cpp_int, 2> Q_coefficients{};
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
     for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
-      Q_coefficients[j] += Q_multipliers[i] * v_i[j];
+      Q_coefficients[j] += Q_multipliers[i] * static_cast<cpp_int>(v_i[j]);
     }
 LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
   }
@@ -238,8 +244,8 @@ LOG(ERROR)<<"t₀: "<<t₀;
   }
 
   for (auto const& Fi : F) {
-    auto const Fi_t₀ = static_cast<cpp_bin_float_50>(Fi(t₀));
-    if (abs(Fi_t₀ - round(Fi_t₀)) >= 1 / cpp_bin_float_50(M)) {
+    auto const Fi_t₀ = Fi(t₀);
+    if (M * abs(Fi_t₀ - round(Fi_t₀)) >= 1) {
         LOG(ERROR) << Fi_t₀ - round(Fi_t₀);
         return absl::NotFoundError("Not enough zeroes");
       }

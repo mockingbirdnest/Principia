@@ -8,6 +8,7 @@
 
 #include "absl/container/btree_set.h"
 #include "base/tags.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/root_finders.hpp"
@@ -21,6 +22,7 @@ namespace numerics {
 namespace _matrix_computations {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_views;
@@ -312,22 +314,32 @@ template<typename Scalar>
 struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
     UnboundedMatrix<Scalar> Q;
-    UnboundedUpperTriangularMatrix<Quotient<Scalar, Scalar>> R;
+    UnboundedUpperTriangularMatrix<double> R;
   };
   using QVector = UnboundedVector<Scalar>;
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
 template<typename Scalar, int rows, int columns>
-struct UnitriangularGramSchmidtGenerator<
-    FixedMatrix<Scalar, rows, columns>> {
+struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
   struct Result {
     FixedMatrix<Scalar, rows, columns> Q;
-    FixedUpperTriangularMatrix<Quotient<Scalar, Scalar>, columns> R;
+    FixedUpperTriangularMatrix<double, columns> R;
   };
   using QVector = FixedVector<Scalar, rows>;
+  static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
+};
+
+template<int rows, int columns>
+struct UnitriangularGramSchmidtGenerator<
+    FixedMatrix<cpp_rational, rows, columns>> {
+  struct Result {
+    FixedMatrix<cpp_rational, rows, columns> Q;
+    FixedUpperTriangularMatrix<cpp_rational, columns> R;
+  };
+  using QVector = FixedVector<cpp_rational, rows>;
   static Result Uninitialized(
-      FixedMatrix<Scalar, rows, columns> const& m);
+      FixedMatrix<cpp_rational, rows, columns> const& m);
 };
 
 template<typename Scalar>
@@ -498,7 +510,7 @@ auto UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>>::
 Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
   return Result{
       .Q = UnboundedMatrix<Scalar>(m.rows(), m.columns(), uninitialized),
-      .R = UnboundedUpperTriangularMatrix<Quotient<Scalar, Scalar>>(m.columns(), uninitialized)};
+      .R = UnboundedUpperTriangularMatrix<double>(m.columns(), uninitialized)};
 }
 
 template<typename Scalar, int rows, int columns>
@@ -507,7 +519,16 @@ auto UnitriangularGramSchmidtGenerator<
 Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
   return Result{
       .Q = FixedMatrix<Scalar, rows, columns>(uninitialized),
-      .R = FixedUpperTriangularMatrix<Quotient<Scalar, Scalar>, columns>(uninitialized)};
+      .R = FixedUpperTriangularMatrix<double, columns>(uninitialized)};
+}
+
+template<int rows, int columns>
+auto UnitriangularGramSchmidtGenerator<
+    FixedMatrix<cpp_rational, rows, columns>>::
+Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& m) -> Result {
+  return Result{
+      .Q = FixedMatrix<cpp_rational, rows, columns>(uninitialized),
+      .R = FixedUpperTriangularMatrix<cpp_rational, columns>(uninitialized)};
 }
 
 template<typename Scalar>
