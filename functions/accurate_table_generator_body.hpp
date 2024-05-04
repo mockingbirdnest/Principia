@@ -11,6 +11,7 @@
 
 #include "base/for_all_of.hpp"
 #include "base/not_null.hpp"
+#include "base/tags.hpp"
 #include "base/thread_pool.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -25,11 +26,38 @@ namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
 using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
+
+template<int rows, int columns>
+FixedMatrix<cpp_int, rows, columns> ToInt(
+    FixedMatrix<cpp_rational, rows, columns> const& m) {
+  FixedMatrix<cpp_int, rows, columns> result(uninitialized);
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
+      auto const& mᵢⱼ = m(i, j);
+      DCHECK_EQ(1, denominator(mᵢⱼ));
+      result(i, j) = numerator(m(i, j));
+    }
+  }
+  return result;
+}
+
+template<int rows, int columns>
+FixedMatrix<cpp_rational, rows, columns> ToRational(
+    FixedMatrix<cpp_int, rows, columns> const& m) {
+  FixedMatrix<cpp_rational, rows, columns> result(uninitialized);
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
+      result(i, j) = m(i, j);
+    }
+  }
+  return result;
+}
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -155,10 +183,7 @@ LOG(ERROR)<<"P: "<<*P[i];
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
 
-  // The lattice really has integer coefficients, but this is inconvenient to
-  // propagate through the matrix algorithms.  (It would require copies instead
-  // of views.)
-  using Lattice = FixedMatrix<cpp_rational, 5, 4>;
+  using Lattice = FixedMatrix<cpp_int, 5, 4>;
 
   Lattice const L(
       {C,     0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
@@ -168,7 +193,10 @@ LOG(ERROR)<<"P: "<<*P[i];
        0,     0,                            0,                            3});
 LOG(ERROR)<<"L:"<<L;
 
-  Lattice const V = LenstraLenstraLovász(L);
+  // The lattice really has integer coefficients, but this is inconvenient to
+  // propagate through the matrix algorithms.  (It would require copies instead
+  // of views for all the types, not just the ones we use here.)
+  Lattice const V = ToInt(LenstraLenstraLovász(ToRational(L)));
 LOG(ERROR)<<"V:"<<V;
 
   std::array<std::unique_ptr<ColumnView<Lattice const>>, V.columns()> v;
@@ -190,13 +218,13 @@ LOG(ERROR)<<"V:"<<V;
   auto norm1 = [](ColumnView<Lattice const> const& v) {
     cpp_int norm1 = 0;
     for (std::int64_t i = 0; i < v.size(); ++i) {
-      DCHECK_EQ(1, denominator(v[i]));
-      norm1 += abs(static_cast<cpp_int>(v[i]));
+      norm1 += abs(v[i]);
     }
     return norm1;
   };
 
   static constexpr std::int64_t dimension = 3;
+  FixedMatrix<cpp_rational, 5, dimension> w;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
 LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
@@ -209,8 +237,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i1 = *v[(i + 1) % dimension];
     auto const& v_i2 = *v[(i + 2) % dimension];
-    Q_multipliers[i] =
-        static_cast<cpp_int>(v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3]);
+    Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
     LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
   }
 
@@ -218,7 +245,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
     for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
-      Q_coefficients[j] += Q_multipliers[i] * static_cast<cpp_int>(v_i[j]);
+      Q_coefficients[j] += Q_multipliers[i] * v_i[j];
     }
 LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
   }
