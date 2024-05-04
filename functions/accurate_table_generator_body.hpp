@@ -101,14 +101,14 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
   std::array<AccurateFunction, 2> const& functions,
-  std::array<AccuratePolynomial<2>, 2> const& polynomials,
+  std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
   cpp_rational const& near_argument,
   std::int64_t const M,
   std::int64_t const N,
   std::int64_t const T) {
 
   std::array<AccurateFunction, 2> F;
-  std::array<std::optional<AccuratePolynomial<2>>, 2> P;
+  std::array<std::optional<AccuratePolynomial<cpp_rational, 2>>, 2> P;
 
   for (std::int64_t i = 0; i < functions.size(); ++i) {
     F[i] = [&functions, i, N, &near_argument](cpp_rational const& t) {
@@ -116,12 +116,13 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
       return N * functions[i](near_argument + t / N);
     };
   }
+  AccuratePolynomial<cpp_rational, 1> const shift_and_rescale(
+      {near_argument, cpp_rational(1, N)});
   for (std::int64_t i = 0; i < polynomials.size(); ++i) {
-    P[i] = N * Compose(polynomials[i],
-                       AccuratePolynomial<1>({near_argument, 1.0 / N}));
+    P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
 
-  cpp_rational const T_increment = cpp_rational(T, 100);
+  cpp_rational const T_increment = cpp_rational(T, 100);///???
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
@@ -133,27 +134,27 @@ LOG(ERROR)<<"ε: "<<ε;
   auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
   if (C == 0) {
-    return absl::NotFoundError("Error too large");
+    return absl::FailedPreconditionError("Error too large");
   }
 LOG(ERROR)<<"C:"<<C;
-  std::array<std::optional<AccuratePolynomial<2>>, 2> P̃;
-  AccuratePolynomial<1> const Tτ({cpp_rational(0), cpp_rational(T)});
+  std::array<std::optional<AccuratePolynomial<cpp_int, 2>>, 2> P̃;
+  AccuratePolynomial<cpp_rational, 1> const Tτ({0, T});
   for (std::int64_t i = 0; i < 2; ++i) {
 LOG(ERROR)<<"P: "<<*P[i];
-    auto P̃_coefficients = Compose(C * *P[i], Tτ).coefficients();
-    for_all_of(P̃_coefficients).loop([](auto& coefficient) {
-      auto c = static_cast<cpp_bin_float_50>(coefficient);
-      coefficient = static_cast<cpp_rational>(
-          round(static_cast<cpp_bin_float_50>(coefficient)));
-      LOG(ERROR)<<std::setprecision(50)<<c<<"->"<<static_cast<cpp_bin_float_50>(coefficient);
-    });
-    P̃[i] = AccuratePolynomial<2>(P̃_coefficients);
-LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
+    auto const composition_coefficients = Compose(C * *P[i], Tτ).coefficients();
+    AccuratePolynomial<cpp_int, 2>::Coefficients P̃_coefficients;
+    for_all_of(composition_coefficients, P̃_coefficients)
+        .loop([](auto const& composition_coefficient, auto& P̃_coefficient) {
+          P̃_coefficient = static_cast<cpp_int>(
+              round(static_cast<cpp_bin_float_50>(composition_coefficient)));
+        });
+    P̃[i] = AccuratePolynomial<cpp_int, 2>(P̃_coefficients);
+    LOG(ERROR)<<"i: "<<i<<" P̃: "<<*P̃[i];
   }
 
   auto const& P̃₀_coefficients = P̃[0]->coefficients();
   auto const& P̃₁_coefficients = P̃[1]->coefficients();
-  using Lattice = FixedMatrix<cpp_rational, 5, 4>;
+  using Lattice = FixedMatrix<cpp_int, 5, 4>;
 
   Lattice const L(
       {C,     0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
@@ -199,7 +200,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
     }
   }
 
-  std::array<cpp_rational, dimension> Q_multipliers;
+  std::array<cpp_int, dimension> Q_multipliers;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i1 = *v[(i + 1) % dimension];
     auto const& v_i2 = *v[(i + 2) % dimension];
@@ -207,7 +208,7 @@ LOG(ERROR)<<"i: "<<i<<" v_i: "<<v_i;
 LOG(ERROR)<<"Qmu: "<<Q_multipliers[i];
   }
 
-  FixedVector<cpp_rational, 2> Q_coefficients{};
+  FixedVector<cpp_int, 2> Q_coefficients{};
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& v_i = *v[i];
     for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
@@ -220,15 +221,11 @@ LOG(ERROR)<<"Qcoeffs: "<<Q_coefficients;
       return absl::NotFoundError("No integer zeroes");
   }
 
-  auto const Q_coefficients_gcd =
-      gcd(static_cast<cpp_int>(Q_coefficients[0]),
-          static_cast<cpp_int>(Q_coefficients[1]));
-
-  AccuratePolynomial<1> const Q({Q_coefficients[0] / Q_coefficients_gcd,
-                                 Q_coefficients[1] / Q_coefficients_gcd});
+  AccuratePolynomial<cpp_rational, 1> const Q({Q_coefficients[0],
+                                               Q_coefficients[1]});
   LOG(ERROR)<<"Q: "<<Q;
-  AccuratePolynomial<1> const q =
-      Compose(Q, AccuratePolynomial<1>({0, 1.0 / T}));
+  AccuratePolynomial<cpp_rational, 1> const q =
+      Compose(Q, AccuratePolynomial<cpp_rational, 1>({0, cpp_rational(1, T)}));
   LOG(ERROR)<<"q: "<<q;
 
   cpp_rational const t₀ =

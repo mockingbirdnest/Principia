@@ -61,7 +61,7 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
                            .last_row = m - 1,
                            .column = j};
       auto const round_μₖⱼ =
-          static_cast<cpp_rational>(round(static_cast<cpp_bin_float_50>(μₖⱼ)));
+          static_cast<cpp_int>(round(static_cast<cpp_bin_float_50>(μₖⱼ)));
       if (round_μₖⱼ != 0) {
         vₖ -= round_μₖⱼ * typename G::Vector(vⱼ);
         qr = UnitriangularGramSchmidt(v);
@@ -76,7 +76,7 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
                            .first_row = 0,
                            .last_row = m - 1,
                            .column = k - 1};
-    if (v𐌟ₖ.Norm²() >= (0.75 - Pow<2>(μₖₖ₋₁)) * v𐌟ₖ₋₁.Norm²()) {
+    if (4 * v𐌟ₖ.Norm²() >= (3 - 4 * Pow<2>(μₖₖ₋₁)) * v𐌟ₖ₋₁.Norm²()) {
       ++k;
     } else {
       auto vₖ₋₁ = ColumnView{.matrix = v,

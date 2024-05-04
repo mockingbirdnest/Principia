@@ -115,15 +115,15 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
   CHECK(0.5 <= u₀ & u₀ < 1.0) << u₀;
   CHECK(0.5 <= sin(u₀) && sin(u₀) < 1.0);
   CHECK(0.5 <= cos(u₀) && cos(u₀) < 1.0);
-  AccuratePolynomial<2> sin_taylor2(
-      AccuratePolynomial<2>::Coefficients{4 * cpp_rational(Sin(u₀ / 4)),
-                                          cpp_rational(Cos(u₀ / 4)),
-                                          -cpp_rational(Sin(u₀ / 4)) / 8},
+  AccuratePolynomial<cpp_rational, 2> sin_taylor2(
+      {4 * cpp_rational(Sin(u₀ / 4)),
+       cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4)) / 8},
       u₀);
-  AccuratePolynomial<2> cos_taylor2(
-      AccuratePolynomial<2>::Coefficients{cpp_rational(Cos(u₀ / 4)),
-                                          -cpp_rational(Sin(u₀ / 4) / 4),
-                                          -cpp_rational(Cos(u₀ / 4) / 32)},
+  AccuratePolynomial<cpp_rational, 2> cos_taylor2(
+      {cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4) / 4),
+       -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
 #if 1
   auto const x = SimultaneousBadCaseSearch<5>(
@@ -134,6 +134,10 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
       /*N=*/1ll << 53,
       /*T=*/1ll << 21);
   LOG(ERROR)<<x.status();
+
+//using T = principia::quantities::_named_quantities::Quotient<cpp_int, cpp_int>;
+//static_assert(std::is_same_v<T, cpp_rational>);
+
 #else
   for (int k = 40; k >= 10; --k) {
     auto const x = SimultaneousBadCaseSearch<5>(

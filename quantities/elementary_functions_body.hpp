@@ -163,6 +163,8 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
   if constexpr (std::is_same_v<Q, cpp_rational>) {
     return cpp_rational(pow(numerator(x), exponent),
                         pow(denominator(x), exponent));
+  } else if constexpr (std::is_same_v<Q, cpp_int>) {
+    return pow(x, exponent);
   } else {
     return si::Unit<Exponentiation<Q, exponent>> *
            Pow<exponent>(x / si::Unit<Q>);
