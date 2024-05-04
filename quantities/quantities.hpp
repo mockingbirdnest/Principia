@@ -147,8 +147,10 @@ std::string Format();
 std::string DebugString(
     double number,
     int precision = std::numeric_limits<double>::max_digits10);
+template<typename N>
+  requires is_number<N>::value
 std::string DebugString(
-    cpp_rational const& number,
+    N const& number,
     int precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
 std::string DebugString(

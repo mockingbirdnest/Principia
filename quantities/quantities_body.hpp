@@ -181,8 +181,9 @@ inline std::string DebugString(double const number, int const precision) {
   return result;
 }
 
-inline std::string DebugString(cpp_rational const& number,
-                               int const precision) {
+template<typename N>
+  requires is_number<N>::value
+std::string DebugString(N const& number, int const precision) {
   return number.str();
 }
 
