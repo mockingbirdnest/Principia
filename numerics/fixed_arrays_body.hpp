@@ -211,9 +211,6 @@ constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_>::operator()(
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
-  if (column >= columns()) {
-    LOG(FATAL)<<"!!!";
-  }
   CONSTEXPR_DCHECK(column < columns());
   return data_[row * columns() + column];
 }

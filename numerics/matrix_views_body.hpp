@@ -125,9 +125,6 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto ColumnView<Matrix>::operator[](
     int const index) const -> Scalar const& {
-  if (index > last_row - first_row) {
-    LOG(FATAL)<<"AAA";
-  }
   CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
