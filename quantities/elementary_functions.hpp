@@ -1,5 +1,6 @@
 #pragma once
 
+#include "boost/multiprecision/number.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -8,6 +9,7 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -84,6 +86,11 @@ Angle ArcTanh(double x);
 // |previous_angle|.
 Angle UnwindFrom(Angle const& previous_angle, Angle const& α);
 
+// Only dimensionless quantities can be rounded.
+template<typename Q>
+  requires is_number<Q>::value || std::floating_point<Q>
+Q Round(Q const& x);
+
 }  // namespace internal
 
 using internal::Abs;
@@ -104,6 +111,7 @@ using internal::Mod;
 using internal::NextDown;
 using internal::NextUp;
 using internal::Pow;
+using internal::Round;
 using internal::Sin;
 using internal::Sinh;
 using internal::Sqrt;

@@ -15,19 +15,21 @@ using namespace base::_traits;
 using namespace quantities::_quantities;
 
 // TODO(egg): additive_group should subsume affine, but we use it there.
+// We use |convertible_to| here because we want this concept to work with
+// Boost multiprecision types which heavily use implicit conversions.
 template<typename G>
 concept additive_group = requires(G x, G y, int n) {
   G{};
-  { +x } -> std::same_as<G>;
-  { -x } -> std::same_as<G>;
-  { x + y } -> std::same_as<G>;
-  { x - y } -> std::same_as<G>;
-  { x += y } -> std::same_as<G&>;
-  { x -= y } -> std::same_as<G&>;
+  { +x } -> std::convertible_to<G>;
+  { -x } -> std::convertible_to<G>;
+  { x + y } -> std::convertible_to<G>;
+  { x - y } -> std::convertible_to<G>;
+  { x += y } -> std::convertible_to<G&>;
+  { x -= y } -> std::convertible_to<G&>;
   // An abelian group is a ℤ-module; we require the corresponding operations.
-  { n * x } -> std::same_as<G>;
-  { x * n } -> std::same_as<G>;
-  { x *= n } -> std::same_as<G&>;
+  { n * x } -> std::convertible_to<G>;
+  { x * n } -> std::convertible_to<G>;
+  { x *= n } -> std::convertible_to<G&>;
 };
 
 // A set acted upon simply transitively by an additive group.

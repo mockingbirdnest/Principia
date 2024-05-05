@@ -4,11 +4,6 @@
     <ProjectGuid>{7cca653c-2e8f-4ffd-9e9f-bee590f3efab}</ProjectGuid>
     <RootNamespace>functions</RootNamespace>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <PreprocessorDefinitions>BOOST_MP_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="accurate_table_generator.hpp" />
     <ClInclude Include="accurate_table_generator_body.hpp" />
