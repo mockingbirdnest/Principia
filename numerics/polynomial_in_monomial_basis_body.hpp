@@ -12,7 +12,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "base/not_constructible.hpp"
-#include "boost/multiprecision/fwd.hpp"
+#include "boost/multiprecision/number.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"

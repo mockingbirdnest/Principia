@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "boost/multiprecision/cpp_int.hpp"
-#include "boost/multiprecision/fwd.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"

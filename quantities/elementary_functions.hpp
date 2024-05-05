@@ -2,7 +2,7 @@
 
 #include <concepts>
 
-#include "boost/multiprecision/fwd.hpp"
+#include "boost/multiprecision/number.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 

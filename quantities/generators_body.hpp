@@ -5,7 +5,7 @@
 #include <tuple>
 
 #include "base/not_constructible.hpp"
-#include "boost/multiprecision/fwd.hpp"
+#include "boost/multiprecision/number.hpp"
 #include "quantities/dimensions.hpp"
 
 namespace principia {
