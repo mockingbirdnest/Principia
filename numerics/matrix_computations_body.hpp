@@ -1053,7 +1053,6 @@ Solve(Matrix A, Vector b) {
       }
       U(k, j) = U_kj;
     }
-LOG(ERROR)<<"U: "<<U;
     for (int i = k + 1; i < A.rows(); ++i) {
       auto L_ik = A(i, k);
       for (int j = 0; j < k; ++j) {

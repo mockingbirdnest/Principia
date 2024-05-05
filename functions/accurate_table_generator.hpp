@@ -24,7 +24,7 @@ using AccuratePolynomial =
 
 template<std::int64_t zeroes>
 cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
-                              cpp_rational const& starting_argument);
+                                 cpp_rational const& starting_argument);
 
 template<std::int64_t zeroes>
 std::vector<cpp_rational> GalExhaustiveMultisearch(

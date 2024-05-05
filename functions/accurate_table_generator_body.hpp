@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/for_all_of.hpp"
-#include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "base/thread_pool.hpp"
 #include "glog/logging.h"
@@ -26,7 +25,6 @@ namespace _accurate_table_generator {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_fixed_arrays;
@@ -140,7 +138,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // This implementation follows [SZ05], section 3.1.
   std::int64_t const M = 1 << zeroes;
 
-  // Preliminary: shift and rescale the functions and the polynomial:
+  // Preliminary: shift and rescale the functions and the polynomials:
   //   Fᵢ = N fᵢ(t / N)
   //   Pᵢ = N pᵢ(t / N)
   std::array<AccurateFunction, 2> F;
