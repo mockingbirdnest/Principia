@@ -132,12 +132,13 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
 
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
-  std::array<AccurateFunction, 2> const& functions,
-  std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-  cpp_rational const& near_argument,
-  std::int64_t const M,
-  std::int64_t const N,
-  std::int64_t const T) {
+    std::array<AccurateFunction, 2> const& functions,
+    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    cpp_rational const& near_argument,
+    std::int64_t const M,
+    std::int64_t const N,
+    std::int64_t const T) {
+  // This implementation follows [SZ05], section 3.1.
 
   // Preliminary: shift and rescale the functions and the polynomial:
   //   Fᵢ = N fᵢ(t / N)
