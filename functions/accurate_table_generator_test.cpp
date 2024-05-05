@@ -34,8 +34,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {};
 
 #if 1
 
-TEST_F(AccurateTableGeneratorTest, Sin5) {
-  auto const x = ExhaustiveSearch<5>({Sin}, 5.0 / 128.0);
+TEST_F(AccurateTableGeneratorTest, GalSin5) {
+  auto const x = GalExhaustiveSearch<5>({Sin}, 5.0 / 128.0);
   EXPECT_EQ(x, cpp_rational(2814749767106647, 72057594037927936));
   EXPECT_THAT(static_cast<double>(x),
               RelativeErrorFrom(5.0 / 128.0, IsNear(3.1e-14_(1))));
@@ -54,8 +54,8 @@ TEST_F(AccurateTableGeneratorTest, Sin5) {
   EXPECT_EQ("1000001", mantissa.substr(52, 7));
 }
 
-TEST_F(AccurateTableGeneratorTest, SinCos5) {
-  auto const x = ExhaustiveSearch<5>({Sin, Cos}, 95.0 / 128.0);
+TEST_F(AccurateTableGeneratorTest, GalSinCos5) {
+  auto const x = GalExhaustiveSearch<5>({Sin, Cos}, 95.0 / 128.0);
   EXPECT_EQ(x, cpp_rational(6685030696878177, 9007199254740992));
   EXPECT_THAT(static_cast<double>(x),
               RelativeErrorFrom(95.0 / 128.0, IsNear(1.5e-14_(1))));
@@ -77,14 +77,14 @@ TEST_F(AccurateTableGeneratorTest, SinCos5) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, SinCos5Multisearch) {
+TEST_F(AccurateTableGeneratorTest, GalSinCos5Multisearch) {
   static constexpr std::int64_t index_begin = 17;
   static constexpr std::int64_t index_end = 100;
   std::vector<cpp_rational> starting_arguments;
   for (std::int64_t i = index_begin; i < index_end; ++i) {
     starting_arguments.push_back(i / 128.0);
   }
-  auto const xs = ExhaustiveMultisearch<5>({Sin, Cos}, starting_arguments);
+  auto const xs = GalExhaustiveMultisearch<5>({Sin, Cos}, starting_arguments);
   EXPECT_THAT(xs, SizeIs(index_end - index_begin));
   for (std::int64_t i = 0; i < xs.size(); ++i) {
     auto const& x = xs[i];
@@ -109,7 +109,7 @@ TEST_F(AccurateTableGeneratorTest, SinCos5Multisearch) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
   double const x₀ = 1140850681.0 / 8589934592.0;
   double const u₀ = 4 * x₀;
   auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
@@ -128,11 +128,10 @@ TEST_F(AccurateTableGeneratorTest, SinCos5BadCase) {
        -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
 
-  auto const u = SimultaneousBadCaseSearch<5>(
+  auto const u = StehléZimmermannSimultaneousSearch<15>(
       {sin, cos},
       {sin_taylor2, cos_taylor2},
       u₀,
-      /*M=*/1ll << 15,
       /*N=*/1ll << 53,
       /*T=*/1ll << 21);
   EXPECT_THAT(u,

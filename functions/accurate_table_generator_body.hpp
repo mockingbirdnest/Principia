@@ -75,28 +75,8 @@ bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
 }
 
 template<std::int64_t zeroes>
-std::vector<cpp_rational> ExhaustiveMultisearch(
-    std::vector<AccurateFunction> const& functions,
-    std::vector<cpp_rational> const& starting_arguments) {
-  ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
-
-  std::vector<std::future<cpp_rational>> futures;
-  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
-    futures.push_back(search_pool.Add([i, &functions, &starting_arguments]() {
-      return ExhaustiveSearch<zeroes>(functions, starting_arguments[i]);
-    }));
-  }
-
-  std::vector<cpp_rational> results;
-  for (auto& future : futures) {
-    results.push_back(future.get());
-  }
-  return results;
-}
-
-template<std::int64_t zeroes>
-cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
-                              cpp_rational const& starting_argument) {
+cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
+                                 cpp_rational const& starting_argument) {
   CHECK_LT(0, starting_argument);
 
   // We will look for candidates both above and below |starting_argument|.
@@ -131,14 +111,34 @@ cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
 }
 
 template<std::int64_t zeroes>
-absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
+std::vector<cpp_rational> GalExhaustiveMultisearch(
+    std::vector<AccurateFunction> const& functions,
+    std::vector<cpp_rational> const& starting_arguments) {
+  ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
+
+  std::vector<std::future<cpp_rational>> futures;
+  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
+    futures.push_back(search_pool.Add([i, &functions, &starting_arguments]() {
+      return GalExhaustiveSearch<zeroes>(functions, starting_arguments[i]);
+    }));
+  }
+
+  std::vector<cpp_rational> results;
+  for (auto& future : futures) {
+    results.push_back(future.get());
+  }
+  return results;
+}
+
+template<std::int64_t zeroes>
+absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     cpp_rational const& near_argument,
-    std::int64_t const M,
     std::int64_t const N,
     std::int64_t const T) {
   // This implementation follows [SZ05], section 3.1.
+  std::int64_t const M = 1 << zeroes;
 
   // Preliminary: shift and rescale the functions and the polynomial:
   //   Fᵢ = N fᵢ(t / N)

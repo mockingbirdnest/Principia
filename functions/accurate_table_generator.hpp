@@ -23,30 +23,30 @@ using AccuratePolynomial =
     PolynomialInMonomialBasis<ArgValue, ArgValue, degree>;
 
 template<std::int64_t zeroes>
-cpp_rational ExhaustiveSearch(std::vector<AccurateFunction> const& functions,
+cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
                               cpp_rational const& starting_argument);
 
 template<std::int64_t zeroes>
-std::vector<cpp_rational> ExhaustiveMultisearch(
+std::vector<cpp_rational> GalExhaustiveMultisearch(
     std::vector<AccurateFunction> const& functions,
     std::vector<cpp_rational> const& starting_arguments);
 
-// |functions| have arguments at distance |T/N| of |near_argument|.
+// Searches in an interval of radius |T / N| centered on |near_argument|.  The
+// |polynomials| must be the degree-2 Taylor approximations of the |functions|.
 template<std::int64_t zeroes>
-absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
-  std::array<AccurateFunction, 2> const& functions,
-  std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-  cpp_rational const& near_argument,
-  std::int64_t M,
-  std::int64_t N,
-  std::int64_t T);
+absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    cpp_rational const& near_argument,
+    std::int64_t N,
+    std::int64_t T);
 
 }  // namespace internal
 
 using internal::AccuratePolynomial;
-using internal::ExhaustiveMultisearch;
-using internal::ExhaustiveSearch;
-using internal::SimultaneousBadCaseSearch;
+using internal::GalExhaustiveMultisearch;
+using internal::GalExhaustiveSearch;
+using internal::StehléZimmermannSimultaneousSearch;
 
 }  // namespace _accurate_table_generator
 }  // namespace functions
