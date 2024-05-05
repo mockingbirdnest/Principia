@@ -8,6 +8,7 @@
 
 #include "absl/container/btree_set.h"
 #include "base/tags.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/root_finders.hpp"
@@ -21,6 +22,7 @@ namespace numerics {
 namespace _matrix_computations {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_views;
@@ -318,16 +320,28 @@ struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar, int dimension>
-struct UnitriangularGramSchmidtGenerator<
-    FixedMatrix<Scalar, dimension, dimension>> {
+template<typename Scalar, int rows, int columns>
+struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
   struct Result {
-    FixedMatrix<Scalar, dimension, dimension> Q;
-    FixedUpperTriangularMatrix<double, dimension> R;
+    FixedMatrix<Scalar, rows, columns> Q;
+    FixedUpperTriangularMatrix<double, columns> R;
   };
-  using QVector = FixedVector<Scalar, dimension>;
+  using QVector = FixedVector<Scalar, rows>;
+  static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
+};
+
+// A specialization for |cpp_rational|, which is used for lattice reduction.
+// |double| is not appropriate for the element of |R| in this case.
+template<int rows, int columns>
+struct UnitriangularGramSchmidtGenerator<
+    FixedMatrix<cpp_rational, rows, columns>> {
+  struct Result {
+    FixedMatrix<cpp_rational, rows, columns> Q;
+    FixedUpperTriangularMatrix<cpp_rational, columns> R;
+  };
+  using QVector = FixedVector<cpp_rational, rows>;
   static Result Uninitialized(
-      FixedMatrix<Scalar, dimension, dimension> const& m);
+      FixedMatrix<cpp_rational, rows, columns> const& m);
 };
 
 template<typename Scalar>
@@ -423,10 +437,10 @@ template<typename MScalar, typename VScalar>
 struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
   using Scalar = MScalar;
   using Result = UnboundedVector<Quotient<VScalar, MScalar>>;
-  static UnboundedLowerTriangularMatrix<double> UninitializedL(
-      UnboundedMatrix<MScalar> const& m);
-  static UnboundedUpperTriangularMatrix<MScalar> UninitializedU(
-      UnboundedMatrix<MScalar> const& m);
+  static UnboundedLowerTriangularMatrix<Quotient<MScalar, MScalar>>
+  UninitializedL(UnboundedMatrix<MScalar> const& m);
+  static UnboundedUpperTriangularMatrix<MScalar>
+  UninitializedU(UnboundedMatrix<MScalar> const& m);
 };
 
 template<typename MScalar, typename VScalar, int rows, int columns>
@@ -434,12 +448,14 @@ struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                       FixedVector<VScalar, rows>> {
   using Scalar = MScalar;
   using Result = FixedVector<Quotient<VScalar, MScalar>, columns>;
-  static FixedLowerTriangularMatrix<double, rows> UninitializedL(
-      FixedMatrix<MScalar, rows, columns> const& m);
-  static FixedUpperTriangularMatrix<MScalar, columns> UninitializedU(
-      FixedMatrix<MScalar, rows, columns> const& m);
+  static FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>
+  UninitializedL(FixedMatrix<MScalar, rows, columns> const& m);
+  static FixedUpperTriangularMatrix<MScalar, columns>
+  UninitializedU(FixedMatrix<MScalar, rows, columns> const& m);
 };
 
+// TODO(phl): Do we really need all these `Uninitialized` functions?  Is there a
+// better way?
 template<typename Scalar>
 auto CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar>>::
 Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
@@ -501,13 +517,22 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
       .R = UnboundedUpperTriangularMatrix<double>(m.columns(), uninitialized)};
 }
 
-template<typename Scalar, int dimension>
+template<typename Scalar, int rows, int columns>
 auto UnitriangularGramSchmidtGenerator<
-    FixedMatrix<Scalar, dimension, dimension>>::
-Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+    FixedMatrix<Scalar, rows, columns>>::
+Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
   return Result{
-      .Q = FixedMatrix<Scalar, dimension, dimension>(uninitialized),
-      .R = FixedUpperTriangularMatrix<double, dimension>(uninitialized)};
+      .Q = FixedMatrix<Scalar, rows, columns>(uninitialized),
+      .R = FixedUpperTriangularMatrix<double, columns>(uninitialized)};
+}
+
+template<int rows, int columns>
+auto UnitriangularGramSchmidtGenerator<
+    FixedMatrix<cpp_rational, rows, columns>>::
+Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& m) -> Result {
+  return Result{
+      .Q = FixedMatrix<cpp_rational, rows, columns>(uninitialized),
+      .R = FixedUpperTriangularMatrix<cpp_rational, columns>(uninitialized)};
 }
 
 template<typename Scalar>
@@ -561,10 +586,11 @@ auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
 }
 
 template<typename MScalar, typename VScalar>
-UnboundedLowerTriangularMatrix<double>
+UnboundedLowerTriangularMatrix<Quotient<MScalar, MScalar>>
 SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>>::
 UninitializedL(UnboundedMatrix<MScalar> const& m) {
-  return UnboundedLowerTriangularMatrix<double>(m.rows(), uninitialized);
+  return UnboundedLowerTriangularMatrix<Quotient<MScalar, MScalar>>(
+      m.rows(), uninitialized);
 }
 
 template<typename MScalar, typename VScalar>
@@ -575,11 +601,12 @@ UninitializedU(UnboundedMatrix<MScalar> const& m) {
 }
 
 template<typename MScalar, typename VScalar, int rows, int columns>
-FixedLowerTriangularMatrix<double, rows>
+FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>
 SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                FixedVector<VScalar, rows>>::
 UninitializedL(FixedMatrix<MScalar, rows, columns> const& m) {
-  return FixedLowerTriangularMatrix<double, rows>(uninitialized);
+  return FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>(
+      uninitialized);
 }
 
 template<typename MScalar, typename VScalar, int rows, int columns>
@@ -726,7 +753,8 @@ UnitriangularGramSchmidt(Matrix const& A) {
   auto result = G::Uninitialized(A);
   auto& Q = result.Q;
   auto& R = result.R;
-  int const n = A.rows();
+  int const m = A.rows();
+  int const n = A.columns();
 
   // The algorithm is derived from [HPS14], Theorem 7.13, but we keep the code
   // similar to the one for classical Gram-Schmidt, i.e., adopt the conventions
@@ -738,24 +766,24 @@ UnitriangularGramSchmidt(Matrix const& A) {
   for (int j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
-                                             .last_row = n - 1,
+                                             .last_row = m - 1,
                                              .column = j};
     for (int i = 0; i < j; ++i) {
       auto const qᵢ = ColumnView{.matrix = Q,
                                  .first_row = 0,
-                                 .last_row = n - 1,
+                                 .last_row = m - 1,
                                  .column = i};
       R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ / qᵢ.Norm²();  // NOLINT
     }
     auto qⱼ = ColumnView{.matrix = Q,  // NOLINT
                          .first_row = 0,
-                         .last_row = n - 1,
+                         .last_row = m - 1,
                          .column = j};
     qⱼ = aⱼ;
     for (int k = 0; k < j; ++k) {
       qⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
                                                      .first_row = 0,
-                                                     .last_row = n - 1,
+                                                     .last_row = m - 1,
                                                      .column = k});
     }
     R(j, j) = 1;

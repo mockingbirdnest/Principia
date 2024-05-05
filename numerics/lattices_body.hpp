@@ -58,7 +58,7 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
                            .first_row = 0,
                            .last_row = m - 1,
                            .column = j};
-      auto const round_μₖⱼ = std::round(μₖⱼ);
+      auto const round_μₖⱼ = Round(μₖⱼ);
       if (round_μₖⱼ != 0) {
         vₖ -= round_μₖⱼ * typename G::Vector(vⱼ);
         qr = UnitriangularGramSchmidt(v);
