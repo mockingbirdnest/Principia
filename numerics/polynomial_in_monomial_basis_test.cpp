@@ -2,6 +2,8 @@
 
 #include <tuple>
 
+#include "boost/multiprecision/cpp_bin_float.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -28,6 +30,7 @@ namespace principia {
 namespace numerics {
 
 using ::testing::Eq;
+using namespace boost::multiprecision;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -277,18 +280,14 @@ TEST_F(PolynomialInMonomialBasisTest, Affine) {
   }
 }
 
-// Compose contains a fold expression which fails to compile in Clang because of
-// https://bugs.llvm.org/show_bug.cgi?id=30590.  That bug will be fixed post-
-// 11.0.0.  Since we don't use Compose as of this writing, and working around
-// the bug would be hard, we ifdef out the test.
-#if PRINCIPIA_COMPILER_MSVC
 TEST_F(PolynomialInMonomialBasisTest, Monoid) {
-  using P0 = PolynomialInMonomialBasis<Current, Temperature, 0>;
+  using P1A = PolynomialInMonomialBasis<Current, Temperature, 1>;
   using P2A = PolynomialInMonomialBasis<Temperature, Instant, 2>;
   using P2V = PolynomialInMonomialBasis<Temperature, Time, 2>;
   using P3 = PolynomialInMonomialBasis<Current, Temperature, 3>;
   Instant const t0;
-  P0 const p0(std::tuple{9 * Ampere});
+  P1A const p1a({2 * Ampere,
+                 -4 * Ampere / Kelvin}, 3 * Kelvin);
   P2A const p2a({1 * Kelvin,
                  3 * Kelvin / Second,
                  -8 * Kelvin / Second / Second}, t0);
@@ -332,11 +331,10 @@ TEST_F(PolynomialInMonomialBasisTest, Monoid) {
     EXPECT_THAT(actual_v, AlmostEquals(-46396 * Ampere, 0));
   }
   {
-    auto const actual = Compose(p0, p2a)(t0);
-    EXPECT_THAT(actual, AlmostEquals(9 * Ampere, 0));
+    auto const actual = Compose(p1a, p2a)(t0 + 1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(26 * Ampere, 0));
   }
 }
-#endif
 
 TEST_F(PolynomialInMonomialBasisTest, PointwiseInnerProduct) {
   P2V::Coefficients const coefficients({
@@ -448,6 +446,21 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
   EXPECT_THAT(estrin_light(1729 * Second), Eq(1729 * light_second));
   EXPECT_THAT(horner_light.EvaluateDerivative(1729 * Second), Eq(SpeedOfLight));
   EXPECT_THAT(estrin_light.EvaluateDerivative(1729 * Second), Eq(SpeedOfLight));
+}
+
+// Check that polynomials may be used with Boost multiprecision types.
+TEST_F(PolynomialInMonomialBasisTest, Boost) {
+  using P2i = PolynomialInMonomialBasis<cpp_int, cpp_int, 2>;
+  P2i const p2i({1, 3, -8});
+  EXPECT_EQ(p2i(3), -185);
+
+  using P2r = PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2>;
+  P2r const p2r({1, 3, -8});
+  EXPECT_EQ(p2r(cpp_rational(1, 3)), cpp_rational(37, 27));
+
+  using P2f = PolynomialInMonomialBasis<cpp_bin_float_50, cpp_bin_float_50, 2>;
+  P2f const p2f({1, 3, -8});
+  EXPECT_EQ(p2f(cpp_bin_float_50("1.3")), cpp_bin_float_50("-10.206"));
 }
 
 // Check that polynomials may be serialized.
