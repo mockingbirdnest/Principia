@@ -18,6 +18,7 @@
 #include "numerics/lattices.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace functions {
@@ -32,6 +33,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
+using namespace principia::quantities::_elementary_functions;
 
 constexpr std::int64_t ε_computation_points = 16;
 
@@ -183,8 +185,7 @@ absl::StatusOr<cpp_rational> SimultaneousBadCaseSearch(
     AccuratePolynomial<cpp_int, 2>::Coefficients P̃_coefficients;
     for_all_of(composition_coefficients, P̃_coefficients)
         .loop([](auto const& composition_coefficient, auto& P̃_coefficient) {
-          P̃_coefficient = static_cast<cpp_int>(
-              round(static_cast<cpp_bin_float_50>(composition_coefficient)));
+          P̃_coefficient = static_cast<cpp_int>(Round(composition_coefficient));
         });
     P̃[i] = AccuratePolynomial<cpp_int, 2>(P̃_coefficients);
     VLOG(1) << "P̃[" << i << "] = " << *P̃[i];

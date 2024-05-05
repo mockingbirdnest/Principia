@@ -200,6 +200,17 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y / si::Unit<Quantity<D>>, x / si::Unit<Quantity<D>>);
 }
 
+template<typename Q>
+  requires is_number<Q>::value || std::floating_point<Q>
+Q Round(Q const& x) {
+  if constexpr (is_number<Q>::value) {
+    // TODO(phl): This is clunky.  Use |divide_qr| or something.
+    return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
+  } else {
+    return std::round(x);
+  }
+}
+
 inline double Sinh(Angle const& α) {
   return std::sinh((α / Radian));
 }
