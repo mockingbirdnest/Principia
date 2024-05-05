@@ -46,14 +46,10 @@ struct ExponentiationGenerator<int, n> : not_constructible {
   using Type = int;
 };
 
-template<int n>
-struct ExponentiationGenerator<cpp_rational, n> : not_constructible {
-  using Type = cpp_rational;
-};
-
-template<int n>
-struct ExponentiationGenerator<cpp_int, n> : not_constructible {
-  using Type = cpp_int;
+template<typename Number, int n>
+  requires is_number<Number>::value
+struct ExponentiationGenerator<Number, n> : not_constructible {
+  using Type = Number;
 };
 
 template<template<typename> typename Quantity, typename D, int n>
