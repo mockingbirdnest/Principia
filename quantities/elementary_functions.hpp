@@ -1,7 +1,5 @@
 #pragma once
 
-#include <concepts>
-
 #include "boost/multiprecision/number.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
