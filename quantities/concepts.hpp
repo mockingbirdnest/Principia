@@ -15,6 +15,8 @@ using namespace base::_traits;
 using namespace quantities::_quantities;
 
 // TODO(egg): additive_group should subsume affine, but we use it there.
+// We use |convertible_to| here because we want this concept to work with
+// Boost multiprecision types which heavily use implicit conversions.
 template<typename G>
 concept additive_group = requires(G x, G y, int n) {
   G{};

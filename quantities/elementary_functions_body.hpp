@@ -6,8 +6,7 @@
 
 #include <cmath>
 
-#include "boost/multiprecision/cpp_int.hpp"
-#include "boost/multiprecision/fwd.hpp"
+#include "boost/multiprecision/numbers.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
@@ -31,7 +30,14 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
   if constexpr (is_number<Q1>::value || is_number<Q2>::value) {
-    return x * y + z;
+    if constexpr ((number_category<Q1>::value == number_kind_integer ||
+                   number_category<Q1>::value == number_kind_rational) &&
+                  (number_category<Q2>::value == number_kind_integer ||
+                   number_category<Q2>::value == number_kind_rational)) {
+      return x * y + z;
+    } else {
+      return fma(x, y, z);
+    }
   } else {
     return si::Unit<Product<Q1, Q2>> *
             numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
@@ -157,7 +163,7 @@ inline constexpr double Pow<3>(double x) {
 
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  if constexpr (std::is_same_v<Q, cpp_rational>) {
+  if constexpr (number_category<Q>::value == number_kind_rational) {
     // It seems that Boost does not define |pow| for |cpp_rational|.
     return cpp_rational(pow(numerator(x), exponent),
                         pow(denominator(x), exponent));
