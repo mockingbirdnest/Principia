@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "boost/multiprecision/cpp_int.hpp"
+#include "boost/multiprecision/fwd.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
@@ -29,13 +30,13 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  if constexpr (quantity<Q1> && quantity<Q2>) {
+  if constexpr (is_number<Q1>::value || is_number<Q2>::value) {
+    return x * y + z;
+  } else {
     return si::Unit<Product<Q1, Q2>> *
             numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
                                              y / si::Unit<Q2>,
                                              z / si::Unit<Product<Q1, Q2>>);
-  } else {
-    return x * y + z;
   }
 }
 
@@ -67,11 +68,12 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 }
 
 template<typename Q>
-FORCE_INLINE(inline) Q Abs(Q const& x) {
-  if constexpr (quantity<Q>) {
-    return si::Unit<Q> * std::abs(x / si::Unit<Q>);
-  } else {
+FORCE_INLINE(inline)
+Q Abs(Q const& x) {
+  if constexpr (is_number<Q>::value) {
     return abs(x);
+  } else {
+    return si::Unit<Q> * std::abs(x / si::Unit<Q>);
   }
 }
 
@@ -130,11 +132,6 @@ constexpr double Pow(double x) {
   }
 }
 
-template<int exponent>
-constexpr double Pow(cpp_rational const& x) {
-  return Pow<exponent>(static_cast<double>(x));///???
-}
-
 // Static specializations for frequently-used exponents, so that this gets
 // turned into multiplications at compile time.
 
@@ -161,9 +158,10 @@ inline constexpr double Pow<3>(double x) {
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
   if constexpr (std::is_same_v<Q, cpp_rational>) {
+    // It seems that Boost does not define |pow| for |cpp_rational|.
     return cpp_rational(pow(numerator(x), exponent),
                         pow(denominator(x), exponent));
-  } else if constexpr (std::is_same_v<Q, cpp_int>) {
+  } else if constexpr (is_number<Q>::value) {
     return pow(x, exponent);
   } else {
     return si::Unit<Exponentiation<Q, exponent>> *
