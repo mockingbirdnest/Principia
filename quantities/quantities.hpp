@@ -5,7 +5,6 @@
 #include <iostream>
 #include <limits>
 #include <string>
-#include <strstream>
 #include <type_traits>
 
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_NAN.

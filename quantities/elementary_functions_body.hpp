@@ -6,11 +6,11 @@
 
 #include <cmath>
 
-#include "boost/multiprecision/numbers.hpp"
+#include "boost/multiprecision/cpp_bin_float.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -22,7 +22,6 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
