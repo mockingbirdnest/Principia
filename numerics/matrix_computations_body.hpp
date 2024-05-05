@@ -330,6 +330,8 @@ struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
   static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
+// A specialization for |cpp_rational|, which is used for lattice reduction.
+// |double| is not appropriate for the element of |R| in this case.
 template<int rows, int columns>
 struct UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_rational, rows, columns>> {
@@ -452,6 +454,8 @@ struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
   UninitializedU(FixedMatrix<MScalar, rows, columns> const& m);
 };
 
+// TODO(phl): Do we really need all these `Uninitialized` functions?  Is there a
+// better way?
 template<typename Scalar>
 auto CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar>>::
 Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
