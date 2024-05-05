@@ -12,6 +12,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "base/not_constructible.hpp"
+#include "boost/multiprecision/fwd.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
@@ -24,6 +25,7 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
@@ -445,6 +447,13 @@ is_zero() const {
 }
 
 template<typename Value_, typename Argument_, int degree_>
+typename PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+Coefficients const&
+PolynomialInMonomialBasis<Value_, Argument_, degree_>::coefficients() const {
+  return coefficients_;
+}
+
+template<typename Value_, typename Argument_, int degree_>
 Argument_ const& PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 origin() const {
   return origin_;
@@ -508,17 +517,19 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::WithEvaluator() && {
 template<typename Value_, typename Argument_, int degree_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
-  message->set_degree(degree_);
-  auto* const extension =
-      message->MutableExtension(
-          serialization::PolynomialInMonomialBasis::extension);
-  TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
-  DoubleOrQuantityOrPointOrMultivectorSerializer<
-      Argument,
-      serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
-                                                                extension);
-  Evaluator<Value, Difference<Argument>, degree_>::WriteToMessage(
-      extension->mutable_evaluator(), evaluator_);
+  // No serialization for Boost types.
+  if constexpr (!is_number<Value>::value) {
+    message->set_degree(degree_);
+    auto* const extension = message->MutableExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
+    DoubleOrQuantityOrPointOrMultivectorSerializer<
+        Argument,
+        serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
+                                                                  extension);
+    Evaluator<Value, Difference<Argument>, degree_>::WriteToMessage(
+        extension->mutable_evaluator(), evaluator_);
+  }
 }
 
 template<typename Value_, typename Argument_, int degree_>
@@ -750,19 +761,21 @@ operator-(Value const& left,
 }
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree_, int rdegree_>
-constexpr PolynomialInMonomialBasis<LValue, Argument, ldegree_ * rdegree_>
+         typename RArgument, int ldegree_, int rdegree_>
+constexpr PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>
 Compose(PolynomialInMonomialBasis<LValue, RValue, ldegree_> const& left,
-        PolynomialInMonomialBasis<RValue, Argument, rdegree_> const& right) {
+        PolynomialInMonomialBasis<RValue, RArgument, rdegree_> const& right) {
+  using LArgument = RValue;
   using LCoefficients =
-      typename PolynomialInMonomialBasis<LValue, RValue, ldegree_>::
+      typename PolynomialInMonomialBasis<LValue, LArgument, ldegree_>::
           Coefficients;
   using RCoefficients =
-      typename PolynomialInMonomialBasis<RValue, Argument, rdegree_>::
+      typename PolynomialInMonomialBasis<RValue, RArgument, rdegree_>::
           Coefficients;
-  return PolynomialInMonomialBasis<LValue, Argument, ldegree_ * rdegree_>(
+  auto const left_at_origin = left.AtOrigin(LArgument{});
+  return PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>(
       TupleComposition<LCoefficients, RCoefficients>::Compose(
-          left.coefficients_, right.coefficients_),
+          left_at_origin.coefficients_, right.coefficients_),
       right.origin_);
 }
 

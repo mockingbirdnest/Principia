@@ -332,7 +332,7 @@ TEST_F(PolynomialInMonomialBasisTest, Monoid) {
   }
   {
     auto const actual = Compose(p1a, p2a)(t0 + 1 * Second);
-    EXPECT_THAT(actual, AlmostEquals(26 * Ampere, 0));
+    EXPECT_THAT(actual, AlmostEquals(30 * Ampere, 0));
   }
 }
 
@@ -452,15 +452,15 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
 TEST_F(PolynomialInMonomialBasisTest, Boost) {
   using P2i = PolynomialInMonomialBasis<cpp_int, cpp_int, 2>;
   P2i const p2i({1, 3, -8});
-  EXPECT_EQ(p2i(3), -185);
+  EXPECT_EQ(p2i(3), -62);
 
   using P2r = PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2>;
   P2r const p2r({1, 3, -8});
-  EXPECT_EQ(p2r(cpp_rational(1, 3)), cpp_rational(37, 27));
+  EXPECT_EQ(p2r(cpp_rational(1, 3)), cpp_rational(10, 9));
 
   using P2f = PolynomialInMonomialBasis<cpp_bin_float_50, cpp_bin_float_50, 2>;
   P2f const p2f({1, 3, -8});
-  EXPECT_EQ(p2f(cpp_bin_float_50("1.3")), cpp_bin_float_50("-10.206"));
+  EXPECT_EQ(p2f(cpp_bin_float_50("1.25")), cpp_bin_float_50("-7.75"));
 }
 
 // Check that polynomials may be serialized.

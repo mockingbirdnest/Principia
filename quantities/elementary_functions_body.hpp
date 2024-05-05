@@ -5,11 +5,13 @@
 #include <pmmintrin.h>
 
 #include <cmath>
-#include <type_traits>
 
+#include "boost/multiprecision/cpp_int.hpp"
+#include "boost/multiprecision/fwd.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,18 +19,25 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedMultiplyAdd(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (is_number<Q1>::value || is_number<Q2>::value) {
+    return x * y + z;
+  } else {
+    return si::Unit<Product<Q1, Q2>> *
+            numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
+                                             y / si::Unit<Q2>,
+                                             z / si::Unit<Product<Q1, Q2>>);
+  }
 }
 
 template<typename Q1, typename Q2>
@@ -59,8 +68,13 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 }
 
 template<typename Q>
-FORCE_INLINE(inline) Q Abs(Q const& quantity) {
-  return si::Unit<Q> * std::abs(quantity / si::Unit<Q>);
+FORCE_INLINE(inline)
+Q Abs(Q const& x) {
+  if constexpr (is_number<Q>::value) {
+    return abs(x);
+  } else {
+    return si::Unit<Q> * std::abs(x / si::Unit<Q>);
+  }
 }
 
 template<typename Q>
@@ -143,7 +157,16 @@ inline constexpr double Pow<3>(double x) {
 
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  return si::Unit<Exponentiation<Q, exponent>> * Pow<exponent>(x / si::Unit<Q>);
+  if constexpr (std::is_same_v<Q, cpp_rational>) {
+    // It seems that Boost does not define |pow| for |cpp_rational|.
+    return cpp_rational(pow(numerator(x), exponent),
+                        pow(denominator(x), exponent));
+  } else if constexpr (is_number<Q>::value) {
+    return pow(x, exponent);
+  } else {
+    return si::Unit<Exponentiation<Q, exponent>> *
+           Pow<exponent>(x / si::Unit<Q>);
+  }
 }
 
 inline double Sin(Angle const& α) {
@@ -173,6 +196,17 @@ inline Angle ArcTan(double const y, double const x) {
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y / si::Unit<Quantity<D>>, x / si::Unit<Quantity<D>>);
+}
+
+template<typename Q>
+  requires is_number<Q>::value || std::floating_point<Q>
+Q Round(Q const& x) {
+  if constexpr (is_number<Q>::value) {
+    // TODO(phl): This is clunky.  Use |divide_qr| or something.
+    return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
+  } else {
+    return std::round(x);
+  }
 }
 
 inline double Sinh(Angle const& α) {

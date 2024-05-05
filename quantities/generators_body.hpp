@@ -5,6 +5,7 @@
 #include <tuple>
 
 #include "base/not_constructible.hpp"
+#include "boost/multiprecision/fwd.hpp"
 #include "quantities/dimensions.hpp"
 
 namespace principia {
@@ -12,6 +13,7 @@ namespace quantities {
 namespace _generators {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_dimensions;
 
@@ -42,6 +44,12 @@ struct ExponentiationGenerator<double, n> : not_constructible {
 template<int n>
 struct ExponentiationGenerator<int, n> : not_constructible {
   using Type = int;
+};
+
+template<typename Number, int n>
+  requires is_number<Number>::value
+struct ExponentiationGenerator<Number, n> : not_constructible {
+  using Type = Number;
 };
 
 template<template<typename> typename Quantity, typename D, int n>
