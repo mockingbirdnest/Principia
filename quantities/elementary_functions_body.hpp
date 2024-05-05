@@ -30,7 +30,14 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
   if constexpr (is_number<Q1>::value || is_number<Q2>::value) {
-    return x * y + z;
+    if constexpr ((std::is_same_v<Q1, cpp_int> ||
+                   std::is_same_v<Q1, cpp_rational>) &&
+                  (std::is_same_v<Q2, cpp_int> ||
+                   std::is_same_v<Q2, cpp_rational>)) {
+      return x * y + z;
+    } else {
+      return fma(x, y, z);
+    }
   } else {
     return si::Unit<Product<Q1, Q2>> *
             numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
