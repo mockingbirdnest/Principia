@@ -41,11 +41,20 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::int64_t N,
     std::int64_t T);
 
+//TODO(phl)comment
+template<std::int64_t zeroes>
+absl::StatusOr<cpp_rational> IterativeStehléZimmermannSimultaneousSearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    cpp_rational const& near_argument,
+    std::int64_t N);
+
 }  // namespace internal
 
 using internal::AccuratePolynomial;
 using internal::GalExhaustiveMultisearch;
 using internal::GalExhaustiveSearch;
+using internal::IterativeStehléZimmermannSimultaneousSearch;
 using internal::StehléZimmermannSimultaneousSearch;
 
 }  // namespace _accurate_table_generator

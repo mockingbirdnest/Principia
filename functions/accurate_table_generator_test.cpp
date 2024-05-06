@@ -156,6 +156,102 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
   }
 }
 
+#if 0
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15NotFound) {
+  auto const u₀ =
+      cpp_rational("160560481864624295660215/302231454903657293676544");
+  auto const u_expected =
+      cpp_rational("1284483861309301654012917/604462909807314587353088");
+  auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
+  auto const cos = [](cpp_rational const& u) { return Cos(u / 4); };
+  CHECK(0.5 <= u₀ & u₀ < 1.0) << u₀;
+  CHECK(0.5 <= sin(u₀) && sin(u₀) < 1.0);
+  CHECK(0.5 <= cos(u₀) && cos(u₀) < 1.0);
+  AccuratePolynomial<cpp_rational, 2> sin_taylor2(
+      {4 * cpp_rational(Sin(u₀ / 4)),
+       cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4)) / 8},
+      u₀);
+  AccuratePolynomial<cpp_rational, 2> cos_taylor2(
+      {cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4) / 4),
+       -cpp_rational(Cos(u₀ / 4) / 32)},
+      u₀);
+
+  auto const u = StehléZimmermannSimultaneousSearch<15>(
+      {sin, cos},
+      {sin_taylor2, cos_taylor2},
+      u₀,
+      /*N=*/1ll << 53,
+      /*T=*/1ll << 22);
+  EXPECT_THAT(u,
+              IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
+  EXPECT_THAT(static_cast<double>(*u),
+              RelativeErrorFrom(u₀, Lt(1.3e-10)));
+  {
+    std::string const mathematica = ToMathematica(sin(*u),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+  }
+  {
+    std::string const mathematica = ToMathematica(cos(*u),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+  }
+}
+#endif
+
+TEST_F(AccurateTableGeneratorTest, IterativeStehléZimmermannSinCos15) {
+  double const x₀ = 17.0 / 128;
+  double const u₀ = 4 * x₀;
+  auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
+  auto const cos = [](cpp_rational const& u) { return Cos(u / 4); };
+  CHECK(0.5 <= u₀ & u₀ < 1.0) << u₀;
+  CHECK(0.5 <= sin(u₀) && sin(u₀) < 1.0);
+  CHECK(0.5 <= cos(u₀) && cos(u₀) < 1.0);
+  AccuratePolynomial<cpp_rational, 2> sin_taylor2(
+      {4 * cpp_rational(Sin(u₀ / 4)),
+       cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4)) / 8},
+      u₀);
+  AccuratePolynomial<cpp_rational, 2> cos_taylor2(
+      {cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4) / 4),
+       -cpp_rational(Cos(u₀ / 4) / 32)},
+      u₀);
+
+  auto const u = IterativeStehléZimmermannSimultaneousSearch<15>(
+      {sin, cos},
+      {sin_taylor2, cos_taylor2},
+      u₀,
+      /*N=*/1ll << 53);
+  //EXPECT_THAT(u,
+  //            IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
+  //EXPECT_THAT(static_cast<double>(*u),
+  //            RelativeErrorFrom(u₀, Lt(1.3e-10)));
+  //{
+  //  std::string const mathematica = ToMathematica(sin(*u),
+  //                                                /*express_in=*/std::nullopt,
+  //                                                /*base=*/2);
+  //  std::string_view mantissa = mathematica;
+  //  CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+  //  EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+  //}
+  //{
+  //  std::string const mathematica = ToMathematica(cos(*u),
+  //                                                /*express_in=*/std::nullopt,
+  //                                                /*base=*/2);
+  //  std::string_view mantissa = mathematica;
+  //  CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+  //  EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+  //}
+}
 #endif
 
 }  // namespace _accurate_table_generator

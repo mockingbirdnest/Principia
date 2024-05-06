@@ -9,6 +9,7 @@
 #include <thread>
 #include <vector>
 
+#include "base/bits.hpp"
 #include "base/for_all_of.hpp"
 #include "base/tags.hpp"
 #include "base/thread_pool.hpp"
@@ -24,6 +25,7 @@ namespace functions {
 namespace _accurate_table_generator {
 namespace internal {
 
+using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_tags;
 using namespace principia::base::_thread_pool;
@@ -281,7 +283,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
-  VLOG(1) << "t₀ = " << t₀;
+  LOG(ERROR) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
   } else if (denominator(t₀) != 1) {
@@ -291,6 +293,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   for (auto const& Fᵢ : F) {
     auto const Fᵢ_t₀ = Fᵢ(t₀);
     auto const Fᵢ_t₀_cmod_1 = Fᵢ_t₀ - round(Fᵢ_t₀);
+LOG(ERROR)<< "Fi(t₀) cmod 1 = " <<Fᵢ_t₀_cmod_1;
     if (M * abs(Fᵢ_t₀_cmod_1) >= 1) {
       VLOG(1) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
       return absl::NotFoundError("Not enough zeroes");
@@ -298,6 +301,72 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   }
 
   return t₀ / N + near_argument;
+}
+
+template<std::int64_t zeroes>
+absl::StatusOr<cpp_rational> IterativeStehléZimmermannSimultaneousSearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    cpp_rational const& near_argument,
+    std::int64_t const N) {
+  //TODO(phl):tolerance
+  std::int64_t const M = 1 << zeroes;
+  auto const T₀ =
+      PowerOf2Le(8 * Cbrt(static_cast<double>(N) * static_cast<double>(M)));
+LOG(ERROR)<<T₀;
+
+  auto high_argument = near_argument;// + cpp_rational(T₀, N);
+  high_argument =
+      cpp_rational("160560481864624295660215/302231454903657293676544");
+//      cpp_rational("642241934607515968772377/1208925819614629174706176");
+  auto low_argument = near_argument - cpp_rational(T₀, N);
+  for (;;) {
+    LOG(ERROR)<<"high arg = "<<high_argument;
+LOG(ERROR)<<std::setprecision(25)<<static_cast<cpp_bin_float_50>(high_argument);
+    auto T = T₀;
+    while (T > 0) {
+      LOG(ERROR)<<"T = "<<T;
+      auto const status_or_solution =
+          StehléZimmermannSimultaneousSearch<zeroes>(
+              functions, polynomials, high_argument, N, T);
+      absl::Status const& status = status_or_solution.status();
+      if (status.ok()) {
+LOG(ERROR)<<status_or_solution.value();
+        return status_or_solution.value();
+      } else if (absl::IsOutOfRange(status) || absl::IsNotFound(status)) {
+LOG(ERROR)<<status;
+        T /= 2;
+      } else if (absl::IsNotFound(status)) {
+        return status;
+      } else {
+        return status;
+      }
+    }
+LOG(ERROR)<<"T is 0";
+  return absl::OkStatus();
+//    LOG(ERROR)<<"low arg = "<<low_argument;
+//    T = T₀;
+//    while (T > 0) {
+//      //LOG(ERROR)<<"T = "<<T;
+//      auto const status_or_solution =
+//          StehléZimmermannSimultaneousSearch<zeroes>(
+//              functions, polynomials, low_argument, N, T);
+//      absl::Status const& status = status_or_solution.status();
+//      if (status.ok()) {
+//LOG(ERROR)<<status_or_solution.value();
+//        return status_or_solution.value();
+//      } else if (absl::IsOutOfRange(status)) {
+//        T /= 2;
+//      } else if (absl::IsNotFound(status)) {
+//        break;
+//      } else {
+//LOG(ERROR)<<status;
+//        return status;
+//      }
+//    }
+    high_argument += cpp_rational(2 * T₀, N);
+    low_argument -= cpp_rational(2 * T₀, N);
+  }
 }
 
 }  // namespace internal
