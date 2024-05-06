@@ -243,9 +243,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   static constexpr std::int64_t dimension = 3;
   FixedMatrix<cpp_rational, 5, dimension> w;
   for (std::int64_t i = 0; i < dimension; ++i) {
-    auto const& v_i = *v[i];
-    VLOG(1) << "v[" << i << "] = " << v_i;
-    if (norm1(v_i) >= C) {
+    auto const& vᵢ = *v[i];
+    VLOG(1) << "v[" << i << "] = " << vᵢ;
+    if (norm1(vᵢ) >= C) {
       return absl::OutOfRangeError("Vectors too big");
     }
   }
@@ -254,16 +254,16 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // degree 1 coefficient is 0, there is no solution.
   std::array<cpp_int, dimension> Q_multipliers;
   for (std::int64_t i = 0; i < dimension; ++i) {
-    auto const& v_i1 = *v[(i + 1) % dimension];
-    auto const& v_i2 = *v[(i + 2) % dimension];
-    Q_multipliers[i] = v_i1[3] * v_i2[4] - v_i1[4] * v_i2[3];
+    auto const& vᵢ₊₁ = *v[(i + 1) % dimension];
+    auto const& vᵢ₊₂ = *v[(i + 2) % dimension];
+    Q_multipliers[i] = vᵢ₊₁[3] * vᵢ₊₂[4] - vᵢ₊₁[4] * vᵢ₊₂[3];
   }
 
   FixedVector<cpp_int, 2> Q_coefficients{};
   for (std::int64_t i = 0; i < dimension; ++i) {
-    auto const& v_i = *v[i];
+    auto const& vᵢ = *v[i];
     for (std::int64_t j = 0; j < Q_coefficients.size(); ++j) {
-      Q_coefficients[j] += Q_multipliers[i] * v_i[j];
+      Q_coefficients[j] += Q_multipliers[i] * vᵢ[j];
     }
   }
 
@@ -288,10 +288,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     return absl::NotFoundError("Noninteger root");
   }
 
-  for (auto const& Fi : F) {
-    auto const Fi_t₀ = Fi(t₀);
-    if (M * abs(Fi_t₀ - round(Fi_t₀)) >= 1) {
-      LOG(ERROR) << Fi_t₀ - round(Fi_t₀);
+  for (auto const& Fᵢ : F) {
+    auto const Fᵢ_t₀ = Fᵢ(t₀);
+    auto const Fᵢ_t₀_cmod_1 = Fᵢ_t₀ - round(Fᵢ_t₀);
+    if (M * abs(Fᵢ_t₀_cmod_1) >= 1) {
+      VLOG(1) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
       return absl::NotFoundError("Not enough zeroes");
     }
   }
