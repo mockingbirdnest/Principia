@@ -13,6 +13,7 @@
 #include "base/for_all_of.hpp"
 #include "base/tags.hpp"
 #include "base/thread_pool.hpp"
+#include "geometry/interval.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
@@ -29,6 +30,7 @@ using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_tags;
 using namespace principia::base::_thread_pool;
+using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_computations;
@@ -300,7 +302,7 @@ LOG(ERROR)<< "Fi(t₀) cmod 1 = " <<Fᵢ_t₀_cmod_1;
     }
   }
 
-  return t₀ / N + near_argument;
+  return near_argument + t₀ / N;
 }
 
 template<std::int64_t zeroes>
@@ -309,41 +311,35 @@ absl::StatusOr<cpp_rational> IterativeStehléZimmermannSimultaneousSearch(
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     cpp_rational const& near_argument,
     std::int64_t const N) {
-  //TODO(phl):tolerance
   std::int64_t const M = 1 << zeroes;
+  //TODO(phl):tolerance
   auto const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(N) * static_cast<double>(M)));
-LOG(ERROR)<<T₀;
 
-  auto high_argument = near_argument;// + cpp_rational(T₀, N);
-  high_argument =
-      cpp_rational("160560481864624295660215/302231454903657293676544");
-//      cpp_rational("642241934607515968772377/1208925819614629174706176");
-  auto low_argument = near_argument - cpp_rational(T₀, N);
+  Interval<cpp_rational> high_interval{
+      .min = near_argument - cpp_rational(T₀, N),
+      .max = near_argument + cpp_rational(T₀, N)};
   for (;;) {
-    LOG(ERROR)<<"high arg = "<<high_argument;
-LOG(ERROR)<<std::setprecision(25)<<static_cast<cpp_bin_float_50>(high_argument);
     auto T = T₀;
     while (T > 0) {
-      LOG(ERROR)<<"T = "<<T;
+LOG(ERROR)<<"T = "<<T<<" interval = "<<high_interval;
       auto const status_or_solution =
           StehléZimmermannSimultaneousSearch<zeroes>(
-              functions, polynomials, high_argument, N, T);
+              functions, polynomials, high_interval.midpoint(), N, T);
       absl::Status const& status = status_or_solution.status();
       if (status.ok()) {
 LOG(ERROR)<<status_or_solution.value();
         return status_or_solution.value();
-      } else if (absl::IsOutOfRange(status) || absl::IsNotFound(status)) {
-LOG(ERROR)<<status;
+      } else if (absl::IsOutOfRange(status)) {
+        high_interval.max = high_interval.midpoint();
         T /= 2;
       } else if (absl::IsNotFound(status)) {
-        return status;
+        break;
       } else {
+LOG(ERROR)<<status;
         return status;
       }
     }
-LOG(ERROR)<<"T is 0";
-  return absl::OkStatus();
 //    LOG(ERROR)<<"low arg = "<<low_argument;
 //    T = T₀;
 //    while (T > 0) {
@@ -364,8 +360,8 @@ LOG(ERROR)<<"T is 0";
 //        return status;
 //      }
 //    }
-    high_argument += cpp_rational(2 * T₀, N);
-    low_argument -= cpp_rational(2 * T₀, N);
+    high_interval = {.min = high_interval.max,
+                     .max = high_interval.max + cpp_rational(2 * T₀, N)};
   }
 }
 
