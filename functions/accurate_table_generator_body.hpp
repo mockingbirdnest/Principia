@@ -312,7 +312,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::int64_t const N) {
   std::int64_t const M = 1 << zeroes;
   // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
-  // to avoid starting with too large a value.
+  // to avoid starting with too small a value.
   auto const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
