@@ -41,9 +41,10 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::int64_t N,
     std::int64_t T);
 
-//TODO(phl)comment
+// Performs a search around |near_argument| to find a solution, automatically
+// adjusting the interval over which the search happens.
 template<std::int64_t zeroes>
-absl::StatusOr<cpp_rational> IterativeStehléZimmermannSimultaneousSearch(
+absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     cpp_rational const& near_argument,
@@ -54,7 +55,7 @@ absl::StatusOr<cpp_rational> IterativeStehléZimmermannSimultaneousSearch(
 using internal::AccuratePolynomial;
 using internal::GalExhaustiveMultisearch;
 using internal::GalExhaustiveSearch;
-using internal::IterativeStehléZimmermannSimultaneousSearch;
+using internal::StehléZimmermannSimultaneousFullSearch;
 using internal::StehléZimmermannSimultaneousSearch;
 
 }  // namespace _accurate_table_generator

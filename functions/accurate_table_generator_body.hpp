@@ -285,7 +285,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
-  LOG(ERROR) << "t₀ = " << t₀;
+  VLOG(1) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
   } else if (denominator(t₀) != 1) {
@@ -295,9 +295,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   for (auto const& Fᵢ : F) {
     auto const Fᵢ_t₀ = Fᵢ(t₀);
     auto const Fᵢ_t₀_cmod_1 = Fᵢ_t₀ - round(Fᵢ_t₀);
-LOG(ERROR)<< "Fi(t₀) cmod 1 = " <<Fᵢ_t₀_cmod_1;
+    VLOG(1) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
     if (M * abs(Fᵢ_t₀_cmod_1) >= 1) {
-      VLOG(1) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
       return absl::NotFoundError("Not enough zeroes");
     }
   }
@@ -306,62 +305,76 @@ LOG(ERROR)<< "Fi(t₀) cmod 1 = " <<Fᵢ_t₀_cmod_1;
 }
 
 template<std::int64_t zeroes>
-absl::StatusOr<cpp_rational> IterativeStehléZimmermannSimultaneousSearch(
+absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     cpp_rational const& near_argument,
     std::int64_t const N) {
   std::int64_t const M = 1 << zeroes;
-  //TODO(phl):tolerance
+  // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
+  // to avoid starting with too large a value.
   auto const T₀ =
-      PowerOf2Le(8 * Cbrt(static_cast<double>(N) * static_cast<double>(M)));
+      PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
+  // We construct intervals above and below |near_argument| and search for
+  // solutions on each side alternatively.
   Interval<cpp_rational> high_interval{
-      .min = near_argument - cpp_rational(T₀, N),
-      .max = near_argument + cpp_rational(T₀, N)};
+      .min = near_argument,
+      .max = near_argument + cpp_rational(2 * T₀, N)};
+  Interval<cpp_rational> low_interval{
+      .min = near_argument - cpp_rational(2 * T₀, N),
+      .max = near_argument};
   for (;;) {
-    auto T = T₀;
-    while (T > 0) {
-LOG(ERROR)<<"T = "<<T<<" interval = "<<high_interval;
-      auto const status_or_solution =
-          StehléZimmermannSimultaneousSearch<zeroes>(
-              functions, polynomials, high_interval.midpoint(), N, T);
-      absl::Status const& status = status_or_solution.status();
-      if (status.ok()) {
-LOG(ERROR)<<status_or_solution.value();
-        return status_or_solution.value();
-      } else if (absl::IsOutOfRange(status)) {
-        high_interval.max = high_interval.midpoint();
-        T /= 2;
-      } else if (absl::IsNotFound(status)) {
-        break;
-      } else {
-LOG(ERROR)<<status;
-        return status;
+    {
+      auto T = T₀;
+      while (T > 0) {
+        VLOG(1) << "T = " << T << ", high_interval = " << high_interval;
+        auto const status_or_solution =
+            StehléZimmermannSimultaneousSearch<zeroes>(
+                functions, polynomials, high_interval.midpoint(), N, T);
+        absl::Status const& status = status_or_solution.status();
+        if (status.ok()) {
+          return status_or_solution.value();
+        } else if (absl::IsOutOfRange(status)) {
+          // Halve the interval.  Make sure that the new interval is contiguous
+          // to the segment already explored.
+          high_interval.max = high_interval.midpoint();
+          T /= 2;
+        } else if (absl::IsNotFound(status)) {
+          // No solutions here, go to the next interval.
+          break;
+        } else {
+          return status;
+        }
       }
     }
-//    LOG(ERROR)<<"low arg = "<<low_argument;
-//    T = T₀;
-//    while (T > 0) {
-//      //LOG(ERROR)<<"T = "<<T;
-//      auto const status_or_solution =
-//          StehléZimmermannSimultaneousSearch<zeroes>(
-//              functions, polynomials, low_argument, N, T);
-//      absl::Status const& status = status_or_solution.status();
-//      if (status.ok()) {
-//LOG(ERROR)<<status_or_solution.value();
-//        return status_or_solution.value();
-//      } else if (absl::IsOutOfRange(status)) {
-//        T /= 2;
-//      } else if (absl::IsNotFound(status)) {
-//        break;
-//      } else {
-//LOG(ERROR)<<status;
-//        return status;
-//      }
-//    }
+    {
+      auto T = T₀;
+      while (T > 0) {
+        VLOG(1) << "T = " << T << ", low_interval = " << low_interval;
+        auto const status_or_solution =
+            StehléZimmermannSimultaneousSearch<zeroes>(
+                functions, polynomials, low_interval.midpoint(), N, T);
+        absl::Status const& status = status_or_solution.status();
+        if (status.ok()) {
+          return status_or_solution.value();
+        } else if (absl::IsOutOfRange(status)) {
+          // Halve the interval.  Make sure that the new interval is contiguous
+          // to the segment already explored.
+          low_interval.min = low_interval.midpoint();
+          T /= 2;
+        } else if (absl::IsNotFound(status)) {
+          // No solutions here, go to the next interval.
+          break;
+        } else {
+          return status;
+        }
+      }
+    }
     high_interval = {.min = high_interval.max,
                      .max = high_interval.max + cpp_rational(2 * T₀, N)};
+    low_interval = {.min = low_interval.min - cpp_rational(2 * T₀, N),
+                    .max = low_interval.min};
   }
 }
 
