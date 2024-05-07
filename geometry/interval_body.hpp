@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "glog/logging.h"
 #include "boost/multiprecision/number.hpp"
 
 namespace principia {
@@ -21,6 +22,7 @@ Difference<T> Interval<T>::measure() const {
 template<typename T>
 T Interval<T>::midpoint() const {
   if constexpr (is_number<T>::value) {
+    DCHECK_GE(max, min);
     return min + measure() / 2;
   } else {
     return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
