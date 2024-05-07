@@ -20,6 +20,7 @@ namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
 
+using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::SizeIs;
 using namespace boost::multiprecision;
@@ -157,6 +158,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
 }
 
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15) {
+  FLAGS_v = 0;
+  google::LogToStderr();
   double const x₀ = 17.0 / 128;
   double const u₀ = 4 * x₀;
   auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
@@ -190,7 +193,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15) {
                                                   /*base=*/2);
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-    EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+    EXPECT_THAT(mantissa.substr(53, 15), Eq("00000""00000""00000"));
   }
   {
     std::string const mathematica = ToMathematica(cos(*u),
@@ -198,7 +201,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15) {
                                                   /*base=*/2);
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-    EXPECT_EQ("00000""00000""00000", mantissa.substr(53, 15));
+    EXPECT_THAT(mantissa.substr(53, 15), Eq("00000""00000""00000"));
   }
 }
 #endif

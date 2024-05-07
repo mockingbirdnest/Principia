@@ -20,6 +20,7 @@
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace functions {
@@ -36,6 +37,7 @@ using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t ε_computation_points = 16;
 
@@ -169,7 +171,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
       ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
     }
   }
-  VLOG(1) << "ε = " << ε;
+  VLOG(2) << "ε = " << ε;
 
   // Step 3, first part: compute Mʹ and C.  Give up is C is 0, which may happen
   // if ε is too large.
@@ -178,7 +180,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   if (C == 0) {
     return absl::FailedPreconditionError("Error too large");
   }
-  VLOG(1) << "C = " << C;
+  VLOG(2) << "C = " << C;
 
   // Step 3, second part: compute P̃
   std::array<std::optional<AccuratePolynomial<cpp_int, 2>>, 2> P̃;
@@ -191,7 +193,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
           P̃_coefficient = static_cast<cpp_int>(Round(composition_coefficient));
         });
     P̃[i] = AccuratePolynomial<cpp_int, 2>(P̃_coefficients);
-    VLOG(1) << "P̃[" << i << "] = " << *P̃[i];
+    VLOG(2) << "P̃[" << i << "] = " << *P̃[i];
   }
 
   // Step 5 and 6: form the lattice.  Note that our vectors are in columns, not
@@ -207,14 +209,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
        0,     0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
        0,     0,                            3,                            0,
        0,     0,                            0,                            3});
-  VLOG(1) << "L = " << L;
+  VLOG(2) << "L = " << L;
 
   // Step 7: reduce the lattice.
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
   Lattice const V = ToInt(LenstraLenstraLovász(ToRational(L)));
-  VLOG(1) << "V = " << V;
+  VLOG(2) << "V = " << V;
 
   // Step 8: find the three shortest vectors of the reduced lattice.  We sort
   // the columns according to the L₂ norm.
@@ -248,7 +250,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   FixedMatrix<cpp_rational, 5, dimension> w;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& vᵢ = *v[i];
-    VLOG(1) << "v[" << i << "] = " << vᵢ;
+    VLOG(2) << "v[" << i << "] = " << vᵢ;
     if (norm1(vᵢ) >= C) {
       return absl::OutOfRangeError("Vectors too big");
     }
@@ -277,7 +279,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   AccuratePolynomial<cpp_rational, 1> const Q({Q_coefficients[0],
                                                Q_coefficients[1]});
-  VLOG(1) << "Q = " << Q;
+  VLOG(2) << "Q = " << Q;
 
   // Step 11: compute q and find its integer root (singular), if any.
   AccuratePolynomial<cpp_rational, 1> const q =
@@ -285,7 +287,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
-  VLOG(1) << "t₀ = " << t₀;
+  VLOG(2) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
   } else if (denominator(t₀) != 1) {
@@ -295,7 +297,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   for (auto const& Fᵢ : F) {
     auto const Fᵢ_t₀ = Fᵢ(t₀);
     auto const Fᵢ_t₀_cmod_1 = Fᵢ_t₀ - round(Fᵢ_t₀);
-    VLOG(1) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
+    VLOG(2) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
     if (M * abs(Fᵢ_t₀_cmod_1) >= 1) {
       return absl::NotFoundError("Not enough zeroes");
     }
@@ -325,10 +327,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       .min = near_argument - cpp_rational(2 * T₀, N),
       .max = near_argument};
   for (;;) {
+    VLOG_EVERY_N(1, 10) << "high = "
+                        << DebugString(static_cast<double>(high_interval.max));
+    VLOG_EVERY_N(1, 10) << "low  = "
+                        << DebugString(static_cast<double>(low_interval.min));
     {
       auto T = T₀;
       while (T > 0) {
-        VLOG(1) << "T = " << T << ", high_interval = " << high_interval;
+        VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(
                 functions, polynomials, high_interval.midpoint(), N, T);
@@ -351,7 +357,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     {
       auto T = T₀;
       while (T > 0) {
-        VLOG(1) << "T = " << T << ", low_interval = " << low_interval;
+        VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(
                 functions, polynomials, low_interval.midpoint(), N, T);
