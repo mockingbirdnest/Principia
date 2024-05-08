@@ -4,10 +4,15 @@
 
 #include <algorithm>
 
+#include "glog/logging.h"
+#include "boost/multiprecision/number.hpp"
+
 namespace principia {
 namespace geometry {
 namespace _interval {
 namespace internal {
+
+using namespace boost::multiprecision;
 
 template<typename T>
 Difference<T> Interval<T>::measure() const {
@@ -16,7 +21,12 @@ Difference<T> Interval<T>::measure() const {
 
 template<typename T>
 T Interval<T>::midpoint() const {
-  return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
+  if constexpr (is_number<T>::value) {
+    DCHECK_GE(max, min);
+    return min + measure() / 2;
+  } else {
+    return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
+  }
 }
 
 template<typename T>

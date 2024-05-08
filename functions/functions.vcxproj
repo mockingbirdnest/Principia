@@ -22,5 +22,6 @@
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="Shared">
     <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   </ImportGroup>
 </Project>
