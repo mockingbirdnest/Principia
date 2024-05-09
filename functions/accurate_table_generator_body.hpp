@@ -443,7 +443,7 @@ StehléZimmermannSimultaneousMultisearch(
   std::vector<std::future<absl::StatusOr<cpp_rational>>> futures;
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
     futures.push_back(
-        search_pool.Add([i, &functions, &polynomials, &starting_arguments]() -> absl::StatusOr<cpp_rational>{
+        search_pool.Add([i, &functions, &polynomials, &starting_arguments]() {
           return StehléZimmermannSimultaneousFullSearch<zeroes>(
               functions, polynomials[i], starting_arguments[i]);
         }));
