@@ -430,6 +430,31 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   }
 }
 
+template<std::int64_t zeroes>
+std::vector<absl::StatusOr<cpp_rational>>
+StehléZimmermannSimultaneousMultisearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
+        polynomials,
+    std::vector<cpp_rational> const& starting_arguments) {
+  ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
+
+  std::vector<std::future<absl::StatusOr<cpp_rational>>> futures;
+  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
+    futures.push_back(
+        search_pool.Add([i, &functions, &polynomials, &starting_arguments]() -> absl::StatusOr<cpp_rational>{
+          return StehléZimmermannSimultaneousFullSearch<zeroes>(
+              functions, polynomials[i], starting_arguments[i]);
+        }));
+  }
+
+  std::vector<absl::StatusOr<cpp_rational>> results;
+  for (auto& future : futures) {
+    results.push_back(future.get());
+  }
+  return results;
+}
+
 }  // namespace internal
 }  // namespace _accurate_table_generator
 }  // namespace functions

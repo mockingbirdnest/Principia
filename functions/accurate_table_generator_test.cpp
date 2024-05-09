@@ -78,7 +78,7 @@ TEST_F(AccurateTableGeneratorTest, GalSinCos5) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, GalSinCos5Multisearch) {
+TEST_F(AccurateTableGeneratorTest, GalMultisearchSinCos5) {
   static constexpr std::int64_t index_begin = 17;
   static constexpr std::int64_t index_end = 100;
   std::vector<cpp_rational> starting_arguments;
@@ -240,6 +240,51 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
     EXPECT_THAT(mantissa.substr(53, 15), Eq("00000""00000""00000"));
+  }
+}
+
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos5) {
+  static constexpr std::int64_t index_begin = 17;
+  static constexpr std::int64_t index_end = 100;
+  std::vector<cpp_rational> starting_arguments;
+  std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
+  for (std::int64_t i = index_begin; i < index_end; ++i) {
+    auto const x₀ = i / 128.0;
+    AccuratePolynomial<cpp_rational, 2> sin_taylor2({cpp_rational(Sin(x₀)),
+                                                     cpp_rational(Cos(x₀)),
+                                                     -cpp_rational(Sin(x₀)) / 2},
+                                                    x₀);
+    AccuratePolynomial<cpp_rational, 2> cos_taylor2({cpp_rational(Cos(x₀)),
+                                                     -cpp_rational(Sin(x₀)),
+                                                     -cpp_rational(Cos(x₀) / 2)},
+                                                    x₀);
+    starting_arguments.push_back(x₀);
+    polynomials.push_back({sin_taylor2, cos_taylor2});
+  }
+  auto const xs = StehléZimmermannSimultaneousMultisearch<5>(
+      {Sin, Cos}, polynomials, starting_arguments);
+  EXPECT_THAT(xs, SizeIs(index_end - index_begin));
+  for (std::int64_t i = 0; i < xs.size(); ++i) {
+    CHECK_OK(xs[i]);
+    auto const& x = *xs[i];
+    EXPECT_THAT(static_cast<double>(x),
+                RelativeErrorFrom((i + index_begin) / 128.0, Lt(8.6e-13)));
+    {
+      std::string const mathematica = ToMathematica(Sin(x),
+                                                    /*express_in=*/std::nullopt,
+                                                    /*base=*/2);
+      std::string_view mantissa = mathematica;
+      CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+      EXPECT_EQ("00000", mantissa.substr(53, 5));
+    }
+    {
+      std::string const mathematica = ToMathematica(Cos(x),
+                                                    /*express_in=*/std::nullopt,
+                                                    /*base=*/2);
+      std::string_view mantissa = mathematica;
+      CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+      EXPECT_EQ("00000", mantissa.substr(53, 5));
+    }
   }
 }
 
