@@ -310,15 +310,17 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    cpp_rational const& near_argument,
-    std::int64_t const N) {
-  std::int64_t const M = 1 << zeroes;
+    cpp_rational const& near_argument) {
+  constexpr std::int64_t M = 1LL << zeroes;
+  constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
+
   // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
   // to avoid starting with too small a value.
   auto const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
   // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
+  // TODO(phl): Handle an argument that is exactly a power of 2.
   std::int64_t argument_exponent;
   auto const argument_mantissa =
       frexp(static_cast<cpp_bin_float_50>(near_argument), &argument_exponent);
@@ -381,7 +383,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                                                        T);
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
-          return status_or_solution.value();
+          return status_or_solution.value() / argument_scale;
         } else if (absl::IsOutOfRange(status)) {
           // Halve the interval.  Make sure that the new interval is contiguous
           // to the segment already explored.
@@ -407,7 +409,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                                                        T);
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
-          return status_or_solution.value();
+          return status_or_solution.value() / argument_scale;
         } else if (absl::IsOutOfRange(status)) {
           // Halve the interval.  Make sure that the new interval is contiguous
           // to the segment already explored.
