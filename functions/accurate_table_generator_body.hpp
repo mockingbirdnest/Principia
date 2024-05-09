@@ -318,6 +318,40 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   auto const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
+  // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
+  {
+    std::int64_t exponent;
+    auto const argument_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(near_argument), &exponent);
+    CHECK_NE(0, argument_mantissa);
+    cpp_rational const scaled_argument = near_argument * exp2(-exponent);
+  }
+
+  std::array<AccurateFunction, 2> scaled_functions;
+  for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
+    std::int64_t exponent;
+    auto const function_mantissa =
+        frexp(functions[i](near_argument), &exponent);
+    CHECK_NE(0, function_mantissa);
+    auto const scale = exp2(-exponent);
+    scaled_functions[i] = [&functions, i, scale](cpp_rational const& argument) {
+      return functions[i](argument) * scale;
+    };
+  }
+
+  auto build_scaled_polynomial =
+      [&near_argument](AccuratePolynomial<cpp_rational, 2> const& polynomial) {
+        std::int64_t exponent;
+        auto const polynomial_mantissa =
+            frexp(static_cast<cpp_bin_float_50>(polynomial(near_argument)),
+                  &exponent);
+        CHECK_NE(0, polynomial_mantissa);
+        return polynomial * exp2(-exponent);
+      };
+  std::array<AccuratePolynomial<cpp_rational, 2>, 2> const scaled_polynomials{
+      build_scaled_polynomial(polynomials[0]),
+      build_scaled_polynomial(polynomials[1])};
+
   // We construct intervals above and below |near_argument| and search for
   // solutions on each side alternatively.
   Interval<cpp_rational> high_interval{
