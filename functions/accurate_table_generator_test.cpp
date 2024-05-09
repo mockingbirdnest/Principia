@@ -253,14 +253,16 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
   for (std::int64_t i = index_begin; i < index_end; ++i) {
     auto const x₀ = i / 128.0;
-    AccuratePolynomial<cpp_rational, 2> sin_taylor2({cpp_rational(Sin(x₀)),
-                                                     cpp_rational(Cos(x₀)),
-                                                     -cpp_rational(Sin(x₀)) / 2},
-                                                    x₀);
-    AccuratePolynomial<cpp_rational, 2> cos_taylor2({cpp_rational(Cos(x₀)),
-                                                     -cpp_rational(Sin(x₀)),
-                                                     -cpp_rational(Cos(x₀) / 2)},
-                                                    x₀);
+    AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
+        {cpp_rational(Sin(x₀)),
+         cpp_rational(Cos(x₀)),
+         -cpp_rational(Sin(x₀)) / 2},
+        x₀);
+    AccuratePolynomial<cpp_rational, 2> const cos_taylor2(
+        {cpp_rational(Cos(x₀)),
+         -cpp_rational(Sin(x₀)),
+         -cpp_rational(Cos(x₀) / 2)},
+        x₀);
     starting_arguments.push_back(x₀);
     polynomials.push_back({sin_taylor2, cos_taylor2});
   }
