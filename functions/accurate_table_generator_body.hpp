@@ -310,22 +310,62 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    cpp_rational const& near_argument,
-    std::int64_t const N) {
-  std::int64_t const M = 1 << zeroes;
+    cpp_rational const& near_argument) {
+  constexpr std::int64_t M = 1LL << zeroes;
+  constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
+
   // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
   // to avoid starting with too small a value.
   auto const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
-  // We construct intervals above and below |near_argument| and search for
+  // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
+  // TODO(phl): Handle an argument that is exactly a power of 2.
+  std::int64_t argument_exponent;
+  auto const argument_mantissa =
+      frexp(static_cast<cpp_bin_float_50>(near_argument), &argument_exponent);
+  CHECK_NE(0, argument_mantissa);
+  auto const argument_scale = exp2(-argument_exponent);
+  cpp_rational const scaled_argument = near_argument * argument_scale;
+
+  std::array<AccurateFunction, 2> scaled_functions;
+  for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
+    std::int64_t function_exponent;
+    auto const function_mantissa =
+        frexp(functions[i](near_argument), &function_exponent);
+    CHECK_NE(0, function_mantissa);
+    auto const function_scale = exp2(-function_exponent);
+    scaled_functions[i] = [argument_scale, function_scale, &functions, i](
+                              cpp_rational const& argument) {
+      return functions[i](argument / argument_scale) * function_scale;
+    };
+  }
+
+  auto build_scaled_polynomial =
+      [argument_scale,
+       &near_argument](AccuratePolynomial<cpp_rational, 2> const& polynomial) {
+        std::int64_t polynomial_exponent;
+        auto const polynomial_mantissa =
+            frexp(static_cast<cpp_bin_float_50>(polynomial(near_argument)),
+                  &polynomial_exponent);
+        CHECK_NE(0, polynomial_mantissa);
+        return exp2(-polynomial_exponent) *
+               Compose(polynomial,
+                       AccuratePolynomial<cpp_rational, 1>(
+                           {0, 1 / argument_scale}));
+      };
+  std::array<AccuratePolynomial<cpp_rational, 2>, 2> const scaled_polynomials{
+      build_scaled_polynomial(polynomials[0]),
+      build_scaled_polynomial(polynomials[1])};
+
+  // We construct intervals above and below |scaled_argument| and search for
   // solutions on each side alternatively.
   Interval<cpp_rational> high_interval{
-      .min = near_argument,
-      .max = near_argument + cpp_rational(2 * T₀, N)};
+      .min = scaled_argument,
+      .max = scaled_argument + cpp_rational(2 * T₀, N)};
   Interval<cpp_rational> low_interval{
-      .min = near_argument - cpp_rational(2 * T₀, N),
-      .max = near_argument};
+      .min = scaled_argument - cpp_rational(2 * T₀, N),
+      .max = scaled_argument};
   for (;;) {
     VLOG_EVERY_N(1, 10) << "high = "
                         << DebugString(static_cast<double>(high_interval.max));
@@ -336,11 +376,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       while (T > 0) {
         VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
-            StehléZimmermannSimultaneousSearch<zeroes>(
-                functions, polynomials, high_interval.midpoint(), N, T);
+            StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
+                                                       scaled_polynomials,
+                                                       high_interval.midpoint(),
+                                                       N,
+                                                       T);
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
-          return status_or_solution.value();
+          return status_or_solution.value() / argument_scale;
         } else if (absl::IsOutOfRange(status)) {
           // Halve the interval.  Make sure that the new interval is contiguous
           // to the segment already explored.
@@ -359,11 +402,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       while (T > 0) {
         VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
-            StehléZimmermannSimultaneousSearch<zeroes>(
-                functions, polynomials, low_interval.midpoint(), N, T);
+            StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
+                                                       scaled_polynomials,
+                                                       low_interval.midpoint(),
+                                                       N,
+                                                       T);
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
-          return status_or_solution.value();
+          return status_or_solution.value() / argument_scale;
         } else if (absl::IsOutOfRange(status)) {
           // Halve the interval.  Make sure that the new interval is contiguous
           // to the segment already explored.

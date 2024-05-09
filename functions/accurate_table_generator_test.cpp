@@ -157,7 +157,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15) {
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
   FLAGS_v = 0;
   google::LogToStderr();
   double const x₀ = 17.0 / 128;
@@ -181,8 +181,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15) {
   auto const u = StehléZimmermannSimultaneousFullSearch<15>(
       {sin, cos},
       {sin_taylor2, cos_taylor2},
-      u₀,
-      /*N=*/1ll << 53);
+      u₀);
   EXPECT_THAT(u,
               IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
   EXPECT_THAT(static_cast<double>(*u),
@@ -204,6 +203,46 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15) {
     EXPECT_THAT(mantissa.substr(53, 15), Eq("00000""00000""00000"));
   }
 }
+
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
+  FLAGS_v = 0;
+  google::LogToStderr();
+  double const x₀ = 17.0 / 128;
+  AccuratePolynomial<cpp_rational, 2> sin_taylor2({cpp_rational(Sin(x₀)),
+                                                   cpp_rational(Cos(x₀)),
+                                                   -cpp_rational(Sin(x₀)) / 2},
+                                                  x₀);
+  AccuratePolynomial<cpp_rational, 2> cos_taylor2({cpp_rational(Cos(x₀)),
+                                                   -cpp_rational(Sin(x₀)),
+                                                   -cpp_rational(Cos(x₀) / 2)},
+                                                  x₀);
+
+  auto const x = StehléZimmermannSimultaneousFullSearch<15>(
+      {Sin, Cos},
+      {sin_taylor2, cos_taylor2},
+      x₀);
+  EXPECT_THAT(x,
+              IsOkAndHolds(cpp_rational(4785074575333183, 36028797018963968)));
+  EXPECT_THAT(static_cast<double>(*x),
+              RelativeErrorFrom(x₀, Lt(6.1e-9)));
+  {
+    std::string const mathematica = ToMathematica(Sin(*x),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_THAT(mantissa.substr(53, 15), Eq("00000""00000""00000"));
+  }
+  {
+    std::string const mathematica = ToMathematica(Cos(*x),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_THAT(mantissa.substr(53, 15), Eq("00000""00000""00000"));
+  }
+}
+
 #endif
 
 }  // namespace _accurate_table_generator
