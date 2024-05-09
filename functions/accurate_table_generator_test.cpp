@@ -32,7 +32,13 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
-class AccurateTableGeneratorTest : public ::testing::Test {};
+class AccurateTableGeneratorTest : public ::testing::Test {
+ protected:
+  AccurateTableGeneratorTest() {
+    FLAGS_v = 1;
+    google::LogToStderr();
+  }
+};
 
 #if 1
 
@@ -159,8 +165,6 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
 }
 
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
-  FLAGS_v = 0;
-  google::LogToStderr();
   double const x₀ = 17.0 / 128;
   double const u₀ = 4 * x₀;
   auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
@@ -206,8 +210,6 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
 }
 
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
-  FLAGS_v = 0;
-  google::LogToStderr();
   double const x₀ = 17.0 / 128;
   AccuratePolynomial<cpp_rational, 2> sin_taylor2({cpp_rational(Sin(x₀)),
                                                    cpp_rational(Cos(x₀)),
@@ -245,8 +247,6 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
 }
 
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
-  FLAGS_v = 0;
-  google::LogToStderr();
   static constexpr std::int64_t index_begin = 17;
   static constexpr std::int64_t index_end = 100;
   std::vector<cpp_rational> starting_arguments;

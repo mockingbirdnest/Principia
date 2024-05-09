@@ -273,13 +273,12 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     }
   }
 
-  if (Q_coefficients[1] == 0) {
-      return absl::NotFoundError("No integer zeroes");
-  }
-
   AccuratePolynomial<cpp_rational, 1> const Q({Q_coefficients[0],
                                                Q_coefficients[1]});
   VLOG(2) << "Q = " << Q;
+  if (Q_coefficients[1] == 0) {
+      return absl::NotFoundError("No integer zeroes");
+  }
 
   // Step 11: compute q and find its integer root (singular), if any.
   AccuratePolynomial<cpp_rational, 1> const q =
@@ -367,10 +366,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       .min = scaled_argument - cpp_rational(2 * T₀, N),
       .max = scaled_argument};
   for (;;) {
-    VLOG_EVERY_N(1, 10) << "high = "
-                        << DebugString(static_cast<double>(high_interval.max));
-    VLOG_EVERY_N(1, 10) << "low  = "
-                        << DebugString(static_cast<double>(low_interval.min));
     {
       auto T = T₀;
       while (T > 0) {
@@ -384,16 +379,19 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
           return status_or_solution.value() / argument_scale;
-        } else if (absl::IsOutOfRange(status)) {
-          // Halve the interval.  Make sure that the new interval is contiguous
-          // to the segment already explored.
-          high_interval.max = high_interval.midpoint();
-          T /= 2;
-        } else if (absl::IsNotFound(status)) {
-          // No solutions here, go to the next interval.
-          break;
         } else {
-          return status;
+          VLOG(2) << "Status = " << status;
+          if (absl::IsOutOfRange(status)) {
+            // Halve the interval.  Make sure that the new interval is
+            // contiguous to the segment already explored.
+            high_interval.max = high_interval.midpoint();
+            T /= 2;
+          } else if (absl::IsNotFound(status)) {
+            // No solutions here, go to the next interval.
+            break;
+          } else {
+            return status;
+          }
         }
       }
     }
@@ -410,19 +408,26 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
           return status_or_solution.value() / argument_scale;
-        } else if (absl::IsOutOfRange(status)) {
-          // Halve the interval.  Make sure that the new interval is contiguous
-          // to the segment already explored.
-          low_interval.min = low_interval.midpoint();
-          T /= 2;
-        } else if (absl::IsNotFound(status)) {
-          // No solutions here, go to the next interval.
-          break;
         } else {
-          return status;
+          VLOG(2) << "Status = " << status;
+          if (absl::IsOutOfRange(status)) {
+            // Halve the interval.  Make sure that the new interval is
+            // contiguous to the segment already explored.
+            low_interval.min = low_interval.midpoint();
+            T /= 2;
+          } else if (absl::IsNotFound(status)) {
+            // No solutions here, go to the next interval.
+            break;
+          } else {
+            return status;
+          }
         }
       }
     }
+    VLOG_EVERY_N(1, 10) << "high = "
+                        << DebugString(static_cast<double>(high_interval.max));
+    VLOG_EVERY_N(1, 10) << "low  = "
+                        << DebugString(static_cast<double>(low_interval.min));
     high_interval = {.min = high_interval.max,
                      .max = high_interval.max + cpp_rational(2 * T₀, N)};
     low_interval = {.min = low_interval.min - cpp_rational(2 * T₀, N),
