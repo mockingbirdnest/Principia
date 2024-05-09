@@ -437,7 +437,8 @@ StehléZimmermannSimultaneousMultisearch(
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
         polynomials,
     std::vector<cpp_rational> const& starting_arguments) {
-  ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
+  ThreadPool<absl::StatusOr<cpp_rational>> search_pool(
+      std::thread::hardware_concurrency());
 
   std::vector<std::future<absl::StatusOr<cpp_rational>>> futures;
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {

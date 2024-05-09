@@ -20,6 +20,7 @@ namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
 
+using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::SizeIs;
@@ -243,7 +244,9 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos5) {
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
+  FLAGS_v = 0;
+  google::LogToStderr();
   static constexpr std::int64_t index_begin = 17;
   static constexpr std::int64_t index_end = 100;
   std::vector<cpp_rational> starting_arguments;
@@ -261,21 +264,23 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos5) {
     starting_arguments.push_back(x₀);
     polynomials.push_back({sin_taylor2, cos_taylor2});
   }
-  auto const xs = StehléZimmermannSimultaneousMultisearch<5>(
+  auto const xs = StehléZimmermannSimultaneousMultisearch<15>(
       {Sin, Cos}, polynomials, starting_arguments);
   EXPECT_THAT(xs, SizeIs(index_end - index_begin));
   for (std::int64_t i = 0; i < xs.size(); ++i) {
-    CHECK_OK(xs[i]);
+    CHECK_OK(xs[i].status());
     auto const& x = *xs[i];
     EXPECT_THAT(static_cast<double>(x),
-                RelativeErrorFrom((i + index_begin) / 128.0, Lt(8.6e-13)));
+                RelativeErrorFrom((i + index_begin) / 128.0, Lt(1.3e-7)));
     {
       std::string const mathematica = ToMathematica(Sin(x),
                                                     /*express_in=*/std::nullopt,
                                                     /*base=*/2);
       std::string_view mantissa = mathematica;
       CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-      EXPECT_EQ("00000", mantissa.substr(53, 5));
+      EXPECT_THAT(mantissa.substr(53, 15),
+                  AnyOf(Eq("00000""00000""00000"),
+                        Eq("11111""11111""11111")));
     }
     {
       std::string const mathematica = ToMathematica(Cos(x),
@@ -283,7 +288,9 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos5) {
                                                     /*base=*/2);
       std::string_view mantissa = mathematica;
       CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-      EXPECT_EQ("00000", mantissa.substr(53, 5));
+      EXPECT_THAT(mantissa.substr(53, 15),
+                  AnyOf(Eq("00000""00000""00000"),
+                        Eq("11111""11111""11111")));
     }
   }
 }
