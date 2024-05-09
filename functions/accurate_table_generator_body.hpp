@@ -319,35 +319,38 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
   // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
-  cpp_rational scaled_argument;
-  {
-    std::int64_t exponent;
-    auto const argument_mantissa =
-        frexp(static_cast<cpp_bin_float_50>(near_argument), &exponent);
-    CHECK_NE(0, argument_mantissa);
-    scaled_argument = near_argument * exp2(-exponent);
-  }
+  std::int64_t argument_exponent;
+  auto const argument_mantissa =
+      frexp(static_cast<cpp_bin_float_50>(near_argument), &argument_exponent);
+  CHECK_NE(0, argument_mantissa);
+  auto const argument_scale = exp2(-argument_exponent);
+  cpp_rational const scaled_argument = near_argument * argument_scale;
 
   std::array<AccurateFunction, 2> scaled_functions;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
-    std::int64_t exponent;
+    std::int64_t function_exponent;
     auto const function_mantissa =
-        frexp(functions[i](near_argument), &exponent);
+        frexp(functions[i](near_argument), &function_exponent);
     CHECK_NE(0, function_mantissa);
-    auto const scale = exp2(-exponent);
-    scaled_functions[i] = [&functions, i, scale](cpp_rational const& argument) {
-      return functions[i](argument) * scale;
+    auto const function_scale = exp2(-function_exponent);
+    scaled_functions[i] = [argument_scale, function_scale, &functions, i](
+                              cpp_rational const& argument) {
+      return functions[i](argument / argument_scale) * function_scale;
     };
   }
 
   auto build_scaled_polynomial =
-      [&near_argument](AccuratePolynomial<cpp_rational, 2> const& polynomial) {
-        std::int64_t exponent;
+      [argument_scale,
+       &near_argument](AccuratePolynomial<cpp_rational, 2> const& polynomial) {
+        std::int64_t polynomial_exponent;
         auto const polynomial_mantissa =
             frexp(static_cast<cpp_bin_float_50>(polynomial(near_argument)),
-                  &exponent);
+                  &polynomial_exponent);
         CHECK_NE(0, polynomial_mantissa);
-        return polynomial * exp2(-exponent);
+        return exp2(-polynomial_exponent) *
+               Compose(polynomial,
+                       AccuratePolynomial<cpp_rational, 1>(
+                           {0, 1 / argument_scale}));
       };
   std::array<AccuratePolynomial<cpp_rational, 2>, 2> const scaled_polynomials{
       build_scaled_polynomial(polynomials[0]),
