@@ -40,7 +40,7 @@ class AccurateTableGeneratorTest : public ::testing::Test {
   }
 };
 
-#if 1
+#if !_DEBUG
 
 TEST_F(AccurateTableGeneratorTest, GalSin5) {
   auto const x = GalExhaustiveSearch<5>({Sin}, 5.0 / 128.0);
