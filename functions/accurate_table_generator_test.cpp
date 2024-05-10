@@ -32,9 +32,15 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
-class AccurateTableGeneratorTest : public ::testing::Test {};
+class AccurateTableGeneratorTest : public ::testing::Test {
+ protected:
+  AccurateTableGeneratorTest() {
+    FLAGS_v = 0;
+    google::LogToStderr();
+  }
+};
 
-#if 1
+#if !_DEBUG
 
 TEST_F(AccurateTableGeneratorTest, GalSin5) {
   auto const x = GalExhaustiveSearch<5>({Sin}, 5.0 / 128.0);
@@ -158,9 +164,52 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
   }
 }
 
+TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
+  double const x₀ = 17.0 / 128;
+  double const u₀ = 4 * x₀;
+  auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
+  auto const cos = [](cpp_rational const& u) { return Cos(u / 4); };
+  CHECK(0.5 <= u₀ & u₀ < 1.0) << u₀;
+  CHECK(0.5 <= sin(u₀) && sin(u₀) < 1.0);
+  CHECK(0.5 <= cos(u₀) && cos(u₀) < 1.0);
+  AccuratePolynomial<cpp_rational, 2> sin_taylor2(
+      {4 * cpp_rational(Sin(u₀ / 4)),
+       cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4)) / 8},
+      u₀);
+  AccuratePolynomial<cpp_rational, 2> cos_taylor2(
+      {cpp_rational(Cos(u₀ / 4)),
+       -cpp_rational(Sin(u₀ / 4) / 4),
+       -cpp_rational(Cos(u₀ / 4) / 32)},
+      u₀);
+
+  auto const u = StehléZimmermannSimultaneousFullSearch<5>(
+      {sin, cos},
+      {sin_taylor2, cos_taylor2},
+      u₀);
+  EXPECT_THAT(u,
+              IsOkAndHolds(cpp_rational(4785074604081885, 9007199254740992)));
+  EXPECT_THAT(static_cast<double>(*u),
+              RelativeErrorFrom(u₀, Lt(1.6e-13)));
+  {
+    std::string const mathematica = ToMathematica(sin(*u),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_THAT(mantissa.substr(53, 5), Eq("00000"));
+  }
+  {
+    std::string const mathematica = ToMathematica(cos(*u),
+                                                  /*express_in=*/std::nullopt,
+                                                  /*base=*/2);
+    std::string_view mantissa = mathematica;
+    CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+    EXPECT_THAT(mantissa.substr(53, 5), Eq("00000"));
+  }
+}
+
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
-  FLAGS_v = 0;
-  google::LogToStderr();
   double const x₀ = 17.0 / 128;
   double const u₀ = 4 * x₀;
   auto const sin = [](cpp_rational const& u) { return 4 * Sin(u / 4); };
@@ -206,8 +255,6 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
 }
 
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
-  FLAGS_v = 0;
-  google::LogToStderr();
   double const x₀ = 17.0 / 128;
   AccuratePolynomial<cpp_rational, 2> sin_taylor2({cpp_rational(Sin(x₀)),
                                                    cpp_rational(Cos(x₀)),
@@ -245,8 +292,6 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
 }
 
 TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
-  FLAGS_v = 0;
-  google::LogToStderr();
   static constexpr std::int64_t index_begin = 17;
   static constexpr std::int64_t index_end = 100;
   std::vector<cpp_rational> starting_arguments;
