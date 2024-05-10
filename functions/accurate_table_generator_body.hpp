@@ -3,6 +3,7 @@
 #include "functions/accurate_table_generator.hpp"
 
 #include <algorithm>
+#include <concepts>
 #include <future>
 #include <limits>
 #include <memory>
@@ -78,6 +79,18 @@ bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
   return trunc(y_candidate_zeroes) == 0;
 }
 
+template<std::int64_t zeroes, typename Container>
+  requires std::same_as<typename Container::value_type, AccurateFunction>
+bool AllFunctionValuesHaveDesiredZeroes(
+    Container const& functions,
+    cpp_rational const& argument) {
+  return std::all_of(functions.begin(),
+                     functions.end(),
+                     [&argument](AccurateFunction const& f) {
+                       return HasDesiredZeroes<zeroes>(f(argument));
+                     });
+}
+
 template<std::int64_t zeroes>
 cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
                                  cpp_rational const& starting_argument) {
@@ -97,17 +110,11 @@ cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
   cpp_rational high_x = starting_argument;
   cpp_rational low_x = starting_argument - low_increment;
   for (;;) {
-    if (std::all_of(functions.begin(), functions.end(),
-                    [&high_x](AccurateFunction const& f) {
-                      return HasDesiredZeroes<zeroes>(f(high_x));
-                    })) {
+    if (AllFunctionValuesHaveDesiredZeroes<zeroes>(functions, high_x)) {
       return high_x;
     }
     high_x += high_increment;
-    if (std::all_of(functions.begin(), functions.end(),
-                    [&low_x](AccurateFunction const& f) {
-                      return HasDesiredZeroes<zeroes>(f(low_x));
-                    })) {
+    if (AllFunctionValuesHaveDesiredZeroes<zeroes>(functions, low_x)) {
       return low_x;
     }
     low_x -= low_increment;
@@ -164,7 +171,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // Step 2: compute ε.  We don't care too much about its accuracy because in
   // general the largest error is on the boundary of the domain, and anyway ε
   // has virtually no incidence on the value of Mʹ.
-  cpp_rational const T_increment = cpp_rational(T, ε_computation_points);
+  auto const T_increment = cpp_rational(T, ε_computation_points);
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < 2; ++i) {
     for (cpp_rational t = -T; t <= T; t += T_increment) {
@@ -368,7 +375,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   for (;;) {
     {
       auto T = T₀;
-      while (T > 0) {
+      do {
         VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
@@ -393,11 +400,18 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
             return status;
           }
         }
+      } while (T > 0);
+
+      // The Stehlé-Zimmermann algorithm doesn't work for T = 0 because the
+      // lattice becomes singular.
+      if (T == 0 && AllFunctionValuesHaveDesiredZeroes<zeroes>(
+                        scaled_functions, high_interval.max)) {
+        return high_interval.max;
       }
     }
     {
       auto T = T₀;
-      while (T > 0) {
+      do {
         VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
@@ -422,6 +436,13 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
             return status;
           }
         }
+      } while (T > 0);
+
+      // The Stehlé-Zimmermann algorithm doesn't work for T = 0 because the
+      // lattice becomes singular.
+      if (T == 0 && AllFunctionValuesHaveDesiredZeroes<zeroes>(
+                        scaled_functions, low_interval.min)) {
+        return low_interval.min;
       }
     }
     VLOG_EVERY_N(1, 10) << "high = "
