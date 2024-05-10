@@ -138,7 +138,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    cpp_rational const& near_argument,
+    cpp_rational const& starting_argument,
     std::int64_t const N,
     std::int64_t const T) {
   // This implementation follows [SZ05], section 3.1.
@@ -150,13 +150,13 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   std::array<AccurateFunction, 2> F;
   std::array<std::optional<AccuratePolynomial<cpp_rational, 2>>, 2> P;
   for (std::int64_t i = 0; i < functions.size(); ++i) {
-    F[i] = [&functions, i, N, &near_argument](cpp_rational const& t) {
+    F[i] = [&functions, i, N, &starting_argument](cpp_rational const& t) {
       // Here |t| <= |T|.
-      return N * functions[i](near_argument + t / N);
+      return N * functions[i](starting_argument + t / N);
     };
   }
   AccuratePolynomial<cpp_rational, 1> const shift_and_rescale(
-      {near_argument, cpp_rational(1, N)});
+      {starting_argument, cpp_rational(1, N)});
   for (std::int64_t i = 0; i < polynomials.size(); ++i) {
     P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
@@ -303,14 +303,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     }
   }
 
-  return near_argument + t₀ / N;
+  return starting_argument + t₀ / N;
 }
 
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    cpp_rational const& near_argument) {
+    cpp_rational const& starting_argument) {
   constexpr std::int64_t M = 1LL << zeroes;
   constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
 
@@ -322,17 +322,17 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
   // TODO(phl): Handle an argument that is exactly a power of 2.
   std::int64_t argument_exponent;
-  auto const argument_mantissa =
-      frexp(static_cast<cpp_bin_float_50>(near_argument), &argument_exponent);
+  auto const argument_mantissa = frexp(
+      static_cast<cpp_bin_float_50>(starting_argument), &argument_exponent);
   CHECK_NE(0, argument_mantissa);
   auto const argument_scale = exp2(-argument_exponent);
-  cpp_rational const scaled_argument = near_argument * argument_scale;
+  cpp_rational const scaled_argument = starting_argument * argument_scale;
 
   std::array<AccurateFunction, 2> scaled_functions;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     std::int64_t function_exponent;
     auto const function_mantissa =
-        frexp(functions[i](near_argument), &function_exponent);
+        frexp(functions[i](starting_argument), &function_exponent);
     CHECK_NE(0, function_mantissa);
     auto const function_scale = exp2(-function_exponent);
     scaled_functions[i] = [argument_scale, function_scale, &functions, i](
@@ -342,11 +342,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   }
 
   auto build_scaled_polynomial =
-      [argument_scale,
-       &near_argument](AccuratePolynomial<cpp_rational, 2> const& polynomial) {
+      [argument_scale, &starting_argument](
+          AccuratePolynomial<cpp_rational, 2> const& polynomial) {
         std::int64_t polynomial_exponent;
         auto const polynomial_mantissa =
-            frexp(static_cast<cpp_bin_float_50>(polynomial(near_argument)),
+            frexp(static_cast<cpp_bin_float_50>(polynomial(starting_argument)),
                   &polynomial_exponent);
         CHECK_NE(0, polynomial_mantissa);
         return exp2(-polynomial_exponent) *
@@ -428,6 +428,32 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     low_interval = {.min = low_interval.min - cpp_rational(2 * T₀, N),
                     .max = low_interval.min};
   }
+}
+
+template<std::int64_t zeroes>
+std::vector<absl::StatusOr<cpp_rational>>
+StehléZimmermannSimultaneousMultisearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
+        polynomials,
+    std::vector<cpp_rational> const& starting_arguments) {
+  ThreadPool<absl::StatusOr<cpp_rational>> search_pool(
+      std::thread::hardware_concurrency());
+
+  std::vector<std::future<absl::StatusOr<cpp_rational>>> futures;
+  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
+    futures.push_back(
+        search_pool.Add([i, &functions, &polynomials, &starting_arguments]() {
+          return StehléZimmermannSimultaneousFullSearch<zeroes>(
+              functions, polynomials[i], starting_arguments[i]);
+        }));
+  }
+
+  std::vector<absl::StatusOr<cpp_rational>> results;
+  for (auto& future : futures) {
+    results.push_back(future.get());
+  }
+  return results;
 }
 
 }  // namespace internal
