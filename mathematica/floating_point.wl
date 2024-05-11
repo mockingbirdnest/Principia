@@ -4,7 +4,7 @@ BeginPackage["IEEE754FloatingPoint`"]
 
 
 (*Useful, but doesn't really belong here...*)
-ConditionNumber[f_,params_]:=D[f,{params}]params/f;
+ConditionNumber;
 
 
 SetFloatingPointFormat;
@@ -39,10 +39,12 @@ HexLiteral;
 
 
 CorrectlyRound;
-\[LeftAngleBracket]x_\[RightAngleBracket]:=CorrectlyRound[x];
 
 
 Begin["`Private`"]
+
+
+ConditionNumber[f_,params_]:=D[f,{params}]params/f;
 
 
 SetFloatingPointFormat[{sBits_,eBits_}]:=
@@ -139,6 +141,10 @@ EndPackage[]
 
 (* ::Section:: *)
 (*Examples*)
+
+
+(* ::Code:: *)
+(*\[LeftAngleBracket]x_\[RightAngleBracket]:=CorrectlyRound[x];*)
 
 
 (* ::Code:: *)
