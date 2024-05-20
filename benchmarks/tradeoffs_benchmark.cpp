@@ -58,32 +58,37 @@ void Implementation<table_spacing>::Initialize() {
 }
 
 template<Argument table_spacing>
+FORCE_INLINE(inline)
 Value Implementation<table_spacing>::Sin(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
-  auto const h = x - accurate_values.x;
-  auto const h2 = h * h;
-  auto const h3 = h2 * h;
-  auto const s0_plus_c0h =
-      TwoProductAdd(accurate_values.cos_x, h, accurate_values.sin_x);
-  return s0_plus_c0h.value + ((accurate_values.sin_x * h2 * CosPolynomial(h2) +
-                               accurate_values.cos_x * h3 * SinPolynomial(h2)) +
-                              s0_plus_c0h.error);
+  auto const& x₀ = accurate_values.x;
+  auto const& sin_x₀ = accurate_values.sin_x;
+  auto const& cos_x₀ = accurate_values.cos_x;
+  auto const h = x - x₀;
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
+  return sin_x₀_plus_h_cos_x₀.value +
+         ((sin_x₀ * h² * CosPolynomial(h²) + cos_x₀ * h³ * SinPolynomial(h²)) +
+          sin_x₀_plus_h_cos_x₀.error);
 }
 
 template<Argument table_spacing>
+FORCE_INLINE(inline)
 Value Implementation<table_spacing>::Cos(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
-  auto const h = x - accurate_values.x;
-  auto const h2 = h * h;
-  auto const h3 = h2 * h;
-  auto const c0_minus_hs0 =
-      TwoProductAdd(accurate_values.sin_x, -h, accurate_values.cos_x);
-  return c0_minus_hs0.value +
-         ((accurate_values.cos_x * h2 * CosPolynomial(h2) -
-           accurate_values.sin_x * h3 * SinPolynomial(h2)) +
-          c0_minus_hs0.error);
+  auto const& x₀ = accurate_values.x;
+  auto const& sin_x₀ = accurate_values.sin_x;
+  auto const& cos_x₀ = accurate_values.cos_x;
+  auto const h = x - x₀;
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
+  return cos_x₀_minus_h_sin_x₀.value +
+         ((cos_x₀ * h² * CosPolynomial(h²) - sin_x₀ * h³ * SinPolynomial(h²)) +
+          cos_x₀_minus_h_sin_x₀.error);
 }
 
 //TODO(phl):polynomials
@@ -135,7 +140,34 @@ void BM_EvaluateSinTradeOffs(benchmark::State& state) {
       v[i] = implementation.Sin(a[i]);
 #if _DEBUG
       auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      CHECK_LT(absolute_error, 6e-17);
+      CHECK_LT(absolute_error, 5.6e-17);
+#endif
+    }
+    benchmark::DoNotOptimize(v);
+  }
+}
+
+template<Argument table_spacing>
+void BM_EvaluateCosTradeOffs(benchmark::State& state) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(x_min, x_max);
+
+  Implementation<table_spacing> implementation;
+  implementation.Initialize();
+
+  Argument a[number_of_iterations];
+  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+    a[i] = uniformly_at(random);
+  }
+
+  Value v[number_of_iterations];
+  while (state.KeepRunningBatch(number_of_iterations)) {
+    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+      using namespace principia::quantities;
+      v[i] = implementation.Cos(a[i]);
+#if _DEBUG
+      auto const absolute_error = Abs(v[i] - std::cos(a[i]));
+      CHECK_LT(absolute_error, 1.2e-16);
 #endif
     }
     benchmark::DoNotOptimize(v);
@@ -145,6 +177,10 @@ void BM_EvaluateSinTradeOffs(benchmark::State& state) {
 BENCHMARK_TEMPLATE(BM_EvaluateSinTradeOffs, 1.0 / 128.0)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluateSinTradeOffs, 1.0 / 512.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateCosTradeOffs, 1.0 / 128.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateCosTradeOffs, 1.0 / 512.0)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
