@@ -1,3 +1,5 @@
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=BM_Evaluate.*Spacing  // NOLINT(whitespace/line_length)
+
 #include <array>
 #include <cmath>
 #include <cstdint>
@@ -6,7 +8,7 @@
 #include "benchmark/benchmark.h"
 #include "numerics/double_precision.hpp"
 #include "quantities/elementary_functions.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
 namespace functions {
