@@ -306,7 +306,7 @@ TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c) {
   if (UseHardwareFMA) {
-    using quantities::_elementary_functions::FuseMultiplyAdd;
+    using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(FusedNegatedMultiplySubtract(a, b, c));
     result.error = FusedMultiplyAdd(a, b, (result.value + c));

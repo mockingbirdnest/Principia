@@ -155,6 +155,9 @@ using internal::DoublePrecision;
 using internal::TwoDifference;
 using internal::TwoProduct;
 using internal::TwoProductAdd;
+using internal::TwoProductNegatedAdd;
+using internal::TwoProductNegatedSubtract;
+using internal::TwoProductSubtract;
 using internal::TwoSum;
 using internal::VeltkampDekkerProduct;
 
