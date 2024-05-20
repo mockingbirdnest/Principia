@@ -300,10 +300,13 @@ TEST_F(VesselTest, Prediction) {
 
   vessel_.CreateTrajectoryIfNeeded(t0_);
   // Polling for the integration to happen.
+  int count = 0;
   do {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
+    ++count;
+    CHECK_LT(count, 1000);
   } while (vessel_.prediction()->back().time == t0_);
 
   EXPECT_EQ(3, vessel_.prediction()->size());
