@@ -40,6 +40,7 @@
     <ClCompile Include="quantities_benchmark.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_benchmark.cpp" />
     <ClCompile Include="thread_pool_benchmark.cpp" />
+    <ClCompile Include="tradeoffs_benchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp" />
