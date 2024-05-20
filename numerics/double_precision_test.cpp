@@ -282,6 +282,20 @@ TEST_F(DoublePrecisionTest, Product) {
                            0));
 }
 
+TEST_F(DoublePrecisionTest, ProductAndAdd) {
+  Time const a = 3.0 * Second;
+  Speed const b =  7.0 * Metre / Second;
+  Length const c = 5.0 * Metre;
+  auto const add = TwoProductAdd(a, b, c);
+  EXPECT_THAT(add.value, AlmostEquals(26.0 * Metre, 0));
+  auto const subtract = TwoProductSubtract(a, b, c);
+  EXPECT_THAT(subtract.value, AlmostEquals(16.0 * Metre, 0));
+  auto const negated_add = TwoProductNegatedAdd(a, b, c);
+  EXPECT_THAT(negated_add.value, AlmostEquals(-16.0 * Metre, 0));
+  auto const negated_subtract = TwoProductNegatedSubtract(a, b, c);
+  EXPECT_THAT(negated_subtract.value, AlmostEquals(-26.0 * Metre, 0));
+}
+
 TEST_F(DoublePrecisionTest, LongProduct) {
   DoublePrecision<Length> a(3 * Metre);
   a.Increment(474 * ε * Metre);
