@@ -62,6 +62,31 @@ DoublePrecision<Product<T, U>> Scale(T const& scale,
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
+// Returns the exact value of |a * b + c|.
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
+                                             U const& b,
+                                             Product<T, U> const& c);
+
+// Returns the exact value of |a * b - c|.
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
+                                                  U const& b,
+                                                  Product<T, U> const& c);
+
+// Returns the exact value of |-a * b + c|.
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
+                                                    U const& b,
+                                                    Product<T, U> const& c);
+
+// Returns the exact value of |-a * b - c|.
+template<typename T, typename U>
+DoublePrecision<Product<T, U>>
+TwoProductNegatedSubtract(T const& a,
+                          U const& b,
+                          Product<T, U> const& c);
+
 // Same as |TwoProduct|, but never uses FMA.
 template<typename T, typename U>
 constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
@@ -129,6 +154,7 @@ std::ostream& operator<<(std::ostream& os,
 using internal::DoublePrecision;
 using internal::TwoDifference;
 using internal::TwoProduct;
+using internal::TwoProductAdd;
 using internal::TwoSum;
 using internal::VeltkampDekkerProduct;
 
