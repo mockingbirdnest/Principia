@@ -21,6 +21,7 @@ constexpr Argument x_min = π / 12;
 constexpr Argument x_max = π / 6;
 static constexpr std::int64_t number_of_iterations = 1000;
 
+// A helper class to benchmark implementations with various table spacings.
 template<Argument table_spacing>
 class Implementation {
  public:
@@ -30,6 +31,8 @@ class Implementation {
   Value Cos(Argument x);
 
  private:
+  // Despite the name these are not accurate values, but for the purposes of
+  // benchmarking it doesn't matter.
   struct AccurateValues {
     Argument x;
     Value sin_x;
@@ -46,7 +49,6 @@ class Implementation {
 
 template<Argument table_spacing>
 void Implementation<table_spacing>::Initialize() {
-  using namespace principia::quantities;
   int i = 0;
   for (Argument x = table_spacing / 2;
        x <= x_max + table_spacing / 2;
@@ -91,7 +93,7 @@ Value Implementation<table_spacing>::Cos(Argument const x) {
           cos_x₀_minus_h_sin_x₀.error);
 }
 
-//TODO(phl):polynomials
+// TODO(phl): This should use polynomials.
 
 template<Argument table_spacing>
 Value Implementation<table_spacing>::SinPolynomial(Argument const x) {
@@ -121,7 +123,7 @@ Value Implementation<table_spacing>::CosPolynomial(Argument const x) {
 }
 
 template<Argument table_spacing>
-void BM_EvaluateSinTradeOffs(benchmark::State& state) {
+void BM_EvaluateSinTableSpacing(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> uniformly_at(x_min, x_max);
 
@@ -139,6 +141,8 @@ void BM_EvaluateSinTradeOffs(benchmark::State& state) {
       using namespace principia::quantities;
       v[i] = implementation.Sin(a[i]);
 #if _DEBUG
+      // The implementation is not accurate, but let's check that it's not
+      // broken.
       auto const absolute_error = Abs(v[i] - std::sin(a[i]));
       CHECK_LT(absolute_error, 5.6e-17);
 #endif
@@ -148,7 +152,7 @@ void BM_EvaluateSinTradeOffs(benchmark::State& state) {
 }
 
 template<Argument table_spacing>
-void BM_EvaluateCosTradeOffs(benchmark::State& state) {
+void BM_EvaluateCosTableSpacing(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> uniformly_at(x_min, x_max);
 
@@ -166,6 +170,8 @@ void BM_EvaluateCosTradeOffs(benchmark::State& state) {
       using namespace principia::quantities;
       v[i] = implementation.Cos(a[i]);
 #if _DEBUG
+      // The implementation is not accurate, but let's check that it's not
+      // broken.
       auto const absolute_error = Abs(v[i] - std::cos(a[i]));
       CHECK_LT(absolute_error, 1.2e-16);
 #endif
@@ -174,13 +180,13 @@ void BM_EvaluateCosTradeOffs(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(BM_EvaluateSinTradeOffs, 1.0 / 128.0)
+BENCHMARK_TEMPLATE(BM_EvaluateSinTableSpacing, 1.0 / 128.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateSinTradeOffs, 1.0 / 512.0)
+BENCHMARK_TEMPLATE(BM_EvaluateSinTableSpacing, 1.0 / 512.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateCosTradeOffs, 1.0 / 128.0)
+BENCHMARK_TEMPLATE(BM_EvaluateCosTableSpacing, 1.0 / 128.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateCosTradeOffs, 1.0 / 512.0)
+BENCHMARK_TEMPLATE(BM_EvaluateCosTableSpacing, 1.0 / 512.0)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
