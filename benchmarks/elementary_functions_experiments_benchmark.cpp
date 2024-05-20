@@ -180,13 +180,13 @@ void BM_EvaluateCosTableSpacing(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE(BM_EvaluateSinTableSpacing, 1.0 / 128.0)
+BENCHMARK_TEMPLATE(BM_EvaluateSinTableSpacing, 2.0 / 256.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateSinTableSpacing, 1.0 / 512.0)
+BENCHMARK_TEMPLATE(BM_EvaluateSinTableSpacing, 2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateCosTableSpacing, 1.0 / 128.0)
+BENCHMARK_TEMPLATE(BM_EvaluateCosTableSpacing, 2.0 / 256.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateCosTableSpacing, 1.0 / 512.0)
+BENCHMARK_TEMPLATE(BM_EvaluateCosTableSpacing, 2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
