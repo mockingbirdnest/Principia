@@ -304,8 +304,8 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
 }
 
 template<typename T, typename U>
-DoublePrecision<Product<T, U>>
 FORCE_INLINE(inline)
+DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c) {
