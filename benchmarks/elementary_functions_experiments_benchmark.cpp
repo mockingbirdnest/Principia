@@ -110,15 +110,15 @@ Value Implementation<table_spacing>::SinPolynomial(Argument const x) {
 
 template<Argument table_spacing>
 Value Implementation<table_spacing>::CosPolynomial(Argument const x) {
-  if constexpr (table_spacing == 2.0 / 1024.0) {
-    // 72 bits.
-    return -0.499999999999999999999872434553 +
-           0.0416666654823785864634569932662 * x;
-  } else if constexpr (table_spacing == 2.0 / 256.0) {
+  if constexpr (table_spacing == 2.0 / 256.0) {
     // 77 bits.
     return -0.499999999999999999999999974543 +
            x * (0.0416666666666633318024480868405 -
                 0.00138888829905860875255146938745 * x);
+  } else if constexpr (table_spacing == 2.0 / 1024.0) {
+    // 72 bits.
+    return -0.499999999999999999999872434553 +
+           0.0416666654823785864634569932662 * x;
   }
 }
 
