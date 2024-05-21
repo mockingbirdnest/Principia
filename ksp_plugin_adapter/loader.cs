@@ -37,8 +37,9 @@ internal static class Loader {
             @"GameData/Principia/MacOS64/principia.so"
         };
         is_cxx_installed = null;
-        required_cxx_packages = "libc++abi1-17 and libc++1-17 or later " +
-                                "(Linux) or High Sierra or later (MacOS)";
+        required_cxx_packages = "libc++abi1-17, libc++1-17, and libunwind-17 " +
+                                "or later (Linux) or High Sierra or later " +
+                                "(MacOS)";
         break;
       default:
         return "The operating system " +
