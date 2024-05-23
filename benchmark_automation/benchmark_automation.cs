@@ -7,13 +7,13 @@ using System.Linq;
 namespace principia {
 namespace benchmark_automation {
 
-class BenchmarkAutomation {
+internal class BenchmarkAutomation {
   private const string benchmark_executable = @".\Release\x64\benchmarks.exe";
 
   private static void Main(string[] args) {
-    DirectoryInfo benchmark_directory = new DirectoryInfo(args[0]);
-    DirectoryInfo mathematica_directory = new DirectoryInfo(args[1]);
-    DirectoryInfo jenkins_directory = new DirectoryInfo(args[2]);
+    var benchmark_directory = new DirectoryInfo(args[0]);
+    var mathematica_directory = new DirectoryInfo(args[1]);
+    var jenkins_directory = new DirectoryInfo(args[2]);
     DateTime date = DateTime.UtcNow;
     string mathematica_date = date.ToString("{yyyy, M, d, H, m, s.fffffff},");
     string mathematica_output_file =
@@ -37,10 +37,11 @@ class BenchmarkAutomation {
         CreateNoWindow = true
       }
     };
-    var seen_benchmarks = new Dictionary<String, bool>();
+    var seen_benchmarks = new Dictionary<string, bool>();
     list_benchmarks_process.Start();
     while (!list_benchmarks_process.StandardOutput.EndOfStream) {
       seen_benchmarks.Add(list_benchmarks_process.StandardOutput.ReadLine().
+          Replace(" / ","/").
           Replace(", ", ",").
           Replace(",\n", ",").
           Replace(",\r\n", ","), false);
@@ -77,6 +78,7 @@ class BenchmarkAutomation {
             // templated benchmark that has more than one parameter.  Remove the
             // space or line break as it would confuse word splitting.
             string line = process.StandardOutput.ReadLine().
+                              Replace(" / ","/").
                               Replace(", ",",").
                               Replace(",\n", ",").
                               Replace(",\r\n", ",");
