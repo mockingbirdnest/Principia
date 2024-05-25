@@ -542,7 +542,7 @@ internal class
           target_frame_selected ? TargetFrameDescription(target)
                                 : Description(frame_type, selected_celestial),
           Style.Multiline(UnityEngine.GUI.skin.label),
-          GUILayoutHeight(3));
+          GUILayoutHeight(4));
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         // Left-hand side: tree view of celestials.
         using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
