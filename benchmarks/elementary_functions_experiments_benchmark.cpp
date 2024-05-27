@@ -74,7 +74,7 @@ class MultiTableImplementation {
   Value CosPolynomial(Argument x);
 
   static constexpr std::int64_t table_size =
-      static_cast<std::int64_t>(0.5 / max_table_spacing);
+      static_cast<std::int64_t>((2 * x_min - x_min) / max_table_spacing);
 
   std::array<std::int64_t, number_of_tables> one_over_table_spacings_;
   std::array<std::array<AccurateValues, table_size>, number_of_tables>
@@ -162,7 +162,7 @@ Initialize() {
   Argument current_table_spacing = max_table_spacing;
   for (std::int64_t i = number_of_tables - 1; i >= 0; --i) {
     one_over_table_spacings_[i] = 1.0 / current_table_spacing;
-    std::int64_t j = number_of_tables - 1;
+    std::int64_t j = table_size - 1;
     for (Argument x = current_x_max - current_table_spacing / 2;
          x > current_x_min;
          x -= current_table_spacing, --j) {
