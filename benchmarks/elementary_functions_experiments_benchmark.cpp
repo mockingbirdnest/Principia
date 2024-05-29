@@ -61,6 +61,18 @@ class MultiTableImplementation {
   Value Cos(Argument x);
 
  private:
+  // ArcSin(2^-(n + 1)) for n in [0, 8] rounded towards positive infinity.
+  static constexpr std::array<double, number_of_tables> cutoffs_{
+      0x1.0C152382D7366p-1,
+      0x1.02BE9CE0B87CEp-2,
+      0x1.00ABE0C129E1Fp-3,
+      0x1.002ABDE95361Ap-4,
+      0x1.000AABDE0B9C9p-5,
+      0x1.0002AABDDE94Dp-6,
+      0x1.0000AAABDDE0Cp-7,
+      0x1.00002AAABDDDFp-8,
+      0x1.00000AAAABDDEp-9};
+
   // Despite the name these are not accurate values, but for the purposes of
   // benchmarking it doesn't matter.
   struct AccurateValues {
@@ -157,18 +169,17 @@ Value TableSpacingImplementation<table_spacing>::CosPolynomial(Argument const x)
 template<Argument max_table_spacing, std::int64_t number_of_tables>
 void MultiTableImplementation<max_table_spacing, number_of_tables>::
 Initialize() {
-  Argument current_x_max = 2 * x_min;
-  Argument current_x_min = x_min;
+  Argument current_x_max = x_max;
+  Argument current_x_min = cutoffs_[0];
   Argument current_table_spacing = max_table_spacing;
-  for (std::int64_t i = number_of_tables - 1; i >= 0; --i) {
+  for (std::int64_t i = 0; i < number_of_tables; ++i) {
     one_over_table_spacings_[i] = 1.0 / current_table_spacing;
-    std::int64_t j = table_size - 1;
-    for (Argument x = current_x_max - current_table_spacing / 2;
-         x > current_x_min;
-         x -= current_table_spacing, --j) {
+    Argument x = current_x_min;
+    for (std::int64_t j = 0; j < table_size && x < current_x_max; ++j) {
       accurate_values_[i][j] = {.x = x,
                                 .sin_x = std::sin(x),
                                 .cos_x = std::cos(x)};
+      x += current_table_spacing;
     }
     current_x_max = current_x_min;
     current_x_min /= 2;
@@ -180,10 +191,18 @@ template<Argument max_table_spacing, std::int64_t number_of_tables>
 FORCE_INLINE(inline)
 Value MultiTableImplementation<max_table_spacing, number_of_tables>::
 Sin(Argument const x) {
-  int x_exponent;
-  auto const x_mantissa = std::frexp(x, &x_exponent);
-  auto const i = number_of_tables + x_exponent;
-  auto const j = static_cast<std::int64_t>((x_mantissa - 0.5) *
+  // Because the intervals are unequal, this loop does on average 2.28
+  // comparisons, which is better than a binary tree.
+  std::int64_t i = -1;
+  for (std::int64_t k = 0; k < cutoffs_.size(); ++k) {
+    if (cutoffs_[k] <= x) {
+      i = k;
+      break;
+    }
+  }
+
+  Argument const x_minus_cutoff = x - cutoffs_[i]
+  auto const j = static_cast<std::int64_t>((x_minus_cutoff) *
                                            one_over_table_spacings_[i]);
   auto const& accurate_values = accurate_values_[i][j];
   auto const& x₀ = accurate_values.x;
