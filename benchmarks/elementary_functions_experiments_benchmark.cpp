@@ -321,7 +321,6 @@ void BM_ExperimentSinTableSpacing(benchmark::State& state) {
   Value v[number_of_iterations];
   while (state.KeepRunningBatch(number_of_iterations)) {
     for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      using namespace principia::quantities;
       v[i] = implementation.Sin(a[i]);
 #if _DEBUG
       // The implementation is not accurate, but let's check that it's not
@@ -350,7 +349,6 @@ void BM_ExperimentCosTableSpacing(benchmark::State& state) {
   Value v[number_of_iterations];
   while (state.KeepRunningBatch(number_of_iterations)) {
     for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      using namespace principia::quantities;
       v[i] = implementation.Cos(a[i]);
 #if _DEBUG
       // The implementation is not accurate, but let's check that it's not
@@ -381,13 +379,11 @@ void BM_ExperimentSinMultiTable(benchmark::State& state) {
   Value v[number_of_iterations];
   while (state.KeepRunningBatch(number_of_iterations)) {
     for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      using namespace principia::quantities;
       v[i] = implementation.Sin(a[i]);
 #if _DEBUG
       // The implementation is not accurate, but let's check that it's not
       // broken.
       auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      //LOG(ERROR)<<absolute_error;
       CHECK_LT(absolute_error, 1.2e-16);
 #endif
     }
@@ -413,13 +409,11 @@ void BM_ExperimentCosMultiTable(benchmark::State& state) {
   Value v[number_of_iterations];
   while (state.KeepRunningBatch(number_of_iterations)) {
     for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      using namespace principia::quantities;
       v[i] = implementation.Cos(a[i]);
 #if _DEBUG
       // The implementation is not accurate, but let's check that it's not
       // broken.
       auto const absolute_error = Abs(v[i] - std::cos(a[i]));
-      //LOG(ERROR)<<absolute_error;
       CHECK_LT(absolute_error, 1.2e-16);
 #endif
     }
