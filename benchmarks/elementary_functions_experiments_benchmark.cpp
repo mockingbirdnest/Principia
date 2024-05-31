@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <random>
+#include <utility>
 
 #include "benchmark/benchmark.h"
 #include "numerics/double_precision.hpp"
@@ -99,6 +100,8 @@ class MultiTableImplementation {
     Value sin_x;
     Value cos_x;
   };
+
+  void SelectCutoff(double x, std::int64_t& index, double& cutoff);
 
   Value SinPolynomial(Argument x);
   // |i| is the index of the binade in |cutoffs_|,
@@ -210,7 +213,7 @@ FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
   // Because the intervals are unequal, this loop does on average 2.28
   // comparisons, which is better than a binary tree.
-  std::int64_t i = -1;
+  std::int64_t i;
   for (std::int64_t k = 0; k < cutoffs.size(); ++k) {
     if (cutoffs[k] <= x) {
       i = k;
@@ -218,8 +221,7 @@ Value MultiTableImplementation::Sin(Argument const x) {
     }
   }
 
-  Argument const x_minus_cutoff = x - cutoffs[i];
-  auto const j = static_cast<std::int64_t>(x_minus_cutoff *
+  auto const j = static_cast<std::int64_t>((x - cutoffs[i]) *
                                            one_over_table_spacings_[i]);
   auto const& accurate_values = accurate_values_[i][j];
   auto const& x₀ = accurate_values.x;
@@ -236,18 +238,11 @@ Value MultiTableImplementation::Sin(Argument const x) {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Cos(Argument const x) {
-  // Because the intervals are unequal, this loop does on average 2.28
-  // comparisons, which is better than a binary tree.
-  std::int64_t i = -1;
-  for (std::int64_t k = 0; k < cutoffs.size(); ++k) {
-    if (cutoffs[k] <= x) {
-      i = k;
-      break;
-    }
-  }
+  std::int64_t i;
+  double cutoff;
+  SelectCutoff(x, i, cutoff);
 
-  Argument const x_minus_cutoff = x - cutoffs[i];
-  auto const j = static_cast<std::int64_t>(x_minus_cutoff *
+  auto const j = static_cast<std::int64_t>((x - cutoff) *
                                            one_over_table_spacings_[i]);
   auto const& accurate_values = accurate_values_[i][j];
   auto const& x₀ = accurate_values.x;
@@ -260,6 +255,30 @@ Value MultiTableImplementation::Cos(Argument const x) {
   return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial(i, h²) -
                                          sin_x₀ * h³ * SinPolynomial(h²)) +
                                         cos_x₀_minus_h_sin_x₀.error);
+}
+
+FORCE_INLINE(inline)
+void MultiTableImplementation::SelectCutoff(double const x,
+                                            std::int64_t& index,
+                                            double& cutoff) {
+  // The details of this code have a measurable performance impact.
+  if (x <= cutoffs[1]) {
+    // Because the intervals are unequal, this loop does on average 1.93
+    // comparisons, which is better than a binary tree.
+    for (std::int64_t k = 2; k < cutoffs.size(); ++k) {
+      if (cutoffs[k] <= x) {
+        index = k;
+        cutoff = cutoffs[k];
+        break;
+      }
+    }
+  } else if (cutoffs[0] <= x) {
+    index = 0;
+    cutoff = cutoffs[0];
+  } else {
+    index = 1;
+    cutoff = cutoffs[1];
+  }
 }
 
 Value MultiTableImplementation::SinPolynomial(Argument const x) {
