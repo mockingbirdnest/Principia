@@ -123,3 +123,6 @@ unity/
 
 # Visual Studio Code
 .vscode/
+
+# Nuget
+.nuget/

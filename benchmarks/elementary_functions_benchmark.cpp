@@ -6,6 +6,7 @@
 #include "benchmark/benchmark.h"
 #include "functions/cos.hpp"
 #include "functions/sin.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
 namespace functions {
@@ -23,7 +24,7 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
   using Argument = double;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(-1.0, 1.0);
+  std::uniform_real_distribution<> uniformly_at(0.0, π / 4);
   Argument argument = uniformly_at(random);
 
   if constexpr (metric == Metric::Throughput) {
