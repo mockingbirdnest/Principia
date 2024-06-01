@@ -1122,7 +1122,7 @@ absl::StatusOr<DiscreteTrajectory<Barycentric>> Vessel::FlowPrognostication(
         prognosticator_parameters.adaptive_step_parameters,
         FlightPlan::max_ephemeris_steps_per_frame);
   }
-  LOG_IF_EVERY_N(ERROR, !status.ok(), 50)
+  LOG_IF_EVERY_N(INFO, !status.ok(), 50)
       << "Prognostication from " << prognosticator_parameters.first_time
       << " finished at " << prognostication.back().time << " with "
       << status.ToString() << " for " << ShortDebugString();
