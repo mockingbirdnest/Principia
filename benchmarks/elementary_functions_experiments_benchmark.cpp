@@ -106,7 +106,7 @@ class MultiTableImplementation {
     Value cos_x;
   };
 
-  void SelectCutoff(Argument x, std::int64_t& index, double& cutoff);
+  void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
 
   Value SinPolynomial(Argument x);
   // |i| is the index of the binade in |cutoffs_|,

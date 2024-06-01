@@ -138,14 +138,6 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right);
 
-//TODO(phl)others
-template<typename T, typename U>
-DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
-                                         U const& right);
-template<typename T, typename U>
-DoublePrecision<Product<T, U>> operator*(T const& left,
-                                         DoublePrecision<U> const& right);
-
 template<typename T, typename U>
 DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           DoublePrecision<U> const& right);
