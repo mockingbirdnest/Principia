@@ -154,7 +154,7 @@ class SingleTableImplementation {
 
   Value SinPolynomial(Argument x);
   Value CosPolynomial(Argument x);
-  Value CosPolynomial1(Argument x);
+  Value CosPolynomial2(Argument x);
 
   std::array<AccurateValues,
              static_cast<std::int64_t>(x_max / table_spacing) + 1>
@@ -374,13 +374,14 @@ Value SingleTableImplementation::Sin(Argument const x) {
                                           cos_x₀ * h³ * SinPolynomial(h²)) +
                                          sin_x₀_plus_h_cos_x₀.error);
   } else {
+    // TODO(phl): Error analysis of this computation.
     auto const h² = TwoProduct(h, h);
     auto const h³ = h².value * h;
     auto const sin_x₀_h²_cos_polynomial_0 = sin_x₀ * h² * cos_polynomial_0;
     auto const terms_up_to_h² =
         TwoSum(sin_x₀_plus_h_cos_x₀.value, sin_x₀_h²_cos_polynomial_0.value);
     return terms_up_to_h².value +
-           ((sin_x₀ * h².value * CosPolynomial1(h².value) +
+           ((sin_x₀ * h².value * CosPolynomial2(h².value) +
              cos_x₀ * h³ * SinPolynomial(h².value)) +
             sin_x₀_plus_h_cos_x₀.error + sin_x₀_h²_cos_polynomial_0.error);
   }
@@ -409,7 +410,7 @@ Value SingleTableImplementation::Cos(Argument const x) {
     auto const terms_up_to_h² =
         TwoSum(cos_x₀_minus_h_sin_x₀.value, cos_x₀_h²_cos_polynomial_0.value);
     return terms_up_to_h².value +
-           ((cos_x₀ * h².value * CosPolynomial1(h².value) -
+           ((cos_x₀ * h².value * CosPolynomial2(h².value) -
              sin_x₀ * h³ * SinPolynomial(h².value)) +
             cos_x₀_minus_h_sin_x₀.error + cos_x₀_h²_cos_polynomial_0.error);
   }
@@ -428,10 +429,11 @@ Value SingleTableImplementation::CosPolynomial(
   return cos_polynomial_0 + 0.0416666654823785864634569932662 * x;
 }
 
-Value SingleTableImplementation::CosPolynomial1(
+Value SingleTableImplementation::CosPolynomial2(
     Argument const x) {
-  // 72 bits.
-  return 0.0416666654823785864634569932662 * x;
+  // 101 bits.
+  return x * (0.04166666666666665363986848039146102332933 -
+              0.001388888852024502693312293343727757316234 * x);
 }
 
 template<Argument table_spacing>
