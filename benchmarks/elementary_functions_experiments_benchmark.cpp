@@ -377,13 +377,14 @@ Value SingleTableImplementation::Sin(Argument const x) {
     // TODO(phl): Error analysis of this computation.
     auto const h² = TwoProduct(h, h);
     auto const h³ = h².value * h;
-    auto const sin_x₀_h²_cos_polynomial_0 = sin_x₀ * h² * cos_polynomial_0;
+    auto const h²_sin_x₀_cos_polynomial_0 =
+        h² * TwoProduct(sin_x₀, cos_polynomial_0);
     auto const terms_up_to_h² =
-        TwoSum(sin_x₀_plus_h_cos_x₀.value, sin_x₀_h²_cos_polynomial_0.value);
+        TwoSum(sin_x₀_plus_h_cos_x₀.value, h²_sin_x₀_cos_polynomial_0.value);
     return terms_up_to_h².value +
            ((sin_x₀ * h².value * CosPolynomial2(h².value) +
              cos_x₀ * h³ * SinPolynomial(h².value)) +
-            sin_x₀_plus_h_cos_x₀.error + sin_x₀_h²_cos_polynomial_0.error);
+            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
   }
 }
 
@@ -406,13 +407,14 @@ Value SingleTableImplementation::Cos(Argument const x) {
     // TODO(phl): Error analysis of this computation.
     auto const h² = TwoProduct(h, h);
     auto const h³ = h².value * h;
-    auto const cos_x₀_h²_cos_polynomial_0 = cos_x₀ * h² * cos_polynomial_0;
+    auto const h²_cos_x₀_cos_polynomial_0 =
+        h² * TwoProduct(cos_x₀, cos_polynomial_0);
     auto const terms_up_to_h² =
-        TwoSum(cos_x₀_minus_h_sin_x₀.value, cos_x₀_h²_cos_polynomial_0.value);
+        TwoSum(cos_x₀_minus_h_sin_x₀.value, h²_cos_x₀_cos_polynomial_0.value);
     return terms_up_to_h².value +
            ((cos_x₀ * h².value * CosPolynomial2(h².value) -
              sin_x₀ * h³ * SinPolynomial(h².value)) +
-            cos_x₀_minus_h_sin_x₀.error + cos_x₀_h²_cos_polynomial_0.error);
+            cos_x₀_minus_h_sin_x₀.error + h²_cos_x₀_cos_polynomial_0.error);
   }
 }
 
