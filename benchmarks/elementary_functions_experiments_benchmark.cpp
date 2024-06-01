@@ -31,7 +31,9 @@ constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.
 static constexpr std::int64_t number_of_iterations = 1000;
 
-// A helper class to benchmark implementations with various table spacings.
+// A helper class to benchmark implementations with various table spacings, and
+// compare the effect of reduced table spacing with the effect of increased
+// polynomial degrees.
 template<Argument table_spacing>
 class TableSpacingImplementation {
  public:
@@ -57,6 +59,9 @@ class TableSpacingImplementation {
       accurate_values_;
 };
 
+// A helper class to benchmark an implementation with multiple tables.  Each
+// table covers a binade of the value of the Sin function, and tables closer to
+// 0 have smaller spacing.
 class MultiTableImplementation {
  public:
   static constexpr double max_table_spacing = 2.0 / 1024.0;
@@ -107,8 +112,8 @@ class MultiTableImplementation {
   // |i| is the index of the binade in |cutoffs_|,
   Value CosPolynomial(std::int64_t i, Argument x);
 
-  // Because the interval [π / 6, π / 4] is shorter than the next, the maximum
-  // value is reached between the first two cutoffs.
+  // Because the interval [π / 6, π / 4] is shorter than the next one below, the
+  // maximum value is reached between the first two cutoffs.
   static constexpr std::int64_t table_size =
       static_cast<std::int64_t>((cutoffs[0] - cutoffs[1]) / table_spacings[1]);
 
@@ -211,17 +216,11 @@ void MultiTableImplementation::Initialize() {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
-  // Because the intervals are unequal, this loop does on average 2.28
-  // comparisons, which is better than a binary tree.
   std::int64_t i;
-  for (std::int64_t k = 0; k < cutoffs.size(); ++k) {
-    if (cutoffs[k] <= x) {
-      i = k;
-      break;
-    }
-  }
+  double cutoff;
+  SelectCutoff(x, i, cutoff);
 
-  auto const j = static_cast<std::int64_t>((x - cutoffs[i]) *
+  auto const j = static_cast<std::int64_t>((x - cutoff) *
                                            one_over_table_spacings_[i]);
   auto const& accurate_values = accurate_values_[i][j];
   auto const& x₀ = accurate_values.x;
@@ -261,10 +260,12 @@ FORCE_INLINE(inline)
 void MultiTableImplementation::SelectCutoff(double const x,
                                             std::int64_t& index,
                                             double& cutoff) {
-  // The details of this code have a measurable performance impact.
+  // The details of this code have a measurable performance impact.  It does on
+  // average 2.30 comparisons.  That's more than a naive loop starting at
+  // |k = 0| (which would do 2.28 comparisons) but it's faster in practice.
   if (x <= cutoffs[1]) {
     // Because the intervals are unequal, this loop does on average 1.93
-    // comparisons, which is better than a binary tree.
+    // comparisons.
     for (std::int64_t k = 2; k < cutoffs.size(); ++k) {
       if (cutoffs[k] <= x) {
         index = k;
@@ -282,13 +283,15 @@ void MultiTableImplementation::SelectCutoff(double const x,
 }
 
 Value MultiTableImplementation::SinPolynomial(Argument const x) {
-  // 85 bits.
+  // 85 bits.  Works for all binades.
   return -0.166666666666666666666666651721 +
          0.00833333316093951937646271666739 * x;
 }
 
 Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
                                               Argument const x) {
+  // The polynomials for the highest two binades don't give us enough bits, so
+  // we have to use 3 polynomials.
   // i == 1 goes first because it is the largest argument interval.
   if (i == 1) {
     // 78 bits.
