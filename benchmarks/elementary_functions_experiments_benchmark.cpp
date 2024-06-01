@@ -122,7 +122,9 @@ class MultiTableImplementation {
       accurate_values_;
 };
 
-//TODO(phl) comment
+// A helper class to benchmark an implementation with a single table.  Near 0,
+// the polynomial for the Cos function is split into two parts, with the
+// constant term computed in DoublePrecision and the rest going up to degree 2.
 class SingleTableImplementation {
  public:
   static constexpr Argument table_spacing = 2.0 / 1024.0;
@@ -153,7 +155,7 @@ class SingleTableImplementation {
   static constexpr Value cos_polynomial_0 = -0.499999999999999999999872434553;
 
   Value SinPolynomial(Argument x);
-  Value CosPolynomial(Argument x);
+  Value CosPolynomial1(Argument x);
   Value CosPolynomial2(Argument x);
 
   std::array<AccurateValues,
@@ -370,7 +372,7 @@ Value SingleTableImplementation::Sin(Argument const x) {
   if (cutoff <= x) {
     auto const h² = h * h;
     auto const h³ = h² * h;
-    return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial(h²) +
+    return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
                                           cos_x₀ * h³ * SinPolynomial(h²)) +
                                          sin_x₀_plus_h_cos_x₀.error);
   } else {
@@ -400,7 +402,7 @@ Value SingleTableImplementation::Cos(Argument const x) {
   if (cutoff <= x) {
     auto const h² = h * h;
     auto const h³ = h² * h;
-    return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial(h²) -
+    return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
                                            sin_x₀ * h³ * SinPolynomial(h²)) +
                                           cos_x₀_minus_h_sin_x₀.error);
   } else {
@@ -425,7 +427,7 @@ Value SingleTableImplementation::SinPolynomial(
          0.00833333316093951937646271666739 * x;
 }
 
-Value SingleTableImplementation::CosPolynomial(
+Value SingleTableImplementation::CosPolynomial1(
     Argument const x) {
   // 72 bits.
   return cos_polynomial_0 + 0.0416666654823785864634569932662 * x;
