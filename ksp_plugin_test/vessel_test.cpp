@@ -286,10 +286,9 @@ TEST_F(VesselTest, Prediction) {
       /*t2=*/t0_ + 2 * Second);
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 2 * Second, _, _))
-      .WillOnce(DoAll(
+      .WillRepeatedly(DoAll(
           AppendPointsToDiscreteTrajectory(&expected_vessel_prediction),
-          Return(absl::OkStatus())))
-      .WillRepeatedly(Return(absl::OkStatus()));
+          Return(absl::OkStatus())));
 
   // The call to extend the exphemeris.  Irrelevant since we won't be looking at
   // these points.
@@ -303,6 +302,8 @@ TEST_F(VesselTest, Prediction) {
   int count = 0;
   do {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
+    LOG(ERROR) << "Iteration " << count << " back is "
+               << vessel_.prediction()->back().time;
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
     ++count;
