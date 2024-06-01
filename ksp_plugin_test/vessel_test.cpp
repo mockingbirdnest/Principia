@@ -305,6 +305,8 @@ TEST_F(VesselTest, Prediction) {
     vessel_.RefreshPrediction(t0_ + 1 * Second);
     using namespace std::chrono_literals;
     std::this_thread::sleep_for(100ms);
+    LOG(ERROR) << "Iteration " << count << " back is "
+               << vessel_.prediction()->back().time;
     ++count;
     CHECK_LT(count, 1000);
   } while (vessel_.prediction()->back().time == t0_);
