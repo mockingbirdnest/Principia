@@ -623,7 +623,10 @@ void Vessel::RefreshPrediction() {
     prognostication = prognosticator_.Get();
   }
   if (prognostication.has_value()) {
+    LOG(ERROR) << "Prognostication ends at " << prognostication->back().time;
     AttachPrediction(std::move(prognostication).value());
+  } else {
+    LOG(ERROR) << "No prognostication";
   }
 }
 
