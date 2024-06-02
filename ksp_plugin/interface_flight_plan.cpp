@@ -527,8 +527,7 @@ void __cdecl principia__FlightPlanRenderedApsides(
     plugin->ComputeAndRenderApsides(
         celestial_index,
         flight_plan,
-        segment.begin(),
-        segment.end(),
+        segment.begin(), segment.end(),
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_apoapsides,
@@ -562,8 +561,7 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
     DiscreteTrajectory<World> segment_rendered_closest_approaches;
     plugin->ComputeAndRenderClosestApproaches(
         flight_plan,
-        segment.begin(),
-        segment.end(),
+        segment.begin(), segment.end(),
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_closest_approaches);
@@ -593,8 +591,7 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   for (auto const& segment : flight_plan.segments()) {
     DiscreteTrajectory<World> segment_rendered_ascending;
     DiscreteTrajectory<World> segment_rendered_descending;
-    plugin->ComputeAndRenderNodes(segment.begin(),
-                                  segment.end(),
+    plugin->ComputeAndRenderNodes(segment.begin(), segment.end(),
                                   FromXYZ<Position<World>>(sun_world_position),
                                   max_points,
                                   segment_rendered_ascending,
