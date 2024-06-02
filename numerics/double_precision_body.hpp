@@ -238,6 +238,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 }
 
 template<typename T, typename U>
+FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if (UseHardwareFMA) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
@@ -412,6 +413,7 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
+FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.

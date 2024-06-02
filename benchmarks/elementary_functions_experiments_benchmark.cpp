@@ -64,12 +64,12 @@ class TableSpacingImplementation {
 // 0 have smaller spacing.
 class MultiTableImplementation {
  public:
-  static constexpr double max_table_spacing = 2.0 / 1024.0;
+  static constexpr Argument max_table_spacing = 2.0 / 1024.0;
   static constexpr std::int64_t number_of_tables = 9;
 
   // ArcSin(2^-(n + 1)) for n in [0, 8] rounded towards positive infinity.  The
   // entry at index n has n leading zeroes in the mantissa of its sinus.
-  static constexpr std::array<double, number_of_tables> cutoffs{
+  static constexpr std::array<Argument, number_of_tables> cutoffs{
       0x1.0C152382D7366p-1,
       0x1.02BE9CE0B87CEp-2,
       0x1.00ABE0C129E1Fp-3,
@@ -81,7 +81,7 @@ class MultiTableImplementation {
       0x1.00000AAAABDDEp-9};
 
   // The spacing between arguments above each cutoff.
-  static constexpr std::array<double, number_of_tables> table_spacings{
+  static constexpr std::array<Argument, number_of_tables> table_spacings{
       ScaleB(max_table_spacing, 0),
       ScaleB(max_table_spacing, -1),
       ScaleB(max_table_spacing, -2),
@@ -106,7 +106,7 @@ class MultiTableImplementation {
     Value cos_x;
   };
 
-  void SelectCutoff(double x, std::int64_t& index, double& cutoff);
+  void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
 
   Value SinPolynomial(Argument x);
   // |i| is the index of the binade in |cutoffs_|,
@@ -119,6 +119,47 @@ class MultiTableImplementation {
 
   std::array<std::int64_t, number_of_tables> one_over_table_spacings_;
   std::array<std::array<AccurateValues, table_size>, number_of_tables>
+      accurate_values_;
+};
+
+// A helper class to benchmark an implementation with a single table.  Near 0,
+// the polynomial for the Cos function is split into two parts, with the
+// constant term computed in DoublePrecision and the rest going up to degree 2.
+class SingleTableImplementation {
+ public:
+  static constexpr Argument table_spacing = 2.0 / 1024.0;
+
+  // ArcSin[1/8], rounded towards infinity.  Two more leading zeroes than the
+  // high binade.
+  // TODO(phl): Rigourous error analysis needed to check that this is the right
+  // cutoff.
+  static constexpr Argument cutoff = 0x1.00ABE0C129E1Fp-3;
+
+  // ArcSin[1/512], rounded towards infinity.
+  static constexpr Argument min_argument = 0x1.00000AAAABDDEp-9;
+
+  void Initialize();
+
+  Value Sin(Argument x);
+  Value Cos(Argument x);
+
+ private:
+  // Despite the name these are not accurate values, but for the purposes of
+  // benchmarking it doesn't matter.
+  struct AccurateValues {
+    Argument x;
+    Value sin_x;
+    Value cos_x;
+  };
+
+  static constexpr Value cos_polynomial_0 = -0.499999999999999999999872434553;
+
+  Value SinPolynomial(Argument x);
+  Value CosPolynomial1(Argument x);
+  Value CosPolynomial2(Argument x);
+
+  std::array<AccurateValues,
+             static_cast<std::int64_t>(x_max / table_spacing) + 1>
       accurate_values_;
 };
 
@@ -217,7 +258,7 @@ void MultiTableImplementation::Initialize() {
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
   std::int64_t i;
-  double cutoff;
+  Argument cutoff;
   SelectCutoff(x, i, cutoff);
 
   auto const j = static_cast<std::int64_t>((x - cutoff) *
@@ -238,7 +279,7 @@ Value MultiTableImplementation::Sin(Argument const x) {
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Cos(Argument const x) {
   std::int64_t i;
-  double cutoff;
+  Argument cutoff;
   SelectCutoff(x, i, cutoff);
 
   auto const j = static_cast<std::int64_t>((x - cutoff) *
@@ -257,9 +298,9 @@ Value MultiTableImplementation::Cos(Argument const x) {
 }
 
 FORCE_INLINE(inline)
-void MultiTableImplementation::SelectCutoff(double const x,
+void MultiTableImplementation::SelectCutoff(Argument const x,
                                             std::int64_t& index,
-                                            double& cutoff) {
+                                            Argument& cutoff) {
   // The details of this code have a measurable performance impact.  It does on
   // average 2.30 comparisons.  That's more than a naive loop starting at
   // |k = 0| (which would do 2.28 comparisons) but it's faster in practice.
@@ -306,6 +347,97 @@ Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
     return -0.499999999999999999999999968856 +
            0.0416666665926486697856340784849 * x;
   }
+}
+
+void SingleTableImplementation::Initialize() {
+  int i = 0;
+  for (Argument x = table_spacing / 2;
+       x <= x_max + table_spacing / 2;
+       x += table_spacing, ++i) {
+    accurate_values_[i] = {.x = x,
+                           .sin_x = std::sin(x),
+                           .cos_x = std::cos(x)};
+  }
+}
+
+FORCE_INLINE(inline)
+Value SingleTableImplementation::Sin(Argument const x) {
+  auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+  auto const& accurate_values = accurate_values_[i];
+  auto const& x₀ = accurate_values.x;
+  auto const& sin_x₀ = accurate_values.sin_x;
+  auto const& cos_x₀ = accurate_values.cos_x;
+  auto const h = x - x₀;
+  auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
+  if (cutoff <= x) {
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
+                                          cos_x₀ * h³ * SinPolynomial(h²)) +
+                                         sin_x₀_plus_h_cos_x₀.error);
+  } else {
+    // TODO(phl): Error analysis of this computation.
+    auto const h² = TwoProduct(h, h);
+    auto const h³ = h².value * h;
+    auto const h²_sin_x₀_cos_polynomial_0 =
+        h² * TwoProduct(sin_x₀, cos_polynomial_0);
+    auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                            h²_sin_x₀_cos_polynomial_0.value);
+    return terms_up_to_h².value +
+           ((sin_x₀ * h².value * CosPolynomial2(h².value) +
+             cos_x₀ * h³ * SinPolynomial(h².value)) +
+            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+  }
+}
+
+FORCE_INLINE(inline)
+Value SingleTableImplementation::Cos(Argument const x) {
+  auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+  auto const& accurate_values = accurate_values_[i];
+  auto const& x₀ = accurate_values.x;
+  auto const& sin_x₀ = accurate_values.sin_x;
+  auto const& cos_x₀ = accurate_values.cos_x;
+  auto const h = x - x₀;
+  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
+  if (cutoff <= x) {
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
+                                           sin_x₀ * h³ * SinPolynomial(h²)) +
+                                          cos_x₀_minus_h_sin_x₀.error);
+  } else {
+    // TODO(phl): Error analysis of this computation.
+    auto const h² = TwoProduct(h, h);
+    auto const h³ = h².value * h;
+    auto const h²_cos_x₀_cos_polynomial_0 =
+        h² * TwoProduct(cos_x₀, cos_polynomial_0);
+    auto const terms_up_to_h² = QuickTwoSum(cos_x₀_minus_h_sin_x₀.value,
+                                            h²_cos_x₀_cos_polynomial_0.value);
+    return terms_up_to_h².value +
+           ((cos_x₀ * h².value * CosPolynomial2(h².value) -
+             sin_x₀ * h³ * SinPolynomial(h².value)) +
+            cos_x₀_minus_h_sin_x₀.error + h²_cos_x₀_cos_polynomial_0.error);
+  }
+}
+
+Value SingleTableImplementation::SinPolynomial(
+    Argument const x) {
+  // 85 bits.
+  return -0.166666666666666666666666651721 +
+         0.00833333316093951937646271666739 * x;
+}
+
+Value SingleTableImplementation::CosPolynomial1(
+    Argument const x) {
+  // 72 bits.
+  return cos_polynomial_0 + 0.0416666654823785864634569932662 * x;
+}
+
+Value SingleTableImplementation::CosPolynomial2(
+    Argument const x) {
+  // 101 bits.
+  return x * (0.04166666666666665363986848039146102332933 -
+              0.001388888852024502693312293343727757316234 * x);
 }
 
 template<Argument table_spacing>
@@ -424,6 +556,64 @@ void BM_ExperimentCosMultiTable(benchmark::State& state) {
   }
 }
 
+void BM_ExperimentSinSingleTable(benchmark::State& state) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(
+      SingleTableImplementation::min_argument,
+      x_max);
+
+  SingleTableImplementation implementation;
+  implementation.Initialize();
+
+  Argument a[number_of_iterations];
+  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+    a[i] = uniformly_at(random);
+  }
+
+  Value v[number_of_iterations];
+  while (state.KeepRunningBatch(number_of_iterations)) {
+    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+      v[i] = implementation.Sin(a[i]);
+#if _DEBUG
+      // The implementation is not accurate, but let's check that it's not
+      // broken.
+      auto const absolute_error = Abs(v[i] - std::sin(a[i]));
+      CHECK_LT(absolute_error, 1.2e-16);
+#endif
+    }
+    benchmark::DoNotOptimize(v);
+  }
+}
+
+void BM_ExperimentCosSingleTable(benchmark::State& state) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(
+      SingleTableImplementation::min_argument,
+      x_max);
+
+  SingleTableImplementation implementation;
+  implementation.Initialize();
+
+  Argument a[number_of_iterations];
+  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+    a[i] = uniformly_at(random);
+  }
+
+  Value v[number_of_iterations];
+  while (state.KeepRunningBatch(number_of_iterations)) {
+    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+      v[i] = implementation.Cos(a[i]);
+#if _DEBUG
+      // The implementation is not accurate, but let's check that it's not
+      // broken.
+      auto const absolute_error = Abs(v[i] - std::cos(a[i]));
+      CHECK_LT(absolute_error, 1.2e-16);
+#endif
+    }
+    benchmark::DoNotOptimize(v);
+  }
+}
+
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing, 2.0 / 256.0)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing, 2.0 / 1024.0)
@@ -434,6 +624,8 @@ BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing, 2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK(BM_ExperimentSinMultiTable)->Unit(benchmark::kNanosecond);
 BENCHMARK(BM_ExperimentCosMultiTable)->Unit(benchmark::kNanosecond);
+BENCHMARK(BM_ExperimentSinSingleTable)->Unit(benchmark::kNanosecond);
+BENCHMARK(BM_ExperimentCosSingleTable)->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
 }  // namespace principia

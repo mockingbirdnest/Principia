@@ -152,6 +152,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal
 
 using internal::DoublePrecision;
+using internal::QuickTwoSum;
 using internal::TwoDifference;
 using internal::TwoProduct;
 using internal::TwoProductAdd;
