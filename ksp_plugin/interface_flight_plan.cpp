@@ -521,13 +521,21 @@ void __cdecl principia__FlightPlanRenderedApsides(
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
   DiscreteTrajectory<World> rendered_apoapsides;
   DiscreteTrajectory<World> rendered_periapsides;
-  plugin->ComputeAndRenderApsides(celestial_index,
-                                  flight_plan,
-                                  flight_plan.begin(), flight_plan.end(),
-                                  FromXYZ<Position<World>>(sun_world_position),
-                                  max_points,
-                                  rendered_apoapsides,
-                                  rendered_periapsides);
+  for (auto const& segment : flight_plan.segments()) {
+    DiscreteTrajectory<World> segment_rendered_apoapsides;
+    DiscreteTrajectory<World> segment_rendered_periapsides;
+    plugin->ComputeAndRenderApsides(
+        celestial_index,
+        flight_plan,
+        segment.begin(),
+        segment.end(),
+        FromXYZ<Position<World>>(sun_world_position),
+        max_points,
+        segment_rendered_apoapsides,
+        segment_rendered_periapsides);
+    rendered_apoapsides.Merge(std::move(segment_rendered_apoapsides));
+    rendered_periapsides.Merge(std::move(segment_rendered_periapsides));
+  }
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_apoapsides),
       plugin);
@@ -550,12 +558,18 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
   DiscreteTrajectory<World> rendered_closest_approaches;
-  plugin->ComputeAndRenderClosestApproaches(
-      flight_plan,
-      flight_plan.begin(), flight_plan.end(),
-      FromXYZ<Position<World>>(sun_world_position),
-      max_points,
-      rendered_closest_approaches);
+  for (auto const& segment : flight_plan.segments()) {
+    DiscreteTrajectory<World> segment_rendered_closest_approaches;
+    plugin->ComputeAndRenderClosestApproaches(
+        flight_plan,
+        segment.begin(),
+        segment.end(),
+        FromXYZ<Position<World>>(sun_world_position),
+        max_points,
+        segment_rendered_closest_approaches);
+    rendered_closest_approaches.Merge(
+        std::move(segment_rendered_closest_approaches));
+  }
   *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_closest_approaches),
       plugin);
@@ -576,11 +590,18 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
   DiscreteTrajectory<World> rendered_ascending;
   DiscreteTrajectory<World> rendered_descending;
-  plugin->ComputeAndRenderNodes(flight_plan.begin(), flight_plan.end(),
-                                FromXYZ<Position<World>>(sun_world_position),
-                                max_points,
-                                rendered_ascending,
-                                rendered_descending);
+  for (auto const& segment : flight_plan.segments()) {
+    DiscreteTrajectory<World> segment_rendered_ascending;
+    DiscreteTrajectory<World> segment_rendered_descending;
+    plugin->ComputeAndRenderNodes(segment.begin(),
+                                  segment.end(),
+                                  FromXYZ<Position<World>>(sun_world_position),
+                                  max_points,
+                                  segment_rendered_ascending,
+                                  segment_rendered_descending);
+    rendered_ascending.Merge(std::move(segment_rendered_ascending));
+    rendered_descending.Merge(std::move(segment_rendered_descending));
+  }
   *ascending = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_ascending),
       plugin);
