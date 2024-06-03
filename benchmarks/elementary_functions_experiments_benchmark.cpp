@@ -411,22 +411,19 @@ Value SingleTableImplementation::Cos(Argument const x) {
   }
 }
 
-Value SingleTableImplementation::SinPolynomial(
-    Argument const x) {
+Value SingleTableImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
   return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
 }
 
-Value SingleTableImplementation::CosPolynomial1(
-    Argument const x) {
-    // 72 bits.
-    return cos_polynomial_0 + 0x1.555554B290E6Ap-5 * x;
+Value SingleTableImplementation::CosPolynomial1(Argument const x) {
+  // 72 bits.
+  return cos_polynomial_0 + 0x1.555554B290E6Ap-5 * x;
 }
 
-Value SingleTableImplementation::CosPolynomial2(
-    Argument const x) {
+Value SingleTableImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
-    return x * (0x1.5555555555555p-5 - 0x1.6C16C10C09C11p-10 * x);
+  return x * (0x1.5555555555555p-5 - 0x1.6C16C10C09C11p-10 * x);
 }
 
 template<Argument table_spacing>
