@@ -84,7 +84,7 @@ e=IntegerPart[magnitude/2^(significandBits-1)];
 If[e==0,
 \[Mu]/2^(significandBits-1) 2^(1-bias),
 sign(1+\[Mu]/2^(significandBits-1))2^(e-bias)]];
-CorrectlyRound[x_?NumberQ]:=If[x==\[Infinity]||x==-\[Infinity],x,If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&@FromRepresentation[correctlyRoundRepresentation[Representation[x]]]];
+CorrectlyRound[x_]:=If[x==\[Infinity]||x==-\[Infinity],x,If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&@FromRepresentation[correctlyRoundRepresentation[Representation[x]]]];
 UlpDistance[x_,y_]:=Abs[Representation[x]-Representation[y]]
 
 
