@@ -103,7 +103,7 @@ leastFullHexDigitValue:=2^(significandBits-1)/16^fullHexDigits
 leastHexDigitValue:=If[leastFullHexDigitValue>1,leastFullHexDigitValue/16,leastFullHexDigitValue]
 
 
-HexLiteral[n_]:=If[n<0,"-",""]<>
+HexLiteral[n_]:=If[n==0,"0.0",If[n<0,"-",""]<>
 "0x1."<>ToUpperCase[
 IntegerString[
 Mod[IntegerPart[Representation[Abs[n]]/leastFullHexDigitValue],16^fullHexDigits],16,fullHexDigits]<>
@@ -122,7 +122,7 @@ Switch[
 binary32,"f",
 binary64,"",
 x87extended,"l",
-_,"_"<>ToString[significandBits]<>"_sigbits"]
+_,"_"<>ToString[significandBits]<>"_sigbits"]]
 
 
 smol=-12;

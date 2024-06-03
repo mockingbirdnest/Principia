@@ -152,7 +152,9 @@ class SingleTableImplementation {
     Value cos_x;
   };
 
-  static constexpr Value cos_polynomial_0 = -0.499999999999999999999872434553;
+  // If this was ever changed to a value that is not a power of 2, extra care
+  // would be needed in the computations that use it.
+  static constexpr Value cos_polynomial_0 = -0.5;
 
   Value SinPolynomial(Argument x);
   Value CosPolynomial1(Argument x);
@@ -214,12 +216,10 @@ Value TableSpacingImplementation<table_spacing>::SinPolynomial(
     Argument const x) {
   if constexpr (table_spacing == 2.0 / 256.0) {
     // 71 bits.
-    return -0.166666666666666666666421797625 +
-           0.00833333057503280528178543245797 * x;
+    return -0x1.5555555555555p-3 + 0x1.11110B24ACC74p-7 * x;
   } else if constexpr (table_spacing == 2.0 / 1024.0) {
-    // 85 bits.
-    return -0.166666666666666666666666651721 +
-           0.00833333316093951937646271666739 * x;
+    // 84 bits.
+    return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
   }
 }
 
@@ -227,14 +227,11 @@ template<Argument table_spacing>
 Value TableSpacingImplementation<table_spacing>::CosPolynomial(
     Argument const x) {
   if constexpr (table_spacing == 2.0 / 256.0) {
-    // 77 bits.
-    return -0.499999999999999999999999974543 +
-           x * (0.0416666666666633318024480868405 -
-                0.00138888829905860875255146938745 * x);
+    // 83 bits.
+    return -0.5 + x * (0x1.5555555555555p-5 - 0x1.6C16BB6B46CA6p-10 * x);
   } else if constexpr (table_spacing == 2.0 / 1024.0) {
     // 72 bits.
-    return -0.499999999999999999999872434553 +
-           0.0416666654823785864634569932662 * x;
+    return -0.5 + 0x1.555554B290E6Ap-5 * x;
   }
 }
 
@@ -324,9 +321,8 @@ void MultiTableImplementation::SelectCutoff(Argument const x,
 }
 
 Value MultiTableImplementation::SinPolynomial(Argument const x) {
-  // 85 bits.  Works for all binades.
-  return -0.166666666666666666666666651721 +
-         0.00833333316093951937646271666739 * x;
+  // 84 bits.  Works for all binades.
+  return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
 }
 
 Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
@@ -335,17 +331,14 @@ Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
   // we have to use 3 polynomials.
   // i == 1 goes first because it is the largest argument interval.
   if (i == 1) {
-    // 78 bits.
-    return -0.499999999999999999999998006790 +
-           0.0416666663705946726372008045758 * x;
+    // 76 bits.
+    return -0.5 + 0x1.5555552CA439Ep-5 * x;
   } else if (i == 0) {
     // 72 bits.
-    return -0.499999999999999999999872434553 +
-           0.0416666654823785864634569932662 * x;
+    return -0.5 + 0x1.555554B290E6Ap-5 * x;
   } else {
-    // 84 bits.
-    return -0.499999999999999999999999968856 +
-           0.0416666665926486697856340784849 * x;
+    // 78 bits.
+    return -0.5 + 0x1.5555554B290E8p-5 * x;
   }
 }
 
@@ -422,22 +415,20 @@ Value SingleTableImplementation::Cos(Argument const x) {
 
 Value SingleTableImplementation::SinPolynomial(
     Argument const x) {
-  // 85 bits.
-  return -0.166666666666666666666666651721 +
-         0.00833333316093951937646271666739 * x;
+  // 84 bits.  Works for all binades.
+  return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
 }
 
 Value SingleTableImplementation::CosPolynomial1(
     Argument const x) {
-  // 72 bits.
-  return cos_polynomial_0 + 0.0416666654823785864634569932662 * x;
+    // 72 bits.
+    return cos_polynomial_0 + 0x1.555554B290E6Ap-5 * x;
 }
 
 Value SingleTableImplementation::CosPolynomial2(
     Argument const x) {
-  // 101 bits.
-  return x * (0.04166666666666665363986848039146102332933 -
-              0.001388888852024502693312293343727757316234 * x);
+  // 97 bits.
+    return x * (0x1.5555555555555p-5 - 0x1.6C16C10C09C11p-10 * x);
 }
 
 template<Argument table_spacing>
@@ -461,7 +452,7 @@ void BM_ExperimentSinTableSpacing(benchmark::State& state) {
       // The implementation is not accurate, but let's check that it's not
       // broken.
       auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      CHECK_LT(absolute_error, 5.6e-17);
+      CHECK_LT(absolute_error, 1.2e-16);
 #endif
     }
     benchmark::DoNotOptimize(v);
