@@ -414,6 +414,26 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
 
 template<typename T, typename U>
 FORCE_INLINE(inline)
+DoublePrecision<Product<T, U>> operator*(T const& left,
+                                         DoublePrecision<U> const& right) {
+  // [Lin81], algorithm longmul.
+  auto product = TwoProduct(left, right.value);
+  product.error += left.value * right.error;
+  return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+FORCE_INLINE(inline)
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         U const& right) {
+  // [Lin81], algorithm longmul.
+  auto product = TwoProduct(left.value, right);
+  product.error += +left.error * right;
+  return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
