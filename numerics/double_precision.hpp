@@ -127,16 +127,48 @@ template<typename T>
 DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 
 template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(T const& left,
+                                     DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
+                                     U const& right);
+
+template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(T const& left,
+                                            DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
+                                            U const& right);
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
 
 template<typename T, typename U>
+DoublePrecision<Product<T, U>> operator*(T const& left,
+                                         DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         U const& right);
+
+template<typename T, typename U>
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(T const& left,
+                                          DoublePrecision<U> const& right);
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
+                                          U const& right);
 
 template<typename T, typename U>
 DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,

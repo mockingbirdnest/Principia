@@ -397,11 +397,43 @@ DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left) {
 }
 
 template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(T const& left,
+                                     DoublePrecision<U> const& right) {
+  // [Lin81], algorithm longadd.
+  auto const sum = TwoSum(left, right.value);
+  return QuickTwoSum(sum.value, sum.error + right.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
+                                     U const& right) {
+  // [Lin81], algorithm longadd.
+  auto const sum = TwoSum(left.value, right);
+  return QuickTwoSum(sum.value, sum.error + left.error);
+}
+
+template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right) {
   // [Lin81], algorithm longadd.
   auto const sum = TwoSum(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) + right.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(T const& left,
+                                            DoublePrecision<U> const& right) {
+  // [Lin81], algorithm longadd.
+  auto const sum = TwoDifference(left, right.value);
+  return QuickTwoSum(sum.value, sum.error - right.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
+                                            U const& right) {
+  // [Lin81], algorithm longadd.
+  auto const sum = TwoDifference(left.value, right);
+  return QuickTwoSum(sum.value, sum.error + left.error);
 }
 
 template<typename T, typename U>
@@ -414,6 +446,26 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
 
 template<typename T, typename U>
 FORCE_INLINE(inline)
+DoublePrecision<Product<T, U>> operator*(T const& left,
+                                         DoublePrecision<U> const& right) {
+  // [Lin81], algorithm longmul.
+  auto product = TwoProduct(left, right.value);
+  product.error += left.value * right.error;
+  return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+FORCE_INLINE(inline)
+DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
+                                         U const& right) {
+  // [Lin81], algorithm longmul.
+  auto product = TwoProduct(left.value, right);
+  product.error += +left.error * right;
+  return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
@@ -421,6 +473,28 @@ DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
   product.error +=
       (left.value + left.error) * right.error + left.error * right.value;
   return QuickTwoSum(product.value, product.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(T const& left,
+                                          DoublePrecision<U> const& right) {
+  // [Lin81], algorithm longdiv.
+  auto const z = left / right.value;
+  auto const product = TwoProduct(right.value, z);
+  auto const zz = (((left - product.value) - product.error) - z * right.error) /
+                  (right.value + right.error);
+  return QuickTwoSum(z, zz);
+}
+
+template<typename T, typename U>
+DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
+                                          U const& right) {
+  // [Lin81], algorithm longdiv.
+  auto const z = left.value / right;
+  auto const product = TwoProduct(right, z);
+  auto const zz =
+      (((left.value - product.value) - product.error) + left.error) / right;
+  return QuickTwoSum(z, zz);
 }
 
 template<typename T, typename U>
