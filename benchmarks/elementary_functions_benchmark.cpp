@@ -25,13 +25,17 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> uniformly_at(0.0, π / 4);
-  Argument argument = uniformly_at(random);
+
+  Argument a[number_of_iterations];
+  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+    a[i] = uniformly_at(random);
+  }
 
   if constexpr (metric == Metric::Throughput) {
     Value v[number_of_iterations];
     while (state.KeepRunningBatch(number_of_iterations)) {
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-        v[i] = fn(argument);
+        v[i] = fn(a[i]);
       }
       benchmark::DoNotOptimize(v);
     }
@@ -39,9 +43,12 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
     static_assert(metric == Metric::Latency);
     Value v;
     while (state.KeepRunningBatch(number_of_iterations)) {
+      Argument argument = a[0];
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
         v = fn(argument);
-        argument = v;
+        // Here v < 1 / √2 < π / 4.  The quantity being added is less than
+        // π / 64 < π / 4 - 1 / √2, thus the argument remains less than π / 4.
+        argument = v + 0.0625 * a[i];
       }
     }
   }
