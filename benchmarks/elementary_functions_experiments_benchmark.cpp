@@ -18,8 +18,6 @@ namespace functions {
 
 // TODO(phl): The polynomials in this file should use class
 // |PolynomialInMonomialBasis|.
-// TODO(phl): Study the effect of rounding the polynomial coefficients to
-// machine numbers.
 
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_double_precision;
@@ -465,7 +463,7 @@ void BaseSinBenchmark(Argument const& min_argument,
     static_assert(metric == Metric::Latency);
     Value v;
     while (state.KeepRunningBatch(number_of_iterations)) {
-      Argument argument = a[0];
+      Argument argument = a[number_of_iterations - 1];
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
         v = implementation.Sin(argument);
         argument = (v + a[i]) - v;
@@ -509,7 +507,7 @@ void BaseCosBenchmark(Argument const& min_argument,
     static_assert(metric == Metric::Latency);
     Value v;
     while (state.KeepRunningBatch(number_of_iterations)) {
-      Argument argument = a[0];
+      Argument argument = a[number_of_iterations - 1];
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
         v = implementation.Cos(argument);
         argument = (v + a[i]) - v;

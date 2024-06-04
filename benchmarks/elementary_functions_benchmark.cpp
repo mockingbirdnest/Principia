@@ -43,7 +43,7 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
     static_assert(metric == Metric::Latency);
     Value v;
     while (state.KeepRunningBatch(number_of_iterations)) {
-      Argument argument = a[0];
+      Argument argument = a[number_of_iterations - 1];
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
         v = fn(argument);
         argument = (v + a[i]) - v;
