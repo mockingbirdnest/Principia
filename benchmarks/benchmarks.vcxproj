@@ -43,6 +43,7 @@
     <ClCompile Include="thread_pool_benchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="metric.hpp" />
     <ClInclude Include="quantities.hpp" />
     <ClInclude Include="quantities_body.hpp" />
   </ItemGroup>

@@ -4,6 +4,7 @@
 #include <random>
 
 #include "benchmark/benchmark.h"
+#include "benchmarks/metric.hpp"
 #include "functions/cos.hpp"
 #include "functions/sin.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
@@ -11,12 +12,11 @@
 namespace principia {
 namespace functions {
 
+using namespace principia::benchmarks::_metric;
 using namespace principia::functions::_cos;
 using namespace principia::functions::_sin;
 
 static constexpr std::int64_t number_of_iterations = 1000;
-
-enum class Metric { Latency, Throughput };
 
 template<Metric metric, double (__cdecl *fn)(double)>
 void BM_EvaluateElementaryFunction(benchmark::State& state) {
