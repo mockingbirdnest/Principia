@@ -117,7 +117,8 @@ class MultiTableImplementation {
   // Because the interval [π / 6, π / 4] is shorter than the next one below, the
   // maximum value is reached between the first two cutoffs.
   static constexpr std::int64_t table_size =
-      static_cast<std::int64_t>((cutoffs[0] - cutoffs[1]) / table_spacings[1]);
+      static_cast<std::int64_t>((cutoffs[0] - cutoffs[1]) / table_spacings[1]) +
+      1;
 
   std::array<std::int64_t, number_of_tables> one_over_table_spacings_;
   std::array<std::array<AccurateValues, table_size>, number_of_tables>
@@ -244,7 +245,9 @@ void MultiTableImplementation::Initialize() {
     current_x_min = cutoffs[i];
     one_over_table_spacings_[i] = 1.0 / table_spacings[i];
     Argument x = current_x_min + table_spacings[i] / 2;
-    for (std::int64_t j = 0; j < table_size && x < current_x_max; ++j) {
+    for (std::int64_t j = 0;
+         j < table_size && x < current_x_max + table_spacings[i] / 2;
+         ++j) {
       accurate_values_[i][j] = {.x = x,
                                 .sin_x = std::sin(x),
                                 .cos_x = std::cos(x)};
@@ -541,26 +544,50 @@ void BM_ExperimentCosSingleTable(benchmark::State& state) {
 }
 
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
+                   Metric::Latency,
+                   2.0 / 256.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
                    Metric::Throughput,
                    2.0 / 256.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
+                   Metric::Latency,
+                   2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
                    Metric::Throughput,
                    2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
+                   Metric::Latency,
+                   2.0 / 256.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
                    Metric::Throughput,
                    2.0 / 256.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
+                   Metric::Latency,
+                   2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
                    Metric::Throughput,
                    2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinMultiTable, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentSinMultiTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosMultiTable, Metric::Latency)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentCosMultiTable, Metric::Throughput)
     ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinSingleTable, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentSinSingleTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosSingleTable, Metric::Latency)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentCosSingleTable, Metric::Throughput)
     ->Unit(benchmark::kNanosecond);
