@@ -46,9 +46,7 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
       Argument argument = a[0];
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
         v = fn(argument);
-        // Here v < 1 / √2 < π / 4.  The quantity being added is less than
-        // π / 64 < π / 4 - 1 / √2, thus the argument remains less than π / 4.
-        argument = v + 0.0625 * a[i];
+        argument = (v + a[i]) - v;
       }
     }
   }

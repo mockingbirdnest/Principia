@@ -447,16 +447,29 @@ void BaseSinBenchmark(Argument const& min_argument,
     a[i] = uniformly_at(random);
   }
 
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Sin(a[i]);
+  if constexpr (metric == Metric::Throughput) {
+    Value v[number_of_iterations];
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v[i] = implementation.Sin(a[i]);
 #if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      CHECK_LT(absolute_error, max_absolute_error);
+        // The implementation is not accurate, but let's check that it's not
+        // broken.
+        auto const absolute_error = Abs(v[i] - std::sin(a[i]));
+        CHECK_LT(absolute_error, max_absolute_error);
 #endif
+      }
+      benchmark::DoNotOptimize(v);
+    }
+  } else {
+    static_assert(metric == Metric::Latency);
+    Value v;
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      Argument argument = a[0];
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v = implementation.Sin(argument);
+        argument = (v + a[i]) - v;
+      }
     }
     benchmark::DoNotOptimize(v);
   }
@@ -478,16 +491,29 @@ void BaseCosBenchmark(Argument const& min_argument,
     a[i] = uniformly_at(random);
   }
 
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Cos(a[i]);
+  if constexpr (metric == Metric::Throughput) {
+    Value v[number_of_iterations];
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v[i] = implementation.Cos(a[i]);
 #if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::cos(a[i]));
-      CHECK_LT(absolute_error, max_absolute_error);
+        // The implementation is not accurate, but let's check that it's not
+        // broken.
+        auto const absolute_error = Abs(v[i] - std::cos(a[i]));
+        CHECK_LT(absolute_error, max_absolute_error);
 #endif
+      }
+      benchmark::DoNotOptimize(v);
+    }
+  } else {
+    static_assert(metric == Metric::Latency);
+    Value v;
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      Argument argument = a[0];
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v = implementation.Cos(argument);
+        argument = (v + a[i]) - v;
+      }
     }
     benchmark::DoNotOptimize(v);
   }
