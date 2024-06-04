@@ -525,7 +525,7 @@ void BM_ExperimentSinTableSpacing(benchmark::State& state) {
       state);
 }
 
-template<Metric metric,Argument table_spacing>
+template<Metric metric, Argument table_spacing>
 void BM_ExperimentCosTableSpacing(benchmark::State& state) {
   BaseCosBenchmark<metric, TableSpacingImplementation<table_spacing>>(
       x_min, x_max,
