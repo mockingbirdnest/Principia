@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[کاشانی](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%DA%A9%D8%A7%D8%B4%D8%A7%D9%86%DB%8C), the May version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k4sh4ni).**
+**&lrm;[𒁹𒆠𒁷𒉡](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%F0%92%81%B9%F0%92%86%A0%F0%92%81%B7%F0%92%89%A1), the June version of Principia, is available, with quality-of-life improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/ki_din_nu).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia کاشانی for 1.8.1—1.12.5](https://share.weiyun.com/LbxqNfwZ).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia 𒁹𒆠𒁷𒉡 for 1.8.1—1.12.5](https://share.weiyun.com/JBFSuouF).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k4sh4ni).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [کاشانی](https://github.com/mockingbirdnest/Principia/releases/tag/2024050803-%DA%A9%D8%A7%D8%B4%D8%A7%D9%86%DB%8C) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/ki_din_nu).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [𒁹𒆠𒁷𒉡](https://github.com/mockingbirdnest/Principia/releases/tag/2024060613-%F0%92%81%B9%F0%92%86%A0%F0%92%81%B7%F0%92%89%A1) release.

@@ -446,24 +446,11 @@ Value SingleTableImplementation::Cos(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
   auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  if (cutoff <= x) {
-    auto const h² = h * h;
-    auto const h³ = h² * h;
-    return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
-                                           sin_x₀ * h³ * SinPolynomial(h²)) +
-                                          cos_x₀_minus_h_sin_x₀.error);
-  } else {
-    // TODO(phl): Error analysis of this computation.
-    auto const h² = TwoProduct(h, h);
-    auto const h³ = h².value * h;
-    auto const h²_cos_x₀_cos_polynomial_0 = h² * (cos_x₀ * cos_polynomial_0);
-    auto const terms_up_to_h² = QuickTwoSum(cos_x₀_minus_h_sin_x₀.value,
-                                            h²_cos_x₀_cos_polynomial_0.value);
-    return terms_up_to_h².value +
-           ((cos_x₀ * h².value * CosPolynomial2(h².value) -
-             sin_x₀ * h³ * SinPolynomial(h².value)) +
-            cos_x₀_minus_h_sin_x₀.error + h²_cos_x₀_cos_polynomial_0.error);
-  }
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
+                                         sin_x₀ * h³ * SinPolynomial(h²)) +
+                                        cos_x₀_minus_h_sin_x₀.error);
 }
 
 Value SingleTableImplementation::SinPolynomial(Argument const x) {
@@ -541,13 +528,14 @@ Value NearZeroImplementation::Cos(Argument const x) {
   auto const h² = h * h;
   auto const h³ = h² * h;
   return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
-                                          sin_x₀ * h³ * SinPolynomial(h²)) +
+                                         sin_x₀ * h³ * SinPolynomial(h²)) +
                                         cos_x₀_minus_h_sin_x₀.error);
 }
 
 Value NearZeroImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
-  return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
+  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
+                               x);
 }
 
 Value NearZeroImplementation::SinPolynomialNearZero(Argument const x) {
