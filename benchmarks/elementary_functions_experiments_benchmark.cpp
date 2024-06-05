@@ -172,7 +172,7 @@ class SingleTableImplementation {
 };
 
 // Same as SingleTableImplementation, but also covers the vicinity of zero.
-//TODO(phl): Degree 2?
+// TODO(phl): Could we cover a broader interval if we used degree 2?
 class NearZeroImplementation {
  public:
   static constexpr Argument table_spacing = 2.0 / 1024.0;
@@ -417,7 +417,7 @@ Value SingleTableImplementation::Sin(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
   auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-  if (cutoff <= Abs(x)) {
+  if (cutoff <= x) {
     auto const h² = h * h;
     auto const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
