@@ -186,7 +186,7 @@ class NearZeroImplementation {
   // ArcSin[1/1024], rounded towards infinity.
   static constexpr Argument near_zero_cutoff = 0x1.000002AAAABDEp-10;
 
-  void Initialize();
+  NearZeroImplementation();
 
   Value Sin(Argument x);
   Value Cos(Argument x);
@@ -417,7 +417,7 @@ Value SingleTableImplementation::Sin(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
   auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-  if (cutoff <= x) {
+  if (cutoff <= Abs(x)) {
     auto const h² = h * h;
     auto const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
@@ -470,7 +470,7 @@ Value SingleTableImplementation::CosPolynomial2(Argument const x) {
                  {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
 }
 
-void NearZeroImplementation::Initialize() {
+NearZeroImplementation::NearZeroImplementation() {
   int i = 0;
   for (Argument x = table_spacing / 2;
        x <= x_max + table_spacing / 2;
@@ -483,7 +483,7 @@ void NearZeroImplementation::Initialize() {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
-  if (x < near_zero_cutoff) [[unlikely]] {
+  if (x < near_zero_cutoff) {
     auto const x² = x * x;
     auto const x³ = x² * x;
     return x + x³ * SinPolynomialNearZero(x²);
