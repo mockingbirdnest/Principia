@@ -167,6 +167,7 @@ class SingleTableImplementation {
 };
 
 // Same as SingleTableImplementation, but also covers the vicinity of zero.
+//TODO(phl): Degree 2?
 class NearZeroImplementation {
  public:
   static constexpr Argument table_spacing = 2.0 / 1024.0;
@@ -177,8 +178,8 @@ class NearZeroImplementation {
   // cutoff.
   static constexpr Argument cutoff = 0x1.00ABE0C129E1Fp-3;
 
-  // ArcSin[1/512], rounded towards infinity.
-  static constexpr Argument min_argument = 0x1.00000AAAABDDEp-9;
+  // ArcSin[1/1024], rounded towards infinity.
+  static constexpr Argument near_zero_cutoff = 0x1.000002AAAABDEp-10;
 
   void Initialize();
 
@@ -199,6 +200,7 @@ class NearZeroImplementation {
   static constexpr Value cos_polynomial_0 = -0.5;
 
   Value SinPolynomial(Argument x);
+  Value SinPolynomialNearZero(Argument x);
   Value CosPolynomial1(Argument x);
   Value CosPolynomial2(Argument x);
 
@@ -483,30 +485,36 @@ void NearZeroImplementation::Initialize() {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
-  auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
-  auto const& accurate_values = accurate_values_[i];
-  auto const& x₀ = accurate_values.x;
-  auto const& sin_x₀ = accurate_values.sin_x;
-  auto const& cos_x₀ = accurate_values.cos_x;
-  auto const h = x - x₀;
-  auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-  if (cutoff <= x) {
-    auto const h² = h * h;
-    auto const h³ = h² * h;
-    return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
-                                          cos_x₀ * h³ * SinPolynomial(h²)) +
-                                         sin_x₀_plus_h_cos_x₀.error);
+  if (x < near_zero_cutoff) [[unlikely]] {
+    auto const x² = x * x;
+    auto const x³ = x² * x;
+    return x + x³ * SinPolynomialNearZero(x²);
   } else {
-    // TODO(phl): Error analysis of this computation.
-    auto const h² = TwoProduct(h, h);
-    auto const h³ = h².value * h;
-    auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
-    auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
-                                            h²_sin_x₀_cos_polynomial_0.value);
-    return terms_up_to_h².value +
-           ((sin_x₀ * h².value * CosPolynomial2(h².value) +
-             cos_x₀ * h³ * SinPolynomial(h².value)) +
-            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+    auto const& accurate_values = accurate_values_[i];
+    auto const& x₀ = accurate_values.x;
+    auto const& sin_x₀ = accurate_values.sin_x;
+    auto const& cos_x₀ = accurate_values.cos_x;
+    auto const h = x - x₀;
+    auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
+    if (cutoff <= x) {
+      auto const h² = h * h;
+      auto const h³ = h² * h;
+      return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
+                                            cos_x₀ * h³ * SinPolynomial(h²)) +
+                                           sin_x₀_plus_h_cos_x₀.error);
+    } else {
+      // TODO(phl): Error analysis of this computation.
+      auto const h² = TwoProduct(h, h);
+      auto const h³ = h².value * h;
+      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                              h²_sin_x₀_cos_polynomial_0.value);
+      return terms_up_to_h².value +
+             ((sin_x₀ * h².value * CosPolynomial2(h².value) +
+               cos_x₀ * h³ * SinPolynomial(h².value)) +
+              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    }
   }
 }
 
@@ -527,6 +535,7 @@ Value NearZeroImplementation::Cos(Argument const x) {
                                           cos_x₀_minus_h_sin_x₀.error);
   } else {
     // TODO(phl): Error analysis of this computation.
+    //TODO(phl): makes no sense for Cos?
     auto const h² = TwoProduct(h, h);
     auto const h³ = h².value * h;
     auto const h²_cos_x₀_cos_polynomial_0 = h² * (cos_x₀ * cos_polynomial_0);
@@ -542,6 +551,11 @@ Value NearZeroImplementation::Cos(Argument const x) {
 Value NearZeroImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
   return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
+}
+
+Value NearZeroImplementation::SinPolynomialNearZero(Argument const x) {
+  // 74 bits.
+  return -0x1.5555555555555p-3 + 0x1.11110B24ACC74p-7 * x;
 }
 
 Value NearZeroImplementation::CosPolynomial1(Argument const x) {
