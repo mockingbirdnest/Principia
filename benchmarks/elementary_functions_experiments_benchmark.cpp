@@ -26,8 +26,9 @@ using namespace principia::quantities::_elementary_functions;
 using Value = double;
 using Argument = double;
 
-// A polynomial is too heavy an object to use in this code.  On the other hand,
-// we want the benefits of FMA, so we call the evaluators directly.
+// A polynomial is too heavy an object to use in this code, so we call the
+// evaluators directly.
+// TODO(phl): FMA makes things slower :-(
 using Polynomial1 = Horner<Value, Argument, 1>;
 using Polynomial2 = Horner<Value, Argument, 2>;
 
