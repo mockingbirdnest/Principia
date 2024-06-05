@@ -9,6 +9,7 @@
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
@@ -16,16 +17,20 @@
 namespace principia {
 namespace functions {
 
-// TODO(phl): The polynomials in this file should use class
-// |PolynomialInMonomialBasis|.
-
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_scale_b;
 using namespace principia::quantities::_elementary_functions;
 
 using Value = double;
 using Argument = double;
+
+// A polynomial is too heavy an object to use in this code, so we call the
+// evaluators directly.
+// TODO(phl): FMA makes things slower :-(
+using Polynomial1 = Horner<Value, Argument, 1>;
+using Polynomial2 = Horner<Value, Argument, 2>;
 
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.
@@ -37,7 +42,7 @@ static constexpr std::int64_t number_of_iterations = 1000;
 template<Argument table_spacing>
 class TableSpacingImplementation {
  public:
-  void Initialize();
+  TableSpacingImplementation();
 
   Value Sin(Argument x);
   Value Cos(Argument x);
@@ -92,7 +97,7 @@ class MultiTableImplementation {
       ScaleB(max_table_spacing, -7),
       ScaleB(max_table_spacing, -8)};
 
-  void Initialize();
+  MultiTableImplementation();
 
   Value Sin(Argument x);
   Value Cos(Argument x);
@@ -139,7 +144,7 @@ class SingleTableImplementation {
   // ArcSin[1/512], rounded towards infinity.
   static constexpr Argument min_argument = 0x1.00000AAAABDDEp-9;
 
-  void Initialize();
+  SingleTableImplementation();
 
   Value Sin(Argument x);
   Value Cos(Argument x);
@@ -210,7 +215,7 @@ class NearZeroImplementation {
 };
 
 template<Argument table_spacing>
-void TableSpacingImplementation<table_spacing>::Initialize() {
+TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
   int i = 0;
   for (Argument x = table_spacing / 2;
        x <= x_max + table_spacing / 2;
@@ -260,10 +265,12 @@ Value TableSpacingImplementation<table_spacing>::SinPolynomial(
     Argument const x) {
   if constexpr (table_spacing == 2.0 / 256.0) {
     // 71 bits.
-    return -0x1.5555555555555p-3 + 0x1.11110B24ACC74p-7 * x;
+    return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7},
+                                 x);
   } else if constexpr (table_spacing == 2.0 / 1024.0) {
     // 84 bits.
-    return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
+    return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
+                                 x);
   }
 }
 
@@ -272,14 +279,15 @@ Value TableSpacingImplementation<table_spacing>::CosPolynomial(
     Argument const x) {
   if constexpr (table_spacing == 2.0 / 256.0) {
     // 83 bits.
-    return -0.5 + x * (0x1.5555555555555p-5 - 0x1.6C16BB6B46CA6p-10 * x);
+    return Polynomial2::Evaluate(
+               {-0.5, 0x1.5555555555555p-5, -0x1.6C16BB6B46CA6p-10}, x);
   } else if constexpr (table_spacing == 2.0 / 1024.0) {
     // 72 bits.
-    return -0.5 + 0x1.555554B290E6Ap-5 * x;
+    return Polynomial1::Evaluate({-0.5, 0x1.555554B290E6Ap-5}, x);
   }
 }
 
-void MultiTableImplementation::Initialize() {
+MultiTableImplementation::MultiTableImplementation() {
   Argument current_x_max = x_max;
   Argument current_x_min;
   for (std::int64_t i = 0; i < number_of_tables; ++i) {
@@ -368,7 +376,8 @@ void MultiTableImplementation::SelectCutoff(Argument const x,
 
 Value MultiTableImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
-  return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
+  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
+                               x);
 }
 
 Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
@@ -378,17 +387,17 @@ Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
   // i == 1 goes first because it is the largest argument interval.
   if (i == 1) {
     // 76 bits.
-    return -0.5 + 0x1.5555552CA439Ep-5 * x;
+    return Polynomial1::Evaluate({-0.5, 0x1.5555552CA439Ep-5}, x);
   } else if (i == 0) {
     // 72 bits.
-    return -0.5 + 0x1.555554B290E6Ap-5 * x;
+    return Polynomial1::Evaluate({-0.5, 0x1.555554B290E6Ap-5}, x);
   } else {
     // 78 bits.
-    return -0.5 + 0x1.5555554B290E8p-5 * x;
+    return Polynomial1::Evaluate({-0.5, 0x1.5555554B290E8p-5}, x);
   }
 }
 
-void SingleTableImplementation::Initialize() {
+SingleTableImplementation::SingleTableImplementation() {
   int i = 0;
   for (Argument x = table_spacing / 2;
        x <= x_max + table_spacing / 2;
@@ -459,17 +468,19 @@ Value SingleTableImplementation::Cos(Argument const x) {
 
 Value SingleTableImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
-  return -0x1.5555555555555p-3 + 0x1.111110B24ACB5p-7 * x;
+  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
+                               x);
 }
 
 Value SingleTableImplementation::CosPolynomial1(Argument const x) {
   // 72 bits.
-  return cos_polynomial_0 + 0x1.555554B290E6Ap-5 * x;
+  return Polynomial1::Evaluate({cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
 }
 
 Value SingleTableImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
-  return x * (0x1.5555555555555p-5 - 0x1.6C16C10C09C11p-10 * x);
+  return x * Polynomial1::Evaluate(
+                 {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
 }
 
 void NearZeroImplementation::Initialize() {
@@ -577,7 +588,6 @@ void BaseSinBenchmark(Argument const& min_argument,
   std::uniform_real_distribution<> uniformly_at(min_argument, max_argument);
 
   Implementation implementation;
-  implementation.Initialize();
 
   Argument a[number_of_iterations];
   for (std::int64_t i = 0; i < number_of_iterations; ++i) {
@@ -621,7 +631,6 @@ void BaseCosBenchmark(Argument const& min_argument,
   std::uniform_real_distribution<> uniformly_at(min_argument, max_argument);
 
   Implementation implementation;
-  implementation.Initialize();
 
   Argument a[number_of_iterations];
   for (std::int64_t i = 0; i < number_of_iterations; ++i) {
