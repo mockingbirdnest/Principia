@@ -9,7 +9,7 @@
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
-#include "numerics/polynomial_evaluators.hpp"//TODO(phl)comment
+#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
