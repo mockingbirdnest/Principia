@@ -538,25 +538,11 @@ Value NearZeroImplementation::Cos(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
   auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  if (cutoff <= x) {
-    auto const h² = h * h;
-    auto const h³ = h² * h;
-    return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
-                                           sin_x₀ * h³ * SinPolynomial(h²)) +
-                                          cos_x₀_minus_h_sin_x₀.error);
-  } else {
-    // TODO(phl): Error analysis of this computation.
-    //TODO(phl): makes no sense for Cos?
-    auto const h² = TwoProduct(h, h);
-    auto const h³ = h².value * h;
-    auto const h²_cos_x₀_cos_polynomial_0 = h² * (cos_x₀ * cos_polynomial_0);
-    auto const terms_up_to_h² = QuickTwoSum(cos_x₀_minus_h_sin_x₀.value,
-                                            h²_cos_x₀_cos_polynomial_0.value);
-    return terms_up_to_h².value +
-           ((cos_x₀ * h².value * CosPolynomial2(h².value) -
-             sin_x₀ * h³ * SinPolynomial(h².value)) +
-            cos_x₀_minus_h_sin_x₀.error + h²_cos_x₀_cos_polynomial_0.error);
-  }
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
+                                          sin_x₀ * h³ * SinPolynomial(h²)) +
+                                        cos_x₀_minus_h_sin_x₀.error);
 }
 
 Value NearZeroImplementation::SinPolynomial(Argument const x) {
@@ -566,17 +552,19 @@ Value NearZeroImplementation::SinPolynomial(Argument const x) {
 
 Value NearZeroImplementation::SinPolynomialNearZero(Argument const x) {
   // 74 bits.
-  return -0x1.5555555555555p-3 + 0x1.11110B24ACC74p-7 * x;
+  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7},
+                               x);
 }
 
 Value NearZeroImplementation::CosPolynomial1(Argument const x) {
   // 72 bits.
-  return cos_polynomial_0 + 0x1.555554B290E6Ap-5 * x;
+  return Polynomial1::Evaluate({cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
 }
 
 Value NearZeroImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
-  return x * (0x1.5555555555555p-5 - 0x1.6C16C10C09C11p-10 * x);
+  return x * Polynomial1::Evaluate(
+                 {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
 }
 
 template<Metric metric, typename Implementation>
