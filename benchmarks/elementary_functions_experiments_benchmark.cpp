@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "benchmark/benchmark.h"
+#include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -17,9 +18,8 @@ namespace functions {
 
 // TODO(phl): The polynomials in this file should use class
 // |PolynomialInMonomialBasis|.
-// TODO(phl): Study the effect of rounding the polynomial coefficients to
-// machine numbers.
 
+using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_scale_b;
 using namespace principia::quantities::_elementary_functions;
@@ -115,7 +115,8 @@ class MultiTableImplementation {
   // Because the interval [π / 6, π / 4] is shorter than the next one below, the
   // maximum value is reached between the first two cutoffs.
   static constexpr std::int64_t table_size =
-      static_cast<std::int64_t>((cutoffs[0] - cutoffs[1]) / table_spacings[1]);
+      static_cast<std::int64_t>((cutoffs[0] - cutoffs[1]) / table_spacings[1]) +
+      1;
 
   std::array<std::int64_t, number_of_tables> one_over_table_spacings_;
   std::array<std::array<AccurateValues, table_size>, number_of_tables>
@@ -242,7 +243,9 @@ void MultiTableImplementation::Initialize() {
     current_x_min = cutoffs[i];
     one_over_table_spacings_[i] = 1.0 / table_spacings[i];
     Argument x = current_x_min + table_spacings[i] / 2;
-    for (std::int64_t j = 0; j < table_size && x < current_x_max; ++j) {
+    for (std::int64_t j = 0;
+         j < table_size && x < current_x_max + table_spacings[i] / 2;
+         ++j) {
       accurate_values_[i][j] = {.x = x,
                                 .sin_x = std::sin(x),
                                 .cos_x = std::cos(x)};
@@ -426,192 +429,192 @@ Value SingleTableImplementation::CosPolynomial2(Argument const x) {
   return x * (0x1.5555555555555p-5 - 0x1.6C16C10C09C11p-10 * x);
 }
 
-template<Argument table_spacing>
+template<Metric metric, typename Implementation>
+void BaseSinBenchmark(Argument const& min_argument,
+                      Argument const& max_argument,
+                      Value const& max_absolute_error,
+                      benchmark::State& state) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(min_argument, max_argument);
+
+  Implementation implementation;
+  implementation.Initialize();
+
+  Argument a[number_of_iterations];
+  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+    a[i] = uniformly_at(random);
+  }
+
+  if constexpr (metric == Metric::Throughput) {
+    Value v[number_of_iterations];
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v[i] = implementation.Sin(a[i]);
+#if _DEBUG
+        // The implementation is not accurate, but let's check that it's not
+        // broken.
+        auto const absolute_error = Abs(v[i] - std::sin(a[i]));
+        CHECK_LT(absolute_error, max_absolute_error);
+#endif
+      }
+      benchmark::DoNotOptimize(v);
+    }
+  } else {
+    static_assert(metric == Metric::Latency);
+    Value v;
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      Argument argument = a[number_of_iterations - 1];
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v = implementation.Sin(argument);
+        argument = (v + a[i]) - v;
+      }
+    }
+    benchmark::DoNotOptimize(v);
+  }
+}
+
+template<Metric metric, typename Implementation>
+void BaseCosBenchmark(Argument const& min_argument,
+                      Argument const& max_argument,
+                      Value const& max_absolute_error,
+                      benchmark::State& state) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(min_argument, max_argument);
+
+  Implementation implementation;
+  implementation.Initialize();
+
+  Argument a[number_of_iterations];
+  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+    a[i] = uniformly_at(random);
+  }
+
+  if constexpr (metric == Metric::Throughput) {
+    Value v[number_of_iterations];
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v[i] = implementation.Cos(a[i]);
+#if _DEBUG
+        // The implementation is not accurate, but let's check that it's not
+        // broken.
+        auto const absolute_error = Abs(v[i] - std::cos(a[i]));
+        CHECK_LT(absolute_error, max_absolute_error);
+#endif
+      }
+      benchmark::DoNotOptimize(v);
+    }
+  } else {
+    static_assert(metric == Metric::Latency);
+    Value v;
+    while (state.KeepRunningBatch(number_of_iterations)) {
+      Argument argument = a[number_of_iterations - 1];
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        v = implementation.Cos(argument);
+        argument = (v + a[i]) - v;
+      }
+    }
+    benchmark::DoNotOptimize(v);
+  }
+}
+
+template<Metric metric, Argument table_spacing>
 void BM_ExperimentSinTableSpacing(benchmark::State& state) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(x_min, x_max);
-
-  TableSpacingImplementation<table_spacing> implementation;
-  implementation.Initialize();
-
-  Argument a[number_of_iterations];
-  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-    a[i] = uniformly_at(random);
-  }
-
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Sin(a[i]);
-#if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      CHECK_LT(absolute_error, 1.2e-16);
-#endif
-    }
-    benchmark::DoNotOptimize(v);
-  }
+  BaseSinBenchmark<metric, TableSpacingImplementation<table_spacing>>(
+      x_min, x_max,
+      1.2e-16,
+      state);
 }
 
-template<Argument table_spacing>
+template<Metric metric, Argument table_spacing>
 void BM_ExperimentCosTableSpacing(benchmark::State& state) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(x_min, x_max);
-
-  TableSpacingImplementation<table_spacing> implementation;
-  implementation.Initialize();
-
-  Argument a[number_of_iterations];
-  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-    a[i] = uniformly_at(random);
-  }
-
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Cos(a[i]);
-#if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::cos(a[i]));
-      CHECK_LT(absolute_error, 1.2e-16);
-#endif
-    }
-    benchmark::DoNotOptimize(v);
-  }
+  BaseCosBenchmark<metric, TableSpacingImplementation<table_spacing>>(
+      x_min, x_max,
+      1.2e-16,
+      state);
 }
 
+template<Metric metric>
 void BM_ExperimentSinMultiTable(benchmark::State& state) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(
+  BaseSinBenchmark<metric, MultiTableImplementation>(
       MultiTableImplementation::cutoffs
-          [MultiTableImplementation::number_of_tables - 1],
-      x_max);
-
-  MultiTableImplementation implementation;
-  implementation.Initialize();
-
-  Argument a[number_of_iterations];
-  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-    a[i] = uniformly_at(random);
-  }
-
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Sin(a[i]);
-#if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      CHECK_LT(absolute_error, 1.2e-16);
-#endif
-    }
-    benchmark::DoNotOptimize(v);
-  }
+          [MultiTableImplementation::number_of_tables - 1], x_max,
+      1.2e-16,
+      state);
 }
 
+template<Metric metric>
 void BM_ExperimentCosMultiTable(benchmark::State& state) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(
+  BaseCosBenchmark<metric, MultiTableImplementation>(
       MultiTableImplementation::cutoffs
-          [MultiTableImplementation::number_of_tables - 1],
-      x_max);
-
-  MultiTableImplementation implementation;
-  implementation.Initialize();
-
-  Argument a[number_of_iterations];
-  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-    a[i] = uniformly_at(random);
-  }
-
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Cos(a[i]);
-#if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::cos(a[i]));
-      CHECK_LT(absolute_error, 1.2e-16);
-#endif
-    }
-    benchmark::DoNotOptimize(v);
-  }
+          [MultiTableImplementation::number_of_tables - 1], x_max,
+      1.2e-16,
+      state);
 }
 
+template<Metric metric>
 void BM_ExperimentSinSingleTable(benchmark::State& state) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(
-      SingleTableImplementation::min_argument,
-      x_max);
-
-  SingleTableImplementation implementation;
-  implementation.Initialize();
-
-  Argument a[number_of_iterations];
-  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-    a[i] = uniformly_at(random);
-  }
-
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Sin(a[i]);
-#if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-      CHECK_LT(absolute_error, 1.2e-16);
-#endif
-    }
-    benchmark::DoNotOptimize(v);
-  }
+  BaseSinBenchmark<metric, SingleTableImplementation>(
+      SingleTableImplementation::min_argument, x_max,
+      1.2e-16,
+      state);
 }
 
+template<Metric metric>
 void BM_ExperimentCosSingleTable(benchmark::State& state) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(
-      SingleTableImplementation::min_argument,
-      x_max);
-
-  SingleTableImplementation implementation;
-  implementation.Initialize();
-
-  Argument a[number_of_iterations];
-  for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-    a[i] = uniformly_at(random);
-  }
-
-  Value v[number_of_iterations];
-  while (state.KeepRunningBatch(number_of_iterations)) {
-    for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-      v[i] = implementation.Cos(a[i]);
-#if _DEBUG
-      // The implementation is not accurate, but let's check that it's not
-      // broken.
-      auto const absolute_error = Abs(v[i] - std::cos(a[i]));
-      CHECK_LT(absolute_error, 1.2e-16);
-#endif
-    }
-    benchmark::DoNotOptimize(v);
-  }
+  BaseCosBenchmark<metric, SingleTableImplementation>(
+      SingleTableImplementation::min_argument, x_max,
+      1.2e-16,
+      state);
 }
 
-BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing, 2.0 / 256.0)
+BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
+                   Metric::Latency,
+                   2.0 / 256.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing, 2.0 / 1024.0)
+BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
+                   Metric::Throughput,
+                   2.0 / 256.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing, 2.0 / 256.0)
+BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
+                   Metric::Latency,
+                   2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing, 2.0 / 1024.0)
+BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
+                   Metric::Throughput,
+                   2.0 / 1024.0)
     ->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_ExperimentSinMultiTable)->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_ExperimentCosMultiTable)->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_ExperimentSinSingleTable)->Unit(benchmark::kNanosecond);
-BENCHMARK(BM_ExperimentCosSingleTable)->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
+                   Metric::Latency,
+                   2.0 / 256.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
+                   Metric::Throughput,
+                   2.0 / 256.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
+                   Metric::Latency,
+                   2.0 / 1024.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosTableSpacing,
+                   Metric::Throughput,
+                   2.0 / 1024.0)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinMultiTable, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinMultiTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosMultiTable, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosMultiTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinSingleTable, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinSingleTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosSingleTable, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosSingleTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
 }  // namespace principia

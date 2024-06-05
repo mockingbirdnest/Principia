@@ -5,6 +5,7 @@
 
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
+#include "benchmarks/metric.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
@@ -19,6 +20,7 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::astronomy::_frames;
+using namespace principia::benchmarks::_metric;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
@@ -29,11 +31,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 static constexpr std::int64_t number_of_iterations = 100;
-
-enum class Metric {
-  Latency,
-  Throughput
-};
 
 template<typename T>
 struct ValueGenerator;
