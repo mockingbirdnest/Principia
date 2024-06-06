@@ -60,9 +60,14 @@ class TableSpacingImplementation {
   };
 
   template<FMAPolicy fma_policy>
-  Value SinPolynomial(Argument x);
+  Value SinImplementation(Argument x);
   template<FMAPolicy fma_policy>
-  Value CosPolynomial(Argument x);
+  Value CosImplementation(Argument x);
+
+  template<FMAPolicy fma_policy>
+  static Value SinPolynomial(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial(Argument x);
 
   std::array<AccurateValues,
              static_cast<std::int64_t>(x_max / table_spacing) + 1>
@@ -119,10 +124,15 @@ class MultiTableImplementation {
   void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
 
   template<FMAPolicy fma_policy>
-  Value SinPolynomial(Argument x);
+  Value SinImplementation(Argument x);
+  template<FMAPolicy fma_policy>
+  Value CosImplementation(Argument x);
+
+  template<FMAPolicy fma_policy>
+  static Value SinPolynomial(Argument x);
   // |i| is the index of the binade in |cutoffs_|,
   template<FMAPolicy fma_policy>
-  Value CosPolynomial(std::int64_t i, Argument x);
+  static Value CosPolynomial(std::int64_t i, Argument x);
 
   // Because the interval [π / 6, π / 4] is shorter than the next one below, the
   // maximum value is reached between the first two cutoffs.
@@ -170,11 +180,16 @@ class SingleTableImplementation {
   static constexpr Value cos_polynomial_0 = -0.5;
 
   template<FMAPolicy fma_policy>
-  Value SinPolynomial(Argument x);
+  Value SinImplementation(Argument x);
   template<FMAPolicy fma_policy>
-  Value CosPolynomial1(Argument x);
+  Value CosImplementation(Argument x);
+
   template<FMAPolicy fma_policy>
-  Value CosPolynomial2(Argument x);
+  static Value SinPolynomial(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial1(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial2(Argument x);
 
   std::array<AccurateValues,
              static_cast<std::int64_t>(x_max / table_spacing) + 1>
@@ -215,13 +230,18 @@ class NearZeroImplementation {
   static constexpr Value cos_polynomial_0 = -0.5;
 
   template<FMAPolicy fma_policy>
-  Value SinPolynomial(Argument x);
+  Value SinImplementation(Argument x);
   template<FMAPolicy fma_policy>
-  Value SinPolynomialNearZero(Argument x);
+  Value CosImplementation(Argument x);
+
   template<FMAPolicy fma_policy>
-  Value CosPolynomial1(Argument x);
+  static Value SinPolynomial(Argument x);
   template<FMAPolicy fma_policy>
-  Value CosPolynomial2(Argument x);
+  static Value SinPolynomialNearZero(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial1(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial2(Argument x);
 
   std::array<AccurateValues,
              static_cast<std::int64_t>(x_max / table_spacing) + 1>
@@ -243,6 +263,18 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
+ if (UseHardwareFMA) {
+    return SinImplementation<FMAPolicy::Force>(x);
+  } else {
+    return SinImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<Argument table_spacing>
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value TableSpacingImplementation<table_spacing>::SinImplementation(
+    Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -252,26 +284,29 @@ Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
   auto const h² = h * h;
   auto const h³ = h² * h;
 
-#define PRINCIPIA_SIN_IMPLEMENTATION(fma_policy)            \
-  auto const sin_x₀_plus_h_cos_x₀ =                         \
-      TwoProductAdd<(fma_policy)>(cos_x₀, h, sin_x₀);       \
-  return sin_x₀_plus_h_cos_x₀.value +                       \
-         ((sin_x₀ * h² * CosPolynomial<(fma_policy)>(h²) +  \
-           cos_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) + \
+  auto const sin_x₀_plus_h_cos_x₀ =
+      TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+  return sin_x₀_plus_h_cos_x₀.value +
+         ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
+           cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
           sin_x₀_plus_h_cos_x₀.error);
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Force)
-  } else {
-    PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Disallow)
-  }
-
-#undef PRINCIPIA_SIN_IMPLEMENTATION
 }
 
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
+  if (UseHardwareFMA) {
+    return CosImplementation<FMAPolicy::Force>(x);
+  } else {
+    return CosImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<Argument table_spacing>
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value TableSpacingImplementation<table_spacing>::CosImplementation(
+    Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -281,23 +316,12 @@ Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
   auto const h² = h * h;
   auto const h³ = h² * h;
 
-#define PRINCIPIA_COS_IMPLEMENTATION(fma_policy)             \
-  auto const cos_x₀_minus_h_sin_x₀ =                         \
-      TwoProductNegatedAdd<(fma_policy)>(sin_x₀, h, cos_x₀); \
-  auto const h² = h * h;                                     \
-  auto const h³ = h² * h;                                    \
-  return cos_x₀_minus_h_sin_x₀.value +                       \
-         ((cos_x₀ * h² * CosPolynomial<(fma_policy)>(h²) -   \
-           sin_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +  \
-          cos_x₀_minus_h_sin_x₀.error);                      \
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Force)
-  } else {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Disallow)
-  }
-
-#undef PRINCIPIA_COS_IMPLEMENTATION
+  auto const cos_x₀_minus_h_sin_x₀ =
+      TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
+  return cos_x₀_minus_h_sin_x₀.value +
+         ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
+           sin_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+          cos_x₀_minus_h_sin_x₀.error);
 }
 
 template<Argument table_spacing>
@@ -350,6 +374,16 @@ MultiTableImplementation::MultiTableImplementation() {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
+  if (UseHardwareFMA) {
+    return SinImplementation<FMAPolicy::Force>(x);
+  } else {
+    return SinImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value MultiTableImplementation::SinImplementation(Argument const x) {
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
@@ -364,25 +398,26 @@ Value MultiTableImplementation::Sin(Argument const x) {
   auto const h² = h * h;
   auto const h³ = h² * h;
 
-#define PRINCIPIA_SIN_IMPLEMENTATION(fma_policy)              \
-  auto const sin_x₀_plus_h_cos_x₀ =                           \
-      TwoProductAdd<(fma_policy)>(cos_x₀, h, sin_x₀);         \
-  return sin_x₀_plus_h_cos_x₀.value +                         \
-         ((sin_x₀ * h² * CosPolynomial<(fma_policy)>(i, h²) + \
-           cos_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +   \
+  auto const sin_x₀_plus_h_cos_x₀ =
+      TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+  return sin_x₀_plus_h_cos_x₀.value +
+         ((sin_x₀ * h² * CosPolynomial<fma_policy>(i, h²) +
+           cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
           sin_x₀_plus_h_cos_x₀.error);
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Force)
-  } else {
-    PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Disallow)
-  }
-
-#undef PRINCIPIA_SIN_IMPLEMENTATION
 }
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Cos(Argument const x) {
+  if (UseHardwareFMA) {
+    return CosImplementation<FMAPolicy::Force>(x);
+  } else {
+    return CosImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value MultiTableImplementation::CosImplementation(Argument const x) {
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
@@ -397,21 +432,12 @@ Value MultiTableImplementation::Cos(Argument const x) {
   auto const h² = h * h;
   auto const h³ = h² * h;
 
-#define PRINCIPIA_COS_IMPLEMENTATION(fma_policy)              \
-  auto const cos_x₀_minus_h_sin_x₀ =                          \
-      TwoProductNegatedAdd<(fma_policy)>(sin_x₀, h, cos_x₀);  \
-  return cos_x₀_minus_h_sin_x₀.value +                        \
-         ((cos_x₀ * h² * CosPolynomial<(fma_policy)>(i, h²) - \
-           sin_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +   \
+  auto const cos_x₀_minus_h_sin_x₀ =
+      TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
+  return cos_x₀_minus_h_sin_x₀.value +
+         ((cos_x₀ * h² * CosPolynomial<fma_policy>(i, h²) -
+           sin_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
           cos_x₀_minus_h_sin_x₀.error);
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Force)
-  } else {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Disallow)
-  }
-
-#undef PRINCIPIA_COS_IMPLEMENTATION
 }
 
 FORCE_INLINE(inline)
@@ -478,6 +504,16 @@ SingleTableImplementation::SingleTableImplementation() {
 
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Sin(Argument const x) {
+ if (UseHardwareFMA) {
+    return SinImplementation<FMAPolicy::Force>(x);
+  } else {
+    return SinImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value SingleTableImplementation::SinImplementation(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -485,40 +521,41 @@ Value SingleTableImplementation::Sin(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
 
-#define PRINCIPIA_SIN_IMPLEMENTATION(fma_policy)                               \
-  auto const sin_x₀_plus_h_cos_x₀ =                                            \
-      TwoProductAdd<(fma_policy)>(cos_x₀, h, sin_x₀);                          \
-  if (cutoff <= x) {                                                           \
-    auto const h² = h * h;                                                     \
-    auto const h³ = h² * h;                                                    \
-    return sin_x₀_plus_h_cos_x₀.value +                                        \
-           ((sin_x₀ * h² * CosPolynomial1<(fma_policy)>(h²) +                  \
-             cos_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +                  \
-            sin_x₀_plus_h_cos_x₀.error);                                       \
-  } else {                                                                     \
-    /*TODO(phl): Error analysis of this computation.*/                         \
-    auto const h² = TwoProduct<(fma_policy)>(h, h);                            \
-    auto const h³ = h².value * h;                                              \
-    auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);  \
-    auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,        \
-                                            h²_sin_x₀_cos_polynomial_0.value); \
-    return terms_up_to_h².value +                                              \
-           ((sin_x₀ * h².value * CosPolynomial2<(fma_policy)>(h².value) +      \
-             cos_x₀ * h³ * SinPolynomial<(fma_policy)>(h².value)) +            \
-            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);    \
-  }
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Force)
+  auto const sin_x₀_plus_h_cos_x₀ =
+      TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+  if (cutoff <= x) {
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return sin_x₀_plus_h_cos_x₀.value +
+           ((sin_x₀ * h² * CosPolynomial1<fma_policy>(h²) +
+             cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+            sin_x₀_plus_h_cos_x₀.error);
   } else {
-    PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Disallow)
+    // TODO(phl): Error analysis of this computation.
+    auto const h² = TwoProduct<fma_policy>(h, h);
+    auto const h³ = h².value * h;
+    auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+    auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                            h²_sin_x₀_cos_polynomial_0.value);
+    return terms_up_to_h².value +
+           ((sin_x₀ * h².value * CosPolynomial2<fma_policy>(h².value) +
+             cos_x₀ * h³ * SinPolynomial<fma_policy>(h².value)) +
+            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
   }
-
-#undef PRINCIPIA_SIN_IMPLEMENTATION
 }
 
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Cos(Argument const x) {
+  if (UseHardwareFMA) {
+    return CosImplementation<FMAPolicy::Force>(x);
+  } else {
+    return CosImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value SingleTableImplementation::CosImplementation(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -526,23 +563,14 @@ Value SingleTableImplementation::Cos(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
 
-#define PRINCIPIA_COS_IMPLEMENTATION(fma_policy)             \
-  auto const cos_x₀_minus_h_sin_x₀ =                         \
-      TwoProductNegatedAdd<(fma_policy)>(sin_x₀, h, cos_x₀); \
-  auto const h² = h * h;                                     \
-  auto const h³ = h² * h;                                    \
-  return cos_x₀_minus_h_sin_x₀.value +                       \
-         ((cos_x₀ * h² * CosPolynomial1<(fma_policy)>(h²) -  \
-           sin_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +  \
-          cos_x₀_minus_h_sin_x₀.error);                      \
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Force)
-  } else {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Disallow)
-  }
-
-#undef PRINCIPIA_COS_IMPLEMENTATION
+  auto const cos_x₀_minus_h_sin_x₀ =
+      TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value +
+         ((cos_x₀ * h² * CosPolynomial1<fma_policy>(h²) -
+           sin_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+          cos_x₀_minus_h_sin_x₀.error);
 }
 
 template<FMAPolicy fma_policy>
@@ -579,10 +607,20 @@ NearZeroImplementation::NearZeroImplementation() {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
+  if (UseHardwareFMA) {
+    return SinImplementation<FMAPolicy::Force>(x);
+  } else {
+    return SinImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value NearZeroImplementation::SinImplementation(Argument const x) {
   if (x < near_zero_cutoff) {
     auto const x² = x * x;
     auto const x³ = x² * x;
-    return x + x³ * SinPolynomialNearZero<FMAPolicy::Auto>(x²);
+    return x + x³ * SinPolynomialNearZero<fma_policy>(x²);
   } else {
     auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
     auto const& accurate_values = accurate_values_[i];
@@ -591,42 +629,42 @@ Value NearZeroImplementation::Sin(Argument const x) {
     auto const& cos_x₀ = accurate_values.cos_x;
     auto const h = x - x₀;
 
-#define PRINCIPIA_SIN_IMPLEMENTATION(fma_policy)                               \
-  auto const sin_x₀_plus_h_cos_x₀ =                                            \
-      TwoProductAdd<(fma_policy)>(cos_x₀, h, sin_x₀);                          \
-  if (cutoff <= x) {                                                           \
-    auto const h² = h * h;                                                     \
-    auto const h³ = h² * h;                                                    \
-    return sin_x₀_plus_h_cos_x₀.value +                                        \
-           ((sin_x₀ * h² * CosPolynomial1<(fma_policy)>(h²) +                  \
-             cos_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +                  \
-            sin_x₀_plus_h_cos_x₀.error);                                       \
-  } else {                                                                     \
-    /*TODO(phl): Error analysis of this computation.*/                         \
-    auto const h² = TwoProduct<(fma_policy)>(h, h);                            \
-    auto const h³ = h².value * h;                                              \
-    auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);  \
-    auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,        \
-                                            h²_sin_x₀_cos_polynomial_0.value); \
-    return terms_up_to_h².value +                                              \
-           ((sin_x₀ * h².value * CosPolynomial2<(fma_policy)>(h².value) +      \
-             cos_x₀ * h³ * SinPolynomial<(fma_policy)>(h².value)) +            \
-            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);    \
-  }
-
-    if (UseHardwareFMA) {
-      PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Force)
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+    if (cutoff <= x) {
+      auto const h² = h * h;
+      auto const h³ = h² * h;
+      return sin_x₀_plus_h_cos_x₀.value +
+             ((sin_x₀ * h² * CosPolynomial1<fma_policy>(h²) +
+               cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+              sin_x₀_plus_h_cos_x₀.error);
     } else {
-      PRINCIPIA_SIN_IMPLEMENTATION(FMAPolicy::Disallow)
+      // TODO(phl): Error analysis of this computation.
+      auto const h² = TwoProduct<fma_policy>(h, h);
+      auto const h³ = h².value * h;
+      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                              h²_sin_x₀_cos_polynomial_0.value);
+      return terms_up_to_h².value +
+             ((sin_x₀ * h².value * CosPolynomial2<fma_policy>(h².value) +
+               cos_x₀ * h³ * SinPolynomial<fma_policy>(h².value)) +
+              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
     }
-
-#undef PRINCIPIA_SIN_IMPLEMENTATION
-
   }
 }
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Cos(Argument const x) {
+  if (UseHardwareFMA) {
+    return CosImplementation<FMAPolicy::Force>(x);
+  } else {
+    return CosImplementation<FMAPolicy::Disallow>(x);
+  }
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value NearZeroImplementation::CosImplementation(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -634,23 +672,14 @@ Value NearZeroImplementation::Cos(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
 
-#define PRINCIPIA_COS_IMPLEMENTATION(fma_policy)             \
-  auto const cos_x₀_minus_h_sin_x₀ =                         \
-      TwoProductNegatedAdd<(fma_policy)>(sin_x₀, h, cos_x₀); \
-  auto const h² = h * h;                                     \
-  auto const h³ = h² * h;                                    \
-  return cos_x₀_minus_h_sin_x₀.value +                       \
-         ((cos_x₀ * h² * CosPolynomial1<(fma_policy)>(h²) -  \
-           sin_x₀ * h³ * SinPolynomial<(fma_policy)>(h²)) +  \
-          cos_x₀_minus_h_sin_x₀.error);                      \
-
-  if (UseHardwareFMA) {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Force)
-  } else {
-    PRINCIPIA_COS_IMPLEMENTATION(FMAPolicy::Disallow)
-  }
-
-#undef PRINCIPIA_COS_IMPLEMENTATION
+  auto const cos_x₀_minus_h_sin_x₀ =
+      TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value +
+         ((cos_x₀ * h² * CosPolynomial1<fma_policy>(h²) -
+           sin_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+          cos_x₀_minus_h_sin_x₀.error);
 }
 
 template<FMAPolicy fma_policy>
