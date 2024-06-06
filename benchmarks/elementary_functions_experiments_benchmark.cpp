@@ -171,6 +171,49 @@ class SingleTableImplementation {
       accurate_values_;
 };
 
+// Same as SingleTableImplementation, but also covers the vicinity of zero.
+// TODO(phl): Could we cover a broader interval if we used degree 2?
+class NearZeroImplementation {
+ public:
+  static constexpr Argument table_spacing = 2.0 / 1024.0;
+
+  // ArcSin[1/8], rounded towards infinity.  Two more leading zeroes than the
+  // high binade.
+  // TODO(phl): Rigourous error analysis needed to check that this is the right
+  // cutoff.
+  static constexpr Argument cutoff = 0x1.00ABE0C129E1Fp-3;
+
+  // ArcSin[1/1024], rounded towards infinity.
+  static constexpr Argument near_zero_cutoff = 0x1.000002AAAABDEp-10;
+
+  NearZeroImplementation();
+
+  Value Sin(Argument x);
+  Value Cos(Argument x);
+
+ private:
+  // Despite the name these are not accurate values, but for the purposes of
+  // benchmarking it doesn't matter.
+  struct AccurateValues {
+    Argument x;
+    Value sin_x;
+    Value cos_x;
+  };
+
+  // If this was ever changed to a value that is not a power of 2, extra care
+  // would be needed in the computations that use it.
+  static constexpr Value cos_polynomial_0 = -0.5;
+
+  Value SinPolynomial(Argument x);
+  Value SinPolynomialNearZero(Argument x);
+  Value CosPolynomial1(Argument x);
+  Value CosPolynomial2(Argument x);
+
+  std::array<AccurateValues,
+             static_cast<std::int64_t>(x_max / table_spacing) + 1>
+      accurate_values_;
+};
+
 template<Argument table_spacing>
 TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
   int i = 0;
@@ -403,24 +446,11 @@ Value SingleTableImplementation::Cos(Argument const x) {
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
   auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  if (cutoff <= x) {
-    auto const h² = h * h;
-    auto const h³ = h² * h;
-    return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
-                                           sin_x₀ * h³ * SinPolynomial(h²)) +
-                                          cos_x₀_minus_h_sin_x₀.error);
-  } else {
-    // TODO(phl): Error analysis of this computation.
-    auto const h² = TwoProduct(h, h);
-    auto const h³ = h².value * h;
-    auto const h²_cos_x₀_cos_polynomial_0 = h² * (cos_x₀ * cos_polynomial_0);
-    auto const terms_up_to_h² = QuickTwoSum(cos_x₀_minus_h_sin_x₀.value,
-                                            h²_cos_x₀_cos_polynomial_0.value);
-    return terms_up_to_h².value +
-           ((cos_x₀ * h².value * CosPolynomial2(h².value) -
-             sin_x₀ * h³ * SinPolynomial(h².value)) +
-            cos_x₀_minus_h_sin_x₀.error + h²_cos_x₀_cos_polynomial_0.error);
-  }
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
+                                         sin_x₀ * h³ * SinPolynomial(h²)) +
+                                        cos_x₀_minus_h_sin_x₀.error);
 }
 
 Value SingleTableImplementation::SinPolynomial(Argument const x) {
@@ -435,6 +465,91 @@ Value SingleTableImplementation::CosPolynomial1(Argument const x) {
 }
 
 Value SingleTableImplementation::CosPolynomial2(Argument const x) {
+  // 97 bits.
+  return x * Polynomial1::Evaluate(
+                 {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
+}
+
+NearZeroImplementation::NearZeroImplementation() {
+  int i = 0;
+  for (Argument x = table_spacing / 2;
+       x <= x_max + table_spacing / 2;
+       x += table_spacing, ++i) {
+    accurate_values_[i] = {.x = x,
+                           .sin_x = std::sin(x),
+                           .cos_x = std::cos(x)};
+  }
+}
+
+FORCE_INLINE(inline)
+Value NearZeroImplementation::Sin(Argument const x) {
+  if (x < near_zero_cutoff) {
+    auto const x² = x * x;
+    auto const x³ = x² * x;
+    return x + x³ * SinPolynomialNearZero(x²);
+  } else {
+    auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+    auto const& accurate_values = accurate_values_[i];
+    auto const& x₀ = accurate_values.x;
+    auto const& sin_x₀ = accurate_values.sin_x;
+    auto const& cos_x₀ = accurate_values.cos_x;
+    auto const h = x - x₀;
+    auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
+    if (cutoff <= x) {
+      auto const h² = h * h;
+      auto const h³ = h² * h;
+      return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
+                                            cos_x₀ * h³ * SinPolynomial(h²)) +
+                                           sin_x₀_plus_h_cos_x₀.error);
+    } else {
+      // TODO(phl): Error analysis of this computation.
+      auto const h² = TwoProduct(h, h);
+      auto const h³ = h².value * h;
+      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                              h²_sin_x₀_cos_polynomial_0.value);
+      return terms_up_to_h².value +
+             ((sin_x₀ * h².value * CosPolynomial2(h².value) +
+               cos_x₀ * h³ * SinPolynomial(h².value)) +
+              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    }
+  }
+}
+
+FORCE_INLINE(inline)
+Value NearZeroImplementation::Cos(Argument const x) {
+  auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+  auto const& accurate_values = accurate_values_[i];
+  auto const& x₀ = accurate_values.x;
+  auto const& sin_x₀ = accurate_values.sin_x;
+  auto const& cos_x₀ = accurate_values.cos_x;
+  auto const h = x - x₀;
+  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
+                                         sin_x₀ * h³ * SinPolynomial(h²)) +
+                                        cos_x₀_minus_h_sin_x₀.error);
+}
+
+Value NearZeroImplementation::SinPolynomial(Argument const x) {
+  // 84 bits.  Works for all binades.
+  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
+                               x);
+}
+
+Value NearZeroImplementation::SinPolynomialNearZero(Argument const x) {
+  // 74 bits.
+  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7},
+                               x);
+}
+
+Value NearZeroImplementation::CosPolynomial1(Argument const x) {
+  // 72 bits.
+  return Polynomial1::Evaluate({cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
+}
+
+Value NearZeroImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
   return x * Polynomial1::Evaluate(
                  {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
@@ -576,6 +691,22 @@ void BM_ExperimentCosSingleTable(benchmark::State& state) {
       state);
 }
 
+template<Metric metric>
+void BM_ExperimentSinNearZero(benchmark::State& state) {
+  BaseSinBenchmark<metric, NearZeroImplementation>(
+      0.0, x_max,
+      1.2e-16,
+      state);
+}
+
+template<Metric metric>
+void BM_ExperimentCosNearZero(benchmark::State& state) {
+  BaseCosBenchmark<metric, NearZeroImplementation>(
+      0.0, x_max,
+      1.2e-16,
+      state);
+}
+
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
                    Metric::Latency,
                    2.0 / 256.0)
@@ -623,6 +754,14 @@ BENCHMARK_TEMPLATE(BM_ExperimentSinSingleTable, Metric::Throughput)
 BENCHMARK_TEMPLATE(BM_ExperimentCosSingleTable, Metric::Latency)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentCosSingleTable, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinNearZero, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinNearZero, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosNearZero, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosNearZero, Metric::Throughput)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
