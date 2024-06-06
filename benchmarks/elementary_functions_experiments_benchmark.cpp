@@ -9,6 +9,7 @@
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/fma.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -19,6 +20,7 @@ namespace functions {
 
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_scale_b;
 using namespace principia::quantities::_elementary_functions;
@@ -29,8 +31,10 @@ using Argument = double;
 // A polynomial is too heavy an object to use in this code, so we call the
 // evaluators directly.
 // TODO(phl): FMA makes things slower :-(
-using Polynomial1 = HornerForceFMA<Value, Argument, 1>;
-using Polynomial2 = HornerForceFMA<Value, Argument, 2>;
+template<FMAPolicy fma_policy>
+using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
+template<FMAPolicy fma_policy>
+using Polynomial2 = HornerEvaluator<Value, Argument, 2, fma_policy>;
 
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.
@@ -56,7 +60,9 @@ class TableSpacingImplementation {
     Value cos_x;
   };
 
+  template<FMAPolicy fma_policy>
   Value SinPolynomial(Argument x);
+  template<FMAPolicy fma_policy>
   Value CosPolynomial(Argument x);
 
   std::array<AccurateValues,
@@ -113,8 +119,10 @@ class MultiTableImplementation {
 
   void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
 
+  template<FMAPolicy fma_policy>
   Value SinPolynomial(Argument x);
   // |i| is the index of the binade in |cutoffs_|,
+  template<FMAPolicy fma_policy>
   Value CosPolynomial(std::int64_t i, Argument x);
 
   // Because the interval [π / 6, π / 4] is shorter than the next one below, the
@@ -162,8 +170,11 @@ class SingleTableImplementation {
   // would be needed in the computations that use it.
   static constexpr Value cos_polynomial_0 = -0.5;
 
+  template<FMAPolicy fma_policy>
   Value SinPolynomial(Argument x);
+  template<FMAPolicy fma_policy>
   Value CosPolynomial1(Argument x);
+  template<FMAPolicy fma_policy>
   Value CosPolynomial2(Argument x);
 
   std::array<AccurateValues,
@@ -204,9 +215,13 @@ class NearZeroImplementation {
   // would be needed in the computations that use it.
   static constexpr Value cos_polynomial_0 = -0.5;
 
+  template<FMAPolicy fma_policy>
   Value SinPolynomial(Argument x);
+  template<FMAPolicy fma_policy>
   Value SinPolynomialNearZero(Argument x);
+  template<FMAPolicy fma_policy>
   Value CosPolynomial1(Argument x);
+  template<FMAPolicy fma_policy>
   Value CosPolynomial2(Argument x);
 
   std::array<AccurateValues,
@@ -229,6 +244,8 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
+  using enum FMAPolicy;
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -237,15 +254,28 @@ Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
   auto const h = x - x₀;
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-  return sin_x₀_plus_h_cos_x₀.value +
-         ((sin_x₀ * h² * CosPolynomial(h²) + cos_x₀ * h³ * SinPolynomial(h²)) +
-          sin_x₀_plus_h_cos_x₀.error);
+  if (UseHardwareFMA) {
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<Force>(cos_x₀, h, sin_x₀);
+    return sin_x₀_plus_h_cos_x₀.value +
+           ((sin_x₀ * h² * CosPolynomial<Force>(h²) +
+             cos_x₀ * h³ * SinPolynomial<Force>(h²)) +
+            sin_x₀_plus_h_cos_x₀.error);
+  } else {
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<Disallow>(cos_x₀, h, sin_x₀);
+    return sin_x₀_plus_h_cos_x₀.value +
+           ((sin_x₀ * h² * CosPolynomial<Disallow>(h²) +
+             cos_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+            sin_x₀_plus_h_cos_x₀.error);
+  }
 }
 
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
+  using enum FMAPolicy;
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -254,36 +284,49 @@ Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
   auto const h = x - x₀;
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  return cos_x₀_minus_h_sin_x₀.value +
-         ((cos_x₀ * h² * CosPolynomial(h²) - sin_x₀ * h³ * SinPolynomial(h²)) +
-          cos_x₀_minus_h_sin_x₀.error);
-}
-
-template<Argument table_spacing>
-Value TableSpacingImplementation<table_spacing>::SinPolynomial(
-    Argument const x) {
-  if constexpr (table_spacing == 2.0 / 256.0) {
-    // 71 bits.
-    return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7},
-                                 x);
-  } else if constexpr (table_spacing == 2.0 / 1024.0) {
-    // 84 bits.
-    return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
-                                 x);
+  if (UseHardwareFMA) {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Force>(sin_x₀, h, cos_x₀);
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial<Force>(h²) -
+             sin_x₀ * h³ * SinPolynomial<Force>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  } else {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Disallow>(sin_x₀, h, cos_x₀);
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial<Disallow>(h²) -
+             sin_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
   }
 }
 
 template<Argument table_spacing>
+template<FMAPolicy fma_policy>
+Value TableSpacingImplementation<table_spacing>::SinPolynomial(
+    Argument const x) {
+  if constexpr (table_spacing == 2.0 / 256.0) {
+    // 71 bits.
+    return Polynomial1<fma_policy>::Evaluate(
+        {-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7}, x);
+  } else if constexpr (table_spacing == 2.0 / 1024.0) {
+    // 84 bits.
+    return Polynomial1<fma_policy>::Evaluate(
+        {-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7}, x);
+  }
+}
+
+template<Argument table_spacing>
+template<FMAPolicy fma_policy>
 Value TableSpacingImplementation<table_spacing>::CosPolynomial(
     Argument const x) {
   if constexpr (table_spacing == 2.0 / 256.0) {
     // 83 bits.
-    return Polynomial2::Evaluate(
-               {-0.5, 0x1.5555555555555p-5, -0x1.6C16BB6B46CA6p-10}, x);
+    return Polynomial2<fma_policy>::Evaluate(
+        {-0.5, 0x1.5555555555555p-5, -0x1.6C16BB6B46CA6p-10}, x);
   } else if constexpr (table_spacing == 2.0 / 1024.0) {
     // 72 bits.
-    return Polynomial1::Evaluate({-0.5, 0x1.555554B290E6Ap-5}, x);
+    return Polynomial1<fma_policy>::Evaluate({-0.5, 0x1.555554B290E6Ap-5}, x);
   }
 }
 
@@ -308,6 +351,8 @@ MultiTableImplementation::MultiTableImplementation() {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
+  using enum FMAPolicy;
+
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
@@ -321,14 +366,27 @@ Value MultiTableImplementation::Sin(Argument const x) {
   auto const h = x - x₀;
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-  return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial(i, h²) +
-                                        cos_x₀ * h³ * SinPolynomial(h²)) +
-                                       sin_x₀_plus_h_cos_x₀.error);
+  if (UseHardwareFMA) {
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<Force>(cos_x₀, h, sin_x₀);
+    return sin_x₀_plus_h_cos_x₀.value +
+           ((sin_x₀ * h² * CosPolynomial<Force>(i, h²) +
+             cos_x₀ * h³ * SinPolynomial<Force>(h²)) +
+            sin_x₀_plus_h_cos_x₀.error);
+  } else {
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<Disallow>(cos_x₀, h, sin_x₀);
+    return sin_x₀_plus_h_cos_x₀.value +
+           ((sin_x₀ * h² * CosPolynomial<Disallow>(i, h²) +
+             cos_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+            sin_x₀_plus_h_cos_x₀.error);
+  }
 }
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Cos(Argument const x) {
+  using enum FMAPolicy;
+
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
@@ -342,10 +400,21 @@ Value MultiTableImplementation::Cos(Argument const x) {
   auto const h = x - x₀;
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial(i, h²) -
-                                         sin_x₀ * h³ * SinPolynomial(h²)) +
-                                        cos_x₀_minus_h_sin_x₀.error);
+  if (UseHardwareFMA) {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Force>(sin_x₀, h, cos_x₀);
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial<Force>(i, h²) -
+             sin_x₀ * h³ * SinPolynomial<Force>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  } else {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Disallow>(sin_x₀, h, cos_x₀);
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial<Disallow>(i, h²) -
+             sin_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  }
 }
 
 FORCE_INLINE(inline)
@@ -374,12 +443,14 @@ void MultiTableImplementation::SelectCutoff(Argument const x,
   }
 }
 
+template<FMAPolicy fma_policy>
 Value MultiTableImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
-  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
-                               x);
+  return Polynomial1<fma_policy>::Evaluate(
+      {-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7}, x);
 }
 
+template<FMAPolicy fma_policy>
 Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
                                               Argument const x) {
   // The polynomials for the highest two binades don't give us enough bits, so
@@ -387,13 +458,13 @@ Value MultiTableImplementation::CosPolynomial(std::int64_t const i,
   // i == 1 goes first because it is the largest argument interval.
   if (i == 1) {
     // 76 bits.
-    return Polynomial1::Evaluate({-0.5, 0x1.5555552CA439Ep-5}, x);
+    return Polynomial1<fma_policy>::Evaluate({-0.5, 0x1.5555552CA439Ep-5}, x);
   } else if (i == 0) {
     // 72 bits.
-    return Polynomial1::Evaluate({-0.5, 0x1.555554B290E6Ap-5}, x);
+    return Polynomial1<fma_policy>::Evaluate({-0.5, 0x1.555554B290E6Ap-5}, x);
   } else {
     // 78 bits.
-    return Polynomial1::Evaluate({-0.5, 0x1.5555554B290E8p-5}, x);
+    return Polynomial1<fma_policy>::Evaluate({-0.5, 0x1.5555554B290E8p-5}, x);
   }
 }
 
@@ -410,63 +481,109 @@ SingleTableImplementation::SingleTableImplementation() {
 
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Sin(Argument const x) {
+  using enum FMAPolicy;
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
   auto const& sin_x₀ = accurate_values.sin_x;
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
-  auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-  if (cutoff <= x) {
-    auto const h² = h * h;
-    auto const h³ = h² * h;
-    return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
-                                          cos_x₀ * h³ * SinPolynomial(h²)) +
-                                         sin_x₀_plus_h_cos_x₀.error);
+  if (UseHardwareFMA) {
+    auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd<Force>(cos_x₀, h, sin_x₀);
+    if (cutoff <= x) {
+      auto const h² = h * h;
+      auto const h³ = h² * h;
+      return sin_x₀_plus_h_cos_x₀.value +
+             ((sin_x₀ * h² * CosPolynomial1<Force>(h²) +
+               cos_x₀ * h³ * SinPolynomial<Force>(h²)) +
+              sin_x₀_plus_h_cos_x₀.error);
+    } else {
+      // TODO(phl): Error analysis of this computation.
+      auto const h² = TwoProduct<Force>(h, h);
+      auto const h³ = h².value * h;
+      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                              h²_sin_x₀_cos_polynomial_0.value);
+      return terms_up_to_h².value +
+             ((sin_x₀ * h².value * CosPolynomial2<Force>(h².value) +
+               cos_x₀ * h³ * SinPolynomial<Force>(h².value)) +
+              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    }
   } else {
-    // TODO(phl): Error analysis of this computation.
-    auto const h² = TwoProduct(h, h);
-    auto const h³ = h².value * h;
-    auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
-    auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
-                                            h²_sin_x₀_cos_polynomial_0.value);
-    return terms_up_to_h².value +
-           ((sin_x₀ * h².value * CosPolynomial2(h².value) +
-             cos_x₀ * h³ * SinPolynomial(h².value)) +
-            sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<Disallow>(cos_x₀, h, sin_x₀);
+    if (cutoff <= x) {
+      auto const h² = h * h;
+      auto const h³ = h² * h;
+      return sin_x₀_plus_h_cos_x₀.value +
+             ((sin_x₀ * h² * CosPolynomial1<Disallow>(h²) +
+               cos_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+              sin_x₀_plus_h_cos_x₀.error);
+    } else {
+      // TODO(phl): Error analysis of this computation.
+      auto const h² = TwoProduct<Disallow>(h, h);
+      auto const h³ = h².value * h;
+      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                              h²_sin_x₀_cos_polynomial_0.value);
+      return terms_up_to_h².value +
+             ((sin_x₀ * h².value * CosPolynomial2<Disallow>(h².value) +
+               cos_x₀ * h³ * SinPolynomial<Disallow>(h².value)) +
+              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    }
   }
 }
 
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Cos(Argument const x) {
+  using enum FMAPolicy;
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
   auto const& sin_x₀ = accurate_values.sin_x;
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
-  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  auto const h² = h * h;
-  auto const h³ = h² * h;
-  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
-                                         sin_x₀ * h³ * SinPolynomial(h²)) +
-                                        cos_x₀_minus_h_sin_x₀.error);
+  if (UseHardwareFMA) {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Force>(sin_x₀, h, cos_x₀);
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial1<Force>(h²) -
+             sin_x₀ * h³ * SinPolynomial<Force>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  } else {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Disallow>(sin_x₀, h, cos_x₀);
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial1<Disallow>(h²) -
+             sin_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  }
 }
 
+template<FMAPolicy fma_policy>
 Value SingleTableImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
-  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
-                               x);
+  return Polynomial1<fma_policy>::Evaluate(
+      {-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7}, x);
 }
 
+template<FMAPolicy fma_policy>
 Value SingleTableImplementation::CosPolynomial1(Argument const x) {
   // 72 bits.
-  return Polynomial1::Evaluate({cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
+  return Polynomial1<fma_policy>::Evaluate(
+      {cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
 }
 
+template<FMAPolicy fma_policy>
 Value SingleTableImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
-  return x * Polynomial1::Evaluate(
+  return x * Polynomial1<fma_policy>::Evaluate(
                  {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
 }
 
@@ -483,10 +600,12 @@ NearZeroImplementation::NearZeroImplementation() {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
+  using enum FMAPolicy;
+
   if (x < near_zero_cutoff) {
     auto const x² = x * x;
     auto const x³ = x² * x;
-    return x + x³ * SinPolynomialNearZero(x²);
+    return x + x³ * SinPolynomialNearZero<Auto>(x²);
   } else {
     auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
     auto const& accurate_values = accurate_values_[i];
@@ -494,64 +613,112 @@ Value NearZeroImplementation::Sin(Argument const x) {
     auto const& sin_x₀ = accurate_values.sin_x;
     auto const& cos_x₀ = accurate_values.cos_x;
     auto const h = x - x₀;
-    auto const sin_x₀_plus_h_cos_x₀ = TwoProductAdd(cos_x₀, h, sin_x₀);
-    if (cutoff <= x) {
-      auto const h² = h * h;
-      auto const h³ = h² * h;
-      return sin_x₀_plus_h_cos_x₀.value + ((sin_x₀ * h² * CosPolynomial1(h²) +
-                                            cos_x₀ * h³ * SinPolynomial(h²)) +
-                                           sin_x₀_plus_h_cos_x₀.error);
+    if (UseHardwareFMA) {
+      auto const sin_x₀_plus_h_cos_x₀ =
+          TwoProductAdd<Force>(cos_x₀, h, sin_x₀);
+      if (cutoff <= x) {
+        auto const h² = h * h;
+        auto const h³ = h² * h;
+        return sin_x₀_plus_h_cos_x₀.value +
+               ((sin_x₀ * h² * CosPolynomial1<Force>(h²) +
+                 cos_x₀ * h³ * SinPolynomial<Force>(h²)) +
+                sin_x₀_plus_h_cos_x₀.error);
+      } else {
+        // TODO(phl): Error analysis of this computation.
+        auto const h² = TwoProduct<Force>(h, h);
+        auto const h³ = h².value * h;
+        auto const h²_sin_x₀_cos_polynomial_0 =
+            h² * (sin_x₀ * cos_polynomial_0);
+        auto const terms_up_to_h² = QuickTwoSum(
+            sin_x₀_plus_h_cos_x₀.value, h²_sin_x₀_cos_polynomial_0.value);
+        return terms_up_to_h².value +
+               ((sin_x₀ * h².value * CosPolynomial2<Force>(h².value) +
+                 cos_x₀ * h³ * SinPolynomial<Force>(h².value)) +
+                sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+      }
     } else {
-      // TODO(phl): Error analysis of this computation.
-      auto const h² = TwoProduct(h, h);
-      auto const h³ = h².value * h;
-      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
-      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
-                                              h²_sin_x₀_cos_polynomial_0.value);
-      return terms_up_to_h².value +
-             ((sin_x₀ * h².value * CosPolynomial2(h².value) +
-               cos_x₀ * h³ * SinPolynomial(h².value)) +
-              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+      auto const sin_x₀_plus_h_cos_x₀ =
+          TwoProductAdd<Disallow>(cos_x₀, h, sin_x₀);
+      if (cutoff <= x) {
+        auto const h² = h * h;
+        auto const h³ = h² * h;
+        return sin_x₀_plus_h_cos_x₀.value +
+               ((sin_x₀ * h² * CosPolynomial1<Disallow>(h²) +
+                 cos_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+                sin_x₀_plus_h_cos_x₀.error);
+      } else {
+        // TODO(phl): Error analysis of this computation.
+        auto const h² = TwoProduct<Disallow>(h, h);
+        auto const h³ = h².value * h;
+        auto const h²_sin_x₀_cos_polynomial_0 =
+            h² * (sin_x₀ * cos_polynomial_0);
+        auto const terms_up_to_h² = QuickTwoSum(
+            sin_x₀_plus_h_cos_x₀.value, h²_sin_x₀_cos_polynomial_0.value);
+        return terms_up_to_h².value +
+               ((sin_x₀ * h².value * CosPolynomial2<Disallow>(h².value) +
+                 cos_x₀ * h³ * SinPolynomial<Disallow>(h².value)) +
+                sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+      }
     }
   }
 }
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Cos(Argument const x) {
+  using enum FMAPolicy;
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
   auto const& sin_x₀ = accurate_values.sin_x;
   auto const& cos_x₀ = accurate_values.cos_x;
   auto const h = x - x₀;
-  auto const cos_x₀_minus_h_sin_x₀ = TwoProductNegatedAdd(sin_x₀, h, cos_x₀);
-  auto const h² = h * h;
-  auto const h³ = h² * h;
-  return cos_x₀_minus_h_sin_x₀.value + ((cos_x₀ * h² * CosPolynomial1(h²) -
-                                         sin_x₀ * h³ * SinPolynomial(h²)) +
-                                        cos_x₀_minus_h_sin_x₀.error);
+  if (UseHardwareFMA) {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Force>(sin_x₀, h, cos_x₀);
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial1<Force>(h²) -
+             sin_x₀ * h³ * SinPolynomial<Force>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  } else {
+    auto const cos_x₀_minus_h_sin_x₀ =
+        TwoProductNegatedAdd<Disallow>(sin_x₀, h, cos_x₀);
+    auto const h² = h * h;
+    auto const h³ = h² * h;
+    return cos_x₀_minus_h_sin_x₀.value +
+           ((cos_x₀ * h² * CosPolynomial1<Disallow>(h²) -
+             sin_x₀ * h³ * SinPolynomial<Disallow>(h²)) +
+            cos_x₀_minus_h_sin_x₀.error);
+  }
 }
 
+template<FMAPolicy fma_policy>
 Value NearZeroImplementation::SinPolynomial(Argument const x) {
   // 84 bits.  Works for all binades.
-  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7},
-                               x);
+  return Polynomial1<fma_policy>::Evaluate(
+      {-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7}, x);
 }
 
+template<FMAPolicy fma_policy>
 Value NearZeroImplementation::SinPolynomialNearZero(Argument const x) {
   // 74 bits.
-  return Polynomial1::Evaluate({-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7},
-                               x);
+  return Polynomial1<fma_policy>::Evaluate(
+      {-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7}, x);
 }
 
+template<FMAPolicy fma_policy>
 Value NearZeroImplementation::CosPolynomial1(Argument const x) {
   // 72 bits.
-  return Polynomial1::Evaluate({cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
+  return Polynomial1<fma_policy>::Evaluate(
+      {cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
 }
 
+template<FMAPolicy fma_policy>
 Value NearZeroImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
-  return x * Polynomial1::Evaluate(
+  return x * Polynomial1<fma_policy>::Evaluate(
                  {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
 }
 

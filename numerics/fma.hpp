@@ -26,15 +26,15 @@ inline bool const UseHardwareFMA =
 inline bool const UseHardwareFMA = false;
 #endif
 
-// The policy used for emitting FMA instructions:
+// The policy used for emitting FMA instructions.  This type is not used by this
+// file, but is declared here for the convenience of the clients.  The intended
+// semantics are:
 // * |Auto|: FMA is used if supported by the processor, the decision must be
 //   made dynamically by calling |UseHardwareFMA|.
 // * |Disallow|: FMA is never used.
 // * |Force|: FMA is always used.  The caller is expected to determine upstream
 //   if FMA is supported by the processor by calling |UseHardwareFMA|.  Note
 //   that |Force| is equivalent to |Disallow| on clang.
-// This type is not used by this file, but is declared here for the convenience
-// of the clients.
 enum class FMAPolicy {
   Auto = 0,
   Disallow = 1,

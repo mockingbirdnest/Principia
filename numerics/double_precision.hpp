@@ -3,6 +3,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -13,6 +14,7 @@ namespace _double_precision {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -59,29 +61,29 @@ DoublePrecision<Product<T, U>> Scale(T const& scale,
 // from context, it may be preferable to either:
 // — use VeltkampDekkerProduct(a, b) below;
 // — directly compute value = a * b, error = FusedMultiplySubtract(a, b, value).
-template<bool force_fma = false, typename T, typename U>
+template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
 // Returns the exact value of |a * b + c|.
-template<bool force_fma = false, typename T, typename U>
+template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c);
 
 // Returns the exact value of |a * b - c|.
-template<bool force_fma = false, typename T, typename U>
+template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c);
 
 // Returns the exact value of |-a * b + c|.
-template<bool force_fma = false, typename T, typename U>
+template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c);
 
 // Returns the exact value of |-a * b - c|.
-template<bool force_fma = false, typename T, typename U>
+template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
