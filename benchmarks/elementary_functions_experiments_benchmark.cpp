@@ -30,7 +30,6 @@ using Argument = double;
 
 // A polynomial is too heavy an object to use in this code, so we call the
 // evaluators directly.
-// TODO(phl): FMA makes things slower :-(
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 template<FMAPolicy fma_policy>
@@ -244,8 +243,6 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
-  using enum FMAPolicy;
-
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -275,8 +272,6 @@ Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
-  using enum FMAPolicy;
-
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -355,8 +350,6 @@ MultiTableImplementation::MultiTableImplementation() {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
-  using enum FMAPolicy;
-
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
