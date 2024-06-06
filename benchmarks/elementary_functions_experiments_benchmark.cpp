@@ -263,11 +263,8 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
- if (UseHardwareFMA) {
-    return SinImplementation<FMAPolicy::Force>(x);
-  } else {
-    return SinImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+                        : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<Argument table_spacing>
@@ -295,11 +292,8 @@ Value TableSpacingImplementation<table_spacing>::SinImplementation(
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
-  if (UseHardwareFMA) {
-    return CosImplementation<FMAPolicy::Force>(x);
-  } else {
-    return CosImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+                        : CosImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<Argument table_spacing>
@@ -374,11 +368,8 @@ MultiTableImplementation::MultiTableImplementation() {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
-  if (UseHardwareFMA) {
-    return SinImplementation<FMAPolicy::Force>(x);
-  } else {
-    return SinImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+                        : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -408,11 +399,8 @@ Value MultiTableImplementation::SinImplementation(Argument const x) {
 
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Cos(Argument const x) {
-  if (UseHardwareFMA) {
-    return CosImplementation<FMAPolicy::Force>(x);
-  } else {
-    return CosImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+                        : CosImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -504,11 +492,8 @@ SingleTableImplementation::SingleTableImplementation() {
 
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Sin(Argument const x) {
- if (UseHardwareFMA) {
-    return SinImplementation<FMAPolicy::Force>(x);
-  } else {
-    return SinImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+                        : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -546,11 +531,8 @@ Value SingleTableImplementation::SinImplementation(Argument const x) {
 
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Cos(Argument const x) {
-  if (UseHardwareFMA) {
-    return CosImplementation<FMAPolicy::Force>(x);
-  } else {
-    return CosImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+                        : CosImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -607,11 +589,8 @@ NearZeroImplementation::NearZeroImplementation() {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
-  if (UseHardwareFMA) {
-    return SinImplementation<FMAPolicy::Force>(x);
-  } else {
-    return SinImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+                        : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -655,11 +634,8 @@ Value NearZeroImplementation::SinImplementation(Argument const x) {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Cos(Argument const x) {
-  if (UseHardwareFMA) {
-    return CosImplementation<FMAPolicy::Force>(x);
-  } else {
-    return CosImplementation<FMAPolicy::Disallow>(x);
-  }
+  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+                        : CosImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
