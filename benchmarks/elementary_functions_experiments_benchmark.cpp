@@ -29,8 +29,8 @@ using Argument = double;
 // A polynomial is too heavy an object to use in this code, so we call the
 // evaluators directly.
 // TODO(phl): FMA makes things slower :-(
-using Polynomial1 = Horner<Value, Argument, 1>;
-using Polynomial2 = Horner<Value, Argument, 2>;
+using Polynomial1 = HornerForceFMA<Value, Argument, 1>;
+using Polynomial2 = HornerForceFMA<Value, Argument, 2>;
 
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.

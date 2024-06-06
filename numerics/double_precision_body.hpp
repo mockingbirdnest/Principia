@@ -237,10 +237,10 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
   return result;
 }
 
-template<typename T, typename U>
+template<bool force_fma, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
-  if (UseHardwareFMA) {
+  if (force_fma || UseHardwareFMA) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(a * b);
     result.error = FusedMultiplySubtract(a, b, result.value);
@@ -250,12 +250,12 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   }
 }
 
-template<typename T, typename U>
+template<bool force_fma, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c) {
-  if (UseHardwareFMA) {
+  if (force_fma || UseHardwareFMA) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     DoublePrecision<Product<T, U>> result(FusedMultiplyAdd(a, b, c));
@@ -268,12 +268,12 @@ DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
   }
 }
 
-template<typename T, typename U>
+template<bool force_fma, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c) {
-  if (UseHardwareFMA) {
+  if (force_fma || UseHardwareFMA) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     DoublePrecision<Product<T, U>> result(FusedMultiplySubtract(a, b, c));
@@ -286,12 +286,12 @@ DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
   }
 }
 
-template<typename T, typename U>
+template<bool force_fma, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c) {
-  if (UseHardwareFMA) {
+  if (force_fma || UseHardwareFMA) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     DoublePrecision<Product<T, U>> result(FusedNegatedMultiplyAdd(a, b, c));
@@ -304,13 +304,13 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
   }
 }
 
-template<typename T, typename U>
+template<bool force_fma, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c) {
-  if (UseHardwareFMA) {
+  if (force_fma || UseHardwareFMA) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(

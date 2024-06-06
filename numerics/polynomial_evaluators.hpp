@@ -47,25 +47,38 @@ struct Evaluator {
       serialization::PolynomialInMonomialBasis::Evaluator const& message);
 };
 
-template<typename Value, typename Argument, int degree, bool allow_fma>
+//TODO(phl)comment
+enum class FMAPolicy {
+  Auto,
+  Disallow,
+  Force,
+};
+
+template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 class EstrinEvaluator;
-template<typename Value, typename Argument, int degree, bool allow_fma>
+template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 class HornerEvaluator;
 
 }  // namespace internal
 
 template<typename Value, typename Argument, int degree>
 using Estrin = internal::
-    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
+    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
 template<typename Value, typename Argument, int degree>
 using EstrinWithoutFMA = internal::
-    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
+template<typename Value, typename Argument, int degree>
+using EstrinForceFMA = internal::
+    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Force>;
 template<typename Value, typename Argument, int degree>
 using Horner = internal::
-    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
+    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
 template<typename Value, typename Argument, int degree>
 using HornerWithoutFMA = internal::
-    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
+template<typename Value, typename Argument, int degree>
+using HornerForceFMA = internal::
+    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Force>;
 
 using internal::Evaluator;
 using internal::with_evaluator;

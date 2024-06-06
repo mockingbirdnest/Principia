@@ -59,29 +59,29 @@ DoublePrecision<Product<T, U>> Scale(T const& scale,
 // from context, it may be preferable to either:
 // — use VeltkampDekkerProduct(a, b) below;
 // — directly compute value = a * b, error = FusedMultiplySubtract(a, b, value).
-template<typename T, typename U>
+template<bool force_fma = false, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
 // Returns the exact value of |a * b + c|.
-template<typename T, typename U>
+template<bool force_fma = false, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c);
 
 // Returns the exact value of |a * b - c|.
-template<typename T, typename U>
+template<bool force_fma = false, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c);
 
 // Returns the exact value of |-a * b + c|.
-template<typename T, typename U>
+template<bool force_fma = false, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c);
 
 // Returns the exact value of |-a * b - c|.
-template<typename T, typename U>
+template<bool force_fma = false, typename T, typename U>
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
