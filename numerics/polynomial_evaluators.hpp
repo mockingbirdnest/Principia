@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/not_null.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -12,6 +13,7 @@ namespace _polynomial_evaluators {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
@@ -47,13 +49,6 @@ struct Evaluator {
       serialization::PolynomialInMonomialBasis::Evaluator const& message);
 };
 
-//TODO(phl)comment
-enum class FMAPolicy {
-  Auto,
-  Disallow,
-  Force,
-};
-
 template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 class EstrinEvaluator;
 template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
@@ -68,19 +63,15 @@ template<typename Value, typename Argument, int degree>
 using EstrinWithoutFMA = internal::
     EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
 template<typename Value, typename Argument, int degree>
-using EstrinForceFMA = internal::
-    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Force>;
-template<typename Value, typename Argument, int degree>
 using Horner = internal::
     HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
 template<typename Value, typename Argument, int degree>
 using HornerWithoutFMA = internal::
     HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
-template<typename Value, typename Argument, int degree>
-using HornerForceFMA = internal::
-    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Force>;
 
+using internal::EstrinEvaluator;
 using internal::Evaluator;
+using internal::HornerEvaluator;
 using internal::with_evaluator;
 using internal::with_evaluator_t;
 

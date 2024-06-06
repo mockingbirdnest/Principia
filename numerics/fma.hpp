@@ -26,6 +26,21 @@ inline bool const UseHardwareFMA =
 inline bool const UseHardwareFMA = false;
 #endif
 
+// The policy used for emitting FMA instructions:
+// * |Auto|: FMA is used if supported by the processor, the decision must be
+//   made dynamically by calling |UseHardwareFMA|.
+// * |Disallow|: FMA is never used.
+// * |Force|: FMA is always used.  The caller is expected to determine upstream
+//   if FMA is supported by the processor by calling |UseHardwareFMA|.  Note
+//   that |Force| is equivalent to |Disallow| on clang.
+// This type is not used by this file, but is declared here for the convenience
+// of the clients.
+enum class FMAPolicy {
+  Auto = 0,
+  Disallow = 1,
+  Force = CanEmitFMAInstructions ? 2 : 1,
+};
+
 // The functions in this file unconditionally wrap the appropriate intrinsics.
 // The caller may only use them if |UseHardwareFMA| is true.
 
@@ -44,6 +59,7 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 }  // namespace internal
 
 using internal::CanEmitFMAInstructions;
+using internal::FMAPolicy;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
