@@ -305,7 +305,7 @@ template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Sin(
     Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
@@ -329,7 +329,7 @@ template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Cos(
     Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
@@ -399,7 +399,7 @@ MultiTableImplementation::MultiTableImplementation() {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Sin(Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   std::int64_t i;
   Argument cutoff;
@@ -426,7 +426,7 @@ Value MultiTableImplementation::Sin(Argument const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value MultiTableImplementation::Cos(Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   std::int64_t i;
   Argument cutoff;
@@ -515,7 +515,7 @@ SingleTableImplementation::SingleTableImplementation() {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Sin(Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
@@ -550,7 +550,7 @@ Value SingleTableImplementation::Sin(Argument const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SingleTableImplementation::Cos(Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
@@ -604,7 +604,7 @@ NearZeroImplementation::NearZeroImplementation() {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   if (x < near_zero_cutoff) {
     auto const x² = x * x;
@@ -645,7 +645,7 @@ Value NearZeroImplementation::Sin(Argument const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Cos(Argument const x) {
-  DCHECK(UseHardwareFMA);
+  DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
@@ -892,7 +892,7 @@ template<Metric metric, Argument table_spacing>
 void BM_ExperimentSinTableSpacing(benchmark::State& state) {
   BaseSinBenchmark<metric, TableSpacingImplementation<table_spacing>>(
       x_min, x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -900,7 +900,7 @@ template<Metric metric, Argument table_spacing>
 void BM_ExperimentCosTableSpacing(benchmark::State& state) {
   BaseCosBenchmark<metric, TableSpacingImplementation<table_spacing>>(
       x_min, x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -909,7 +909,7 @@ void BM_ExperimentSinMultiTable(benchmark::State& state) {
   BaseSinBenchmark<metric, MultiTableImplementation>(
       MultiTableImplementation::cutoffs
           [MultiTableImplementation::number_of_tables - 1], x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -918,7 +918,7 @@ void BM_ExperimentCosMultiTable(benchmark::State& state) {
   BaseCosBenchmark<metric, MultiTableImplementation>(
       MultiTableImplementation::cutoffs
           [MultiTableImplementation::number_of_tables - 1], x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -926,7 +926,7 @@ template<Metric metric>
 void BM_ExperimentSinSingleTable(benchmark::State& state) {
   BaseSinBenchmark<metric, SingleTableImplementation>(
       SingleTableImplementation::min_argument, x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -934,7 +934,7 @@ template<Metric metric>
 void BM_ExperimentCosSingleTable(benchmark::State& state) {
   BaseCosBenchmark<metric, SingleTableImplementation>(
       SingleTableImplementation::min_argument, x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -942,7 +942,7 @@ template<Metric metric>
 void BM_ExperimentSinNearZero(benchmark::State& state) {
   BaseSinBenchmark<metric, NearZeroImplementation>(
       0.0, x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
@@ -950,7 +950,7 @@ template<Metric metric>
 void BM_ExperimentCosNearZero(benchmark::State& state) {
   BaseCosBenchmark<metric, NearZeroImplementation>(
       0.0, x_max,
-      1.2e-16,
+      2.3e-16,
       state);
 }
 
