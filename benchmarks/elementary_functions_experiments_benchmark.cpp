@@ -6,6 +6,7 @@
 #include <random>
 #include <utility>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
@@ -820,16 +821,18 @@ void BaseSinBenchmark(Argument const& min_argument,
   if constexpr (metric == Metric::Throughput) {
     Value v[number_of_iterations];
     while (state.KeepRunningBatch(number_of_iterations)) {
-      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-        v[i] = implementation.Sin(a[i]);
-#if _DEBUG
-        // The implementation is not accurate, but let's check that it's not
-        // broken.
-        auto const absolute_error = Abs(v[i] - std::sin(a[i]));
-        CHECK_LT(absolute_error, max_absolute_error);
-#endif
+      for (std::int64_t i = 0; i < number_of_iterations;) {
+        PRINCIPIA_REPEAT8(v[i] = implementation.Sin(a[i]); ++i;)
       }
       benchmark::DoNotOptimize(v);
+#if _DEBUG
+      // The implementation is not accurate, but let's check that it's not
+      // broken.
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        auto const absolute_error = Abs(v[i] - std::sin(a[i]));
+        CHECK_LT(absolute_error, max_absolute_error);
+      }
+#endif
     }
   } else {
     static_assert(metric == Metric::Latency);
@@ -863,16 +866,18 @@ void BaseCosBenchmark(Argument const& min_argument,
   if constexpr (metric == Metric::Throughput) {
     Value v[number_of_iterations];
     while (state.KeepRunningBatch(number_of_iterations)) {
-      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-        v[i] = implementation.Cos(a[i]);
-#if _DEBUG
-        // The implementation is not accurate, but let's check that it's not
-        // broken.
-        auto const absolute_error = Abs(v[i] - std::cos(a[i]));
-        CHECK_LT(absolute_error, max_absolute_error);
-#endif
+      for (std::int64_t i = 0; i < number_of_iterations;) {
+        PRINCIPIA_REPEAT8(v[i] = implementation.Cos(a[i]); ++i;)
       }
       benchmark::DoNotOptimize(v);
+#if _DEBUG
+      // The implementation is not accurate, but let's check that it's not
+      // broken.
+      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
+        auto const absolute_error = Abs(v[i] - std::cos(a[i]));
+        CHECK_LT(absolute_error, max_absolute_error);
+      }
+#endif
     }
   } else {
     static_assert(metric == Metric::Latency);

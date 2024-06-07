@@ -178,6 +178,14 @@ char const* const Architecture = "x86-64";
 // For templates in macro parameters.
 #define TEMPLATE(...) template<__VA_ARGS__>
 
+#define PRINCIPIA_REPEAT8(...) \
+  PRINCIPIA_REPEAT4(__VA_ARGS__) PRINCIPIA_REPEAT4(__VA_ARGS__)
+#define PRINCIPIA_REPEAT4(...) \
+  PRINCIPIA_REPEAT2(__VA_ARGS__) PRINCIPIA_REPEAT2(__VA_ARGS__)
+#define PRINCIPIA_REPEAT2(...) \
+  PRINCIPIA_REPEAT1(__VA_ARGS__) PRINCIPIA_REPEAT1(__VA_ARGS__)
+#define PRINCIPIA_REPEAT1(...) __VA_ARGS__
+
 // The macro magic is inspired from http://jhnet.co.uk/articles/cpp_magic.  Note
 // that we are using __VA_OPT__ to stop the recursion and detect empty argument
 // lists because we are modern.
