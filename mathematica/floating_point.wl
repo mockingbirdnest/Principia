@@ -65,20 +65,20 @@ TowardNegativeInfinity=Floor;
 mantissaExponent12[x_]:={#[[1]]*2,#[[2]]-1}&[MantissaExponent[x,2]];
 Representation[x_]:=Block[
 {sign,magnitude,\[Mu],e},
-sign=Sign[x];
+sign=If[x<0,2^(exponentBits+significandBits-1),0];
 magnitude=Abs[x];
 If[magnitude==\[Infinity],
-sign(2^exponentBits-1)2^(significandBits-1),
+sign+(2^exponentBits-1)2^(significandBits-1),
 If[x==0,0,
 {\[Mu],e}=mantissaExponent12[magnitude];
 If[e<=-bias,
 2^(significandBits-1) 2^(e+bias-1) \[Mu],
-sign(2^(significandBits-1) (\[Mu]-1)+2^(significandBits-1) (e+bias))
+sign+(2^(significandBits-1) (\[Mu]-1)+2^(significandBits-1) (e+bias))
 ]]]];
 FromRepresentation[n_]:=Block[
 {sign,magnitude,\[Mu],e},
-sign=Sign[n];
-magnitude=Abs[n];
+sign=If[n>=2^(exponentBits+significandBits-1),-1,1];
+magnitude=Mod[n,2^(exponentBits+significandBits-1)];
 \[Mu]=Mod[magnitude,2^(significandBits-1)];
 e=IntegerPart[magnitude/2^(significandBits-1)];
 If[e==0,

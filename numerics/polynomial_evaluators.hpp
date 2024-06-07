@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/not_null.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -12,6 +13,7 @@ namespace _polynomial_evaluators {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
@@ -47,27 +49,29 @@ struct Evaluator {
       serialization::PolynomialInMonomialBasis::Evaluator const& message);
 };
 
-template<typename Value, typename Argument, int degree, bool allow_fma>
+template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 class EstrinEvaluator;
-template<typename Value, typename Argument, int degree, bool allow_fma>
+template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 class HornerEvaluator;
 
 }  // namespace internal
 
 template<typename Value, typename Argument, int degree>
 using Estrin = internal::
-    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
+    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
 template<typename Value, typename Argument, int degree>
 using EstrinWithoutFMA = internal::
-    EstrinEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
 template<typename Value, typename Argument, int degree>
 using Horner = internal::
-    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/true>;
+    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
 template<typename Value, typename Argument, int degree>
 using HornerWithoutFMA = internal::
-    HornerEvaluator<Value, Argument, degree, /*allow_fma=*/false>;
+    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
 
+using internal::EstrinEvaluator;
 using internal::Evaluator;
+using internal::HornerEvaluator;
 using internal::with_evaluator;
 using internal::with_evaluator_t;
 

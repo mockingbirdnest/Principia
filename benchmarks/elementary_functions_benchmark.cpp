@@ -3,6 +3,7 @@
 #include <cmath>
 #include <random>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "functions/cos.hpp"
@@ -34,8 +35,8 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
   if constexpr (metric == Metric::Throughput) {
     Value v[number_of_iterations];
     while (state.KeepRunningBatch(number_of_iterations)) {
-      for (std::int64_t i = 0; i < number_of_iterations; ++i) {
-        v[i] = fn(a[i]);
+      for (std::int64_t i = 0; i < number_of_iterations;) {
+        PRINCIPIA_REPEAT8(v[i] = fn(a[i]); ++i;)
       }
       benchmark::DoNotOptimize(v);
     }
