@@ -47,7 +47,9 @@ class TableSpacingImplementation {
  public:
   TableSpacingImplementation();
 
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Sin(Argument x);
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Cos(Argument x);
 
  private:
@@ -58,11 +60,6 @@ class TableSpacingImplementation {
     Value sin_x;
     Value cos_x;
   };
-
-  template<FMAPolicy fma_policy>
-  Value SinImplementation(Argument x);
-  template<FMAPolicy fma_policy>
-  Value CosImplementation(Argument x);
 
   template<FMAPolicy fma_policy>
   static Value SinPolynomial(Argument x);
@@ -109,7 +106,9 @@ class MultiTableImplementation {
 
   MultiTableImplementation();
 
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Sin(Argument x);
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Cos(Argument x);
 
  private:
@@ -122,11 +121,6 @@ class MultiTableImplementation {
   };
 
   void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
-
-  template<FMAPolicy fma_policy>
-  Value SinImplementation(Argument x);
-  template<FMAPolicy fma_policy>
-  Value CosImplementation(Argument x);
 
   template<FMAPolicy fma_policy>
   static Value SinPolynomial(Argument x);
@@ -163,7 +157,9 @@ class SingleTableImplementation {
 
   SingleTableImplementation();
 
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Sin(Argument x);
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Cos(Argument x);
 
  private:
@@ -178,11 +174,6 @@ class SingleTableImplementation {
   // If this was ever changed to a value that is not a power of 2, extra care
   // would be needed in the computations that use it.
   static constexpr Value cos_polynomial_0 = -0.5;
-
-  template<FMAPolicy fma_policy>
-  Value SinImplementation(Argument x);
-  template<FMAPolicy fma_policy>
-  Value CosImplementation(Argument x);
 
   template<FMAPolicy fma_policy>
   static Value SinPolynomial(Argument x);
@@ -213,7 +204,9 @@ class NearZeroImplementation {
 
   NearZeroImplementation();
 
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Sin(Argument x);
+  template<FMAPolicy fma_policy = FMAPolicy::Force>
   Value Cos(Argument x);
 
  private:
@@ -230,11 +223,6 @@ class NearZeroImplementation {
   static constexpr Value cos_polynomial_0 = -0.5;
 
   template<FMAPolicy fma_policy>
-  Value SinImplementation(Argument x);
-  template<FMAPolicy fma_policy>
-  Value CosImplementation(Argument x);
-
-  template<FMAPolicy fma_policy>
   static Value SinPolynomial(Argument x);
   template<FMAPolicy fma_policy>
   static Value SinPolynomialNearZero(Argument x);
@@ -248,7 +236,8 @@ class NearZeroImplementation {
       accurate_values_;
 };
 
-//TODO(phl):Comment
+// Same as |NearZeroImplementation|, but evaluates the cost of the dynamic FMA
+// determination.
 class FMAImplementation {
  public:
   static constexpr Argument table_spacing = 2.0 / 1024.0;
@@ -312,19 +301,12 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 }
 
 template<Argument table_spacing>
-FORCE_INLINE(inline)
-Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
-  DCHECK(UseHardwareFMA);
-  return SinImplementation<FMAPolicy::Force>(x);
-  //return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
-  //                      : SinImplementation<FMAPolicy::Disallow>(x);
-}
-
-template<Argument table_spacing>
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value TableSpacingImplementation<table_spacing>::SinImplementation(
+Value TableSpacingImplementation<table_spacing>::Sin(
     Argument const x) {
+  DCHECK(UseHardwareFMA);
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -343,19 +325,12 @@ Value TableSpacingImplementation<table_spacing>::SinImplementation(
 }
 
 template<Argument table_spacing>
-FORCE_INLINE(inline)
-Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
-  DCHECK(UseHardwareFMA);
-  return CosImplementation<FMAPolicy::Force>(x);
-  //return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
-  //                      : CosImplementation<FMAPolicy::Disallow>(x);
-}
-
-template<Argument table_spacing>
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value TableSpacingImplementation<table_spacing>::CosImplementation(
+Value TableSpacingImplementation<table_spacing>::Cos(
     Argument const x) {
+  DCHECK(UseHardwareFMA);
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -421,15 +396,11 @@ MultiTableImplementation::MultiTableImplementation() {
   }
 }
 
-FORCE_INLINE(inline)
-Value MultiTableImplementation::Sin(Argument const x) {
-  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
-                        : SinImplementation<FMAPolicy::Disallow>(x);
-}
-
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value MultiTableImplementation::SinImplementation(Argument const x) {
+Value MultiTableImplementation::Sin(Argument const x) {
+  DCHECK(UseHardwareFMA);
+
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
@@ -452,15 +423,11 @@ Value MultiTableImplementation::SinImplementation(Argument const x) {
           sin_x₀_plus_h_cos_x₀.error);
 }
 
-FORCE_INLINE(inline)
-Value MultiTableImplementation::Cos(Argument const x) {
-  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
-                        : CosImplementation<FMAPolicy::Disallow>(x);
-}
-
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value MultiTableImplementation::CosImplementation(Argument const x) {
+Value MultiTableImplementation::Cos(Argument const x) {
+  DCHECK(UseHardwareFMA);
+
   std::int64_t i;
   Argument cutoff;
   SelectCutoff(x, i, cutoff);
@@ -545,15 +512,11 @@ SingleTableImplementation::SingleTableImplementation() {
   }
 }
 
-FORCE_INLINE(inline)
-Value SingleTableImplementation::Sin(Argument const x) {
-  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
-                        : SinImplementation<FMAPolicy::Disallow>(x);
-}
-
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value SingleTableImplementation::SinImplementation(Argument const x) {
+Value SingleTableImplementation::Sin(Argument const x) {
+  DCHECK(UseHardwareFMA);
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -584,15 +547,11 @@ Value SingleTableImplementation::SinImplementation(Argument const x) {
   }
 }
 
-FORCE_INLINE(inline)
-Value SingleTableImplementation::Cos(Argument const x) {
-  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
-                        : CosImplementation<FMAPolicy::Disallow>(x);
-}
-
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value SingleTableImplementation::CosImplementation(Argument const x) {
+Value SingleTableImplementation::Cos(Argument const x) {
+  DCHECK(UseHardwareFMA);
+
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
@@ -642,17 +601,11 @@ NearZeroImplementation::NearZeroImplementation() {
   }
 }
 
+template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
   DCHECK(UseHardwareFMA);
-  return SinImplementation<FMAPolicy::Force>(x);
-  //return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
-  //                      : SinImplementation<FMAPolicy::Disallow>(x);
-}
 
-template<FMAPolicy fma_policy>
-FORCE_INLINE(inline)
-Value NearZeroImplementation::SinImplementation(Argument const x) {
   if (x < near_zero_cutoff) {
     auto const x² = x * x;
     auto const x³ = x² * x;
@@ -689,17 +642,11 @@ Value NearZeroImplementation::SinImplementation(Argument const x) {
   }
 }
 
+template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Cos(Argument const x) {
   DCHECK(UseHardwareFMA);
-  return CosImplementation<FMAPolicy::Force>(x);
-  //return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
-  //                      : CosImplementation<FMAPolicy::Disallow>(x);
-}
 
-template<FMAPolicy fma_policy>
-FORCE_INLINE(inline)
-Value NearZeroImplementation::CosImplementation(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;
