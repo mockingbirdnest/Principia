@@ -3,6 +3,7 @@
 #include <cmath>
 #include <random>
 
+#include "absl/strings/str_cat.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
@@ -32,25 +33,40 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
     a[i] = uniformly_at(random);
   }
 
+  std::uint64_t iterations = 0;
+  std::uint64_t cycles = 0;
   if constexpr (metric == Metric::Throughput) {
     Value v[number_of_iterations];
     while (state.KeepRunningBatch(number_of_iterations)) {
+      std::uint64_t const start = __rdtsc();
       for (std::int64_t i = 0; i < number_of_iterations;) {
         PRINCIPIA_REPEAT8(v[i] = fn(a[i]); ++i;)
       }
-      benchmark::DoNotOptimize(v);
+      std::uint64_t const stop = __rdtsc();
+      ++iterations;
+      cycles += stop - start;
     }
+    benchmark::DoNotOptimize(v);
   } else {
     static_assert(metric == Metric::Latency);
     Value v;
     while (state.KeepRunningBatch(number_of_iterations)) {
+      std::uint64_t const start = __rdtsc();
       Argument argument = a[number_of_iterations - 1];
       for (std::int64_t i = 0; i < number_of_iterations; ++i) {
         v = fn(argument);
         argument = (v + a[i]) - v;
       }
+      std::uint64_t const stop = __rdtsc();
+      ++iterations;
+      cycles += stop - start;
     }
+    benchmark::DoNotOptimize(v);
   }
+  state.SetLabel(
+      absl::StrCat("cycles: ",
+                   static_cast<double>(cycles) /
+                       static_cast<double>(iterations * number_of_iterations)));
 }
 
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, std::sin)
