@@ -248,6 +248,57 @@ class NearZeroImplementation {
       accurate_values_;
 };
 
+//TODO(phl):Comment
+class FMAImplementation {
+ public:
+  static constexpr Argument table_spacing = 2.0 / 1024.0;
+
+  // ArcSin[1/8], rounded towards infinity.  Two more leading zeroes than the
+  // high binade.
+  // TODO(phl): Rigourous error analysis needed to check that this is the right
+  // cutoff.
+  static constexpr Argument cutoff = 0x1.00ABE0C129E1Fp-3;
+
+  // ArcSin[1/1024], rounded towards infinity.
+  static constexpr Argument near_zero_cutoff = 0x1.000002AAAABDEp-10;
+
+  FMAImplementation();
+
+  Value Sin(Argument x);
+  Value Cos(Argument x);
+
+ private:
+  // Despite the name these are not accurate values, but for the purposes of
+  // benchmarking it doesn't matter.
+  struct AccurateValues {
+    Argument x;
+    Value sin_x;
+    Value cos_x;
+  };
+
+  // If this was ever changed to a value that is not a power of 2, extra care
+  // would be needed in the computations that use it.
+  static constexpr Value cos_polynomial_0 = -0.5;
+
+  template<FMAPolicy fma_policy>
+  Value SinImplementation(Argument x);
+  template<FMAPolicy fma_policy>
+  Value CosImplementation(Argument x);
+
+  template<FMAPolicy fma_policy>
+  static Value SinPolynomial(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value SinPolynomialNearZero(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial1(Argument x);
+  template<FMAPolicy fma_policy>
+  static Value CosPolynomial2(Argument x);
+
+  std::array<AccurateValues,
+             static_cast<std::int64_t>(x_max / table_spacing) + 1>
+      accurate_values_;
+};
+
 template<Argument table_spacing>
 TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
   int i = 0;
@@ -263,8 +314,10 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Sin(Argument const x) {
-  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
-                        : SinImplementation<FMAPolicy::Disallow>(x);
+  DCHECK(UseHardwareFMA);
+  return SinImplementation<FMAPolicy::Force>(x);
+  //return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+  //                      : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<Argument table_spacing>
@@ -292,8 +345,10 @@ Value TableSpacingImplementation<table_spacing>::SinImplementation(
 template<Argument table_spacing>
 FORCE_INLINE(inline)
 Value TableSpacingImplementation<table_spacing>::Cos(Argument const x) {
-  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
-                        : CosImplementation<FMAPolicy::Disallow>(x);
+  DCHECK(UseHardwareFMA);
+  return CosImplementation<FMAPolicy::Force>(x);
+  //return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+  //                      : CosImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<Argument table_spacing>
@@ -589,8 +644,10 @@ NearZeroImplementation::NearZeroImplementation() {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Sin(Argument const x) {
-  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
-                        : SinImplementation<FMAPolicy::Disallow>(x);
+  DCHECK(UseHardwareFMA);
+  return SinImplementation<FMAPolicy::Force>(x);
+  //return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+  //                      : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -634,8 +691,10 @@ Value NearZeroImplementation::SinImplementation(Argument const x) {
 
 FORCE_INLINE(inline)
 Value NearZeroImplementation::Cos(Argument const x) {
-  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
-                        : CosImplementation<FMAPolicy::Disallow>(x);
+  DCHECK(UseHardwareFMA);
+  return CosImplementation<FMAPolicy::Force>(x);
+  //return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+  //                      : CosImplementation<FMAPolicy::Disallow>(x);
 }
 
 template<FMAPolicy fma_policy>
@@ -681,6 +740,116 @@ Value NearZeroImplementation::CosPolynomial1(Argument const x) {
 
 template<FMAPolicy fma_policy>
 Value NearZeroImplementation::CosPolynomial2(Argument const x) {
+  // 97 bits.
+  return x * Polynomial1<fma_policy>::Evaluate(
+                 {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
+}
+
+FMAImplementation::FMAImplementation() {
+  int i = 0;
+  for (Argument x = table_spacing / 2;
+       x <= x_max + table_spacing / 2;
+       x += table_spacing, ++i) {
+    accurate_values_[i] = {.x = x,
+                           .sin_x = std::sin(x),
+                           .cos_x = std::cos(x)};
+  }
+}
+
+FORCE_INLINE(inline)
+Value FMAImplementation::Sin(Argument const x) {
+  return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
+                        : SinImplementation<FMAPolicy::Disallow>(x);
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value FMAImplementation::SinImplementation(Argument const x) {
+  if (x < near_zero_cutoff) {
+    auto const x² = x * x;
+    auto const x³ = x² * x;
+    return x + x³ * SinPolynomialNearZero<fma_policy>(x²);
+  } else {
+    auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+    auto const& accurate_values = accurate_values_[i];
+    auto const& x₀ = accurate_values.x;
+    auto const& sin_x₀ = accurate_values.sin_x;
+    auto const& cos_x₀ = accurate_values.cos_x;
+    auto const h = x - x₀;
+
+    auto const sin_x₀_plus_h_cos_x₀ =
+        TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+    if (cutoff <= x) {
+      auto const h² = h * h;
+      auto const h³ = h² * h;
+      return sin_x₀_plus_h_cos_x₀.value +
+             ((sin_x₀ * h² * CosPolynomial1<fma_policy>(h²) +
+               cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+              sin_x₀_plus_h_cos_x₀.error);
+    } else {
+      // TODO(phl): Error analysis of this computation.
+      auto const h² = TwoProduct<fma_policy>(h, h);
+      auto const h³ = h².value * h;
+      auto const h²_sin_x₀_cos_polynomial_0 = h² * (sin_x₀ * cos_polynomial_0);
+      auto const terms_up_to_h² = QuickTwoSum(sin_x₀_plus_h_cos_x₀.value,
+                                              h²_sin_x₀_cos_polynomial_0.value);
+      return terms_up_to_h².value +
+             ((sin_x₀ * h².value * CosPolynomial2<fma_policy>(h².value) +
+               cos_x₀ * h³ * SinPolynomial<fma_policy>(h².value)) +
+              sin_x₀_plus_h_cos_x₀.error + h²_sin_x₀_cos_polynomial_0.error);
+    }
+  }
+}
+
+FORCE_INLINE(inline)
+Value FMAImplementation::Cos(Argument const x) {
+  return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
+                        : CosImplementation<FMAPolicy::Disallow>(x);
+}
+
+template<FMAPolicy fma_policy>
+FORCE_INLINE(inline)
+Value FMAImplementation::CosImplementation(Argument const x) {
+  auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
+  auto const& accurate_values = accurate_values_[i];
+  auto const& x₀ = accurate_values.x;
+  auto const& sin_x₀ = accurate_values.sin_x;
+  auto const& cos_x₀ = accurate_values.cos_x;
+  auto const h = x - x₀;
+
+  auto const cos_x₀_minus_h_sin_x₀ =
+      TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  return cos_x₀_minus_h_sin_x₀.value +
+         ((cos_x₀ * h² * CosPolynomial1<fma_policy>(h²) -
+           sin_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+          cos_x₀_minus_h_sin_x₀.error);
+}
+
+template<FMAPolicy fma_policy>
+Value FMAImplementation::SinPolynomial(Argument const x) {
+  // 84 bits.  Works for all binades.
+  return Polynomial1<fma_policy>::Evaluate(
+      {-0x1.5555555555555p-3, 0x1.111110B24ACB5p-7}, x);
+}
+
+template<FMAPolicy fma_policy>
+Value FMAImplementation::SinPolynomialNearZero(Argument const x) {
+  // 74 bits.
+  return Polynomial1<fma_policy>::Evaluate(
+      {-0x1.5555555555555p-3, 0x1.11110B24ACC74p-7}, x);
+}
+
+template<FMAPolicy fma_policy>
+Value FMAImplementation::CosPolynomial1(Argument const x) {
+  // 72 bits.
+  return Polynomial1<fma_policy>::Evaluate(
+      {cos_polynomial_0, 0x1.555554B290E6Ap-5}, x);
+}
+
+template<FMAPolicy fma_policy>
+Value FMAImplementation::CosPolynomial2(Argument const x) {
   // 97 bits.
   return x * Polynomial1<fma_policy>::Evaluate(
                  {0x1.5555555555555p-5, -0x1.6C16C10C09C11p-10}, x);
@@ -838,6 +1007,22 @@ void BM_ExperimentCosNearZero(benchmark::State& state) {
       state);
 }
 
+template<Metric metric>
+void BM_ExperimentSinFMA(benchmark::State& state) {
+  BaseSinBenchmark<metric, FMAImplementation>(
+      0.0, x_max,
+      1.2e-16,
+      state);
+}
+
+template<Metric metric>
+void BM_ExperimentCosFMA(benchmark::State& state) {
+  BaseCosBenchmark<metric, FMAImplementation>(
+      0.0, x_max,
+      1.2e-16,
+      state);
+}
+
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
                    Metric::Latency,
                    2.0 / 256.0)
@@ -893,6 +1078,14 @@ BENCHMARK_TEMPLATE(BM_ExperimentSinNearZero, Metric::Throughput)
 BENCHMARK_TEMPLATE(BM_ExperimentCosNearZero, Metric::Latency)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_ExperimentCosNearZero, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinFMA, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentSinFMA, Metric::Throughput)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosFMA, Metric::Latency)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_ExperimentCosFMA, Metric::Throughput)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions
