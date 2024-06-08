@@ -391,7 +391,7 @@ template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 Value EstrinEvaluator<Value, Argument, degree, fma_policy>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using InternalEvaluator = InternalEstrinEvaluator<Value,
                                                       Argument,
@@ -418,7 +418,7 @@ EstrinEvaluator<Value, Argument, degree, fma_policy>::EvaluateDerivative(
     Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
-  } else if (fma_policy == FMAPolicy::Force ||
+  } else if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
              (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using InternalEvaluator =
         InternalEstrinEvaluator<Value,
@@ -470,7 +470,7 @@ template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
 Value HornerEvaluator<Value, Argument, degree, fma_policy>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     return InternalHornerEvaluator<
         Value, Argument, degree, /*fma=*/true, /*low=*/0>::Evaluate(
@@ -489,7 +489,7 @@ HornerEvaluator<Value, Argument, degree, fma_policy>::EvaluateDerivative(
     Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
-  } else if (fma_policy == FMAPolicy::Force ||
+  } else if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
              (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     return InternalHornerEvaluator<
         Value, Argument, degree,
