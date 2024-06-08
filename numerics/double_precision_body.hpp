@@ -240,7 +240,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 template<FMAPolicy fma_policy, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(a * b);
@@ -256,7 +256,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
@@ -275,7 +275,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
@@ -294,7 +294,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
@@ -314,7 +314,7 @@ DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c) {
-  if (fma_policy == FMAPolicy::Force ||
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
