@@ -22,6 +22,7 @@ NearestTiesToEven;
 Toward0;
 TowardPositiveInfinity;
 TowardNegativeInfinity;
+RoundingMode;
 
 
 Representation;
@@ -84,8 +85,16 @@ e=IntegerPart[magnitude/2^(significandBits-1)];
 If[e==0,
 \[Mu]/2^(significandBits-1) 2^(1-bias),
 sign(1+\[Mu]/2^(significandBits-1))2^(e-bias)]];
-CorrectlyRound[x_]:=If[x==\[Infinity]||x==-\[Infinity],x,If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&@FromRepresentation[correctlyRoundRepresentation[Representation[x]]]];
 UlpDistance[x_,y_]:=Abs[Representation[x]-Representation[y]]
+
+
+CorrectlyRound[x_,OptionsPattern[]]:=With[
+{rounding=If[OptionValue[RoundingMode]===Automatic,correctlyRoundRepresentation,OptionValue[RoundingMode]]},
+If[x==\[Infinity]||x==-\[Infinity],x,
+If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&
+@FromRepresentation[rounding[Representation[x]]]]];
+UlpDistance[x_,y_]:=Abs[Representation[x]-Representation[y]];
+Options[CorrectlyRound]={RoundingMode->Automatic};
 
 
 Bits[n_, extraBits_: 10]:=If[n>=0,"0","1"]<>
@@ -208,3 +217,11 @@ EndPackage[]
 (*SetFloatingPointFormat[format];*)
 (*{#,{Bits[#],HexLiteral[#]},{Bits[CorrectlyRound[#]],HexLiteral[CorrectlyRound[#]]}}&/@{\[Pi],1/3,Sqrt[2],1+2^-format[[1]],1+2^(-format[[1]]-5)}//TableForm,*)
 (*{format,{binary16,binary32,binary64,x87extended}}]//TableForm*)
+(*SetRoundingMode[TowardPositiveInfinity];*)
+(*CorrectlyRound[1/3]*)
+(*SetRoundingMode[TowardNegativeInfinity];*)
+(*CorrectlyRound[1/3]*)
+(*CorrectlyRound[1/3,RoundingMode->Toward0]*)
+(*CorrectlyRound[1/3,RoundingMode->TowardPositiveInfinity]*)
+(*CorrectlyRound[1/3,RoundingMode->TowardNegativeInfinity]*)
+(*CorrectlyRound[1/3,RoundingMode->NearestTiesToEven]*)
