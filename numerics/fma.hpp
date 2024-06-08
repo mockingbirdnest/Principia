@@ -33,8 +33,7 @@ inline bool const UseHardwareFMA = false;
 //   made dynamically by calling |UseHardwareFMA|.
 // * |Disallow|: FMA is never used.
 // * |Force|: FMA is always used.  The caller is expected to determine upstream
-//   if FMA is supported by the processor by calling |UseHardwareFMA|.  Note
-//   that |Force| is equivalent to |Auto| on clang.
+//   if FMA is supported by the processor by calling |UseHardwareFMA|.
 enum class FMAPolicy {
   Auto = 0,
   Disallow = 1,
