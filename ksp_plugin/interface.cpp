@@ -887,6 +887,12 @@ void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
   journal::Method<journal::InsertOrKeepVessel> m(
       {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
   CHECK_NOTNULL(plugin);
+  CHECK(vessel_guid != nullptr)
+      << "name: "
+      << (vessel_name == nullptr ? "null" : std::string_view(vessel_name));
+  CHECK(vessel_name != nullptr)
+      << "guid: "
+      << (vessel_guid == nullptr ? "null" : std::string_view(vessel_guid));
   plugin->InsertOrKeepVessel(vessel_guid,
                              vessel_name,
                              parent_index,
