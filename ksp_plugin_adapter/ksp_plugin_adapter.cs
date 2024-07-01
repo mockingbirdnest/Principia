@@ -2243,6 +2243,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         if (main_vessel_guid == null) {
           return;
         }
+        int number_of_rendered_manœuvres = 0;
         if (plugin_.FlightPlanExists(main_vessel_guid)) {
           int number_of_anomalous_manœuvres =
               plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
@@ -2250,7 +2251,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               plugin_.FlightPlanNumberOfManoeuvres(main_vessel_guid);
           int number_of_segments =
               plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
-          int number_of_rendered_manœuvres = 0;
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
             using (DisposableIterator rendered_segments =
@@ -2289,11 +2289,19 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               }
             }
           }
-          for (int i = number_of_rendered_manœuvres;
-               i < manœuvre_marker_pool_.Count;
-               ++i) {
-            manœuvre_marker_pool_[i].Disable();
+        }
+        // This cleanup must occur even if there is no flight plan. In the
+        // tracking station, one may switch from a vessel with a plan to one
+        // without.
+        for (int i = number_of_rendered_manœuvres;
+             i < manœuvre_marker_pool_.Count;
+             ++i) {
+          // Since markers are used sequentially, all subsequent ones will
+          // be in the disabled state.
+          if (manœuvre_marker_pool_[i].is_disabled) {
+            break;
           }
+          manœuvre_marker_pool_[i].Disable();
         }
       }
     }
