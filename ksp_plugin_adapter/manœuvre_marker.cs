@@ -26,6 +26,8 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   // during which it is consumed by node markers.
   public static bool has_interacting_marker { get; private set; }
 
+  public bool is_disabled => !gameObject.activeSelf && !caption_.activeSelf;
+
   // Construct the geometry of the marker when instantiated.
   // 1. Build the mesh of the marker (base 'bulb' & one cylinder for each axis).
   // 2. Attach a spherical collider (centred on the bulb) to the gameobject for
