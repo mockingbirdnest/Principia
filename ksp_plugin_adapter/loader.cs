@@ -18,6 +18,7 @@ internal static class Loader {
              "use the 64-bit KSP executable.";
     }
     string[] possible_dll_paths;
+    string dll_filename;
     bool? is_cxx_installed;
     string required_cxx_packages;
     switch (Environment.OSVersion.Platform) {
@@ -26,15 +27,18 @@ internal static class Loader {
         required_cxx_packages =
             "the Microsoft Visual C++ 2015-2022 Redistributable (x64) - " +
             "14.38.33130";
-        possible_dll_paths = new [] {@"GameData\Principia\x64\principia.dll"};
+        dll_filename = "principia.dll";
+        possible_dll_paths = new []
+            { @"GameData\Principia\x64\" + dll_filename };
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
       // (we probably don't actually encounter |PlatformID.MacOSX|).
       case PlatformID.Unix:
       case PlatformID.MacOSX:
+        dll_filename = "principia.so";
         possible_dll_paths = new [] {
-            @"GameData/Principia/Linux64/principia.so",
-            @"GameData/Principia/MacOS64/principia.so"
+            @"GameData/Principia/Linux64/" + dll_filename,
+            @"GameData/Principia/MacOS64/" + dll_filename,
         };
         is_cxx_installed = null;
         required_cxx_packages = "libc++abi1-17, libc++1-17, and libunwind-17 " +
@@ -47,11 +51,23 @@ internal static class Loader {
                " is not supported at this time.";
     }
     if (!possible_dll_paths.Any(File.Exists)) {
+      string[] where_did_they_put_the_dll = Directory.GetFiles(
+          Directory.GetCurrentDirectory(),
+          dll_filename,
+          SearchOption.AllDirectories);
+      string incorrectly_installed_in = "";
+      if (where_did_they_put_the_dll.Any()) {
+        incorrectly_installed_in = "  It was incorrectly installed in " +
+                                   string.Join(", ",
+                                               where_did_they_put_the_dll) +
+                                   ".";
+      }
       return "The principia DLL was not found at '" +
              string.Join("', '", possible_dll_paths) +
              "' in directory '" +
              Directory.GetCurrentDirectory() +
-             "'.";
+             "'." +
+             incorrectly_installed_in;
     }
     string non_ascii_path_error = null;
     foreach (char c in Directory.GetCurrentDirectory()) {
