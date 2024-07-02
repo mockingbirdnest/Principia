@@ -47,11 +47,22 @@ internal static class Loader {
                " is not supported at this time.";
     }
     if (!possible_dll_paths.Any(File.Exists)) {
+      string[] where_did_they_put_the_dll = Directory.GetFiles(
+          Directory.GetCurrentDirectory(),
+          "principia.dll",
+          SearchOption.AllDirectories);
+      string incorrectly_installed_in = "";
+      if (where_did_they_put_the_dll.Any()) {
+        incorrectly_installed_in = "  It was incorrectly installed in " +
+                                   string.Join(", ",
+                                               where_did_they_put_the_dll);
+      }
       return "The principia DLL was not found at '" +
              string.Join("', '", possible_dll_paths) +
              "' in directory '" +
              Directory.GetCurrentDirectory() +
-             "'.";
+             "'." +
+             incorrectly_installed_in;
     }
     string non_ascii_path_error = null;
     foreach (char c in Directory.GetCurrentDirectory()) {
