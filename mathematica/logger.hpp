@@ -50,7 +50,7 @@ class Logger final {
   // this object is destroyed, an assignment is generated for each of the
   // variables named in a call to Set.
   template<typename... Args>
-  void Set(std::string const& name, Args... args);
+  void Set(std::string const& name, Args const&... args);
 
   // When a logger is disabled, the calls to |Append| and |Set| have no effect.
   // Loggers are enabled at construction.

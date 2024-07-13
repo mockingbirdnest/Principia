@@ -492,7 +492,7 @@ std::string ToMathematica(Bivector<S, F> const& bivector,
 }
 
 template<typename V, typename OptionalExpressIn>
-std::string ToMathematica(Point<V> const & point,
+std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in) {
   return ToMathematica(point - Point<V>(), express_in);
 }
@@ -596,6 +596,16 @@ std::string ToMathematica(UnboundedVector<Scalar> const& vector,
   elements.reserve(vector.size());
   for (int i = 0; i < vector.size(); ++i) {
     elements.push_back(ToMathematica(vector[i], express_in));
+  }
+  return RawApply("List", elements);
+}
+
+template<typename F, typename OptionalExpressIn>
+std::string ToMathematica(DiscreteTrajectory<F> const& trajectory,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> elements;
+  for (const auto& value : trajectory) {
+    elements.push_back(ToMathematica(value, express_in));
   }
   return RawApply("List", elements);
 }
