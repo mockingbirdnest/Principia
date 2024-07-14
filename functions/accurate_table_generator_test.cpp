@@ -348,18 +348,16 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
 }
 
 TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
-  Logger logger(TEMP_DIR / "sin_cos_18.wl");
-  std::int64_t n = 0;
+  for (std::int64_t n = 0; n < 10; ++n) {
+    Logger logger(TEMP_DIR / absl::StrCat("sin_cos_18_", n, ".wl"));
 
-  double const h = 1.0 / 1024.0;
-  double const h_over_2 = h / 2.0;
-  double lower_bound;
-  double upper_bound = π / 4;
-
-  do {
     // Process the binade [1 / 2^(n + 1), 1 / 2^n[ (except that for n = 0 the
     // upper bound is π / 4).
-    lower_bound = std::asin(1.0 / (1 << (n + 1)));
+    double const lower_bound = std::asin(1.0 / (1 << (n + 1)));
+    double const upper_bound = n == 0 ? π / 4 : std::asin(1.0 / (1 << n));
+
+    double const h = 1.0 / (1 << (n + 10));
+    double const h_over_2 = h / 2.0;
 
     std::vector<cpp_rational> starting_arguments;
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
@@ -367,7 +365,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
          i <= std::ceil(upper_bound / h_over_2);
          ++i) {
       // The arguments are odd multiples of h/2.
-      if (i % 2 == 1) {
+      if (i % 2 == 1 && i == 1077) {
         double const x₀ = i * h_over_2;
         if (lower_bound <= x₀ && x₀ < upper_bound) {
           AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
@@ -397,10 +395,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
           absl::StrCat("accurateTables[", n, "]"),
           std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
     }
-
-    upper_bound = lower_bound;
-    ++n;
-  } while (n < 1);
+  }
 }
 
 #endif
