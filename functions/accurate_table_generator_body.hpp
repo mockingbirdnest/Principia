@@ -470,8 +470,19 @@ StehléZimmermannSimultaneousMultisearch(
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
     futures.push_back(
         search_pool.Add([i, &functions, &polynomials, &starting_arguments]() {
-          return StehléZimmermannSimultaneousFullSearch<zeroes>(
-              functions, polynomials[i], starting_arguments[i]);
+          auto const& starting_argument = starting_arguments[i];
+          LOG(INFO) << "Starting search around " << starting_argument;
+          auto const status_or_final_argument =
+              StehléZimmermannSimultaneousFullSearch<zeroes>(
+                  functions, polynomials[i], starting_argument);
+          if (status_or_final_argument.ok()) {
+            LOG(INFO) << "Finished search around " << starting_argument
+                      << ", found " << status_or_final_argument.value();
+          } else {
+            LOG(WARNING) << "Search around " << starting_argument
+                         << " failed with" << status_or_final_argument.status();
+          }
+          return status_or_final_argument;
         }));
   }
 

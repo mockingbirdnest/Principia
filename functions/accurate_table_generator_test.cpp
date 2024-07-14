@@ -1,7 +1,9 @@
 #include "functions/accurate_table_generator.hpp"
 
+#include <cmath>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 #include "absl/strings/strip.h"
@@ -10,7 +12,9 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "quantities/numbers.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -26,6 +30,7 @@ using ::testing::Lt;
 using ::testing::SizeIs;
 using namespace boost::multiprecision;
 using namespace principia::functions::_multiprecision;
+using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
@@ -340,6 +345,62 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
                         Eq("11111""11111""11111")));
     }
   }
+}
+
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
+  Logger logger(TEMP_DIR / "sin_cos_18.wl");
+  std::int64_t n = 0;
+
+  double const h = 1.0 / 1024.0;
+  double const h_over_2 = h / 2.0;
+  double lower_bound;
+  double upper_bound = π / 4;
+
+  do {
+    // Process the binade [1 / 2^(n + 1), 1 / 2^n[ (except that for n = 0 the
+    // upper bound is π / 4).
+    lower_bound = std::asin(1.0 / (1 << (n + 1)));
+
+    std::vector<cpp_rational> starting_arguments;
+    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
+    for (std::int64_t i = std::floor(lower_bound / h_over_2);
+         i <= std::ceil(upper_bound / h_over_2);
+         ++i) {
+      // The arguments are odd multiples of h/2.
+      if (i % 2 == 1) {
+        double const x₀ = i * h_over_2;
+        if (lower_bound <= x₀ && x₀ < upper_bound) {
+          AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
+              {cpp_rational(Sin(x₀)),
+               cpp_rational(Cos(x₀)),
+               -cpp_rational(Sin(x₀)) / 2},
+              x₀);
+          AccuratePolynomial<cpp_rational, 2> const cos_taylor2(
+              {cpp_rational(Cos(x₀)),
+               -cpp_rational(Sin(x₀)),
+               -cpp_rational(Cos(x₀) / 2)},
+              x₀);
+          starting_arguments.push_back(x₀);
+          polynomials.push_back({sin_taylor2, cos_taylor2});
+        }
+      }
+      if (i >= 1080) break;
+    }
+
+    auto const xs = StehléZimmermannSimultaneousMultisearch<18>(
+        {Sin, Cos}, polynomials, starting_arguments);
+
+    for (auto const& status_or_x : xs) {
+      CHECK_OK(status_or_x.status());
+      auto const& x = status_or_x.value();
+      logger.Append(
+          absl::StrCat("accurateTables[", n, "]"),
+          std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
+    }
+
+    upper_bound = lower_bound;
+    ++n;
+  } while (n < 1);
 }
 
 #endif
