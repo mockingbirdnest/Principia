@@ -12,6 +12,7 @@
 
 #include "base/bits.hpp"
 #include "base/for_all_of.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/interval.hpp"
@@ -41,6 +42,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t ε_computation_points = 16;
+constexpr std::int64_t T_max = 32;
 
 template<int rows, int columns>
 FixedMatrix<cpp_int, rows, columns> ToInt(
@@ -89,6 +91,49 @@ bool AllFunctionValuesHaveDesiredZeroes(
                      [&argument](AccurateFunction const& f) {
                        return HasDesiredZeroes<zeroes>(f(argument));
                      });
+}
+
+//TODO(phl)comment
+absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
+    std::array<AccurateFunction, 2> const& F,
+    std::int64_t const M,
+    std::int64_t const T) {
+  VLOG(2) << "Exhaustive search with T = " << T;
+  for (std::int64_t t = 0; t <= T; ++t) {
+    {
+      bool found = true;
+      for (auto const& Fᵢ : F) {
+        auto const Fᵢ_t = Fᵢ(t);
+        auto const Fᵢ_t_cmod_1 = Fᵢ_t - round(Fᵢ_t);
+        VLOG(2) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
+        if (M * abs(Fᵢ_t_cmod_1) >= 1) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        VLOG(2) << "t = " << t;
+        return t;
+      }
+    }
+    if (t > 0) {
+      bool found = true;
+      for (auto const& Fᵢ : F) {
+        auto const Fᵢ_minus_t = Fᵢ(-t);
+        auto const Fᵢ_minus_t_cmod_1 = Fᵢ_minus_t - round(Fᵢ_minus_t);
+        VLOG(2) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
+        if (M * abs(Fᵢ_minus_t_cmod_1) >= 1) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        VLOG(2) << "t = " << -t;
+        return -t;
+      }
+    }
+  }
+  return absl::NotFoundError("Not enough zeroes");
 }
 
 template<std::int64_t zeroes>
@@ -162,6 +207,15 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
       return N * functions[i](starting_argument + t / N);
     };
   }
+
+  std::optional<cpp_rational> gb_argument;
+  if (T <= T_max) {
+    auto const status_or_t = StehléZimmermannExhaustiveSearch(F, M, T);
+    RETURN_IF_ERROR(status_or_t);
+
+    gb_argument = starting_argument + cpp_rational(status_or_t.value(), N);
+  }
+
   AccuratePolynomial<cpp_rational, 1> const shift_and_rescale(
       {starting_argument, cpp_rational(1, N)});
   for (std::int64_t i = 0; i < polynomials.size(); ++i) {
