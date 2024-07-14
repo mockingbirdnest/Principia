@@ -317,6 +317,7 @@ struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
     UnboundedUpperTriangularMatrix<double> R;
   };
   using QVector = UnboundedVector<Scalar>;
+  using RElement = double;
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
@@ -327,6 +328,7 @@ struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
     FixedUpperTriangularMatrix<double, columns> R;
   };
   using QVector = FixedVector<Scalar, rows>;
+  using RElement = double;
   static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
@@ -340,6 +342,7 @@ struct UnitriangularGramSchmidtGenerator<
     FixedUpperTriangularMatrix<cpp_rational, columns> R;
   };
   using QVector = FixedVector<cpp_rational, rows>;
+  using RElement = cpp_rational;
   static Result Uninitialized(
       FixedMatrix<cpp_rational, rows, columns> const& m);
 };
@@ -763,6 +766,7 @@ UnitriangularGramSchmidt(Matrix const& A) {
   //   vⱼ  ≘ aⱼ
   //   v⭑ⱼ ≘ qⱼ
   //   μᵢⱼ ≘ Rⱼᵢ
+  auto const zero = Square<typename G::QVector::Scalar>{};
   for (int j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
@@ -773,7 +777,12 @@ UnitriangularGramSchmidt(Matrix const& A) {
                                  .first_row = 0,
                                  .last_row = m - 1,
                                  .column = i};
-      R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ / qᵢ.Norm²();  // NOLINT
+      auto const qᵢ_Norm² = qᵢ.Norm²();
+      if (qᵢ_Norm² == zero) {
+        R(i, j) = typename G::RElement{};
+      } else {
+        R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ / qᵢ_Norm²;  // NOLINT
+      }
     }
     auto qⱼ = ColumnView{.matrix = Q,  // NOLINT
                          .first_row = 0,
