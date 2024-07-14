@@ -193,16 +193,16 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
       {sin_taylor2, cos_taylor2},
       u₀);
   EXPECT_THAT(u,
-              IsOkAndHolds(cpp_rational(4785074604081885, 9007199254740992)));
+              IsOkAndHolds(cpp_rational(1196268651020245, 2251799813685248)));
   EXPECT_THAT(static_cast<double>(*u),
-              RelativeErrorFrom(u₀, Lt(1.6e-13)));
+              RelativeErrorFrom(u₀, Lt(3.6e-14)));
   {
     std::string const mathematica = ToMathematica(sin(*u),
                                                   /*express_in=*/std::nullopt,
                                                   /*base=*/2);
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-    EXPECT_THAT(mantissa.substr(53, 5), Eq("00000"));
+    EXPECT_THAT(mantissa.substr(53, 5), Eq("11111"));
   }
   {
     std::string const mathematica = ToMathematica(cos(*u),
@@ -210,7 +210,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
                                                   /*base=*/2);
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-    EXPECT_THAT(mantissa.substr(53, 5), Eq("00000"));
+    EXPECT_THAT(mantissa.substr(53, 5), Eq("11111"));
   }
 }
 

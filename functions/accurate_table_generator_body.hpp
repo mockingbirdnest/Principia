@@ -93,7 +93,8 @@ bool AllFunctionValuesHaveDesiredZeroes(
                      });
 }
 
-//TODO(phl)comment
+// This is essentially the same as Gal's exhaustive search, but with the
+// normalization done for [SZ05].
 absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
     std::array<AccurateFunction, 2> const& F,
     std::int64_t const M,
@@ -208,12 +209,17 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     };
   }
 
-  std::optional<cpp_rational> gb_argument;
+  // If the interval is small enough, we don't use the Stehlé-Zimmermann
+  // algorithm as it may be quite expensive, retrying smaller and smaller
+  // intervals and doing a lattice reduction each time.  Instead, we use an
+  // exhaustive search.  Note that this may yield a better solution, because if
+  // there is one in the interval, it is sure to find it, whereas
+  // Stehlé-Zimmermann may miss it.
   if (T <= T_max) {
     auto const status_or_t = StehléZimmermannExhaustiveSearch(F, M, T);
     RETURN_IF_ERROR(status_or_t);
 
-    gb_argument = starting_argument + cpp_rational(status_or_t.value(), N);
+    return starting_argument + cpp_rational(status_or_t.value(), N);
   }
 
   AccuratePolynomial<cpp_rational, 1> const shift_and_rescale(
@@ -308,7 +314,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   };
 
   static constexpr std::int64_t dimension = 3;
-  FixedMatrix<cpp_rational, 5, dimension> w;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& vᵢ = *v[i];
     VLOG(2) << "v[" << i << "] = " << vᵢ;
