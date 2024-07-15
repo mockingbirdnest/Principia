@@ -417,7 +417,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
 
 TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
   for (std::int64_t n = 0; n < 1; ++n) {
-    Logger logger(TEMP_DIR / absl::StrCat("sin_cos_18_", n, ".wl"));
+    Logger logger(TEMP_DIR / absl::StrCat("sin_cos_18_", n, ".wl"),
+                  /*make_unique=*/false);
 
     // Process the binade [1 / 2^(n + 1), 1 / 2^n[ (except that for n = 0 the
     // upper bound is π / 4).
@@ -434,7 +435,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
          i <= std::ceil(upper_bound / h_over_2);
          ++i) {
       // The arguments are odd multiples of h/2.
-      if (i % 2 == 1 && i == 1077) {
+      if (i % 2 == 1) {
         double const x₀ = i * h_over_2;
         if (lower_bound <= x₀ && x₀ < upper_bound) {
           AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
@@ -466,7 +467,6 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
           rests.push_back({rest_sin_taylor2, rest_cos_taylor2});
         }
       }
-      if (i >= 1080) break;
     }
 
     auto const xs = StehléZimmermannSimultaneousMultisearch<18>(
