@@ -42,7 +42,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t ε_computation_points = 16;
-constexpr std::int64_t T_max = 32;
+constexpr std::int64_t T_max = 16;
 
 template<int rows, int columns>
 FixedMatrix<cpp_int, rows, columns> ToInt(
@@ -210,11 +210,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   }
 
   // If the interval is small enough, we don't use the Stehlé-Zimmermann
-  // algorithm as it may be quite expensive, retrying smaller and smaller
-  // intervals and doing a lattice reduction each time.  Instead, we use an
-  // exhaustive search.  Note that this may yield a better solution, because if
-  // there is one in the interval, it is sure to find it, whereas
-  // Stehlé-Zimmermann may miss it.
+  // algorithm.  Instead, we use an exhaustive search.  Note that this may yield
+  // a better solution, because if there is one in the interval, it is sure to
+  // find it, whereas Stehlé-Zimmermann may miss it.
   if (T <= T_max) {
     auto const status_or_t = StehléZimmermannExhaustiveSearch(F, M, T);
     RETURN_IF_ERROR(status_or_t);
