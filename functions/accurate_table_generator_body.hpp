@@ -245,8 +245,11 @@ LOG(INFO)<<"T/N = "<<(double)T/(double)N;
   // Step 2: compute ε.  We use the rests provided by the clients, scaled by N.
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < rests.size(); ++i) {
-    ε = std::max(ε, abs(N * rests[i](starting_argument - T / N)));
-    ε = std::max(ε, abs(N * rests[i](starting_argument + T / N)));
+    auto const T_over_N = cpp_rational(T, N);
+LOG(INFO)<<starting_argument - T / N;
+    ε = std::max(ε, abs(N * rests[i](starting_argument - T_over_N)));
+LOG(INFO)<<starting_argument + T / N;
+    ε = std::max(ε, abs(N * rests[i](starting_argument + T_over_N)));
   }
   VLOG(2) << "ε = " << ε;
 
