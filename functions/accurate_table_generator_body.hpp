@@ -226,29 +226,13 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
 
-LOG(INFO)<<"T/N = "<<(double)T/(double)N;
-  {
-    // Step 2: compute ε.  We don't care too much about its accuracy because in
-    // general the largest error is on the boundary of the domain, and anyway ε
-    // has virtually no incidence on the value of Mʹ.
-    auto const T_increment = cpp_rational(T, 16);
-    cpp_bin_float_50 ε = 0;
-    for (std::int64_t i = 0; i < 2; ++i) {
-      for (cpp_rational t = -T; t <= T; t += T_increment) {
-        ε = std::max(ε,
-                     abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
-      }
-    }
-    VLOG(2) << "ε = " << ε;
-  }
-
-  // Step 2: compute ε.  We use the rests provided by the clients, scaled by N.
+  // Step 2: compute ε.  We use the rests provided by the clients.  Note that we
+  // could save on the number of evaluations by providing both bounds to a
+  // single call.
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < rests.size(); ++i) {
     auto const T_over_N = cpp_rational(T, N);
-LOG(INFO)<<starting_argument - T / N;
     ε = std::max(ε, abs(N * rests[i](starting_argument - T_over_N)));
-LOG(INFO)<<starting_argument + T / N;
     ε = std::max(ε, abs(N * rests[i](starting_argument + T_over_N)));
   }
   VLOG(2) << "ε = " << ε;

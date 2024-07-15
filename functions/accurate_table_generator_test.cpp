@@ -143,8 +143,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
        -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
 
-  // Use the Lagrange form of the rest.  Note that we use the fact that the
-  // functions are monotonic.
+  // Use the Lagrange form of the rest.  u may be above or below u₀.  Note that
+  // we use the fact that the functions are monotonic.
   auto const rest_sin_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
