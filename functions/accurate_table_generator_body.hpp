@@ -191,6 +191,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    std::array<cpp_bin_float_50, 2> const& rests,
     cpp_rational const& starting_argument,
     std::int64_t const N,
     std::int64_t const T) {
@@ -226,15 +227,10 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
 
-  // Step 2: compute ε.  We don't care too much about its accuracy because in
-  // general the largest error is on the boundary of the domain, and anyway ε
-  // has virtually no incidence on the value of Mʹ.
-  auto const T_increment = cpp_rational(T, ε_computation_points);
+  // Step 2: compute ε.  We use the rests provided by the clients, scaled by N.
   cpp_bin_float_50 ε = 0;
-  for (std::int64_t i = 0; i < 2; ++i) {
-    for (cpp_rational t = -T; t <= T; t += T_increment) {
-      ε = std::max(ε, abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
-    }
+  for (std::int64_t i = 0; i < rests.size(); ++i) {
+    ε = std::max(ε, N * rests[i]);
   }
   VLOG(2) << "ε = " << ε;
 
@@ -373,6 +369,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    std::array<cpp_bin_float_50, 2> const& rests,
     cpp_rational const& starting_argument) {
   constexpr std::int64_t M = 1LL << zeroes;
   constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
@@ -391,35 +388,39 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   auto const argument_scale = exp2(-argument_exponent);
   cpp_rational const scaled_argument = starting_argument * argument_scale;
 
+  std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     std::int64_t function_exponent;
     auto const function_mantissa =
         frexp(functions[i](starting_argument), &function_exponent);
     CHECK_NE(0, function_mantissa);
-    auto const function_scale = exp2(-function_exponent);
-    scaled_functions[i] = [argument_scale, function_scale, &functions, i](
-                              cpp_rational const& argument) {
-      return functions[i](argument / argument_scale) * function_scale;
+    function_scales[i] = exp2(-function_exponent);
+    scaled_functions[i] = [argument_scale,
+                           function_scale = function_scales[i],
+                           &functions,
+                           i](cpp_rational const& argument) {
+      return function_scale * functions[i](argument / argument_scale);
     };
   }
 
   auto build_scaled_polynomial =
       [argument_scale, &starting_argument](
+          double const function_scale,
           AccuratePolynomial<cpp_rational, 2> const& polynomial) {
-        std::int64_t polynomial_exponent;
-        auto const polynomial_mantissa =
-            frexp(static_cast<cpp_bin_float_50>(polynomial(starting_argument)),
-                  &polynomial_exponent);
-        CHECK_NE(0, polynomial_mantissa);
-        return exp2(-polynomial_exponent) *
+        return function_scale *
                Compose(polynomial,
                        AccuratePolynomial<cpp_rational, 1>(
                            {0, 1 / argument_scale}));
       };
   std::array<AccuratePolynomial<cpp_rational, 2>, 2> const scaled_polynomials{
-      build_scaled_polynomial(polynomials[0]),
-      build_scaled_polynomial(polynomials[1])};
+      build_scaled_polynomial(function_scales[0], polynomials[0]),
+      build_scaled_polynomial(function_scales[1], polynomials[1])};
+
+  std::array<cpp_bin_float_50, 2> scaled_rests;
+  for (std::int64_t i = 0; i < scaled_rests.size(); ++i) {
+    scaled_rests[i] = function_scales[i] * rests[i];
+  }
 
   // We construct intervals above and below |scaled_argument| and search for
   // solutions on each side alternatively.
@@ -437,6 +438,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
                                                        scaled_polynomials,
+                                                       scaled_rests,
                                                        high_interval.midpoint(),
                                                        N,
                                                        T);
@@ -473,6 +475,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
                                                        scaled_polynomials,
+                                                       scaled_rests,
                                                        low_interval.midpoint(),
                                                        N,
                                                        T);
@@ -519,19 +522,20 @@ StehléZimmermannSimultaneousMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
         polynomials,
+    std::vector<std::array<cpp_bin_float_50, 2>> const& rests,
     std::vector<cpp_rational> const& starting_arguments) {
   ThreadPool<absl::StatusOr<cpp_rational>> search_pool(
       std::thread::hardware_concurrency());
 
   std::vector<std::future<absl::StatusOr<cpp_rational>>> futures;
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
-    futures.push_back(
-        search_pool.Add([i, &functions, &polynomials, &starting_arguments]() {
+    futures.push_back(search_pool.Add(
+        [i, &functions, &polynomials, &rests, &starting_arguments]() {
           auto const& starting_argument = starting_arguments[i];
           LOG(INFO) << "Starting search around " << starting_argument;
           auto const status_or_final_argument =
               StehléZimmermannSimultaneousFullSearch<zeroes>(
-                  functions, polynomials[i], starting_argument);
+                  functions, polynomials[i], rests[i], starting_argument);
           if (status_or_final_argument.ok()) {
             LOG(INFO) << "Finished search around " << starting_argument
                       << ", found " << status_or_final_argument.value();
