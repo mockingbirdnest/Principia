@@ -41,7 +41,6 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
-constexpr std::int64_t ε_computation_points = 16;
 constexpr std::int64_t T_max = 16;
 
 template<int rows, int columns>
@@ -191,7 +190,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<cpp_bin_float_50, 2> const& rests,
+    std::array<AccurateFunction, 2> const& rests,
     cpp_rational const& starting_argument,
     std::int64_t const N,
     std::int64_t const T) {
@@ -227,10 +226,27 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
 
+LOG(INFO)<<"T/N = "<<(double)T/(double)N;
+  {
+    // Step 2: compute ε.  We don't care too much about its accuracy because in
+    // general the largest error is on the boundary of the domain, and anyway ε
+    // has virtually no incidence on the value of Mʹ.
+    auto const T_increment = cpp_rational(T, 16);
+    cpp_bin_float_50 ε = 0;
+    for (std::int64_t i = 0; i < 2; ++i) {
+      for (cpp_rational t = -T; t <= T; t += T_increment) {
+        ε = std::max(ε,
+                     abs(F[i](t) - static_cast<cpp_bin_float_50>((*P[i])(t))));
+      }
+    }
+    VLOG(2) << "ε = " << ε;
+  }
+
   // Step 2: compute ε.  We use the rests provided by the clients, scaled by N.
   cpp_bin_float_50 ε = 0;
   for (std::int64_t i = 0; i < rests.size(); ++i) {
-    ε = std::max(ε, N * rests[i]);
+    ε = std::max(ε, abs(N * rests[i](starting_argument - T / N)));
+    ε = std::max(ε, abs(N * rests[i](starting_argument + T / N)));
   }
   VLOG(2) << "ε = " << ε;
 
@@ -369,7 +385,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<cpp_bin_float_50, 2> const& rests,
+    std::array<AccurateFunction, 2> const& rests,
     cpp_rational const& starting_argument) {
   constexpr std::int64_t M = 1LL << zeroes;
   constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
@@ -390,6 +406,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
+  std::array<AccurateFunction, 2> scaled_rests;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     std::int64_t function_exponent;
     auto const function_mantissa =
@@ -401,6 +418,12 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                            &functions,
                            i](cpp_rational const& argument) {
       return function_scale * functions[i](argument / argument_scale);
+    };
+    scaled_rests[i] = [argument_scale,
+                       function_scale = function_scales[i],
+                       &rests,
+                       i](cpp_rational const& argument) {
+      return function_scale * rests[i](argument / argument_scale);
     };
   }
 
@@ -416,11 +439,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   std::array<AccuratePolynomial<cpp_rational, 2>, 2> const scaled_polynomials{
       build_scaled_polynomial(function_scales[0], polynomials[0]),
       build_scaled_polynomial(function_scales[1], polynomials[1])};
-
-  std::array<cpp_bin_float_50, 2> scaled_rests;
-  for (std::int64_t i = 0; i < scaled_rests.size(); ++i) {
-    scaled_rests[i] = function_scales[i] * rests[i];
-  }
 
   // We construct intervals above and below |scaled_argument| and search for
   // solutions on each side alternatively.
@@ -522,7 +540,7 @@ StehléZimmermannSimultaneousMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
         polynomials,
-    std::vector<std::array<cpp_bin_float_50, 2>> const& rests,
+    std::vector<std::array<AccurateFunction, 2>> const& rests,
     std::vector<cpp_rational> const& starting_arguments) {
   ThreadPool<absl::StatusOr<cpp_rational>> search_pool(
       std::thread::hardware_concurrency());

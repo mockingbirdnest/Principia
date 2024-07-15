@@ -39,7 +39,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<cpp_bin_float_50, 2> const& rests,
+    std::array<AccurateFunction, 2> const& rests,
     cpp_rational const& starting_argument,
     std::int64_t N,
     std::int64_t T);
@@ -51,7 +51,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<cpp_bin_float_50, 2> const& rests,
+    std::array<AccurateFunction, 2> const& rests,
     cpp_rational const& starting_argument);
 
 template<std::int64_t zeroes>
@@ -60,11 +60,12 @@ StehléZimmermannSimultaneousMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
         polynomials,
-    std::vector<std::array<cpp_bin_float_50, 2>> const& rests,
+    std::vector<std::array<AccurateFunction, 2>> const& rests,
     std::vector<cpp_rational> const& starting_arguments);
 
 }  // namespace internal
 
+using internal::AccurateFunction;
 using internal::AccuratePolynomial;
 using internal::GalExhaustiveMultisearch;
 using internal::GalExhaustiveSearch;
