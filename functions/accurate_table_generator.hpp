@@ -54,6 +54,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& rests,
     cpp_rational const& starting_argument);
 
+//TODO(phl)comment
 template<std::int64_t zeroes>
 std::vector<absl::StatusOr<cpp_rational>>
 StehléZimmermannSimultaneousMultisearch(
@@ -62,6 +63,17 @@ StehléZimmermannSimultaneousMultisearch(
         polynomials,
     std::vector<std::array<AccurateFunction, 2>> const& rests,
     std::vector<cpp_rational> const& starting_arguments);
+
+//TODO(phl)comment
+template<std::int64_t zeroes>
+void StehléZimmermannSimultaneousStreamingMultisearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
+        polynomials,
+    std::vector<std::array<AccurateFunction, 2>> const& rests,
+    std::vector<cpp_rational> const& starting_arguments,
+    std::function<void(/*index=*/std::int64_t,
+                       absl::StatusOr<cpp_rational>)> const& callback);
 
 }  // namespace internal
 
@@ -72,6 +84,7 @@ using internal::GalExhaustiveSearch;
 using internal::StehléZimmermannSimultaneousFullSearch;
 using internal::StehléZimmermannSimultaneousMultisearch;
 using internal::StehléZimmermannSimultaneousSearch;
+using internal::StehléZimmermannSimultaneousStreamingMultisearch;
 
 }  // namespace _accurate_table_generator
 }  // namespace functions

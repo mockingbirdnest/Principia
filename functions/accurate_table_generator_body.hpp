@@ -529,16 +529,39 @@ StehléZimmermannSimultaneousMultisearch(
         polynomials,
     std::vector<std::array<AccurateFunction, 2>> const& rests,
     std::vector<cpp_rational> const& starting_arguments) {
-  ThreadPool<absl::StatusOr<cpp_rational>> search_pool(
-      std::thread::hardware_concurrency());
+  std::vector<absl::StatusOr<cpp_rational>> result;
+  result.resize(starting_arguments.size());
+  StehléZimmermannSimultaneousStreamingMultisearch<zeroes>(
+      functions,
+      polynomials,
+      rests,
+      starting_arguments,
+      [&result](std::int64_t const index,
+                absl::StatusOr<cpp_rational> status_or_final_argument) {
+        result[index] = std::move(status_or_final_argument);
+      });
+  return result;
+}
 
-  std::vector<std::future<absl::StatusOr<cpp_rational>>> futures;
+template<std::int64_t zeroes>
+void StehléZimmermannSimultaneousStreamingMultisearch(
+    std::array<AccurateFunction, 2> const& functions,
+    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
+        polynomials,
+    std::vector<std::array<AccurateFunction, 2>> const& rests,
+    std::vector<cpp_rational> const& starting_arguments,
+    std::function<void(/*index=*/std::int64_t,
+                       absl::StatusOr<cpp_rational>)> const& callback) {
+  ThreadPool<void> search_pool(std::thread::hardware_concurrency());
+
+  std::vector<std::future<void>> futures;
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
     futures.push_back(search_pool.Add(
-        [i, &functions, &polynomials, &rests, &starting_arguments]() {
+        [i, &callback, &functions, &polynomials, &rests, &starting_arguments]()
+        {
           auto const& starting_argument = starting_arguments[i];
           LOG(INFO) << "Starting search around " << starting_argument;
-          auto const status_or_final_argument =
+          auto status_or_final_argument =
               StehléZimmermannSimultaneousFullSearch<zeroes>(
                   functions, polynomials[i], rests[i], starting_argument);
           if (status_or_final_argument.ok()) {
@@ -548,15 +571,13 @@ StehléZimmermannSimultaneousMultisearch(
             LOG(WARNING) << "Search around " << starting_argument
                          << " failed with" << status_or_final_argument.status();
           }
-          return status_or_final_argument;
+          callback(i, std::move(status_or_final_argument));
         }));
   }
 
-  std::vector<absl::StatusOr<cpp_rational>> results;
   for (auto& future : futures) {
-    results.push_back(future.get());
+    future.wait();
   }
-  return results;
 }
 
 }  // namespace internal

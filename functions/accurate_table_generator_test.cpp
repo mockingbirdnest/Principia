@@ -469,16 +469,19 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
       }
     }
 
-    auto const xs = StehléZimmermannSimultaneousMultisearch<18>(
-        {Sin, Cos}, polynomials, rests, starting_arguments);
-
-    for (auto const& status_or_x : xs) {
-      CHECK_OK(status_or_x.status());
-      auto const& x = status_or_x.value();
-      logger.Append(
-          absl::StrCat("accurateTables[", n, "]"),
-          std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
-    }
+    StehléZimmermannSimultaneousStreamingMultisearch<18>(
+        {Sin, Cos},
+        polynomials,
+        rests,
+        starting_arguments,
+        [n, &logger](std::int64_t const index,
+                     absl::StatusOr<cpp_rational> status_or_x) {
+          auto const& x = status_or_x.value();
+          logger.Set(
+              absl::StrCat("accurateTables[", n, ",", index, "]"),
+              std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
+          logger.FlushAndClear();
+        });
   }
 }
 
