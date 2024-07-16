@@ -59,7 +59,7 @@ void Logger::Append(std::string const& name, Args... args) {
 }
 
 template<typename... Args>
-void Logger::Set(std::string const& name, Args... args) {
+void Logger::Set(std::string const& name, Args const&... args) {
   if (enabled_) {
     name_and_single_value_[name] = ToMathematica(args...);
   }
