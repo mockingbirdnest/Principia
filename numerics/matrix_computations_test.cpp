@@ -173,6 +173,40 @@ TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
   }
 }
 
+TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt_Singular) {
+  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  Matrix const m4({1, 2, 0, -4,
+                   5, 6, 0, 8,
+                   9, 8, 0, 6,
+                   5, 4, 0, 2});
+  auto const qr = UnitriangularGramSchmidt(m4);
+
+  // Check that the decomposition is correct.
+  auto const near_m4 = qr.Q * Matrix(qr.R);
+  EXPECT_THAT(near_m4, AlmostEquals(m4, 0));
+
+  // Check that R is unitriangular.
+  for (int i = 0; i < qr.R.rows(); ++i) {
+    EXPECT_THAT(qr.R(i, i), AlmostEquals(1, 0));
+  }
+
+  // Check that the columns of Q are approximately orthogonal.
+  for (int c1 = 0; c1 < qr.Q.columns(); ++c1) {
+    auto const column_c1 = ColumnView{.matrix = qr.Q,
+                                      .first_row = 0,
+                                      .last_row = qr.Q.rows() - 1,
+                                      .column = c1};
+    for (int c2 = c1 + 1; c2 < qr.Q.columns(); ++c2) {
+      auto const column_c2 = ColumnView{.matrix = qr.Q,
+                                        .first_row = 0,
+                                        .last_row = qr.Q.rows() - 1,
+                                        .column = c2};
+      EXPECT_THAT(TransposedView{.transpose = column_c1} * column_c2,  // NOLINT
+                  VanishesBefore(1, 0, 64));
+    }
+  }
+}
+
 TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
   using Matrix = typename std::tuple_element<3, TypeParam>::type;
   Matrix const m4({1, 2, 3, -4,
