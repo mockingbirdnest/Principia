@@ -38,7 +38,7 @@ class Logger final {
   // resulting file may contain many assignments to the same variable.
   void Flush();
 
-  // TODO(phl)Comment
+  // Flushes the logger and (atomically) clears its contents.
   void FlushAndClear();
 
   // Appends an element to the list of values for the List variable |name|.  The

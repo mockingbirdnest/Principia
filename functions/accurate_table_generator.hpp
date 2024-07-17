@@ -54,7 +54,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& rests,
     cpp_rational const& starting_argument);
 
-//TODO(phl)comment
+// Same as above, but performs searches in parallel using the corresponding
+// |functions|, |polynomials|, |rests|, and |starting_arguments|.  Returns the
+// results in the same order as the parameters.
 template<std::int64_t zeroes>
 std::vector<absl::StatusOr<cpp_rational>>
 StehléZimmermannSimultaneousMultisearch(
@@ -64,7 +66,9 @@ StehléZimmermannSimultaneousMultisearch(
     std::vector<std::array<AccurateFunction, 2>> const& rests,
     std::vector<cpp_rational> const& starting_arguments);
 
-//TODO(phl)comment
+// Same as above, but instead of accumulating all the results and returning them
+// in a vector, it runs |callback| each time a computation is complete.  The
+// |index| indicates to which parameters the result corresponds.
 template<std::int64_t zeroes>
 void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,
