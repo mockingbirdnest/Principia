@@ -55,8 +55,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     cpp_rational const& starting_argument);
 
 // Same as above, but performs searches in parallel using the corresponding
-// |functions|, |polynomials|, |rests|, and |starting_arguments|.  Returns the
-// results in the same order as the parameters.
+// |polynomials|, |rests|, and |starting_arguments|.  Returns the results in the
+// same order as the parameters.
 template<std::int64_t zeroes>
 std::vector<absl::StatusOr<cpp_rational>>
 StehléZimmermannSimultaneousMultisearch(

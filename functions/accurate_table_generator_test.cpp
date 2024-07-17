@@ -1,9 +1,9 @@
 #include "functions/accurate_table_generator.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <vector>
 
 #include "absl/strings/strip.h"

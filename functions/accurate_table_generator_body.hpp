@@ -8,6 +8,7 @@
 #include <limits>
 #include <memory>
 #include <thread>
+#include <utility>
 #include <vector>
 
 #include "base/bits.hpp"
@@ -19,7 +20,6 @@
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
-#include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -36,7 +36,6 @@ using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
-using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
@@ -556,23 +555,26 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
 
   std::vector<std::future<void>> futures;
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
-    futures.push_back(search_pool.Add(
-        [i, &callback, &functions, &polynomials, &rests, &starting_arguments]()
-        {
-          auto const& starting_argument = starting_arguments[i];
-          LOG(INFO) << "Starting search around " << starting_argument;
-          auto status_or_final_argument =
-              StehléZimmermannSimultaneousFullSearch<zeroes>(
-                  functions, polynomials[i], rests[i], starting_argument);
-          if (status_or_final_argument.ok()) {
-            LOG(INFO) << "Finished search around " << starting_argument
-                      << ", found " << status_or_final_argument.value();
-          } else {
-            LOG(WARNING) << "Search around " << starting_argument
-                         << " failed with" << status_or_final_argument.status();
-          }
-          callback(i, std::move(status_or_final_argument));
-        }));
+    futures.push_back(search_pool.Add([i,
+                                       &callback,
+                                       &functions,
+                                       &polynomials,
+                                       &rests,
+                                       &starting_arguments]() {
+      auto const& starting_argument = starting_arguments[i];
+      LOG(INFO) << "Starting search around " << starting_argument;
+      auto status_or_final_argument =
+          StehléZimmermannSimultaneousFullSearch<zeroes>(
+              functions, polynomials[i], rests[i], starting_argument);
+      if (status_or_final_argument.ok()) {
+        LOG(INFO) << "Finished search around " << starting_argument
+                  << ", found " << status_or_final_argument.value();
+      } else {
+        LOG(WARNING) << "Search around " << starting_argument << " failed with"
+                     << status_or_final_argument.status();
+      }
+      callback(i, std::move(status_or_final_argument));
+    }));
   }
 
   for (auto& future : futures) {
