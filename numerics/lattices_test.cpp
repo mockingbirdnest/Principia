@@ -1,5 +1,6 @@
 #include "numerics/lattices.hpp"
 
+#include "boost/multiprecision/cpp_int.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -8,6 +9,7 @@ namespace principia {
 namespace numerics {
 namespace _lattices {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::testing_utilities::_almost_equals;
@@ -33,6 +35,22 @@ TEST_F(LatticesTest, Example_7_75) {
                                                19,  13, 15,   8,  -6,   1,
                                                 9,  16, -9, -12, -11,  31})),
                   0));
+}
+
+TEST_F(LatticesTest, Rational) {
+  FixedMatrix<cpp_rational, 5, 4> l({
+      45,         0, 214695880217044191, 401754430875619365,
+       0, 188743680,          187081485,           -6248472,
+       0,         0,                  0,                  0,
+       0,         0,                  3,                  0,
+       0,         0,                  0,                  3});
+
+  auto const reduced = LenstraLenstraLovász(l);
+  EXPECT_EQ(reduced,
+            (FixedMatrix<cpp_rational, 5, 4>({  45,     6, -18,   15,   0,
+                                                45, -1200, 348,    0,   0,
+                                                 0,     0,   0, 1083, 336,
+                                              -660,     0, 165, -180, 1263})));
 }
 
 }  // namespace _lattices
