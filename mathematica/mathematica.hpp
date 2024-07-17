@@ -23,6 +23,7 @@
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -51,6 +52,7 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -259,6 +261,11 @@ std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
 
 template<typename Scalar, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(UnboundedVector<Scalar> const& vector,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename F,
+         typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(DiscreteTrajectory<F> const& trajectory,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename F,

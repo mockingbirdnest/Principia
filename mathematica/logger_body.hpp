@@ -62,7 +62,7 @@ void Logger::Append(std::string const& name, Args... args) {
 }
 
 template<typename... Args>
-void Logger::Set(std::string const& name, Args... args) {
+void Logger::Set(std::string const& name, Args const&... args) {
   absl::MutexLock l(&lock_);
   if (enabled_) {
     name_and_single_value_[name] = ToMathematica(args...);

@@ -38,11 +38,12 @@ TEST_F(LatticesTest, Example_7_75) {
 }
 
 TEST_F(LatticesTest, Rational) {
-  FixedMatrix<cpp_rational, 5, 4> l({45,         0, 214695880217044191, 401754430875619365,
-                                      0, 188743680,          187081485,           -6248472,
-                                      0,         0,                  0,                  0,
-                                      0,         0,                  3,                  0,
-                                      0,         0,                  0,                  3});
+  FixedMatrix<cpp_rational, 5, 4> l({
+      45,         0, 214695880217044191, 401754430875619365,
+       0, 188743680,          187081485,           -6248472,
+       0,         0,                  0,                  0,
+       0,         0,                  3,                  0,
+       0,         0,                  0,                  3});
 
   auto const reduced = LenstraLenstraLovász(l);
   EXPECT_EQ(reduced,
