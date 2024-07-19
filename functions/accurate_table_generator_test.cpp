@@ -143,14 +143,16 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
        -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
 
-  // Use the Lagrange form of the rest.  u may be above or below u₀.  Note that
-  // we use the fact that the functions are monotonic.
-  auto const rest_sin_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
+  // Use the Lagrange form of the remainder.  u may be above or below u₀.  Note
+  // that we use the fact that the functions are monotonic.
+  auto const remainder_sin_taylor2 =
+      [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
     return Δu³ * (-Cos(std::min(u, u₀) / 4) / 16) / Factorial(3);
   };
-  auto const rest_cos_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
+  auto const remainder_cos_taylor2 =
+      [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
     return Δu³ * (Sin(std::max(u, u₀) / 4) / 64) / Factorial(3);
@@ -159,7 +161,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
   auto const u = StehléZimmermannSimultaneousSearch<15>(
       {sin, cos},
       {sin_taylor2, cos_taylor2},
-      {rest_sin_taylor2, rest_cos_taylor2},
+      {remainder_sin_taylor2, remainder_cos_taylor2},
       u₀,
       /*N=*/1ll << 53,
       /*T=*/1ll << 21);
@@ -204,12 +206,14 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
        -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
 
-  auto const rest_sin_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
+  auto const remainder_sin_taylor2 =
+      [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
     return Δu³ * (-Cos(std::min(u, u₀) / 4) / 16) / Factorial(3);
   };
-  auto const rest_cos_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
+  auto const remainder_cos_taylor2 =
+      [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
     return Δu³ * (Sin(std::max(u, u₀) / 4) / 64) / Factorial(3);
@@ -218,7 +222,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
   auto const u = StehléZimmermannSimultaneousFullSearch<5>(
       {sin, cos},
       {sin_taylor2, cos_taylor2},
-      {rest_sin_taylor2, rest_cos_taylor2},
+      {remainder_sin_taylor2, remainder_cos_taylor2},
       u₀);
   EXPECT_THAT(u,
               IsOkAndHolds(cpp_rational(4785074604080979, 9007199254740992)));
@@ -261,12 +265,14 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
        -cpp_rational(Cos(u₀ / 4) / 32)},
       u₀);
 
-  auto const rest_sin_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
+  auto const remainder_sin_taylor2 =
+      [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
     return Δu³ * (-Cos(std::min(u, u₀) / 4) / 16) / Factorial(3);
   };
-  auto const rest_cos_taylor2 = [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
+  auto const remainder_cos_taylor2 =
+      [u₀ = cpp_rational(u₀)](cpp_rational const& u) {
     auto const Δu = u - u₀;
     auto const Δu³ = static_cast<cpp_bin_float_50>(Δu * Δu * Δu);
     return Δu³ * (Sin(std::max(u, u₀) / 4) / 64) / Factorial(3);
@@ -275,7 +281,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
   auto const u = StehléZimmermannSimultaneousFullSearch<15>(
       {sin, cos},
       {sin_taylor2, cos_taylor2},
-      {rest_sin_taylor2, rest_cos_taylor2},
+      {remainder_sin_taylor2, remainder_cos_taylor2},
       u₀);
   EXPECT_THAT(u,
               IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
@@ -310,12 +316,14 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
                                                    -cpp_rational(Cos(x₀) / 2)},
                                                   x₀);
 
-  auto const rest_sin_taylor2 = [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
+  auto const remainder_sin_taylor2 =
+      [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
     auto const Δx = x - x₀;
     auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
     return -Δx³ * -Cos(std::min(x, x₀)) / Factorial(3);
   };
-  auto const rest_cos_taylor2 = [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
+  auto const remainder_cos_taylor2 =
+      [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
     auto const Δx = x - x₀;
     auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
     return Δx³ * Sin(std::max(x, x₀)) / Factorial(3);
@@ -324,7 +332,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
   auto const x = StehléZimmermannSimultaneousFullSearch<15>(
       {Sin, Cos},
       {sin_taylor2, cos_taylor2},
-      {rest_sin_taylor2, rest_cos_taylor2},
+      {remainder_sin_taylor2, remainder_cos_taylor2},
       x₀);
   EXPECT_THAT(x,
               IsOkAndHolds(cpp_rational(4785074575333183, 36028797018963968)));
@@ -353,7 +361,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   static constexpr std::int64_t index_end = 100;
   std::vector<cpp_rational> starting_arguments;
   std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
-  std::vector<std::array<AccurateFunction, 2>> rests;
+  std::vector<std::array<AccurateFunction, 2>> remainders;
   for (std::int64_t i = index_begin; i < index_end; ++i) {
     auto const x₀ = i / 128.0;
     AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
@@ -367,13 +375,13 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
          -cpp_rational(Cos(x₀) / 2)},
         x₀);
 
-    auto const rest_sin_taylor2 =
+    auto const remainder_sin_taylor2 =
         [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
           auto const Δx = x - x₀;
           auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
           return -Δx³ * Cos(std::min(x, x₀)) / Factorial(3);
         };
-    auto const rest_cos_taylor2 =
+    auto const remainder_cos_taylor2 =
         [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
           auto const Δx = x - x₀;
           auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
@@ -382,10 +390,10 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
 
     starting_arguments.push_back(x₀);
     polynomials.push_back({sin_taylor2, cos_taylor2});
-    rests.push_back({rest_sin_taylor2, rest_cos_taylor2});
+    remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
   }
   auto const xs = StehléZimmermannSimultaneousMultisearch<15>(
-      {Sin, Cos}, polynomials, rests, starting_arguments);
+      {Sin, Cos}, polynomials, remainders, starting_arguments);
   EXPECT_THAT(xs, SizeIs(index_end - index_begin));
   for (std::int64_t i = 0; i < xs.size(); ++i) {
     CHECK_OK(xs[i].status());
@@ -430,7 +438,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
 
     std::vector<cpp_rational> starting_arguments;
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
-    std::vector<std::array<AccurateFunction, 2>> rests;
+    std::vector<std::array<AccurateFunction, 2>> remainders;
     for (std::int64_t i = std::floor(lower_bound / h_over_2);
          i <= std::ceil(upper_bound / h_over_2);
          ++i) {
@@ -449,13 +457,13 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
                -cpp_rational(Cos(x₀) / 2)},
               x₀);
 
-          auto const rest_sin_taylor2 =
+          auto const remainder_sin_taylor2 =
               [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
                 auto const Δx = x - x₀;
                 auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
                 return -Δx³ * -Cos(std::min(x, x₀)) / Factorial(3);
               };
-          auto const rest_cos_taylor2 =
+          auto const remainder_cos_taylor2 =
               [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
                 auto const Δx = x - x₀;
                 auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
@@ -464,7 +472,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
 
           starting_arguments.push_back(x₀);
           polynomials.push_back({sin_taylor2, cos_taylor2});
-          rests.push_back({rest_sin_taylor2, rest_cos_taylor2});
+          remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
         }
       }
     }
@@ -472,7 +480,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
     StehléZimmermannSimultaneousStreamingMultisearch<18>(
         {Sin, Cos},
         polynomials,
-        rests,
+        remainders,
         starting_arguments,
         [n, &logger](std::int64_t const index,
                      absl::StatusOr<cpp_rational> status_or_x) {
