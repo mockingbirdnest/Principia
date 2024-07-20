@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
@@ -15,6 +16,7 @@ namespace numerics {
 namespace _lattices {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
@@ -50,6 +52,30 @@ struct GramGenerator<FixedMatrix<Scalar, rows, columns>> {
   static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
+template<typename Matrix>
+struct NguyễnStehléGenerator;
+
+template<typename Scalar>
+struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
+  using R = UnboundedMatrix<Scalar>;
+};
+
+template<>
+struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
+  using R = UnboundedMatrix<double>;
+};
+
+template<typename Scalar, int rows, int columns>
+struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
+  using R = FixedMatrix<Scalar, rows, columns>;
+};
+
+template<int rows, int columns>
+struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
+  using R = FixedMatrix<cpp_int, rows, columns>;
+};
+
+
 template<typename Scalar>
 auto GramGenerator<UnboundedMatrix<Scalar>>::Uninitialized(
 UnboundedMatrix<Scalar> const& m) -> Result {
@@ -61,6 +87,7 @@ auto GramGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialized(
 FixedMatrix<Scalar, rows, columns> const& m) -> Result {
   return Result(uninitialized);
 }
+
 
 template<typename Matrix>
 typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
@@ -139,6 +166,36 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix NguyễnStehlé(Matrix const& L) {
+  using G = NguyễnStehléGenerator<Matrix>;
+  //[NS09] figure 7.
+  double const ẟ = 0.75;
+  double const η = 0.55;
+  //[NS09] Section 6.
+  auto b = L;
+  // Step 1.
+  auto const G = Gram(b);
+  // Step 2.
+  double const ẟ = (ẟ + 1) / 2;
+  auto const b₀ = ColumnView{.matrix = b,
+                             .first_row = 0,
+                             .last_row = b.rows(),
+                             .column = 0};
+  typename G::R r̄ = G::Uninitialized();
+  r̄(0, 0) = static_cast<typename G::R::ElementType>(b₀.Norm²());
+  std::int64_t κ = 1;
+  std::int64_t ζ = -1;
+  while (κ < b.columns()) {
+    // Step 3.
+    SizeReduce(b, ζ + 1, κ);
+    // Step 4.
+    std::int64_t κʹ = κ;
+    while (κ >= ζ + 2 &&  ẟ * r̄(κ - 1, κ - 1) >= s̄(κ - 1)) {
+      --κ;
+    }
+    for (std::int64_t i = ζ + 1; i < κ; ++i) {
+      μ̄
+    }
+  }
 }
 
 }  // namespace internal
