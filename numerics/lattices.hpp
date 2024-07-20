@@ -16,6 +16,11 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász(Matrix const& L);
 
+//TODO(phl)comment
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+Matrix NguyễnStehlé(Matrix const& L);
+
 }  // namespace internal
 
 using internal::LenstraLenstraLovász;

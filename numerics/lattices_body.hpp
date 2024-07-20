@@ -35,6 +35,55 @@ struct LenstraLenstraLovászGenerator<
   using Vector = FixedVector<Scalar, rows>;
 };
 
+template<typename Matrix>
+struct GramGenerator;
+
+template<typename Scalar>
+struct GramGenerator<UnboundedMatrix<Scalar>> {
+  using Result = UnboundedMatrix<Scalar>;
+  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
+};
+
+template<typename Scalar, int rows, int columns>
+struct GramGenerator<FixedMatrix<Scalar, rows, columns>> {
+  using Result = Fixed<Scalar, columns, columns>;
+  static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
+};
+
+template<typename Scalar>
+auto GramGenerator<UnboundedMatrix<Scalar>>::Uninitialized(
+UnboundedMatrix<Scalar> const& m) -> Result {
+  return Result(m.rows(), m.rows(), uninitialized);
+}
+
+template<typename Scalar, int rows, int columns>
+auto GramGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialized(
+FixedMatrix<Scalar, rows, columns> const& m) -> Result {
+  return Result(uninitialized);
+}
+
+template<typename Matrix>
+typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
+  using G = GramGenerator<Matrix>;
+  auto result = G::Uninitialized(L);
+  for (std::int64_t i = 0; i < columns) {
+    auto const bᵢ = ColumnView{.matrix = L,
+                               .first_row = 0,
+                               .last_row = rows - 1,
+                               .column = i};
+    for (std::int64_t j = 0; j <= i) {
+      auto const bⱼ = ColumnView{.matrix = L,
+                                 .first_row = 0,
+                                 .last_row = rows - 1,
+                                 .column = j};
+      auto const bᵢbⱼ = bᵢ * bⱼ;
+      result(i, j) = bᵢbⱼ;
+      result(j, i) = bᵢbⱼ;
+    }
+  }
+  return result;
+}
+
 // This implements [HPS], theorem 7.71, figure 7.8.  Note that figures 7.9 and
 // 7.10 are supposedly more efficient, but they are significantly more
 // complicated.  If performance is an issue, we should look into recent
@@ -85,6 +134,11 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
     }
   }
   return v;
+}
+
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+Matrix NguyễnStehlé(Matrix const& L) {
 }
 
 }  // namespace internal
