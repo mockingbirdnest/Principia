@@ -23,7 +23,7 @@ using namespace principia::base::_not_null;
 // names, which is useful for regression testing of the logger.
 #define PRINCIPIA_MATHEMATICA_LOGGER_REGRESSION_TEST 0
 
-// An RAII object to help with Mathematica logging.
+// An RAII object to help with Mathematica logging.  This class is thread-safe.
 class Logger final {
  public:
   // Creates a logger object that will, at destruction, write to the given file.
@@ -37,6 +37,9 @@ class Logger final {
   // be called explicitly, but it's useful when debugging crashes.  Beware, the
   // resulting file may contain many assignments to the same variable.
   void Flush();
+
+  // Flushes the logger and (atomically) clears its contents.
+  void FlushAndClear();
 
   // Appends an element to the list of values for the List variable |name|.  The
   // |args...| are passed verbatim to ToMathematica for stringification.  When
@@ -73,7 +76,10 @@ class Logger final {
   static void ClearConstructionCallback();
 
  private:
-  std::atomic_bool enabled_ = true;
+  void FlushLocked();
+
+  absl::Mutex lock_;
+  bool enabled_ = true;
   std::optional<std::uint64_t> my_id_;
   OFStream file_;
   std::map<std::string, std::vector<std::string>> name_and_multiple_values_;
