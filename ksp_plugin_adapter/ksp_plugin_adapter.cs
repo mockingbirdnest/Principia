@@ -2327,11 +2327,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           return null;
         }
       }
-      executor.CollisionSetRadius(centre.TerrainAltitude(
-                                      trial_latitude,
-                                      trial_longitude,
-                                      allowNegative: !centre.ocean) +
-                                  centre.Radius);
+      double radius = centre.TerrainAltitude(
+                          trial_latitude,
+                          trial_longitude,
+                          allowNegative: !centre.ocean) +
+                      centre.Radius;
+      if (double.IsNaN(radius)) {
+        Log.Fatal("Terrain system returned NaN for altitude at latitude " +
+                  trial_latitude +
+                  ", longitude " +
+                  trial_longitude +
+                  " for celestial " +
+                  centre.name +
+                  " (radius is " +
+                  centre.Radius +
+                  ")");
+      }
+      executor.CollisionSetRadius(radius);
     }
   }
 
@@ -2355,11 +2367,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           return null;
         }
       }
-      executor.CollisionSetRadius(centre.TerrainAltitude(
-                                      trial_latitude,
-                                      trial_longitude,
-                                      allowNegative: !centre.ocean) +
-                                  centre.Radius);
+      double radius = centre.TerrainAltitude(
+                          trial_latitude,
+                          trial_longitude,
+                          allowNegative: !centre.ocean) +
+                      centre.Radius;
+      if (double.IsNaN(radius)) {
+        Log.Fatal("Terrain system returned NaN for altitude at latitude " +
+                  trial_latitude +
+                  ", longitude " +
+                  trial_longitude +
+                  " for celestial " +
+                  centre.name +
+                  " (radius is " +
+                  centre.Radius +
+                  ")");
+      }
+      executor.CollisionSetRadius(radius);
     }
   }
 
