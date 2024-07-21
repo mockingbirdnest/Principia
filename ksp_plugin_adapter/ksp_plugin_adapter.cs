@@ -738,7 +738,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 centre.name);
     }
     if (double.IsNaN(centre.Radius)) {
-      Log.Fatal("Radius is NaN  for celestial " + centre.name);
+      Log.Fatal("Radius is NaN for celestial " + centre.name);
     }
     return altitude + centre.Radius;
   }
