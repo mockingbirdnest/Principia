@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine.Profiling;
 using static principia.ksp_plugin_adapter.FrameType;
 
@@ -94,6 +95,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   // EulerSolver.
   CelestialBody last_main_body_;
   private int main_body_change_countdown_ = 1;
+  private bool celestial_terrains_were_validated_ = false;
 
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
@@ -717,6 +719,37 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     bool success = LoadTextureIfExists(out texture, path);
     if (!success) {
       Log.Fatal("Missing texture " + path);
+    }
+  }
+
+  public static double RadiusAt(CelestialBody centre,
+                                double latitude,
+                                double longitude) {
+    double altitude = centre.TerrainAltitude(
+        latitude,
+        longitude,
+        allowNegative: !centre.ocean);
+    if (double.IsNaN(altitude)) {
+      Log.Fatal("Terrain system returned NaN for altitude at latitude " +
+                latitude +
+                ", longitude " +
+                longitude +
+                " for celestial " +
+                centre.name);
+    }
+    if (double.IsNaN(centre.Radius)) {
+      Log.Fatal("Radius is NaN  for celestial " + centre.name);
+    }
+    return altitude + centre.Radius;
+  }
+
+  [MethodImpl(MethodImplOptions.NoOptimization)]
+  public static void ValidateCelestialTerrain(CelestialBody centre,
+                                              Random random) {
+    for (int i = 0; i < 5; ++i) {
+      double latitude = random.NextDouble() * 360.0 - 180.0;
+      double longitude = random.NextDouble() * 360.0 - 180.0;
+      RadiusAt(centre, latitude: latitude, longitude: longitude);
     }
   }
 
@@ -1804,6 +1837,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void BetterLateThanNeverLateUpdate() {
+    if (!celestial_terrains_were_validated_) {
+      var random = new Random();
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        ValidateCelestialTerrain(celestial, random);
+      }
+      celestial_terrains_were_validated_ = true;
+    }
+
     // While we draw the trajectories directly (and thus do so after everything
     // else has been rendered), we rely on the game to render its map nodes.
     // Since the screen position is determined in |MapNode.NodeUpdate|, it must
@@ -2327,23 +2368,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           return null;
         }
       }
-      double radius = centre.TerrainAltitude(
-                          trial_latitude,
-                          trial_longitude,
-                          allowNegative: !centre.ocean) +
-                      centre.Radius;
-      if (double.IsNaN(radius)) {
-        Log.Fatal("Terrain system returned NaN for altitude at latitude " +
-                  trial_latitude +
-                  ", longitude " +
-                  trial_longitude +
-                  " for celestial " +
-                  centre.name +
-                  " (radius is " +
-                  centre.Radius +
-                  ")");
-      }
-      executor.CollisionSetRadius(radius);
+      executor.CollisionSetRadius(RadiusAt(centre,
+                                           latitude: trial_latitude,
+                                           longitude: trial_longitude));
     }
   }
 
@@ -2367,23 +2394,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           return null;
         }
       }
-      double radius = centre.TerrainAltitude(
-                          trial_latitude,
-                          trial_longitude,
-                          allowNegative: !centre.ocean) +
-                      centre.Radius;
-      if (double.IsNaN(radius)) {
-        Log.Fatal("Terrain system returned NaN for altitude at latitude " +
-                  trial_latitude +
-                  ", longitude " +
-                  trial_longitude +
-                  " for celestial " +
-                  centre.name +
-                  " (radius is " +
-                  centre.Radius +
-                  ")");
-      }
-      executor.CollisionSetRadius(radius);
+      executor.CollisionSetRadius(RadiusAt(centre,
+                                           latitude: trial_latitude,
+                                           longitude: trial_longitude));
     }
   }
 
