@@ -180,8 +180,8 @@ Matrix NguyễnStehlé(Matrix const& L) {
                              .first_row = 0,
                              .last_row = b.rows(),
                              .column = 0};
-  typename G::R r̄ = G::Uninitialized();
-  r̄(0, 0) = static_cast<typename G::R::ElementType>(b₀.Norm²());
+  typename G::R r = G::Uninitialized();
+  r(0, 0) = static_cast<typename G::R::ElementType>(b₀.Norm²());
   std::int64_t κ = 1;
   std::int64_t ζ = -1;
   while (κ < b.columns()) {
@@ -189,12 +189,28 @@ Matrix NguyễnStehlé(Matrix const& L) {
     SizeReduce(b, ζ + 1, κ);
     // Step 4.
     std::int64_t κʹ = κ;
-    while (κ >= ζ + 2 &&  ẟ * r̄(κ - 1, κ - 1) >= s̄(κ - 1)) {
+    while (κ >= ζ + 2 &&  ẟ * r(κ - 1, κ - 1) >= s(κ - 1)) {
       --κ;
     }
+    // Step 5.
     for (std::int64_t i = ζ + 1; i < κ; ++i) {
-      μ̄
+      μ(κ, i) = μ(κʹ, i);
+      r(κ, i) = r(κʹ, i);
     }
+    r(κ, κ) = s(κ);
+    // Step 6.
+    Insert(b, κʹ, κ);
+    UpdateGram(G, b);
+    // Step 7.
+    auto const bκ = ColumnView{.matrix = b,
+                               .first_row = 0,
+                               .last_row = b.rows(),
+                               .column = κ};
+    if (bκ == zero) {
+      ++ζ;
+    }
+    // Step 8.
+    κ = std::max(ζ + 2, κ + 1);
   }
 }
 
