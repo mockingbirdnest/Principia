@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/tags.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
@@ -18,6 +19,7 @@ namespace _lattices {
 namespace internal {
 
 using namespace boost::multiprecision;
+using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
@@ -102,7 +104,6 @@ auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Uninitialized(
   return R(m.rows(), m.columns(), uninitialized);
 }
 
-template<>
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Uninitialized(
     UnboundedMatrix<cpp_int> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
@@ -110,13 +111,13 @@ auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Uninitialized(
 
 template<typename Scalar, int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialized(
-    FixedMatrix<Scalar, rows, columns> const& m) {
+    FixedMatrix<Scalar, rows, columns> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
 }
 
 template<int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Uninitialized(
-    FixedMatrix<cpp_int, rows, columns> const& m) {
+    FixedMatrix<cpp_int, rows, columns> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
 }
 
@@ -124,13 +125,15 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Uninitializ
 template<typename Matrix>
 typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
   using G = GramGenerator<Matrix>;
+  std::int64_t const rows = L.rows();
+  std::int64_t const columns = L.columns();
   auto result = G::Uninitialized(L);
-  for (std::int64_t i = 0; i < columns) {
+  for (std::int64_t i = 0; i < columns; ++i) {
     auto const bᵢ = ColumnView{.matrix = L,
                                .first_row = 0,
                                .last_row = rows - 1,
                                .column = i};
-    for (std::int64_t j = 0; j <= i) {
+    for (std::int64_t j = 0; j <= i; ++j) {
       auto const bⱼ = ColumnView{.matrix = L,
                                  .first_row = 0,
                                  .last_row = rows - 1,
@@ -215,7 +218,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
                              .last_row = b.rows(),
                              .column = 0};
   typename Gen::R r = Gen::Uninitialized(b);
-  r(0, 0) = static_cast<typename G::R::ElementType>(b₀.Norm²());
+  r(0, 0) = static_cast<typename Gen::R::ElementType>(b₀.Norm²());
   std::int64_t κ = 1;
   std::int64_t ζ = -1;
   while (κ < d) {
