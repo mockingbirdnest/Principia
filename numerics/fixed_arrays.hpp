@@ -335,7 +335,8 @@ constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right);
 
-template<typename LScalar, typename RScalar, std::int64_t rows, std::int64_t columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right);

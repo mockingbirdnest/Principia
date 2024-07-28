@@ -346,7 +346,7 @@ UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
 template<typename Scalar_>
 UnboundedLowerTriangularMatrix<Scalar_>::UnboundedLowerTriangularMatrix(
     std::initializer_list<Scalar> data)
-    : rows_(static_cast<std::int64_t>(std::lround((-1 + Sqrt(8 * data.size())) * 0.5))),
+    : rows_(std::llround((-1 + Sqrt(8 * data.size())) * 0.5)),
       data_(std::move(data)) {
   DCHECK_EQ(data_.size(), rows_ * (rows_ + 1) / 2);
 }
@@ -535,8 +535,8 @@ void UnboundedUpperTriangularMatrix<Scalar_>::Extend(
 template<typename Scalar_>
 void UnboundedUpperTriangularMatrix<Scalar_>::Extend(
     std::initializer_list<Scalar> const& data) {
-  std::int64_t const new_columns = static_cast<std::int64_t>(
-      std::lround((-1 + Sqrt(8 * (data_.size() + data.size()))) * 0.5));
+  std::int64_t const new_columns =
+      std::llround((-1 + Sqrt(8 * (data_.size() + data.size()))) * 0.5);
   auto transposed_data = Transpose(data,
                                    /*current_columns=*/columns_,
                                    /*extra_columns=*/new_columns - columns_);
