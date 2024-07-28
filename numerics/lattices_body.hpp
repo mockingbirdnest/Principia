@@ -63,33 +63,49 @@ struct NguyễnStehléGenerator;
 
 template<typename Scalar>
 struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
-  using R = UnboundedMatrix<Scalar>;
+  using R = UnboundedMatrix<Square<Scalar>>;
+  using Μ = UnboundedMatrix<double>;
+  using S = UnboundedVector<Square<Scalar>>;
   using Vector = UnboundedVector<Scalar>;
-  static R Uninitialized(UnboundedMatrix<Scalar> const& m);
+  static R UninitializedR(UnboundedMatrix<Scalar> const& m);
+  static Μ UninitializedΜ(UnboundedMatrix<Scalar> const& m);
+  static S UninitializedS(UnboundedMatrix<Scalar> const& m);
   static Vector Zero(UnboundedMatrix<Scalar> const& m);
 };
 
 template<>
 struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
   using R = UnboundedMatrix<double>;
+  using Μ = UnboundedMatrix<double>;
+  using S = UnboundedVector<double>;
   using Vector = UnboundedVector<cpp_int>;
-  static R Uninitialized(UnboundedMatrix<cpp_int> const& m);
+  static R UninitializedR(UnboundedMatrix<cpp_int> const& m);
+  static Μ UninitializedΜ(UnboundedMatrix<cpp_int> const& m);
+  static S UninitializedS(UnboundedMatrix<cpp_int> const& m);
   static Vector Zero(UnboundedMatrix<cpp_int> const& m);
 };
 
 template<typename Scalar, int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
-  using R = FixedMatrix<Scalar, rows, columns>;
+  using R = FixedMatrix<Square<Scalar>, rows, columns>;
+  using Μ = FixedMatrix<double, rows, columns>;
+  using S = FixedVector<Square<Scalar>, rows>;
   using Vector = FixedVector<Scalar, rows>;
-  static R Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
+  static R UninitializedR(FixedMatrix<Scalar, rows, columns> const& m);
+  static Μ UninitializedΜ(FixedMatrix<Scalar, rows, columns> const& m);
+  static S UninitializedS(FixedMatrix<Scalar, rows, columns> const& m);
   static Vector Zero(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
 template<int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
-  using R = FixedMatrix<cpp_int, rows, columns>;
+  using R = FixedMatrix<double, rows, columns>;
+  using Μ = FixedMatrix<double, rows, columns>;
+  using S = FixedVector<double, rows>;
   using Vector = FixedVector<cpp_int, rows>;
-  static R Uninitialized(FixedMatrix<cpp_int, rows, columns> const& m);
+  static R UninitializedR(FixedMatrix<cpp_int, rows, columns> const& m);
+  static Μ UninitializedΜ(FixedMatrix<cpp_int, rows, columns> const& m);
+  static S UninitializedS(FixedMatrix<cpp_int, rows, columns> const& m);
   static Vector Zero(FixedMatrix<cpp_int, rows, columns> const& m);
 };
 
@@ -107,9 +123,21 @@ FixedMatrix<Scalar, rows, columns> const& m) -> Result {
 }
 
 template<typename Scalar>
-auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Uninitialized(
+auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::UninitializedR(
     UnboundedMatrix<Scalar> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
+}
+
+template<typename Scalar>
+auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::UninitializedΜ(
+    UnboundedMatrix<Scalar> const& m) -> Μ {
+  return Μ(m.rows(), m.columns(), uninitialized);
+}
+
+template<typename Scalar>
+auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::UninitializedS(
+    UnboundedMatrix<Scalar> const& m) -> S {
+  return S(m.rows(), uninitialized);
 }
 
 template<typename Scalar>
@@ -118,9 +146,19 @@ auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Zero(
   return Vector(m.rows());
 }
 
-auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Uninitialized(
+auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedR(
     UnboundedMatrix<cpp_int> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
+}
+
+auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedΜ(
+    UnboundedMatrix<cpp_int> const& m) -> Μ {
+  return Μ(m.rows(), m.columns(), uninitialized);
+}
+
+auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedS(
+    UnboundedMatrix<cpp_int> const& m) -> S {
+  return S(m.rows(), uninitialized);
 }
 
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
@@ -129,9 +167,21 @@ auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
 }
 
 template<typename Scalar, int rows, int columns>
-auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialized(
+auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedR(
     FixedMatrix<Scalar, rows, columns> const& m) -> R {
-  return R(m.rows(), m.columns(), uninitialized);
+  return R(uninitialized);
+}
+
+template<typename Scalar, int rows, int columns>
+auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedΜ(
+    FixedMatrix<Scalar, rows, columns> const& m) -> Μ {
+  return Μ(uninitialized);
+}
+
+template<typename Scalar, int rows, int columns>
+auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedS(
+    FixedMatrix<Scalar, rows, columns> const& m) -> S {
+  return S(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
@@ -141,9 +191,21 @@ auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Zero(
 }
 
 template<int rows, int columns>
-auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Uninitialized(
+auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::UninitializedR(
     FixedMatrix<cpp_int, rows, columns> const& m) -> R {
-  return R(m.rows(), m.columns(), uninitialized);
+  return R(uninitialized);
+}
+
+template<int rows, int columns>
+auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::UninitializedΜ(
+    FixedMatrix<cpp_int, rows, columns> const& m) -> Μ {
+  return Μ(uninitialized);
+}
+
+template<int rows, int columns>
+auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::UninitializedS(
+    FixedMatrix<cpp_int, rows, columns> const& m) -> S {
+  return S(uninitialized);
 }
 
 template<int rows, int columns>
@@ -244,22 +306,26 @@ Matrix NguyễnStehlé(Matrix const& L) {
   // Step 1.
   auto const G = Gram(b);
   // Step 2.
-  double const ẟ = (ẟ + 1) / 2;
+  // Note that the combining macron doesn't work well here so we use a modifier
+  // macron.
+  double const δˉ = (ẟ + 1) / 2;
   auto const b₀ = ColumnView{.matrix = b,
                              .first_row = 0,
                              .last_row = b.rows(),
                              .column = 0};
-  typename Gen::R r = Gen::Uninitialized(b);
-  r(0, 0) = static_cast<typename Gen::R::ElementType>(b₀.Norm²());
+  typename Gen::R r = Gen::UninitializedR(b);
+  typename Gen::Μ μ = Gen::UninitializedΜ(b);
+  typename Gen::S s = Gen::UninitializedS(b);
+  r(0, 0) = static_cast<typename Gen::R::Scalar>(b₀.Norm²());
   std::int64_t κ = 1;
   std::int64_t ζ = -1;
   while (κ < d) {
     // Step 3.
-    SizeReduce(b, ζ + 1, κ);
+    SizeReduce(b, ζ + 1, κ, r, μ, s);
     // Step 4.
     //TODO(phl)high index probably useless
     std::int64_t κʹ = κ;
-    while (κ >= ζ + 2 &&  ẟ * r(κ - 1, κ - 1) >= s(κ - 1)) {
+    while (κ >= ζ + 2 && δˉ * r(κ - 1, κ - 1) >= s[κ - 1]) {
       --κ;
     }
     // Step 5.
@@ -267,7 +333,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
       μ(κ, i) = μ(κʹ, i);
       r(κ, i) = r(κʹ, i);
     }
-    r(κ, κ) = s(κ);
+    r(κ, κ) = s[κ];
     // Step 6.
     Insert(b, κʹ, κ, G);
     // Step 7.
