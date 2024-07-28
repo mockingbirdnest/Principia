@@ -109,7 +109,7 @@ constexpr auto BlockView<Matrix>::rows() const -> std::int64_t {
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto BlockView<Matrix>::columns() const -> std::int64_t{
+constexpr auto BlockView<Matrix>::columns() const -> std::int64_t {
   return last_column - first_column + 1;
 }
 
