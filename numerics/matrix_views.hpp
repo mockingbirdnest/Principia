@@ -23,13 +23,14 @@ struct BlockView {
   using Scalar = typename Matrix::Scalar;
 
   Matrix& matrix;
-  int first_row;
-  int last_row;
-  int first_column;
-  int last_column;
+  std::int64_t first_row;
+  std::int64_t last_row;
+  std::int64_t first_column;
+  std::int64_t last_column;
 
-  constexpr Scalar& operator()(int row, int column);
-  constexpr Scalar const& operator()(int row, int column) const;
+  constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
+  constexpr Scalar const& operator()(std::int64_t row,
+                                     std::int64_t column) const;
 
   template<typename T>
     requires two_dimensional<T> && same_elements_as<T, Matrix>
@@ -45,8 +46,8 @@ struct BlockView {
   BlockView& operator*=(double right);
   BlockView& operator/=(double right);
 
-  constexpr int rows() const;
-  constexpr int columns() const;
+  constexpr std::int64_t rows() const;
+  constexpr std::int64_t columns() const;
 };
 
 // A view of a column of a matrix.  This view is |one_dimensional|.
@@ -56,12 +57,12 @@ struct ColumnView {
   using Scalar = typename Matrix::Scalar;
 
   Matrix& matrix;
-  int first_row;
-  int last_row;
-  int column;
+  std::int64_t first_row;
+  std::int64_t last_row;
+  std::int64_t column;
 
-  constexpr Scalar& operator[](int index);
-  constexpr Scalar const& operator[](int index) const;
+  constexpr Scalar& operator[](std::int64_t index);
+  constexpr Scalar const& operator[](std::int64_t index) const;
 
   template<typename T>
     requires one_dimensional<T> && same_elements_as<T, Matrix>
@@ -80,7 +81,7 @@ struct ColumnView {
 
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
-  constexpr int size() const;
+  constexpr std::int64_t size() const;
 };
 
 // TODO(phl): This should probably be just |swap|.  The semantics of BlockView

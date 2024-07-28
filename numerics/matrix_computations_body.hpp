@@ -98,15 +98,15 @@ void PostMultiply(Matrix& A, HouseholderReflection const& P) {
 struct JacobiRotation {
   double cos;
   double sin;
-  int p;
-  int q;
+  std::int64_t p;
+  std::int64_t q;
 };
 
 // See [GV13] section 8.5.2, algorithm 8.5.1.
 template<typename Scalar, typename Matrix>
 JacobiRotation SymmetricSchurDecomposition2By2(Matrix const& A,
-                                               int const p,
-                                               int const q) {
+                                               std::int64_t const p,
+                                               std::int64_t const q) {
   DCHECK_LE(0, p);
   DCHECK_LT(p, q);
   DCHECK_LT(q, A.rows());
@@ -137,7 +137,7 @@ JacobiRotation SymmetricSchurDecomposition2By2(Matrix const& A,
 template<typename Matrix>
 void PremultiplyByTranspose(JacobiRotation const& J, Matrix& A) {
   auto const& [c, s, p, q] = J;
-  for (int j = 0; j < A.columns(); ++j) {
+  for (std::int64_t j = 0; j < A.columns(); ++j) {
     auto const τ₁ = A(p, j);
     auto const τ₂ = A(q, j);
     A(p, j) = c * τ₁ - s * τ₂;
@@ -149,7 +149,7 @@ void PremultiplyByTranspose(JacobiRotation const& J, Matrix& A) {
 template<typename Matrix>
 void PostMultiply(Matrix& A, JacobiRotation const& J) {
   auto const& [c, s, p, q] = J;
-  for (int j = 0; j < A.rows(); ++j) {
+  for (std::int64_t j = 0; j < A.rows(); ++j) {
     auto const τ₁ = A(j, p);
     auto const τ₂ = A(j, q);
     A(j, p) = c * τ₁ - s * τ₂;
@@ -175,8 +175,8 @@ absl::btree_set<typename Matrix::Scalar> Compute2By2Eigenvalues(
 // [GV13] algorithm 7.5.1.
 template<typename Scalar, typename Matrix>
 void FrancisQRStep(Matrix& H) {
-  int const n = H.rows();
-  int const m = n - 1;
+  std::int64_t const n = H.rows();
+  std::int64_t const m = n - 1;
   auto const s = H(m - 1, m - 1) + H(n - 1, n - 1);
   auto const t = H(m - 1, m - 1) * H(n - 1, n - 1) -
                  H(m - 1, n - 1) * H(n - 1, m - 1);
@@ -187,9 +187,9 @@ void FrancisQRStep(Matrix& H) {
   x = Pow<2>(H(0, 0)) + H(0, 1) * H(1, 0) - s * H(0, 0) + t;
   y = H(1, 0) * (H(0, 0) + H(1, 1) - s);
   z = H(1, 0) * H(2, 1);
-  for (int k = 0; k < n - 2; ++k) {
+  for (std::int64_t k = 0; k < n - 2; ++k) {
     auto const P = ComputeHouseholderReflection(xyz);
-    int const q = std::max(1, k);
+    std::int64_t const q = std::max(1LL, k);
     {
       auto block = BlockView<Matrix>{.matrix = H,
                                      .first_row = k,
@@ -198,7 +198,7 @@ void FrancisQRStep(Matrix& H) {
                                      .last_column = n - 1};
       Premultiply(P, block);
     }
-    int const r = std::min(k + 4, n);
+    std::int64_t const r = std::min(k + 4, n);
     {
       auto block = BlockView<Matrix>{.matrix = H,
                                      .first_row = 0,
@@ -241,7 +241,7 @@ struct CholeskyDecompositionGenerator<UnboundedUpperTriangularMatrix<Scalar>> {
   static Result Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u);
 };
 
-template<typename Scalar, int columns>
+template<typename Scalar, std::int64_t columns>
 struct CholeskyDecompositionGenerator<
     FixedUpperTriangularMatrix<Scalar, columns>> {
   using Result = FixedUpperTriangularMatrix<SquareRoot<Scalar>, columns>;
@@ -259,7 +259,7 @@ struct ᵗRDRDecompositionGenerator<UnboundedVector<Scalar>,
   static Result Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u);
 };
 
-template<typename Scalar, int columns>
+template<typename Scalar, std::int64_t columns>
 struct ᵗRDRDecompositionGenerator<
     FixedVector<Scalar, columns>,
     FixedUpperTriangularMatrix<Scalar, columns>> {
@@ -279,8 +279,8 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar>,
   static Result Uninitialized(TriangularMatrix<LScalar> const& m);
 };
 
-template<typename LScalar, typename RScalar, int dimension,
-         template<typename S, int d> typename TriangularMatrix>
+template<typename LScalar, typename RScalar, std::int64_t dimension,
+         template<typename S, std::int64_t d> typename TriangularMatrix>
 struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
                              FixedVector<RScalar, dimension>> {
   using Result = FixedVector<Quotient<RScalar, LScalar>, dimension>;
@@ -298,7 +298,7 @@ struct GramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 struct GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
     FixedMatrix<double, dimension, dimension> Q;
@@ -321,7 +321,7 @@ struct UnitriangularGramSchmidtGenerator<UnboundedMatrix<Scalar>> {
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar, std::int64_t rows, std::int64_t columns>
 struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
   struct Result {
     FixedMatrix<Scalar, rows, columns> Q;
@@ -334,7 +334,7 @@ struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
 
 // A specialization for |cpp_rational|, which is used for lattice reduction.
 // |double| is not appropriate for the element of |R| in this case.
-template<int rows, int columns>
+template<std::int64_t rows, std::int64_t columns>
 struct UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_rational, rows, columns>> {
   struct Result {
@@ -354,7 +354,7 @@ struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar>> {
   };
 };
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 struct HessenbergDecompositionGenerator<
     FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
@@ -370,7 +370,7 @@ struct RealSchurDecompositionGenerator<UnboundedMatrix<Scalar>> {
   };
 };
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 struct RealSchurDecompositionGenerator<
     FixedMatrix<Scalar, dimension, dimension>> {
   struct Result {
@@ -390,7 +390,7 @@ struct ClassicalJacobiGenerator<UnboundedMatrix<Scalar>> {
   static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 struct ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>> {
   using Rotation = FixedMatrix<double, dimension, dimension>;
   struct Result {
@@ -408,7 +408,7 @@ struct RayleighQuotientGenerator<UnboundedMatrix<MScalar>,
   using Result = MScalar;
 };
 
-template<typename MScalar, typename VScalar, int dimension>
+template<typename MScalar, typename VScalar, std::int64_t dimension>
 struct RayleighQuotientGenerator<FixedMatrix<MScalar, dimension, dimension>,
                                  FixedVector<VScalar, dimension>> {
   using Result = MScalar;
@@ -425,7 +425,7 @@ struct RayleighQuotientIterationGenerator<
   static Result Uninitialized(UnboundedVector<VScalar> const& v);
 };
 
-template<typename MScalar, typename VScalar, int dimension>
+template<typename MScalar, typename VScalar, std::int64_t dimension>
 struct RayleighQuotientIterationGenerator<
     FixedMatrix<MScalar, dimension, dimension>,
     FixedVector<VScalar, dimension>> {
@@ -446,7 +446,8 @@ struct SolveGenerator<UnboundedMatrix<MScalar>, UnboundedVector<VScalar>> {
   UninitializedU(UnboundedMatrix<MScalar> const& m);
 };
 
-template<typename MScalar, typename VScalar, int rows, int columns>
+template<typename MScalar, typename VScalar,
+         std::int64_t rows, std::int64_t columns>
 struct SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                       FixedVector<VScalar, rows>> {
   using Scalar = MScalar;
@@ -465,7 +466,7 @@ Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
   return Result(u.columns(), uninitialized);
 }
 
-template<typename Scalar, int columns>
+template<typename Scalar, std::int64_t columns>
 auto CholeskyDecompositionGenerator<
     FixedUpperTriangularMatrix<Scalar, columns>>::
 Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
@@ -480,7 +481,7 @@ Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
           UnboundedVector<Scalar>(u.columns(), uninitialized)};
 }
 
-template<typename Scalar, int columns>
+template<typename Scalar, std::int64_t columns>
 auto ᵗRDRDecompositionGenerator<FixedVector<Scalar, columns>,
                                 FixedUpperTriangularMatrix<Scalar, columns>>::
 Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
@@ -504,7 +505,7 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
       .R = UnboundedUpperTriangularMatrix<Scalar>(m.columns(), uninitialized)};
 }
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 auto GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>>::
 Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
   return Result{
@@ -520,7 +521,7 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
       .R = UnboundedUpperTriangularMatrix<double>(m.columns(), uninitialized)};
 }
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar, std::int64_t rows, std::int64_t columns>
 auto UnitriangularGramSchmidtGenerator<
     FixedMatrix<Scalar, rows, columns>>::
 Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
@@ -529,7 +530,7 @@ Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
       .R = FixedUpperTriangularMatrix<double, columns>(uninitialized)};
 }
 
-template<int rows, int columns>
+template<std::int64_t rows, std::int64_t columns>
 auto UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_rational, rows, columns>>::
 Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& m) -> Result {
@@ -551,13 +552,13 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
           .eigenvalues = UnboundedVector<Scalar>(m.columns())};
 }
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>>::
 Identity(FixedMatrix<Scalar, dimension, dimension> const& m) -> Rotation {
   return Rotation::Identity();
 }
 
-template<typename Scalar, int dimension>
+template<typename Scalar, std::int64_t dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>>::
 Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
   return {.rotation = FixedMatrix<double, dimension, dimension>(),
@@ -572,7 +573,7 @@ Uninitialized(UnboundedVector<VScalar> const& v) -> Result {
   return {UnboundedVector<VScalar>(v.size(), uninitialized), MScalar()};
 }
 
-template<typename MScalar, typename VScalar, int dimension>
+template<typename MScalar, typename VScalar, std::int64_t dimension>
 auto RayleighQuotientIterationGenerator<
     FixedMatrix<MScalar, dimension, dimension>,
     FixedVector<VScalar, dimension>>::
@@ -580,8 +581,8 @@ Uninitialized(FixedVector<VScalar, dimension> const& v) -> Result {
   return {FixedVector<VScalar, dimension>(uninitialized), MScalar()};
 }
 
-template<typename LScalar, typename RScalar, int dimension,
-         template<typename S, int d> typename TriangularMatrix>
+template<typename LScalar, typename RScalar, std::int64_t dimension,
+         template<typename S, std::int64_t d> typename TriangularMatrix>
 auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
                            FixedVector<RScalar, dimension>>::Uninitialized(
     TriangularMatrix<LScalar, dimension> const& m) -> Result {
@@ -603,7 +604,8 @@ UninitializedU(UnboundedMatrix<MScalar> const& m) {
   return UnboundedUpperTriangularMatrix<MScalar>(m.columns(), uninitialized);
 }
 
-template<typename MScalar, typename VScalar, int rows, int columns>
+template<typename MScalar, typename VScalar,
+         std::int64_t rows, std::int64_t columns>
 FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>
 SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                FixedVector<VScalar, rows>>::
@@ -612,7 +614,8 @@ UninitializedL(FixedMatrix<MScalar, rows, columns> const& m) {
       uninitialized);
 }
 
-template<typename MScalar, typename VScalar, int rows, int columns>
+template<typename MScalar, typename VScalar,
+         std::int64_t rows, std::int64_t columns>
 FixedUpperTriangularMatrix<MScalar, columns>
 SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                FixedVector<VScalar, rows>>::
@@ -627,16 +630,16 @@ CholeskyDecomposition(UpperTriangularMatrix const& A) {
   using G = CholeskyDecompositionGenerator<UpperTriangularMatrix>;
   using Scalar = typename UpperTriangularMatrix::Scalar;
   auto R = G::Uninitialized(A);
-  for (int j = 0; j < A.columns(); ++j) {
-    for (int i = 0; i < j; ++i) {
+  for (std::int64_t j = 0; j < A.columns(); ++j) {
+    for (std::int64_t i = 0; i < j; ++i) {
       Scalar Σrₖᵢrₖⱼ{};
-      for (int k = 0; k < i; ++k) {
+      for (std::int64_t k = 0; k < i; ++k) {
         Σrₖᵢrₖⱼ += R(k, i) * R(k, j);
       }
       R(i, j) = (A(i, j) - Σrₖᵢrₖⱼ) / R(i, i);
     }
     Scalar Σrₖⱼ²{};
-    for (int k = 0; k < j; ++k) {
+    for (std::int64_t k = 0; k < j; ++k) {
       Σrₖⱼ² += Pow<2>(R(k, j));
     }
     // This will produce NaNs if the matrix is not positive definite.
@@ -654,15 +657,15 @@ typename ᵗRDRDecompositionGenerator<Vector, UpperTriangularMatrix>::Result
   auto result = G::Uninitialized(A);
   auto& R = result.R;
   auto& D = result.D;
-  for (int i = 0; i < A.columns(); ++i) {
+  for (std::int64_t i = 0; i < A.columns(); ++i) {
     Scalar Σrₖᵢ²dₖ{};
-    for (int k = 0; k < i; ++k) {
+    for (std::int64_t k = 0; k < i; ++k) {
       Σrₖᵢ²dₖ += Pow<2>(R(k, i)) * D[k];
     }
     D[i] = A(i, i) - Σrₖᵢ²dₖ;
-    for (int j = i + 1; j < A.columns(); ++j) {
+    for (std::int64_t j = i + 1; j < A.columns(); ++j) {
       Scalar Σrₖᵢrₖⱼdₖ{};
-      for (int k = 0; k < i; ++k) {
+      for (std::int64_t k = 0; k < i; ++k) {
         Σrₖᵢrₖⱼdₖ += R(k, i) * R(k, j) * D[k];
       }
       R(i, j) = (A(i, j) - Σrₖᵢrₖⱼdₖ) / D[i];
@@ -679,11 +682,11 @@ BackSubstitution(UpperTriangularMatrix const& U,
                  Vector const& b) {
   using G = SubstitutionGenerator<UpperTriangularMatrix, Vector>;
   auto x = G::Uninitialized(U);
-  int const n = x.size() - 1;
+  std::int64_t const n = x.size() - 1;
   x[n] = b[n] / U(n, n);
-  for (int i = n - 1; i >= 0; --i) {
+  for (std::int64_t i = n - 1; i >= 0; --i) {
     auto s = b[i];
-    for (int j = i + 1; j <= n; ++j) {
+    for (std::int64_t j = i + 1; j <= n; ++j) {
       s -= U(i, j) * x[j];
     }
     x[i] = s / U(i, i);
@@ -701,9 +704,9 @@ ForwardSubstitution(LowerTriangularMatrix const& L,
   using G = SubstitutionGenerator<LowerTriangularMatrix, Vector>;
   auto x = G::Uninitialized(L);
   x[0] = b[0] / L(0, 0);
-  for (int i = 1; i < b.size(); ++i) {
+  for (std::int64_t i = 1; i < b.size(); ++i) {
     auto s = b[i];
-    for (int j = 0; j < i; ++j) {
+    for (std::int64_t j = 0; j < i; ++j) {
       s -= L(i, j) * x[j];
     }
     x[i] = s / L(i, i);
@@ -718,15 +721,15 @@ typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
   auto result = G::Uninitialized(A);
   auto& Q = result.Q;
   auto& R = result.R;
-  int const n = A.rows();
+  std::int64_t const n = A.rows();
 
   // [Hig02], Algorithm 19.11.
-  for (int j = 0; j < n; ++j) {
+  for (std::int64_t j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
                                              .last_row = n - 1,
                                              .column = j};
-    for (int i = 0; i < j; ++i) {
+    for (std::int64_t i = 0; i < j; ++i) {
       auto const qᵢ = ColumnView{.matrix = Q,
                                  .first_row = 0,
                                  .last_row = n - 1,
@@ -734,7 +737,7 @@ typename GramSchmidtGenerator<Matrix>::Result ClassicalGramSchmidt(
       R(i, j) = TransposedView{.transpose = qᵢ} * aⱼ;  // NOLINT
     }
     typename G::AVector qʹⱼ(aⱼ);
-    for (int k = 0; k < j; ++k) {
+    for (std::int64_t k = 0; k < j; ++k) {
       qʹⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
                                                       .first_row = 0,
                                                       .last_row = n - 1,
@@ -756,8 +759,8 @@ UnitriangularGramSchmidt(Matrix const& A) {
   auto result = G::Uninitialized(A);
   auto& Q = result.Q;
   auto& R = result.R;
-  int const m = A.rows();
-  int const n = A.columns();
+  std::int64_t const m = A.rows();
+  std::int64_t const n = A.columns();
 
   // The algorithm is derived from [HPS14], Theorem 7.13, but we keep the code
   // similar to the one for classical Gram-Schmidt, i.e., adopt the conventions
@@ -767,12 +770,12 @@ UnitriangularGramSchmidt(Matrix const& A) {
   //   v⭑ⱼ ≘ qⱼ
   //   μᵢⱼ ≘ Rⱼᵢ
   auto const zero = Square<typename G::QVector::Scalar>{};
-  for (int j = 0; j < n; ++j) {
+  for (std::int64_t j = 0; j < n; ++j) {
     auto const aⱼ = ColumnView<Matrix const>{.matrix = A,
                                              .first_row = 0,
                                              .last_row = m - 1,
                                              .column = j};
-    for (int i = 0; i < j; ++i) {
+    for (std::int64_t i = 0; i < j; ++i) {
       auto const qᵢ = ColumnView{.matrix = Q,
                                  .first_row = 0,
                                  .last_row = m - 1,
@@ -789,7 +792,7 @@ UnitriangularGramSchmidt(Matrix const& A) {
                          .last_row = m - 1,
                          .column = j};
     qⱼ = aⱼ;
-    for (int k = 0; k < j; ++k) {
+    for (std::int64_t k = 0; k < j; ++k) {
       qⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
                                                      .first_row = 0,
                                                      .last_row = m - 1,
@@ -806,10 +809,10 @@ HessenbergDecomposition(Matrix const& A) {
   using G = HessenbergDecompositionGenerator<Matrix>;
   typename G::Result result{.H = A};
   auto& H = result.H;
-  int const n = A.rows();
+  std::int64_t const n = A.rows();
 
   // [GV13], Algorithm 7.4.2.
-  for (int k = 0; k < n - 2; ++k) {
+  for (std::int64_t k = 0; k < n - 2; ++k) {
     auto const P = ComputeHouseholderReflection(
         ColumnView<Matrix>{.matrix = H,
                            .first_row = k + 1,
@@ -845,9 +848,9 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
   // [GV13] algorithm 7.5.2.
   auto hessenberg = HessenbergDecomposition(A);
   auto& H = hessenberg.H;
-  int const n = H.rows();
+  std::int64_t const n = H.rows();
   for (;;) {
-    for (int i = 1; i < n; ++i) {
+    for (std::int64_t i = 1; i < n; ++i) {
       if (Abs(H(i, i - 1)) <= ε * (Abs(H(i, i)) + Abs(H(i - 1, i - 1)))) {
         H(i, i - 1) = zero;
       }
@@ -856,8 +859,8 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
     // Upper quasi-triangular means that we don't have consecutive nonzero
     // subdiagonal elements, and we end on a zero.
     bool has_subdiagonal_element = false;
-    int q = 0;
-    for (int i = 1; i <= n; ++i) {
+    std::int64_t q = 0;
+    for (std::int64_t i = 1; i <= n; ++i) {
       // The case i == n corresponds to a zero sentinel immediately to the left
       // of the first element of the matrix.
       if (i == n || H(n - i, n - i - 1) == zero) {
@@ -874,7 +877,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
       break;
     }
 
-    int p = n - q - 1;
+    std::int64_t p = n - q - 1;
     for (; p > 0; --p) {
       if (H(p, p - 1) == zero) {
         break;
@@ -892,8 +895,8 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
   // Find the real eigenvalues.  Note that they may be part of a 2×2 block which
   // happens to have real roots.
   absl::btree_set<Scalar> real_eigenvalues;
-  for (int i = 0; i < H.rows();) {
-    int first_in_block = 0;
+  for (std::int64_t i = 0; i < H.rows();) {
+    std::int64_t first_in_block = 0;
     if (i == H.rows() - 1) {
       if (i == 0 || H(i, i - 1) == 0) {
         real_eigenvalues.insert(H(i, i));
@@ -926,7 +929,7 @@ RealSchurDecomposition(Matrix const& A, double const ε) {
 
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result
-ClassicalJacobi(Matrix const& A,  int max_iterations, double const ε) {
+ClassicalJacobi(Matrix const& A,  std::int64_t max_iterations, double const ε) {
   using G = ClassicalJacobiGenerator<Matrix>;
   using Scalar = typename Matrix::Scalar;
   auto result = G::Uninitialized(A);
@@ -937,14 +940,14 @@ ClassicalJacobi(Matrix const& A,  int max_iterations, double const ε) {
   auto const A_frobenius_norm = A.FrobeniusNorm();
   V = identity;
   auto diagonalized_A = A;
-  for (int k = 0; k < max_iterations; ++k) {
+  for (std::int64_t k = 0; k < max_iterations; ++k) {
     Scalar max_Apq{};
-    int max_p = -1;
-    int max_q = -1;
+    std::int64_t max_p = -1;
+    std::int64_t max_q = -1;
 
     // Find the largest off-diagonal element and exit if it's small.
-    for (int p = 0; p < diagonalized_A.rows(); ++p) {
-      for (int q = p + 1; q < diagonalized_A.columns(); ++q) {
+    for (std::int64_t p = 0; p < diagonalized_A.rows(); ++p) {
+      for (std::int64_t q = p + 1; q < diagonalized_A.columns(); ++q) {
         Scalar const abs_Apq = Abs(diagonalized_A(p, q));
         if (abs_Apq >= max_Apq) {
           max_Apq = abs_Apq;
@@ -972,7 +975,7 @@ ClassicalJacobi(Matrix const& A,  int max_iterations, double const ε) {
     }
   }
 
-  for (int i = 0; i < A.rows(); ++i) {
+  for (std::int64_t i = 0; i < A.rows(); ++i) {
     result.eigenvalues[i] = diagonalized_A(i, i);
   }
   return result;
@@ -995,10 +998,10 @@ RayleighQuotientIteration(Matrix const& A, Vector const& x) {
 
   // [GV13], section 8.2.3.
   xₖ = x / x.Norm();
-  for (int iteration = 0; iteration < 10; ++iteration) {
+  for (std::int64_t iteration = 0; iteration < 10; ++iteration) {
     μₖ = RayleighQuotient(A, xₖ);
     auto A_minus_μₖ_I = A;
-    for (int i = 0; i < A.rows(); ++i) {
+    for (std::int64_t i = 0; i < A.rows(); ++i) {
       A_minus_μₖ_I(i, i) -= μₖ;
     }
     auto const residual = (A_minus_μₖ_I * xₖ).Norm();
@@ -1028,11 +1031,11 @@ Solve(Matrix A, Vector b) {
 
   // Doolittle's method: write P * A = L * U where P is an implicit permutation
   // that is also applied to b.  See [Hig02], Algorithm 9.2 p. 162.
-  for (int k = 0; k < A.columns(); ++k) {
+  for (std::int64_t k = 0; k < A.columns(); ++k) {
     // Partial pivoting.
-    int r = -1;
+    std::int64_t r = -1;
     Scalar max{};
-    for (int i = k; i < A.rows(); ++i) {
+    for (std::int64_t i = k; i < A.rows(); ++i) {
       if (Abs(A(i, k)) >= max) {
         r = i;
         max = Abs(A(i, k));
@@ -1042,11 +1045,11 @@ Solve(Matrix A, Vector b) {
     CHECK_LT(r, A.rows()) << A << " cannot pivot";
 
     // Swap the rows of A.
-    for (int i = 0; i < A.columns(); ++i) {
+    for (std::int64_t i = 0; i < A.columns(); ++i) {
       std::swap(A(k, i), A(r, i));
     }
     // Swap the rows of L.
-    for (int i = 0; i < k; ++i) {
+    for (std::int64_t i = 0; i < k; ++i) {
       std::swap(L(k, i), L(r, i));
     }
     // Swap the rows of b.
@@ -1055,16 +1058,16 @@ Solve(Matrix A, Vector b) {
     LOG_IF(WARNING, A(k, k) == Scalar{})
         << A << " does not have a unique LU decomposition";
 
-    for (int j = k; j < A.columns(); ++j) {
+    for (std::int64_t j = k; j < A.columns(); ++j) {
       auto U_kj = A(k, j);
-      for (int i = 0; i < k; ++i) {
+      for (std::int64_t i = 0; i < k; ++i) {
         U_kj -= L(k, i) * U(i, j);
       }
       U(k, j) = U_kj;
     }
-    for (int i = k + 1; i < A.rows(); ++i) {
+    for (std::int64_t i = k + 1; i < A.rows(); ++i) {
       auto L_ik = A(i, k);
-      for (int j = 0; j < k; ++j) {
+      for (std::int64_t j = 0; j < k; ++j) {
         L_ik -= L(i, j) * U(j, k);
       }
       L(i, k) = L_ik / U(k, k);
