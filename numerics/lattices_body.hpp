@@ -325,6 +325,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   using Gen = NguyễnStehléGenerator<Matrix>;
   auto b = L;
   std::int64_t const d = b.columns();
+  std::int64_t const n = b.rows();
   auto const zero = Gen::Zero(b);
 
   //[NS09] figure 7.
@@ -339,7 +340,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   double const δˉ = (ẟ + 1) / 2;
   auto const b₀ = ColumnView{.matrix = b,
                              .first_row = 0,
-                             .last_row = b.rows(),
+                             .last_row = n,
                              .column = 0};
   typename Gen::R r = Gen::UninitializedR(b);
   typename Gen::Μ μ = Gen::UninitializedΜ(b);
@@ -367,7 +368,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     // Step 7.
     auto const bκ = ColumnView{.matrix = b,
                                .first_row = 0,
-                               .last_row = b.rows(),
+                               .last_row = n,
                                .column = κ};
     if (bκ == zero) {
       ++ζ;
