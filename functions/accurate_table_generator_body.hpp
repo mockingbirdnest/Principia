@@ -42,7 +42,7 @@ using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t T_max = 16;
 
-template<int rows, int columns>
+template<std::int64_t rows, std::int64_t columns>
 FixedMatrix<cpp_int, rows, columns> ToInt(
     FixedMatrix<cpp_rational, rows, columns> const& m) {
   FixedMatrix<cpp_int, rows, columns> result(uninitialized);
@@ -56,7 +56,7 @@ FixedMatrix<cpp_int, rows, columns> ToInt(
   return result;
 }
 
-template<int rows, int columns>
+template<std::int64_t rows, std::int64_t columns>
 FixedMatrix<cpp_rational, rows, columns> ToRational(
     FixedMatrix<cpp_int, rows, columns> const& m) {
   FixedMatrix<cpp_rational, rows, columns> result(uninitialized);

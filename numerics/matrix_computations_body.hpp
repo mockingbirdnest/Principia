@@ -189,7 +189,7 @@ void FrancisQRStep(Matrix& H) {
   z = H(1, 0) * H(2, 1);
   for (std::int64_t k = 0; k < n - 2; ++k) {
     auto const P = ComputeHouseholderReflection(xyz);
-    std::int64_t const q = std::max(1LL, k);
+    std::int64_t const q = std::max<std::int64_t>(1, k);
     {
       auto block = BlockView<Matrix>{.matrix = H,
                                      .first_row = k,
