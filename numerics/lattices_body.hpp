@@ -64,25 +64,33 @@ struct NguyễnStehléGenerator;
 template<typename Scalar>
 struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
   using R = UnboundedMatrix<Scalar>;
+  using Vector = UnboundedVector<Scalar>;
   static R Uninitialized(UnboundedMatrix<Scalar> const& m);
+  static Vector Zero(UnboundedMatrix<Scalar> const& m);
 };
 
 template<>
 struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
   using R = UnboundedMatrix<double>;
+  using Vector = UnboundedVector<cpp_int>;
   static R Uninitialized(UnboundedMatrix<cpp_int> const& m);
+  static Vector Zero(UnboundedMatrix<cpp_int> const& m);
 };
 
 template<typename Scalar, int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
   using R = FixedMatrix<Scalar, rows, columns>;
+  using Vector = FixedVector<Scalar, rows>;
   static R Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
+  static Vector Zero(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
 template<int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
   using R = FixedMatrix<cpp_int, rows, columns>;
+  using Vector = FixedVector<cpp_int, rows>;
   static R Uninitialized(FixedMatrix<cpp_int, rows, columns> const& m);
+  static Vector Zero(FixedMatrix<cpp_int, rows, columns> const& m);
 };
 
 
@@ -104,9 +112,20 @@ auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Uninitialized(
   return R(m.rows(), m.columns(), uninitialized);
 }
 
+template<typename Scalar>
+auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Zero(
+    UnboundedMatrix<Scalar> const& m) -> Vector {
+  return Vector(m.rows());
+}
+
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Uninitialized(
     UnboundedMatrix<cpp_int> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
+}
+
+auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
+    UnboundedMatrix<cpp_int> const& m) -> Vector {
+  return Vector(m.rows());
 }
 
 template<typename Scalar, int rows, int columns>
@@ -115,10 +134,22 @@ auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialize
   return R(m.rows(), m.columns(), uninitialized);
 }
 
+template<typename Scalar, int rows, int columns>
+auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Zero(
+    FixedMatrix<Scalar, rows, columns> const& m) -> Vector {
+  return Vector();
+}
+
 template<int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Uninitialized(
     FixedMatrix<cpp_int, rows, columns> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
+}
+
+template<int rows, int columns>
+auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
+    FixedMatrix<cpp_int, rows, columns> const& m) -> Vector {
+  return Vector();
 }
 
 
@@ -204,6 +235,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   using Gen = NguyễnStehléGenerator<Matrix>;
   auto b = L;
   std::int64_t const d = b.columns();
+  auto const zero = Gen::Zero(b);
 
   //[NS09] figure 7.
   double const ẟ = 0.75;
