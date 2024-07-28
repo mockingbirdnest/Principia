@@ -24,6 +24,7 @@ Matrix NguyễnStehlé(Matrix const& L);
 }  // namespace internal
 
 using internal::LenstraLenstraLovász;
+using internal::NguyễnStehlé;
 
 }  // namespace _lattices
 }  // namespace numerics
