@@ -112,7 +112,8 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
       LOG(FATAL) << "Unexpected degree: "
                  << pre_канторович_message.DebugString();
 #if PRINCIPIA_COMPILER_MSVC && \
-    _MSC_FULL_VER == 193'933'523
+    (_MSC_FULL_VER == 193'933'523 || \
+     _MSC_FULL_VER == 194'033'813)
       std::abort();
 #endif
   }

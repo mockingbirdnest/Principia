@@ -383,7 +383,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     default:
       LOG(FATAL) << "Unexpected region " << static_cast<int>(region_);
 #if PRINCIPIA_COMPILER_MSVC && \
-    _MSC_FULL_VER == 193'933'523
+    (_MSC_FULL_VER == 193'933'523 || \
+     _MSC_FULL_VER == 194'033'813)
       std::abort();
 #endif
   }
