@@ -18,7 +18,7 @@ using namespace principia::quantities::_elementary_functions;
 template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto BlockView<Matrix>::operator()(
-    int const row, int const column) -> Scalar& {
+    std::int64_t const row, std::int64_t const column) -> Scalar& {
   CONSTEXPR_DCHECK(row <= last_row - first_row);
   CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
@@ -27,8 +27,8 @@ constexpr auto BlockView<Matrix>::operator()(
 template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto BlockView<Matrix>::operator()(
-    int const row,
-    int const column) const -> Scalar const& {
+    std::int64_t const row,
+    std::int64_t const column) const -> Scalar const& {
   CONSTEXPR_DCHECK(row <= last_row - first_row);
   CONSTEXPR_DCHECK(column <= last_column - first_column);
   return matrix(first_row + row, first_column + column);
@@ -41,8 +41,8 @@ template<typename T>
 BlockView<Matrix>& BlockView<Matrix>::operator=(T const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) = right(i, j);
     }
   }
@@ -56,8 +56,8 @@ template<typename T>
 BlockView<Matrix>& BlockView<Matrix>::operator+=(T const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) += right(i, j);
     }
   }
@@ -71,8 +71,8 @@ template<typename T>
 auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) -= right(i, j);
     }
   }
@@ -82,8 +82,8 @@ auto BlockView<Matrix>::operator-=(T const& right) -> BlockView<Matrix>& {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) *= right;
     }
   }
@@ -93,8 +93,8 @@ BlockView<Matrix>& BlockView<Matrix>::operator*=(double const right) {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 BlockView<Matrix>& BlockView<Matrix>::operator/=(double const right) {
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j < columns(); ++j) {
       matrix(first_row + i, first_column + j) /= right;
     }
   }
@@ -103,20 +103,21 @@ BlockView<Matrix>& BlockView<Matrix>::operator/=(double const right) {
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto BlockView<Matrix>::rows() const -> int {
+constexpr auto BlockView<Matrix>::rows() const -> std::int64_t {
   return last_row - first_row + 1;
 }
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto BlockView<Matrix>::columns() const -> int{
+constexpr auto BlockView<Matrix>::columns() const -> std::int64_t{
   return last_column - first_column + 1;
 }
 
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto ColumnView<Matrix>::operator[](int const index) -> Scalar& {
+constexpr auto ColumnView<Matrix>::operator[](
+    std::int64_t const index) -> Scalar& {
   CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
@@ -124,7 +125,7 @@ constexpr auto ColumnView<Matrix>::operator[](int const index) -> Scalar& {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 constexpr auto ColumnView<Matrix>::operator[](
-    int const index) const -> Scalar const& {
+    std::int64_t const index) const -> Scalar const& {
   CONSTEXPR_DCHECK(index <= last_row - first_row);
   return matrix(first_row + index, column);
 }
@@ -135,7 +136,7 @@ template<typename T>
   requires one_dimensional<T> && same_elements_as<T, Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator=(T const& right) {
   DCHECK_EQ(size(), right.size());
-  for (int i = 0; i < size(); ++i) {
+  for (std::int64_t i = 0; i < size(); ++i) {
     matrix(first_row + i, column) = right[i];
   }
   return *this;
@@ -145,7 +146,7 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator=(ColumnView const& right) {
   DCHECK_EQ(size(), right.size());
-  for (int i = 0; i < size(); ++i) {
+  for (std::int64_t i = 0; i < size(); ++i) {
     matrix(first_row + i, column) = right[i];
   }
   return *this;
@@ -157,7 +158,7 @@ template<typename T>
   requires one_dimensional<T> && same_elements_as<T, Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator+=(T const& right) {
   DCHECK_EQ(size(), right.size());
-  for (int i = 0; i < size(); ++i) {
+  for (std::int64_t i = 0; i < size(); ++i) {
     matrix(first_row + i, column) += right[i];
   }
   return *this;
@@ -169,7 +170,7 @@ template<typename T>
   requires one_dimensional<T> && same_elements_as<T, Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator-=(T const& right) {
   DCHECK_EQ(size(), right.size());
-  for (int i = 0; i < size(); ++i) {
+  for (std::int64_t i = 0; i < size(); ++i) {
     matrix(first_row + i, column) -= right[i];
   }
   return *this;
@@ -178,7 +179,7 @@ ColumnView<Matrix>& ColumnView<Matrix>::operator-=(T const& right) {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator*=(double const right) {
-  for (int i = first_row; i <= last_row; ++i) {
+  for (std::int64_t i = first_row; i <= last_row; ++i) {
     matrix(i, column) *= right;
   }
   return *this;
@@ -187,7 +188,7 @@ ColumnView<Matrix>& ColumnView<Matrix>::operator*=(double const right) {
 template<typename Matrix>
   requires two_dimensional<Matrix>
 ColumnView<Matrix>& ColumnView<Matrix>::operator/=(double const right) {
-  for (int i = first_row; i <= last_row; ++i) {
+  for (std::int64_t i = first_row; i <= last_row; ++i) {
     matrix(i, column) /= right;
   }
   return *this;
@@ -203,7 +204,7 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
   Square<Scalar> result{};
-  for (int i = first_row; i <= last_row; ++i) {
+  for (std::int64_t i = first_row; i <= last_row; ++i) {
     result += Pow<2>(matrix(i, column));
   }
   return result;
@@ -211,7 +212,7 @@ auto ColumnView<Matrix>::Norm²() const -> Square<Scalar> {
 
 template<typename Matrix>
   requires two_dimensional<Matrix>
-constexpr auto ColumnView<Matrix>::size() const -> int {
+constexpr auto ColumnView<Matrix>::size() const -> std::int64_t {
   return last_row - first_row + 1;
 }
 
@@ -219,7 +220,7 @@ template<typename Matrix>
 void SwapColumns(ColumnView<Matrix>& m1, ColumnView<Matrix>& m2) {
   DCHECK_EQ(m1.first_row, m2.first_row);
   DCHECK_EQ(m1.last_row, m2.last_row);
-  for (int i = 0; i < m1.size(); ++i) {
+  for (std::int64_t i = 0; i < m1.size(); ++i) {
     std::swap(m1[i], m2[i]);
   }
 }
@@ -230,7 +231,7 @@ Product<typename LMatrix::Scalar, typename RMatrix::Scalar> operator*(
     ColumnView<RMatrix> const& right) {
   DCHECK_EQ(left.size(), right.size());
   Product<typename LMatrix::Scalar, typename RMatrix::Scalar> result{};
-  for (int i = 0; i < left.size(); ++i) {
+  for (std::int64_t i = 0; i < left.size(); ++i) {
     result += left[i] * right[i];
   }
   return result;
@@ -242,8 +243,8 @@ bool operator==(BlockView<Matrix> const& left, T const& right) {
   if (left.rows() != right.rows() || left.columns() != right.columns()) {
     return false;
   }
-  for (int i = 0; i < left.rows(); ++i) {
-    for (int j = 0; j < left.columns(); ++j) {
+  for (std::int64_t i = 0; i < left.rows(); ++i) {
+    for (std::int64_t j = 0; j < left.columns(); ++j) {
       if (left(i, j) != right(i, j)) {
         return false;
       }
@@ -258,7 +259,7 @@ bool operator==(ColumnView<Matrix> const& left, T const& right) {
   if (left.size() != right.size()) {
     return false;
   }
-  for (int i = 0; i < left.size(); ++i) {
+  for (std::int64_t i = 0; i < left.size(); ++i) {
     if (left[i] != right[i]) {
       return false;
     }
@@ -269,9 +270,9 @@ bool operator==(ColumnView<Matrix> const& left, T const& right) {
 template<typename Matrix>
 std::ostream& operator<<(std::ostream& out, BlockView<Matrix> const& view) {
   out << "rows: " << view.rows() << " columns: " << view.columns() << "\n";
-  for (int i = 0; i < view.rows(); ++i) {
+  for (std::int64_t i = 0; i < view.rows(); ++i) {
     out << "{";
-    for (int j = 0; j < view.columns(); ++j) {
+    for (std::int64_t j = 0; j < view.columns(); ++j) {
       out << view(i, j);
       if (j < view.columns() - 1) {
         out << ", ";
@@ -286,7 +287,7 @@ template<typename Matrix>
 std::ostream& operator<<(std::ostream& out,
                          ColumnView<Matrix> const& view) {
   std::stringstream s;
-  for (int i = 0; i < view.size(); ++i) {
+  for (std::int64_t i = 0; i < view.size(); ++i) {
     s << (i == 0 ? "{" : "") << view[i]
       << (i == view.size() - 1 ? "}" : ", ");
   }

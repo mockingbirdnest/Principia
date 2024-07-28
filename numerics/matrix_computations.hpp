@@ -146,7 +146,7 @@ RealSchurDecomposition(Matrix const& A, double ε);
 template<typename Matrix>
 typename ClassicalJacobiGenerator<Matrix>::Result ClassicalJacobi(
     Matrix const& A,
-    int max_iterations = 16,
+    std::int64_t max_iterations = 16,
     double ε = std::numeric_limits<double>::epsilon() / 128);
 
 // Returns the Rayleigh quotient r(x) = ᵗx A x / ᵗx x.

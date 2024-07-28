@@ -49,11 +49,11 @@ class UnboundedVector final {
  public:
   using Scalar = Scalar_;
 
-  explicit UnboundedVector(int size);  // Zero-initialized.
-  UnboundedVector(int size, uninitialized_t);
+  explicit UnboundedVector(std::int64_t size);  // Zero-initialized.
+  UnboundedVector(std::int64_t size, uninitialized_t);
   UnboundedVector(std::initializer_list<Scalar> data);
 
-  template<int size_>
+  template<std::int64_t size_>
   explicit UnboundedVector(FixedVector<Scalar, size_> const& data);
 
   // Constructs an unbounded vector by copying data from the view.  Note that
@@ -67,8 +67,8 @@ class UnboundedVector final {
   friend bool operator!=(UnboundedVector const& left,
                          UnboundedVector const& right) = default;
 
-  Scalar& operator[](int index);
-  Scalar const& operator[](int index) const;
+  Scalar& operator[](std::int64_t index);
+  Scalar const& operator[](std::int64_t index) const;
 
   UnboundedVector& operator=(std::initializer_list<Scalar> right);
 
@@ -77,18 +77,18 @@ class UnboundedVector final {
   UnboundedVector& operator*=(double right);
   UnboundedVector& operator/=(double right);
 
-  void Extend(int extra_size);
-  void Extend(int extra_size, uninitialized_t);
+  void Extend(std::int64_t extra_size);
+  void Extend(std::int64_t extra_size, uninitialized_t);
   void Extend(std::initializer_list<Scalar> data);
 
-  void EraseToEnd(int begin_index);
+  void EraseToEnd(std::int64_t begin_index);
 
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
   UnboundedVector<double> Normalize() const;
 
-  int size() const;
+  std::int64_t size() const;
 
   typename std::vector<Scalar>::const_iterator begin() const;
   typename std::vector<Scalar>::const_iterator end() const;
@@ -110,13 +110,14 @@ class UnboundedMatrix final {
  public:
   using Scalar = Scalar_;
 
-  UnboundedMatrix(int rows, int columns);
-  UnboundedMatrix(int rows, int columns, uninitialized_t);
+  UnboundedMatrix(std::int64_t rows, std::int64_t columns);
+  UnboundedMatrix(std::int64_t rows, std::int64_t columns, uninitialized_t);
 
   // The |data| must be in row-major format and must be for a square matrix.
   UnboundedMatrix(std::initializer_list<Scalar> data);
 
-  UnboundedMatrix(int rows, int columns, std::initializer_list<Scalar> data);
+  UnboundedMatrix(std::int64_t rows, std::int64_t columns,
+                  std::initializer_list<Scalar> data);
 
   explicit UnboundedMatrix(TransposedView<UnboundedMatrix<Scalar>> const& view);
 
@@ -128,8 +129,8 @@ class UnboundedMatrix final {
   // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
   // |a(i, j)|.  If i and j do not satisfy these conditions, the expression
   // |a(i, j)| implies undefined behaviour.
-  Scalar& operator()(int row, int column);
-  Scalar const& operator()(int row, int column) const;
+  Scalar& operator()(std::int64_t row, std::int64_t column);
+  Scalar const& operator()(std::int64_t row, std::int64_t column) const;
 
   // Applies the matrix as a bilinear form.  Present for compatibility with
   // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
@@ -147,16 +148,16 @@ class UnboundedMatrix final {
 
   UnboundedMatrix& operator*=(UnboundedMatrix<double> const& right);
 
-  int rows() const;
-  int columns() const;
+  std::int64_t rows() const;
+  std::int64_t columns() const;
 
   Scalar FrobeniusNorm() const;
 
-  static UnboundedMatrix Identity(int rows, int columns);
+  static UnboundedMatrix Identity(std::int64_t rows, std::int64_t columns);
 
  private:
-  int rows_;
-  int columns_;
+  std::int64_t rows_;
+  std::int64_t columns_;
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 
   template<typename S>
@@ -169,8 +170,8 @@ class UnboundedLowerTriangularMatrix final {
  public:
   using Scalar = Scalar_;
 
-  explicit UnboundedLowerTriangularMatrix(int rows);
-  UnboundedLowerTriangularMatrix(int rows, uninitialized_t);
+  explicit UnboundedLowerTriangularMatrix(std::int64_t rows);
+  UnboundedLowerTriangularMatrix(std::int64_t rows, uninitialized_t);
 
   // The |data| must be in row-major format.
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
@@ -188,25 +189,25 @@ class UnboundedLowerTriangularMatrix final {
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
   // If i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
-  Scalar& operator()(int row, int column);
-  Scalar const& operator()(int row, int column) const;
+  Scalar& operator()(std::int64_t row, std::int64_t column);
+  Scalar const& operator()(std::int64_t row, std::int64_t column) const;
 
   UnboundedLowerTriangularMatrix& operator=(
       std::initializer_list<Scalar> right);
 
-  void Extend(int extra_rows);
-  void Extend(int extra_rows, uninitialized_t);
+  void Extend(std::int64_t extra_rows);
+  void Extend(std::int64_t extra_rows, uninitialized_t);
 
   // The |data| must be in row-major format.
   void Extend(std::initializer_list<Scalar> data);
 
-  void EraseToEnd(int begin_row_index);
+  void EraseToEnd(std::int64_t begin_row_index);
 
-  int rows() const;
-  int columns() const;
+  std::int64_t rows() const;
+  std::int64_t columns() const;
 
  private:
-  int rows_;
+  std::int64_t rows_;
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
 
   template<typename S>
@@ -220,8 +221,8 @@ class UnboundedUpperTriangularMatrix final {
  public:
   using Scalar = Scalar_;
 
-  explicit UnboundedUpperTriangularMatrix(int columns);
-  UnboundedUpperTriangularMatrix(int columns, uninitialized_t);
+  explicit UnboundedUpperTriangularMatrix(std::int64_t columns);
+  UnboundedUpperTriangularMatrix(std::int64_t columns, uninitialized_t);
 
   // The |data| must be in row-major format.
   UnboundedUpperTriangularMatrix(std::initializer_list<Scalar> const& data);
@@ -239,32 +240,32 @@ class UnboundedUpperTriangularMatrix final {
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
   // If i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
-  Scalar& operator()(int row, int column);
-  Scalar const& operator()(int row, int column) const;
+  Scalar& operator()(std::int64_t row, std::int64_t column);
+  Scalar const& operator()(std::int64_t row, std::int64_t column) const;
 
   UnboundedUpperTriangularMatrix& operator=(
       std::initializer_list<Scalar> right);
 
-  void Extend(int extra_columns);
-  void Extend(int extra_columns, uninitialized_t);
+  void Extend(std::int64_t extra_columns);
+  void Extend(std::int64_t extra_columns, uninitialized_t);
 
   // The |data| must be in row-major format.
   void Extend(std::initializer_list<Scalar> const& data);
 
-  void EraseToEnd(int begin_column_index);
+  void EraseToEnd(std::int64_t begin_column_index);
 
-  int rows() const;
-  int columns() const;
+  std::int64_t rows() const;
+  std::int64_t columns() const;
 
  private:
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This translates a trapezoidal slice to make it column-major.
   static std::vector<Scalar, uninitialized_allocator<Scalar>> Transpose(
       std::initializer_list<Scalar> const& data,
-      int current_columns,
-      int extra_columns);
+      std::int64_t current_columns,
+      std::int64_t extra_columns);
 
-  int columns_;
+  std::int64_t columns_;
   // Stored in column-major format, so the data passed the public API must be
   // transposed.
   std::vector<Scalar, uninitialized_allocator<Scalar>> data_;

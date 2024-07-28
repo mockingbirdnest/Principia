@@ -23,7 +23,7 @@ using namespace principia::quantities::_elementary_functions;
 template<typename LScalar, typename RScalar, typename>
 struct DotProduct;
 
-template<typename LScalar, typename RScalar, int... i>
+template<typename LScalar, typename RScalar, std::int64_t... i>
 struct DotProduct<LScalar, RScalar, std::index_sequence<i...>> {
   template<typename Left, typename Right>
   static Product<LScalar, RScalar> Compute(Left const& left,
@@ -31,7 +31,7 @@ struct DotProduct<LScalar, RScalar, std::index_sequence<i...>> {
 };
 
 
-template<typename LScalar, typename RScalar, int... i>
+template<typename LScalar, typename RScalar, std::int64_t... i>
 template<typename Left, typename Right>
 Product<LScalar, RScalar>
 DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
@@ -44,80 +44,81 @@ DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
 // which performs value initialization on the components.  For quantities this
 // calls the default constructor, for non-class types this does
 // zero-initialization.
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>::FixedVector() : data_{} {}
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 FixedVector<Scalar_, size_>::FixedVector(uninitialized_t) {}
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>::FixedVector(
     std::array<Scalar, size_> const& data)
     : data_(data) {}
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>::FixedVector(
     std::array<Scalar, size_>&& data)
     : data_(std::move(data)) {}
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 template<typename T>
   requires std::same_as<typename T::Scalar, Scalar_>
 constexpr FixedVector<Scalar_, size_>::FixedVector(
     ColumnView<T> const& view) : FixedVector(uninitialized) {
   CONSTEXPR_DCHECK(view.size() == size_);
-  for (int i = 0; i < size_; ++i) {
+  for (std::int64_t i = 0; i < size_; ++i) {
     (*this)[i] = view[i];
   }
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>::operator std::array<Scalar_, size_>()
     const {
   return data_;
 }
 
-template<typename Scalar_, int size_>
-constexpr Scalar_& FixedVector<Scalar_, size_>::operator[](int const index) {
+template<typename Scalar_, std::int64_t size_>
+constexpr Scalar_& FixedVector<Scalar_, size_>::operator[](
+    std::int64_t const index) {
   CONSTEXPR_DCHECK(0 <= index);
   CONSTEXPR_DCHECK(index < size());
   return data_[index];
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr Scalar_ const& FixedVector<Scalar_, size_>::operator[](
-    int const index) const {
+    std::int64_t const index) const {
   CONSTEXPR_DCHECK(0 <= index);
   CONSTEXPR_DCHECK(index < size());
   return data_[index];
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator=(
     Scalar const (&right)[size_]) {
   std::copy(right, right + size_, data_.data());
   return *this;
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator+=(
     FixedVector const& right) {
-  for (int i = 0; i < size(); ++i) {
+  for (std::int64_t i = 0; i < size(); ++i) {
     data_[i] += right.data_[i];
   }
   return *this;
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator-=(
     FixedVector const& right) {
-  for (int i = 0; i < size(); ++i) {
+  for (std::int64_t i = 0; i < size(); ++i) {
     data_[i] -= right.data_[i];
   }
   return *this;
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator*=(
     double const right) {
   for (auto& d : data_) {
@@ -126,7 +127,7 @@ constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator*=(
   return *this;
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator/=(
     double const right) {
   for (auto& d : data_) {
@@ -135,69 +136,69 @@ constexpr FixedVector<Scalar_, size_>& FixedVector<Scalar_, size_>::operator/=(
   return *this;
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 Scalar_ FixedVector<Scalar_, size_>::Norm() const {
   return Sqrt(Norm²());
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 Square<Scalar_> FixedVector<Scalar_, size_>::Norm²() const {
   return DotProduct<Scalar, Scalar, std::make_index_sequence<size_>>::Compute(
       data_, data_);
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 FixedVector<double, size_> FixedVector<Scalar_, size_>::Normalize() const {
   return *this / Norm();
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 typename std::array<Scalar_, size_>::const_iterator
 FixedVector<Scalar_, size_>::begin() const {
   return data_.cbegin();
 }
 
-template<typename Scalar_, int size_>
+template<typename Scalar_, std::int64_t size_>
 typename std::array<Scalar_, size_>::const_iterator
 FixedVector<Scalar_, size_>::end() const {
   return data_.cend();
 }
 
-template<typename H, typename Scalar_, int size_>
+template<typename H, typename Scalar_, std::int64_t size_>
 H AbslHashValue(H h, FixedVector<Scalar_, size_> const& vector) {
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix()
     : data_{} {}
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(uninitialized_t) {}
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
     std::array<Scalar, size_> const& data)
     : data_(data) {}
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
     std::array<Scalar, size_>&& data)
     : data_(std::move(data)) {}
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>::FixedMatrix(
     TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view)
     : FixedMatrix(uninitialized) {
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < columns_; ++j) {
+  for (std::int64_t i = 0; i < rows_; ++i) {
+    for (std::int64_t j = 0; j < columns_; ++j) {
       (*this)(i, j) = view(i, j);
     }
   }
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr Scalar_& FixedMatrix<Scalar_, rows_, columns_>::operator()(
-    int const row, int const column) {
+    std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
@@ -205,9 +206,9 @@ constexpr Scalar_& FixedMatrix<Scalar_, rows_, columns_>::operator()(
   return data_[row * columns() + column];
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_>::operator()(
-    int const row, int const column) const {
+    std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
@@ -215,7 +216,7 @@ constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_>::operator()(
   return data_[row * columns() + column];
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator=(
     Scalar const (&right)[size_]) {
@@ -223,25 +224,25 @@ FixedMatrix<Scalar_, rows_, columns_>::operator=(
   return *this;
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator+=(FixedMatrix const& right) {
-  for (int i = 0; i < size_; ++i) {
+  for (std::int64_t i = 0; i < size_; ++i) {
     data_[i] += right.data_[i];
   }
   return *this;
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator-=(FixedMatrix const& right) {
-  for (int i = 0; i < size_; ++i) {
+  for (std::int64_t i = 0; i < size_; ++i) {
     data_[i] -= right.data_[i];
   }
   return *this;
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator*=(double const right) {
   for (auto& d : data_) {
@@ -250,7 +251,7 @@ FixedMatrix<Scalar_, rows_, columns_>::operator*=(double const right) {
   return *this;
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator/=(double const right) {
   for (auto& d : data_) {
@@ -259,7 +260,7 @@ FixedMatrix<Scalar_, rows_, columns_>::operator/=(double const right) {
   return *this;
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 constexpr FixedMatrix<Scalar_, rows_, columns_>&
 FixedMatrix<Scalar_, rows_, columns_>::operator*=(
     FixedMatrix<double, rows_, columns_> const& right)
@@ -268,25 +269,25 @@ FixedMatrix<Scalar_, rows_, columns_>::operator*=(
   return *this = *this * right;
 }
 
-template<typename Scalar_, int rows_, int columns_>
-template<int r>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
+template<std::int64_t r>
 Scalar_ const* FixedMatrix<Scalar_, rows_, columns_>::row() const {
   static_assert(r < rows_);
   return &data_[r * columns()];
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 Scalar_ FixedMatrix<Scalar_, rows_, columns_>::FrobeniusNorm() const {
   Square<Scalar> Σᵢⱼaᵢⱼ²{};
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j < columns(); ++j) {
       Σᵢⱼaᵢⱼ² += Pow<2>((*this)(i, j));
     }
   }
   return Sqrt(Σᵢⱼaᵢⱼ²);
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 template<typename LScalar, typename RScalar>
 Product<Scalar_, Product<LScalar, RScalar>>
 FixedMatrix<Scalar_, rows_, columns_>::operator()(
@@ -295,61 +296,61 @@ FixedMatrix<Scalar_, rows_, columns_>::operator()(
   return TransposedView{left} * (*this * right);  // NOLINT
 }
 
-template<typename Scalar_, int rows_, int columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 FixedMatrix<Scalar_, rows_, columns_>
 FixedMatrix<Scalar_, rows_, columns_>::Identity() {
   FixedMatrix<Scalar, rows(), columns()> m;
-  for (int i = 0; i < rows(); ++i) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
     m(i, i) = 1;
   }
   return m;
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
     FixedStrictlyLowerTriangularMatrix()
     : data_{} {}
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
     FixedStrictlyLowerTriangularMatrix(uninitialized_t) {}
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
 FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
 operator FixedMatrix<Scalar_, rows_, rows_>() const {
   FixedMatrix<Scalar, rows_, rows_> result;  // Initialized.
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j < i; ++j) {
+  for (std::int64_t i = 0; i < rows_; ++i) {
+    for (std::int64_t j = 0; j < i; ++j) {
       result(i, j) = (*this)(i, j);
     }
   }
   return result;
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr Scalar_& FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
-operator()(int const row, int const column) {
+operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row - 1) / 2 + column];
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr Scalar_ const& FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::
-operator()(int const row, int const column) const {
+operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row - 1) / 2 + column];
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>&
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::operator=(
     Scalar const (&right)[size_]) {
@@ -357,69 +358,69 @@ FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::operator=(
   return *this;
 }
 
-template<typename Scalar_, int rows_>
-template<int r>
+template<typename Scalar_, std::int64_t rows_>
+template<std::int64_t r>
 Scalar_ const* FixedStrictlyLowerTriangularMatrix<Scalar_, rows_>::row() const {
   static_assert(r < rows_);
   return &data_[r * (r - 1) / 2];
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_>::
 FixedLowerTriangularMatrix()
     : data_{} {}
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 FixedLowerTriangularMatrix<Scalar_, rows_>::
 FixedLowerTriangularMatrix(uninitialized_t) {}
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_>::
 FixedLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 FixedLowerTriangularMatrix<Scalar_, rows_>::FixedLowerTriangularMatrix(
     TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view)
     : FixedLowerTriangularMatrix(uninitialized) {
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = 0; j <= i; ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = 0; j <= i; ++j) {
       (*this)(i, j) = view(i, j);
     }
   }
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_>::
 operator FixedMatrix<Scalar_, rows_, rows_>() const {
   FixedMatrix<Scalar, rows_, rows_> result;  // Initialized.
-  for (int i = 0; i < rows_; ++i) {
-    for (int j = 0; j <= i; ++j) {
+  for (std::int64_t i = 0; i < rows_; ++i) {
+    for (std::int64_t j = 0; j <= i; ++j) {
       result(i, j) = (*this)(i, j);
     }
   }
   return result;
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr Scalar_& FixedLowerTriangularMatrix<Scalar_, rows_>::
-operator()(int const row, int const column) {
+operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column <= row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row + 1) / 2 + column];
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr Scalar_ const& FixedLowerTriangularMatrix<Scalar_, rows_>::
-operator()(int const row, int const column) const {
+operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column <= row);
   CONSTEXPR_DCHECK(row < rows());
   return data_[row * (row + 1) / 2 + column];
 }
 
-template<typename Scalar_, int rows_>
+template<typename Scalar_, std::int64_t rows_>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_>&
 FixedLowerTriangularMatrix<Scalar_, rows_>::operator=(
     Scalar const (&right)[size_]) {
@@ -427,62 +428,62 @@ FixedLowerTriangularMatrix<Scalar_, rows_>::operator=(
   return *this;
 }
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
 FixedUpperTriangularMatrix()
     : data_{} {}
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 FixedUpperTriangularMatrix<Scalar_, columns_>::FixedUpperTriangularMatrix(
     uninitialized_t) {}
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
 FixedUpperTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(Transpose(data)) {}
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 FixedUpperTriangularMatrix<Scalar_, columns_>::FixedUpperTriangularMatrix(
     TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view)
     : FixedUpperTriangularMatrix(uninitialized) {
-  for (int i = 0; i < rows(); ++i) {
-    for (int j = i; j < columns(); ++j) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = i; j < columns(); ++j) {
       (*this)(i, j) = view(i, j);
     }
   }
 }
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
 operator FixedMatrix<Scalar_, columns_, columns_>() const {
   FixedMatrix<Scalar, columns_, columns_> result;  // Initialized.
-  for (int j = 0; j < columns_; ++j) {
-    for (int i = 0; i <= j; ++i) {
+  for (std::int64_t j = 0; j < columns_; ++j) {
+    for (std::int64_t i = 0; i <= j; ++i) {
       result(i, j) = (*this)(i, j);
     }
   }
   return result;
 }
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 constexpr Scalar_& FixedUpperTriangularMatrix<Scalar_, columns_>::
-operator()(int const row, int const column) {
+operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
   return data_[column * (column + 1) / 2 + row];
 }
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 constexpr Scalar_ const& FixedUpperTriangularMatrix<Scalar_, columns_>::
-operator()(int const row, int const column) const {
+operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
   return data_[column * (column + 1) / 2 + row];
 }
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>&
 FixedUpperTriangularMatrix<Scalar_, columns_>::operator=(
     Scalar const (&right)[size_]) {
@@ -491,14 +492,14 @@ FixedUpperTriangularMatrix<Scalar_, columns_>::operator=(
   return *this;
 }
 
-template<typename Scalar_, int columns_>
+template<typename Scalar_, std::int64_t columns_>
 auto FixedUpperTriangularMatrix<Scalar_, columns_>::Transpose(
     std::array<Scalar, size_> const& data)
     -> std::array<Scalar, size_> {
   std::array<Scalar, rows() * columns()> full;
-  int index = 0;
-  for (int row = 0; row < rows(); ++row) {
-    for (int column = row; column < columns(); ++column) {
+  std::int64_t index = 0;
+  for (std::int64_t row = 0; row < rows(); ++row) {
+    for (std::int64_t column = row; column < columns(); ++column) {
       full[row * columns() + column] = data[index];
       ++index;
     }
@@ -506,8 +507,8 @@ auto FixedUpperTriangularMatrix<Scalar_, columns_>::Transpose(
 
   std::array<Scalar, size_> result;
   index = 0;
-  for (int column = 0; column < columns(); ++column) {
-    for (int row = 0; row <= column; ++row) {
+  for (std::int64_t column = 0; column < columns(); ++column) {
+    for (std::int64_t row = 0; row <= column; ++row) {
       result[index] = full[row * columns() + column];
       ++index;
     }
@@ -515,7 +516,7 @@ auto FixedUpperTriangularMatrix<Scalar_, columns_>::Transpose(
   return result;
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
@@ -523,19 +524,19 @@ constexpr Product<LScalar, RScalar> InnerProduct(
       left, right);
 }
 
-template<typename Scalar, int size>
+template<typename Scalar, std::int64_t size>
 constexpr FixedVector<double, size> Normalize(
     FixedVector<Scalar, size> const& vector) {
   return vector / vector.Norm();
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr FixedMatrix<Product<LScalar, RScalar>, size, size> SymmetricProduct(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
   FixedMatrix<Product<LScalar, RScalar>, size, size> result(uninitialized);
-  for (int i = 0; i < size; ++i) {
-    for (int j = 0; j < i; ++j) {
+  for (std::int64_t i = 0; i < size; ++i) {
+    for (std::int64_t j = 0; j < i; ++j) {
       auto const r = 0.5 * (left[i] * right[j] + left[j] * right[i]);
       result(i, j) = r;
       result(j, i) = r;
@@ -545,12 +546,12 @@ constexpr FixedMatrix<Product<LScalar, RScalar>, size, size> SymmetricProduct(
   return result;
 }
 
-template<typename Scalar, int size>
+template<typename Scalar, std::int64_t size>
 constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
     FixedVector<Scalar, size> const& vector) {
   FixedMatrix<Square<Scalar>, size, size> result(uninitialized);
-  for (int i = 0; i < size; ++i) {
-    for (int j = 0; j < i; ++j) {
+  for (std::int64_t i = 0; i < size; ++i) {
+    for (std::int64_t j = 0; j < i; ++j) {
       auto const r =  vector[i] * vector[j];
       result(i, j) = r;
       result(j, i) = r;
@@ -560,165 +561,170 @@ constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
   return result;
 }
 
-template<typename Scalar, int size>
+template<typename Scalar, std::int64_t size>
 constexpr FixedVector<Scalar, size> operator+(
     FixedVector<Scalar, size> const& right) {
   return right;
 }
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar, std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Scalar, rows, columns> operator+(
     FixedMatrix<Scalar, rows, columns> const& right) {
   return right;
 }
 
-template<typename Scalar, int size>
+template<typename Scalar, std::int64_t size>
 constexpr FixedVector<Scalar, size> operator-(
     FixedVector<Scalar, size> const& right) {
   std::array<Scalar, size> result;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     result[i] = -right[i];
   }
   return FixedVector<Scalar, size>(std::move(result));
 }
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar, std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Scalar, rows, columns> operator-(
     FixedMatrix<Scalar, rows, columns> const& right) {
   FixedMatrix<Scalar, rows, columns> result(uninitialized);
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       result(i, j) = -right(i, j);
     }
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
   std::array<Sum<LScalar, RScalar>, size> result;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     result[i] = left[i] + right[i];
   }
   return FixedVector<Sum<LScalar, RScalar>, size>(std::move(result));
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right) {
   FixedMatrix<Sum<LScalar, RScalar>, rows, columns> result(uninitialized);
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       result(i, j) = left(i, j) + right(i, j);
     }
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
     FixedVector<LScalar, size> const& left,
     FixedVector<RScalar, size> const& right) {
   std::array<Difference<LScalar, RScalar>, size> result;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     result[i] = left[i] - right[i];
   }
   return FixedVector<Difference<LScalar, RScalar>, size>(std::move(result));
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedMatrix<RScalar, rows, columns> const& right) {
   FixedMatrix<Difference<LScalar, RScalar>, rows, columns> result(
       uninitialized);
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       result(i, j) = left(i, j) - right(i, j);
     }
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     LScalar const& left,
     FixedVector<RScalar, size> const& right) {
   std::array<Product<LScalar, RScalar>, size> result;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     result[i] = left * right[i];
   }
   return FixedVector<Product<LScalar, RScalar>, size>(std::move(result));
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
     FixedVector<LScalar, size> const& left,
     RScalar const& right) {
   std::array<Product<LScalar, RScalar>, size> result;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     result[i] = left[i] * right;
   }
   return FixedVector<Product<LScalar, RScalar>, size>(std::move(result));
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
     LScalar const& left,
     FixedMatrix<RScalar, rows, columns> const& right) {
   FixedMatrix<Product<LScalar, RScalar>, rows, columns> result(
       uninitialized);
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       result(i, j) = left * right(i, j);
     }
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     RScalar const& right) {
   FixedMatrix<Product<LScalar, RScalar>, rows, columns> result(
       uninitialized);
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       result(i, j) = left(i, j) * right;
     }
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
     FixedVector<LScalar, size> const& left,
     RScalar const& right) {
   FixedVector<Quotient<LScalar, RScalar>, size> result(uninitialized);
-  for (int i = 0; i < left.size(); ++i) {
+  for (std::int64_t i = 0; i < left.size(); ++i) {
     result[i] = left[i] / right;
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> operator/(
     FixedMatrix<LScalar, rows, columns> const& left,
     RScalar const& right) {
   FixedMatrix<Quotient<LScalar, RScalar>, rows, columns> result(
       uninitialized);
-  for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
+  for (std::int64_t i = 0; i < rows; ++i) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       result(i, j) = left(i, j) / right;
     }
   }
   return result;
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr Product<LScalar, RScalar> operator*(
     LScalar* const left,
     FixedVector<RScalar, size> const& right) {
@@ -726,7 +732,7 @@ constexpr Product<LScalar, RScalar> operator*(
       left, right.data_);
 }
 
-template<typename LScalar, typename RScalar, int size>
+template<typename LScalar, typename RScalar, std::int64_t size>
 constexpr Product<LScalar, RScalar> operator*(
     TransposedView<FixedVector<LScalar, size>> const& left,
     FixedVector<RScalar, size> const& right) {
@@ -734,13 +740,14 @@ constexpr Product<LScalar, RScalar> operator*(
       left.transpose.data_, right.data_);
 }
 
-template<typename LScalar, typename RScalar, int lsize, int rsize>
+template<typename LScalar, typename RScalar,
+         std::int64_t lsize, std::int64_t rsize>
 constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
     FixedVector<LScalar, lsize> const& left,
     TransposedView<FixedVector<RScalar, rsize>> const& right) {
   FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> result(uninitialized);
-  for (int i = 0; i < lsize; ++i) {
-    for (int j = 0; j < rsize; ++j) {
+  for (std::int64_t i = 0; i < lsize; ++i) {
+    for (std::int64_t j = 0; j < rsize; ++j) {
       result(i, j) = left[i] * right[j];
     }
   }
@@ -748,14 +755,14 @@ constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
 }
 
 template<typename LScalar, typename RScalar,
-         int rows, int dimension, int columns>
+         std::int64_t rows, std::int64_t dimension, std::int64_t columns>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
 operator*(FixedMatrix<LScalar, rows, dimension> const& left,
           FixedMatrix<RScalar, dimension, columns> const& right) {
   FixedMatrix<Product<LScalar, RScalar>, rows, columns> result{};
-  for (int i = 0; i < left.rows(); ++i) {
-    for (int j = 0; j < right.columns(); ++j) {
-      for (int k = 0; k < left.columns(); ++k) {
+  for (std::int64_t i = 0; i < left.rows(); ++i) {
+    for (std::int64_t j = 0; j < right.columns(); ++j) {
+      for (std::int64_t k = 0; k < left.columns(); ++k) {
         result(i, j) += left(i, k) * right(k, j);
       }
     }
@@ -763,13 +770,14 @@ operator*(FixedMatrix<LScalar, rows, dimension> const& left,
   return result;
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
     FixedMatrix<LScalar, rows, columns> const& left,
     FixedVector<RScalar, columns> const& right) {
   std::array<Product<LScalar, RScalar>, rows> result;
   auto const* row = left.data_.data();
-  for (int i = 0; i < rows; ++i) {
+  for (std::int64_t i = 0; i < rows; ++i) {
     result[i] =
         DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::
             Compute(row, right.data_);
@@ -778,25 +786,26 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
   return FixedVector<Product<LScalar, RScalar>, rows>(std::move(result));
 }
 
-template<typename LScalar, typename RScalar, int rows, int columns>
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns>
 constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
     TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
     FixedVector<RScalar, rows> const& right) {
   std::array<Product<LScalar, RScalar>, columns> result{};
-  for (int i = 0; i < columns; ++i) {
+  for (std::int64_t i = 0; i < columns; ++i) {
     auto& result_i = result[i];
-    for (int j = 0; j < rows; ++j) {
+    for (std::int64_t j = 0; j < rows; ++j) {
       result_i += left(i, j) * right[j];
     }
   }
   return FixedVector<Product<LScalar, RScalar>, columns>(std::move(result));
 }
 
-template<typename Scalar, int size>
+template<typename Scalar, std::int64_t size>
 std::ostream& operator<<(std::ostream& out,
                          FixedVector<Scalar, size> const& vector) {
   std::stringstream s;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     s << (i == 0 ? "{" : "") << vector[i]
       << (i == size - 1 ? "}" : ", ");
   }
@@ -804,13 +813,13 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-template<typename Scalar, int rows, int columns>
+template<typename Scalar, std::int64_t rows, std::int64_t columns>
 std::ostream& operator<<(std::ostream& out,
                          FixedMatrix<Scalar, rows, columns> const& matrix) {
   out << "rows: " << rows << " columns: " << columns << "\n";
-  for (int i = 0; i < rows; ++i) {
+  for (std::int64_t i = 0; i < rows; ++i) {
     out << "{";
-    for (int j = 0; j < columns; ++j) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       out << matrix(i, j);
       if (j < columns - 1) {
         out << ", ";
@@ -821,14 +830,14 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-template<typename Scalar, int rows>
+template<typename Scalar, std::int64_t rows>
 std::ostream& operator<<(
     std::ostream& out,
     FixedStrictlyLowerTriangularMatrix<Scalar, rows> const& matrix) {
   out << "rows: " << matrix.rows() << "\n";
-  for (int i = 0; i < matrix.rows(); ++i) {
+  for (std::int64_t i = 0; i < matrix.rows(); ++i) {
     out << "{";
-    for (int j = 0; j < i; ++j) {
+    for (std::int64_t j = 0; j < i; ++j) {
       out << matrix(i, j);
       if (j < i - 1) {
         out << ", ";
@@ -839,14 +848,14 @@ std::ostream& operator<<(
   return out;
 }
 
-template<typename Scalar, int rows>
+template<typename Scalar, std::int64_t rows>
 std::ostream& operator<<(
     std::ostream& out,
     FixedLowerTriangularMatrix<Scalar, rows> const& matrix) {
   out << "rows: " << matrix.rows() << "\n";
-  for (int i = 0; i < matrix.rows(); ++i) {
+  for (std::int64_t i = 0; i < matrix.rows(); ++i) {
     out << "{";
-    for (int j = 0; j <= i; ++j) {
+    for (std::int64_t j = 0; j <= i; ++j) {
       out << matrix(i, j);
       if (j < i) {
         out << ", ";
@@ -857,14 +866,14 @@ std::ostream& operator<<(
   return out;
 }
 
-template<typename Scalar, int columns>
+template<typename Scalar, std::int64_t columns>
 std::ostream& operator<<(
     std::ostream& out,
     FixedUpperTriangularMatrix<Scalar, columns> const& matrix) {
   out << "columns: " << matrix.columns() << "\n";
-  for (int i = 0; i < matrix.columns(); ++i) {
+  for (std::int64_t i = 0; i < matrix.columns(); ++i) {
     out << "{";
-    for (int j = i; j < matrix.columns(); ++j) {
+    for (std::int64_t j = i; j < matrix.columns(); ++j) {
       if (j > i) {
         out << ", ";
       }
