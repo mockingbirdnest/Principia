@@ -216,6 +216,34 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
 
 
 template<typename Matrix>
+void Insert(Matrix& matrix,
+            typename GramGenerator<Matrix>::Result& gram_matrix,
+            std::int64_t const from_column,
+            std::int64_t const to_column) {
+  CHECK_LT(to_column, from_column);
+
+  for (std::int64_t i = 0; i < matrix.rows(); ++i) {
+    auto const from = matrix(i, from_column);
+    for (std::int64_t j = from_column; j > to_column; --j) {
+      matrix(i, j) = matrix(i, j - 1);
+    }
+    matrix(i, to_column) = from;
+  }
+
+  std::int64_t to_row = to_column;
+  std::int64_t from_row = from_column;
+  for (std::int64_t i = from_row; i > to_row; --i) {
+    auto const from = gram_matrix(i, from_column);
+    for (std::int64_t j = from_column; j > to_column; --j) {
+      gram_matrix(i, j) = gram_matrix(i - 1, j - 1);
+    }
+    gram_matrix(i, to_column) = from;
+  }
+
+}
+
+
+template<typename Matrix>
 typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
   using G = GramGenerator<Matrix>;
   std::int64_t const rows = L.rows();
@@ -304,7 +332,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   double const η = 0.55;
   //[NS09] figure 9.
   // Step 1.
-  auto const G = Gram(b);
+  auto G = Gram(b);
   // Step 2.
   // Note that the combining macron doesn't work well here so we use a modifier
   // macron.
@@ -335,7 +363,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     }
     r(κ, κ) = s[κ];
     // Step 6.
-    Insert(b, κʹ, κ, G);
+    Insert(b, G, κʹ, κ);
     // Step 7.
     auto const bκ = ColumnView{.matrix = b,
                                .first_row = 0,
