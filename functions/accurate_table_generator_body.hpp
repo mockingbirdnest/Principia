@@ -285,13 +285,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // the columns according to the L₂ norm.
   std::array<std::unique_ptr<ColumnView<Lattice const>>, V.columns()> v;
   for (std::int64_t i = 0; i < v.size(); ++i) {
-    // TODO(phl): Switch the matrices to use std::int64_t instead of int, and
-    // the cast below will go away.
     v[i] = std::make_unique<ColumnView<Lattice const>>(
         ColumnView<Lattice const>{.matrix = V,
                                   .first_row = 0,
                                   .last_row = V.rows() - 1,
-                                  .column = static_cast<int>(i)});
+                                  .column = i});
   }
   std::sort(v.begin(),
             v.end(),

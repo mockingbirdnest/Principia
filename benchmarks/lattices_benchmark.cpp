@@ -16,19 +16,20 @@ using namespace principia::numerics::_lattices;
 
 constexpr std::int64_t number_of_lattices = 1000;
 
-template<typename Element, int max_element>
+template<typename Element, std::int64_t max_element>
 class LatticesBenchmark : public benchmark::Fixture {
  protected:
   using Lattice = FixedMatrix<Element, 5, 4>;
 
   void SetUp(benchmark::State& state) {
     std::mt19937_64 random(42);
-    std::uniform_int_distribution<> uniformly_at(-max_element, max_element);
+    std::uniform_int_distribution<std::int64_t> uniformly_at(-max_element,
+                                                             max_element);
 
     for (std::int64_t l = 0; l < number_of_lattices; ++l) {
       auto& lattice = lattices_[l];
       for (std::int64_t i = 0; i < lattice.rows(); ++i) {
-        for (std::int64_t j = 0; j < lattice.rows(); ++j) {
+        for (std::int64_t j = 0; j < lattice.columns(); ++j) {
           lattice(i, j) = uniformly_at(random);
         }
       }
@@ -47,6 +48,12 @@ class LatticesBenchmark : public benchmark::Fixture {
 };
 
 BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászDouble3,
+                     double, 1'000)(benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
                      LenstraLenstraLovászDouble6,
                      double, 1'000'000)(benchmark::State& state) {
   RunLenstraLenstraLovász(state);
@@ -59,6 +66,31 @@ BENCHMARK_TEMPLATE_F(LatticesBenchmark,
 }
 
 BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászDouble12,
+                     double, 1'000'000'000'000)(benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászDouble15,
+                     double, 1'000'000'000'000'000)(benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászDouble18,
+                     double, 1'000'000'000'000'000'000)(
+                     benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászCppRational3,
+                     cpp_rational, 1'000)(benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
                      LenstraLenstraLovászCppRational6,
                      cpp_rational, 1'000'000)(benchmark::State& state) {
   RunLenstraLenstraLovász(state);
@@ -67,6 +99,26 @@ BENCHMARK_TEMPLATE_F(LatticesBenchmark,
 BENCHMARK_TEMPLATE_F(LatticesBenchmark,
                      LenstraLenstraLovászCppRational9,
                      cpp_rational, 1'000'000'000)(benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászCppRational12,
+                     cpp_rational, 1'000'000'000'000)(benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászCppRational15,
+                     cpp_rational, 1'000'000'000'000'000)(
+                     benchmark::State& state) {
+  RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     LenstraLenstraLovászCppRational18,
+                     cpp_rational, 1'000'000'000'000'000'000)(
+                     benchmark::State& state) {
   RunLenstraLenstraLovász(state);
 }
 
