@@ -177,11 +177,12 @@ std::string ToMathematica(
     OptionalExpressIn express_in = std::nullopt,
     std::int64_t base = 16);
 
-template<typename T, int size, typename OptionalExpressIn = std::nullopt_t>
+template<typename T, std::int64_t size,
+         typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, int rows, int columns,
+template<typename T, std::int64_t rows, std::int64_t columns,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(FixedMatrix<T, rows, columns> const& fixed_matrix,
                           OptionalExpressIn express_in = std::nullopt);
