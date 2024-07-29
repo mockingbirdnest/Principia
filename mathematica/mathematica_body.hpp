@@ -402,23 +402,24 @@ std::string ToMathematica(Quaternion const& quaternion,
                    ToMathematica(quaternion.imaginary_part().z)});
 }
 
-template<typename T, int size, typename OptionalExpressIn>
+template<typename T, std::int64_t size, typename OptionalExpressIn>
 std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
                           OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
-  for (int i = 0; i < size; ++i) {
+  for (std::int64_t i = 0; i < size; ++i) {
     expressions.emplace_back(ToMathematica(fixed_vector[i], express_in));
   }
   return RawApply("List", expressions);
 }
 
-template<typename T, int rows, int columns, typename OptionalExpressIn>
+template<typename T, std::int64_t rows, std::int64_t columns,
+         typename OptionalExpressIn>
 std::string ToMathematica(FixedMatrix<T, rows, columns> const& fixed_matrix,
                           OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
-  for (int i = 0; i < rows; ++i) {
+  for (std::int64_t i = 0; i < rows; ++i) {
     std::vector<std::string> row_expressions;
-    for (int j = 0; j < columns; ++j) {
+    for (std::int64_t j = 0; j < columns; ++j) {
       row_expressions.emplace_back(
           ToMathematica(fixed_matrix(i, j), express_in));
     }
@@ -540,10 +541,10 @@ std::string ToMathematica(UnboundedMatrix<Scalar> const& matrix,
                           OptionalExpressIn express_in) {
   std::vector<std::string> rows;
   rows.reserve(matrix.rows());
-  for (int i = 0; i < matrix.rows(); ++i) {
+  for (std::int64_t i = 0; i < matrix.rows(); ++i) {
     std::vector<std::string> row;
     row.reserve(matrix.columns());
-    for (int j = 0; j < matrix.columns(); ++j) {
+    for (std::int64_t j = 0; j < matrix.columns(); ++j) {
       row.push_back(ToMathematica(matrix(i, j), express_in));
     }
     rows.push_back(RawApply("List", row));
@@ -556,13 +557,13 @@ std::string ToMathematica(UnboundedLowerTriangularMatrix<Scalar> const& matrix,
                           OptionalExpressIn express_in) {
   std::vector<std::string> rows;
   rows.reserve(matrix.rows());
-  for (int i = 0; i < matrix.rows(); ++i) {
+  for (std::int64_t i = 0; i < matrix.rows(); ++i) {
     std::vector<std::string> row;
     row.reserve(matrix.rows());
-    for (int j = 0; j <= i; ++j) {
+    for (std::int64_t j = 0; j <= i; ++j) {
       row.push_back(ToMathematica(matrix(i, j), express_in));
     }
-    for (int j = i + 1; j < matrix.rows(); ++j) {
+    for (std::int64_t j = i + 1; j < matrix.rows(); ++j) {
       row.push_back(ToMathematica(Scalar{}, express_in));
     }
     rows.push_back(RawApply("List", row));
@@ -575,13 +576,13 @@ std::string ToMathematica(UnboundedUpperTriangularMatrix<Scalar> const& matrix,
                           OptionalExpressIn express_in) {
   std::vector<std::string> rows;
   rows.reserve(matrix.columns());
-  for (int i = 0; i < matrix.columns(); ++i) {
+  for (std::int64_t i = 0; i < matrix.columns(); ++i) {
     std::vector<std::string> row;
     row.reserve(matrix.columns());
-    for (int j = 0; j < i; ++j) {
+    for (std::int64_t j = 0; j < i; ++j) {
       row.push_back(ToMathematica(Scalar{}, express_in));
     }
-    for (int j = i; j < matrix.columns(); ++j) {
+    for (std::int64_t j = i; j < matrix.columns(); ++j) {
       row.push_back(ToMathematica(matrix(i, j), express_in));
     }
     rows.push_back(RawApply("List", row));
@@ -594,7 +595,7 @@ std::string ToMathematica(UnboundedVector<Scalar> const& vector,
                           OptionalExpressIn express_in) {
   std::vector<std::string> elements;
   elements.reserve(vector.size());
-  for (int i = 0; i < vector.size(); ++i) {
+  for (std::int64_t i = 0; i < vector.size(); ++i) {
     elements.push_back(ToMathematica(vector[i], express_in));
   }
   return RawApply("List", elements);
