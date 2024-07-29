@@ -242,6 +242,52 @@ void Insert(Matrix& matrix,
 
 }
 
+template<typename Matrix>
+void SizeReduce(Matrix& b,
+                typename NguyễnStehléGenerator<Matrix>::Μ& μ,
+                typename NguyễnStehléGenerator<Matrix>::R& r,
+                typename NguyễnStehléGenerator<Matrix>::S& s,
+                std::int64_t const κ) {
+  std::int64_t const rows = b.rows();
+  // [NS09] figure 7.
+  double const η = 0.55;
+  // [NS09] figure 5.
+  // Step 1.
+  double const ηˉ = (η + 1) / 2;
+  for (;;) {
+    // Step 2.
+    Missing();
+    // Step 3.
+    for (std::int64_t j = 0; j < κ; ++j) {
+      if (Abs(μ(j, κ)) > ηˉ) {
+        return;
+      }
+    }
+    std::vector<std::int64_t> X(κ);
+    for (std::int64_t i = κ - 1; i >= 0; --i) {
+      // Step 4.
+      X[i] = std::llround(μ(i, κ));
+      // Step 5.
+      for (std::int64_t j = 0; j < i; ++j) {
+        μ(j, κ) -= X[i] * μ(j, i);
+      }
+    }
+    // Step 6.
+    auto b_κ = ColumnView{.matrix = b,
+                          .first_row = 0,
+                          .last_row = rows - 1,
+                          .column =κ};
+    for (std::int64_t i = 0; i < κ - 1; ++i) {
+      auto const bᵢ = ColumnView{.matrix = b,
+                                 .first_row = 0,
+                                 .last_row = rows - 1,
+                                 .column = i};
+      b_κ -= X[i] * bᵢ;
+    }
+    UpdateG();
+  }
+}
+
 
 template<typename Matrix>
 typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
@@ -328,10 +374,10 @@ Matrix NguyễnStehlé(Matrix const& L) {
   std::int64_t const n = b.rows();
   auto const zero = Gen::Zero(b);
 
-  //[NS09] figure 7.
+  // [NS09] figure 7.
   double const ẟ = 0.75;
   double const η = 0.55;
-  //[NS09] figure 9.
+  // [NS09] figure 9.
   // Step 1.
   auto G = Gram(b);
   // Step 2.
@@ -350,7 +396,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   std::int64_t ζ = -1;
   while (κ < d) {
     // Step 3.
-    SizeReduce(b, ζ + 1, κ, r, μ, s);
+    SizeReduce(b, r, μ, s, κ);
     // Step 4.
     //TODO(phl)high index probably useless
     std::int64_t κʹ = κ;
@@ -364,7 +410,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     }
     r(κ, κ) = s[κ];
     // Step 6.
-    Insert(b, G, κʹ, κ);
+    Insert(b, G, /*from_column=*/κʹ, /*to_column=*/κ);
     // Step 7.
     auto const bκ = ColumnView{.matrix = b,
                                .first_row = 0,
