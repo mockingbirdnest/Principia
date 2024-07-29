@@ -96,18 +96,18 @@ class AlmostEqualsMatcher final {
   template<typename S>
   bool MatchAndExplain(DoublePrecision<S> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar, int size>
+  template<typename Scalar, std::int64_t size>
   bool MatchAndExplain(FixedVector<Scalar, size> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar, int rows, int columns>
+  template<typename Scalar, std::int64_t rows, std::int64_t columns>
   bool MatchAndExplain(
       FixedMatrix<Scalar, rows, columns> const& actual,
       testing::MatchResultListener* listener) const;
-  template<typename Scalar, int rows>
+  template<typename Scalar, std::int64_t rows>
   bool MatchAndExplain(
       FixedLowerTriangularMatrix<Scalar, rows> const& actual,
       testing::MatchResultListener* listener) const;
-  template<typename Scalar, int columns>
+  template<typename Scalar, std::int64_t columns>
   bool MatchAndExplain(
       FixedUpperTriangularMatrix<Scalar, columns> const& actual,
       testing::MatchResultListener* listener) const;
