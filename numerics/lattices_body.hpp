@@ -9,6 +9,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
+#include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -23,6 +24,7 @@ using namespace principia::base::_tags;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
+using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -216,48 +218,77 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
 
 
 template<typename Matrix>
-void Insert(Matrix& matrix,
-            typename GramGenerator<Matrix>::Result& gram_matrix,
-            std::int64_t const from_column,
-            std::int64_t const to_column) {
+void Insert(std::int64_t const from_column,
+            std::int64_t const to_column,
+            Matrix& b,
+            typename GramGenerator<Matrix>::Result& G) {
   CHECK_LT(to_column, from_column);
 
-  for (std::int64_t i = 0; i < matrix.rows(); ++i) {
-    auto const from = matrix(i, from_column);
+  for (std::int64_t i = 0; i < b.rows(); ++i) {
+    auto const from = b(i, from_column);
     for (std::int64_t j = from_column; j > to_column; --j) {
-      matrix(i, j) = matrix(i, j - 1);
+      b(i, j) = b(i, j - 1);
     }
-    matrix(i, to_column) = from;
+    b(i, to_column) = from;
   }
 
   std::int64_t to_row = to_column;
   std::int64_t from_row = from_column;
+  //TODO(phl)Is this right?
   for (std::int64_t i = from_row; i > to_row; --i) {
-    auto const from = gram_matrix(i, from_column);
+    auto const from = G(i, from_column);
     for (std::int64_t j = from_column; j > to_column; --j) {
-      gram_matrix(i, j) = gram_matrix(i - 1, j - 1);
+      G(i, j) = G(i - 1, j - 1);
     }
-    gram_matrix(i, to_column) = from;
+    G(i, to_column) = from;
   }
-
 }
 
+// This is [NS09] figure 4.
 template<typename Matrix>
-void SizeReduce(Matrix& b,
+void CholeskyFactorization(std::int64_t const κ,
+                           typename GramGenerator<Matrix>::Result& G,
+                           typename NguyễnStehléGenerator<Matrix>::Μ& μ,
+                           typename NguyễnStehléGenerator<Matrix>::R& r,
+                           typename NguyễnStehléGenerator<Matrix>::S& s) {
+  std::int64_t const i = κ;
+  // Step 2.
+  for (std::int64_t j = 0; j < κ; ++j) {
+    // Step 3.
+    r(j, i) = static_cast<double>(G(i, j));
+    // Step 4.
+    for (std::int64_t k = 0; k < j; ++k) {
+      r(j, i) -= μ(k, j) * r(k, i);
+    }
+    // Step 5.
+    μ(j, i) = r(j, i) / r(j, j);
+    // Step 6.
+    s[0] = static_cast<double>(G(i, i));
+    for (std::int64_t k = 1; k <= i; ++k) {
+      s[j] = s[j - 1] - μ(j - 1, i) * r(j - 1, i);
+    }
+    // Step 7.
+    r(i, i) = s[i];
+  }
+}
+
+// Unless otherwise indicated, this is [NS09] figure 5.
+template<typename Matrix>
+void SizeReduce(std::int64_t const κ,
+                Matrix& b,
                 typename GramGenerator<Matrix>::Result& G,
                 typename NguyễnStehléGenerator<Matrix>::Μ& μ,
                 typename NguyễnStehléGenerator<Matrix>::R& r,
-                typename NguyễnStehléGenerator<Matrix>::S& s,
-                std::int64_t const κ) {
-  std::int64_t const rows = b.rows();
+                typename NguyễnStehléGenerator<Matrix>::S& s) {
   // [NS09] figure 7.
   double const η = 0.55;
-  // [NS09] figure 5.
+
+  std::int64_t const rows = b.rows();
   // Step 1.
   double const ηˉ = (η + 1) / 2;
   for (;;) {
     // Step 2.
-    Missing();
+    CholeskyFactorization<Matrix>(κ, G, μ, r, s);
     // Step 3.
     for (std::int64_t j = 0; j < κ; ++j) {
       if (Abs(μ(j, κ)) > ηˉ) {
@@ -279,17 +310,18 @@ void SizeReduce(Matrix& b,
                           .last_row = rows - 1,
                           .column =κ};
     for (std::int64_t i = 0; i < κ; ++i) {
-      auto const bᵢ = ColumnView{.matrix = b,
-                                 .first_row = 0,
-                                 .last_row = rows - 1,
-                                 .column = i};
+      auto const bᵢ = typename NguyễnStehléGenerator<Matrix>::Vector(
+                          ColumnView{.matrix = b,
+                                     .first_row = 0,
+                                     .last_row = rows - 1,
+                                     .column = i});
       b_κ -= X[i] * bᵢ;
     }
 
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
     for (std::int64_t j = 0; j < κ; ++j) {
-      typename GramGenerator<Matrix>::Result::Element ΣᵢXᵢbᵢbⱼ{};
+      typename GramGenerator<Matrix>::Result::Scalar ΣᵢXᵢbᵢbⱼ{};
       for (std::int64_t i = 0; i < κ; ++i) {
         ΣᵢXᵢbᵢbⱼ += X[i] * G(i, j);
       }
@@ -313,10 +345,10 @@ typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
   std::int64_t const columns = L.columns();
   auto result = G::Uninitialized(L);
   for (std::int64_t i = 0; i < columns; ++i) {
-    auto const bᵢ = ColumnView{.matrix = L,
-                               .first_row = 0,
-                               .last_row = rows - 1,
-                               .column = i};
+    auto const bᵢ = TransposedView{ColumnView{.matrix = L,
+                                              .first_row = 0,
+                                              .last_row = rows - 1,
+                                              .column = i}};
     for (std::int64_t j = 0; j <= i; ++j) {
       auto const bⱼ = ColumnView{.matrix = L,
                                  .first_row = 0,
@@ -382,19 +414,19 @@ Matrix LenstraLenstraLovász(Matrix const& L) {
   return v;
 }
 
+// Unless otherwise indicated, this is [NS09] figure 9.
 template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix NguyễnStehlé(Matrix const& L) {
+  // [NS09] figure 7.
+  double const ẟ = 0.75;
+
   using Gen = NguyễnStehléGenerator<Matrix>;
   auto b = L;
   std::int64_t const d = b.columns();
   std::int64_t const n = b.rows();
   auto const zero = Gen::Zero(b);
 
-  // [NS09] figure 7.
-  double const ẟ = 0.75;
-  double const η = 0.55;
-  // [NS09] figure 9.
   // Step 1.
   auto G = Gram(b);
   // Step 2.
@@ -413,7 +445,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   std::int64_t ζ = -1;
   while (κ < d) {
     // Step 3.
-    SizeReduce(b, G, r, μ, s, κ);
+    SizeReduce(κ, b, G, r, μ, s);
     // Step 4.
     //TODO(phl)high index probably useless
     std::int64_t κʹ = κ;
@@ -427,7 +459,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     }
     r(κ, κ) = s[κ];
     // Step 6.
-    Insert(b, G, /*from_column=*/κʹ, /*to_column=*/κ);
+    Insert(/*from_column=*/κʹ, /*to_column=*/κ, b, G);
     // Step 7.
     auto const bκ = ColumnView{.matrix = b,
                                .first_row = 0,
