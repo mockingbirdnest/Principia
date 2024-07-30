@@ -244,6 +244,7 @@ void Insert(Matrix& matrix,
 
 template<typename Matrix>
 void SizeReduce(Matrix& b,
+                typename GramGenerator<Matrix>::Result& G,
                 typename NguyễnStehléGenerator<Matrix>::Μ& μ,
                 typename NguyễnStehléGenerator<Matrix>::R& r,
                 typename NguyễnStehléGenerator<Matrix>::S& s,
@@ -277,14 +278,30 @@ void SizeReduce(Matrix& b,
                           .first_row = 0,
                           .last_row = rows - 1,
                           .column =κ};
-    for (std::int64_t i = 0; i < κ - 1; ++i) {
+    for (std::int64_t i = 0; i < κ; ++i) {
       auto const bᵢ = ColumnView{.matrix = b,
                                  .first_row = 0,
                                  .last_row = rows - 1,
                                  .column = i};
       b_κ -= X[i] * bᵢ;
     }
-    UpdateG();
+
+    // [NS09], below figure 6.  Note that G is symmetric, so we can write the
+    // indices just like in the paper.
+    for (std::int64_t j = 0; j < κ; ++j) {
+      typename GramGenerator<Matrix>::Result::Element ΣᵢXᵢbᵢbⱼ{};
+      for (std::int64_t i = 0; i < κ; ++i) {
+        ΣᵢXᵢbᵢbⱼ += X[i] * G(i, j);
+      }
+      G(κ, κ) += X[j] * (X[j] * G(j, j) + 2 * (ΣᵢXᵢbᵢbⱼ - G(j, κ)));
+    }
+    for (std::int64_t i = 0; i < κ; ++i) {
+      for (std::int64_t j = 0; j < κ; ++j) {
+        //TODO(phl): This is ΣᵢXᵢbᵢbⱼ, don't recompute it.
+        G(i, κ) -= X[j] * G(i, j);
+      }
+      G(i, κ) = G(i, κ);
+    }
   }
 }
 
@@ -396,7 +413,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   std::int64_t ζ = -1;
   while (κ < d) {
     // Step 3.
-    SizeReduce(b, r, μ, s, κ);
+    SizeReduce(b, G, r, μ, s, κ);
     // Step 4.
     //TODO(phl)high index probably useless
     std::int64_t κʹ = κ;
