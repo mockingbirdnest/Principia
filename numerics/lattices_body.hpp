@@ -36,14 +36,14 @@ struct GramGenerator;
 
 template<typename Scalar>
 struct GramGenerator<UnboundedMatrix<Scalar>> {
-  using Result = UnboundedMatrix<Square<Scalar>>;
-  static Result Uninitialized(UnboundedMatrix<Scalar> const& m);
+  using G = UnboundedMatrix<Square<Scalar>>;
+  static G Uninitialized(UnboundedMatrix<Scalar> const& m);
 };
 
 template<typename Scalar, int rows, int columns>
 struct GramGenerator<FixedMatrix<Scalar, rows, columns>> {
-  using Result = FixedMatrix<Square<Scalar>, columns, columns>;
-  static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
+  using G = FixedMatrix<Square<Scalar>, columns, columns>;
+  static G Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
 template<typename Matrix>
@@ -114,14 +114,14 @@ struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
 
 template<typename Scalar>
 auto GramGenerator<UnboundedMatrix<Scalar>>::Uninitialized(
-UnboundedMatrix<Scalar> const& m) -> Result {
-  return Result(m.rows(), m.rows(), uninitialized);
+UnboundedMatrix<Scalar> const& m) -> G {
+  return G(m.rows(), m.rows(), uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
 auto GramGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialized(
-FixedMatrix<Scalar, rows, columns> const& m) -> Result {
-  return Result(uninitialized);
+FixedMatrix<Scalar, rows, columns> const& m) -> G {
+  return G(uninitialized);
 }
 
 template<typename Scalar>
@@ -217,11 +217,12 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
 }
 
 
-template<typename Matrix>
+template<typename Matrix,
+         typename GG = GramGenerator<Matrix>>
 void Insert(std::int64_t const from_column,
             std::int64_t const to_column,
             Matrix& b,
-            typename GramGenerator<Matrix>::Result& G) {
+            typename GG::G& G) {
   CHECK_LT(to_column, from_column);
 
   for (std::int64_t i = 0; i < b.rows(); ++i) {
@@ -249,7 +250,7 @@ template<typename Matrix,
          typename GG = GramGenerator<Matrix>,
          typename NSG = NguyễnStehléGenerator<Matrix>>
 void CholeskyFactorization(std::int64_t const κ,
-                           typename GG::Result& G,
+                           typename GG::G& G,
                            typename NSG::Μ& μ,
                            typename NSG::R& r,
                            typename NSG::S& s) {
@@ -280,7 +281,7 @@ template<typename Matrix,
          typename NSG = NguyễnStehléGenerator<Matrix>>
 void SizeReduce(std::int64_t const κ,
                 Matrix& b,
-                typename GG::Result& G,
+                typename GG::G& G,
                 typename NSG::Μ& μ,
                 typename NSG::R& r,
                 typename NSG::S& s) {
@@ -324,7 +325,7 @@ void SizeReduce(std::int64_t const κ,
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
     for (std::int64_t j = 0; j < κ; ++j) {
-      typename GG::Result::Scalar ΣᵢXᵢbᵢbⱼ{};
+      typename GG::G::Scalar ΣᵢXᵢbᵢbⱼ{};
       for (std::int64_t i = 0; i < κ; ++i) {
         ΣᵢXᵢbᵢbⱼ += X[i] * G(i, j);
       }
@@ -342,11 +343,11 @@ void SizeReduce(std::int64_t const κ,
 
 
 template<typename Matrix>
-typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
+typename GramGenerator<Matrix>::G Gram(Matrix const& L) {
   using G = GramGenerator<Matrix>;
   std::int64_t const rows = L.rows();
   std::int64_t const columns = L.columns();
-  auto result = G::Uninitialized(L);
+  auto g = G::Uninitialized(L);
   for (std::int64_t i = 0; i < columns; ++i) {
     auto const bᵢ = TransposedView{ColumnView{.matrix = L,
                                               .first_row = 0,
@@ -358,11 +359,11 @@ typename GramGenerator<Matrix>::Result Gram(Matrix const& L) {
                                  .last_row = rows - 1,
                                  .column = j};
       auto const bᵢbⱼ = bᵢ * bⱼ;
-      result(i, j) = bᵢbⱼ;
-      result(j, i) = bᵢbⱼ;
+      g(i, j) = bᵢbⱼ;
+      g(j, i) = bᵢbⱼ;
     }
   }
-  return result;
+  return g;
 }
 
 // This implements [HPS], theorem 7.71, figure 7.8.  Note that figures 7.9 and
