@@ -245,12 +245,14 @@ void Insert(std::int64_t const from_column,
 }
 
 // This is [NS09] figure 4.
-template<typename Matrix>
+template<typename Matrix,
+         typename GG = GramGenerator<Matrix>,
+         typename NSG = NguyễnStehléGenerator<Matrix>>
 void CholeskyFactorization(std::int64_t const κ,
-                           typename GramGenerator<Matrix>::Result& G,
-                           typename NguyễnStehléGenerator<Matrix>::Μ& μ,
-                           typename NguyễnStehléGenerator<Matrix>::R& r,
-                           typename NguyễnStehléGenerator<Matrix>::S& s) {
+                           typename GG::Result& G,
+                           typename NSG::Μ& μ,
+                           typename NSG::R& r,
+                           typename NSG::S& s) {
   std::int64_t const i = κ;
   // Step 2.
   for (std::int64_t j = 0; j < κ; ++j) {
@@ -273,13 +275,15 @@ void CholeskyFactorization(std::int64_t const κ,
 }
 
 // Unless otherwise indicated, this is [NS09] figure 5.
-template<typename Matrix>
+template<typename Matrix,
+         typename GG = GramGenerator<Matrix>,
+         typename NSG = NguyễnStehléGenerator<Matrix>>
 void SizeReduce(std::int64_t const κ,
                 Matrix& b,
-                typename GramGenerator<Matrix>::Result& G,
-                typename NguyễnStehléGenerator<Matrix>::Μ& μ,
-                typename NguyễnStehléGenerator<Matrix>::R& r,
-                typename NguyễnStehléGenerator<Matrix>::S& s) {
+                typename GG::Result& G,
+                typename NSG::Μ& μ,
+                typename NSG::R& r,
+                typename NSG::S& s) {
   // [NS09] figure 7.
   double const η = 0.55;
 
@@ -310,18 +314,17 @@ void SizeReduce(std::int64_t const κ,
                           .last_row = rows - 1,
                           .column =κ};
     for (std::int64_t i = 0; i < κ; ++i) {
-      auto const bᵢ = typename NguyễnStehléGenerator<Matrix>::Vector(
-                          ColumnView{.matrix = b,
-                                     .first_row = 0,
-                                     .last_row = rows - 1,
-                                     .column = i});
+      auto const bᵢ = typename NSG::Vector(ColumnView{.matrix = b,
+                                                      .first_row = 0,
+                                                      .last_row = rows - 1,
+                                                      .column = i});
       b_κ -= X[i] * bᵢ;
     }
 
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
     for (std::int64_t j = 0; j < κ; ++j) {
-      typename GramGenerator<Matrix>::Result::Scalar ΣᵢXᵢbᵢbⱼ{};
+      typename GG::Result::Scalar ΣᵢXᵢbᵢbⱼ{};
       for (std::int64_t i = 0; i < κ; ++i) {
         ΣᵢXᵢbᵢbⱼ += X[i] * G(i, j);
       }
@@ -421,11 +424,11 @@ Matrix NguyễnStehlé(Matrix const& L) {
   // [NS09] figure 7.
   double const ẟ = 0.75;
 
-  using Gen = NguyễnStehléGenerator<Matrix>;
+  using NSG = NguyễnStehléGenerator<Matrix>;
   auto b = L;
   std::int64_t const d = b.columns();
   std::int64_t const n = b.rows();
-  auto const zero = Gen::Zero(b);
+  auto const zero = NSG::Zero(b);
 
   // Step 1.
   auto G = Gram(b);
@@ -437,10 +440,10 @@ Matrix NguyễnStehlé(Matrix const& L) {
                              .first_row = 0,
                              .last_row = n,
                              .column = 0};
-  typename Gen::R r = Gen::UninitializedR(b);
-  typename Gen::Μ μ = Gen::UninitializedΜ(b);
-  typename Gen::S s = Gen::UninitializedS(b);
-  r(0, 0) = static_cast<typename Gen::R::Scalar>(b₀.Norm²());
+  typename NSG::R r = NSG::UninitializedR(b);
+  typename NSG::Μ μ = NSG::UninitializedΜ(b);
+  typename NSG::S s = NSG::UninitializedS(b);
+  r(0, 0) = static_cast<typename NSG::R::Scalar>(b₀.Norm²());
   std::int64_t κ = 1;
   std::int64_t ζ = -1;
   while (κ < d) {
