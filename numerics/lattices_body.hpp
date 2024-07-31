@@ -217,6 +217,7 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
 }
 
 
+//TODO(phl)comment
 template<typename Matrix,
          typename GG = GramGenerator<Matrix>>
 void Insert(std::int64_t const from_column,
@@ -226,23 +227,39 @@ void Insert(std::int64_t const from_column,
   CHECK_LT(to_column, from_column);
 
   for (std::int64_t i = 0; i < b.rows(); ++i) {
-    auto const from = b(i, from_column);
+    auto from = std::move(b(i, from_column));
     for (std::int64_t j = from_column; j > to_column; --j) {
-      b(i, j) = b(i, j - 1);
+      b(i, j) = std::move(b(i, j - 1));
     }
-    b(i, to_column) = from;
+    b(i, to_column) = std::move(from);
   }
 
-  std::int64_t to_row = to_column;
-  std::int64_t from_row = from_column;
-  //TODO(phl)Is this right?
-  for (std::int64_t i = from_row; i > to_row; --i) {
-    auto const from = G(i, from_column);
-    for (std::int64_t j = from_column; j > to_column; --j) {
-      G(i, j) = G(i - 1, j - 1);
-    }
-    G(i, to_column) = from;
+  std::int64_t const to_row = to_column;
+  std::int64_t const from_row = from_column;
+
+  // Squirrel away the row `from_row` (the last one) since it will be
+  // overwritten below.
+  std::vector<typename GG::G::Scalar> t;
+  t.reserve(from_column - to_column + 1);
+  for (std::int64_t j = to_column; j <= from_column; ++j) {
+    t.push_back(std::move(G(from_row, j)));
   }
+
+  // Move the bulk of the elements.
+  for (std::int64_t i = from_row; i > to_row; --i) {
+    auto from = std::move(G(i - 1, from_column));
+    for (std::int64_t j = from_column; j > to_column; --j) {
+      G(i, j) = std::move(G(i - 1, j - 1));
+    }
+    G(i, to_column) = std::move(from);
+  }
+
+  // Restore the row that we saved at the beginning.  It now goes to `to_row`
+  // (the first one) with a suitable rotation.
+  for (std::int64_t j = to_column; j < from_column; ++j) {
+    G(to_row, to_column + j + 1) = std::move(t[j]);
+  }
+  G(to_row, to_column) = std::move(t[from_column]);
 }
 
 // This is [NS09] figure 4.
