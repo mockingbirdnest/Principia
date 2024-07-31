@@ -366,20 +366,32 @@ LOG(ERROR)<<"after: "<<b_κ;
 
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
+    typename GG::G::Scalar ΣⱼXⱼ²bⱼ²{};
+    typename GG::G::Scalar ΣⱼXⱼbⱼb_κ{};
+    typename GG::G::Scalar ΣᵢΣⱼXᵢXⱼbᵢbⱼ{};
     for (std::int64_t j = 0; j < κ; ++j) {
-      typename GG::G::Scalar ΣᵢXᵢbᵢbⱼ{};
-      for (std::int64_t i = 0; i < κ; ++i) {
-        ΣᵢXᵢbᵢbⱼ += X[i] * G(i, j);
+      ΣⱼXⱼ²bⱼ² += (X[j] * X[j]) * G(j, j);
+      ΣⱼXⱼbⱼb_κ += X[j] * G(j, κ);
+      for (std::int64_t i = 0; i < j; ++i) {
+        ΣᵢΣⱼXᵢXⱼbᵢbⱼ += (X[i] * X[j]) * G(i, j);
       }
-      G(κ, κ) += X[j] * (X[j] * G(j, j) + 2 * (ΣᵢXᵢbᵢbⱼ - G(j, κ)));
     }
+LOG(ERROR)<<G(κ, κ);
+LOG(ERROR)<<ΣⱼXⱼ²bⱼ²;
+LOG(ERROR)<<ΣⱼXⱼbⱼb_κ;
+LOG(ERROR)<<ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
+    G(κ, κ) += ΣⱼXⱼ²bⱼ² - 2 * ΣⱼXⱼbⱼb_κ + 2 * ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
+CHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
+
     for (std::int64_t i = 0; i < κ; ++i) {
+      typename GG::G::Scalar ΣⱼXⱼbᵢbⱼ{};
       for (std::int64_t j = 0; j < κ; ++j) {
-        //TODO(phl): This is ΣᵢXᵢbᵢbⱼ, don't recompute it.
-        G(i, κ) -= X[j] * G(i, j);
+        ΣⱼXⱼbᵢbⱼ += X[j] * G(i, j);
       }
+      G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
       G(κ, i) = G(i, κ);
     }
+LOG(ERROR)<<"after: "<<G;
   }
 }
 
@@ -491,6 +503,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     // Step 4.
     //TODO(phl)high index probably useless
     std::int64_t κʹ = κ;
+LOG(ERROR)<<"Lovacs: "<<r(κ - 1, κ - 1) << " vs " << s[κ - 1];
     while (κ >= ζ + 2 && δˉ * r(κ - 1, κ - 1) >= s[κ - 1]) {
       --κ;
     }
