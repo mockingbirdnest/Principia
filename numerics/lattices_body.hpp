@@ -65,8 +65,8 @@ struct NguyễnStehléGenerator;
 
 template<typename Scalar>
 struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
-  using R = UnboundedMatrix<Square<Scalar>>;
-  using Μ = UnboundedMatrix<double>;
+  using R = UnboundedUpperTriangularMatrix<Square<Scalar>>;
+  using Μ = UnboundedUpperTriangularMatrix<double>;  //TODO(phl)Strictly
   using S = UnboundedVector<Square<Scalar>>;
   using Vector = UnboundedVector<Scalar>;
   static R UninitializedR(UnboundedMatrix<Scalar> const& m);
@@ -77,8 +77,8 @@ struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
 
 template<>
 struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
-  using R = UnboundedMatrix<double>;
-  using Μ = UnboundedMatrix<double>;
+  using R = UnboundedUpperTriangularMatrix<double>;
+  using Μ = UnboundedUpperTriangularMatrix<double>;  //TODO(phl)Strictly
   using S = UnboundedVector<double>;
   using Vector = UnboundedVector<cpp_int>;
   static R UninitializedR(UnboundedMatrix<cpp_int> const& m);
@@ -89,9 +89,9 @@ struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
 
 template<typename Scalar, int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
-  using R = FixedMatrix<Square<Scalar>, rows, columns>;
-  using Μ = FixedMatrix<double, rows, columns>;
-  using S = FixedVector<Square<Scalar>, rows>;
+  using R = FixedUpperTriangularMatrix<Square<Scalar>, columns>;
+  using Μ = FixedUpperTriangularMatrix<double, columns>;  //TODO(phl)Strictly
+  using S = FixedVector<Square<Scalar>, columns>;
   using Vector = FixedVector<Scalar, rows>;
   static R UninitializedR(FixedMatrix<Scalar, rows, columns> const& m);
   static Μ UninitializedΜ(FixedMatrix<Scalar, rows, columns> const& m);
@@ -101,9 +101,9 @@ struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
 
 template<int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
-  using R = FixedMatrix<double, rows, columns>;
-  using Μ = FixedMatrix<double, rows, columns>;
-  using S = FixedVector<double, rows>;
+  using R = FixedUpperTriangularMatrix<double, columns>;
+  using Μ = FixedUpperTriangularMatrix<double, columns>;  //TODO(phl)Strictly
+  using S = FixedVector<double, columns>;
   using Vector = FixedVector<cpp_int, rows>;
   static R UninitializedR(FixedMatrix<cpp_int, rows, columns> const& m);
   static Μ UninitializedΜ(FixedMatrix<cpp_int, rows, columns> const& m);
@@ -150,17 +150,17 @@ auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Zero(
 
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedR(
     UnboundedMatrix<cpp_int> const& m) -> R {
-  return R(m.rows(), m.columns(), uninitialized);
+  return R(m.columns(), uninitialized);
 }
 
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedΜ(
     UnboundedMatrix<cpp_int> const& m) -> Μ {
-  return Μ(m.rows(), m.columns(), uninitialized);
+  return Μ(m.columns(), uninitialized);
 }
 
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedS(
     UnboundedMatrix<cpp_int> const& m) -> S {
-  return S(m.rows(), uninitialized);
+  return S(m.columns(), uninitialized);
 }
 
 auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
