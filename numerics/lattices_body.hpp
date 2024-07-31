@@ -226,6 +226,9 @@ void Insert(std::int64_t const from_column,
             typename GG::G& G) {
   CHECK_LT(to_column, from_column);
 
+  //LOG(ERROR)<<"from "<<from_column<<" to "<<to_column;
+  //LOG(ERROR)<<"b before "<<b;
+
   for (std::int64_t i = 0; i < b.rows(); ++i) {
     auto from = std::move(b(i, from_column));
     for (std::int64_t j = from_column; j > to_column; --j) {
@@ -233,9 +236,12 @@ void Insert(std::int64_t const from_column,
     }
     b(i, to_column) = std::move(from);
   }
+  //LOG(ERROR)<<"b after "<<b;
 
   std::int64_t const to_row = to_column;
   std::int64_t const from_row = from_column;
+
+  //LOG(ERROR)<<"G before "<<G;
 
   // Squirrel away the row `from_row` (the last one) since it will be
   // overwritten below.
@@ -260,6 +266,8 @@ void Insert(std::int64_t const from_column,
     G(to_row, j) = std::move(t[j - to_column - 1]);
   }
   G(to_row, to_column) = std::move(t[t.size() - 1]);
+
+  //LOG(ERROR)<<"G after "<<G;
 }
 
 // This is [NS09] figure 4.
@@ -268,12 +276,12 @@ template<typename Matrix,
          typename NSG = NguyễnStehléGenerator<Matrix>>
 void CholeskyFactorization(std::int64_t const κ,
                            typename GG::G& G,
-                           typename NSG::Μ& μ,
                            typename NSG::R& r,
+                           typename NSG::Μ& μ,
                            typename NSG::S& s) {
   std::int64_t const i = κ;
   // Step 2.
-  for (std::int64_t j = 0; j < κ; ++j) {
+  for (std::int64_t j = 0; j < i; ++j) {
     // Step 3.
     r(j, i) = static_cast<double>(G(i, j));
     // Step 4.
@@ -301,8 +309,8 @@ template<typename Matrix,
 void SizeReduce(std::int64_t const κ,
                 Matrix& b,
                 typename GG::G& G,
-                typename NSG::Μ& μ,
                 typename NSG::R& r,
+                typename NSG::Μ& μ,
                 typename NSG::S& s) {
   // [NS09] figure 7.
   double const η = 0.55;
@@ -312,7 +320,12 @@ void SizeReduce(std::int64_t const κ,
   double const ηˉ = (η + 0.5) / 2;
   for (;;) {
     // Step 2.
-    CholeskyFactorization<Matrix>(κ, G, μ, r, s);
+    CholeskyFactorization<Matrix>(κ, G, r, μ, s);
+LOG(ERROR)<<"b:\n"<<b;
+LOG(ERROR)<<"G:\n"<<G;
+LOG(ERROR)<<"r:\n"<<r;
+LOG(ERROR)<<"μ:\n"<<μ;
+LOG(ERROR)<<"s:\n"<<s;
     // Step 3.
     bool terminate = true;
     for (std::int64_t j = 0; j < κ; ++j) {
@@ -339,13 +352,17 @@ void SizeReduce(std::int64_t const κ,
                           .first_row = 0,
                           .last_row = rows - 1,
                           .column = κ};
+LOG(ERROR)<<"kappa: "<<κ;
+LOG(ERROR)<<"before: "<<b_κ;
     for (std::int64_t i = 0; i < κ; ++i) {
       auto const bᵢ = typename NSG::Vector(ColumnView{.matrix = b,
                                                       .first_row = 0,
                                                       .last_row = rows - 1,
                                                       .column = i});
       b_κ -= X[i] * bᵢ;
+LOG(ERROR)<<"i: "<<i<<" Xi: "<<X[i]<<" b: "<<b_κ;
     }
+LOG(ERROR)<<"after: "<<b_κ;
 
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
