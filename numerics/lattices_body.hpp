@@ -284,7 +284,9 @@ void CholeskyFactorization(std::int64_t const κ,
     μ(j, i) = r(j, i) / r(j, j);
     // Step 6.
     s[0] = static_cast<double>(G(i, i));
-    for (std::int64_t k = 1; k <= i; ++k) {
+    // Calling this index `j` is a tad confusing, but that's what the article
+    // does.
+    for (std::int64_t j = 1; j <= i; ++j) {
       s[j] = s[j - 1] - μ(j - 1, i) * r(j - 1, i);
     }
     // Step 7.
@@ -312,11 +314,17 @@ void SizeReduce(std::int64_t const κ,
     // Step 2.
     CholeskyFactorization<Matrix>(κ, G, μ, r, s);
     // Step 3.
+    bool terminate = true;
     for (std::int64_t j = 0; j < κ; ++j) {
       if (Abs(μ(j, κ)) > ηˉ) {
-        return;
+        terminate = false;
+        break;
       }
     }
+    if (terminate) {
+      return;
+    }
+
     std::vector<std::int64_t> X(κ);
     for (std::int64_t i = κ - 1; i >= 0; --i) {
       // Step 4.
@@ -456,7 +464,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   double const δˉ = (ẟ + 1) / 2;
   auto const b₀ = ColumnView{.matrix = b,
                              .first_row = 0,
-                             .last_row = n,
+                             .last_row = n - 1,
                              .column = 0};
   typename NSG::R r = NSG::UninitializedR(b);
   typename NSG::Μ μ = NSG::UninitializedΜ(b);
@@ -474,7 +482,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
       --κ;
     }
     // Step 5.
-    for (std::int64_t i = ζ + 1; i < κ - 1; ++i) {
+    for (std::int64_t i = ζ + 1; i <= κ - 1; ++i) {
       μ(κ, i) = μ(κʹ, i);
       r(κ, i) = r(κʹ, i);
     }
@@ -484,7 +492,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     // Step 7.
     auto const bκ = ColumnView{.matrix = b,
                                .first_row = 0,
-                               .last_row = n,
+                               .last_row = n - 1,
                                .column = κ};
     if (bκ == zero) {
       ++ζ;
