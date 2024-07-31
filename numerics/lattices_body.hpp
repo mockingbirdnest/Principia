@@ -256,10 +256,10 @@ void Insert(std::int64_t const from_column,
 
   // Restore the row that we saved at the beginning.  It now goes to `to_row`
   // (the first one) with a suitable rotation.
-  for (std::int64_t j = to_column; j < from_column; ++j) {
-    G(to_row, to_column + j + 1) = std::move(t[j]);
+  for (std::int64_t j = to_column + 1; j <= from_column; ++j) {
+    G(to_row, j) = std::move(t[j - to_column - 1]);
   }
-  G(to_row, to_column) = std::move(t[from_column]);
+  G(to_row, to_column) = std::move(t[t.size() - 1]);
 }
 
 // This is [NS09] figure 4.
@@ -309,7 +309,7 @@ void SizeReduce(std::int64_t const κ,
 
   std::int64_t const rows = b.rows();
   // Step 1.
-  double const ηˉ = (η + 1) / 2;
+  double const ηˉ = (η + 0.5) / 2;
   for (;;) {
     // Step 2.
     CholeskyFactorization<Matrix>(κ, G, μ, r, s);
@@ -338,7 +338,7 @@ void SizeReduce(std::int64_t const κ,
     auto b_κ = ColumnView{.matrix = b,
                           .first_row = 0,
                           .last_row = rows - 1,
-                          .column =κ};
+                          .column = κ};
     for (std::int64_t i = 0; i < κ; ++i) {
       auto const bᵢ = typename NSG::Vector(ColumnView{.matrix = b,
                                                       .first_row = 0,
@@ -361,7 +361,7 @@ void SizeReduce(std::int64_t const κ,
         //TODO(phl): This is ΣᵢXᵢbᵢbⱼ, don't recompute it.
         G(i, κ) -= X[j] * G(i, j);
       }
-      G(i, κ) = G(i, κ);
+      G(κ, i) = G(i, κ);
     }
   }
 }
@@ -462,14 +462,10 @@ Matrix NguyễnStehlé(Matrix const& L) {
   // Note that the combining macron doesn't work well here so we use a modifier
   // macron.
   double const δˉ = (ẟ + 1) / 2;
-  auto const b₀ = ColumnView{.matrix = b,
-                             .first_row = 0,
-                             .last_row = n - 1,
-                             .column = 0};
   typename NSG::R r = NSG::UninitializedR(b);
   typename NSG::Μ μ = NSG::UninitializedΜ(b);
   typename NSG::S s = NSG::UninitializedS(b);
-  r(0, 0) = static_cast<typename NSG::R::Scalar>(b₀.Norm²());
+  r(0, 0) = static_cast<typename NSG::R::Scalar>(G(0, 0));
   std::int64_t κ = 1;
   std::int64_t ζ = -1;
   while (κ < d) {
@@ -483,12 +479,14 @@ Matrix NguyễnStehlé(Matrix const& L) {
     }
     // Step 5.
     for (std::int64_t i = ζ + 1; i <= κ - 1; ++i) {
-      μ(κ, i) = μ(κʹ, i);
-      r(κ, i) = r(κʹ, i);
+      μ(i, κ) = μ(i, κʹ);
+      r(i, κ) = r(i, κʹ);
     }
     r(κ, κ) = s[κ];
     // Step 6.
-    Insert(/*from_column=*/κʹ, /*to_column=*/κ, b, G);
+    if (κʹ != κ) {
+      Insert(/*from_column=*/κʹ, /*to_column=*/κ, b, G);
+    }
     // Step 7.
     auto const bκ = ColumnView{.matrix = b,
                                .first_row = 0,
