@@ -47,9 +47,9 @@ TEST_F(LatticesTest, LLL_Rational) {
 
   auto const reduced = LenstraLenstraLovász(l);
   EXPECT_EQ(reduced,
-            (FixedMatrix<cpp_rational, 5, 4>({  45,     6, -18,   15,   0,
-                                                45, -1200, 348,    0,   0,
-                                                 0,     0,   0, 1083, 336,
+            (FixedMatrix<cpp_rational, 5, 4>({  45,     6, -18,   15,    0,
+                                                45, -1200, 348,    0,    0,
+                                                 0,     0,   0, 1083,  336,
                                               -660,     0, 165, -180, 1263})));
 }
 
@@ -83,10 +83,10 @@ TEST_F(LatticesTest, NS_Int) {
 
   auto const reduced = NguyễnStehlé(l);
   EXPECT_EQ(reduced,
-            (FixedMatrix<cpp_int, 5, 4>({  45,     6, -18,   15,   0,
-                                                45, -1200, 348,    0,   0,
-                                                 0,     0,   0, 1083, 336,
-                                              -660,     0, 165, -180, 1263})));
+            (FixedMatrix<cpp_int, 5, 4>({  45,     6, -18,   15,    0,
+                                           45, -1200, 348,    0,    0,
+                                            0,     0,   0, 1083,  336,
+                                         -660,     0, 165, -180, 1263})));
 }
 
 }  // namespace _lattices
