@@ -3,6 +3,8 @@
 #include "numerics/lattices.hpp"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/tags.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
@@ -261,7 +263,7 @@ void Insert(std::int64_t const from_column,
                                .column = i};
     for (std::int64_t j = 0; j < d; ++j) {
       CHECK_EQ(G(i, j),
-               (TransposedView{bᵢ} *
+               (TransposedView{bᵢ} *                                   // NOLINT
                 ColumnView{.matrix = b,
                            .first_row = 0,
                            .last_row = n - 1,
@@ -374,7 +376,7 @@ void SizeReduce(std::int64_t const κ,
       }
     }
     G(κ, κ) += ΣⱼXⱼ²bⱼ² - 2 * ΣⱼXⱼbⱼb_κ + 2 * ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
-    DCHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
+    DCHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);                     // NOLINT
 
     for (std::int64_t i = 0; i < d; ++i) {
       if (i != κ) {
@@ -385,7 +387,7 @@ void SizeReduce(std::int64_t const κ,
         G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
         G(κ, i) = G(i, κ);
         DCHECK_EQ(G(i, κ),
-                  (TransposedView{ColumnView{.matrix = b,
+                  (TransposedView{ColumnView{.matrix = b,              // NOLINT
                                              .first_row = 0,
                                              .last_row = n - 1,
                                              .column = i}} *
