@@ -217,7 +217,9 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
 }
 
 
-//TODO(phl)comment
+// Moves the column of `b` with index `from_column` to index `to_column`,
+// nudging everything after `to_column` by one column (so this is really a
+// "rotate").  Updates `G` accordingly.
 template<typename Matrix,
          typename GG = GramGenerator<Matrix>>
 void Insert(std::int64_t const from_column,
@@ -227,10 +229,6 @@ void Insert(std::int64_t const from_column,
   CHECK_LT(to_column, from_column);
   std::int64_t const d = b.columns();
   std::int64_t const n = b.rows();
-
-  LOG(ERROR)<<"from "<<from_column<<" to "<<to_column;
-  LOG(ERROR)<<"b before "<<b;
-  LOG(ERROR)<<"G before "<<G;
 
   auto target_index = [from_index = from_column,
                        to_index = to_column](std::int64_t const index) {
@@ -243,6 +241,7 @@ void Insert(std::int64_t const from_column,
     }
   };
 
+  //TODO(phl)simplify
   // After iteration `j` the entry at `target_index(j)` has the right content,
   // and it won't be touched again since `j` is decreasing.
   for (std::int64_t i = 0; i < n; ++i) {
@@ -250,7 +249,6 @@ void Insert(std::int64_t const from_column,
       std::swap(b(i, target_index(j)), b(i, j));
     }
   }
-  LOG(ERROR)<<"b after "<<b;
 
   for (std::int64_t i = 0; i < d; ++i) {
     for (std::int64_t j = from_column; j > to_column; --j) {
@@ -263,14 +261,6 @@ void Insert(std::int64_t const from_column,
     }
   }
 
-//  for (std::int64_t i = d - 1; i >= 0; --i) {
-//    for (std::int64_t j = d - 1; j >= 0; --j) {
-//LOG(ERROR)<<i<<" "<<j<<"->"<<target_index(i)<<" "<< target_index(j);
-//      std::swap(G(target_index(i), target_index(j)), G(i, j));
-//    }
-//  }
-
-  LOG(ERROR)<<"G after "<<G;
 #if _DEBUG
   for (std::int64_t i = 0; i < d ; ++i) {
     auto const bᵢ = ColumnView{.matrix = b,
@@ -341,11 +331,6 @@ void SizeReduce(std::int64_t const κ,
   for (;;) {
     // Step 2.
     CholeskyFactorization<Matrix>(κ, G, r, μ, s);
-LOG(ERROR)<<"b:\n"<<b;
-LOG(ERROR)<<"G:\n"<<G;
-LOG(ERROR)<<"r:\n"<<r;
-LOG(ERROR)<<"μ:\n"<<μ;
-LOG(ERROR)<<"s:\n"<<s;
     // Step 3.
     bool terminate = true;
     for (std::int64_t j = 0; j < κ; ++j) {
@@ -372,17 +357,13 @@ LOG(ERROR)<<"s:\n"<<s;
                           .first_row = 0,
                           .last_row = n - 1,
                           .column = κ};
-LOG(ERROR)<<"kappa: "<<κ;
-LOG(ERROR)<<"before: "<<b_κ;
     for (std::int64_t i = 0; i < κ; ++i) {
       auto const bᵢ = typename NSG::Vector(ColumnView{.matrix = b,
                                                       .first_row = 0,
                                                       .last_row = n - 1,
                                                       .column = i});
       b_κ -= X[i] * bᵢ;
-LOG(ERROR)<<"i: "<<i<<" Xi: "<<X[i]<<" b: "<<b_κ;
     }
-LOG(ERROR)<<"after: "<<b_κ;
 
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
@@ -396,14 +377,8 @@ LOG(ERROR)<<"after: "<<b_κ;
       ΣⱼXⱼbⱼb_κ += X[j] * G(j, κ);
       for (std::int64_t i = 0; i < j; ++i) {
         ΣᵢΣⱼXᵢXⱼbᵢbⱼ += X[i] * (X[j] * G(i, j));
-LOG(ERROR)<<i<<" "<<j<<" "<<X[i]<<" "<<X[j]<<" "<<G(i, j);
-LOG(ERROR)<<i<<" "<<j<<" "<<X[i] * (X[j] * G(i, j));
       }
     }
-LOG(ERROR)<<G(κ, κ);
-LOG(ERROR)<<ΣⱼXⱼ²bⱼ²;
-LOG(ERROR)<<ΣⱼXⱼbⱼb_κ;
-LOG(ERROR)<<ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
     G(κ, κ) += ΣⱼXⱼ²bⱼ² - 2 * ΣⱼXⱼbⱼb_κ + 2 * ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
     DCHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
 
@@ -423,7 +398,6 @@ LOG(ERROR)<<ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
                    b_κ)) << i;
       }
     }
-LOG(ERROR)<<"after: "<<G;
   }
 }
 
@@ -533,9 +507,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     // Step 3.
     SizeReduce(κ, b, G, r, μ, s);
     // Step 4.
-    //TODO(phl)high index probably useless
     std::int64_t κʹ = κ;
-LOG(ERROR)<<"Lovacs: "<<r(κ - 1, κ - 1) << " vs " << s[κ - 1];
     while (κ >= ζ + 2 && δˉ * r(κ - 1, κ - 1) >= s[κ - 1]) {
       --κ;
     }

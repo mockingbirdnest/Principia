@@ -16,7 +16,7 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász(Matrix const& L);
 
-//TODO(phl)comment
+// Same convention as above, but using a more efficient algorithm.
 template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix NguyễnStehlé(Matrix const& L);
