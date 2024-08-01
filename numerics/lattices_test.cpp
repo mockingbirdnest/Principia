@@ -62,14 +62,18 @@ TEST_F(LatticesTest, NS_Example_7_75) {
                                33, 24, 16, 15, 31, 29});
 
   auto const reduced = NguyễnStehlé(l);
+  // Note that, even taking into account permutations and sign changes, this
+  // reduction is not the same as the one obtained by LLL: the last vector
+  // differs.  It appears to be a little longer and somewhat more orthogonal
+  // than the LLL one.
   EXPECT_THAT(reduced,
               AlmostEquals(
-                  (FixedMatrix<double, 6, 6>({  7, -20,  5,  -6, -10,   7,
-                                              -12,   4,  2,  -7, -24,   4,
-                                               -8,  -9, 33, -20,  21,  -9,
-                                                4,  16,  0, -21, -15, -11,
-                                               19,  13, 15,   8,  -6,   1,
-                                                9,  16, -9, -12, -11,  31})),
+                  (FixedMatrix<double, 6, 6>({ -7, -20,  6,  5,  -7,  -9,
+                                               12,   4,  7,  2,  -4, -19,
+                                                8,  -9, 20, 33,   9,   8,
+                                               -4,  16, 21,  0,  11,   6,
+                                              -19,  13, -8, 15,  -1, -29,
+                                               -9,  16, 12, -9, -31,  10})),
                   0));
 }
 
