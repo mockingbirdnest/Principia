@@ -225,23 +225,24 @@ void Insert(std::int64_t const from_column,
             Matrix& b,
             typename GG::G& G) {
   CHECK_LT(to_column, from_column);
+  std::int64_t const rows = b.rows();
 
-  //LOG(ERROR)<<"from "<<from_column<<" to "<<to_column;
-  //LOG(ERROR)<<"b before "<<b;
+  LOG(ERROR)<<"from "<<from_column<<" to "<<to_column;
+  LOG(ERROR)<<"b before "<<b;
 
-  for (std::int64_t i = 0; i < b.rows(); ++i) {
+  for (std::int64_t i = 0; i < rows; ++i) {
     auto from = std::move(b(i, from_column));
     for (std::int64_t j = from_column; j > to_column; --j) {
       b(i, j) = std::move(b(i, j - 1));
     }
     b(i, to_column) = std::move(from);
   }
-  //LOG(ERROR)<<"b after "<<b;
+  LOG(ERROR)<<"b after "<<b;
 
   std::int64_t const to_row = to_column;
   std::int64_t const from_row = from_column;
 
-  //LOG(ERROR)<<"G before "<<G;
+  LOG(ERROR)<<"G before "<<G;
 
   // Squirrel away the row `from_row` (the last one) since it will be
   // overwritten below.
@@ -267,7 +268,23 @@ void Insert(std::int64_t const from_column,
   }
   G(to_row, to_column) = std::move(t[t.size() - 1]);
 
-  //LOG(ERROR)<<"G after "<<G;
+  LOG(ERROR)<<"G after "<<G;
+#if _DEBUG
+  for (std::int64_t i = 0; i < rows ; ++i) {
+    auto const bᵢ = ColumnView{.matrix = b,
+                               .first_row = 0,
+                               .last_row = rows - 1,
+                               .column = i};
+    for (std::int64_t j = 0; j < rows; ++j) {
+      CHECK_EQ(G(i, j),
+               (TransposedView{bᵢ} *
+                ColumnView{.matrix = b,
+                           .first_row = 0,
+                           .last_row = rows - 1,
+                           .column = j})) << i << " " << j;
+    }
+  }
+#endif
 }
 
 // This is [NS09] figure 4.
@@ -376,6 +393,8 @@ LOG(ERROR)<<"after: "<<b_κ;
       ΣⱼXⱼbⱼb_κ += X[j] * G(j, κ);
       for (std::int64_t i = 0; i < j; ++i) {
         ΣᵢΣⱼXᵢXⱼbᵢbⱼ += X[i] * (X[j] * G(i, j));
+LOG(ERROR)<<i<<" "<<j<<" "<<X[i]<<" "<<X[j]<<" "<<G(i, j);
+LOG(ERROR)<<i<<" "<<j<<" "<<X[i] * (X[j] * G(i, j));
       }
     }
 LOG(ERROR)<<G(κ, κ);
@@ -397,7 +416,7 @@ LOG(ERROR)<<ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
                                            .first_row = 0,
                                            .last_row = rows - 1,
                                            .column = i}} *
-                 b_κ));
+                 b_κ)) << i;
     }
 LOG(ERROR)<<"after: "<<G;
   }
