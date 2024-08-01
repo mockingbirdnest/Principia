@@ -66,7 +66,7 @@ struct NguyễnStehléGenerator;
 template<typename Scalar>
 struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
   using R = UnboundedUpperTriangularMatrix<Square<Scalar>>;
-  using Μ = UnboundedUpperTriangularMatrix<double>;  //TODO(phl)Strictly
+  using Μ = UnboundedUpperTriangularMatrix<double>;  // TODO(phl): Strictly
   using S = UnboundedVector<Square<Scalar>>;
   using Vector = UnboundedVector<Scalar>;
   static R UninitializedR(UnboundedMatrix<Scalar> const& m);
@@ -78,7 +78,7 @@ struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
 template<>
 struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
   using R = UnboundedUpperTriangularMatrix<double>;
-  using Μ = UnboundedUpperTriangularMatrix<double>;  //TODO(phl)Strictly
+  using Μ = UnboundedUpperTriangularMatrix<double>;  // TODO(phl): Strictly
   using S = UnboundedVector<double>;
   using Vector = UnboundedVector<cpp_int>;
   static R UninitializedR(UnboundedMatrix<cpp_int> const& m);
@@ -90,7 +90,7 @@ struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
 template<typename Scalar, int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
   using R = FixedUpperTriangularMatrix<Square<Scalar>, columns>;
-  using Μ = FixedUpperTriangularMatrix<double, columns>;  //TODO(phl)Strictly
+  using Μ = FixedUpperTriangularMatrix<double, columns>;  // TODO(phl): Strictly
   using S = FixedVector<Square<Scalar>, columns>;
   using Vector = FixedVector<Scalar, rows>;
   static R UninitializedR(FixedMatrix<Scalar, rows, columns> const& m);
@@ -102,7 +102,7 @@ struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
 template<int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
   using R = FixedUpperTriangularMatrix<double, columns>;
-  using Μ = FixedUpperTriangularMatrix<double, columns>;  //TODO(phl)Strictly
+  using Μ = FixedUpperTriangularMatrix<double, columns>;  // TODO(phl): Strictly
   using S = FixedVector<double, columns>;
   using Vector = FixedVector<cpp_int, rows>;
   static R UninitializedR(FixedMatrix<cpp_int, rows, columns> const& m);
@@ -230,35 +230,27 @@ void Insert(std::int64_t const from_column,
   std::int64_t const d = b.columns();
   std::int64_t const n = b.rows();
 
-  auto target_index = [from_index = from_column,
-                       to_index = to_column](std::int64_t const index) {
-    if (index == from_index) {
-      return to_index;
-    } else if (to_index <= index && index < from_index) {
-      return index + 1;
-    } else {
-      return index;
-    }
-  };
-
-  //TODO(phl)simplify
-  // After iteration `j` the entry at `target_index(j)` has the right content,
-  // and it won't be touched again since `j` is decreasing.
   for (std::int64_t i = 0; i < n; ++i) {
+    auto const from = b(i, from_column);
     for (std::int64_t j = from_column; j > to_column; --j) {
-      std::swap(b(i, target_index(j)), b(i, j));
+      b(i, j) = b(i, j - 1);
     }
+    b(i, to_column) = from;
   }
 
   for (std::int64_t i = 0; i < d; ++i) {
+    auto const from = G(i, from_column);
     for (std::int64_t j = from_column; j > to_column; --j) {
-      std::swap(G(i, target_index(j)), G(i, j));
+      G(i, j) = G(i, j - 1);
     }
+    G(i, to_column) = from;
   }
   for (std::int64_t j = 0; j < d; ++j) {
+    auto const from = G(from_column, j);
     for (std::int64_t i = from_column; i > to_column; --i) {
-      std::swap(G(target_index(i), j), G(i, j));
+      G(i, j) = G(i - 1, j);
     }
+    G(to_column, j) = from;
   }
 
 #if _DEBUG
@@ -365,8 +357,10 @@ void SizeReduce(std::int64_t const κ,
       b_κ -= X[i] * bᵢ;
     }
 
-    // [NS09], below figure 6.  Note that G is symmetric, so we can write the
-    // indices just like in the paper.
+    // [NS09], below figure 6.  G is symmetric, so we can write the indices just
+    // like in the article.  The article is at best confusing, at worst
+    // incorrect.  In particular the summations must stop at `κ - 1` (and not
+    // `≠ κ`) and the last sum must have `i < j`.
     // Note that we cannot compute terms like X[i] * X[j] as they could
     // overflow.
     typename GG::G::Scalar ΣⱼXⱼ²bⱼ²{};
