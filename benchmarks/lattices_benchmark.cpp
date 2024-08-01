@@ -44,6 +44,14 @@ class LatticesBenchmark : public benchmark::Fixture {
     }
   }
 
+  void RunNguyễnStehlé(benchmark::State& state) {
+    while (state.KeepRunningBatch(number_of_lattices)) {
+      for (auto const& lattice : lattices_) {
+        benchmark::DoNotOptimize(NguyễnStehlé(lattice));
+      }
+    }
+  }
+
   std::array<Lattice, number_of_lattices> lattices_;
 };
 
@@ -120,6 +128,81 @@ BENCHMARK_TEMPLATE_F(LatticesBenchmark,
                      cpp_rational, 1'000'000'000'000'000'000)(
                      benchmark::State& state) {
   RunLenstraLenstraLovász(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléDouble3,
+                     double, 1'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléDouble6,
+                     double, 1'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléDouble9,
+                     double, 1'000'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléDouble12,
+                     double, 1'000'000'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléDouble15,
+                     double, 1'000'000'000'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléDouble18,
+                     double, 1'000'000'000'000'000'000)(
+                     benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléCppInt3,
+                     cpp_int, 1'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléCppInt6,
+                     cpp_int, 1'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléCppInt9,
+                     cpp_int, 1'000'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléCppInt12,
+                     cpp_int, 1'000'000'000'000)(benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléCppInt15,
+                     cpp_int, 1'000'000'000'000'000)(
+                     benchmark::State& state) {
+  RunNguyễnStehlé(state);
+}
+
+BENCHMARK_TEMPLATE_F(LatticesBenchmark,
+                     NguyễnStehléCppInt18,
+                     cpp_int, 1'000'000'000'000'000'000)(
+                     benchmark::State& state) {
+  RunNguyễnStehlé(state);
 }
 
 }  // namespace numerics
