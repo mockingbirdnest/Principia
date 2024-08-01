@@ -366,14 +366,16 @@ LOG(ERROR)<<"after: "<<b_κ;
 
     // [NS09], below figure 6.  Note that G is symmetric, so we can write the
     // indices just like in the paper.
+    // Note that we cannot compute terms like X[i] * X[j] as they could
+    // overflow.
     typename GG::G::Scalar ΣⱼXⱼ²bⱼ²{};
     typename GG::G::Scalar ΣⱼXⱼbⱼb_κ{};
     typename GG::G::Scalar ΣᵢΣⱼXᵢXⱼbᵢbⱼ{};
     for (std::int64_t j = 0; j < κ; ++j) {
-      ΣⱼXⱼ²bⱼ² += (X[j] * X[j]) * G(j, j);
+      ΣⱼXⱼ²bⱼ² += X[j] * (X[j] * G(j, j));
       ΣⱼXⱼbⱼb_κ += X[j] * G(j, κ);
       for (std::int64_t i = 0; i < j; ++i) {
-        ΣᵢΣⱼXᵢXⱼbᵢbⱼ += (X[i] * X[j]) * G(i, j);
+        ΣᵢΣⱼXᵢXⱼbᵢbⱼ += X[i] * (X[j] * G(i, j));
       }
     }
 LOG(ERROR)<<G(κ, κ);
@@ -381,7 +383,7 @@ LOG(ERROR)<<ΣⱼXⱼ²bⱼ²;
 LOG(ERROR)<<ΣⱼXⱼbⱼb_κ;
 LOG(ERROR)<<ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
     G(κ, κ) += ΣⱼXⱼ²bⱼ² - 2 * ΣⱼXⱼbⱼb_κ + 2 * ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
-CHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
+    DCHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
 
     for (std::int64_t i = 0; i < κ; ++i) {
       typename GG::G::Scalar ΣⱼXⱼbᵢbⱼ{};
@@ -390,6 +392,12 @@ CHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
       }
       G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
       G(κ, i) = G(i, κ);
+      DCHECK_EQ(G(i, κ),
+                (TransposedView{ColumnView{.matrix = b,
+                                           .first_row = 0,
+                                           .last_row = rows - 1,
+                                           .column = i}} *
+                 b_κ));
     }
 LOG(ERROR)<<"after: "<<G;
   }
