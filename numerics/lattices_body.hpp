@@ -225,62 +225,64 @@ void Insert(std::int64_t const from_column,
             Matrix& b,
             typename GG::G& G) {
   CHECK_LT(to_column, from_column);
-  std::int64_t const rows = b.rows();
+  std::int64_t const d = b.columns();
+  std::int64_t const n = b.rows();
 
   LOG(ERROR)<<"from "<<from_column<<" to "<<to_column;
   LOG(ERROR)<<"b before "<<b;
+  LOG(ERROR)<<"G before "<<G;
 
-  for (std::int64_t i = 0; i < rows; ++i) {
-    auto from = std::move(b(i, from_column));
-    for (std::int64_t j = from_column; j > to_column; --j) {
-      b(i, j) = std::move(b(i, j - 1));
+  auto target_index = [from_index = from_column,
+                       to_index = to_column](std::int64_t const index) {
+    if (index == from_index) {
+      return to_index;
+    } else if (to_index <= index && index < from_index) {
+      return index + 1;
+    } else {
+      return index;
     }
-    b(i, to_column) = std::move(from);
+  };
+
+  // After iteration `j` the entry at `target_index(j)` has the right content,
+  // and it won't be touched again since `j` is decreasing.
+  for (std::int64_t i = 0; i < n; ++i) {
+    for (std::int64_t j = from_column; j > to_column; --j) {
+      std::swap(b(i, target_index(j)), b(i, j));
+    }
   }
   LOG(ERROR)<<"b after "<<b;
 
-  std::int64_t const to_row = to_column;
-  std::int64_t const from_row = from_column;
-
-  LOG(ERROR)<<"G before "<<G;
-
-  // Squirrel away the row `from_row` (the last one) since it will be
-  // overwritten below.
-  std::vector<typename GG::G::Scalar> t;
-  t.reserve(from_column - to_column + 1);
-  for (std::int64_t j = to_column; j <= from_column; ++j) {
-    t.push_back(std::move(G(from_row, j)));
-  }
-
-  // Move the bulk of the elements.
-  for (std::int64_t i = from_row; i > to_row; --i) {
-    auto from = std::move(G(i - 1, from_column));
+  for (std::int64_t i = 0; i < d; ++i) {
     for (std::int64_t j = from_column; j > to_column; --j) {
-      G(i, j) = std::move(G(i - 1, j - 1));
+      std::swap(G(i, target_index(j)), G(i, j));
     }
-    G(i, to_column) = std::move(from);
+  }
+  for (std::int64_t j = 0; j < d; ++j) {
+    for (std::int64_t i = from_column; i > to_column; --i) {
+      std::swap(G(target_index(i), j), G(i, j));
+    }
   }
 
-  // Restore the row that we saved at the beginning.  It now goes to `to_row`
-  // (the first one) with a suitable rotation.
-  for (std::int64_t j = to_column + 1; j <= from_column; ++j) {
-    G(to_row, j) = std::move(t[j - to_column - 1]);
-  }
-  G(to_row, to_column) = std::move(t[t.size() - 1]);
+//  for (std::int64_t i = d - 1; i >= 0; --i) {
+//    for (std::int64_t j = d - 1; j >= 0; --j) {
+//LOG(ERROR)<<i<<" "<<j<<"->"<<target_index(i)<<" "<< target_index(j);
+//      std::swap(G(target_index(i), target_index(j)), G(i, j));
+//    }
+//  }
 
   LOG(ERROR)<<"G after "<<G;
 #if _DEBUG
-  for (std::int64_t i = 0; i < rows ; ++i) {
+  for (std::int64_t i = 0; i < d ; ++i) {
     auto const bᵢ = ColumnView{.matrix = b,
                                .first_row = 0,
-                               .last_row = rows - 1,
+                               .last_row = n - 1,
                                .column = i};
-    for (std::int64_t j = 0; j < rows; ++j) {
+    for (std::int64_t j = 0; j < d; ++j) {
       CHECK_EQ(G(i, j),
                (TransposedView{bᵢ} *
                 ColumnView{.matrix = b,
                            .first_row = 0,
-                           .last_row = rows - 1,
+                           .last_row = n - 1,
                            .column = j})) << i << " " << j;
     }
   }
@@ -332,7 +334,8 @@ void SizeReduce(std::int64_t const κ,
   // [NS09] figure 7.
   double const η = 0.55;
 
-  std::int64_t const rows = b.rows();
+  std::int64_t const d = b.columns();
+  std::int64_t const n = b.rows();
   // Step 1.
   double const ηˉ = (η + 0.5) / 2;
   for (;;) {
@@ -367,14 +370,14 @@ LOG(ERROR)<<"s:\n"<<s;
     // Step 6.
     auto b_κ = ColumnView{.matrix = b,
                           .first_row = 0,
-                          .last_row = rows - 1,
+                          .last_row = n - 1,
                           .column = κ};
 LOG(ERROR)<<"kappa: "<<κ;
 LOG(ERROR)<<"before: "<<b_κ;
     for (std::int64_t i = 0; i < κ; ++i) {
       auto const bᵢ = typename NSG::Vector(ColumnView{.matrix = b,
                                                       .first_row = 0,
-                                                      .last_row = rows - 1,
+                                                      .last_row = n - 1,
                                                       .column = i});
       b_κ -= X[i] * bᵢ;
 LOG(ERROR)<<"i: "<<i<<" Xi: "<<X[i]<<" b: "<<b_κ;
@@ -404,19 +407,21 @@ LOG(ERROR)<<ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
     G(κ, κ) += ΣⱼXⱼ²bⱼ² - 2 * ΣⱼXⱼbⱼb_κ + 2 * ΣᵢΣⱼXᵢXⱼbᵢbⱼ;
     DCHECK_EQ(G(κ, κ), TransposedView{b_κ} * b_κ);
 
-    for (std::int64_t i = 0; i < κ; ++i) {
-      typename GG::G::Scalar ΣⱼXⱼbᵢbⱼ{};
-      for (std::int64_t j = 0; j < κ; ++j) {
-        ΣⱼXⱼbᵢbⱼ += X[j] * G(i, j);
+    for (std::int64_t i = 0; i < d; ++i) {
+      if (i != κ) {
+        typename GG::G::Scalar ΣⱼXⱼbᵢbⱼ{};
+        for (std::int64_t j = 0; j < κ; ++j) {
+          ΣⱼXⱼbᵢbⱼ += X[j] * G(i, j);
+        }
+        G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
+        G(κ, i) = G(i, κ);
+        DCHECK_EQ(G(i, κ),
+                  (TransposedView{ColumnView{.matrix = b,
+                                             .first_row = 0,
+                                             .last_row = n - 1,
+                                             .column = i}} *
+                   b_κ)) << i;
       }
-      G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
-      G(κ, i) = G(i, κ);
-      DCHECK_EQ(G(i, κ),
-                (TransposedView{ColumnView{.matrix = b,
-                                           .first_row = 0,
-                                           .last_row = rows - 1,
-                                           .column = i}} *
-                 b_κ)) << i;
     }
 LOG(ERROR)<<"after: "<<G;
   }
