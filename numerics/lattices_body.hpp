@@ -231,26 +231,26 @@ void Insert(std::int64_t const from_column,
   std::int64_t const n = b.rows();
 
   for (std::int64_t i = 0; i < n; ++i) {
-    auto const from = b(i, from_column);
+    auto from = std::move(b(i, from_column));
     for (std::int64_t j = from_column; j > to_column; --j) {
-      b(i, j) = b(i, j - 1);
+      b(i, j) = std::move(b(i, j - 1));
     }
-    b(i, to_column) = from;
+    b(i, to_column) = std::move(from);
   }
 
   for (std::int64_t i = 0; i < d; ++i) {
-    auto const from = G(i, from_column);
+    auto from = std::move(G(i, from_column));
     for (std::int64_t j = from_column; j > to_column; --j) {
-      G(i, j) = G(i, j - 1);
+      G(i, j) = std::move(G(i, j - 1));
     }
-    G(i, to_column) = from;
+    G(i, to_column) = std::move(from);
   }
   for (std::int64_t j = 0; j < d; ++j) {
-    auto const from = G(from_column, j);
+    auto from = std::move(G(from_column, j));
     for (std::int64_t i = from_column; i > to_column; --i) {
-      G(i, j) = G(i - 1, j);
+      G(i, j) = std::move(G(i - 1, j));
     }
-    G(to_column, j) = from;
+    G(to_column, j) = std::move(from);
   }
 
 #if _DEBUG
@@ -361,7 +361,7 @@ void SizeReduce(std::int64_t const κ,
     // like in the article.  The article is at best confusing, at worst
     // incorrect.  In particular the summations must stop at `κ - 1` (and not
     // `≠ κ`) and the last sum must have `i < j`.
-    // Note that we cannot compute terms like X[i] * X[j] as they could
+    // Note that we cannot compute terms like `X[i] * X[j]` as they could
     // overflow.
     typename GG::G::Scalar ΣⱼXⱼ²bⱼ²{};
     typename GG::G::Scalar ΣⱼXⱼbⱼb_κ{};
