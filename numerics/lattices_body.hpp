@@ -219,6 +219,34 @@ auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
 }
 
 
+template<typename Matrix>
+typename GramGenerator<Matrix>::G Gram(Matrix const& L) {
+  using G = GramGenerator<Matrix>;
+  std::int64_t const rows = L.rows();
+  std::int64_t const columns = L.columns();
+  auto g = G::Uninitialized(L);
+  for (std::int64_t i = 0; i < columns; ++i) {
+    auto const bᵢ = TransposedView{ColumnView{.matrix = L,
+                                              .first_row = 0,
+                                              .last_row = rows - 1,
+                                              .column = i}};
+    for (std::int64_t j = 0; j <= i; ++j) {
+      auto const bⱼ = ColumnView{.matrix = L,
+                                 .first_row = 0,
+                                 .last_row = rows - 1,
+                                 .column = j};
+      auto const bᵢbⱼ = bᵢ * bⱼ;
+      g(i, j) = bᵢbⱼ;
+      g(j, i) = bᵢbⱼ;
+    }
+  }
+  return g;
+}
+
+// In `NguyễnStehlé` and related functions, the indices for the matrices are
+// swapped with respect to [NS09] because their vectors `b` are in rows but ours
+// are in columns.  This doesn't matter for the Gram matrix, which is symmetric.
+
 // Moves the column of `b` with index `from_column` to index `to_column`,
 // nudging everything after `to_column` by one column (so this is really a
 // "rotate").  Updates `G` accordingly.
@@ -273,7 +301,7 @@ void Insert(std::int64_t const from_column,
 #endif
 }
 
-// This is [NS09] figure 4.
+// This is [NS09] figure 4, steps 2 to 7.
 template<typename Matrix,
          typename GG = GramGenerator<Matrix>,
          typename NSG = NguyễnStehléGenerator<Matrix>>
@@ -284,11 +312,11 @@ void CholeskyFactorization(std::int64_t const κ,
                            typename NSG::S& s) {
   std::int64_t const i = κ;
   // Step 2.
-  for (std::int64_t j = 0; j < i; ++j) {
+  for (std::int64_t j = 0; j <= i - 1; ++j) {
     // Step 3.
     r(j, i) = static_cast<double>(G(i, j));
     // Step 4.
-    for (std::int64_t k = 0; k < j; ++k) {
+    for (std::int64_t k = 0; k <= j - 1; ++k) {
       r(j, i) -= μ(k, j) * r(k, i);
     }
     // Step 5.
@@ -321,14 +349,14 @@ void SizeReduce(std::int64_t const κ,
   std::int64_t const d = b.columns();
   std::int64_t const n = b.rows();
   // Step 1.
-  double const ηˉ = (η + 0.5) / 2;
+  double const η̄ = (η + 0.5) / 2;
   for (;;) {
     // Step 2.
     CholeskyFactorization<Matrix>(κ, G, r, μ, s);
     // Step 3.
     bool terminate = true;
     for (std::int64_t j = 0; j < κ; ++j) {
-      if (Abs(μ(j, κ)) > ηˉ) {
+      if (Abs(μ(j, κ)) > η̄) {
         terminate = false;
         break;
       }
@@ -342,7 +370,7 @@ void SizeReduce(std::int64_t const κ,
       // Step 4.
       X[i] = std::llround(μ(i, κ));
       // Step 5.
-      for (std::int64_t j = 0; j < i; ++j) {
+      for (std::int64_t j = 0; j <= i - 1; ++j) {
         μ(j, κ) -= X[i] * μ(j, i);
       }
     }
@@ -356,6 +384,8 @@ void SizeReduce(std::int64_t const κ,
                                                       .first_row = 0,
                                                       .last_row = n - 1,
                                                       .column = i});
+      // The sum is associated differently from [NS09], which is legitimate
+      // because the elements of `b` are of type `cpp_int`.
       b_κ -= X[i] * bᵢ;
     }
 
@@ -397,30 +427,6 @@ void SizeReduce(std::int64_t const κ,
   }
 }
 
-
-template<typename Matrix>
-typename GramGenerator<Matrix>::G Gram(Matrix const& L) {
-  using G = GramGenerator<Matrix>;
-  std::int64_t const rows = L.rows();
-  std::int64_t const columns = L.columns();
-  auto g = G::Uninitialized(L);
-  for (std::int64_t i = 0; i < columns; ++i) {
-    auto const bᵢ = TransposedView{ColumnView{.matrix = L,
-                                              .first_row = 0,
-                                              .last_row = rows - 1,
-                                              .column = i}};
-    for (std::int64_t j = 0; j <= i; ++j) {
-      auto const bⱼ = ColumnView{.matrix = L,
-                                 .first_row = 0,
-                                 .last_row = rows - 1,
-                                 .column = j};
-      auto const bᵢbⱼ = bᵢ * bⱼ;
-      g(i, j) = bᵢbⱼ;
-      g(j, i) = bᵢbⱼ;
-    }
-  }
-  return g;
-}
 
 // This implements [HPS], theorem 7.71, figure 7.8.  Note that figures 7.9 and
 // 7.10 are supposedly more efficient, but they are significantly more
@@ -492,7 +498,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
   // Step 2.
   // Note that the combining macron doesn't work well here so we use a modifier
   // macron.
-  double const δˉ = (ẟ + 1) / 2;
+  double const δ̄ = (ẟ + 1) / 2;
   typename NSG::R r = NSG::UninitializedR(b);
   typename NSG::Μ μ = NSG::UninitializedΜ(b);
   typename NSG::S s = NSG::UninitializedS(b);
@@ -504,7 +510,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     SizeReduce(κ, b, G, r, μ, s);
     // Step 4.
     std::int64_t κʹ = κ;
-    while (κ >= ζ + 2 && δˉ * r(κ - 1, κ - 1) >= s[κ - 1]) {
+    while (κ >= ζ + 2 && δ̄ * r(κ - 1, κ - 1) >= s[κ - 1]) {
       --κ;
     }
     // Step 5.
