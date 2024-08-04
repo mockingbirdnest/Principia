@@ -16,9 +16,15 @@ template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász(Matrix const& L);
 
+// Same convention as above, but using a more efficient algorithm.
+template<typename Matrix>
+  requires two_dimensional<Matrix>
+Matrix NguyễnStehlé(Matrix const& L);
+
 }  // namespace internal
 
 using internal::LenstraLenstraLovász;
+using internal::NguyễnStehlé;
 
 }  // namespace _lattices
 }  // namespace numerics
