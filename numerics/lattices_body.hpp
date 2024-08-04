@@ -13,6 +13,7 @@
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -28,6 +29,7 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
@@ -66,6 +68,7 @@ template<typename Matrix>
 struct NguyễnStehléGenerator;
 
 template<typename Scalar>
+  requires quantity<Scalar>
 struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
   using R = UnboundedUpperTriangularMatrix<Square<Scalar>>;
   using Μ = UnboundedUpperTriangularMatrix<double>;  // TODO(phl): Strictly
@@ -90,6 +93,7 @@ struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
 };
 
 template<typename Scalar, int rows, int columns>
+  requires quantity<Scalar>
 struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
   using R = FixedUpperTriangularMatrix<Square<Scalar>, columns>;
   using Μ = FixedUpperTriangularMatrix<double, columns>;  // TODO(phl): Strictly
@@ -127,24 +131,28 @@ FixedMatrix<Scalar, rows, columns> const& m) -> G {
 }
 
 template<typename Scalar>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::UninitializedR(
     UnboundedMatrix<Scalar> const& m) -> R {
   return R(m.rows(), m.columns(), uninitialized);
 }
 
 template<typename Scalar>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::UninitializedΜ(
     UnboundedMatrix<Scalar> const& m) -> Μ {
   return Μ(m.rows(), m.columns(), uninitialized);
 }
 
 template<typename Scalar>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::UninitializedS(
     UnboundedMatrix<Scalar> const& m) -> S {
   return S(m.rows(), uninitialized);
 }
 
 template<typename Scalar>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Zero(
     UnboundedMatrix<Scalar> const& m) -> Vector {
   return Vector(m.rows());
@@ -171,24 +179,28 @@ auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
 }
 
 template<typename Scalar, int rows, int columns>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedR(
     FixedMatrix<Scalar, rows, columns> const& m) -> R {
   return R(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedΜ(
     FixedMatrix<Scalar, rows, columns> const& m) -> Μ {
   return Μ(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedS(
     FixedMatrix<Scalar, rows, columns> const& m) -> S {
   return S(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
+  requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Zero(
     FixedMatrix<Scalar, rows, columns> const& m) -> Vector {
   return Vector();
