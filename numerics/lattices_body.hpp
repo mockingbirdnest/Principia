@@ -158,22 +158,22 @@ auto NguyễnStehléGenerator<UnboundedMatrix<Scalar>>::Zero(
   return Vector(m.rows());
 }
 
-auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedR(
+inline auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedR(
     UnboundedMatrix<cpp_int> const& m) -> R {
   return R(m.columns(), uninitialized);
 }
 
-auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedΜ(
+inline auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedΜ(
     UnboundedMatrix<cpp_int> const& m) -> Μ {
   return Μ(m.columns(), uninitialized);
 }
 
-auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedS(
+inline auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::UninitializedS(
     UnboundedMatrix<cpp_int> const& m) -> S {
   return S(m.columns(), uninitialized);
 }
 
-auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
+inline auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
     UnboundedMatrix<cpp_int> const& m) -> Vector {
   return Vector(m.rows());
 }
