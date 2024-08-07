@@ -249,6 +249,54 @@ class FixedLowerTriangularMatrix final {
 };
 
 template<typename Scalar_, std::int64_t columns_>
+class FixedStrictlyUpperTriangularMatrix final {
+  static constexpr std::int64_t size_ = columns_ * (columns_ + 1) / 2;
+
+ public:
+  using Scalar = Scalar_;
+  static constexpr std::int64_t rows() { return columns_; }
+  static constexpr std::int64_t columns() { return columns_; }
+
+  constexpr FixedStrictlyUpperTriangularMatrix();
+  explicit FixedStrictlyUpperTriangularMatrix(uninitialized_t);
+
+  // The |data| must be in row-major format.
+  constexpr FixedStrictlyUpperTriangularMatrix(
+      std::array<Scalar, size_> const& data);
+
+  explicit FixedStrictlyUpperTriangularMatrix(
+      TransposedView<
+          FixedStrictlyLowerTriangularMatrix<Scalar, columns_>> const& view);
+
+  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_>() const;
+
+  friend bool operator==(
+      FixedStrictlyUpperTriangularMatrix const& left,
+      FixedStrictlyUpperTriangularMatrix const& right) = default;
+  friend bool operator!=(
+      FixedStrictlyUpperTriangularMatrix const& left,
+      FixedStrictlyUpperTriangularMatrix const& right) = default;
+
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
+  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
+  constexpr Scalar const& operator()(std::int64_t row,
+                                     std::int64_t column) const;
+
+  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
+      Scalar const (&right)[size_]);
+
+ private:
+  // For ease of writing matrices in tests, the input data is received in row-
+  // major format.  This transposes a trapezoidal slice to make it column-major.
+  static std::array<Scalar, size_> Transpose(
+      std::array<Scalar, size_> const& data);
+
+  std::array<Scalar, size_> data_;
+};
+
+template<typename Scalar_, std::int64_t columns_>
 class FixedUpperTriangularMatrix final {
   static constexpr std::int64_t size_ = columns_ * (columns_ + 1) / 2;
 
@@ -456,6 +504,7 @@ std::ostream& operator<<(
 using internal::FixedLowerTriangularMatrix;
 using internal::FixedMatrix;
 using internal::FixedStrictlyLowerTriangularMatrix;
+using internal::FixedStrictlyUpperTriangularMatrix;
 using internal::FixedUpperTriangularMatrix;
 using internal::FixedVector;
 
