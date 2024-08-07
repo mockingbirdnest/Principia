@@ -429,6 +429,96 @@ FixedLowerTriangularMatrix<Scalar_, rows_>::operator=(
 }
 
 template<typename Scalar_, std::int64_t columns_>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+FixedStrictlyUpperTriangularMatrix()
+    : data_{} {}
+
+template<typename Scalar_, std::int64_t columns_>
+FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+FixedStrictlyUpperTriangularMatrix(uninitialized_t) {}
+
+template<typename Scalar_, std::int64_t columns_>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+FixedStrictlyUpperTriangularMatrix(std::array<Scalar, size_> const& data)
+    : data_(Transpose(data)) {}
+
+template<typename Scalar_, std::int64_t columns_>
+FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+FixedStrictlyUpperTriangularMatrix(
+    TransposedView<
+        FixedStrictlyLowerTriangularMatrix<Scalar, columns_>> const& view)
+    : FixedStrictlyUpperTriangularMatrix(uninitialized) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = i; j < columns(); ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
+
+template<typename Scalar_, std::int64_t columns_>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+operator FixedMatrix<Scalar_, columns_, columns_>() const {
+  FixedMatrix<Scalar, columns_, columns_> result;  // Initialized.
+  for (std::int64_t j = 0; j < columns_; ++j) {
+    for (std::int64_t i = 0; i < j; ++i) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename Scalar_, std::int64_t columns_>
+constexpr Scalar_& FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+operator()(std::int64_t const row, std::int64_t const column) {
+  CONSTEXPR_DCHECK(0 <= row);
+  CONSTEXPR_DCHECK(row < column);
+  CONSTEXPR_DCHECK(column < columns());
+  return data_[column * (column - 1) / 2 + row];
+}
+
+template<typename Scalar_, std::int64_t columns_>
+constexpr Scalar_ const& FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::
+operator()(std::int64_t const row, std::int64_t const column) const {
+  CONSTEXPR_DCHECK(0 <= row);
+  CONSTEXPR_DCHECK(row < column);
+  CONSTEXPR_DCHECK(column < columns());
+  return data_[column * (column - 1) / 2 + row];
+}
+
+template<typename Scalar_, std::int64_t columns_>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>&
+FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::operator=(
+    Scalar const (&right)[size_]) {
+  std::copy(right, right + size_, data_.data());
+  data_ = Transpose(data_);
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t columns_>
+auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_>::Transpose(
+    std::array<Scalar, size_> const& data)
+    -> std::array<Scalar, size_> {
+  std::array<Scalar, rows() * columns()> full;
+  std::int64_t index = 0;
+  for (std::int64_t row = 0; row < rows(); ++row) {
+    for (std::int64_t column = row + 1; column < columns(); ++column) {
+      full[row * columns() + column] = data[index];
+      ++index;
+    }
+  }
+
+  std::array<Scalar, size_> result;
+  index = 0;
+  for (std::int64_t column = 0; column < columns(); ++column) {
+    for (std::int64_t row = 0; row < column; ++row) {
+      result[index] = full[row * columns() + column];
+      ++index;
+    }
+  }
+  return result;
+}
+
+template<typename Scalar_, std::int64_t columns_>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_>::
 FixedUpperTriangularMatrix()
     : data_{} {}

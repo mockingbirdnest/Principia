@@ -71,7 +71,7 @@ template<typename Scalar>
   requires quantity<Scalar>
 struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
   using R = UnboundedUpperTriangularMatrix<Square<Scalar>>;
-  using Μ = UnboundedUpperTriangularMatrix<double>;  // TODO(phl): Strictly
+  using Μ = UnboundedStrictlyUpperTriangularMatrix<double>;
   using S = UnboundedVector<Square<Scalar>>;
   using Vector = UnboundedVector<Scalar>;
   static R UninitializedR(UnboundedMatrix<Scalar> const& m);
@@ -83,7 +83,7 @@ struct NguyễnStehléGenerator<UnboundedMatrix<Scalar>> {
 template<>
 struct NguyễnStehléGenerator<UnboundedMatrix<cpp_int>> {
   using R = UnboundedUpperTriangularMatrix<double>;
-  using Μ = UnboundedUpperTriangularMatrix<double>;  // TODO(phl): Strictly
+  using Μ = UnboundedStrictlyUpperTriangularMatrix<double>;
   using S = UnboundedVector<double>;
   using Vector = UnboundedVector<cpp_int>;
   static R UninitializedR(UnboundedMatrix<cpp_int> const& m);
@@ -96,7 +96,7 @@ template<typename Scalar, int rows, int columns>
   requires quantity<Scalar>
 struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
   using R = FixedUpperTriangularMatrix<Square<Scalar>, columns>;
-  using Μ = FixedUpperTriangularMatrix<double, columns>;  // TODO(phl): Strictly
+  using Μ = FixedStrictlyUpperTriangularMatrix<double, columns>;
   using S = FixedVector<Square<Scalar>, columns>;
   using Vector = FixedVector<Scalar, rows>;
   static R UninitializedR(FixedMatrix<Scalar, rows, columns> const& m);
@@ -108,7 +108,7 @@ struct NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>> {
 template<int rows, int columns>
 struct NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>> {
   using R = FixedUpperTriangularMatrix<double, columns>;
-  using Μ = FixedUpperTriangularMatrix<double, columns>;  // TODO(phl): Strictly
+  using Μ = FixedStrictlyUpperTriangularMatrix<double, columns>;
   using S = FixedVector<double, columns>;
   using Vector = FixedVector<cpp_int, rows>;
   static R UninitializedR(FixedMatrix<cpp_int, rows, columns> const& m);
