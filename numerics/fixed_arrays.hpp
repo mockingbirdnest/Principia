@@ -277,7 +277,7 @@ class FixedStrictlyUpperTriangularMatrix final {
       FixedStrictlyUpperTriangularMatrix const& left,
       FixedStrictlyUpperTriangularMatrix const& right) = default;
 
-  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
+  // For  0 ≤ i < j < columns, the entry a_ij is accessed as |a(i, j)|.
   // if i and j do not satisfy these conditions, the expression |a(i, j)|
   // implies undefined behaviour.
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
