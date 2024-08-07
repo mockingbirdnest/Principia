@@ -443,6 +443,179 @@ std::int64_t UnboundedLowerTriangularMatrix<Scalar_>::columns() const {
 }
 
 template<typename Scalar_>
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::
+UnboundedStrictlyUpperTriangularMatrix(std::int64_t const columns)
+    : columns_(columns),
+      data_(columns_ * (columns_ - 1) / 2, Scalar{}) {}
+
+template<typename Scalar_>
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::
+UnboundedStrictlyUpperTriangularMatrix(
+    std::int64_t const columns,
+    uninitialized_t)
+    : columns_(columns),
+      data_(columns_ * (columns_ - 1) / 2) {}
+
+template<typename Scalar_>
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::
+UnboundedStrictlyUpperTriangularMatrix(
+    std::initializer_list<Scalar> const& data)
+    : columns_(std::llround((1 + Sqrt(8 * data.size())) * 0.5)),
+      data_(Transpose(data,
+                      /*current_columns=*/0,
+                      /*extra_columns=*/columns_)) {
+  DCHECK_EQ(data_.size(), columns_ * (columns_ - 1) / 2);
+}
+
+template<typename Scalar_>
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::
+UnboundedStrictlyUpperTriangularMatrix(
+    TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view)
+    : UnboundedStrictlyUpperTriangularMatrix<Scalar>(view.columns(), uninitialized) {
+  for (std::int64_t i = 0; i < rows(); ++i) {
+    for (std::int64_t j = i; j < columns(); ++j) {
+      (*this)(i, j) = view(i, j);
+    }
+  }
+}
+
+template<typename Scalar_>
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::
+operator UnboundedMatrix<Scalar_>() const {
+  UnboundedMatrix<Scalar> result(columns_, columns_);  // Initialized.
+  for (std::int64_t j = 0; j < columns_; ++j) {
+    for (std::int64_t i = 0; i < j; ++i) {
+      result(i, j) = (*this)(i, j);
+    }
+  }
+  return result;
+}
+
+template<typename Scalar_>
+Scalar_& UnboundedStrictlyUpperTriangularMatrix<Scalar_>::operator()(
+    std::int64_t const row, std::int64_t const column) {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, column);
+  DCHECK_LT(column, columns_);
+  return data_[column * (column - 1) / 2 + row];
+}
+
+template<typename Scalar_>
+Scalar_ const& UnboundedStrictlyUpperTriangularMatrix<Scalar_>::operator()(
+    std::int64_t const row, std::int64_t const column) const {
+  DCHECK_LE(0, row);
+  DCHECK_LT(row, column);
+  DCHECK_LT(column, columns_);
+  return data_[column * (column - 1) / 2 + row];
+}
+
+template<typename Scalar_>
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>&
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::operator=(
+    std::initializer_list<Scalar> right) {
+  DCHECK_EQ(data_.size(), right.size());
+  data_ = Transpose(std::move(right),
+                    /*current_columns=*/0,
+                    /*extra_columns=*/columns_);
+return *this;
+}
+
+template<typename Scalar_>
+void UnboundedStrictlyUpperTriangularMatrix<Scalar_>::Extend(
+    std::int64_t const extra_columns) {
+  columns_ += extra_columns;
+  data_.resize(columns_ * (columns_ - 1) / 2, Scalar{});
+}
+
+template<typename Scalar_>
+void UnboundedStrictlyUpperTriangularMatrix<Scalar_>::Extend(
+    std::int64_t const extra_columns,
+    uninitialized_t) {
+  columns_ += extra_columns;
+  data_.resize(columns_ * (columns_ - 1) / 2);
+}
+
+template<typename Scalar_>
+void UnboundedStrictlyUpperTriangularMatrix<Scalar_>::Extend(
+    std::initializer_list<Scalar> const& data) {
+  std::int64_t const new_columns =
+      std::llround((1 + Sqrt(8 * (data_.size() + data.size()))) * 0.5);
+  auto transposed_data = Transpose(data,
+                                   /*current_columns=*/columns_,
+                                   /*extra_columns=*/new_columns - columns_);
+  columns_ = new_columns;
+  std::move(transposed_data.begin(),
+            transposed_data.end(),
+            std::back_inserter(data_));
+  DCHECK_EQ(data_.size(), columns_ * (columns_ - 1) / 2);
+}
+
+template<typename Scalar_>
+void UnboundedStrictlyUpperTriangularMatrix<Scalar_>::EraseToEnd(
+    std::int64_t const begin_column_index) {
+  columns_ = begin_column_index;
+  data_.erase(data_.begin() + begin_column_index * (begin_column_index - 1) / 2,
+              data_.end());
+}
+
+template<typename Scalar_>
+std::int64_t UnboundedStrictlyUpperTriangularMatrix<Scalar_>::rows() const {
+  return columns_;
+}
+
+template<typename Scalar_>
+std::int64_t UnboundedStrictlyUpperTriangularMatrix<Scalar_>::columns() const {
+  return columns_;
+}
+
+template<typename Scalar_>
+auto
+UnboundedStrictlyUpperTriangularMatrix<Scalar_>::Transpose(
+    std::initializer_list<Scalar> const& data,
+    std::int64_t const current_columns,
+    std::int64_t const extra_columns) ->
+  std::vector<Scalar, uninitialized_allocator<Scalar>> {
+  // |data| is a trapezoidal slice at the end of the matrix.  This is
+  // inconvenient to index, so we start by constructing a rectangular array with
+  // |extra_columns| columns and |current_columns + extra_columns| rows padded
+  // with junk.
+  std::vector<Scalar, uninitialized_allocator<Scalar>> padded;
+  {
+    padded.reserve(2 * data.size());  // An overestimate.
+    std::int64_t row = 0;
+    std::int64_t column = 0;
+    for (auto it = data.begin(); it != data.end();) {
+      if (row < current_columns + column) {
+        padded.push_back(*it);
+        ++it;
+      } else {
+        padded.emplace_back();
+      }
+      ++column;
+      if (column == extra_columns) {
+        column = 0;
+        ++row;
+      }
+    }
+  }
+
+  // Scan the padded array by column and append the part above the diagonal to
+  // the result.
+  std::vector<Scalar, uninitialized_allocator<Scalar>> result;
+  result.reserve(data.size());
+  std::int64_t const number_of_rows = current_columns + extra_columns;
+  for (std::int64_t column = 0; column < extra_columns; ++column) {
+    for (std::int64_t row = 0; row < number_of_rows; ++row) {
+      if (row < current_columns + column) {
+        result.push_back(padded[row * extra_columns + column]);
+      }
+    }
+  }
+
+  return result;
+}
+
+template<typename Scalar_>
 UnboundedUpperTriangularMatrix<Scalar_>::UnboundedUpperTriangularMatrix(
     std::int64_t const columns)
     : columns_(columns),

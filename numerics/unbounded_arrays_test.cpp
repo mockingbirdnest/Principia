@@ -35,6 +35,10 @@ class UnboundedArraysTest : public ::testing::Test {
             2,  3,
             5,  8,  13,
             21, 34, 55, 89}),
+      su4_({    1, 2,  3,
+                   5,  8,
+                      13
+                        }),
       u4_({1, 2,  3,  5,
               8, 13, 21,
                  34, 55,
@@ -47,6 +51,7 @@ class UnboundedArraysTest : public ::testing::Test {
   UnboundedMatrix<double> m23_;
   UnboundedMatrix<double> n23_;
   UnboundedLowerTriangularMatrix<double> l4_;
+  UnboundedStrictlyUpperTriangularMatrix<double> su4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
 
@@ -210,6 +215,20 @@ TEST_F(UnboundedArraysTest, LowerTriangularMatrixIndexing) {
   EXPECT_EQ(1, l4(0, 0));
 }
 
+TEST_F(UnboundedArraysTest, StrictlyUpperTriangularMatrixIndexing) {
+  EXPECT_EQ(1, su4_(0, 1));
+  EXPECT_EQ(2, su4_(0, 2));
+  EXPECT_EQ(3, su4_(0, 3));
+  EXPECT_EQ(5, su4_(1, 2));
+  EXPECT_EQ(8, su4_(1, 3));
+  EXPECT_EQ(13, su4_(2, 3));
+  su4_(1, 3) = -666;
+  EXPECT_EQ(-666, su4_(1, 3));
+
+  UnboundedStrictlyUpperTriangularMatrix<double> const su4 = su4_;
+  EXPECT_EQ(1, su4(0, 1));
+}
+
 TEST_F(UnboundedArraysTest, UpperTriangularMatrixIndexing) {
   EXPECT_EQ(1, u4_(0, 0));
   EXPECT_EQ(2, u4_(0, 1));
@@ -235,6 +254,12 @@ TEST_F(UnboundedArraysTest, Conversions) {
                                      5,   8, 13,  0,
                                      21, 34, 55, 89}),
             UnboundedMatrix<double>(l4_));
+  EXPECT_EQ(UnboundedMatrix<double>(4, 4,
+                                    {0, 1, 2,  3,
+                                     0, 0, 5,  8,
+                                     0, 0, 0, 13,
+                                     0, 0, 0,  0}),
+            UnboundedMatrix<double>(su4_));
   EXPECT_EQ(UnboundedMatrix<double>(4, 4,
                                     {1, 2,  3,  5,
                                      0, 8, 13, 21,

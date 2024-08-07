@@ -490,6 +490,7 @@ std::ostream& operator<<(std::ostream& out,
 
 using internal::UnboundedLowerTriangularMatrix;
 using internal::UnboundedMatrix;
+using internal::UnboundedStrictlyUpperTriangularMatrix;
 using internal::UnboundedUpperTriangularMatrix;
 using internal::UnboundedVector;
 

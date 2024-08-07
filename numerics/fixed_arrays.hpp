@@ -250,7 +250,7 @@ class FixedLowerTriangularMatrix final {
 
 template<typename Scalar_, std::int64_t columns_>
 class FixedStrictlyUpperTriangularMatrix final {
-  static constexpr std::int64_t size_ = columns_ * (columns_ + 1) / 2;
+  static constexpr std::int64_t size_ = columns_ * (columns_ - 1) / 2;
 
  public:
   using Scalar = Scalar_;
