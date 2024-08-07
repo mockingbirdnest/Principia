@@ -470,8 +470,9 @@ UnboundedStrictlyUpperTriangularMatrix(
 template<typename Scalar_>
 UnboundedStrictlyUpperTriangularMatrix<Scalar_>::
 UnboundedStrictlyUpperTriangularMatrix(
-    TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view)
-    : UnboundedStrictlyUpperTriangularMatrix<Scalar>(view.columns(), uninitialized) {
+        TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view)
+    : UnboundedStrictlyUpperTriangularMatrix<Scalar>(view.columns(),
+                                                     uninitialized) {
   for (std::int64_t i = 0; i < rows(); ++i) {
     for (std::int64_t j = i; j < columns(); ++j) {
       (*this)(i, j) = view(i, j);
