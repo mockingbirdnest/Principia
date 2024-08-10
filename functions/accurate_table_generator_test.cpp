@@ -457,8 +457,8 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
                -cpp_rational(Cos(x₀) / 2)},
               x₀);
 
-          // The remainder don't need to be extremely precise, so for speed they
-          // are computed using double.
+          // The remainders don't need to be extremely precise, so for speed
+          // they are computed using double.
           auto const remainder_sin_taylor2 =
               [x₀ = static_cast<double>(cpp_rational(x₀))](
                   cpp_rational const& x) {
