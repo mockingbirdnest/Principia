@@ -217,6 +217,72 @@ class UnboundedLowerTriangularMatrix final {
 };
 
 template<typename Scalar_>
+class UnboundedStrictlyUpperTriangularMatrix final {
+ public:
+  using Scalar = Scalar_;
+
+  explicit UnboundedStrictlyUpperTriangularMatrix(std::int64_t columns);
+  UnboundedStrictlyUpperTriangularMatrix(std::int64_t columns, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  UnboundedStrictlyUpperTriangularMatrix(
+      std::initializer_list<Scalar> const& data);
+
+  explicit UnboundedStrictlyUpperTriangularMatrix(
+      TransposedView<UnboundedLowerTriangularMatrix<Scalar>> const& view);
+
+  explicit operator UnboundedMatrix<Scalar>() const;
+
+  friend bool operator==(
+      UnboundedStrictlyUpperTriangularMatrix const& left,
+      UnboundedStrictlyUpperTriangularMatrix const& right) = default;
+  friend bool operator!=(
+      UnboundedStrictlyUpperTriangularMatrix const& left,
+      UnboundedStrictlyUpperTriangularMatrix const& right) = default;
+
+  // For  0 ≤ i < j < columns, the entry a_ij is accessed as |a(i, j)|.
+  // If i and j do not satisfy these conditions, the expression |a(i, j)|
+  // implies undefined behaviour.
+  Scalar& operator()(std::int64_t row, std::int64_t column);
+  Scalar const& operator()(std::int64_t row, std::int64_t column) const;
+
+  UnboundedStrictlyUpperTriangularMatrix& operator=(
+      std::initializer_list<Scalar> right);
+
+  void Extend(std::int64_t extra_columns);
+  void Extend(std::int64_t extra_columns, uninitialized_t);
+
+  // The |data| must be in row-major format.
+  void Extend(std::initializer_list<Scalar> const& data);
+
+  void EraseToEnd(std::int64_t begin_column_index);
+
+  std::int64_t rows() const;
+  std::int64_t columns() const;
+
+ private:
+  // For ease of writing matrices in tests, the input data is received in row-
+  // major format.  This translates a trapezoidal slice to make it column-major.
+  static std::vector<Scalar, uninitialized_allocator<Scalar>> Transpose(
+      std::initializer_list<Scalar> const& data,
+      std::int64_t current_columns,
+      std::int64_t extra_columns);
+
+  std::int64_t columns_;
+  // Stored in column-major format, so the data passed the public API must be
+  // transposed.
+  std::vector<Scalar, uninitialized_allocator<Scalar>> data_;
+
+  template<typename S>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      UnboundedStrictlyUpperTriangularMatrix<S> const& matrix);
+
+  template<typename R>
+  friend class Row;
+};
+
+template<typename Scalar_>
 class UnboundedUpperTriangularMatrix final {
  public:
   using Scalar = Scalar_;
@@ -424,6 +490,7 @@ std::ostream& operator<<(std::ostream& out,
 
 using internal::UnboundedLowerTriangularMatrix;
 using internal::UnboundedMatrix;
+using internal::UnboundedStrictlyUpperTriangularMatrix;
 using internal::UnboundedUpperTriangularMatrix;
 using internal::UnboundedVector;
 
