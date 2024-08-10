@@ -278,7 +278,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
-  Lattice const V = ToInt(LenstraLenstraLovász(ToRational(L)));
+  Lattice const V = NguyễnStehlé(L);
   VLOG(2) << "V = " << V;
 
   // Step 8: find the three shortest vectors of the reduced lattice.  We sort

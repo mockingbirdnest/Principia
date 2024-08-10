@@ -457,17 +457,21 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
                -cpp_rational(Cos(x₀) / 2)},
               x₀);
 
+          // The remainders don't need to be extremely precise, so for speed
+          // they are computed using double.
           auto const remainder_sin_taylor2 =
-              [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
-                auto const Δx = x - x₀;
-                auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
-                return -Δx³ * -Cos(std::min(x, x₀)) / Factorial(3);
+              [x₀ = static_cast<double>(cpp_rational(x₀))](
+                  cpp_rational const& x) {
+                auto const Δx = static_cast<double>(x) - x₀;
+                auto const Δx³ = Δx * Δx * Δx;
+                return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
               };
           auto const remainder_cos_taylor2 =
-              [x₀ = cpp_rational(x₀)](cpp_rational const& x) {
-                auto const Δx = x - x₀;
-                auto const Δx³ = static_cast<cpp_bin_float_50>(Δx * Δx * Δx);
-                return Δx³ * Sin(std::max(x, x₀)) / Factorial(3);
+              [x₀ = static_cast<double>(cpp_rational(x₀))](
+                  cpp_rational const& x) {
+                auto const Δx = static_cast<double>(x) - x₀;
+                auto const Δx³ = Δx * Δx * Δx;
+                return Δx³ * std::sin(std::max(x₀ + Δx, x₀)) / Factorial(3);
               };
 
           starting_arguments.push_back(x₀);
