@@ -16,6 +16,8 @@ class OFStream {
   explicit OFStream(std::filesystem::path const& path);
   ~OFStream();
 
+  void Flush();
+
   OFStream& operator=(OFStream&& other);
   OFStream& operator<<(std::string const& s);
 
