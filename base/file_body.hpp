@@ -36,7 +36,7 @@ inline OFStream::~OFStream() {
   stream_.close();
 }
 
-void OFStream::Flush() {
+inline void OFStream::Flush() {
   stream_.flush();
 }
 
