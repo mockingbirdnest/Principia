@@ -341,12 +341,11 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
       /*t2=*/t0_ + 5.5 * Second);
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, t0_ + 5 * Second, _, _))
-      .WillOnce(DoAll(
+      .WillRepeatedly(DoAll(
           AppendPointsToDiscreteTrajectory(&expected_vessel_prediction1),
-          Return(absl::OkStatus())))
-      .WillRepeatedly(Return(absl::OkStatus()));
+          Return(absl::OkStatus())));
 
-  // The call to extend the exphemeris by many points.
+  // The call to extend the prognostication by many points.
   auto const expected_vessel_prediction2 = NewLinearTrajectoryTimeline(
       Barycentre({p1_dof_, p2_dof_}, {mass1_, mass2_}),
       /*Δt=*/0.5 * Second,
@@ -354,10 +353,9 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
       /*t2=*/t0_ + FlightPlan::max_ephemeris_steps_per_frame * Second);
   EXPECT_CALL(ephemeris_,
               FlowWithAdaptiveStep(_, _, InfiniteFuture, _, _))
-      .WillOnce(DoAll(
+      .WillRepeatedly(DoAll(
           AppendPointsToDiscreteTrajectory(&expected_vessel_prediction2),
-          Return(absl::OkStatus())))
-      .WillRepeatedly(Return(absl::OkStatus()));
+          Return(absl::OkStatus())));
 
   vessel_.CreateTrajectoryIfNeeded(t0_);
   // Polling for the integration to happen.
