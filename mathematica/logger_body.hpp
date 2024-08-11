@@ -98,6 +98,7 @@ inline void Logger::FlushLocked() {
   for (auto const& [name, value] : name_and_single_value_) {
     file_ << RawApply("Set", {name, value}) + ";\n";
   }
+  file_.Flush();
 }
 
 inline std::atomic_uint64_t Logger::id_ = 0;

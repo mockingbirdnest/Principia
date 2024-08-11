@@ -36,6 +36,10 @@ inline OFStream::~OFStream() {
   stream_.close();
 }
 
+void OFStream::Flush() {
+  stream_.flush();
+}
+
 inline OFStream& OFStream::operator=(OFStream&& other) {
   CHECK(other.stream_.good());
   stream_ = std::move(other.stream_);
