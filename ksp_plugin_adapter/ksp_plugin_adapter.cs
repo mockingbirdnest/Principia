@@ -2471,7 +2471,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               descending_nodes_iterator);
       plugin_.RenderedPredictionClosestApproaches(
           vessel_guid,
-          t_max: null,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
@@ -2557,7 +2556,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               descending_nodes_iterator);
       plugin_.FlightPlanRenderedClosestApproaches(
           vessel_guid,
-          t_max: null,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
