@@ -2298,6 +2298,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                                PatchTransition),
                                        plotting_frame_selector_);
         }
+      if (plugin_.FlightPlanExists(vessel_guid)) {
         flight_plan_collision =
             RenderedFlightPlanCollision(vessel_guid, centre);
         if (flight_plan_collision.HasValue) {
@@ -2313,6 +2314,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       }
     }
   }
+}
 
   private void RenderManœuvreMarkers() {
     if (!PluginRunning()) {

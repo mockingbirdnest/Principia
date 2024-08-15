@@ -129,11 +129,12 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     Plugin const* const plugin,
     char const* const vessel_guid,
     int const index,
+    double const* const t_max,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m(
-      {planetarium, plugin, vessel_guid, index, vertices, vertices_size},
+      {planetarium, plugin, vessel_guid, index, t_max, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -150,8 +151,11 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
       segment->empty() ||
       segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
     planetarium->PlotMethod3(
-        *segment, segment->begin(), segment->end(),
+        *segment,
+        segment->begin(),
+        segment->end(),
         plugin->CurrentTime(),
+        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -167,11 +171,12 @@ void __cdecl principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     char const* const vessel_guid,
+    double const* const t_max,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotPrediction> m(
-      {planetarium, plugin, vessel_guid, vertices, vertices_size},
+      {planetarium, plugin, vessel_guid, t_max, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -179,8 +184,11 @@ void __cdecl principia__PlanetariumPlotPrediction(
 
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   planetarium->PlotMethod3(
-      *prediction, prediction->begin(), prediction->end(),
+      *prediction,
+      prediction->begin(),
+      prediction->end(),
       plugin->CurrentTime(),
+      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
@@ -198,6 +206,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const max_history_length,
+    double const* const t_max,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
@@ -206,6 +215,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
        plugin,
        vessel_guid,
        max_history_length,
+       t_max,
        vertices,
        vertices_size},
       {vertex_count});
@@ -235,6 +245,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
         trajectory.lower_bound(desired_first_time),
         psychohistory->end(),
         /*now=*/plugin->CurrentTime(),
+        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;

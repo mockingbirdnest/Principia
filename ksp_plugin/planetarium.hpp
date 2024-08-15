@@ -130,6 +130,7 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end,
       Instant const& now,
+      Instant const& t_max,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points) const;

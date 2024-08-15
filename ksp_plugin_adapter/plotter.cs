@@ -57,6 +57,7 @@ class Plotter {
           Plugin,
           main_vessel_guid,
           history_length,
+          prediction_t_max,
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
@@ -91,6 +92,7 @@ class Plotter {
             Plugin,
             target_id,
             history_length,
+            prediction_t_max = null,
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -128,8 +130,8 @@ class Plotter {
         planetarium.PlanetariumPlotFlightPlanSegment(
             Plugin,
             main_vessel_guid,
-            flight_plan_t_max,
             i,
+            flight_plan_t_max,
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);

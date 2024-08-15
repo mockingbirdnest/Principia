@@ -270,6 +270,7 @@ void Planetarium::PlotMethod3(
     DiscreteTrajectory<Barycentric>::iterator begin,
     DiscreteTrajectory<Barycentric>::iterator end,
     Instant const& now,
+    Instant const& t_max,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {
@@ -278,7 +279,8 @@ void Planetarium::PlotMethod3(
   }
   auto last = std::prev(end);
   auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time = std::min(last->time, plotting_frame_->t_max());
+  auto const last_time =
+      std::min({last->time, plotting_frame_->t_max(), t_max});
   PlotMethod3(
       trajectory, begin_time, last_time, now, reverse, add_point, max_points);
 }
