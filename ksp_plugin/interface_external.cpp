@@ -333,6 +333,7 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   ComputeApsides(/*reference=*/immobile_reference,
                  coast,
                  coast.begin(), coast.end(),
+                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);

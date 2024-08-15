@@ -999,8 +999,7 @@ void Plugin::ComputeAndRenderApsides(
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  trajectory,
-                 begin,
-                 end,
+                 begin, end,
                  t_max,
                  max_points,
                  apoapsides_trajectory,
@@ -1038,8 +1037,8 @@ Plugin::ComputeAndRenderFirstCollision(
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ComputeApsides(celestial_trajectory,
                  trajectory,
-                 begin,
-                 end,
+                 begin, end,
+                 /*t_max=*/InfiniteFuture,
                  max_points,
                  apoapsides_trajectory,
                  periapsides_trajectory);
@@ -1094,8 +1093,8 @@ void Plugin::ComputeAndRenderClosestApproaches(
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
   ComputeApsides(*renderer_->GetTargetVessel().prediction(),
                  trajectory,
-                 begin,
-                 end,
+                 begin, end,
+                 /*t_max=*/InfiniteFuture,
                  max_points,
                  apoapsides_trajectory,
                  periapsides_trajectory);

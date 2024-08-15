@@ -229,6 +229,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
                    flight_plan_trajectory,
                    flight_plan_trajectory.upper_bound("1970-08-15T00:00:00"_TT),
                    flight_plan_trajectory.end(),
+                   /*t_max=*/InfiniteFuture,
                    /*max_points=*/100,
                    apoapsides,
                    periapsides);

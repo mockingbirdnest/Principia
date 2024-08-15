@@ -567,6 +567,7 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
                    vessel_trajectory,
                    vessel_trajectory.lower_bound(begin_time),
                    vessel_trajectory.end(),
+                   /*t_max=*/InfiniteFuture,
                    max_apsides,
                    apoapsides,
                    periapsides);
