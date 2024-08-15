@@ -36,17 +36,22 @@ class Plotter {
 
   public void PlotTrajectories(DisposablePlanetarium planetarium,
                                string main_vessel_guid,
-                               double history_length) {
+                               double history_length,
+                               double? prediction_t_max,
+                               double? flight_plan_t_max) {
     PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
     if (main_vessel_guid == null) {
       return;
     }
-    PlotVesselTrajectories(planetarium, main_vessel_guid, history_length);
+    PlotVesselTrajectories(planetarium, main_vessel_guid, history_length,
+                           prediction_t_max, flight_plan_t_max);
   }
 
   private void PlotVesselTrajectories(DisposablePlanetarium planetarium,
                                       string main_vessel_guid,
-                                      double history_length) {
+                                      double history_length,
+                                      double? prediction_t_max,
+                                      double? flight_plan_t_max) {
     {
       planetarium.PlanetariumPlotPsychohistory(
           Plugin,
@@ -64,6 +69,7 @@ class Plotter {
       planetarium.PlanetariumPlotPrediction(
           Plugin,
           main_vessel_guid,
+          prediction_t_max,
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
@@ -97,6 +103,7 @@ class Plotter {
         planetarium.PlanetariumPlotPrediction(
             Plugin,
             target_id,
+            prediction_t_max = null,
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -121,6 +128,7 @@ class Plotter {
         planetarium.PlanetariumPlotFlightPlanSegment(
             Plugin,
             main_vessel_guid,
+            flight_plan_t_max,
             i,
             VertexBuffer.data,
             VertexBuffer.size,
