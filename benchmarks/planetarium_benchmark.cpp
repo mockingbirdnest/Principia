@@ -330,6 +330,7 @@ void BM_PlanetariumPlotMethod3(
         satellites.goes_8_trajectory().begin(),
         satellites.goes_8_trajectory().end(),
         now,
+        /*t_max=*/InfiniteFuture,
         /*reverse=*/false,
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },

@@ -2194,6 +2194,7 @@ message PlanetariumPlotFlightPlanSegment {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required string vessel_guid = 4;
     required int32 index = 5;
+    optional double t_max = 8;  // Added in von Koch.
     required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 7 [(size_of) = "vertices"];
@@ -2215,6 +2216,7 @@ message PlanetariumPlotPrediction {
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required string vessel_guid = 4;
+    optional double t_max = 7;  // Added in von Koch.
     required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 6 [(size_of) = "vertices"];
@@ -2237,6 +2239,7 @@ message PlanetariumPlotPsychohistory {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required string vessel_guid = 4;
     required double max_history_length = 5;
+    optional double t_max = 8;  // Added in von Koch.
     required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 7 [(size_of) = "vertices"];

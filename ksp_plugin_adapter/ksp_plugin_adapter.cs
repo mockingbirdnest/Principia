@@ -1837,14 +1837,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void BetterLateThanNeverLateUpdate() {
-    if (!celestial_terrains_were_validated_) {
-      var random = new Random();
-      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-        ValidateCelestialTerrain(celestial, random);
-      }
-      celestial_terrains_were_validated_ = true;
-    }
-
     // While we draw the trajectories directly (and thus do so after everything
     // else has been rendered), we rely on the game to render its map nodes.
     // Since the screen position is determined in |MapNode.NodeUpdate|, it must
@@ -2261,12 +2253,64 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     string main_vessel_guid = PredictedVessel()?.id.ToString();
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      RenderTrajectoryCollisions(main_vessel_guid,
+                                 out TQP? prediction_collision,
+                                 out TQP? flight_plan_collision);
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         plotter_.PlotTrajectories(planetarium, main_vessel_guid,
-                                  main_window_.history_length);
+                                  main_window_.history_length,
+                                  prediction_collision?.t,
+                                  flight_plan_collision?.t);
         if (main_window_.show_equipotentials) {
           plotter_.PlotEquipotentials(planetarium);
+        }
+      }
+    }
+  }
+
+  private void RenderTrajectoryCollisions(string vessel_guid,
+                                          out TQP? prediction_collision,
+                                          out TQP? flight_plan_collision) {
+    if (!celestial_terrains_were_validated_) {
+      var random = new Random();
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        ValidateCelestialTerrain(celestial, random);
+      }
+      celestial_terrains_were_validated_ = true;
+    }
+
+    prediction_collision = null;
+    flight_plan_collision = null;
+    if (plotting_frame_selector_.Centre() != null) {
+      var centre = plotting_frame_selector_.Centre();
+      var centre_index = centre.flightGlobalsIndex;
+      if (plotting_frame_selector_.IsSurfaceFrame()) {
+        prediction_collision =
+            RenderedPredictionCollision(vessel_guid, centre);
+        if (prediction_collision.HasValue) {
+          map_node_pool_.RenderMarkers(new[] { prediction_collision.Value },
+                                       new MapNodePool.Provenance(
+                                           vessel_guid,
+                                           MapNodePool.NodeSource.
+                                               Prediction,
+                                           MapObject.ObjectType.
+                                               PatchTransition),
+                                       plotting_frame_selector_);
+        }
+        if (plugin_.FlightPlanExists(vessel_guid)) {
+          flight_plan_collision =
+              RenderedFlightPlanCollision(vessel_guid, centre);
+          if (flight_plan_collision.HasValue) {
+            map_node_pool_.RenderMarkers(new[] { flight_plan_collision.Value },
+                                         new MapNodePool.Provenance(
+                                             vessel_guid,
+                                             MapNodePool.NodeSource.
+                                                 FlightPlan,
+                                             MapObject.ObjectType.
+                                                 PatchTransition),
+                                         plotting_frame_selector_);
+          }
         }
       }
     }
@@ -2438,19 +2482,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (plotting_frame_selector_.Centre() != null) {
         var centre = plotting_frame_selector_.Centre();
         var centre_index = centre.flightGlobalsIndex;
-        if (plotting_frame_selector_.IsSurfaceFrame()) {
-          TQP? collision = RenderedPredictionCollision(vessel_guid, centre);
-          if (collision.HasValue) {
-            map_node_pool_.RenderMarkers(new[] {collision.Value },
-                                           new MapNodePool.Provenance(
-                                               vessel_guid,
-                                               MapNodePool.NodeSource.
-                                                   Prediction,
-                                               MapObject.ObjectType.
-                                                   PatchTransition),
-                                           plotting_frame_selector_);
-          }
-        }
         plugin_.RenderedPredictionApsides(vessel_guid,
                                           centre_index,
                                           sun_world_position,
@@ -2532,19 +2563,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (plotting_frame_selector_.Centre() != null) {
         var centre = plotting_frame_selector_.Centre();
         var centre_index = centre.flightGlobalsIndex;
-        if (plotting_frame_selector_.IsSurfaceFrame()) {
-          TQP? collision = RenderedFlightPlanCollision(vessel_guid, centre);
-          if (collision.HasValue) {
-            map_node_pool_.RenderMarkers(new[] {collision.Value },
-                                         new MapNodePool.Provenance(
-                                             vessel_guid,
-                                             MapNodePool.NodeSource.
-                                                 FlightPlan,
-                                             MapObject.ObjectType.
-                                                 PatchTransition),
-                                         plotting_frame_selector_);
-          }
-        }
         plugin_.FlightPlanRenderedApsides(vessel_guid,
                                           centre_index,
                                           sun_world_position,
