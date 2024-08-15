@@ -990,6 +990,7 @@ void Plugin::ComputeAndRenderApsides(
     Trajectory<Barycentric> const& trajectory,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end,
+    Instant const& t_max,
     Position<World> const& sun_world_position,
     int const max_points,
     DiscreteTrajectory<World>& apoapsides,
@@ -1000,6 +1001,7 @@ void Plugin::ComputeAndRenderApsides(
                  trajectory,
                  begin,
                  end,
+                 t_max,
                  max_points,
                  apoapsides_trajectory,
                  periapsides_trajectory);
@@ -1109,6 +1111,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
 void Plugin::ComputeAndRenderNodes(
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end,
+    Instant const& t_max,
     Position<World> const& sun_world_position,
     int const max_points,
     DiscreteTrajectory<World>& ascending,
@@ -1139,6 +1142,7 @@ void Plugin::ComputeAndRenderNodes(
   ComputeNodes(trajectory_in_plotting,
                trajectory_in_plotting.begin(),
                trajectory_in_plotting.end(),
+               t_max,
                Vector<double, Navigation>({0, 0, 1}),
                max_points,
                ascending_trajectory,

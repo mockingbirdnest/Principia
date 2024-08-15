@@ -960,11 +960,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void LateUpdate() {
+    TQP? prediction_collision = null;
+    TQP? flight_plan_collision = null;
     if (map_renderer_ == null) {
       map_renderer_ = PlanetariumCamera.Camera.gameObject.
           AddComponent<RenderingActions>();
       map_renderer_.pre_cull = () => {
-        RenderTrajectories();
+        RenderTrajectories(out prediction_collision, out flight_plan_collision);
         RenderManœuvreMarkers();
       };
     }
@@ -1105,6 +1107,27 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               break;
           }
         }
+      }
+    }
+
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    if (MapView.MapIsEnabled && main_vessel_guid != null) {
+      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      RenderPredictionMarkers(main_vessel_guid,
+                              prediction_collision,
+                              sun_world_position);
+      if (FlightGlobals.ActiveVessel != null &&
+          !plotting_frame_selector_.target_frame_selected &&
+          TargetVesselGuid() is var target_id &&
+          target_id != null) {
+        RenderPredictionMarkers(target_id,
+                                prediction_collision: null,
+                                sun_world_position);
+      }
+      if (plugin_.FlightPlanExists(main_vessel_guid)) {
+        RenderFlightPlanMarkers(main_vessel_guid,
+                                flight_plan_collision,
+                                sun_world_position);
       }
     }
   }
@@ -1844,20 +1867,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     // otherwise, the map nodes will lag behind when the camera is moved.
     // The only timing that satisfies these constraints is BetterLateThanNever
     // in LateUpdate.
-    string main_vessel_guid = PredictedVessel()?.id.ToString();
-    if (MapView.MapIsEnabled && main_vessel_guid != null) {
-      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-      RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-      if (FlightGlobals.ActiveVessel != null &&
-          !plotting_frame_selector_.target_frame_selected &&
-          TargetVesselGuid() is var target_id &&
-          target_id != null) {
-        RenderPredictionMarkers(target_id, sun_world_position);
-      }
-      if (plugin_.FlightPlanExists(main_vessel_guid)) {
-        RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
-      }
-    }
     map_node_pool_.Update();
   }
 
@@ -2232,7 +2241,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void RenderTrajectories() {
+  private void RenderTrajectories(out TQP? prediction_collision,
+                                  out TQP? flight_plan_collision) {
+    prediction_collision = null;
+    flight_plan_collision = null;
     if (!PluginRunning()) {
       return;
     }
@@ -2254,8 +2266,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       RenderTrajectoryCollisions(main_vessel_guid,
-                                 out TQP? prediction_collision,
-                                 out TQP? flight_plan_collision);
+                                 out prediction_collision,
+                                 out flight_plan_collision);
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         plotter_.PlotTrajectories(planetarium, main_vessel_guid,
@@ -2445,10 +2457,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void RenderPredictionMarkers(string vessel_guid,
+                                       TQP? prediction_collision,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_frame_selected &&
         TargetVessel() != null) {
       plugin_.RenderedPredictionNodes(vessel_guid,
+                                      t_max: null,
                                       sun_world_position,
                                       MapNodePool.MaxNodesPerProvenance,
                                       out DisposableIterator
@@ -2457,6 +2471,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               descending_nodes_iterator);
       plugin_.RenderedPredictionClosestApproaches(
           vessel_guid,
+          t_max: null,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
@@ -2483,6 +2498,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         var centre = plotting_frame_selector_.Centre();
         var centre_index = centre.flightGlobalsIndex;
         plugin_.RenderedPredictionApsides(vessel_guid,
+                                          prediction_collision?.t,
                                           centre_index,
                                           sun_world_position,
                                           MapNodePool.MaxNodesPerProvenance,
@@ -2504,6 +2520,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             plotting_frame_selector_);
       }
       plugin_.RenderedPredictionNodes(vessel_guid,
+                                      prediction_collision?.t,
                                       sun_world_position,
                                       MapNodePool.MaxNodesPerProvenance,
                                       out DisposableIterator
@@ -2526,10 +2543,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void RenderFlightPlanMarkers(string vessel_guid,
+                                       TQP? flight_plan_collision,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.target_frame_selected &&
         TargetVessel() != null) {
       plugin_.FlightPlanRenderedNodes(vessel_guid,
+                                      t_max: null,
                                       sun_world_position,
                                       MapNodePool.MaxNodesPerProvenance,
                                       out DisposableIterator
@@ -2538,6 +2557,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               descending_nodes_iterator);
       plugin_.FlightPlanRenderedClosestApproaches(
           vessel_guid,
+          t_max: null,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
@@ -2564,6 +2584,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         var centre = plotting_frame_selector_.Centre();
         var centre_index = centre.flightGlobalsIndex;
         plugin_.FlightPlanRenderedApsides(vessel_guid,
+                                          flight_plan_collision?.t,
                                           centre_index,
                                           sun_world_position,
                                           MapNodePool.MaxNodesPerProvenance,
@@ -2585,6 +2606,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             plotting_frame_selector_);
       }
       plugin_.FlightPlanRenderedNodes(vessel_guid,
+                                      flight_plan_collision?.t,
                                       sun_world_position,
                                       MapNodePool.MaxNodesPerProvenance,
                                       out DisposableIterator

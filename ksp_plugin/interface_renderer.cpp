@@ -37,26 +37,33 @@ void __cdecl principia__ClearTargetVessel(Plugin* const plugin) {
 void __cdecl principia__RenderedPredictionApsides(
     Plugin const* const plugin,
     char const* const vessel_guid,
+    double const* const t_max,
     int const celestial_index,
     XYZ const sun_world_position,
     int const max_points,
     Iterator** const apoapsides,
     Iterator** const periapsides) {
   journal::Method<journal::RenderedPredictionApsides> m(
-      {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
+      {plugin,
+       vessel_guid,
+       t_max,
+       celestial_index,
+       sun_world_position,
+       max_points},
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   DiscreteTrajectory<World> rendered_apoapsides;
   DiscreteTrajectory<World> rendered_periapsides;
-  plugin->ComputeAndRenderApsides(celestial_index,
-                                  *prediction,
-                                  prediction->begin(),
-                                  prediction->end(),
-                                  FromXYZ<Position<World>>(sun_world_position),
-                                  max_points,
-                                  rendered_apoapsides,
-                                  rendered_periapsides);
+  plugin->ComputeAndRenderApsides(
+      celestial_index,
+      *prediction,
+      prediction->begin(), prediction->end(),
+      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      FromXYZ<Position<World>>(sun_world_position),
+      max_points,
+      rendered_apoapsides,
+      rendered_periapsides);
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_apoapsides),
       plugin);
@@ -93,23 +100,25 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
 
 void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
                                                 char const* const vessel_guid,
+                                                double const* const t_max,
                                                 XYZ const sun_world_position,
                                                 int const max_points,
                                                 Iterator** const ascending,
                                                 Iterator** const descending) {
   journal::Method<journal::RenderedPredictionNodes> m(
-      {plugin, vessel_guid, sun_world_position, max_points},
+      {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   DiscreteTrajectory<World> rendered_ascending;
   DiscreteTrajectory<World> rendered_descending;
-  plugin->ComputeAndRenderNodes(prediction->begin(),
-                                prediction->end(),
-                                FromXYZ<Position<World>>(sun_world_position),
-                                max_points,
-                                rendered_ascending,
-                                rendered_descending);
+  plugin->ComputeAndRenderNodes(
+      prediction->begin(), prediction->end(),
+      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      FromXYZ<Position<World>>(sun_world_position),
+      max_points,
+      rendered_ascending,
+      rendered_descending);
   *ascending = new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_ascending),
       plugin);
