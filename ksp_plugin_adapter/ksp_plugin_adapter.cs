@@ -2298,23 +2298,23 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                                PatchTransition),
                                        plotting_frame_selector_);
         }
-      if (plugin_.FlightPlanExists(vessel_guid)) {
-        flight_plan_collision =
-            RenderedFlightPlanCollision(vessel_guid, centre);
-        if (flight_plan_collision.HasValue) {
-          map_node_pool_.RenderMarkers(new[] { flight_plan_collision.Value },
-                                       new MapNodePool.Provenance(
-                                           vessel_guid,
-                                           MapNodePool.NodeSource.
-                                               FlightPlan,
-                                           MapObject.ObjectType.
-                                               PatchTransition),
-                                       plotting_frame_selector_);
+        if (plugin_.FlightPlanExists(vessel_guid)) {
+          flight_plan_collision =
+              RenderedFlightPlanCollision(vessel_guid, centre);
+          if (flight_plan_collision.HasValue) {
+            map_node_pool_.RenderMarkers(new[] { flight_plan_collision.Value },
+                                         new MapNodePool.Provenance(
+                                             vessel_guid,
+                                             MapNodePool.NodeSource.
+                                                 FlightPlan,
+                                             MapObject.ObjectType.
+                                                 PatchTransition),
+                                         plotting_frame_selector_);
+          }
         }
       }
     }
   }
-}
 
   private void RenderManœuvreMarkers() {
     if (!PluginRunning()) {
