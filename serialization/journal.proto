@@ -129,6 +129,13 @@ message NavigationManoeuvreFrenetTrihedron {
   required XYZ tangent = 3;
 }
 
+message Node {
+  required double time = 1;
+  required XYZ world_position = 2;
+  required double apparent_inclination_in_degrees = 3;
+  required double out_of_plane_velocity = 4;
+}
+
 message Origin {
   required bool reference_part_is_at_origin = 1;
   required bool reference_part_is_unmoving = 2;

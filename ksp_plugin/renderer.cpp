@@ -170,6 +170,39 @@ Renderer::RenderPlottingTrajectoryInWorld(
   return trajectory;
 }
 
+std::vector<Renderer::Node>
+Renderer::RenderNodes(
+    Instant const& time,
+    DiscreteTrajectory<Navigation>::iterator const& begin,
+    DiscreteTrajectory<Navigation>::iterator const& end,
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  std::vector<Node> nodes;
+  Similarity<Navigation, World> const
+      from_plotting_frame_to_world_at_current_time =
+          PlottingToWorld(time, sun_world_position, planetarium_rotation);
+  for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
+    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
+        degrees_of_freedom;
+    ConformalMap<double, Navigation, World> const
+        from_plotting_frame_to_world_at_t =
+            PlottingToWorld(t, planetarium_rotation);
+    nodes.push_back(
+        {.time = t,
+         .position = from_plotting_frame_to_world_at_current_time(
+             navigation_degrees_of_freedom.position()),
+         .apparent_inclination =
+             AngleBetween(Bivector<double, Navigation>({0, 0, 1}),
+                          Wedge(navigation_degrees_of_freedom.position() -
+                                    Navigation::origin,
+                                navigation_degrees_of_freedom.velocity())),
+         .out_of_plane_velocity =
+             from_plotting_frame_to_world_at_t.scale() *
+             navigation_degrees_of_freedom.velocity().coordinates().z});
+  }
+  return nodes;
+}
+
 SimilarMotion<Barycentric, Navigation> Renderer::BarycentricToPlotting(
     Instant const& time) const {
   return GetPlottingFrame()->ToThisFrameAtTimeSimilarly(time);

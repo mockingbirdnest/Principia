@@ -400,8 +400,8 @@ class Plugin {
       Instant const& t_max,
       Position<World> const& sun_world_position,
       int max_points,
-      DiscreteTrajectory<World>& ascending,
-      DiscreteTrajectory<World>& descending) const;
+      std::vector<Renderer::Node>& ascending,
+      std::vector<Renderer::Node>& descending) const;
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;

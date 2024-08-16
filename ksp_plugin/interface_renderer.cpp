@@ -110,8 +110,8 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       {ascending, descending});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTrajectory<World> rendered_ascending;
-  DiscreteTrajectory<World> rendered_descending;
+  std::vector<Renderer::Node> rendered_ascending;
+  std::vector<Renderer::Node> rendered_descending;
   plugin->ComputeAndRenderNodes(
       prediction->begin(), prediction->end(),
       t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
@@ -119,12 +119,10 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       max_points,
       rendered_ascending,
       rendered_descending);
-  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_ascending),
-      plugin);
-  *descending = new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_descending),
-      plugin);
+  *ascending = new TypedIterator<std::vector<Renderer::Node>>(
+      std::move(rendered_ascending));
+  *descending = new TypedIterator<std::vector<Renderer::Node>>(
+      std::move(rendered_descending));
   return m.Return();
 }
 
