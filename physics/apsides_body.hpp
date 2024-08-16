@@ -2,6 +2,7 @@
 
 #include "physics/apsides.hpp"
 
+#include <algorithm>
 #include <list>
 #include <optional>
 #include <vector>
