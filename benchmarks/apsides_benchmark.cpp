@@ -10,6 +10,7 @@
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -32,6 +33,7 @@ using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_standard_product_3;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
@@ -142,6 +144,7 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
                    *ilrsa_lageos2_trajectory_icrs_,
                    ilrsa_lageos2_trajectory_icrs_->begin(),
                    ilrsa_lageos2_trajectory_icrs_->end(),
+                   /*t_max=*/InfiniteFuture,
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);
@@ -157,6 +160,7 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
     CHECK_OK(ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
                           ilrsa_lageos2_trajectory_gcrs_->begin(),
                           ilrsa_lageos2_trajectory_gcrs_->end(),
+                          /*t_max=*/InfiniteFuture,
                           Vector<double, GCRS>({0, 0, 1}),
                           /*max_points=*/std::numeric_limits<int>::max(),
                           ascending,

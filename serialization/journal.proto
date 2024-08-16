@@ -1251,6 +1251,7 @@ message FlightPlanRenderedApsides {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    optional double t_max = 6;  // Added in von Koch.
     required int32 celestial_index = 3;
     required XYZ sun_world_position = 4;
     required int32 max_points = 5;
@@ -1296,6 +1297,7 @@ message FlightPlanRenderedNodes {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    optional double t_max = 6;  // Added in von Koch.
     required XYZ sun_world_position = 4;
     required int32 max_points = 5;
   }
@@ -2269,6 +2271,7 @@ message RenderedPredictionApsides {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    optional double t_max = 6;  // Added in von Koch.
     required int32 celestial_index = 3;
     required XYZ sun_world_position = 4;
     required int32 max_points = 5;
@@ -2314,6 +2317,7 @@ message RenderedPredictionNodes {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
+    optional double t_max = 5;  // Added in von Koch.
     required XYZ sun_world_position = 3;
     required int32 max_points = 4;
   }

@@ -508,13 +508,19 @@ Status* __cdecl principia__FlightPlanRemove(Plugin const* const plugin,
 void __cdecl principia__FlightPlanRenderedApsides(
     Plugin const* const plugin,
     char const* const vessel_guid,
+    double const* const t_max,
     int const celestial_index,
     XYZ const sun_world_position,
     int const max_points,
     Iterator** const apoapsides,
     Iterator** const periapsides) {
   journal::Method<journal::FlightPlanRenderedApsides> m(
-      {plugin, vessel_guid, celestial_index, sun_world_position, max_points},
+      {plugin,
+       vessel_guid,
+       t_max,
+       celestial_index,
+       sun_world_position,
+       max_points},
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
@@ -528,6 +534,7 @@ void __cdecl principia__FlightPlanRenderedApsides(
         celestial_index,
         flight_plan,
         segment.begin(), segment.end(),
+        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_apoapsides,
@@ -576,12 +583,13 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
 
 void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
                                                 char const* const vessel_guid,
+                                                double const* const t_max,
                                                 XYZ const sun_world_position,
                                                 int const max_points,
                                                 Iterator** const ascending,
                                                 Iterator** const descending) {
   journal::Method<journal::FlightPlanRenderedNodes> m(
-      {plugin, vessel_guid, sun_world_position, max_points},
+      {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
@@ -591,11 +599,13 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   for (auto const& segment : flight_plan.segments()) {
     DiscreteTrajectory<World> segment_rendered_ascending;
     DiscreteTrajectory<World> segment_rendered_descending;
-    plugin->ComputeAndRenderNodes(segment.begin(), segment.end(),
-                                  FromXYZ<Position<World>>(sun_world_position),
-                                  max_points,
-                                  segment_rendered_ascending,
-                                  segment_rendered_descending);
+    plugin->ComputeAndRenderNodes(
+        segment.begin(), segment.end(),
+        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        FromXYZ<Position<World>>(sun_world_position),
+        max_points,
+        segment_rendered_ascending,
+        segment_rendered_descending);
     rendered_ascending.Merge(std::move(segment_rendered_ascending));
     rendered_descending.Merge(std::move(segment_rendered_descending));
   }

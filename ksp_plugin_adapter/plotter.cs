@@ -92,7 +92,7 @@ class Plotter {
             Plugin,
             target_id,
             history_length,
-            prediction_t_max = null,
+            t_max: null,
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -105,7 +105,7 @@ class Plotter {
         planetarium.PlanetariumPlotPrediction(
             Plugin,
             target_id,
-            prediction_t_max = null,
+            t_max: null,
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);

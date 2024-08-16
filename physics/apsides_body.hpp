@@ -2,6 +2,7 @@
 
 #include "physics/apsides.hpp"
 
+#include <algorithm>
 #include <list>
 #include <optional>
 #include <vector>
@@ -56,6 +57,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     Trajectory<Frame> const& trajectory,
                     typename DiscreteTrajectory<Frame>::iterator const begin,
                     typename DiscreteTrajectory<Frame>::iterator const end,
+                    Instant const& t_max,
                     int const max_points,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides) {
@@ -65,14 +67,14 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   std::optional<Variation<Square<Length>>>
       previous_squared_distance_derivative;
 
-  Instant const t_min = reference.t_min();
-  Instant const t_max = reference.t_max();
+  Instant const effective_t_min = reference.t_min();
+  Instant const effective_t_max = std::min(t_max, reference.t_max());
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
-    if (time < t_min) {
+    if (time < effective_t_min) {
       continue;
     }
-    if (time > t_max) {
+    if (time > effective_t_max) {
       break;
     }
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
@@ -478,6 +480,7 @@ absl::Status ComputeNodes(
     Trajectory<Frame> const& trajectory,
     typename DiscreteTrajectory<Frame>::iterator const begin,
     typename DiscreteTrajectory<Frame>::iterator const end,
+    Instant const& t_max,
     Vector<double, Frame> const& north,
     int const max_points,
     DiscreteTrajectory<Frame>& ascending,
@@ -496,6 +499,9 @@ absl::Status ComputeNodes(
   for (auto it = begin; it != end; ++it) {
     RETURN_IF_STOPPED;
     auto const& [time, degrees_of_freedom] = *it;
+    if (time > t_max) {
+      break;
+    }
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;

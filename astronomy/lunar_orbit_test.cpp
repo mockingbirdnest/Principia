@@ -398,6 +398,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   EXPECT_OK(ComputeNodes(surface_trajectory,
                          surface_trajectory.begin(),
                          surface_trajectory.end(),
+                         /*t_max=*/InfiniteFuture,
                          /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
                          /*max_points=*/std::numeric_limits<int>::max(),
                          ascending_nodes,
@@ -409,6 +410,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                  trajectory,
                  trajectory.begin(),
                  trajectory.end(),
+                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);

@@ -122,6 +122,7 @@ class FlightPlanOptimizerTest : public testing::Test {
                    flight_plan_trajectory,
                    flight_plan_trajectory.begin(),
                    flight_plan_trajectory.end(),
+                   /*t_max=*/InfiniteFuture,
                    /*max_points=*/100,
                    apoapsides,
                    periapsides);
