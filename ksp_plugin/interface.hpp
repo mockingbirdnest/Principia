@@ -101,6 +101,7 @@ bool operator==(NavigationManoeuvre const& left,
                 NavigationManoeuvre const& right);
 bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
                 NavigationManoeuvreFrenetTrihedron const& right);
+bool operator==(Node const& left, Node const& right);
 bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right);
 bool operator==(OrbitRecurrence const& left, OrbitRecurrence const& right);
 bool operator==(OrbitalElements const& left, OrbitalElements const& right);

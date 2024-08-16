@@ -232,6 +232,15 @@ inline bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
          left.tangent == right.tangent;
 }
 
+inline bool operator==(Node const& left, Node const& right) {
+  return NaNIndependentEq(left.time, right.time) &&
+         left.world_position == right.world_position &&
+         NaNIndependentEq(left.apparent_inclination_in_degrees,
+                          right.apparent_inclination_in_degrees) &&
+         NaNIndependentEq(left.out_of_plane_velocity,
+                          right.out_of_plane_velocity);
+}
+
 inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
   return left.elements == right.elements &&
          left.ground_track_equatorial_crossings ==

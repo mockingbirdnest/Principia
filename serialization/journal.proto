@@ -250,7 +250,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5196.
+  extensions 5000 to 5999;  // Last used: 5197.
 }
 
 message AdvanceTime {
@@ -1792,6 +1792,22 @@ message IteratorGetDiscreteTrajectoryXYZ {
   }
   message Return {
     required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetNode {
+  extend Method {
+    optional IteratorGetNode extension = 5197;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required Node node = 1;
   }
   optional In in = 1;
   optional Return return = 3;
