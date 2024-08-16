@@ -255,6 +255,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private readonly MapNodePool map_node_pool_;
   private ManeuverNode guidance_node_;
 
+  // These need to be fields for communication between `LateUpdate` and
+  // `pre_cull`.
+  private TQP? prediction_collision_ = null;
+  private TQP? flight_plan_collision_ = null;
+
   private readonly List<ManœuvreMarker> manœuvre_marker_pool_ =
       new List<ManœuvreMarker>();
 
@@ -960,13 +965,16 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void LateUpdate() {
-    TQP? prediction_collision = null;
-    TQP? flight_plan_collision = null;
+    string main_vessel_guid = PredictedVessel()?.id.ToString();
+    RenderTrajectoryCollisions(main_vessel_guid,
+                               out prediction_collision_,
+                               out flight_plan_collision_);
+
     if (map_renderer_ == null) {
       map_renderer_ = PlanetariumCamera.Camera.gameObject.
           AddComponent<RenderingActions>();
       map_renderer_.pre_cull = () => {
-        RenderTrajectories(out prediction_collision, out flight_plan_collision);
+        RenderTrajectories();
         RenderManœuvreMarkers();
       };
     }
@@ -1110,11 +1118,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       }
     }
 
-    string main_vessel_guid = PredictedVessel()?.id.ToString();
     if (MapView.MapIsEnabled && main_vessel_guid != null) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       RenderPredictionMarkers(main_vessel_guid,
-                              prediction_collision,
+                              prediction_collision_,
                               sun_world_position);
       if (FlightGlobals.ActiveVessel != null &&
           !plotting_frame_selector_.target_frame_selected &&
@@ -1126,7 +1133,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       }
       if (plugin_.FlightPlanExists(main_vessel_guid)) {
         RenderFlightPlanMarkers(main_vessel_guid,
-                                flight_plan_collision,
+                                flight_plan_collision_,
                                 sun_world_position);
       }
     }
@@ -2241,10 +2248,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
-  private void RenderTrajectories(out TQP? prediction_collision,
-                                  out TQP? flight_plan_collision) {
-    prediction_collision = null;
-    flight_plan_collision = null;
+  private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
     }
@@ -2265,15 +2269,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     string main_vessel_guid = PredictedVessel()?.id.ToString();
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-      RenderTrajectoryCollisions(main_vessel_guid,
-                                 out prediction_collision,
-                                 out flight_plan_collision);
       using (DisposablePlanetarium planetarium =
           GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         plotter_.PlotTrajectories(planetarium, main_vessel_guid,
                                   main_window_.history_length,
-                                  prediction_collision?.t,
-                                  flight_plan_collision?.t);
+                                  prediction_collision_?.t,
+                                  flight_plan_collision_?.t);
         if (main_window_.show_equipotentials) {
           plotter_.PlotEquipotentials(planetarium);
         }
@@ -2294,7 +2295,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     prediction_collision = null;
     flight_plan_collision = null;
-    if (plotting_frame_selector_.Centre() != null) {
+    if (MapView.MapIsEnabled && plotting_frame_selector_.Centre() != null) {
       var centre = plotting_frame_selector_.Centre();
       var centre_index = centre.flightGlobalsIndex;
       if (plotting_frame_selector_.IsSurfaceFrame()) {
