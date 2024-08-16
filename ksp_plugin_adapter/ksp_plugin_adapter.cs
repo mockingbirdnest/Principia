@@ -2361,7 +2361,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               }
               Vector3d position_at_start = (Vector3d)rendered_segments.
                 IteratorGetDiscreteTrajectoryXYZ();
-              if (is_burn) {
+              double time_at_start =
+                  rendered_segments.IteratorGetDiscreteTrajectoryTime();
+              if (is_burn &&
+                  flight_plan_collision_ != null &&
+                  time_at_start <= flight_plan_collision_?.t) {
                 int manœuvre_index = i / 2;
                 if (manœuvre_index <
                     number_of_manœuvres - number_of_anomalous_manœuvres) {
