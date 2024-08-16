@@ -604,7 +604,8 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
         t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
-        segment_rendered_ascending, segment_rendered_descending);
+        segment_rendered_ascending,
+        segment_rendered_descending);
     rendered_ascending.Merge(std::move(segment_rendered_ascending));
     rendered_descending.Merge(std::move(segment_rendered_descending));
   }
