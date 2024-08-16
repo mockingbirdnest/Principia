@@ -16,6 +16,13 @@ TypedIterator<Container>::TypedIterator(Container container)
       iterator_(container_.begin()) {}
 
 template<typename Container>
+TypedIterator<Container>::TypedIterator(Container container,
+                                        not_null<Plugin const*> plugin)
+    : container_(std::move(container)),
+      iterator_(container_.begin()),
+      plugin_(plugin) {}
+
+template<typename Container>
 template<typename Interchange>
 Interchange TypedIterator<Container>::Get(
     std::function<Interchange(typename Container::value_type const&)> const&
@@ -42,6 +49,11 @@ void TypedIterator<Container>::Reset() {
 template<typename Container>
 int TypedIterator<Container>::Size() const {
   return container_.size();
+}
+
+template<typename Container>
+Plugin const* TypedIterator<Container>::plugin() const {
+  return plugin_;
 }
 
 inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(

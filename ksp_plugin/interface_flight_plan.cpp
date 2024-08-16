@@ -616,9 +616,11 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
               std::back_inserter(rendered_descending));
   }
   *ascending = new TypedIterator<std::vector<Renderer::Node>>(
-      std::move(rendered_ascending));
+      std::move(rendered_ascending),
+      plugin);
   *descending = new TypedIterator<std::vector<Renderer::Node>>(
-      std::move(rendered_descending));
+      std::move(rendered_descending),
+      plugin);
   return m.Return();
 }
 

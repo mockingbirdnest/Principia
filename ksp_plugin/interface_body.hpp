@@ -18,6 +18,7 @@
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/renderer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
@@ -35,6 +36,7 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
@@ -376,6 +378,15 @@ FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
   return {adaptive_step_parameters, generalized_adaptive_step_parameters};
 }
 
+inline Renderer::Node FromNode(Plugin const& plugin,
+                               Node const& node) {
+  return Renderer::Node{
+      .time = FromGameTime(plugin, node.time),
+      .position = FromXYZ<Position<World>>(node.world_position),
+      .apparent_inclination = node.apparent_inclination_in_degrees * Degree,
+      .out_of_plane_velocity = node.out_of_plane_velocity * Metre / Second};
+}
+
 template<>
 inline DegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<DegreesOfFreedom<World>>::FromQP(qp);
@@ -478,6 +489,15 @@ inline KeplerianElements ToKeplerianElements(
           keplerian_elements.longitude_of_ascending_node / Degree,
           *keplerian_elements.argument_of_periapsis / Degree,
           *keplerian_elements.mean_anomaly / Radian};
+}
+
+inline Node ToNode(Plugin const& plugin,
+                   Renderer::Node const& node) {
+  return Node{
+      .time = ToGameTime(plugin, node.time),
+      .world_position = ToXYZ(node.position),
+      .apparent_inclination_in_degrees = node.apparent_inclination / Degree,
+      .out_of_plane_velocity = node.out_of_plane_velocity / (Metre / Second)};
 }
 
 inline QP ToQP(DegreesOfFreedom<World> const& dof) {

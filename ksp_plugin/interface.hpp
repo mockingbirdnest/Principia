@@ -24,6 +24,7 @@
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -58,6 +59,7 @@ using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -124,6 +126,9 @@ std::pair<physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters,
 FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
                                          flight_plan_adaptive_step_parameters);
 
+Renderer::Node FromNode(Plugin const& plugin,
+                        Node const& node);
+
 template<typename T>
 T FromQP(QP const& qp);
 template<>
@@ -165,6 +170,9 @@ FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
 KeplerianElements ToKeplerianElements(
     physics::_kepler_orbit::KeplerianElements<Barycentric> const&
         keplerian_elements);
+
+Node ToNode(Plugin const& plugin,
+            Renderer::Node const& node);
 
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
