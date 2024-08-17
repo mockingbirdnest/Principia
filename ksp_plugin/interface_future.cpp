@@ -38,7 +38,7 @@ void __cdecl principia__FutureWaitForVesselToCatchUp(
   VesselSet collided_vessel_set;
   plugin->WaitForVesselToCatchUp(*owned_future, collided_vessel_set);
   *collided_vessels =
-      new TypedIterator<VesselSet>(std::move(collided_vessel_set));
+      new TypedIterator<VesselSet>(std::move(collided_vessel_set), plugin);
   return m.Return();
 }
 

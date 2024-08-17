@@ -11,13 +11,8 @@ namespace _iterators {
 namespace internal {
 
 template<typename Container>
-TypedIterator<Container>::TypedIterator(Container container)
-    : container_(std::move(container)),
-      iterator_(container_.begin()) {}
-
-template<typename Container>
 TypedIterator<Container>::TypedIterator(Container container,
-                                        not_null<Plugin const*> plugin)
+                                        Plugin const* const plugin)
     : container_(std::move(container)),
       iterator_(container_.begin()),
       plugin_(plugin) {}

@@ -120,9 +120,9 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       rendered_ascending,
       rendered_descending);
   *ascending = new TypedIterator<std::vector<Renderer::Node>>(
-      std::move(rendered_ascending));
+      std::move(rendered_ascending), plugin);
   *descending = new TypedIterator<std::vector<Renderer::Node>>(
-      std::move(rendered_descending));
+      std::move(rendered_descending), plugin);
   return m.Return();
 }
 
