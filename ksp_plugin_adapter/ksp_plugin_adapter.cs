@@ -2479,14 +2479,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.DescendingNode),
@@ -2531,14 +2531,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               ascending_nodes_iterator,
                                       out DisposableIterator
                                               descending_nodes_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.DescendingNode),
@@ -2564,14 +2564,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.DescendingNode),
@@ -2616,14 +2616,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               ascending_nodes_iterator,
                                       out DisposableIterator
                                               descending_nodes_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.DescendingNode),
