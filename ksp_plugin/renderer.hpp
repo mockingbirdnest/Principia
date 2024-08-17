@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"

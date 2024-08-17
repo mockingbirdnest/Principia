@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <utility>
+#include <vector>
 
 #include "base/ranges.hpp"
 #include "geometry/grassmann.hpp"

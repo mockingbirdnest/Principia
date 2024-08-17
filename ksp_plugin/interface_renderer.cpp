@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <utility>
+#include <vector>
 
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
