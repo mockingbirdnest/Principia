@@ -11,9 +11,11 @@ namespace _iterators {
 namespace internal {
 
 template<typename Container>
-TypedIterator<Container>::TypedIterator(Container container)
+TypedIterator<Container>::TypedIterator(Container container,
+                                        Plugin const* const plugin)
     : container_(std::move(container)),
-      iterator_(container_.begin()) {}
+      iterator_(container_.begin()),
+      plugin_(plugin) {}
 
 template<typename Container>
 template<typename Interchange>
@@ -42,6 +44,11 @@ void TypedIterator<Container>::Reset() {
 template<typename Container>
 int TypedIterator<Container>::Size() const {
   return container_.size();
+}
+
+template<typename Container>
+Plugin const* TypedIterator<Container>::plugin() const {
+  return plugin_;
 }
 
 inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(

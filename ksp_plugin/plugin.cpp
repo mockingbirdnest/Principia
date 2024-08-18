@@ -1113,8 +1113,8 @@ void Plugin::ComputeAndRenderNodes(
     Instant const& t_max,
     Position<World> const& sun_world_position,
     int const max_points,
-    DiscreteTrajectory<World>& ascending,
-    DiscreteTrajectory<World>& descending) const {
+    std::vector<Renderer::Node>& ascending,
+    std::vector<Renderer::Node>& descending) const {
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
 
@@ -1148,18 +1148,16 @@ void Plugin::ComputeAndRenderNodes(
                descending_trajectory,
                show_node).IgnoreError();
 
-  ascending = renderer_->RenderPlottingTrajectoryInWorld(
-                  current_time_,
-                  ascending_trajectory.begin(),
-                  ascending_trajectory.end(),
-                  sun_world_position,
-                  PlanetariumRotation());
-  descending = renderer_->RenderPlottingTrajectoryInWorld(
-                   current_time_,
-                   descending_trajectory.begin(),
-                   descending_trajectory.end(),
-                   sun_world_position,
-                   PlanetariumRotation());
+  ascending = renderer_->RenderNodes(current_time_,
+                                     ascending_trajectory.begin(),
+                                     ascending_trajectory.end(),
+                                     sun_world_position,
+                                     PlanetariumRotation());
+  descending = renderer_->RenderNodes(current_time_,
+                                      descending_trajectory.begin(),
+                                      descending_trajectory.end(),
+                                      sun_world_position,
+                                      PlanetariumRotation());
 }
 
 bool Plugin::HasCelestial(Index const index) const {

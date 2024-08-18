@@ -38,6 +38,7 @@ using interface::KeplerianElements;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;
 using interface::NavigationManoeuvreFrenetTrihedron;
+using interface::Node;
 using interface::OrbitalElements;
 using interface::OrbitAnalysis;
 using interface::OrbitRecurrence;

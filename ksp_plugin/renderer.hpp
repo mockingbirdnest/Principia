@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
@@ -21,6 +22,7 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/similar_motion.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -45,10 +47,18 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_similar_motion;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 class Renderer {
  public:
+  struct Node {
+    Instant time;
+    Position<World> position;
+    Angle apparent_inclination;
+    Speed out_of_plane_velocity;
+  };
+
   Renderer(not_null<Celestial const*> sun,
            not_null<std::unique_ptr<PlottingFrame>> plotting_frame);
 
@@ -104,6 +114,13 @@ class Renderer {
   // |begin| and |end| in the current plotting frame.
   virtual DiscreteTrajectory<World>
   RenderPlottingTrajectoryInWorld(
+      Instant const& time,
+      DiscreteTrajectory<Navigation>::iterator const& begin,
+      DiscreteTrajectory<Navigation>::iterator const& end,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  std::vector<Node> RenderNodes(
       Instant const& time,
       DiscreteTrajectory<Navigation>::iterator const& begin,
       DiscreteTrajectory<Navigation>::iterator const& end,

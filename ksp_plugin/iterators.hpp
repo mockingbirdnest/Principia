@@ -30,7 +30,9 @@ class Iterator {
 template<typename Container>
 class TypedIterator : public Iterator {
  public:
-  explicit TypedIterator(Container container);
+  // The `plugin` may be nullptr but it must be provided.
+  TypedIterator(Container container,
+                Plugin const* plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
   // |Interchange| type using |convert|.
@@ -44,9 +46,12 @@ class TypedIterator : public Iterator {
   void Reset() override;
   int Size() const override;
 
+  Plugin const* plugin() const;
+
  private:
   Container container_;
   typename Container::const_iterator iterator_;
+  Plugin const* plugin_;
 };
 
 // A specialization for |DiscreteTrajectory<World>|.

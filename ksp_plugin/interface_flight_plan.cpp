@@ -14,6 +14,7 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
+#include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
@@ -38,6 +39,7 @@ using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
@@ -594,11 +596,11 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
-  DiscreteTrajectory<World> rendered_ascending;
-  DiscreteTrajectory<World> rendered_descending;
+  std::vector<Renderer::Node> rendered_ascending;
+  std::vector<Renderer::Node> rendered_descending;
   for (auto const& segment : flight_plan.segments()) {
-    DiscreteTrajectory<World> segment_rendered_ascending;
-    DiscreteTrajectory<World> segment_rendered_descending;
+    std::vector<Renderer::Node> segment_rendered_ascending;
+    std::vector<Renderer::Node> segment_rendered_descending;
     plugin->ComputeAndRenderNodes(
         segment.begin(), segment.end(),
         t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
@@ -606,13 +608,17 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
         max_points,
         segment_rendered_ascending,
         segment_rendered_descending);
-    rendered_ascending.Merge(std::move(segment_rendered_ascending));
-    rendered_descending.Merge(std::move(segment_rendered_descending));
+    std::move(segment_rendered_ascending.begin(),
+              segment_rendered_ascending.end(),
+              std::back_inserter(rendered_ascending));
+    std::move(segment_rendered_descending.begin(),
+              segment_rendered_descending.end(),
+              std::back_inserter(rendered_descending));
   }
-  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
+  *ascending = new TypedIterator<std::vector<Renderer::Node>>(
       std::move(rendered_ascending),
       plugin);
-  *descending = new TypedIterator<DiscreteTrajectory<World>>(
+  *descending = new TypedIterator<std::vector<Renderer::Node>>(
       std::move(rendered_descending),
       plugin);
   return m.Return();

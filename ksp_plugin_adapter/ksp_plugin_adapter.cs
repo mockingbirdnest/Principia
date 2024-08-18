@@ -126,7 +126,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   internal UnityEngine.Color target_prediction_colour = XKCDColors.LightMauve;
   internal GLLines.Style target_prediction_style = GLLines.Style.Solid;
 
-  private Plotter plotter_;
+  private readonly Plotter plotter_;
 
   private readonly List<IntPtr> vessel_futures_ = new List<IntPtr>();
   private readonly EventVoidHolder event_void_holder_ = new EventVoidHolder();
@@ -2021,7 +2021,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
        plotting_frame_selector_.target = target_vessel;
        if (plotting_frame_selector_.target_frame_selected &&
            target_vessel == null) {
-         // The target is not longer manageable.
+         // The target is no longer manageable.
          plotting_frame_selector_.UnsetTargetFrame();
        } else if (FlightGlobals.speedDisplayMode ==
                       FlightGlobals.SpeedDisplayModes.Target &&
@@ -2253,13 +2253,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       return;
     }
     foreach (var celestial in FlightGlobals.Bodies.Where(
-        c => c.MapObject?.uiNode != null)) {
+                 c => c.MapObject?.uiNode != null)) {
       celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
       celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
       RemoveStockTrajectoriesIfNeeded(celestial);
     }
     foreach (var vessel in FlightGlobals.Vessels.Where(
-        v => v.mapObject?.uiNode != null)) {
+                 v => v.mapObject?.uiNode != null)) {
       // There is no way to check if we have already added a callback to an
       // event...
       vessel.mapObject.uiNode.OnClick -= OnVesselNodeClick;
@@ -2270,8 +2270,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (MapView.MapIsEnabled) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
-          GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        plotter_.PlotTrajectories(planetarium, main_vessel_guid,
+             GLLines.NewPlanetarium(plugin_, sun_world_position)) {
+        plotter_.PlotTrajectories(planetarium,
+                                  main_vessel_guid,
                                   main_window_.history_length,
                                   prediction_collision_?.t,
                                   flight_plan_collision_?.t);
@@ -2299,14 +2300,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       var centre = plotting_frame_selector_.Centre();
       var centre_index = centre.flightGlobalsIndex;
       if (plotting_frame_selector_.IsSurfaceFrame()) {
-        prediction_collision =
-            RenderedPredictionCollision(vessel_guid, centre);
+        prediction_collision = RenderedPredictionCollision(vessel_guid, centre);
         if (prediction_collision.HasValue) {
           map_node_pool_.RenderMarkers(new[] { prediction_collision.Value },
                                        new MapNodePool.Provenance(
                                            vessel_guid,
-                                           MapNodePool.NodeSource.
-                                               Prediction,
+                                           MapNodePool.NodeSource.Prediction,
                                            MapObject.ObjectType.
                                                PatchTransition),
                                        plotting_frame_selector_);
@@ -2318,8 +2317,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             map_node_pool_.RenderMarkers(new[] { flight_plan_collision.Value },
                                          new MapNodePool.Provenance(
                                              vessel_guid,
-                                             MapNodePool.NodeSource.
-                                                 FlightPlan,
+                                             MapNodePool.NodeSource.FlightPlan,
                                              MapObject.ObjectType.
                                                  PatchTransition),
                                          plotting_frame_selector_);
@@ -2479,14 +2477,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.DescendingNode),
@@ -2531,14 +2529,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               ascending_nodes_iterator,
                                       out DisposableIterator
                                               descending_nodes_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.DescendingNode),
@@ -2564,14 +2562,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           sun_world_position,
           MapNodePool.MaxNodesPerProvenance,
           out DisposableIterator approaches_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.DescendingNode),
@@ -2616,14 +2614,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                               ascending_nodes_iterator,
                                       out DisposableIterator
                                               descending_nodes_iterator);
-      map_node_pool_.RenderMarkers(
-          ascending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          ascending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.AscendingNode),
           plotting_frame_selector_);
-      map_node_pool_.RenderMarkers(
-          descending_nodes_iterator.DiscreteTrajectoryPoints(),
+      map_node_pool_.RenderNodes(
+          descending_nodes_iterator.Nodes(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.DescendingNode),

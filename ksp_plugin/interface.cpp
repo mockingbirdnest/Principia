@@ -402,7 +402,7 @@ void __cdecl principia__CatchUpLaggingVessels(
   VesselSet collided_vessel_set;
   plugin->CatchUpLaggingVessels(collided_vessel_set);
   *collided_vessels =
-      new TypedIterator<VesselSet>(std::move(collided_vessel_set));
+      new TypedIterator<VesselSet>(std::move(collided_vessel_set), plugin);
   return m.Return();
 }
 

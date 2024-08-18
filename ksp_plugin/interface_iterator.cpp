@@ -9,6 +9,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
+#include "ksp_plugin/renderer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -22,6 +23,7 @@ using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
+using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
@@ -47,6 +49,17 @@ QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
       [](DiscreteTrajectory<World>::iterator const& iterator) -> QP {
         return ToQP(iterator->degrees_of_freedom);
       }));
+}
+
+Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetNode> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<std::vector<Renderer::Node>> const*>(
+          iterator));
+  auto const plugin = typed_iterator->plugin();
+  return m.Return(typed_iterator->Get<Node>(
+      [plugin](Renderer::Node const& node) { return ToNode(*plugin, node); }));
 }
 
 double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
@@ -82,7 +95,8 @@ Iterator* __cdecl principia__IteratorGetRP2LinesIterator(
       dynamic_cast<TypedIterator<RP2Lines<Length, Camera>> const*>(iterator));
   return m.Return(typed_iterator->Get<Iterator*>(
       [](RP2Line<Length, Camera> const& rp2_line) -> Iterator* {
-        return new TypedIterator<RP2Line<Length, Camera>>(rp2_line);
+        return new TypedIterator<RP2Line<Length, Camera>>(rp2_line,
+                                                          /*plugin=*/nullptr);
       }));
 }
 
