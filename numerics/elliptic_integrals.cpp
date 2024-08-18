@@ -14,6 +14,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 // The implementation in this file is derived from [Fuk18] (license: MIT). The
@@ -31,6 +32,7 @@ using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {
@@ -1210,7 +1212,7 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
       // "If in this case b ≠ 0 then cel is undefined."
       DLOG(ERROR) << "kc = " << kc << " nc = " << nc << " a = " << a
                   << " b = " << b;
-      return std::numeric_limits<Angle>::quiet_NaN();
+      return NaN<Angle>;
     }
   }
   kc = Abs(kc);
@@ -1818,7 +1820,14 @@ void FukushimaEllipticBDJ(Angle const& φ,
     // better algorithm (Payne-Hanek?).
     Angle φ_reduced{uninitialized};
     std::int64_t j;
-    ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j);
+    if (!ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j)) {
+      B_φǀm = NaN<Angle>;
+      D_φǀm = NaN<Angle>;
+      if constexpr (should_compute<ThirdKind>) {
+        J_φ_nǀm = NaN<ThirdKind>;
+      }
+      return;
+    }
     Angle const abs_φ_reduced = Abs(φ_reduced);
 
     FukushimaEllipticBDJ(abs_φ_reduced, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);

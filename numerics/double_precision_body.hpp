@@ -455,7 +455,7 @@ DoublePrecision<Product<T, U>> operator*(T const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
   auto product = TwoProduct(left, right.value);
-  product.error += left.value * right.error;
+  product.error += left * right.error;
   return QuickTwoSum(product.value, product.error);
 }
 

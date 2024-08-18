@@ -35,13 +35,15 @@ constexpr Angle two_π;
 // more, the reduction is modulo 2π.  If it covers only π, the reduction is
 // modulo π.
 
+// Return false if the argument is too large.
 template<DoubleWrapper fractional_part_lower_bound,
          DoubleWrapper fractional_part_upper_bound,
          typename Angle>
-void ReduceAngle(Angle const& θ,
+bool ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
                  std::int64_t& integer_part);
 
+// Fails if the argument is too large.
 template<DoubleWrapper fractional_part_lower_bound,
          DoubleWrapper fractional_part_upper_bound,
          typename Angle>
