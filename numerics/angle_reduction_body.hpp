@@ -2,6 +2,8 @@
 
 #include "numerics/angle_reduction.hpp"
 
+#include <limits>
+
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "quantities/si.hpp"
 
@@ -11,6 +13,11 @@ namespace _angle_reduction {
 namespace internal {
 
 using namespace principia::quantities::_si;
+
+// A somewhat arbitrary value above which we fail argument reduction.
+// TODO(phl): We *really* need a proper angle reduction.
+double const reduction_threshold =
+    std::numeric_limits<std::int64_t>::max() / 2.0;
 
 template<>
 inline constexpr Angle one_π<Angle> = π * Radian;
@@ -60,9 +67,13 @@ class AngleReduction<Angle, -π / 2, π / 2> {
  public:
   // Argument reduction: angle = fractional_part + integer_part * π where
   // fractional_part is in [-π/2, π/2].
-  static void Reduce(Angle const& θ,
+  static bool Reduce(Angle const& θ,
                      Angle& fractional_part,
                      std::int64_t& integer_part) {
+    if (θ > reduction_threshold * one_π<Angle> ||
+        θ < -reduction_threshold * one_π<Angle>) {
+      return false;
+    }
     double const θ_in_half_cycles = θ / (π * Radian);
     double reduced_in_half_cycles;
 #if PRINCIPIA_USE_SSE3_INTRINSICS
@@ -76,63 +87,76 @@ class AngleReduction<Angle, -π / 2, π / 2> {
     reduced_in_half_cycles = θ_in_half_cycles - integer_part;
 #endif
     fractional_part = reduced_in_half_cycles * π * Radian;
+    return true;
   }
 };
 
 template<typename Angle>
 class AngleReduction<Angle, -π, π> {
  public:
-  static void Reduce(Angle const& θ,
+  static bool Reduce(Angle const& θ,
                      Angle& fractional_part,
                      std::int64_t& integer_part) {
-    AngleReduction<Angle, 0.0, 2 * π>::Reduce(θ, fractional_part, integer_part);
+    if (!AngleReduction<Angle, 0.0, 2 * π>::Reduce(
+            θ, fractional_part, integer_part)) {
+      return false;
+    }
     if (fractional_part > one_π<Angle>) {
       fractional_part -= two_π<Angle>;
       ++integer_part;
     }
+    return true;
   }
 };
 
 template<typename Angle>
 class AngleReduction<Angle, 0.0, 2 * π> {
  public:
-  static void Reduce(Angle const& θ,
+  static bool Reduce(Angle const& θ,
                      Angle& fractional_part,
                      std::int64_t& integer_part) {
-    AngleReduction<Angle, -2 * π, 2 * π>::Reduce(
-        θ, fractional_part, integer_part);
+    if (!AngleReduction<Angle, -2 * π, 2 * π>::Reduce(
+            θ, fractional_part, integer_part)) {
+      return false;
+    }
     if (fractional_part < Angle{}) {
       fractional_part += two_π<Angle>;
       --integer_part;
     }
+    return true;
   }
 };
 
 template<typename Angle>
 class AngleReduction<Angle, -2 * π, 2 * π> {
  public:
-  static void Reduce(Angle const& θ,
+  static bool Reduce(Angle const& θ,
                      Angle& fractional_part,
                      std::int64_t& integer_part) {
+    if (θ > reduction_threshold * one_π<Angle> ||
+        θ < -reduction_threshold * one_π<Angle>) {
+      return false;
+    }
     // This has the same semantics as fmod.
     auto const θ_over_2π = θ / two_π<Angle>;
     integer_part = StaticCastToInt64(θ_over_2π);
     fractional_part =
         θ - two_π<Angle> * static_cast<decltype(θ_over_2π)>(integer_part);
+    return true;
   }
 };
 
 template<DoubleWrapper fractional_part_lower_bound,
          DoubleWrapper fractional_part_upper_bound,
          typename Angle>
-void ReduceAngle(Angle const& θ,
+bool ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
                  std::int64_t& integer_part) {
-  AngleReduction<Angle,
-                 fractional_part_lower_bound,
-                 fractional_part_upper_bound>::Reduce(θ,
-                                                      fractional_part,
-                                                      integer_part);
+  return AngleReduction<Angle,
+                        fractional_part_lower_bound,
+                        fractional_part_upper_bound>::Reduce(θ,
+                                                             fractional_part,
+                                                             integer_part);
 }
 
 template<DoubleWrapper fractional_part_lower_bound,
@@ -141,11 +165,11 @@ template<DoubleWrapper fractional_part_lower_bound,
 Angle ReduceAngle(Angle const& θ) {
   Angle fractional_part;
   std::int64_t integer_part;
-  AngleReduction<Angle,
-                 fractional_part_lower_bound,
-                 fractional_part_upper_bound>::Reduce(θ,
-                                                      fractional_part,
-                                                      integer_part);
+  CHECK((AngleReduction<Angle,
+                        fractional_part_lower_bound,
+                        fractional_part_upper_bound>::Reduce(θ,
+                                                             fractional_part,
+                                                             integer_part)));
   return fractional_part;
 }
 
