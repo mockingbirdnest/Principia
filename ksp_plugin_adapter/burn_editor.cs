@@ -239,17 +239,36 @@ class BurnEditor : ScalingRenderer {
           UnityEngine.GUILayout.Space(Width(5));
           UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
         }
-        UnityEngine.GUILayout.Label(
-            index == 0
-                ? L10N.CacheFormat(
-                    "#Principia_BurnEditor_TimeBase_StartOfFlightPlan")
-                : L10N.CacheFormat(
-                    "#Principia_BurnEditor_TimeBase_EndOfManœuvre",
-                    index),
-            style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
-                alignment = UnityEngine.TextAnchor.UpperLeft
-            });
+
+        // Display and select the time base for the manœuvre.
+        if (index == 0) {
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat(
+                  "#Principia_BurnEditor_TimeBase_StartOfFlightPlan"),
+              style : new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label){
+                  alignment = UnityEngine.TextAnchor.UpperRight
+              });
+        } else {
+          using (new UnityEngine.GUILayout.HorizontalScope()) {
+            UnityEngine.GUILayout.Label("Time base:",
+                                        style : new UnityEngine.GUIStyle(
+                                            UnityEngine.GUI.skin.label){
+                                            alignment = UnityEngine.TextAnchor.
+                                                UpperRight
+                                        });
+            string button_text = time_base_is_start_of_flight_plan_
+                                     ? "Start of flight plan"
+                                     : "End of manœuvre #" + index;
+            if (UnityEngine.GUILayout.Button(
+                    new UnityEngine.GUIContent(button_text,
+                                               "Change the time base of this manœuvre"))) {
+              time_base_is_start_of_flight_plan_ =
+                  !time_base_is_start_of_flight_plan_;
+            }
+          }
+        }
       }
+
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             L10N.CacheFormat("#Principia_BurnEditor_Δv",
@@ -472,9 +491,12 @@ class BurnEditor : ScalingRenderer {
     return true;
   }
 
-  private double time_base => previous_burn?.final_time ??
-                              plugin.FlightPlanGetInitialTime(
-                                  vessel_.id.ToString());
+  private double time_base => time_base_is_start_of_flight_plan_
+                                  ? plugin.FlightPlanGetInitialTime(
+                                      vessel_.id.ToString())
+                                  : previous_burn?.final_time ??
+                                    plugin.FlightPlanGetInitialTime(
+                                        vessel_.id.ToString());
 
   public double initial_time => initial_time_;
   public double final_time => initial_time_ + duration_;
@@ -498,6 +520,8 @@ class BurnEditor : ScalingRenderer {
   private double initial_time_;
 
   private bool first_time_rendering_ = true;
+
+  private bool time_base_is_start_of_flight_plan_ = false;
 
   private const double log10_Δv_lower_rate = -3.0;
   private const double log10_Δv_upper_rate = 3.5;

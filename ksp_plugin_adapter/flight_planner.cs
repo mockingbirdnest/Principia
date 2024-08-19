@@ -670,7 +670,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
       }
       if (UnityEngine.GUILayout.Button(
               L10N.CacheFormat("#Principia_FlightPlan_AddManœuvre"),
-              GUILayoutWidth(4))) {
+              GUILayoutWidth(5))) {
         double initial_time;
         if (index == 0) {
           initial_time = plugin.CurrentTime() + 60;
