@@ -168,17 +168,20 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                                   style : Style.Info(
                                       UnityEngine.GUI.skin.label));
       history_length_.Render(enabled : true);
-      if (MapView.MapIsEnabled &&
-          FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+      if (FlightGlobals.ActiveVessel?.orbitTargeter != null &&
+          (MapView.MapIsEnabled ||
+           FlightGlobals.fetch.VesselTarget?.GetVessel() != null)) {
         show_selection_ui_ = true;
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
-              selecting_active_vessel_target,
-              L10N.CacheFormat("#Principia_MainWindow_TargetVessel_Select"));
-          if (selecting_active_vessel_target) {
-            selecting_target_celestial_ = false;
+          if (MapView.MapIsEnabled) {
+            selecting_active_vessel_target = UnityEngine.GUILayout.Toggle(
+                selecting_active_vessel_target,
+                L10N.CacheFormat("#Principia_MainWindow_TargetVessel_Select"));
+            if (selecting_active_vessel_target) {
+              selecting_target_celestial_ = false;
+            }
           }
-          if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
+          if (FlightGlobals.fetch.VesselTarget?.GetVessel() != null) {
             UnityEngine.GUILayout.Label(
                 L10N.CacheFormat("#Principia_MainWindow_TargetVessel_Name",
                                  FlightGlobals.fetch.VesselTarget.GetVessel().
