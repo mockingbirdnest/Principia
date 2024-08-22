@@ -114,8 +114,9 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
       colour
         = UnityEngine.Color.HSVToRGB(h, s, v * hover_luminosity_boost, hdr: true);
     }
-    game_object.GetComponentInChildren<UnityEngine.Renderer>().material.color
-      = colour;
+    material_property_block.SetColor(material_colour_property_id, colour);
+    game_object.GetComponentInChildren<UnityEngine.Renderer>().
+        SetPropertyBlock(material_property_block);
   }
 
   // Brighten the marker when interacting.
@@ -257,8 +258,8 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
         UnityEngine.PrimitiveType.Sphere);
     Destroy(sphere.GetComponent<UnityEngine.Collider>());
     sphere.transform.localScale *= base_diameter;
-    sphere.GetComponent<UnityEngine.Renderer>().material =
-        new UnityEngine.Material(marker_material);
+    sphere.GetComponent<UnityEngine.Renderer>().sharedMaterial =
+        marker_material;
     return sphere;
   }
 
@@ -271,8 +272,8 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     cylinder.transform.localScale
       = new UnityEngine.Vector3(arrow_diameter, 0.5f, arrow_diameter);
     cylinder.transform.localPosition = new UnityEngine.Vector3(0f, 0.5f, 0f);
-    cylinder.GetComponent<UnityEngine.Renderer>().material =
-        new UnityEngine.Material(marker_material);
+    cylinder.GetComponent<UnityEngine.Renderer>().sharedMaterial =
+        marker_material;
     return arrow;
   }
 
@@ -349,6 +350,13 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
       return marker_material_;
     }
   }
+
+  private static UnityEngine.MaterialPropertyBlock mpb_;
+  private static UnityEngine.MaterialPropertyBlock material_property_block =>
+      mpb_ ??= new UnityEngine.MaterialPropertyBlock();
+
+  private static readonly int material_colour_property_id =
+      UnityEngine.Shader.PropertyToID("_Color");
 }
 
 }  // namespace ksp_plugin_adapter
