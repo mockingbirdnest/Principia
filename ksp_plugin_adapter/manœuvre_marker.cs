@@ -352,8 +352,14 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   }
 
   private static UnityEngine.MaterialPropertyBlock mpb_;
-  private static UnityEngine.MaterialPropertyBlock material_property_block =>
-      mpb_ ??= new UnityEngine.MaterialPropertyBlock();
+  private static UnityEngine.MaterialPropertyBlock material_property_block {
+    get {
+      if (mpb_ == null) {
+        mpb_ = new UnityEngine.MaterialPropertyBlock();
+      }
+      return mpb_;
+    }
+  }
 
   private static readonly int material_colour_property_id =
       UnityEngine.Shader.PropertyToID("_Color");
