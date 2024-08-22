@@ -40,9 +40,6 @@ class Plotter {
                                double? prediction_t_max,
                                double? flight_plan_t_max) {
     PlotCelestialTrajectories(planetarium, main_vessel_guid, history_length);
-    if (main_vessel_guid == null) {
-      return;
-    }
     PlotVesselTrajectories(planetarium, main_vessel_guid, history_length,
                            prediction_t_max, flight_plan_t_max);
   }
@@ -52,32 +49,64 @@ class Plotter {
                                       double history_length,
                                       double? prediction_t_max,
                                       double? flight_plan_t_max) {
-    {
-      planetarium.PlanetariumPlotPsychohistory(
-          Plugin,
-          main_vessel_guid,
-          history_length,
-          prediction_t_max,
-          VertexBuffer.data,
-          VertexBuffer.size,
-          out int vertex_count);
-      DrawLineMesh(ref psychohistory_mesh_,
-                   vertex_count,
-                   adapter_.history_colour,
-                   adapter_.history_style);
-    }
-    {
-      planetarium.PlanetariumPlotPrediction(
-          Plugin,
-          main_vessel_guid,
-          prediction_t_max,
-          VertexBuffer.data,
-          VertexBuffer.size,
-          out int vertex_count);
-      DrawLineMesh(ref prediction_mesh_,
-                   vertex_count,
-                   adapter_.prediction_colour,
-                   adapter_.prediction_style);
+    if (main_vessel_guid != null) {
+      {
+        planetarium.PlanetariumPlotPsychohistory(
+            Plugin,
+            main_vessel_guid,
+            history_length,
+            prediction_t_max,
+            VertexBuffer.data,
+            VertexBuffer.size,
+            out int vertex_count);
+        DrawLineMesh(ref psychohistory_mesh_,
+                     vertex_count,
+                     adapter_.history_colour,
+                     adapter_.history_style);
+      }
+      {
+        planetarium.PlanetariumPlotPrediction(Plugin,
+                                              main_vessel_guid,
+                                              prediction_t_max,
+                                              VertexBuffer.data,
+                                              VertexBuffer.size,
+                                              out int vertex_count);
+        DrawLineMesh(ref prediction_mesh_,
+                     vertex_count,
+                     adapter_.prediction_colour,
+                     adapter_.prediction_style);
+      }
+
+      // Main vessel flight plan.
+      if (Plugin.FlightPlanExists(main_vessel_guid)) {
+        int number_of_segments =
+            Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
+        for (int i = flight_plan_segment_meshes_.Count;
+             i < number_of_segments;
+             ++i) {
+          flight_plan_segment_meshes_.Add(MakeDynamicMesh());
+        }
+        for (int i = 0; i < number_of_segments; ++i) {
+          bool is_burn = i % 2 == 1;
+          planetarium.PlanetariumPlotFlightPlanSegment(
+              Plugin,
+              main_vessel_guid,
+              i,
+              flight_plan_t_max,
+              VertexBuffer.data,
+              VertexBuffer.size,
+              out int vertex_count);
+          // No need for dynamic initialization, that was done above.
+          DrawLineMesh(flight_plan_segment_meshes_[i],
+                       vertex_count,
+                       is_burn
+                           ? adapter_.burn_colour
+                           : adapter_.flight_plan_colour,
+                       is_burn
+                           ? adapter_.burn_style
+                           : adapter_.flight_plan_style);
+        }
+      }
     }
 
     // Target psychohistory and prediction.
@@ -113,37 +142,6 @@ class Plotter {
                      vertex_count,
                      adapter_.target_prediction_colour,
                      adapter_.target_prediction_style);
-      }
-    }
-
-    // Main vessel flight plan.
-    if (Plugin.FlightPlanExists(main_vessel_guid)) {
-      int number_of_segments =
-          Plugin.FlightPlanNumberOfSegments(main_vessel_guid);
-      for (int i = flight_plan_segment_meshes_.Count;
-           i < number_of_segments;
-           ++i) {
-        flight_plan_segment_meshes_.Add(MakeDynamicMesh());
-      }
-      for (int i = 0; i < number_of_segments; ++i) {
-        bool is_burn = i % 2 == 1;
-        planetarium.PlanetariumPlotFlightPlanSegment(
-            Plugin,
-            main_vessel_guid,
-            i,
-            flight_plan_t_max,
-            VertexBuffer.data,
-            VertexBuffer.size,
-            out int vertex_count);
-        // No need for dynamic initialization, that was done above.
-        DrawLineMesh(flight_plan_segment_meshes_[i],
-                     vertex_count,
-                     is_burn
-                         ? adapter_.burn_colour
-                         : adapter_.flight_plan_colour,
-                     is_burn
-                         ? adapter_.burn_style
-                         : adapter_.flight_plan_style);
       }
     }
   }
