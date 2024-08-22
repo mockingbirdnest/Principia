@@ -482,24 +482,27 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void UpdatePredictions() {
     Vessel main_vessel = PredictedVessel();
-    bool ready_to_draw_active_vessel_trajectory =
-        main_vessel != null && MapView.MapIsEnabled;
 
-    if (ready_to_draw_active_vessel_trajectory) {
-      string main_vessel_guid = main_vessel.id.ToString();
+    if (MapView.MapIsEnabled) {
+      string main_vessel_guid = main_vessel?.id.ToString();
       if (!plotting_frame_selector_.target_frame_selected &&
-          TargetVesselGuid() is var target_guid &&
-          target_guid != null) {
-        // TODO(phl): It's not nice that we are overriding the target vessel
-        // parameters.
-        AdaptiveStepParameters adaptive_step_parameters =
-            plugin_.VesselGetPredictionAdaptiveStepParameters(main_vessel_guid);
-        plugin_.VesselSetPredictionAdaptiveStepParameters(
-            target_guid,
-            adaptive_step_parameters);
-        plugin_.UpdatePrediction(new string[]{ main_vessel_guid, target_guid });
-      } else {
-        plugin_.UpdatePrediction(new string[]{main_vessel_guid});
+          TargetVesselGuid() is string target_guid) {
+        if (main_vessel_guid == null) {
+          plugin_.UpdatePrediction(new string[]{ target_guid });
+        } else {
+          // TODO(phl): It's not nice that we are overriding the target vessel
+          // parameters.
+          AdaptiveStepParameters adaptive_step_parameters =
+              plugin_.VesselGetPredictionAdaptiveStepParameters(
+                  main_vessel_guid);
+          plugin_.VesselSetPredictionAdaptiveStepParameters(
+              target_guid,
+              adaptive_step_parameters);
+          plugin_.UpdatePrediction(
+              new string[]{ main_vessel_guid, target_guid });
+        }
+      } else if (main_vessel_guid != null) {
+        plugin_.UpdatePrediction(new string[]{ main_vessel_guid });
       }
     }
   }
@@ -999,6 +1002,31 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       HandleMapViewClicks();
     }
 
+    RenderNavballAndAccessories();
+
+    if (MapView.MapIsEnabled) {
+      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      if (main_vessel_guid != null) {
+        RenderPredictionMarkers(main_vessel_guid,
+                                prediction_collision_,
+                                sun_world_position);
+        if (plugin_.FlightPlanExists(main_vessel_guid)) {
+          RenderFlightPlanMarkers(main_vessel_guid,
+                                  flight_plan_collision_,
+                                  sun_world_position);
+        }
+      }
+      if (FlightGlobals.ActiveVessel != null &&
+          !plotting_frame_selector_.target_frame_selected &&
+          TargetVesselGuid() is string target_id) {
+        RenderPredictionMarkers(target_id,
+                                prediction_collision: null,
+                                sun_world_position);
+      }
+    }
+  }
+
+  private void RenderNavballAndAccessories() {
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null) {
@@ -1043,13 +1071,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             speed_display?.textSpeed != null &&
             !ferram_owns_the_speed_display) {
           speed_display.textTitle.text = plotting_frame_selector_.NavballName();
-          var active_vessel_velocity =
-              plugin_has_active_manageable_vessel
-                  ? (Vector3d)plugin_.VesselVelocity(active_vessel_guid)
-                  : (Vector3d)plugin_.UnmanageableVesselVelocity(
-                      new QP{q = (XYZ)active_vessel.orbit.pos,
-                             p = (XYZ)active_vessel.orbit.vel},
-                      active_vessel.orbit.referenceBody.flightGlobalsIndex);
+          var active_vessel_velocity = plugin_has_active_manageable_vessel
+                                           ? (Vector3d)plugin_.VesselVelocity(
+                                               active_vessel_guid)
+                                           : (Vector3d)plugin_.
+                                               UnmanageableVesselVelocity(
+                                                   new QP{
+                                                       q = (XYZ)active_vessel.
+                                                           orbit.pos,
+                                                       p = (XYZ)active_vessel.
+                                                           orbit.vel
+                                                   },
+                                                   active_vessel.orbit.
+                                                       referenceBody.
+                                                       flightGlobalsIndex);
           speed_display.textSpeed.text = L10N.CacheFormat(
               "#Principia_SpeedDisplayText",
               active_vessel_velocity.magnitude.ToString("F1"));
@@ -1115,26 +1150,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               break;
           }
         }
-      }
-    }
-
-    if (MapView.MapIsEnabled && main_vessel_guid != null) {
-      XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-      RenderPredictionMarkers(main_vessel_guid,
-                              prediction_collision_,
-                              sun_world_position);
-      if (FlightGlobals.ActiveVessel != null &&
-          !plotting_frame_selector_.target_frame_selected &&
-          TargetVesselGuid() is var target_id &&
-          target_id != null) {
-        RenderPredictionMarkers(target_id,
-                                prediction_collision: null,
-                                sun_world_position);
-      }
-      if (plugin_.FlightPlanExists(main_vessel_guid)) {
-        RenderFlightPlanMarkers(main_vessel_guid,
-                                flight_plan_collision_,
-                                sun_world_position);
       }
     }
   }
@@ -2296,7 +2311,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     prediction_collision = null;
     flight_plan_collision = null;
-    if (MapView.MapIsEnabled && plotting_frame_selector_.Centre() != null) {
+    if (vessel_guid != null &&
+        MapView.MapIsEnabled &&
+        plotting_frame_selector_.Centre() != null) {
       var centre = plotting_frame_selector_.Centre();
       var centre_index = centre.flightGlobalsIndex;
       if (plotting_frame_selector_.IsSurfaceFrame()) {
