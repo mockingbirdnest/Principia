@@ -25,6 +25,7 @@ class StackTraceDecoder {
                                     @":.*\] Base address is ([0-9A-F]+)$");
     Match base_address_match;
     do {
+      Check(!stream.EndOfStream, $"Could not find base address");
       base_address_match = base_address_regex.Match(stream.ReadLine());
     } while (!base_address_match.Success);
     string base_address_string = base_address_match.Groups[1].ToString();
@@ -100,6 +101,7 @@ class StackTraceDecoder {
   }
 
   private static void Main(string[] args) {
+    Int64? base_address_override = null;
     bool unity_crash = false;
     Func<string, string> comment = Comment;
     bool snippets = true;
@@ -114,15 +116,20 @@ class StackTraceDecoder {
 
     for (int i = 2; i < args.Length; ++i) {
       string flag = args[i];
-      var match = Regex.Match(flag, "--unity-crash-at-commit=([0-9a-f]{40})");
-      if (!unity_crash && match.Success) {
+      var base_address_match = Regex.Match(flag, "--base-address=(0x[0-9A-F]+)");
+      var unity_crash_match = Regex.Match(flag, "--unity-crash-at-commit=([0-9a-f]{40})");
+      if (!base_address_override.HasValue && base_address_match.Success) {
+        base_address_override = Convert.ToInt64(
+            base_address_match.Groups[1].ToString(), 16);
+      } else if (!unity_crash && unity_crash_match.Success) {
         unity_crash = true;
-        commit = match.Groups[1].ToString();
+        commit = unity_crash_match.Groups[1].ToString();
       } else if (snippets && flag == "--no-snippet") {
         snippets = false;
       } else if (comment == Comment && flag == "--no-comment") {
         comment = (_) => "";
       } else {
+        Console.WriteLine($"Unrecognized argument {flag}");
         PrintUsage();
         return;
       }
@@ -148,7 +155,7 @@ class StackTraceDecoder {
             $"Warning: version is dirty; line numbers may be incorrect."));
       }
     }
-    Int64 principia_base_address = GetBaseAddress(
+    Int64 principia_base_address = base_address_override ?? GetBaseAddress(
         unity_crash,
         @"(?i)GameData\\Principia\\x64\\principia.dll:principia.dll " +
         @"\(([0-9A-F]+)\)",
@@ -162,14 +169,16 @@ class StackTraceDecoder {
     if (unity_crash) {
       Match stack_start_match;
       do {
-        stack_start_match =
-            Regex.Match(stream.ReadLine(),
-                        @"========== OUTPUTT?ING STACK TRACE ==================");
+        stack_start_match = Regex.Match(
+            stream.ReadLine(),
+            @"={10} OUTPUTT?ING STACK TRACE ={10}|Stack Trace of Crashed Thread");
       } while (!stack_start_match.Success);
     }
     string log_line;
     Match stack_match;
     do {
+      Check(!stream.EndOfStream,
+            $"Could not find stack trace in {info_file_uri}");
       log_line = stream.ReadLine();
       stack_match = stack_regex.Match(log_line);
     } while (!stack_match.Success);
@@ -194,7 +203,8 @@ class StackTraceDecoder {
     for (;
          stack_match.Success ||
          (unity_crash &&
-          !Regex.IsMatch(log_line, "========== END OF STACKTRACE ==========="));
+          !Regex.IsMatch(log_line,
+          "={10} END OF STACKTRACE ={10}|Stacks for Running Threads:"));
          log_line = stream.ReadLine(), stack_match = stack_regex.Match(log_line)) {
       if (!stack_match.Success) {
         continue;
@@ -244,8 +254,16 @@ class StackTraceDecoder {
 
   private static void PrintUsage() {
     Console.WriteLine("Usage: stacktrace_decoder " +
-                      "<info_file_uri> <principia_dll_directory> " +
-                      "[--unity-crash-at-commit=<sha1>] " +
+                      "<INFO log> <principia_dll_directory> " +
+                      "[--no-comment] [--no-snippet]");
+    Console.WriteLine("       stacktrace_decoder " +
+                      "<Player.log> <principia_dll_directory> " +
+                      "--unity-crash-at-commit=<sha1> " +
+                      "[--no-comment] [--no-snippet]");
+    Console.WriteLine("       stacktrace_decoder " +
+                      "<error.log> <principia_dll_directory> " +
+                      "--unity-crash-at-commit=<sha1> " +
+                      "--base-address=0x<hex> " +
                       "[--no-comment] [--no-snippet]");
   }
 }
