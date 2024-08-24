@@ -113,7 +113,8 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
                  << pre_канторович_message.DebugString();
 #if PRINCIPIA_COMPILER_MSVC && \
     (_MSC_FULL_VER == 193'933'523 || \
-     _MSC_FULL_VER == 194'033'813)
+     _MSC_FULL_VER == 194'033'813 || \
+     _MSC_FULL_VER == 194'134'120)
       std::abort();
 #endif
   }
