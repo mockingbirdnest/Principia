@@ -1666,7 +1666,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     shared_pile_ups.emplace_back(check_not_null(pile_up));
   }
   auto const pile_up_for_serialization_index =
-      [&shared_pile_ups](int const serialization_index) {
+      [&shared_pile_ups](int const serialization_index)
+      -> not_null<std::shared_ptr<PileUp>> const& {
     return shared_pile_ups.at(serialization_index);
   };
 
