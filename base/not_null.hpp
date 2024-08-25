@@ -140,9 +140,9 @@ struct NotNullStorage<
 // |_checked_not_null| is invariant under application of reference or rvalue
 // reference to its template argument.
 template<typename Pointer>
-using _checked_not_null = typename std::enable_if_t<
-    !is_instance_of_v<not_null, typename std::remove_reference_t<Pointer>>,
-    not_null<typename std::remove_reference_t<Pointer>>>;
+using _checked_not_null = std::enable_if_t<
+    !is_instance_of_v<not_null, std::remove_reference_t<Pointer>>,
+    not_null<std::remove_reference_t<Pointer>>>;
 
 // We cannot refer to the template |not_null| inside of |not_null|.
 template<typename Pointer>
@@ -162,7 +162,7 @@ class not_null final {
  public:
   // The type of the pointer being wrapped.
   // This follows the naming convention from |std::unique_ptr|.
-  using pointer = typename remove_not_null_t<Pointer>;
+  using pointer = remove_not_null_t<Pointer>;
 
   // Smart pointers define this type.
   using element_type = typename std::pointer_traits<pointer>::element_type;
@@ -173,18 +173,18 @@ class not_null final {
   constexpr not_null(not_null const&) = default;
   // Copy contructor for implicitly convertible pointers.
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                std::is_convertible_v<OtherPointer, pointer>>>
   constexpr not_null(not_null<OtherPointer> const& other);
   // Constructor from a nullable pointer, performs a null check.
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                std::is_convertible_v<OtherPointer, pointer> &&
                !is_instance_of_not_null_v<pointer>>>
   constexpr not_null(OtherPointer other);  // NOLINT(runtime/explicit)
   // Explicit copy constructor for static_cast'ing.
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                !std::is_convertible_v<OtherPointer, pointer>>,
            typename = decltype(static_cast<pointer>(
                                    std::declval<OtherPointer>()))>
@@ -196,13 +196,13 @@ class not_null final {
   // Move contructor for implicitly convertible pointers. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                std::is_convertible_v<OtherPointer, pointer>>>
   constexpr not_null(not_null<OtherPointer>&& other);
   // Explicit move constructor for static_cast'ing. This constructor may
   // invalidate its argument.
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                !std::is_convertible_v<OtherPointer, pointer>>,
            typename = decltype(static_cast<pointer>(
                                    std::declval<OtherPointer>()))>
@@ -211,7 +211,7 @@ class not_null final {
   // Copy assigment operators.
   not_null& operator=(not_null const&) = default;
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                std::is_convertible_v<OtherPointer, pointer>>>
   constexpr not_null& operator=(not_null<OtherPointer> const& other);
 
@@ -219,7 +219,7 @@ class not_null final {
   not_null& operator=(not_null&& other) = default;
   // This operator may invalidate its argument.
   template<typename OtherPointer,
-           typename = typename std::enable_if_t<
+           typename = std::enable_if_t<
                std::is_convertible_v<OtherPointer, pointer>>>
   constexpr not_null& operator=(not_null<OtherPointer>&& other);
 
