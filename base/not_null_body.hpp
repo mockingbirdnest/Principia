@@ -63,10 +63,8 @@ constexpr not_null<Pointer>& not_null<Pointer>::operator=(
 }
 
 template<typename Pointer>
-constexpr not_null<Pointer>::operator pointer const&&() const& {
-  // This |move| is deceptive: we are not actually moving anything (|*this| is
-  // |const&|), we are simply casting to an rvalue reference.
-  return std::move(storage_.pointer);
+constexpr not_null<Pointer>::operator pointer() const {
+  return storage_.pointer;
 }
 
 template<typename Pointer>

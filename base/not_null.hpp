@@ -220,18 +220,7 @@ class not_null final {
                std::is_convertible<OtherPointer, pointer>::value>::type>
   constexpr not_null& operator=(not_null<OtherPointer>&& other);
 
-  // Returns |storage_.pointer|, by const reference to avoid a copy if |pointer|
-  // is |unique_ptr|.
-  // If this were to return by |const&|, ambiguities would arise where an rvalue
-  // of type |not_null<pointer>| is given as an argument to a function that has
-  // overloads for both |pointer const&| and |pointer&&|.
-  // Note that the preference for |T&&| over |T const&| for overload resolution
-  // is not relevant here since both go through a user-defined conversion,
-  // see 13.3.3.2.
-  // GCC nevertheless incorrectly prefers |T&&| in that case, while clang and
-  // MSVC recognize the ambiguity.
-  // The |RValue| test gives two examples of this.
-  constexpr operator pointer const&&() const&;
+  constexpr operator pointer() const;
 
   template<typename OtherPointer,
            typename = std::enable_if_t<
@@ -246,6 +235,7 @@ class not_null final {
   template<typename OtherPointer,
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
+               !std::is_same<pointer, OtherPointer>::value &&
                !is_instance_of_not_null_v<OtherPointer>>>
   constexpr operator OtherPointer() &&;  // NOLINT(whitespace/operators)
 
