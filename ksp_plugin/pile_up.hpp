@@ -126,7 +126,7 @@ class PileUp {
   void RecomputeFromParts();
 
   using PileUpForSerializationIndex =
-      std::function<not_null<std::shared_ptr<PileUp>> const&(int)>;
+      std::function<not_null<std::shared_ptr<PileUp>>(int)>;
   using SerializationIndexForPileUp =
       std::function<int(not_null<PileUp const*>)>;
 
