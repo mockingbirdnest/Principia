@@ -12,7 +12,7 @@ There are many knowledgeable users there who can help you with basic questions
 and provide guidance on getting started with the mod.  The Discord channel is
 *not* suitable for reporting bugs, however; a post like "when I do X it crashes"
 will likely not been seen by the developers, and therefore the underlying bug
-won't be fixed.
+won’t be fixed.
 
 ## GitHub Issues
 
@@ -45,7 +45,7 @@ files, we need them in their entirety.)
 
 #### KSP or Unity Crashes
 
-If you don't have a `FATAL` file, you probably had a crash KSP or Unity that
+If you don’t have a `FATAL` file, you probably had a crash KSP or Unity that
 Principia did not detect (Principia can still be the culprit).  Normally, you
 should find a crash directory located in one the directories:
 * Windows: either
@@ -71,13 +71,13 @@ manner.  When that happens, please provide reproduction steps, possibly
 including screenshots or movies showing the behaviour that you think is faulty.
 Note that these issues may be caused by interactions between mods that are hard
 for us to reproduce, so if you can give us a scenario that works in the stock
-game that's preferable.
+game that’s preferable.
 
 ### New Features and Improvements
 
 If asking for a new feature, please explain the problem you are trying to solve,
-not what you think the solution should be (that's known as the 
+not what you think the solution should be (that’s known as the 
 [XY Problem](https://en.wikipedia.org/wiki/XY_problem)).  Most users are not in
 a position to evaluate the complexity of implementing a particular solution, so
-if you suggest a change that would be extremely onerous to implement, it's
+if you suggest a change that would be extremely onerous to implement, it’s
 likely to be rejected, even if a cheap change would solve 80% of the problem.
