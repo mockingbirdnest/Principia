@@ -38,23 +38,31 @@ Go to `<KSP directory>\glog\Principia`, you should find a `FATAL` file with a
 name that matches the time of the crash, for instance
 `FATAL.20230920-223637.6656.log`. You should also find an `INFO` file created
 shortly before that, for instance `INFO.20230920-223615.6656.log`.  Take these
-two files (one is not enough), upload them on gist. Link the gist in your github
-issue.
+two files (one is not enough), and
+[attach](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files)
+them to the issue.  (Don't try to extract "interesting" snippets from these
+files, we need them in their entirety.)
 
 #### KSP or Unity Crashes
 
 If you don't have a `FATAL` file, you probably had a crash KSP or Unity that
 Principia did not detect (Principia can still be the culprit).  Normally, you
 should find a crash directory located in one the directories:
-*  `%USERPROFILE%\AppData\LocalLow\Squad\Kerbal Space Program\Crashes`
-*  `%USERPROFILE%\AppData\Local\Temp\Squad\Kerbal Space Program\Crashes`
-*  <where does that live on Linux/macOS?>
+* Windows: either
+  `%USERPROFILE%\AppData\LocalLow\Squad\Kerbal Space Program\Crashes` or
+ `%USERPROFILE%\AppData\Local\Temp\Squad\Kerbal Space Program\Crashes`
+ * macOS: possibly `~/Library/Logs/Unity`?
+ * Linux: possibly `~/.config/unity3d/Squad/Kerbal Space Program`?
 
 The crash directory has a name that starts with `Crash` and matches the time of
-the crash, for instance `Crash_2024-08-22_143949780`.  Put the entire contents
-of this folder on gist (there should be at least 3 files, named `crash.dmp`,
-`error.log`, and `Player.log`).  Also include the `<KSP directory>\KSP.log` at
-the time of the crash.  Link the gist in your github issue.
+the crash, for instance `Crash_2024-08-22_143949780`.
+[Attach](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files)
+an archive (`zip`, `7z`, `rar`, etc.) of the entire contents of this folder to
+the issue (there should be at least 3 files, named `crash.dmp`,
+`error.log`, and `Player.log`).  Also include the `<KSP directory>\KSP.log` and
+the `INFO` file ([see above](#principia-crashes)) at the time of the crash.
+(Don't try to extract "interesting" snippets from these files, we need them in
+their entirety.)
 
 ### Unexpected Behaviour and Other Bugs
 
