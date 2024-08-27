@@ -19,6 +19,9 @@ struct is_unique : std::false_type, not_constructible {};
 template<typename T>
 struct is_unique<std::unique_ptr<T>> : std::true_type, not_constructible {};
 
+template<typename T>
+inline constexpr bool is_unique_v = is_unique<T>::value;
+
 template<typename Pointer>
 template<typename OtherPointer, typename>
 constexpr not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
@@ -183,7 +186,7 @@ constexpr not_null<Pointer>::not_null(pointer other, unchecked_tag const tag)
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer) {
   CHECK(pointer != nullptr);
-  return not_null<typename std::remove_reference<Pointer>::type>(
+  return not_null<std::remove_reference_t<Pointer>>(
       std::move(pointer),
       not_null<Pointer>::unchecked_tag_);
 }
@@ -217,14 +220,13 @@ std::ostream& operator<<(std::ostream& stream,
 
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<T*> const pointer) {
-  static_assert(std::is_pointer<Result>::value, "|Result| should be |U*|");
+  static_assert(std::is_pointer_v<Result>, "|Result| should be |U*|");
   return not_null<Result>(dynamic_cast<Result>(static_cast<T*>(pointer)));
 }
 
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer) {
-  static_assert(is_unique<Result>::value,
-                "|Result| should be |std::unique_ptr<U>|");
+  static_assert(is_unique_v<Result>, "|Result| should be |std::unique_ptr<U>|");
   T* const unowned_pointer = pointer.release();
   Result owned_pointer(dynamic_cast<typename Result::pointer>(unowned_pointer));
   return std::move(owned_pointer);
