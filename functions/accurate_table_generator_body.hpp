@@ -427,7 +427,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       build_scaled_polynomial(function_scales[1], polynomials[1])};
 
   // We construct intervals above and below |scaled_argument| and search for
-  // solutions on each side alternatively.
+  // solutions on each side alternatively.  The intervals all have the same
+  // measure, 2 * T₀, and are progressively farther from the
+  // |starting_argument|.
   for (std::int64_t index = 0;; ++index) {
     auto const start = std::chrono::system_clock::now();
 

@@ -42,7 +42,7 @@ using namespace principia::testing_utilities::_numerics_matchers;
 class AccurateTableGeneratorTest : public ::testing::Test {
  protected:
   AccurateTableGeneratorTest() {
-    FLAGS_v = 1;
+    FLAGS_v = 0;
     google::LogToStderr();
   }
 };
