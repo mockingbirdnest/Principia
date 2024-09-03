@@ -41,6 +41,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t T_max = 16;
+static_assert(T_max >= 1);
 
 template<std::int64_t rows, std::int64_t columns>
 FixedMatrix<cpp_int, rows, columns> ToInt(
@@ -435,7 +436,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   for (;;) {
     {
       auto T = T₀;
-      do {
+      // This loop exits (breaks or returns) when |T <= T_max| because
+      // exhaustive search always gives an answer.
+      for (;;) {
         VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
@@ -461,18 +464,13 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
             return status;
           }
         }
-      } while (T > 0);
-
-      // The Stehlé-Zimmermann algorithm doesn't work for T = 0 because the
-      // lattice becomes singular.
-      if (T == 0 && AllFunctionValuesHaveDesiredZeroes<zeroes>(
-                        scaled_functions, high_interval.max)) {
-        return high_interval.max;
       }
     }
     {
       auto T = T₀;
-      do {
+      // This loop exits (breaks or returns) when |T <= T_max| because
+      // exhaustive search always gives an answer.
+      for (;;) {
         VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
@@ -498,13 +496,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
             return status;
           }
         }
-      } while (T > 0);
-
-      // The Stehlé-Zimmermann algorithm doesn't work for T = 0 because the
-      // lattice becomes singular.
-      if (T == 0 && AllFunctionValuesHaveDesiredZeroes<zeroes>(
-                        scaled_functions, low_interval.min)) {
-        return low_interval.min;
       }
     }
     VLOG_EVERY_N(1, 10) << "high = "
