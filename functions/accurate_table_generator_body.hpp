@@ -464,7 +464,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
           auto const status_or_solution =
               StehléZimmermannSimultaneousSearch<zeroes>(
                   scaled_functions,
-                  scaled_polynomials, 
+                  scaled_polynomials,
                   scaled_remainders,
                   high_interval.midpoint(),
                   N,
