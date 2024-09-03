@@ -446,8 +446,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     auto high_T_to_cover = T₀;
     auto low_T_to_cover = T₀;
 
-    // When exiting this loop, we have completely processed the intervals
-    // corresponding to |index|.
+    // When exiting this loop, we have completely processed
+    // |initial_high_interval| and |initial_low_interval|.
     for (;;) {
       bool const high_interval_empty = high_interval.empty();
       bool const low_interval_empty = low_interval.empty();
