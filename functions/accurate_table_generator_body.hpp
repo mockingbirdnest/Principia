@@ -45,32 +45,6 @@ using namespace principia::quantities::_quantities;
 constexpr std::int64_t T_max = 16;
 static_assert(T_max >= 1);
 
-template<std::int64_t rows, std::int64_t columns>
-FixedMatrix<cpp_int, rows, columns> ToInt(
-    FixedMatrix<cpp_rational, rows, columns> const& m) {
-  FixedMatrix<cpp_int, rows, columns> result(uninitialized);
-  for (std::int64_t i = 0; i < rows; ++i) {
-    for (std::int64_t j = 0; j < columns; ++j) {
-      auto const& mᵢⱼ = m(i, j);
-      DCHECK_EQ(1, denominator(mᵢⱼ));
-      result(i, j) = numerator(m(i, j));
-    }
-  }
-  return result;
-}
-
-template<std::int64_t rows, std::int64_t columns>
-FixedMatrix<cpp_rational, rows, columns> ToRational(
-    FixedMatrix<cpp_int, rows, columns> const& m) {
-  FixedMatrix<cpp_rational, rows, columns> result(uninitialized);
-  for (std::int64_t i = 0; i < rows; ++i) {
-    for (std::int64_t j = 0; j < columns; ++j) {
-      result(i, j) = m(i, j);
-    }
-  }
-  return result;
-}
-
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
   std::int64_t y_exponent;
