@@ -68,50 +68,6 @@ bool AllFunctionValuesHaveDesiredZeroes(
                      });
 }
 
-// This is essentially the same as Gal's exhaustive search, but with the
-// normalization done for [SZ05].
-absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
-    std::array<AccurateFunction, 2> const& F,
-    std::int64_t const M,
-    std::int64_t const T) {
-  VLOG(2) << "Exhaustive search with T = " << T;
-  for (std::int64_t t = 0; t <= T; ++t) {
-    {
-      bool found = true;
-      for (auto const& Fᵢ : F) {
-        auto const Fᵢ_t = Fᵢ(t);
-        auto const Fᵢ_t_cmod_1 = Fᵢ_t - round(Fᵢ_t);
-        VLOG(2) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
-        if (M * abs(Fᵢ_t_cmod_1) >= 1) {
-          found = false;
-          break;
-        }
-      }
-      if (found) {
-        VLOG(2) << "t = " << t;
-        return t;
-      }
-    }
-    if (t > 0) {
-      bool found = true;
-      for (auto const& Fᵢ : F) {
-        auto const Fᵢ_minus_t = Fᵢ(-t);
-        auto const Fᵢ_minus_t_cmod_1 = Fᵢ_minus_t - round(Fᵢ_minus_t);
-        VLOG(2) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
-        if (M * abs(Fᵢ_minus_t_cmod_1) >= 1) {
-          found = false;
-          break;
-        }
-      }
-      if (found) {
-        VLOG(2) << "t = " << -t;
-        return -t;
-      }
-    }
-  }
-  return absl::NotFoundError("Not enough zeroes");
-}
-
 struct StehléZimmermannSpecification {
   std::array<AccurateFunction, 2> functions;
   std::array<AccuratePolynomial<cpp_rational, 2>, 2> polynomials;
@@ -175,6 +131,50 @@ StehléZimmermannSpecification ScaleToBinade0(
                                                   polynomials[1])},
           .remainders = scaled_remainders,
           .argument = scaled_argument};
+}
+
+// This is essentially the same as Gal's exhaustive search, but with the
+// scaling to binade 0.
+absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
+    std::array<AccurateFunction, 2> const& F,
+    std::int64_t const M,
+    std::int64_t const T) {
+  VLOG(2) << "Exhaustive search with T = " << T;
+  for (std::int64_t t = 0; t <= T; ++t) {
+    {
+      bool found = true;
+      for (auto const& Fᵢ : F) {
+        auto const Fᵢ_t = Fᵢ(t);
+        auto const Fᵢ_t_cmod_1 = Fᵢ_t - round(Fᵢ_t);
+        VLOG(2) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
+        if (M * abs(Fᵢ_t_cmod_1) >= 1) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        VLOG(2) << "t = " << t;
+        return t;
+      }
+    }
+    if (t > 0) {
+      bool found = true;
+      for (auto const& Fᵢ : F) {
+        auto const Fᵢ_minus_t = Fᵢ(-t);
+        auto const Fᵢ_minus_t_cmod_1 = Fᵢ_minus_t - round(Fᵢ_minus_t);
+        VLOG(2) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
+        if (M * abs(Fᵢ_minus_t_cmod_1) >= 1) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        VLOG(2) << "t = " << -t;
+        return -t;
+      }
+    }
+  }
+  return absl::NotFoundError("Not enough zeroes");
 }
 
 //TODO(phl)comment
