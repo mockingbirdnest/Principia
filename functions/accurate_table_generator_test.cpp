@@ -167,6 +167,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
       /*T=*/1ll << 21);
   EXPECT_THAT(u,
               IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
+  EXPECT_EQ(*u, cpp_rational(static_cast<double>(*u)));
   EXPECT_THAT(static_cast<double>(*u),
               RelativeErrorFrom(u₀, Lt(1.3e-10)));
   {
@@ -225,7 +226,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
       {remainder_sin_taylor2, remainder_cos_taylor2},
       u₀);
   EXPECT_THAT(u,
-              IsOkAndHolds(cpp_rational(4785074604080979, 9007199254740992)));
+              IsOkAndHolds(cpp_rational(1196268651020245, 2251799813685248)));
+  EXPECT_EQ(*u, cpp_rational(static_cast<double>(*u)));
   EXPECT_THAT(static_cast<double>(*u),
               RelativeErrorFrom(u₀, Lt(3.7e-14)));
   {
@@ -242,7 +244,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos5NoScaling) {
                                                   /*base=*/2);
     std::string_view mantissa = mathematica;
     CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-    EXPECT_THAT(mantissa.substr(53, 5), Eq("00000"));
+    EXPECT_THAT(mantissa.substr(53, 5), Eq("11111"));
   }
 }
 
@@ -285,6 +287,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15NoScaling) {
       u₀);
   EXPECT_THAT(u,
               IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
+  EXPECT_EQ(*u, cpp_rational(static_cast<double>(*u)));
   EXPECT_THAT(static_cast<double>(*u),
               RelativeErrorFrom(u₀, Lt(6.1e-9)));
   {
@@ -336,6 +339,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
       x₀);
   EXPECT_THAT(x,
               IsOkAndHolds(cpp_rational(4785074575333183, 36028797018963968)));
+  EXPECT_EQ(*x, cpp_rational(static_cast<double>(*x)));
   EXPECT_THAT(static_cast<double>(*x),
               RelativeErrorFrom(x₀, Lt(6.1e-9)));
   {
@@ -398,6 +402,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   for (std::int64_t i = 0; i < xs.size(); ++i) {
     CHECK_OK(xs[i].status());
     auto const& x = *xs[i];
+    EXPECT_EQ(x, cpp_rational(static_cast<double>(x)));
     EXPECT_THAT(static_cast<double>(x),
                 RelativeErrorFrom((i + index_begin) / 128.0, Lt(1.3e-7)));
     {

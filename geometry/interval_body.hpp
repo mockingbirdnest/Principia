@@ -20,6 +20,11 @@ Difference<T> Interval<T>::measure() const {
 }
 
 template<typename T>
+bool Interval<T>::empty() const {
+  return max <= min;
+}
+
+template<typename T>
 T Interval<T>::midpoint() const {
   if constexpr (is_number<T>::value) {
     DCHECK_GE(max, min);

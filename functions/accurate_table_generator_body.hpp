@@ -3,6 +3,7 @@
 #include "functions/accurate_table_generator.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <concepts>
 #include <future>
 #include <limits>
@@ -41,6 +42,7 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t T_max = 16;
+static_assert(T_max >= 1);
 
 template<std::int64_t rows, std::int64_t columns>
 FixedMatrix<cpp_int, rows, columns> ToInt(
@@ -376,7 +378,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
   // to avoid starting with too small a value.
-  auto const T₀ =
+  std::int64_t const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
   // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
@@ -425,96 +427,120 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       build_scaled_polynomial(function_scales[1], polynomials[1])};
 
   // We construct intervals above and below |scaled_argument| and search for
-  // solutions on each side alternatively.
-  Interval<cpp_rational> high_interval{
-      .min = scaled_argument,
-      .max = scaled_argument + cpp_rational(2 * T₀, N)};
-  Interval<cpp_rational> low_interval{
-      .min = scaled_argument - cpp_rational(2 * T₀, N),
-      .max = scaled_argument};
-  for (;;) {
-    {
-      auto T = T₀;
-      do {
-        VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
-        auto const status_or_solution =
-            StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
-                                                       scaled_polynomials,
-                                                       scaled_remainders,
-                                                       high_interval.midpoint(),
-                                                       N,
-                                                       T);
-        absl::Status const& status = status_or_solution.status();
-        if (status.ok()) {
-          return status_or_solution.value() / argument_scale;
-        } else {
-          VLOG(2) << "Status = " << status;
-          if (absl::IsOutOfRange(status)) {
-            // Halve the interval.  Make sure that the new interval is
-            // contiguous to the segment already explored.
-            high_interval.max = high_interval.midpoint();
-            T /= 2;
-          } else if (absl::IsNotFound(status)) {
-            // No solutions here, go to the next interval.
-            break;
+  // solutions on each side alternatively.  The intervals all have the same
+  // measure, 2 * T₀, and are progressively farther from the
+  // |starting_argument|.
+  for (std::int64_t index = 0;; ++index) {
+    auto const start = std::chrono::system_clock::now();
+
+    Interval<cpp_rational> const initial_high_interval{
+        .min = scaled_argument + cpp_rational(2 * index * T₀, N),
+        .max = scaled_argument + cpp_rational(2 * (index + 1) * T₀, N)};
+    Interval<cpp_rational> const initial_low_interval{
+        .min = scaled_argument - cpp_rational(2 * (index + 1) * T₀, N),
+        .max = scaled_argument - cpp_rational(2 * index * T₀, N)};
+
+    Interval<cpp_rational> high_interval = initial_high_interval;
+    Interval<cpp_rational> low_interval = initial_low_interval;
+
+    // The radii of the intervals remaining to cover above and below the
+    // `scaled_argument`.
+    std::int64_t high_T_to_cover = T₀;
+    std::int64_t low_T_to_cover = T₀;
+
+    // When exiting this loop, we have completely processed
+    // |initial_high_interval| and |initial_low_interval|.
+    for (;;) {
+      bool const high_interval_empty = high_interval.empty();
+      bool const low_interval_empty = low_interval.empty();
+      if (high_interval_empty && low_interval_empty) {
+        break;
+      }
+
+      if (!high_interval_empty) {
+        std::int64_t T = high_T_to_cover;
+        // This loop exits (breaks or returns) when |T <= T_max| because
+        // exhaustive search always gives an answer.
+        for (;;) {
+          VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
+          auto const status_or_solution =
+              StehléZimmermannSimultaneousSearch<zeroes>(
+                  scaled_functions,
+                  scaled_polynomials,
+                  scaled_remainders,
+                  high_interval.midpoint(),
+                  N,
+                  T);
+          absl::Status const& status = status_or_solution.status();
+          if (status.ok()) {
+            return status_or_solution.value() / argument_scale;
           } else {
-            return status;
+            VLOG(2) << "Status = " << status;
+            if (absl::IsOutOfRange(status)) {
+              // Halve the interval.  Make sure that the new interval is
+              // contiguous to the segment already explored.
+              T /= 2;
+              high_interval.max = high_interval.min + cpp_rational(2 * T, N);
+            } else if (absl::IsNotFound(status)) {
+              // No solutions here, go to the next interval.
+              high_T_to_cover -= T;
+              break;
+            } else {
+              return status;
+            }
           }
         }
-      } while (T > 0);
-
-      // The Stehlé-Zimmermann algorithm doesn't work for T = 0 because the
-      // lattice becomes singular.
-      if (T == 0 && AllFunctionValuesHaveDesiredZeroes<zeroes>(
-                        scaled_functions, high_interval.max)) {
-        return high_interval.max;
       }
-    }
-    {
-      auto T = T₀;
-      do {
-        VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
-        auto const status_or_solution =
-            StehléZimmermannSimultaneousSearch<zeroes>(scaled_functions,
-                                                       scaled_polynomials,
-                                                       scaled_remainders,
-                                                       low_interval.midpoint(),
-                                                       N,
-                                                       T);
-        absl::Status const& status = status_or_solution.status();
-        if (status.ok()) {
-          return status_or_solution.value() / argument_scale;
-        } else {
-          VLOG(2) << "Status = " << status;
-          if (absl::IsOutOfRange(status)) {
-            // Halve the interval.  Make sure that the new interval is
-            // contiguous to the segment already explored.
-            low_interval.min = low_interval.midpoint();
-            T /= 2;
-          } else if (absl::IsNotFound(status)) {
-            // No solutions here, go to the next interval.
-            break;
+      if (!low_interval_empty) {
+        std::int64_t T = low_T_to_cover;
+        // This loop exits (breaks or returns) when |T <= T_max| because
+        // exhaustive search always gives an answer.
+        for (;;) {
+          VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
+          auto const status_or_solution =
+              StehléZimmermannSimultaneousSearch<zeroes>(
+                  scaled_functions,
+                  scaled_polynomials,
+                  scaled_remainders,
+                  low_interval.midpoint(),
+                  N,
+                  T);
+          absl::Status const& status = status_or_solution.status();
+          if (status.ok()) {
+            return status_or_solution.value() / argument_scale;
           } else {
-            return status;
+            VLOG(2) << "Status = " << status;
+            if (absl::IsOutOfRange(status)) {
+              // Halve the interval.  Make sure that the new interval is
+              // contiguous to the segment already explored.
+              T /= 2;
+              low_interval.min = low_interval.max - cpp_rational(2 * T, N);
+            } else if (absl::IsNotFound(status)) {
+              // No solutions here, go to the next interval.
+              low_T_to_cover -= T;
+              break;
+            } else {
+              return status;
+            }
           }
         }
-      } while (T > 0);
-
-      // The Stehlé-Zimmermann algorithm doesn't work for T = 0 because the
-      // lattice becomes singular.
-      if (T == 0 && AllFunctionValuesHaveDesiredZeroes<zeroes>(
-                        scaled_functions, low_interval.min)) {
-        return low_interval.min;
       }
+      VLOG_EVERY_N(1, 10) << "high = "
+                          << DebugString(
+                                 static_cast<double>(high_interval.max));
+      VLOG_EVERY_N(1, 10) << "low  = "
+                          << DebugString(static_cast<double>(low_interval.min));
+      high_interval = {.min = high_interval.max,
+                       .max = initial_high_interval.max};
+      low_interval = {.min = initial_low_interval.min,
+                      .max = low_interval.min};
     }
-    VLOG_EVERY_N(1, 10) << "high = "
-                        << DebugString(static_cast<double>(high_interval.max));
-    VLOG_EVERY_N(1, 10) << "low  = "
-                        << DebugString(static_cast<double>(low_interval.min));
-    high_interval = {.min = high_interval.max,
-                     .max = high_interval.max + cpp_rational(2 * T₀, N)};
-    low_interval = {.min = low_interval.min - cpp_rational(2 * T₀, N),
-                    .max = low_interval.min};
+
+    auto const end = std::chrono::system_clock::now();
+    VLOG(1) << "Search with index " << index << " around " << starting_argument
+            << " took "
+            << std::chrono::duration_cast<std::chrono::microseconds>(
+                   end - start);
   }
 }
 
