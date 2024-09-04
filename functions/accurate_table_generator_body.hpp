@@ -378,7 +378,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
   // to avoid starting with too small a value.
-  auto const T₀ =
+  std::int64_t const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
   // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
@@ -443,8 +443,10 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     Interval<cpp_rational> high_interval = initial_high_interval;
     Interval<cpp_rational> low_interval = initial_low_interval;
 
-    auto high_T_to_cover = T₀;
-    auto low_T_to_cover = T₀;
+    // The measure of the intervals remaining to cover above and below the
+    // `scaled_argument`.
+    std::int64_t high_T_to_cover = 2 * T₀;
+    std::int64_t low_T_to_cover = 2 * T₀;
 
     // When exiting this loop, we have completely processed
     // |initial_high_interval| and |initial_low_interval|.
@@ -456,7 +458,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       }
 
       if (!high_interval_empty) {
-        auto T = high_T_to_cover;
+        std::int64_t T = high_T_to_cover;
         // This loop exits (breaks or returns) when |T <= T_max| because
         // exhaustive search always gives an answer.
         for (;;) {
@@ -481,7 +483,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
               high_interval.max = high_interval.min + cpp_rational(2 * T, N);
             } else if (absl::IsNotFound(status)) {
               // No solutions here, go to the next interval.
-              high_T_to_cover -= T;
+              high_T_to_cover -= 2 * T;
               break;
             } else {
               return status;
@@ -490,7 +492,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         }
       }
       if (!low_interval_empty) {
-        auto T = low_T_to_cover;
+        std::int64_t T = low_T_to_cover;
         // This loop exits (breaks or returns) when |T <= T_max| because
         // exhaustive search always gives an answer.
         for (;;) {
@@ -515,7 +517,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
               low_interval.min = low_interval.max - cpp_rational(2 * T, N);
             } else if (absl::IsNotFound(status)) {
               // No solutions here, go to the next interval.
-              low_T_to_cover -= T;
+              low_T_to_cover -= 2 * T;
               break;
             } else {
               return status;

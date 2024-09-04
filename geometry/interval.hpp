@@ -23,7 +23,7 @@ struct Interval {
   // The Lebesgue measure of this interval.
   Difference<T> measure() const;
 
-  // Return true iff |measure| would return zero, but more efficiently.
+  // Returns true iff |measure| would return zero, but more efficiently.
   bool empty() const;
 
   // The midpoint of this interval; NaN if the interval is empty (min > max).
