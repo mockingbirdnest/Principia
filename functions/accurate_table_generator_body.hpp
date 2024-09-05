@@ -16,7 +16,6 @@
 #include "base/bits.hpp"
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
-#include "base/tags.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/interval.hpp"
 #include "glog/logging.h"
@@ -33,7 +32,6 @@ namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_tags;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
@@ -177,7 +175,11 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
   return absl::NotFoundError("Not enough zeroes");
 }
 
-//TODO(phl)comment
+// Searches in a "slice", which is a set of two intervals of measure |2 * T₀| on
+// either side of |scaled.argument|.  Consecutive values of |slice_index|
+// correspond to consecutive intervals farther away from |scaled.argument|.
+// Returns |NotFound| if no solution was found in the slice.  Slices may be
+// processed independently of one another.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
     StehléZimmermannSpecification const& scaled,
@@ -190,11 +192,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   std::int64_t const T₀ =
       PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
-  // We construct intervals above and below |scaled.argument| and search for
-  // solutions on each side alternatively.  The intervals all have the same
-  // measure, 2 * T₀, and are progressively farther from the
-  // |starting_argument|.
-  //TODO(phl)comment
+  // Construct intervals of measure |2 * T₀| above and below |scaled.argument|
+  // and search for solutions on each side alternatively.
   Interval<cpp_rational> const initial_high_interval{
       .min = scaled.argument + cpp_rational(2 * slice_index * T₀, N),
       .max = scaled.argument + cpp_rational(2 * (slice_index + 1) * T₀, N)};
@@ -542,11 +541,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                                       .argument = starting_argument},
                                      argument_scale);
 
-  // We construct intervals above and below |scaled.argument| and search for
-  // solutions on each side alternatively.  The intervals all have the same
-  // measure, 2 * T₀, and are progressively farther from the
-  // |starting_argument|.
-  //TODO(phl)comment
+  // Search in slices with increasing index (therefore progressively more
+  // distant from |starting_argument|) until a solution is found.
   for (std::int64_t slice_index = 0;; ++slice_index) {
     auto const start = std::chrono::system_clock::now();
     auto const status_or_scaled_solution =
