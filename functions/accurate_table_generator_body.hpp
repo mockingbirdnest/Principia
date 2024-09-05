@@ -177,9 +177,10 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
 
 // Searches in a "slice", which is a set of two intervals of measure |2 * T₀| on
 // either side of |scaled.argument|.  Consecutive values of |slice_index|
-// correspond to consecutive intervals farther away from |scaled.argument|.
-// Returns |NotFound| if no solution was found in the slice.  Slices may be
-// processed independently of one another.
+// correspond to contiguous intervals farther away from |scaled.argument|.
+// Slices may be processed independently of one another.
+// Returns a *scaled* argument, or |NotFound| if no solution was found in the
+// slice.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
     StehléZimmermannSpecification const& scaled,
@@ -556,7 +557,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     absl::Status const& status = status_or_scaled_solution.status();
     if (status.ok()) {
       // The argument returned by the slice search is scaled, so we must adjust
-      // it before returning it.
+      // it before returning.
       return status_or_scaled_solution.value() / argument_scale;
     } else if (absl::IsNotFound(status)) {
       // No solution found in this slice, go to the next one.
