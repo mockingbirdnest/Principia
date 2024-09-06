@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "base/bits.hpp"
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
-#include "base/tags.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/interval.hpp"
 #include "glog/logging.h"
@@ -32,7 +32,6 @@ namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_tags;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
@@ -43,32 +42,6 @@ using namespace principia::quantities::_quantities;
 
 constexpr std::int64_t T_max = 16;
 static_assert(T_max >= 1);
-
-template<std::int64_t rows, std::int64_t columns>
-FixedMatrix<cpp_int, rows, columns> ToInt(
-    FixedMatrix<cpp_rational, rows, columns> const& m) {
-  FixedMatrix<cpp_int, rows, columns> result(uninitialized);
-  for (std::int64_t i = 0; i < rows; ++i) {
-    for (std::int64_t j = 0; j < columns; ++j) {
-      auto const& mᵢⱼ = m(i, j);
-      DCHECK_EQ(1, denominator(mᵢⱼ));
-      result(i, j) = numerator(m(i, j));
-    }
-  }
-  return result;
-}
-
-template<std::int64_t rows, std::int64_t columns>
-FixedMatrix<cpp_rational, rows, columns> ToRational(
-    FixedMatrix<cpp_int, rows, columns> const& m) {
-  FixedMatrix<cpp_rational, rows, columns> result(uninitialized);
-  for (std::int64_t i = 0; i < rows; ++i) {
-    for (std::int64_t j = 0; j < columns; ++j) {
-      result(i, j) = m(i, j);
-    }
-  }
-  return result;
-}
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -93,8 +66,73 @@ bool AllFunctionValuesHaveDesiredZeroes(
                      });
 }
 
+struct StehléZimmermannSpecification {
+  std::array<AccurateFunction, 2> functions;
+  std::array<AccuratePolynomial<cpp_rational, 2>, 2> polynomials;
+  std::array<AccurateFunction, 2> remainders;
+  cpp_rational argument;
+};
+
+// Scales the argument, functions, polynomials, and remainders to lie within
+// [1/2, 1[.
+StehléZimmermannSpecification ScaleToBinade0(
+    StehléZimmermannSpecification const& input,
+    double& argument_scale) {
+  auto const& functions = input.functions;
+  auto const& polynomials = input.polynomials;
+  auto const& remainders = input.remainders;
+  auto const& starting_argument = input.argument;
+
+  // TODO(phl): Handle an argument that is exactly a power of 2.
+  std::int64_t argument_exponent;
+  auto const argument_mantissa = frexp(
+      static_cast<cpp_bin_float_50>(starting_argument), &argument_exponent);
+  CHECK_NE(0, argument_mantissa);
+  argument_scale = exp2(-argument_exponent);
+  cpp_rational const scaled_argument = starting_argument * argument_scale;
+
+  std::array<double, 2> function_scales;
+  std::array<AccurateFunction, 2> scaled_functions;
+  std::array<AccurateFunction, 2> scaled_remainders;
+  for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
+    std::int64_t function_exponent;
+    auto const function_mantissa =
+        frexp(functions[i](starting_argument), &function_exponent);
+    CHECK_NE(0, function_mantissa);
+    function_scales[i] = exp2(-function_exponent);
+    scaled_functions[i] = [argument_scale,
+                           function_scale = function_scales[i],
+                           function = functions[i],
+                           i](cpp_rational const& argument) {
+      return function_scale * function(argument / argument_scale);
+    };
+    scaled_remainders[i] = [argument_scale,
+                            function_scale = function_scales[i],
+                            remainder = remainders[i],
+                            i](cpp_rational const& argument) {
+      return function_scale * remainder(argument / argument_scale);
+    };
+  }
+
+  auto build_scaled_polynomial =
+      [argument_scale, &starting_argument](
+          double const function_scale,
+          AccuratePolynomial<cpp_rational, 2> const& polynomial) {
+        return function_scale * Compose(polynomial,
+                                        AccuratePolynomial<cpp_rational, 1>(
+                                            {0, 1 / argument_scale}));
+      };
+  return {.functions = scaled_functions,
+          .polynomials = {build_scaled_polynomial(function_scales[0],
+                                                  polynomials[0]),
+                          build_scaled_polynomial(function_scales[1],
+                                                  polynomials[1])},
+          .remainders = scaled_remainders,
+          .argument = scaled_argument};
+}
+
 // This is essentially the same as Gal's exhaustive search, but with the
-// normalization done for [SZ05].
+// scaling to binade 0.
 absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
     std::array<AccurateFunction, 2> const& F,
     std::int64_t const M,
@@ -136,6 +174,128 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
   }
   return absl::NotFoundError("Not enough zeroes");
 }
+
+// Searches in a "slice", which is a set of two intervals of measure |2 * T₀| on
+// either side of |scaled.argument|.  Consecutive values of |slice_index|
+// correspond to contiguous intervals farther away from |scaled.argument|.
+// Slices may be processed independently of one another.
+// Returns a *scaled* argument, or |NotFound| if no solution was found in the
+// slice.
+template<std::int64_t zeroes>
+absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
+    StehléZimmermannSpecification const& scaled,
+    std::int64_t const slice_index) {
+  constexpr std::int64_t M = 1LL << zeroes;
+  constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
+
+  // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
+  // to avoid starting with too small a value.
+  std::int64_t const T₀ =
+      PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
+
+  // Construct intervals of measure |2 * T₀| above and below |scaled.argument|
+  // and search for solutions on each side alternatively.
+  Interval<cpp_rational> const initial_high_interval{
+      .min = scaled.argument + cpp_rational(2 * slice_index * T₀, N),
+      .max = scaled.argument + cpp_rational(2 * (slice_index + 1) * T₀, N)};
+  Interval<cpp_rational> const initial_low_interval{
+      .min = scaled.argument - cpp_rational(2 * (slice_index + 1) * T₀, N),
+      .max = scaled.argument - cpp_rational(2 * slice_index * T₀, N)};
+
+  Interval<cpp_rational> high_interval = initial_high_interval;
+  Interval<cpp_rational> low_interval = initial_low_interval;
+
+  // The radii of the intervals remaining to cover above and below the
+  // `scaled.argument`.
+  std::int64_t high_T_to_cover = T₀;
+  std::int64_t low_T_to_cover = T₀;
+
+  // When exiting this loop, we have completely processed
+  // |initial_high_interval| and |initial_low_interval|.
+  for (;;) {
+    bool const high_interval_empty = high_interval.empty();
+    bool const low_interval_empty = low_interval.empty();
+    if (high_interval_empty && low_interval_empty) {
+      return absl::NotFoundError(
+          absl::StrCat("No solution in slice #", slice_index));
+    }
+
+    if (!high_interval_empty) {
+      std::int64_t T = high_T_to_cover;
+      // This loop exits (breaks or returns) when |T <= T_max| because
+      // exhaustive search always gives an answer.
+      for (;;) {
+        VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
+        auto const status_or_solution =
+            StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
+                                                       scaled.polynomials,
+                                                       scaled.remainders,
+                                                       high_interval.midpoint(),
+                                                       N,
+                                                       T);
+        absl::Status const& status = status_or_solution.status();
+        if (status.ok()) {
+          return status_or_solution.value();
+        } else {
+          VLOG(2) << "Status = " << status;
+          if (absl::IsOutOfRange(status)) {
+            // Halve the interval.  Make sure that the new interval is
+            // contiguous to the segment already explored.
+            T /= 2;
+            high_interval.max = high_interval.min + cpp_rational(2 * T, N);
+          } else if (absl::IsNotFound(status)) {
+            // No solutions here, go to the next interval.
+            high_T_to_cover -= T;
+            break;
+          } else {
+            return status;
+          }
+        }
+      }
+    }
+    if (!low_interval_empty) {
+      std::int64_t T = low_T_to_cover;
+      // This loop exits (breaks or returns) when |T <= T_max| because
+      // exhaustive search always gives an answer.
+      for (;;) {
+        VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
+        auto const status_or_solution =
+            StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
+                                                       scaled.polynomials,
+                                                       scaled.remainders,
+                                                       low_interval.midpoint(),
+                                                       N,
+                                                       T);
+        absl::Status const& status = status_or_solution.status();
+        if (status.ok()) {
+          return status_or_solution.value();
+        } else {
+          VLOG(2) << "Status = " << status;
+          if (absl::IsOutOfRange(status)) {
+            // Halve the interval.  Make sure that the new interval is
+            // contiguous to the segment already explored.
+            T /= 2;
+            low_interval.min = low_interval.max - cpp_rational(2 * T, N);
+          } else if (absl::IsNotFound(status)) {
+            // No solutions here, go to the next interval.
+            low_T_to_cover -= T;
+            break;
+          } else {
+            return status;
+          }
+        }
+      }
+    }
+    VLOG_EVERY_N(1, 10) << "high = "
+                        << DebugString(static_cast<double>(high_interval.max));
+    VLOG_EVERY_N(1, 10) << "low  = "
+                        << DebugString(static_cast<double>(low_interval.min));
+    high_interval = {.min = high_interval.max,
+                     .max = initial_high_interval.max};
+    low_interval = {.min = initial_low_interval.min, .max = low_interval.min};
+  }
+}
+
 
 template<std::int64_t zeroes>
 cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
@@ -373,174 +533,37 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     std::array<AccurateFunction, 2> const& remainders,
     cpp_rational const& starting_argument) {
-  constexpr std::int64_t M = 1LL << zeroes;
-  constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
+  // Start by scaling the specification of the search.  The rest of this
+  // function only uses the scaled objects.
+  double argument_scale;
+  auto const scaled = ScaleToBinade0({.functions = functions,
+                                      .polynomials = polynomials,
+                                      .remainders = remainders,
+                                      .argument = starting_argument},
+                                     argument_scale);
 
-  // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
-  // to avoid starting with too small a value.
-  std::int64_t const T₀ =
-      PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
-
-  // Scale the argument, functions, and polynomials to lie within [1/2, 1[.
-  // TODO(phl): Handle an argument that is exactly a power of 2.
-  std::int64_t argument_exponent;
-  auto const argument_mantissa = frexp(
-      static_cast<cpp_bin_float_50>(starting_argument), &argument_exponent);
-  CHECK_NE(0, argument_mantissa);
-  auto const argument_scale = exp2(-argument_exponent);
-  cpp_rational const scaled_argument = starting_argument * argument_scale;
-
-  std::array<double, 2> function_scales;
-  std::array<AccurateFunction, 2> scaled_functions;
-  std::array<AccurateFunction, 2> scaled_remainders;
-  for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
-    std::int64_t function_exponent;
-    auto const function_mantissa =
-        frexp(functions[i](starting_argument), &function_exponent);
-    CHECK_NE(0, function_mantissa);
-    function_scales[i] = exp2(-function_exponent);
-    scaled_functions[i] = [argument_scale,
-                           function_scale = function_scales[i],
-                           &functions,
-                           i](cpp_rational const& argument) {
-      return function_scale * functions[i](argument / argument_scale);
-    };
-    scaled_remainders[i] = [argument_scale,
-                       function_scale = function_scales[i],
-                       &remainders,
-                       i](cpp_rational const& argument) {
-      return function_scale * remainders[i](argument / argument_scale);
-    };
-  }
-
-  auto build_scaled_polynomial =
-      [argument_scale, &starting_argument](
-          double const function_scale,
-          AccuratePolynomial<cpp_rational, 2> const& polynomial) {
-        return function_scale *
-               Compose(polynomial,
-                       AccuratePolynomial<cpp_rational, 1>(
-                           {0, 1 / argument_scale}));
-      };
-  std::array<AccuratePolynomial<cpp_rational, 2>, 2> const scaled_polynomials{
-      build_scaled_polynomial(function_scales[0], polynomials[0]),
-      build_scaled_polynomial(function_scales[1], polynomials[1])};
-
-  // We construct intervals above and below |scaled_argument| and search for
-  // solutions on each side alternatively.  The intervals all have the same
-  // measure, 2 * T₀, and are progressively farther from the
-  // |starting_argument|.
-  for (std::int64_t index = 0;; ++index) {
+  // Search in slices with increasing index (therefore progressively more
+  // distant from |starting_argument|) until a solution is found.
+  for (std::int64_t slice_index = 0;; ++slice_index) {
     auto const start = std::chrono::system_clock::now();
-
-    Interval<cpp_rational> const initial_high_interval{
-        .min = scaled_argument + cpp_rational(2 * index * T₀, N),
-        .max = scaled_argument + cpp_rational(2 * (index + 1) * T₀, N)};
-    Interval<cpp_rational> const initial_low_interval{
-        .min = scaled_argument - cpp_rational(2 * (index + 1) * T₀, N),
-        .max = scaled_argument - cpp_rational(2 * index * T₀, N)};
-
-    Interval<cpp_rational> high_interval = initial_high_interval;
-    Interval<cpp_rational> low_interval = initial_low_interval;
-
-    // The radii of the intervals remaining to cover above and below the
-    // `scaled_argument`.
-    std::int64_t high_T_to_cover = T₀;
-    std::int64_t low_T_to_cover = T₀;
-
-    // When exiting this loop, we have completely processed
-    // |initial_high_interval| and |initial_low_interval|.
-    for (;;) {
-      bool const high_interval_empty = high_interval.empty();
-      bool const low_interval_empty = low_interval.empty();
-      if (high_interval_empty && low_interval_empty) {
-        break;
-      }
-
-      if (!high_interval_empty) {
-        std::int64_t T = high_T_to_cover;
-        // This loop exits (breaks or returns) when |T <= T_max| because
-        // exhaustive search always gives an answer.
-        for (;;) {
-          VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
-          auto const status_or_solution =
-              StehléZimmermannSimultaneousSearch<zeroes>(
-                  scaled_functions,
-                  scaled_polynomials,
-                  scaled_remainders,
-                  high_interval.midpoint(),
-                  N,
-                  T);
-          absl::Status const& status = status_or_solution.status();
-          if (status.ok()) {
-            return status_or_solution.value() / argument_scale;
-          } else {
-            VLOG(2) << "Status = " << status;
-            if (absl::IsOutOfRange(status)) {
-              // Halve the interval.  Make sure that the new interval is
-              // contiguous to the segment already explored.
-              T /= 2;
-              high_interval.max = high_interval.min + cpp_rational(2 * T, N);
-            } else if (absl::IsNotFound(status)) {
-              // No solutions here, go to the next interval.
-              high_T_to_cover -= T;
-              break;
-            } else {
-              return status;
-            }
-          }
-        }
-      }
-      if (!low_interval_empty) {
-        std::int64_t T = low_T_to_cover;
-        // This loop exits (breaks or returns) when |T <= T_max| because
-        // exhaustive search always gives an answer.
-        for (;;) {
-          VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
-          auto const status_or_solution =
-              StehléZimmermannSimultaneousSearch<zeroes>(
-                  scaled_functions,
-                  scaled_polynomials,
-                  scaled_remainders,
-                  low_interval.midpoint(),
-                  N,
-                  T);
-          absl::Status const& status = status_or_solution.status();
-          if (status.ok()) {
-            return status_or_solution.value() / argument_scale;
-          } else {
-            VLOG(2) << "Status = " << status;
-            if (absl::IsOutOfRange(status)) {
-              // Halve the interval.  Make sure that the new interval is
-              // contiguous to the segment already explored.
-              T /= 2;
-              low_interval.min = low_interval.max - cpp_rational(2 * T, N);
-            } else if (absl::IsNotFound(status)) {
-              // No solutions here, go to the next interval.
-              low_T_to_cover -= T;
-              break;
-            } else {
-              return status;
-            }
-          }
-        }
-      }
-      VLOG_EVERY_N(1, 10) << "high = "
-                          << DebugString(
-                                 static_cast<double>(high_interval.max));
-      VLOG_EVERY_N(1, 10) << "low  = "
-                          << DebugString(static_cast<double>(low_interval.min));
-      high_interval = {.min = high_interval.max,
-                       .max = initial_high_interval.max};
-      low_interval = {.min = initial_low_interval.min,
-                      .max = low_interval.min};
-    }
-
+    auto const status_or_scaled_solution =
+        StehléZimmermannSimultaneousSliceSearch<zeroes>(scaled, slice_index);
     auto const end = std::chrono::system_clock::now();
-    VLOG(1) << "Search with index " << index << " around " << starting_argument
-            << " took "
-            << std::chrono::duration_cast<std::chrono::microseconds>(
-                   end - start);
+    VLOG(1) << "Search for slice #" << slice_index << " around "
+            << starting_argument << " took "
+            << std::chrono::duration_cast<std::chrono::microseconds>(end -
+                                                                     start);
+
+    absl::Status const& status = status_or_scaled_solution.status();
+    if (status.ok()) {
+      // The argument returned by the slice search is scaled, so we must adjust
+      // it before returning.
+      return status_or_scaled_solution.value() / argument_scale;
+    } else if (absl::IsNotFound(status)) {
+      // No solution found in this slice, go to the next one.
+    } else {
+      return status;
+    }
   }
 }
 
