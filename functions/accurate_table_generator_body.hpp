@@ -17,7 +17,6 @@
 #include "base/bits.hpp"
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
-#include "base/thread_pool.hpp"
 #include "geometry/interval.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -33,7 +32,6 @@ namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
@@ -534,7 +532,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     std::array<AccurateFunction, 2> const& remainders,
     cpp_rational const& starting_argument,
-    ThreadPool<void>& search_pool) {
+    ThreadPool<void>* const search_pool) {
   // Start by scaling the specification of the search.  The rest of this
   // function only uses the scaled objects.
   double argument_scale;
@@ -550,7 +548,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   std::optional<absl::StatusOr<cpp_rational>> status_or_solution
       GUARDED_BY(lock);
 
-  auto search_one_slice = [&lock, &scaled, &status_or_solution](
+  auto search_one_slice = [argument_scale,
+                           &lock,
+                           &scaled,
+                           &starting_argument,
+                           &status_or_solution](
                               std::int64_t const slice_index) {
     auto const start = std::chrono::system_clock::now();
 
@@ -609,11 +611,18 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
     // If the pool has available threads, start speculative execution of more
     // distant slices.
-    while (search_pool.TryAdd(
-        [&search_one_slice, slice_index = current_slice_index + 1] {
-          search_one_slice(slice_index);
-        })) {
-      ++current_slice_index;
+    if (search_pool != nullptr) {
+      for (;;) {
+        auto maybe_future = search_pool->TryAdd(
+            [&search_one_slice, slice_index = current_slice_index + 1] {
+              search_one_slice(slice_index);
+            });
+        if (!maybe_future.has_value()) {
+          break;
+        }
+        speculative_futures.push_back(std::move(maybe_future).value());
+        ++current_slice_index;
+      }
     }
   }
 
@@ -666,12 +675,16 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
                                        &functions,
                                        &polynomials,
                                        &remainders,
+                                       &search_pool,
                                        &starting_arguments]() {
       auto const& starting_argument = starting_arguments[i];
       LOG(INFO) << "Starting search around " << starting_argument;
       auto status_or_final_argument =
-          StehléZimmermannSimultaneousFullSearch<zeroes>(
-              functions, polynomials[i], remainders[i], starting_argument);
+          StehléZimmermannSimultaneousFullSearch<zeroes>(functions,
+                                                         polynomials[i],
+                                                         remainders[i],
+                                                         starting_argument,
+                                                         &search_pool);
       if (status_or_final_argument.ok()) {
         LOG(INFO) << "Finished search around " << starting_argument
                   << ", found " << status_or_final_argument.value();
@@ -683,7 +696,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
     }));
   }
 
-  for (auto& future : futures) {
+  for (auto const& future : futures) {
     future.wait();
   }
 }
