@@ -533,46 +533,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     std::array<AccurateFunction, 2> const& remainders,
-    cpp_rational const& starting_argument) {
-  // Start by scaling the specification of the search.  The rest of this
-  // function only uses the scaled objects.
-  double argument_scale;
-  auto const scaled = ScaleToBinade0({.functions = functions,
-                                      .polynomials = polynomials,
-                                      .remainders = remainders,
-                                      .argument = starting_argument},
-                                     argument_scale);
-
-  // Search in slices with increasing index (therefore progressively more
-  // distant from |starting_argument|) until a solution is found.
-  for (std::int64_t slice_index = 0;; ++slice_index) {
-    auto const start = std::chrono::system_clock::now();
-    auto const status_or_scaled_solution =
-        StehléZimmermannSimultaneousSliceSearch<zeroes>(scaled, slice_index);
-    auto const end = std::chrono::system_clock::now();
-    VLOG(1) << "Search for slice #" << slice_index << " around "
-            << starting_argument << " took "
-            << std::chrono::duration_cast<std::chrono::microseconds>(end -
-                                                                     start);
-
-    absl::Status const& status = status_or_scaled_solution.status();
-    if (status.ok()) {
-      // The argument returned by the slice search is scaled, so we must adjust
-      // it before returning.
-      return status_or_scaled_solution.value() / argument_scale;
-    } else if (absl::IsNotFound(status)) {
-      // No solution found in this slice, go to the next one.
-    } else {
-      return status;
-    }
-  }
-}
-
-template<std::int64_t zeroes>
-absl::StatusOr<cpp_rational> StehléZimmermannFoo(
-    std::array<AccurateFunction, 2> const& functions,
-    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<AccurateFunction, 2> const& remainders,
     cpp_rational const& starting_argument,
     ThreadPool<void>& search_pool) {
   // Start by scaling the specification of the search.  The rest of this
