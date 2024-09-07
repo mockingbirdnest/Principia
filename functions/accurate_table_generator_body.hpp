@@ -136,21 +136,21 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
     std::array<AccurateFunction, 2> const& F,
     std::int64_t const M,
     std::int64_t const T) {
-  VLOG(2) << "Exhaustive search with T = " << T;
+  VLOG(3) << "Exhaustive search with T = " << T;
   for (std::int64_t t = 0; t <= T; ++t) {
     {
       bool found = true;
       for (auto const& Fᵢ : F) {
         auto const Fᵢ_t = Fᵢ(t);
         auto const Fᵢ_t_cmod_1 = Fᵢ_t - round(Fᵢ_t);
-        VLOG(2) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
+        VLOG(3) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
         if (M * abs(Fᵢ_t_cmod_1) >= 1) {
           found = false;
           break;
         }
       }
       if (found) {
-        VLOG(2) << "t = " << t;
+        VLOG(3) << "t = " << t;
         return t;
       }
     }
@@ -159,14 +159,14 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
       for (auto const& Fᵢ : F) {
         auto const Fᵢ_minus_t = Fᵢ(-t);
         auto const Fᵢ_minus_t_cmod_1 = Fᵢ_minus_t - round(Fᵢ_minus_t);
-        VLOG(2) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
+        VLOG(3) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
         if (M * abs(Fᵢ_minus_t_cmod_1) >= 1) {
           found = false;
           break;
         }
       }
       if (found) {
-        VLOG(2) << "t = " << -t;
+        VLOG(3) << "t = " << -t;
         return -t;
       }
     }
@@ -224,7 +224,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       // This loop exits (breaks or returns) when |T <= T_max| because
       // exhaustive search always gives an answer.
       for (;;) {
-        VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
+        VLOG(3) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
@@ -236,7 +236,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         if (status.ok()) {
           return status_or_solution.value();
         } else {
-          VLOG(2) << "Status = " << status;
+          VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
             // Halve the interval.  Make sure that the new interval is
             // contiguous to the segment already explored.
@@ -257,7 +257,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       // This loop exits (breaks or returns) when |T <= T_max| because
       // exhaustive search always gives an answer.
       for (;;) {
-        VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
+        VLOG(3) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
@@ -269,7 +269,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         if (status.ok()) {
           return status_or_solution.value();
         } else {
-          VLOG(2) << "Status = " << status;
+          VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
             // Halve the interval.  Make sure that the new interval is
             // contiguous to the segment already explored.
@@ -285,9 +285,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         }
       }
     }
-    VLOG_EVERY_N(1, 10) << "high = "
+    VLOG_EVERY_N(2, 10) << "high = "
                         << DebugString(static_cast<double>(high_interval.max));
-    VLOG_EVERY_N(1, 10) << "low  = "
+    VLOG_EVERY_N(2, 10) << "low  = "
                         << DebugString(static_cast<double>(low_interval.min));
     high_interval = {.min = high_interval.max,
                      .max = initial_high_interval.max};
@@ -395,7 +395,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     ε = std::max(ε, abs(N * remainders[i](starting_argument - T_over_N)));
     ε = std::max(ε, abs(N * remainders[i](starting_argument + T_over_N)));
   }
-  VLOG(2) << "ε = " << ε;
+  VLOG(3) << "ε = " << ε;
 
   // Step 3, first part: compute Mʹ and C.  Give up is C is 0, which may happen
   // if ε is too large.
@@ -404,7 +404,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   if (C == 0) {
     return absl::FailedPreconditionError("Error too large");
   }
-  VLOG(2) << "C = " << C;
+  VLOG(3) << "C = " << C;
 
   // Step 3, second part: compute P̃
   std::array<std::optional<AccuratePolynomial<cpp_int, 2>>, 2> P̃;
@@ -417,7 +417,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
           P̃_coefficient = static_cast<cpp_int>(Round(composition_coefficient));
         });
     P̃[i] = AccuratePolynomial<cpp_int, 2>(P̃_coefficients);
-    VLOG(2) << "P̃[" << i << "] = " << *P̃[i];
+    VLOG(3) << "P̃[" << i << "] = " << *P̃[i];
   }
 
   // Step 5 and 6: form the lattice.  Note that our vectors are in columns, not
@@ -433,14 +433,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
        0,     0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
        0,     0,                            3,                            0,
        0,     0,                            0,                            3});
-  VLOG(2) << "L = " << L;
+  VLOG(3) << "L = " << L;
 
   // Step 7: reduce the lattice.
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
   Lattice const V = NguyễnStehlé(L);
-  VLOG(2) << "V = " << V;
+  VLOG(3) << "V = " << V;
 
   // Step 8: find the three shortest vectors of the reduced lattice.  We sort
   // the columns according to the L₂ norm.
@@ -471,7 +471,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   static constexpr std::int64_t dimension = 3;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& vᵢ = *v[i];
-    VLOG(2) << "v[" << i << "] = " << vᵢ;
+    VLOG(3) << "v[" << i << "] = " << vᵢ;
     if (norm1(vᵢ) >= C) {
       return absl::OutOfRangeError("Vectors too big");
     }
@@ -496,7 +496,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   AccuratePolynomial<cpp_rational, 1> const Q({Q_coefficients[0],
                                                Q_coefficients[1]});
-  VLOG(2) << "Q = " << Q;
+  VLOG(3) << "Q = " << Q;
   if (Q_coefficients[1] == 0) {
       return absl::NotFoundError("No integer zeroes");
   }
@@ -507,7 +507,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
-  VLOG(2) << "t₀ = " << t₀;
+  VLOG(3) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
   } else if (denominator(t₀) != 1) {
@@ -517,7 +517,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   for (auto const& Fᵢ : F) {
     auto const Fᵢ_t₀ = Fᵢ(t₀);
     auto const Fᵢ_t₀_cmod_1 = Fᵢ_t₀ - round(Fᵢ_t₀);
-    VLOG(2) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
+    VLOG(3) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
     if (M * abs(Fᵢ_t₀_cmod_1) >= 1) {
       return absl::NotFoundError("Not enough zeroes");
     }
