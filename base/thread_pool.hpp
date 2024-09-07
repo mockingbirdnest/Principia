@@ -29,6 +29,10 @@ class ThreadPool final {
   // the result.
   std::future<T> Add(std::function<T()> function);
 
+  // Same as above, but only returns a future if the |function| can be
+  // immediately executed.
+  std::optional<std::future<T>> TryAdd(std::function<T()> function);
+
  private:
   // The queue element contains a |function| to execute and a |promise| used to
   // communicate the result to the caller.
@@ -44,6 +48,7 @@ class ThreadPool final {
   absl::Mutex lock_;
   bool shutdown_ GUARDED_BY(lock_) = false;
   std::deque<Call> calls_ GUARDED_BY(lock_);
+  std::int64_t busy_threads_ GUARDED_BY(lock_) = 0;
 
   std::list<std::thread> threads_;
 };

@@ -54,6 +54,20 @@ std::future<T> ThreadPool<T>::Add(std::function<T()> function) {
 }
 
 template<typename T>
+std::optional<std::future<T>>
+ThreadPool<T>::TryAdd(std::function<T()> function) {
+  std::optional<std::future<T>> result;
+  {
+    absl::MutexLock l(&lock_);
+    if (calls_.empty() && busy_threads_ < threads_.size()) {
+      calls_.push_back({std::move(function), std::promise<T>()});
+      result = calls_.back().promise.get_future();
+    }
+  }
+  return result;
+}
+
+template<typename T>
 void ThreadPool<T>::DequeueCallAndExecute() {
   for (;;) {
     Call this_call;
@@ -73,11 +87,17 @@ void ThreadPool<T>::DequeueCallAndExecute() {
       }
       this_call = std::move(calls_.front());
       calls_.pop_front();
+      ++busy_threads_;
     }
 
     // Execute the function without holding the |lock_| as it might take some
     // time.
     ExecuteAndSetValue(this_call.function, this_call.promise);
+
+    {
+      absl::MutexLock l(&lock_);
+      --busy_threads_;
+    }
   }
 }
 
