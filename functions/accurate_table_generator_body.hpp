@@ -569,6 +569,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       // The argument returned by the slice search is scaled, so we must
       // adjust it before returning.
       auto const solution = status_or_scaled_solution.value() / argument_scale;
+      VLOG(1) << "Solution for " << starting_argument << ", slice #"
+              << slice_index;
       {
         absl::MutexLock l(&lock);
         // We have found a solution; we only retain it if (1) no internal error
@@ -597,6 +599,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   std::vector<std::future<void>> speculative_futures;
   for (std::int64_t current_slice_index = 0;;) {
+    VLOG(1) << "Sequential search for " << starting_argument << ", slice #"
+            << current_slice_index;
     search_one_slice(current_slice_index++);
 
     // We have no way to interrupt the "main" search, so we only detect a
@@ -613,8 +617,12 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     // distant slices.
     if (search_pool != nullptr) {
       for (;;) {
-        auto maybe_future = search_pool->TryAdd(
-            [&search_one_slice, slice_index = current_slice_index + 1] {
+        auto maybe_future =
+            search_pool->TryAdd([&search_one_slice,
+                                 slice_index = current_slice_index,
+                                 &starting_argument] {
+              VLOG(1) << "Speculative search for " << starting_argument
+                      << ", slice #" << slice_index;
               search_one_slice(slice_index);
             });
         if (!maybe_future.has_value()) {

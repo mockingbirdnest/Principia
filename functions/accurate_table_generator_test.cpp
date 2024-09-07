@@ -404,7 +404,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
     auto const& x = *xs[i];
     EXPECT_EQ(x, cpp_rational(static_cast<double>(x)));
     EXPECT_THAT(static_cast<double>(x),
-                RelativeErrorFrom((i + index_begin) / 128.0, Lt(1.3e-7)));
+                RelativeErrorFrom((i + index_begin) / 128.0, Lt(1.3e-7)))
+        << starting_arguments[i];
     {
       std::string const mathematica = ToMathematica(Sin(x),
                                                     /*express_in=*/std::nullopt,
