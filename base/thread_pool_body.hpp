@@ -59,7 +59,10 @@ ThreadPool<T>::TryAdd(std::function<T()> function) {
   std::optional<std::future<T>> result;
   {
     absl::MutexLock l(&lock_);
-    if (calls_.empty() && busy_threads_ < threads_.size()) {
+    // Queue the call iff we are sure that we have enough idle threads to be
+    // able to schedule the call without blocking.
+    std::int64_t const idle_threads = threads_.size() - busy_threads_;
+    if (calls_.size() + 1 <= idle_threads) {
       calls_.push_back({std::move(function), std::promise<T>()});
       result = calls_.back().promise.get_future();
     }
