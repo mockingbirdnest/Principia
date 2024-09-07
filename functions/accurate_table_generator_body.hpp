@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/thread_annotations.h"
 #include "absl/strings/str_cat.h"
 #include "base/bits.hpp"
 #include "base/for_all_of.hpp"
@@ -565,6 +566,104 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       return status;
     }
   }
+}
+
+template<std::int64_t zeroes>
+absl::StatusOr<cpp_rational> StehléZimmermannFoo(
+    std::array<AccurateFunction, 2> const& functions,
+    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
+    std::array<AccurateFunction, 2> const& remainders,
+    cpp_rational const& starting_argument,
+    ThreadPool<void>& search_pool) {
+  // Start by scaling the specification of the search.  The rest of this
+  // function only uses the scaled objects.
+  double argument_scale;
+  auto const scaled = ScaleToBinade0({.functions = functions,
+                                      .polynomials = polynomials,
+                                      .remainders = remainders,
+                                      .argument = starting_argument},
+                                     argument_scale);
+
+  // This mutex is not contended as it is only held exclusively when we have
+  // found a solution.
+  absl::Mutex lock;
+  std::optional<absl::StatusOr<cpp_rational>> status_or_solution
+      GUARDED_BY(lock);
+
+  auto search_one_slice = [&lock, &scaled, &status_or_solution](
+                              std::int64_t const slice_index) {
+    auto const start = std::chrono::system_clock::now();
+
+    auto const status_or_scaled_solution =
+        StehléZimmermannSimultaneousSliceSearch<zeroes>(scaled, slice_index);
+    auto const end = std::chrono::system_clock::now();
+    VLOG(1) << "Search for slice #" << slice_index << " around "
+            << starting_argument << " took "
+            << std::chrono::duration_cast<std::chrono::microseconds>(end -
+                                                                     start);
+
+    absl::Status const& status = status_or_scaled_solution.status();
+    if (status.ok()) {
+      // The argument returned by the slice search is scaled, so we must
+      // adjust it before returning.
+      auto const solution = status_or_scaled_solution.value() / argument_scale;
+      {
+        absl::MutexLock l(&lock);
+        // We have found a solution; we only retain it if (1) no internal error
+        // occurred; and (2) it closer to the `starting_argument` than any
+        // solution found previously.
+        if (status_or_solution.has_value()) {
+          if (status_or_solution.value().ok() &&
+              abs(solution - starting_argument) <
+                  abs(status_or_solution.value().value() - starting_argument)) {
+            status_or_solution = solution;
+          }
+        } else {
+          status_or_solution = solution;
+        }
+      }
+    } else if (absl::IsNotFound(status)) {
+      // No solution found in this slice, go to the next one.
+    } else {
+      // Some kind of internal error, give up.
+      {
+        absl::MutexLock l(&lock);
+        status_or_solution = status;
+      }
+    }
+  };
+
+  std::vector<std::future<void>> speculative_futures;
+  for (std::int64_t current_slice_index = 0;;) {
+    search_one_slice(current_slice_index++);
+
+    // We have no way to interrupt the "main" search, so we only detect a
+    // solution found by speculative execution here.  That's ok because a slice
+    // is a small amount of work.
+    {
+      absl::ReaderMutexLock l(&lock);
+      if (status_or_solution.has_value()) {
+        break;
+      }
+    }
+
+    // If the pool has available threads, start speculative execution of more
+    // distant slices.
+    while (search_pool.TryAdd(
+        [&search_one_slice, slice_index = current_slice_index + 1] {
+          search_one_slice(slice_index);
+        })) {
+      ++current_slice_index;
+    }
+  }
+
+  // Wait for any remaining speculative execution to complete.  They may find a
+  // better solution than the one that caused us to exit the loop.
+  for (auto const& future : speculative_futures) {
+    future.wait();
+  }
+
+  return status_or_solution.value();
 }
 
 template<std::int64_t zeroes>
