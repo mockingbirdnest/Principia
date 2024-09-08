@@ -4,8 +4,6 @@
 
 #include <utility>
 
-#include "glog/logging.h"
-
 namespace principia {
 namespace base {
 namespace _thread_pool {

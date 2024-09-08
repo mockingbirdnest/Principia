@@ -609,8 +609,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   // This thread attempts to keep CPU utilization at 100% by starting
   // speculative searches if some of the threads in the `search_pool` are idle.
-  // When there are called queued in the `search_pool`, it does essentially
-  // nothing, idly looping every 1s.
+  // When there are calls queued in the `search_pool`, it does essentially
+  // nothing, idly looping every 1 s.
   std::vector<std::future<void>> speculative_futures;
   std::thread speculative_scheduler([&current_slice_index,
                                      &lock,
@@ -636,7 +636,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
           }
         }
 
-        // Try to queue as many speculative search as possible to keep the
+        // Try to queue as many speculative searches as possible to keep the
         // `search_pool` busy.  Note that the slice to work on is determined
         // when the function actually starts.
         for (;;) {
