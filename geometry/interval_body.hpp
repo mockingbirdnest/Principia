@@ -4,8 +4,8 @@
 
 #include <algorithm>
 
-#include "glog/logging.h"
 #include "boost/multiprecision/number.hpp"
+#include "glog/logging.h"
 
 namespace principia {
 namespace geometry {

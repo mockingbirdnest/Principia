@@ -54,6 +54,46 @@ std::future<T> ThreadPool<T>::Add(std::function<T()> function) {
 }
 
 template<typename T>
+std::optional<std::future<T>>
+ThreadPool<T>::TryAdd(std::function<T()> function) {
+  std::optional<std::future<T>> result;
+
+  // We use double locking to avoid contention when |TryAdd| fails.
+  lock_.ReaderLock();
+  std::int64_t const idle_threads = threads_.size() - busy_threads_;
+  if (calls_.size() + 1 <= idle_threads) {
+    lock_.ReaderUnlock();
+
+    absl::MutexLock l(&lock_);
+    // Queue the call iff we are sure that we have enough idle threads to be
+    // able to schedule the call without blocking.
+    std::int64_t const idle_threads = threads_.size() - busy_threads_;
+    if (calls_.size() + 1 <= idle_threads) {
+      calls_.push_back({std::move(function), std::promise<T>()});
+      result = calls_.back().promise.get_future();
+    }
+  } else {
+    lock_.ReaderUnlock();
+  }
+
+  return result;
+}
+
+template<typename T>
+bool ThreadPool<T>::WaitUntilIdleFor(absl::Duration const duration) {
+  absl::ReaderMutexLock l(&lock_);
+
+  // Release this thread if there are enough idle threads to guarantee that the
+  // call is able to schedule without blocking.
+  auto const can_schedule_immediately = [this]() {
+    std::int64_t const idle_threads = threads_.size() - busy_threads_;
+    return calls_.size() + 1 <= idle_threads;
+  };
+  return lock_.AwaitWithTimeout(absl::Condition(&can_schedule_immediately),
+                                duration);
+}
+
+template<typename T>
 void ThreadPool<T>::DequeueCallAndExecute() {
   for (;;) {
     Call this_call;
@@ -73,11 +113,17 @@ void ThreadPool<T>::DequeueCallAndExecute() {
       }
       this_call = std::move(calls_.front());
       calls_.pop_front();
+      ++busy_threads_;
     }
 
     // Execute the function without holding the |lock_| as it might take some
     // time.
     ExecuteAndSetValue(this_call.function, this_call.promise);
+
+    {
+      absl::MutexLock l(&lock_);
+      --busy_threads_;
+    }
   }
 }
 

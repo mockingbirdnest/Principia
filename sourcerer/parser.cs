@@ -294,6 +294,7 @@ public class Parser {
         // control over their structure.
         text != null &&
         text.StartsWith("#include \"") &&
+        !text.StartsWith("#include \"boost") &&
         (text.EndsWith(".hpp\"") ||
          text.EndsWith(".generated.h\"") ||
          text.EndsWith(".mathematica.h\""));

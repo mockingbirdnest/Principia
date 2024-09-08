@@ -18,7 +18,6 @@ namespace quantities {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
