@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/thread_annotations.h"
 #include "absl/strings/str_cat.h"
 #include "base/bits.hpp"
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
-#include "base/thread_pool.hpp"
 #include "geometry/interval.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -32,7 +32,6 @@ namespace internal {
 
 using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
@@ -137,21 +136,21 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
     std::array<AccurateFunction, 2> const& F,
     std::int64_t const M,
     std::int64_t const T) {
-  VLOG(2) << "Exhaustive search with T = " << T;
+  VLOG(3) << "Exhaustive search with T = " << T;
   for (std::int64_t t = 0; t <= T; ++t) {
     {
       bool found = true;
       for (auto const& Fᵢ : F) {
         auto const Fᵢ_t = Fᵢ(t);
         auto const Fᵢ_t_cmod_1 = Fᵢ_t - round(Fᵢ_t);
-        VLOG(2) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
+        VLOG(3) << "Fi(t) cmod 1 = " << Fᵢ_t_cmod_1;
         if (M * abs(Fᵢ_t_cmod_1) >= 1) {
           found = false;
           break;
         }
       }
       if (found) {
-        VLOG(2) << "t = " << t;
+        VLOG(3) << "t = " << t;
         return t;
       }
     }
@@ -160,14 +159,14 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
       for (auto const& Fᵢ : F) {
         auto const Fᵢ_minus_t = Fᵢ(-t);
         auto const Fᵢ_minus_t_cmod_1 = Fᵢ_minus_t - round(Fᵢ_minus_t);
-        VLOG(2) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
+        VLOG(3) << "Fi(-t) cmod 1 = " << Fᵢ_minus_t_cmod_1;
         if (M * abs(Fᵢ_minus_t_cmod_1) >= 1) {
           found = false;
           break;
         }
       }
       if (found) {
-        VLOG(2) << "t = " << -t;
+        VLOG(3) << "t = " << -t;
         return -t;
       }
     }
@@ -188,10 +187,15 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   constexpr std::int64_t M = 1LL << zeroes;
   constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
 
-  // [SZ05], section 3.2, proves that T³ = O(M * N).  We use a fudge factor of 8
-  // to avoid starting with too small a value.
-  std::int64_t const T₀ =
-      PowerOf2Le(8 * Cbrt(static_cast<double>(M) * static_cast<double>(N)));
+  // [SZ05], section 3.2, proves that T³ = O(M * N).  Of course, the
+  // multiplicative factor is not known.  In practice it seems that a value of
+  // T₀ that's too large is very costly as it results in many intervals that are
+  // rejected with `OutOfRange` and must be halved and retried.  A value that's
+  // too small on the other hand can slow down progress.  The fudge factor 1/128
+  // attempts to strike a balance between these problems; it has been chosen by
+  // benchmarking SinCos18 around 1167/2048.
+  std::int64_t const T₀ = static_cast<std::int64_t>(
+      Cbrt(static_cast<double>(M) * static_cast<double>(N)) / 128.0);
 
   // Construct intervals of measure |2 * T₀| above and below |scaled.argument|
   // and search for solutions on each side alternatively.
@@ -225,7 +229,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       // This loop exits (breaks or returns) when |T <= T_max| because
       // exhaustive search always gives an answer.
       for (;;) {
-        VLOG(2) << "T = " << T << ", high_interval = " << high_interval;
+        VLOG(3) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
@@ -237,7 +241,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         if (status.ok()) {
           return status_or_solution.value();
         } else {
-          VLOG(2) << "Status = " << status;
+          VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
             // Halve the interval.  Make sure that the new interval is
             // contiguous to the segment already explored.
@@ -258,7 +262,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       // This loop exits (breaks or returns) when |T <= T_max| because
       // exhaustive search always gives an answer.
       for (;;) {
-        VLOG(2) << "T = " << T << ", low_interval = " << low_interval;
+        VLOG(3) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
@@ -270,7 +274,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         if (status.ok()) {
           return status_or_solution.value();
         } else {
-          VLOG(2) << "Status = " << status;
+          VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
             // Halve the interval.  Make sure that the new interval is
             // contiguous to the segment already explored.
@@ -286,9 +290,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         }
       }
     }
-    VLOG_EVERY_N(1, 10) << "high = "
+    VLOG_EVERY_N(2, 10) << "high = "
                         << DebugString(static_cast<double>(high_interval.max));
-    VLOG_EVERY_N(1, 10) << "low  = "
+    VLOG_EVERY_N(2, 10) << "low  = "
                         << DebugString(static_cast<double>(low_interval.min));
     high_interval = {.min = high_interval.max,
                      .max = initial_high_interval.max};
@@ -396,7 +400,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     ε = std::max(ε, abs(N * remainders[i](starting_argument - T_over_N)));
     ε = std::max(ε, abs(N * remainders[i](starting_argument + T_over_N)));
   }
-  VLOG(2) << "ε = " << ε;
+  VLOG(3) << "ε = " << ε;
 
   // Step 3, first part: compute Mʹ and C.  Give up is C is 0, which may happen
   // if ε is too large.
@@ -405,7 +409,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   if (C == 0) {
     return absl::FailedPreconditionError("Error too large");
   }
-  VLOG(2) << "C = " << C;
+  VLOG(3) << "C = " << C;
 
   // Step 3, second part: compute P̃
   std::array<std::optional<AccuratePolynomial<cpp_int, 2>>, 2> P̃;
@@ -418,7 +422,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
           P̃_coefficient = static_cast<cpp_int>(Round(composition_coefficient));
         });
     P̃[i] = AccuratePolynomial<cpp_int, 2>(P̃_coefficients);
-    VLOG(2) << "P̃[" << i << "] = " << *P̃[i];
+    VLOG(3) << "P̃[" << i << "] = " << *P̃[i];
   }
 
   // Step 5 and 6: form the lattice.  Note that our vectors are in columns, not
@@ -434,14 +438,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
        0,     0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
        0,     0,                            3,                            0,
        0,     0,                            0,                            3});
-  VLOG(2) << "L = " << L;
+  VLOG(3) << "L = " << L;
 
   // Step 7: reduce the lattice.
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
   Lattice const V = NguyễnStehlé(L);
-  VLOG(2) << "V = " << V;
+  VLOG(3) << "V = " << V;
 
   // Step 8: find the three shortest vectors of the reduced lattice.  We sort
   // the columns according to the L₂ norm.
@@ -472,7 +476,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   static constexpr std::int64_t dimension = 3;
   for (std::int64_t i = 0; i < dimension; ++i) {
     auto const& vᵢ = *v[i];
-    VLOG(2) << "v[" << i << "] = " << vᵢ;
+    VLOG(3) << "v[" << i << "] = " << vᵢ;
     if (norm1(vᵢ) >= C) {
       return absl::OutOfRangeError("Vectors too big");
     }
@@ -497,7 +501,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   AccuratePolynomial<cpp_rational, 1> const Q({Q_coefficients[0],
                                                Q_coefficients[1]});
-  VLOG(2) << "Q = " << Q;
+  VLOG(3) << "Q = " << Q;
   if (Q_coefficients[1] == 0) {
       return absl::NotFoundError("No integer zeroes");
   }
@@ -508,7 +512,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   cpp_rational const t₀ =
       -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
-  VLOG(2) << "t₀ = " << t₀;
+  VLOG(3) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
   } else if (denominator(t₀) != 1) {
@@ -518,7 +522,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   for (auto const& Fᵢ : F) {
     auto const Fᵢ_t₀ = Fᵢ(t₀);
     auto const Fᵢ_t₀_cmod_1 = Fᵢ_t₀ - round(Fᵢ_t₀);
-    VLOG(2) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
+    VLOG(3) << "Fi(t₀) cmod 1 = " << Fᵢ_t₀_cmod_1;
     if (M * abs(Fᵢ_t₀_cmod_1) >= 1) {
       return absl::NotFoundError("Not enough zeroes");
     }
@@ -532,7 +536,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     std::array<AccurateFunction, 2> const& remainders,
-    cpp_rational const& starting_argument) {
+    cpp_rational const& starting_argument,
+    ThreadPool<void>* const search_pool) {
   // Start by scaling the specification of the search.  The rest of this
   // function only uses the scaled objects.
   double argument_scale;
@@ -542,10 +547,20 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                                       .argument = starting_argument},
                                      argument_scale);
 
-  // Search in slices with increasing index (therefore progressively more
-  // distant from |starting_argument|) until a solution is found.
-  for (std::int64_t slice_index = 0;; ++slice_index) {
+  // This mutex is not contended as it is only held exclusively when we have
+  // found a solution.
+  absl::Mutex lock;
+  std::optional<absl::StatusOr<cpp_rational>> status_or_solution
+      GUARDED_BY(lock);
+
+  auto search_one_slice = [argument_scale,
+                           &lock,
+                           &scaled,
+                           &starting_argument,
+                           &status_or_solution](
+                              std::int64_t const slice_index) {
     auto const start = std::chrono::system_clock::now();
+
     auto const status_or_scaled_solution =
         StehléZimmermannSimultaneousSliceSearch<zeroes>(scaled, slice_index);
     auto const end = std::chrono::system_clock::now();
@@ -556,15 +571,111 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
     absl::Status const& status = status_or_scaled_solution.status();
     if (status.ok()) {
-      // The argument returned by the slice search is scaled, so we must adjust
-      // it before returning.
-      return status_or_scaled_solution.value() / argument_scale;
+      // The argument returned by the slice search is scaled, so we must
+      // adjust it before returning.
+      auto const solution = status_or_scaled_solution.value() / argument_scale;
+      VLOG(1) << "Solution for " << starting_argument << ", slice #"
+              << slice_index;
+      {
+        absl::MutexLock l(&lock);
+        // We have found a solution; we only retain it if (1) no internal error
+        // occurred; and (2) it closer to the `starting_argument` than any
+        // solution found previously.
+        if (status_or_solution.has_value()) {
+          if (status_or_solution.value().ok() &&
+              abs(solution - starting_argument) <
+                  abs(status_or_solution.value().value() - starting_argument)) {
+            status_or_solution = solution;
+          }
+        } else {
+          status_or_solution = solution;
+        }
+      }
     } else if (absl::IsNotFound(status)) {
       // No solution found in this slice, go to the next one.
     } else {
-      return status;
+      // Some kind of internal error, give up.
+      {
+        absl::MutexLock l(&lock);
+        status_or_solution = status;
+      }
+    }
+  };
+
+  // This variable should not be under a mutex as it might cause contention.
+  // Apparently the memory barrier implied by sequential consistency is not
+  // degrading performance.
+  std::atomic<std::int64_t> current_slice_index = 0;
+
+  // This thread attempts to keep CPU utilization at 100% by starting
+  // speculative searches if some of the threads in the `search_pool` are idle.
+  // When there are calls queued in the `search_pool`, it does essentially
+  // nothing, idly looping every 1 s.
+  std::vector<std::future<void>> speculative_futures;
+  std::thread speculative_scheduler([&current_slice_index,
+                                     &lock,
+                                     &search_one_slice,
+                                     search_pool,
+                                     &speculative_futures,
+                                     &starting_argument,
+                                     &status_or_solution]() {
+    if (search_pool != nullptr) {
+      for (;;) {
+        // Avoid busy waiting, and only wake up if the pool has an idle thread,
+        // or if we have been stuck for too long.  The timeout ensures that this
+        // loop eventually terminates if a solution is found without speculative
+        // execution.  Of course, this is racy, so there is no guarantee that
+        // the next call to `TryAdd` below will succeed.
+        search_pool->WaitUntilIdleFor(absl::Seconds(1));
+
+        // Stop this thread if a solution has been found.
+        {
+          absl::ReaderMutexLock l(&lock);
+          if (status_or_solution.has_value()) {
+            return;
+          }
+        }
+
+        // Try to queue as many speculative searches as possible to keep the
+        // `search_pool` busy.  Note that the slice to work on is determined
+        // when the function actually starts.
+        for (;;) {
+          auto maybe_future = search_pool->TryAdd(
+              [&search_one_slice, &current_slice_index, &starting_argument] {
+                std::int64_t const slice_index =
+                    current_slice_index.fetch_add(1);
+                VLOG(1) << "Speculative search for " << starting_argument
+                        << ", slice #" << slice_index;
+                search_one_slice(slice_index);
+              });
+          if (!maybe_future.has_value()) {
+            break;
+          }
+          speculative_futures.push_back(std::move(maybe_future).value());
+        }
+      }
+    }
+  });
+
+  for (;;) {
+    VLOG(1) << "Sequential search for " << starting_argument << ", slice #"
+            << current_slice_index;
+    search_one_slice(current_slice_index.fetch_add(1));
+
+    absl::ReaderMutexLock l(&lock);
+    if (status_or_solution.has_value()) {
+      break;
     }
   }
+
+  // Wait for any remaining speculative execution to complete.  They may find a
+  // better solution than the one that caused us to exit the sequential loop.
+  for (auto const& future : speculative_futures) {
+    future.wait();
+  }
+  speculative_scheduler.join();
+
+  return status_or_solution.value();
 }
 
 template<std::int64_t zeroes>
@@ -607,12 +718,16 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
                                        &functions,
                                        &polynomials,
                                        &remainders,
+                                       &search_pool,
                                        &starting_arguments]() {
       auto const& starting_argument = starting_arguments[i];
       LOG(INFO) << "Starting search around " << starting_argument;
       auto status_or_final_argument =
-          StehléZimmermannSimultaneousFullSearch<zeroes>(
-              functions, polynomials[i], remainders[i], starting_argument);
+          StehléZimmermannSimultaneousFullSearch<zeroes>(functions,
+                                                         polynomials[i],
+                                                         remainders[i],
+                                                         starting_argument,
+                                                         &search_pool);
       if (status_or_final_argument.ok()) {
         LOG(INFO) << "Finished search around " << starting_argument
                   << ", found " << status_or_final_argument.value();
@@ -624,7 +739,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
     }));
   }
 
-  for (auto& future : futures) {
+  for (auto const& future : futures) {
     future.wait();
   }
 }

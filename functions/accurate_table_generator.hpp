@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
+#include "base/thread_pool.hpp"
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
@@ -14,6 +15,7 @@ namespace _accurate_table_generator {
 namespace internal {
 
 using namespace boost::multiprecision;
+using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
@@ -46,13 +48,15 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
 // Performs a search around |starting_argument| to find a solution,
 // automatically adjusting the interval over which the search happens.  The
-// argument and function values must be nonzero.
+// argument and function values must be nonzero.  If |search_pool| is not null,
+// the search may use speculative execution.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
     std::array<AccurateFunction, 2> const& remainders,
-    cpp_rational const& starting_argument);
+    cpp_rational const& starting_argument,
+    ThreadPool<void>* search_pool = nullptr);
 
 // Same as above, but performs searches in parallel using the corresponding
 // |polynomials|, |remainders|, and |starting_arguments|.  Returns the results
