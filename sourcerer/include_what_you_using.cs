@@ -190,7 +190,9 @@ class IncludeWhatYouUsing {
       foreach (string segment in segments) {
         if (segment == "principia") {
           continue;
-        } else if (segment == "absl" || segment == "std") {
+        } else if (segment == "absl" ||
+                   segment == "boost" ||
+                   segment == "std") {
           // We have using directives for namespaces in absl or std, don't emit
           // an include for them.
           skip = true;

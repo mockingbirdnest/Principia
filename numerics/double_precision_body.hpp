@@ -14,7 +14,6 @@
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
-#include "numerics/fma.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -29,7 +28,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
-using namespace principia::numerics::_fma;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;

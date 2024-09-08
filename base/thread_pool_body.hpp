@@ -60,7 +60,7 @@ std::optional<std::future<T>>
 ThreadPool<T>::TryAdd(std::function<T()> function) {
   std::optional<std::future<T>> result;
 
-  // We use double locking to avoid contention when the call fails.
+  // We use double locking to avoid contention when |TryAdd| fails.
   lock_.ReaderLock();
   std::int64_t const idle_threads = threads_.size() - busy_threads_;
   if (calls_.size() + 1 <= idle_threads) {
@@ -85,10 +85,8 @@ template<typename T>
 bool ThreadPool<T>::WaitUntilIdleFor(absl::Duration const duration) {
   absl::ReaderMutexLock l(&lock_);
 
-  // Release this thread if (1) it is at the front of the queue and (2) there
-  // are enough idle threads to guarantee that the call is able to schedule
-  // without blocking.
-  // TODO(phl)comment
+  // Release this thread if there are enough idle threads to guarantee that the
+  // call is able to schedule without blocking.
   auto const can_schedule_immediately = [this]() {
     std::int64_t const idle_threads = threads_.size() - busy_threads_;
     return calls_.size() + 1 <= idle_threads;

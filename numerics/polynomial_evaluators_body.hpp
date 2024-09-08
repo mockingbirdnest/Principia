@@ -6,7 +6,6 @@
 #include <tuple>
 
 #include "base/bits.hpp"
-#include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -15,7 +14,6 @@ namespace _polynomial_evaluators {
 namespace internal {
 
 using namespace principia::base::_bits;
-using namespace principia::numerics::_fma;
 using namespace principia::quantities::_elementary_functions;
 
 
