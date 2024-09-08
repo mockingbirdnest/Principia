@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "absl/base/thread_annotations.h"
+#include "absl/time/time.h"
 #include "absl/synchronization/mutex.h"
 
 namespace principia {
@@ -32,6 +33,13 @@ class ThreadPool final {
   // Same as above, but only returns a future if the |function| can be
   // immediately executed.
   std::optional<std::future<T>> TryAdd(std::function<T()> function);
+
+  // Waits until the thread has at least one idle thread (that is, |TryAdd|
+  // would succeed at that point) or the specified |duration| is reached.
+  // Returns true iff there is an idle thread.  Note that there is no guarantee
+  // that a subsequent call to |TryAdd| will succeed.  This is mostly useful to
+  // avoid busy waiting on |TryAdd|.
+  bool WaitUntilIdleFor(absl::Duration duration);
 
  private:
   // The queue element contains a |function| to execute and a |promise| used to
