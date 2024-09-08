@@ -1,10 +1,12 @@
 #include "base/thread_pool.hpp"
 
+#include <chrono>
 #include <cstdint>
 #include <future>
 #include <thread>
 #include <vector>
 
+#include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
@@ -13,6 +15,7 @@ namespace principia {
 namespace base {
 
 using namespace principia::base::_thread_pool;
+using namespace std::chrono_literals;
 
 class ThreadPoolTest : public ::testing::Test {
  protected:
@@ -53,6 +56,57 @@ TEST_F(ThreadPoolTest, ParallelExecution) {
     }
   }
   EXPECT_FALSE(monotonically_increasing);
+}
+
+TEST_F(ThreadPoolTest, TryAdd) {
+  ThreadPool<void> pool(2);
+  absl::Notification proceed1;
+  absl::Notification proceed2;
+
+  // Add two functions to the thread pool.  They get stuck and keep both threads
+  // busy.
+  pool.Add([&proceed1]() {  proceed1.WaitForNotification(); });
+  pool.Add([&proceed2]() {  proceed2.WaitForNotification(); });
+
+  // Try to add a call to the pool.  It doesn't work and the function doesn't
+  // run.
+  EXPECT_EQ(std::nullopt,
+            pool.TryAdd([]() { LOG(FATAL) << "Should not run"; }));
+
+  // Release one of the executing threads.  Now |TryAdd| should work and the
+  // function should run.
+  proceed1.Notify();
+  std::this_thread::sleep_for(100ms);
+
+  auto future = pool.TryAdd([]() { LOG(INFO) << "Hello, world!"; });
+  future->wait();
+
+  // Release the second thread.
+  proceed2.Notify();
+}
+
+TEST_F(ThreadPoolTest, WaitUntilIdleFor) {
+  ThreadPool<void> pool(2);
+  absl::Notification proceed1;
+  absl::Notification proceed2;
+
+  // Add two functions to the thread pool.  They get stuck and keep both threads
+  // busy.
+  pool.Add([&proceed1]() {  proceed1.WaitForNotification(); });
+  pool.Add([&proceed2]() {  proceed2.WaitForNotification(); });
+
+  // Wait until a thread becomes idle.  That doesn't happen, so we timeout.
+  EXPECT_FALSE(pool.WaitUntilIdleFor(absl::Milliseconds(100)));
+
+  // Release one of the executing threads.  Now |WaitUntilIdleFor| should see
+  // that there is an idle thread.
+  proceed1.Notify();
+  std::this_thread::sleep_for(100ms);
+
+  EXPECT_TRUE(pool.WaitUntilIdleFor(absl::Hours(1)));
+
+  // Release the second thread.
+  proceed2.Notify();
 }
 
 }  // namespace base
