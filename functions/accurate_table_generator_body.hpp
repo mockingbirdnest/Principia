@@ -602,48 +602,78 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     }
   };
 
+  // This variable should not be under a mutex at it might cause contention.
+  // Apparently the memory barrier implied by sequential consistency is not
+  // degrading performance.
+  std::atomic<std::int64_t> current_slice_index = 0;
+
+  // This thread attempts to keep CPU utilization at 100% by starting
+  // speculative searches if some of the threads in the `search_pool` are idle.
+  // When there are called queued in the `search_pool`, it does essentially
+  // nothing, idly looping every 1s.
   std::vector<std::future<void>> speculative_futures;
-  for (std::int64_t current_slice_index = 0;;) {
-    VLOG(1) << "Sequential search for " << starting_argument << ", slice #"
-            << current_slice_index;
-    search_one_slice(current_slice_index++);
-
-    // We have no way to interrupt the "main" search, so we only detect a
-    // solution found by speculative execution here.  That's ok because a slice
-    // is a small amount of work.
-    {
-      absl::ReaderMutexLock l(&lock);
-      if (status_or_solution.has_value()) {
-        break;
-      }
-    }
-
-    // If the pool has available threads, start speculative execution of more
-    // distant slices.
+  std::thread speculative_scheduler([&current_slice_index,
+                                     &lock,
+                                     &search_one_slice,
+                                     search_pool,
+                                     &speculative_futures,
+                                     &starting_argument,
+                                     &status_or_solution]() {
     if (search_pool != nullptr) {
       for (;;) {
-        auto maybe_future =
-            search_pool->TryAdd([&search_one_slice,
-                                 slice_index = current_slice_index,
-                                 &starting_argument] {
-              VLOG(1) << "Speculative search for " << starting_argument
-                      << ", slice #" << slice_index;
-              search_one_slice(slice_index);
-            });
-        if (!maybe_future.has_value()) {
-          break;
+        // Avoid busy waiting, and only wake up if the pool has an idle thread,
+        // or if we have been stuck for too long.  The timeout ensures that this
+        // loop eventually terminates if a solution is found without speculative
+        // execution.  Of course, this is racy, so there is no guarantee that
+        // the next call to `TryAdd` below will succeed.
+        search_pool->WaitUntilIdleFor(absl::Seconds(1));
+
+        // Stop this thread if a solution has been found.
+        {
+          absl::ReaderMutexLock l(&lock);
+          if (status_or_solution.has_value()) {
+            return;
+          }
         }
-        speculative_futures.push_back(std::move(maybe_future).value());
-        ++current_slice_index;
+
+        // Try to queue as many speculative search as possible to keep the
+        // `search_pool` busy.  Note that the slice to work on is determined
+        // when the function actually starts.
+        for (;;) {
+          auto maybe_future = search_pool->TryAdd(
+              [&search_one_slice, &current_slice_index, &starting_argument] {
+                std::int64_t const slice_index =
+                    current_slice_index.fetch_add(1);
+                VLOG(1) << "Speculative search for " << starting_argument
+                        << ", slice #" << slice_index;
+                search_one_slice(slice_index);
+              });
+          if (!maybe_future.has_value()) {
+            break;
+          }
+          speculative_futures.push_back(std::move(maybe_future).value());
+        }
       }
+    }
+  });
+
+  for (;;) {
+    VLOG(1) << "Sequential search for " << starting_argument << ", slice #"
+            << current_slice_index;
+    search_one_slice(current_slice_index.fetch_add(1));
+
+    absl::ReaderMutexLock l(&lock);
+    if (status_or_solution.has_value()) {
+      break;
     }
   }
 
   // Wait for any remaining speculative execution to complete.  They may find a
-  // better solution than the one that caused us to exit the loop.
+  // better solution than the one that caused us to exit the sequential loop.
   for (auto const& future : speculative_futures) {
     future.wait();
   }
+  speculative_scheduler.join();
 
   return status_or_solution.value();
 }
