@@ -7,8 +7,8 @@
 #include <thread>
 
 #include "absl/base/thread_annotations.h"
-#include "absl/time/time.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/time/time.h"
 
 namespace principia {
 namespace base {

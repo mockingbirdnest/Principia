@@ -6,8 +6,8 @@
 #include <thread>
 #include <vector>
 
-#include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/synchronization/notification.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 
