@@ -48,7 +48,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
 // Performs a search around |starting_argument| to find a solution,
 // automatically adjusting the interval over which the search happens.  The
-// argument and function values must be nonzero.  If |search_pool| is notnull,
+// argument and function values must be nonzero.  If |search_pool| is not null,
 // the search may use speculative execution.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(

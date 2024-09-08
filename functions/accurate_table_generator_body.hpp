@@ -602,7 +602,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     }
   };
 
-  // This variable should not be under a mutex at it might cause contention.
+  // This variable should not be under a mutex as it might cause contention.
   // Apparently the memory barrier implied by sequential consistency is not
   // degrading performance.
   std::atomic<std::int64_t> current_slice_index = 0;
