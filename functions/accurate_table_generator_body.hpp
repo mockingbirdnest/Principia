@@ -651,8 +651,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
           if (!maybe_future.has_value()) {
             break;
           }
-          speculative_futures.push_back(
-              std::move(maybe_future).value());
+          speculative_futures.push_back(std::move(maybe_future).value());
         }
       }
     }
