@@ -375,7 +375,7 @@ constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
                       ((low + 1)->ut1() - low->ut1())));
 }
 
-// UT1 Julian Day fraction in [-1/2 - ε, 1/2 + ε] where ε bounds `UT1-UTC`,
+// UT1 Julian Day fraction in [-1/2 - ε, 1/2 + ε] where ε bounds |UT1-UTC|,
 // obtained by linear interpolation of EOP C04 on the TT range
 // [low->tt(), (low + 1)->tt()].
 // `jd_minus_2451545` is set to the integer such that the Julian UT1 date is
