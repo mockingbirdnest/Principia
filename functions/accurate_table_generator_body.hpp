@@ -369,7 +369,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   std::array<std::optional<AccuratePolynomial<cpp_rational, 2>>, 2> P;
   for (std::int64_t i = 0; i < functions.size(); ++i) {
     F[i] = [&functions, i, N, &starting_argument](cpp_rational const& t) {
-      // Here `t` <= `T`.
+      // Here |t| ≤ T.
       return N * functions[i](starting_argument + t / N);
     };
   }
