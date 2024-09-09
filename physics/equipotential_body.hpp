@@ -102,7 +102,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     SpecificEnergy const& energy) const -> Lines {
   using WellIterator = typename std::vector<Well>::const_iterator;
 
-  // A |PeakDelineation| represents:
+  // A `PeakDelineation` represents:
   // 1. the set of wells that are not yet delineated from a peak by
   //    equipotentials already computed;
   // 2. whether the well is delineated from the “well at infinity”.
@@ -111,7 +111,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     bool delineated_from_infinity = false;
   };
 
-  // |peak_delineations[i]| corresponds to |peaks[i]|.
+  // `peak_delineations[i]` corresponds to `peaks[i]`.
   std::vector<PeakDelineation> peak_delineations(peaks.size());
   for (auto& delineation : peak_delineations) {
     for (auto it = wells.begin(); it != wells.end(); ++it) {
@@ -124,7 +124,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
 
-    // Ignore |peak| if it is below |energy|.
+    // Ignore `peak` if it is below `energy`.
     if (reference_frame_->GeometricPotential(t, peak) < energy) {
       continue;
     }
@@ -134,7 +134,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
       std::optional<WellIterator> expected_delineated_well;
       bool expect_delineation_from_infinity = false;
       if (!delineation.indistinct_wells.empty()) {
-        // Try to delineate |peak| from the first of its |indistinct_wells|.
+        // Try to delineate `peak` from the first of its `indistinct_wells`.
         expected_delineated_well = *delineation.indistinct_wells.begin();
         Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
@@ -168,7 +168,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
             Barycentre({peak, well.position}, {x, r - x});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
       } else {
-        // Try to delineate |peak| from the well at infinity; this works as for
+        // Try to delineate `peak` from the well at infinity; this works as for
         // an actual well, but instead of picking the point on the edge of the
         // well in the direction of the peak we generate a far away point based
         // on the peak (corresponding to a point on the edge of the well at

@@ -88,8 +88,8 @@ class GeopotentialTest : public ::testing::Test {
                                   right_ascension_of_pole_,
                                   declination_of_pole_) {}
 
-  // Rather confusingly, the quantity called |r| or |displacement| below is
-  // called |-Δq| in ephemeris_body.hpp.
+  // Rather confusingly, the quantity called `r` or `displacement` below is
+  // called `-Δq` in ephemeris_body.hpp.
 
   template<typename Frame>
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -445,7 +445,7 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(geopotential.sectoral_damping().inner_threshold(),
               Eq(Infinity<Length>));
 
-  // TODO(egg): This is brittle; we should have |SolarSystem| utilities for
+  // TODO(egg): This is brittle; we should have `SolarSystem` utilities for
   // that.
   double const earth_c20 = earth_message.geopotential().row(0).column(0).cos();
   earth_message.mutable_geopotential()
@@ -585,12 +585,12 @@ TEST_F(GeopotentialTest, DampedForces) {
   // The bodies underlying the geopotentials below.
   std::vector<not_null<std::unique_ptr<OblateBody<ICRS>>>> earths;
 
-  // |geopotential_degree[n]| has the degree n terms of the geopotential, with
+  // `geopotential_degree[n]` has the degree n terms of the geopotential, with
   // tolerance 0.
   std::array<std::optional<Geopotential<ICRS>>, 6> geopotential_degree;
-  // |geopotential_j2| has the degree 2 zonal term term with tolerance 0.
+  // `geopotential_j2` has the degree 2 zonal term term with tolerance 0.
   std::optional<Geopotential<ICRS>> geopotential_j2;
-  // |geopotential_c22_s22| has degree 2 sectoral terms with tolerance 0.
+  // `geopotential_c22_s22` has degree 2 sectoral terms with tolerance 0.
   std::optional<Geopotential<ICRS>> geopotential_c22_s22;
 
   for (int n = 2; n <= 5; ++n) {

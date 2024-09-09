@@ -12,29 +12,29 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 
-// For the purposes of this class, |T| represents the set of its values, and
-// a single globally unique partition is being built.  If |MakeSingleton| is
-// called on an element |e| of type |T|, all properties of the subset previously
-// containing |e| are invalidated.
-// To use an union-find algorithm on elements of |T|, specialize
-// |Subset<T>::Node::Get|, run |Subset<T>::MakeSingleton| on all elements
-// involved, and proceed with calls to |Subset<T>::Unite| and |Subset<T>::Find|.
+// For the purposes of this class, `T` represents the set of its values, and
+// a single globally unique partition is being built.  If `MakeSingleton` is
+// called on an element `e` of type `T`, all properties of the subset previously
+// containing `e` are invalidated.
+// To use an union-find algorithm on elements of `T`, specialize
+// `Subset<T>::Node::Get`, run `Subset<T>::MakeSingleton` on all elements
+// involved, and proceed with calls to `Subset<T>::Unite` and `Subset<T>::Find`.
 
-// A subset of |T|.
+// A subset of `T`.
 template<typename T>
 class Subset final {
  public:
-  // Any properties about a subset of |T| that can be efficiently maintained
+  // Any properties about a subset of `T` that can be efficiently maintained
   // when merging (e.g. a list of elements) should be kept in
-  // |Subset<T>::Properties|; specialize it as needed.
+  // `Subset<T>::Properties`; specialize it as needed.
   class Properties final {
    public:
     void MergeWith(Properties& other) {}
   };
 
-  // The |SubsetPropertiesArgs| are forwarded to the constructor of
-  // |Properties|; the constructed |Properties| are owned by
-  // |*Node::Get(element)|, and thus by element.
+  // The `SubsetPropertiesArgs` are forwarded to the constructor of
+  // `Properties`; the constructed `Properties` are owned by
+  // `*Node::Get(element)`, and thus by element.
   template<typename... SubsetPropertiesArgs>
   static Subset MakeSingleton(
       T& element,
@@ -43,7 +43,7 @@ class Subset final {
   // The arguments are invalidated; the result may be used to get information
   // about the united subset.
   static Subset Unite(Subset left, Subset right);
-  // Returns the subset containing |element|.
+  // Returns the subset containing `element`.
   static Subset Find(T& element);
 
   Properties const& properties() const;
@@ -54,7 +54,7 @@ class Subset final {
     Node();
 
    private:
-    // Specialize to return a |Node| owned by |element| (in constant time).  The
+    // Specialize to return a `Node` owned by `element` (in constant time).  The
     // compiler will warn about returning from a non-void function if this is
     // not specialized.
     static not_null<typename Subset::Node*> Get(T& element) {}
@@ -64,17 +64,17 @@ class Subset final {
     not_null<Node*> parent_;
     int rank_ = 0;
 
-    // Do not require a default constructor for |Properties|.
+    // Do not require a default constructor for `Properties`.
     std::optional<Properties> properties_;
 
     friend class Subset<T>;
   };
 
   // These operators cannot be defaulted because that would force instantiation
-  // of |not_null<Node*>| which itself would force instantiation of
-  // |std::optional<Properties>| which itself would force instantiation of
-  // |Properties|, thereby preventing further specialization in
-  // |part_subsets.hpp|.
+  // of `not_null<Node*>` which itself would force instantiation of
+  // `std::optional<Properties>` which itself would force instantiation of
+  // `Properties`, thereby preventing further specialization in
+  // `part_subsets.hpp`.
   friend bool operator==(Subset left, Subset right) {
     return left.node_ == right.node_;
   }

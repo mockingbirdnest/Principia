@@ -34,7 +34,7 @@ template<typename Frame>
 class Geopotential {
  public:
   // Spherical harmonics will not be damped if their contribution to the radial
-  // force exceeds |tolerance| times the central force.
+  // force exceeds `tolerance` times the central force.
   Geopotential(not_null<OblateBody<Frame> const*> body,
                double tolerance);
 
@@ -87,11 +87,11 @@ class Geopotential {
   template<typename>
   class AllDegrees;
 
-  // |limiting_degree| is the first degree such that
-  // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
-  // |degree_damping_.size()| if |r_norm| is below all thresholds.
-  // Since |degree_damping_[0].outer_threshold()| and
-  // |degree_damping_[1].outer_threshold()| are infinite, |limiting_degree > 1|.
+  // `limiting_degree` is the first degree such that
+  // `r_norm >= degree_damping_[limiting_degree].outer_threshold()`, or is
+  // `degree_damping_.size()` if `r_norm` is below all thresholds.
+  // Since `degree_damping_[0].outer_threshold()` and
+  // `degree_damping_[1].outer_threshold()` are infinite, `limiting_degree > 1`.
   int LimitingDegree(Length const& r_norm) const;
 
   not_null<OblateBody<Frame> const*> body_;
@@ -104,7 +104,7 @@ class Geopotential {
   std::vector<HarmonicDamping> degree_damping_;
 
   // The contribution of the degree 2 sectoral harmonics is damped by
-  // |sectoral_damping_|; |degree_damping_[2]| affects only J2.
+  // `sectoral_damping_`; `degree_damping_[2]` affects only J2.
   // The monotonicity relation
   //   degree_damping[2] ≼ sectoral_damping_ ≼ degree_damping[3]
   // holds, where ≼ denotes the ordering of the thresholds.

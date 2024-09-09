@@ -105,7 +105,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   }
 
   while (abs_h <= Abs((s_final - s.value) - s.error)) {
-    // Runge-Kutta iteration; fills |k|.
+    // Runge-Kutta iteration; fills `k`.
     for (int i = 0; i < stages_; ++i) {
       if (i == 0 && first_same_as_last) {
         // TODO(phl): Use pointers to avoid copying big objects.
@@ -198,7 +198,7 @@ ExplicitRungeKuttaIntegrator<Method, ODE_>::
 NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             typename ODE::IndependentVariableDifference const& step) const {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));

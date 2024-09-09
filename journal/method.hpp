@@ -17,7 +17,7 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::journal::_concepts;
 
-// The parameter |Profile| is expected to have the following structure:
+// The parameter `Profile` is expected to have the following structure:
 //
 //  struct SomeProfile : not_constructible {
 //    struct In final {  // Only present if the profile has 'in' parameters.
@@ -44,19 +44,19 @@ class Method final {
  public:
   Method();
 
-  // Only declare this constructor if the profile has an |In| type and no |Out|
+  // Only declare this constructor if the profile has an `In` type and no `Out`
   // type.
   template<typename P = Profile>
   explicit Method(typename P::In const& in)
     requires has_in<P> && (!has_out<P>);
 
-  // Only declare this constructor if the profile has an |Out| type and no |In|
+  // Only declare this constructor if the profile has an `Out` type and no `In`
   // type.
   template<typename P = Profile>
   explicit Method(typename P::Out const& out)
     requires has_out<P> && (!has_in<P>);
 
-  // Only declare this constructor if the profile has an |In| and an |Out|
+  // Only declare this constructor if the profile has an `In` and an `Out`
   // type.
   template<typename P = Profile>
   Method(typename P::In const& in, typename P::Out const& out)
@@ -64,11 +64,11 @@ class Method final {
 
   ~Method();
 
-  // Only declare this method if the profile has no |Return| type.
+  // Only declare this method if the profile has no `Return` type.
   template<typename P = Profile>
   void Return() requires (!has_return<P>);  // NOLINT
 
-  // Only declare this method if the profile has a |Return| type.
+  // Only declare this method if the profile has a `Return` type.
   template<typename P = Profile>
   typename P::Return Return(typename P::Return const& result)
     requires has_return<P>;
@@ -84,7 +84,7 @@ class Method final {
 }  // namespace _method
 
 // To preserve a reasonable style in the interface, we export this class
-// directly in |journal|.
+// directly in `journal`.
 using _method::internal::Method;
 
 }  // namespace journal

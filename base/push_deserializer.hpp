@@ -26,7 +26,7 @@ using namespace principia::base::_not_null;
 using ::google::compression::Compressor;
 
 // An input stream based on an array that delegates to a function the handling
-// of the case where the array is empty.  It calls the |on_empty| function
+// of the case where the array is empty.  It calls the `on_empty` function
 // passed at construction and proceeds with deserializing the array returned by
 // that function.
 class DelegatingArrayInputStream
@@ -58,27 +58,27 @@ std::ostream& operator<<(std::ostream& out,
                          DelegatingArrayInputStream const& stream);
 
 // This class support deserialization which is "pushed" by the client.  That is,
-// the client creates a |PushDeserializer| object, calls |Start| to start the
-// deserialization process, repeatedly calls |Push| to send chunks of data for
-// deserialization, and finally destroys the |PushDeserializer|.
-// |PushDeserializer| is intended for use in memory-critical contexts as it
+// the client creates a `PushDeserializer` object, calls `Start` to start the
+// deserialization process, repeatedly calls `Push` to send chunks of data for
+// deserialization, and finally destroys the `PushDeserializer`.
+// `PushDeserializer` is intended for use in memory-critical contexts as it
 // bounds the amount of memory used irrespective of the size of the message to
 // deserialize.
 class PushDeserializer final {
  public:
-  // The |size| of the data chunks sent to |Pull| are never greater than
-  // |chunk_size|.  The internal queue holds at most |number_of_chunks| chunks.
+  // The `size` of the data chunks sent to `Pull` are never greater than
+  // `chunk_size`.  The internal queue holds at most `number_of_chunks` chunks.
   // Therefore, this class uses at most
-  // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
+  // `number_of_chunks * (chunk_size + O(1)) + O(1)` bytes.
   PushDeserializer(int chunk_size,
                    int number_of_chunks,
                    std::unique_ptr<Compressor> compressor);
   ~PushDeserializer();
 
   // Starts the deserializer, which will proceed to deserialize data into
-  // |message|.  This method must be called at most once for each deserializer
-  // object.  The |done| callback is called once deserialization has completed
-  // (which only happens once the client has called |Push| with a chunk of size
+  // `message`.  This method must be called at most once for each deserializer
+  // object.  The `done` callback is called once deserialization has completed
+  // (which only happens once the client has called `Push` with a chunk of size
   // 0).
   void Start(not_null<std::unique_ptr<google::protobuf::Message>> message,
              std::function<void(google::protobuf::Message const&)> done);
@@ -86,12 +86,12 @@ class PushDeserializer final {
              std::function<void(google::protobuf::Message const&)> done);
 
   // Pushes in the internal queue chunks of data that will be extracted by
-  // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
+  // `Pull`.  Splits `bytes` into chunks of at most `chunk_size`.  May block to
   // stay within the maximum size of the queue.  The caller must push an object
-  // of size 0 to signal the end of input.  |done| is called once the
-  // serialization of |bytes| is complete.  The client must ensure that |bytes|
-  // remains live until the call to |done|.  It may reclaim any memory
-  // associated with |bytes| in |done|.
+  // of size 0 to signal the end of input.  `done` is called once the
+  // serialization of `bytes` is complete.  The client must ensure that `bytes`
+  // remains live until the call to `done`.  It may reclaim any memory
+  // associated with `bytes` in `done`.
   void Push(Array<std::uint8_t> bytes, std::function<void()> done);
 
   // Same as above but ownership is taken.
@@ -100,11 +100,11 @@ class PushDeserializer final {
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data
   // is available.  Used as a callback for the underlying
-  // |DelegatingArrayOutputStream|.
+  // `DelegatingArrayOutputStream`.
   Array<std::uint8_t> Pull();
 
-  // |owned_message_| is null if this object doesn't own the message.
-  // |message_| is non-null after Start.
+  // `owned_message_` is null if this object doesn't own the message.
+  // `message_` is non-null after Start.
   std::unique_ptr<google::protobuf::Message> owned_message_;
   google::protobuf::Message* message_ = nullptr;
 
@@ -114,12 +114,12 @@ class PushDeserializer final {
   // size.
   int const chunk_size_;
 
-  // The maximum size of a chunk after compression.  Greater than |chunk_size_|
+  // The maximum size of a chunk after compression.  Greater than `chunk_size_`
   // because the compressor will occasionally expand data.  This is the
-  // maximum size of the chunks passed to |Push| by the client.
+  // maximum size of the chunks passed to `Push` by the client.
   int const compressed_chunk_size_;
 
-  // The number of chunks passed at construction, used to size |data_|.
+  // The number of chunks passed at construction, used to size `data_`.
   int const number_of_chunks_;
 
   UniqueArray<std::uint8_t> uncompressed_data_;
@@ -129,11 +129,11 @@ class PushDeserializer final {
 
   absl::Mutex lock_;
 
-  // The |queue_| contains the |Array<std::uint8_t>| object filled by |Push| and
-  // not yet consumed by |Pull|.  The |done_| queue contains the callbacks.  The
-  // two queues are out of step: an element is removed from |queue_| by |Pull|
+  // The `queue_` contains the `Array<std::uint8_t>` object filled by `Push` and
+  // not yet consumed by `Pull`.  The `done_` queue contains the callbacks.  The
+  // two queues are out of step: an element is removed from `queue_` by `Pull`
   // when it returns a chunk to the stream, but the corresponding callback is
-  // removed from |done_| (and executed) when |Pull| returns.
+  // removed from `done_` (and executed) when `Pull` returns.
   std::queue<Array<std::uint8_t>> queue_ GUARDED_BY(lock_);
   std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };

@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |ReferenceFrame| must be
+// The files containing the tree of child classes of `ReferenceFrame` must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
@@ -44,8 +44,8 @@ using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// The definition of a reference frame |ThisFrame| in arbitrary motion with
-// respect to the inertial reference frame |InertialFrame|.
+// The definition of a reference frame `ThisFrame` in arbitrary motion with
+// respect to the inertial reference frame `InertialFrame`.
 template<typename InertialFrame, typename ThisFrame>
 class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
  public:
@@ -56,7 +56,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   SimilarMotion<ThisFrame, InertialFrame> FromThisFrameAtTimeSimilarly(
       Instant const& t) const final;
 
-  // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
+  // At least one of `ToThisFrameAtTime` and `FromThisFrameAtTime` must be
   // overriden in derived classes; the default implementation inverts the other
   // one.
   virtual RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
@@ -64,20 +64,20 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   virtual RigidMotion<ThisFrame, InertialFrame> FromThisFrameAtTime(
       Instant const& t) const;
 
-  // The acceleration due to the non-inertial motion of |ThisFrame| and gravity.
+  // The acceleration due to the non-inertial motion of `ThisFrame` and gravity.
   // A particle in free fall follows a trajectory whose second derivative
-  // is |GeometricAcceleration|.
+  // is `GeometricAcceleration`.
   virtual Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
-  // The acceleration of a particle at rest in |ThisFrame| at the given
-  // |position| owing to non-inertial motion of |ThisFrame| and gravity,
+  // The acceleration of a particle at rest in `ThisFrame` at the given
+  // `position` owing to non-inertial motion of `ThisFrame` and gravity,
   // excluding components with a rotation.
-  // Let r be the radial vector (from the origin of |ThisFrame|) corresponding
-  // to |position|.
+  // Let r be the radial vector (from the origin of `ThisFrame`) corresponding
+  // to `position`.
   // Let r ↦ r″ be the vector field of free fall accelerations from rest in
-  // |ThisFrame| at t. This function returns
+  // `ThisFrame` at t. This function returns
   //   a = r″ - (rot r″) r / 2.
   // In a rotating reference frame, this may equivalently be expressed using
   // the second derivative of position with respect to the parametrization on
@@ -90,7 +90,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Position<ThisFrame> const& position) const;
 
   // Computes the (scalar) potential from which the acceleration given by
-  // |RotationFreeGeometricAccelerationAtRest| derives.
+  // `RotationFreeGeometricAccelerationAtRest` derives.
   virtual SpecificEnergy GeometricPotential(
       Instant const& t,
       Position<ThisFrame> const& position) const;
@@ -123,7 +123,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   };
 
   // Computes the orthogonal and orthonormal trihedra associated with
-  // |ThisFrame|.
+  // `ThisFrame`.
   static void ComputeTrihedra(
       Displacement<InertialFrame> const& r,
       Velocity<InertialFrame> const& ṙ,
@@ -153,16 +153,16 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
       Trihedron<double, double, 2>& 𝛛²orthonormal);
 
-  // Computes the rotation that maps |InertialFrame| to |ThisFrame|.
+  // Computes the rotation that maps `InertialFrame` to `ThisFrame`.
   static Rotation<InertialFrame, ThisFrame> ComputeRotation(
       Trihedron<double, double> const& orthonormal);
 
-  // Computes the angular velocity of |ThisFrame| in |InertialFrame|.
+  // Computes the angular velocity of `ThisFrame` in `InertialFrame`.
   static AngularVelocity<InertialFrame> ComputeAngularVelocity(
       Trihedron<double, double> const& orthonormal,
       Trihedron<double, double, 1> const& 𝛛orthonormal);
 
-  // Computes the angular acceleration of |ThisFrame| in |InertialFrame|.
+  // Computes the angular acceleration of `ThisFrame` in `InertialFrame`.
   static Bivector<AngularAcceleration, InertialFrame>
   ComputeAngularAcceleration(Trihedron<double, double> const& orthonormal,
                              Trihedron<double, double, 1> const& 𝛛orthonormal,

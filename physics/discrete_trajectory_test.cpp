@@ -65,8 +65,8 @@ class DiscreteTrajectoryTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 
 
-  // Constructs a trajectory with three 5-second segments starting at |t0| and
-  // the given |degrees_of_freedom|.
+  // Constructs a trajectory with three 5-second segments starting at `t0` and
+  // the given `degrees_of_freedom`.
   DiscreteTrajectory<World> MakeTrajectory(
       Instant const& t0,
       DegreesOfFreedom<World> const& degrees_of_freedom) {

@@ -104,7 +104,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  // Merges |trajectory| (the source) into this object (the target).  The
+  // Merges `trajectory` (the source) into this object (the target).  The
   // operation processes pairs of segments taken from each trajectory and
   // proceeds as follows:
   // 1. If the source segment is empty (or missing), leave the target segment
@@ -125,8 +125,8 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& t) const override;
 
-  // The segments in |tracked| are restored at deserialization.  The points
-  // denoted by |exact| are written and re-read exactly and are not affected by
+  // The segments in `tracked` are restored at deserialization.  The points
+  // denoted by `exact` are written and re-read exactly and are not affected by
   // any errors introduced by zfp compression.  The endpoints of each segment
   // are always exact.
   void WriteToMessage(
@@ -141,9 +141,9 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       std::vector<SegmentIterator> const& tracked,
       std::vector<iterator> const& exact) const;
 
-  // |tracked| must have a size appropriate for the |message| being deserialized
-  // and the orders of the |tracked| iterators must be consistent during
-  // serialization and deserialization.  Upon return, the iterators in |tracked|
+  // `tracked` must have a size appropriate for the `message` being deserialized
+  // and the orders of the `tracked` iterators must be consistent during
+  // serialization and deserialization.  Upon return, the iterators in `tracked`
   // are past-the-end iff they were past-the-end at serialization time.
   static DiscreteTrajectory ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
@@ -176,7 +176,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   absl::Status ConsistencyStatus() const;
 
   // Updates the segments self-pointers and the time-to-segment mapping after
-  // segments have been spliced from |from| to |to|.  The iterator indicates the
+  // segments have been spliced from `from` to `to`.  The iterator indicates the
   // segments to fix-up.
   static void AdjustAfterSplicing(
       DiscreteTrajectory& from,
@@ -213,10 +213,10 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   // DiscreteTrajectory moves.  This field is never null and never empty.
   not_null<std::unique_ptr<Segments>> segments_;
 
-  // Maps time |t| to the last segment that start at time |t|.  Does not contain
+  // Maps time `t` to the last segment that start at time `t`.  Does not contain
   // entries for empty segments (at the beginning of the trajectory) or for
   // 1-point segments that are not the last at their time.  Empty iff the entire
-  // trajectory is empty.  Always updated using |insert_or_assign| to override
+  // trajectory is empty.  Always updated using `insert_or_assign` to override
   // any preexisting segment with the same endpoint.
   SegmentByLeftEndpoint segment_by_left_endpoint_;
 };

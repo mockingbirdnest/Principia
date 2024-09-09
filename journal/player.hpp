@@ -23,10 +23,10 @@ class Player final {
   explicit Player(std::filesystem::path const& path);
 
   // Replays the next message in the journal.  Returns false at end of journal.
-  // |index| is the 0-based index of the message in the journal.
+  // `index` is the 0-based index of the message in the journal.
   bool Play(int index);
 
-  // Same as |Play|, but does not execute the messages, only parse them.
+  // Same as `Play`, but does not execute the messages, only parse them.
   bool Scan(int index);
 
   // Return the last replayed messages.
@@ -34,10 +34,10 @@ class Player final {
   serialization::Method const& last_method_out_return() const;
 
  private:
-  // Reads one message from the stream.  Returns a |nullptr| at end of stream.
+  // Reads one message from the stream.  Returns a `nullptr` at end of stream.
   std::unique_ptr<serialization::Method> Read();
 
-  // Implementation of |Play| and |Scan|.
+  // Implementation of `Play` and `Scan`.
   bool Process(std::unique_ptr<serialization::Method> method_in,
                int const index, bool const play);
 

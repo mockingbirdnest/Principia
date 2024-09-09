@@ -131,7 +131,7 @@ template<typename Quantity>
 std::ostream& operator<<(std::ostream& out,
                          ApproximateQuantity<Quantity> const& q);
 
-// The internal struct |NumericLiteral| and the operator""_ are to be used in
+// The internal struct `NumericLiteral` and the operator""_ are to be used in
 // concert to allow the syntax 1.234_(1), or, in principle, 1.234_(123) for
 // approximate quantities.
 struct NumericLiteral {

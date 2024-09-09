@@ -153,7 +153,7 @@ Ephemeris<Barycentric>::AccuracyParameters MakeAccuracyParameters(
 
 Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
     ConfigurationAdaptiveStepParameters const& parameters) {
-  // It is erroneous for a psychohistory integration to fail, so the |max_steps|
+  // It is erroneous for a psychohistory integration to fail, so the `max_steps`
   // must be unlimited.
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
       ParseAdaptiveStepSizeIntegrator<
@@ -318,10 +318,10 @@ void __cdecl principia__ActivatePlayer() {
   Vessel::MakeSynchronous();
 }
 
-// If |activate| is true and there is no active journal, create one and
-// activate it.  If |activate| is false and there is an active journal,
+// If `activate` is true and there is no active journal, create one and
+// activate it.  If `activate` is false and there is an active journal,
 // deactivate it.  Does nothing if there is already a journal in the desired
-// state.  |verbose| causes methods to be output in the INFO log before being
+// state.  `verbose` causes methods to be output in the INFO log before being
 // executed.
 void __cdecl principia__ActivateRecorder(bool const activate) {
   // NOTE: Do not journal!  You'd end up with half a message in the journal and
@@ -406,8 +406,8 @@ void __cdecl principia__CatchUpLaggingVessels(
   return m.Return();
 }
 
-// Calls |plugin->CelestialFromParent| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// Calls `plugin->CelestialFromParent` with the arguments given.
+// `plugin` must not be null.  No transfer of ownership.
 QP __cdecl principia__CelestialFromParent(Plugin const* const plugin,
                                           int const celestial_index) {
   journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
@@ -496,9 +496,9 @@ void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
   return m.Return();
 }
 
-// Deletes and nulls |*plugin|.
-// |plugin| must not be null.  No transfer of ownership of |*plugin|, takes
-// ownership of |**plugin|.
+// Deletes and nulls `*plugin`.
+// `plugin` must not be null.  No transfer of ownership of `*plugin`, takes
+// ownership of `**plugin`.
 void __cdecl principia__DeletePlugin(Plugin const** const plugin) {
   CHECK_NOTNULL(plugin);
   journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
@@ -512,9 +512,9 @@ void __cdecl principia__DeletePlugin(Plugin const** const plugin) {
   return m.Return();
 }
 
-// Deletes and nulls |*native_string|.  |native_string| must not be null.  No
-// transfer of ownership of |*native_string|, takes ownership of
-// |**native_string|.
+// Deletes and nulls `*native_string`.  `native_string` must not be null.  No
+// transfer of ownership of `*native_string`, takes ownership of
+// `**native_string`.
 void __cdecl principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
   TakeOwnershipArray(native_string);
@@ -529,12 +529,12 @@ void __cdecl principia__DeleteU16String(char16_t const** const native_string) {
   return m.Return();
 }
 
-// The caller takes ownership of |**plugin| when it is not null.  No transfer of
-// ownership of |*serialization| or |**deserializer|.  |*deserializer| and
-// |*plugin| must be null on the first call and must be passed unchanged to the
+// The caller takes ownership of `**plugin` when it is not null.  No transfer of
+// ownership of `*serialization` or `**deserializer`.  `*deserializer` and
+// `*plugin` must be null on the first call and must be passed unchanged to the
 // successive calls.  The caller must perform an extra call with
-// |serialization_size| set to 0 to indicate the end of the input stream.  When
-// this last call returns, |*plugin| is not null and may be used by the caller.
+// `serialization_size` set to 0 to indicate the end of the input stream.  When
+// this last call returns, `*plugin` is not null and may be used by the caller.
 void __cdecl principia__DeserializePlugin(
     char const* const serialization,
     PushDeserializer** const deserializer,
@@ -576,7 +576,7 @@ void __cdecl principia__DeserializePlugin(
   (*deserializer)->Push(std::move(bytes));
 
   // If the data was empty, delete the deserializer.  This ensures that
-  // |*plugin| is filled.
+  // `*plugin` is filled.
   if (bytes_size == 0) {
     LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
@@ -585,8 +585,8 @@ void __cdecl principia__DeserializePlugin(
   return m.Return();
 }
 
-// Calls |plugin->EndInitialization|.
-// |plugin| must not be null.  No transfer of ownership.
+// Calls `plugin->EndInitialization`.
+// `plugin` must not be null.  No transfer of ownership.
 void __cdecl principia__EndInitialization(Plugin* const plugin) {
   journal::Method<journal::EndInitialization> m({plugin});
   CHECK_NOTNULL(plugin);
@@ -876,8 +876,8 @@ void __cdecl principia__InsertCelestialJacobiKeplerian(
   return m.Return();
 }
 
-// Calls |plugin->InsertOrKeepVessel| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// Calls `plugin->InsertOrKeepVessel` with the arguments given.
+// `plugin` must not be null.  No transfer of ownership.
 void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
                                            char const* const vessel_guid,
                                            char const* const vessel_name,
@@ -977,8 +977,8 @@ void __cdecl principia__InsertOrKeepLoadedPart(
   return m.Return();
 }
 
-// Calls |plugin->SetVesselStateOffset| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// Calls `plugin->SetVesselStateOffset` with the arguments given.
+// `plugin` must not be null.  No transfer of ownership.
 void __cdecl principia__InsertUnloadedPart(Plugin* const plugin,
                                            PartId const part_id,
                                            char const* const name,
@@ -995,7 +995,7 @@ void __cdecl principia__InsertUnloadedPart(Plugin* const plugin,
   return m.Return();
 }
 
-// Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
+// Exports `LOG(SEVERITY) << text` for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(SEVERITY).
 void __cdecl principia__LogError(char const* const file,
@@ -1104,9 +1104,9 @@ static PushDeserializer* verification_deserializer = nullptr;
 static Plugin const* verification_plugin = nullptr;
 #endif
 
-// |plugin| must not be null.  The caller takes ownership of the result, except
+// `plugin` must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
-// |*plugin|.  |*serializer| must be null on the first call and must be passed
+// `*plugin`.  `*serializer` must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
 char const* __cdecl principia__SerializePlugin(
     Plugin const* const plugin,
@@ -1177,7 +1177,7 @@ void __cdecl principia__SetBufferDuration(int const seconds) {
   return m.Return();
 }
 
-// Log messages at a level |<= max_severity| are buffered.
+// Log messages at a level `<= max_severity` are buffered.
 // Log messages at a higher level are flushed immediately.
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
@@ -1199,11 +1199,11 @@ void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   return m.Return();
 }
 
-// Make it so that all log messages of at least |min_severity| are logged to
+// Make it so that all log messages of at least `min_severity` are logged to
 // stderr (in addition to logging to the usual log file(s)).
 void __cdecl principia__SetStderrLogging(int const min_severity) {
   journal::Method<journal::SetStderrLogging> m({min_severity});
-  // NOTE(egg): We could use |FLAGS_stderrthreshold| instead, the difference
+  // NOTE(egg): We could use `FLAGS_stderrthreshold` instead, the difference
   // seems to be a mutex.
   google::SetStderrLogging(min_severity);
   return m.Return();
@@ -1217,7 +1217,7 @@ void __cdecl principia__SetSuppressedLogging(int const min_severity) {
   return m.Return();
 }
 
-// Show all VLOG(m) messages for |m <= level|.
+// Show all VLOG(m) messages for `m <= level`.
 void __cdecl principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
@@ -1240,8 +1240,8 @@ XYZ __cdecl principia__UnmanageableVesselVelocity(Plugin const* const plugin,
       parent_index));
 }
 
-// Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// Calls `plugin->UpdateCelestialHierarchy` with the arguments given.
+// `plugin` must not be null.  No transfer of ownership.
 void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
                                                  int const celestial_index,
                                                  int const parent_index) {

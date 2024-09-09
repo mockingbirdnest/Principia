@@ -41,21 +41,21 @@ class Logger final {
   // Flushes the logger and (atomically) clears its contents.
   void FlushAndClear();
 
-  // Appends an element to the list of values for the List variable |name|.  The
-  // |args...| are passed verbatim to ToMathematica for stringification.  When
+  // Appends an element to the list of values for the List variable `name`.  The
+  // `args...` are passed verbatim to ToMathematica for stringification.  When
   // this object is destroyed, an assignment is generated for each of the
   // variables named in a call to Append.
   template<typename... Args>
   void Append(std::string const& name, Args... args);
 
-  // Sets an element as the single value for the variable |name|.  The
-  // |args...| are passed verbatim to ToMathematica for stringification.  When
+  // Sets an element as the single value for the variable `name`.  The
+  // `args...` are passed verbatim to ToMathematica for stringification.  When
   // this object is destroyed, an assignment is generated for each of the
   // variables named in a call to Set.
   template<typename... Args>
   void Set(std::string const& name, Args const&... args);
 
-  // When a logger is disabled, the calls to |Append| and |Set| have no effect.
+  // When a logger is disabled, the calls to `Append` and `Set` have no effect.
   // Loggers are enabled at construction.
   void Enable();
   void Disable();
@@ -64,9 +64,9 @@ class Logger final {
   // construction of each logger.  This makes it possible for distant code to
   // perform operations on the logger, e.g., to disable it or log client-
   // specific data.  The path passed to the callback is the path passed to the
-  // constructor (i.e., before any alteration performed by |make_unique|).  The
-  // |id| is the uniquely-generated id for the logger (if |make_unique| is true)
-  // or nullopt (if |make_unique| is false).
+  // constructor (i.e., before any alteration performed by `make_unique`).  The
+  // `id` is the uniquely-generated id for the logger (if `make_unique` is true)
+  // or nullopt (if `make_unique` is false).
   using ConstructionCallback =
       std::function<void(std::filesystem::path const&,
                          std::optional<std::uint64_t> id,

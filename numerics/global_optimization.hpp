@@ -23,7 +23,7 @@ using namespace principia::numerics::_nearest_neighbour;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// In this file |Argument| must be such that its difference belongs to a Hilbert
+// In this file `Argument` must be such that its difference belongs to a Hilbert
 // space.
 
 template<typename Scalar, typename Argument>
@@ -36,9 +36,9 @@ using Gradient =
                      typename Hilbert<Difference<Argument>>::Norm²Type>>;
 
 // NOTE(phl): This could nearly be a self-standing function (it doesn't have
-// much state) but having the type |Box| floating around would be unpleasant.
+// much state) but having the type `Box` floating around would be unpleasant.
 // Plus, that would be too many parameters in that function.
-// The parameter |dimensions| may be used to specify the dimension of the
+// The parameter `dimensions` may be used to specify the dimension of the
 // problem.  It it is 1 or 2, the box is 1- or 2-dimensional and the computation
 // of rₖ is adjusted accordingly.  In all cases, the dimensions of the box must
 // be nonzero.
@@ -64,10 +64,10 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> f,
       Field<Gradient<Scalar, Argument>, Argument> grad_f);
 
-  // If |number_of_rounds| is given, the algorithm does |number_of_rounds|
-  // iterations, each time adding |points_per_round| to the sample.
-  // If |number_of_rounds| is omitted, the first iteration uses
-  // |points_per_round| points, and subsequent iterations adjust the number of
+  // If `number_of_rounds` is given, the algorithm does `number_of_rounds`
+  // iterations, each time adding `points_per_round` to the sample.
+  // If `number_of_rounds` is omitted, the first iteration uses
+  // `points_per_round` points, and subsequent iterations adjust the number of
   // points (or the decision to terminate) based on the optimal Bayesian
   // stopping rule.
   // Beware!  The Bayesian stopping rule is typically more efficient, but it is
@@ -88,11 +88,11 @@ class MultiLevelSingleLinkage {
   using Norm²Type = typename Hilbert<Difference<Argument>>::Norm²Type;
 
   // We need pointer stability for the arguments as we store pointers, e.g., in
-  // PCP trees.  We generally cannot |reserve| because we don't know the final
-  // size of the vector, hence the |unique_ptr|s.
+  // PCP trees.  We generally cannot `reserve` because we don't know the final
+  // size of the vector, hence the `unique_ptr`s.
   using Arguments = std::vector<not_null<std::unique_ptr<Argument>>>;
 
-  // Implementation method for |FindGlobalMaxima| and |FindGlobalMinima|.
+  // Implementation method for `FindGlobalMaxima` and `FindGlobalMinima`.
   std::vector<Argument> FindGlobalMinima(
       std::int64_t points_per_round,
       std::optional<std::int64_t> number_of_rounds,
@@ -100,19 +100,19 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
-  // Returns true iff the given |stationary_point| is sufficiently far from the
-  // ones already in |stationary_point_neighbourhoods|.
+  // Returns true iff the given `stationary_point` is sufficiently far from the
+  // ones already in `stationary_point_neighbourhoods`.
   static bool IsNewStationaryPoint(
       Argument const& stationary_point,
       PrincipalComponentPartitioningTree<Argument> const&
           stationary_point_neighbourhoods,
       NormType local_search_tolerance);
 
-  // Returns a vector of size |values_per_round|.  The points are in |box_|.
+  // Returns a vector of size `values_per_round`.  The points are in `box_`.
   Arguments RandomArguments(std::int64_t values_per_round);
 
   // Returns the square of the radius rₖ from [RT87a], eqn. 35, specialized for
-  // |dimensions|.
+  // `dimensions`.
   Norm²Type CriticalRadius²(double σ, std::int64_t kN);
 
   Box const box_;

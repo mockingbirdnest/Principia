@@ -5,14 +5,14 @@ namespace quantities {
 namespace _generators {
 namespace internal {
 
-// These structs have a |Type| member that is a |Quantity| suitable for
-// the result of the operation applied to argument(s) of the |Quantity| types
+// These structs have a `Type` member that is a `Quantity` suitable for
+// the result of the operation applied to argument(s) of the `Quantity` types
 // given as template parameter(s).
 
 template<typename Q, int n>
 struct ExponentiationGenerator;
 
-// Only legal if |n| divides the dimensions of |Q|.
+// Only legal if `n` divides the dimensions of `Q`.
 template<typename Q, int n, typename = void>
 struct NthRootGenerator;
 

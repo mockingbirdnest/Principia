@@ -149,10 +149,10 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     auto const expected_parent_dof =
         expected_system.degrees_of_freedom(parent_name);
 
-    // We transform to a frame in which |parent| has the z-axis as its rotation
-    // axis by rotating around the normal to Earth's and |parent|'s rotation
+    // We transform to a frame in which `parent` has the z-axis as its rotation
+    // axis by rotating around the normal to Earth's and `parent`'s rotation
     // axes.
-    // If |parent| is the Sun, we use the normal to the invariable plane instead
+    // If `parent` is the Sun, we use the normal to the invariable plane instead
     // of the Sun's axis.
     // TODO(egg): perhaps rotating bodies should export a rotation to their
     // celestial reference frame, we'll use that in the plugin too.

@@ -22,18 +22,18 @@ using namespace principia::quantities::_quantities;
 template<typename ODE>
 class AdaptiveStepParameters final {
  public:
-  // The |length_integration_tolerance| is used to compute the
-  // |tolerance_to_error_ratio| for step size control.  The number of steps is
-  // limited to |max_steps|.
+  // The `length_integration_tolerance` is used to compute the
+  // `tolerance_to_error_ratio` for step size control.  The number of steps is
+  // limited to `max_steps`.
   template<typename E = ODE,
            std::enable_if_t<E::order == 1, std::nullptr_t> = nullptr>
   AdaptiveStepParameters(AdaptiveStepSizeIntegrator<E> const& integrator,
                          std::int64_t max_steps,
                          Length const& length_integration_tolerance);
 
-  // The |length_| and |speed_integration_tolerance|s are used to compute the
-  // |tolerance_to_error_ratio| for step size control.  The number of steps is
-  // limited to |max_steps|.
+  // The `length_` and `speed_integration_tolerance`s are used to compute the
+  // `tolerance_to_error_ratio` for step size control.  The number of steps is
+  // limited to `max_steps`.
   template<typename E = ODE,
            std::enable_if_t<E::order == 2, std::nullptr_t> = nullptr>
   AdaptiveStepParameters(AdaptiveStepSizeIntegrator<E> const& integrator,

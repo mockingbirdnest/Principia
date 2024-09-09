@@ -59,9 +59,9 @@ class Planetarium {
  public:
   class Parameters final {
    public:
-    // |sphere_radius_multiplier| defines the "dark area" around a celestial
-    // where we don't draw trajectories.  |angular_resolution| defines the limit
-    // beyond which spheres don't participate in hiding.  |field_of_view|
+    // `sphere_radius_multiplier` defines the "dark area" around a celestial
+    // where we don't draw trajectories.  `angular_resolution` defines the limit
+    // beyond which spheres don't participate in hiding.  `field_of_view`
     // is the half-angle of a cone outside of which not plotting takes place.
     explicit Parameters(double sphere_radius_multiplier,
                         Angle const& angular_resolution,
@@ -87,7 +87,7 @@ class Planetarium {
               PlottingToScaledSpaceConversion plotting_to_scaled_space);
 
   // A no-op method that just returns all the points in the trajectory defined
-  // by |begin| and |end|.
+  // by `begin` and `end`.
   RP2Lines<Length, Camera> PlotMethod0(
       DiscreteTrajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
@@ -114,7 +114,7 @@ class Planetarium {
       Instant const& now,
       bool reverse) const;
 
-  // The same method, operating on the |Trajectory| interface.
+  // The same method, operating on the `Trajectory` interface.
   RP2Lines<Length, Camera> PlotMethod2(
       Trajectory<Barycentric> const& trajectory,
       Instant const& first_time,
@@ -135,8 +135,8 @@ class Planetarium {
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points) const;
 
-  // The same method, operating on the |Trajectory| interface for any frame that
-  // can be converted to |Navigation|.
+  // The same method, operating on the `Trajectory` interface for any frame that
+  // can be converted to `Navigation`.
   template<typename Frame>
   void PlotMethod3(
       Trajectory<Frame> const& trajectory,
@@ -149,13 +149,13 @@ class Planetarium {
       Length* minimal_distance = nullptr) const;
 
  private:
-  // Computes the coordinates of the spheres that represent the |ephemeris_|
-  // bodies.  These coordinates are in the |plotting_frame_| at time |now|.
+  // Computes the coordinates of the spheres that represent the `ephemeris_`
+  // bodies.  These coordinates are in the `plotting_frame_` at time `now`.
   std::vector<Sphere<Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
 
-  // Computes the segments of the trajectory defined by |begin| and |end| that
-  // are not hidden by the |plottable_spheres|.
+  // Computes the segments of the trajectory defined by `begin` and `end` that
+  // are not hidden by the `plottable_spheres`.
   Segments<Navigation> ComputePlottableSegments(
       const std::vector<Sphere<Navigation>>& plottable_spheres,
       DiscreteTrajectory<Barycentric>::iterator begin,

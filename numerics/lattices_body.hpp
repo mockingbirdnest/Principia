@@ -33,8 +33,8 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
-// In the terminology of [NS09], our vectors are in columns, so |d| is |columns|
-// and |n| is |rows|.
+// In the terminology of [NS09], our vectors are in columns, so `d` is `columns`
+// and `n` is `rows`.
 template<typename Matrix>
 struct GramGenerator;
 

@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |RigidReferenceFrame| must
+// The files containing the tree of child classes of `RigidReferenceFrame` must
 // be included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
@@ -51,7 +51,7 @@ using namespace principia::quantities::_tuples;
 // points to the barycentre of the secondaries.  The Y axis is in the direction
 // of the velocity of the barycentre of the secondaries with respect to the
 // primary.  The Z axis is in the direction of the angular momentum of the
-// system.  The basis has the same orientation as |InertialFrame|.
+// system.  The basis has the same orientation as `InertialFrame`.
 // Note that if the angular momentum of the system varies, the angular velocity
 // of the frame need not be along its Z axis.
 template<typename InertialFrame, typename ThisFrame>
@@ -139,7 +139,7 @@ class BarycentricRotatingReferenceFrame
   GravitationalParameter const primary_gravitational_parameter_;
   GravitationalParameter const secondary_gravitational_parameter_;
   mutable absl::Mutex lock_;
-  // These members optimize costly computations from |BarycentreDerivative| in
+  // These members optimize costly computations from `BarycentreDerivative` in
   // the frequent case where properties of the frame are repeatedly requested
   // for the same time.
   mutable CachedDerivatives last_evaluated_primary_derivatives_

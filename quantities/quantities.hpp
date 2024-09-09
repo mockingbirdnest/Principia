@@ -42,8 +42,8 @@ using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0>>;
 // We strongly type angles.
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 
-// |Product| and |Quotient| are not exported from this namespace.  Instead they
-// are defined as the result types of |operator*| and |operator/|.
+// `Product` and `Quotient` are not exported from this namespace.  Instead they
+// are defined as the result types of `operator*` and `operator/`.
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
@@ -119,7 +119,7 @@ template<typename RDimensions>
 constexpr Quotient<double, Quantity<RDimensions>>
 operator/(double, Quantity<RDimensions> const&);
 
-// Used for implementing |si::Unit|.  Don't call directly, don't export from
+// Used for implementing `si::Unit`.  Don't call directly, don't export from
 // this namespace.  Defined here to break circular dependencies.
 template<typename Q>
 constexpr Q SIUnit() { return Q(1); };
@@ -129,10 +129,10 @@ inline __m128d ToM128D(double x);
 template<typename Dimensions>
 __m128d ToM128D(Quantity<Dimensions> x);
 
-// A positive infinity of |Q|.
+// A positive infinity of `Q`.
 template<typename Q>
 constexpr Q Infinity = SIUnit<Q>() * std::numeric_limits<double>::infinity();
-// A quiet NaN of |Q|.
+// A quiet NaN of `Q`.
 template <typename Q>
 CONSTEXPR_NAN Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 

@@ -23,16 +23,16 @@ struct is_tuple<std::tuple<D...>> : std::true_type, not_constructible {};
 template<typename T>
 constexpr bool is_tuple_v = is_tuple<T>::value;
 
-// This struct has a |Type| member which is a tuple obtained by applying
-// |Transform| to corresponding elements in |Tuples| (which may be tuples,
-// arrays, or pairs).  If the |Tuples| have different sizes, |void| is passed to
-// |Transform| for the missing element types.
+// This struct has a `Type` member which is a tuple obtained by applying
+// `Transform` to corresponding elements in `Tuples` (which may be tuples,
+// arrays, or pairs).  If the `Tuples` have different sizes, `void` is passed to
+// `Transform` for the missing element types.
 template<template<typename...> typename Transform, typename... Tuples>
 class ApplyGenerator;
 
-// This struct has a |Type| member which is an n-element tuple of successive
-// derivatives of |Value| with respect to |Argument|; the first element is
-// |Value|.
+// This struct has a `Type` member which is an n-element tuple of successive
+// derivatives of `Value` with respect to `Argument`; the first element is
+// `Value`.
 template<typename Value, typename Argument, int n,
          typename = std::make_index_sequence<n>>
 struct DerivativesGenerator;

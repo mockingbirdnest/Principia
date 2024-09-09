@@ -23,17 +23,17 @@ class VanishesBeforeMatcher;
 // computed value is exactly zero.  The matchers take a reference value, which
 // represents the order of magnitude of the intermediate results that triggered
 // the cancellation, and a tolerance expressed as a number of ulps in the
-// error.  More precisely the matcher checks that the |reference| is equal to
-// to |actual + reference| to within the specified number of ulps.
+// error.  More precisely the matcher checks that the `reference` is equal to
+// to `actual + reference` to within the specified number of ulps.
 
-// The 2-argument version of |VanishesBefore()| should always be preferred as it
+// The 2-argument version of `VanishesBefore()` should always be preferred as it
 // guarantees that the error bound is tight.
 template<typename T>
 testing::PolymorphicMatcher<VanishesBeforeMatcher<T>> VanishesBefore(
     T const& reference,
     std::int64_t max_ulps);
 
-// The 3-argument version of |VanishesBefore()| is exclusively for use when a
+// The 3-argument version of `VanishesBefore()` is exclusively for use when a
 // given assertion may have different errors, e.g., because it's in a loop.  It
 // doesn't guarantee that the error bound is tight.
 template<typename T>

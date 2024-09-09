@@ -759,9 +759,9 @@ message ExternalFlowFreefall {
   optional Return return = 3;
 }
 
-// Sets |coefficient| to the normalized geopotential coefficient of the given
-// |degree| and |order| of the body with index |body_index|.
-// |coefficient.x| is set to Cnm, |coefficient.y| is set to Snm.
+// Sets `coefficient` to the normalized geopotential coefficient of the given
+// `degree` and `order` of the body with index `body_index`.
+// `coefficient.x` is set to Cnm, `coefficient.y` is set to Snm.
 message ExternalGeopotentialGetCoefficient {
   extend Method {
     optional ExternalGeopotentialGetCoefficient extension = 5156;
@@ -785,8 +785,8 @@ message ExternalGeopotentialGetCoefficient {
   optional Return return = 3;
 }
 
-// Sets |reference_radius| to the value in metres of the reference radius of
-// the geopotential model for the body with index |body_index|.
+// Sets `reference_radius` to the value in metres of the reference radius of
+// the geopotential model for the body with index `body_index`.
 // If the body does not have a geopotential model, i.e., if it is modeled as an
 // isotropic sphere, the mean radius is used.
 message ExternalGeopotentialGetReferenceRadius {

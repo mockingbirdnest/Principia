@@ -40,7 +40,7 @@ using namespace principia::quantities::_si;
 
 // This number was selected in game to obtain good performance without missing
 // collisions.  It was found that that one evaluation of
-// |height_above_terrain_at_time| costs around 15 µs, and that the number of
+// `height_above_terrain_at_time` costs around 15 µs, and that the number of
 // evaluations grows roughly linearly with the degree.  This is probably because
 // the terrain is very bumpy, so even a high degree doesn't approximate it well,
 // and the number of subdivisions end up being largely independent from the
@@ -48,7 +48,7 @@ using namespace principia::quantities::_si;
 // be evaluated 5 times per interval we could easily miss significant features
 // of the terrain.
 constexpr int max_чебышёв_degree = 8;
-// The error bound |max_collision_error| is guaranteed to be met if the vessel
+// The error bound `max_collision_error` is guaranteed to be met if the vessel
 // is slower than this.
 constexpr Speed max_collision_speed = 10'000 * Metre / Second;
 
@@ -82,7 +82,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
     RelativeDegreesOfFreedom<Frame> const relative =
         degrees_of_freedom - body_degrees_of_freedom;
     Square<Length> const squared_distance = relative.displacement().Norm²();
-    // This is the derivative of |squared_distance|.
+    // This is the derivative of `squared_distance`.
     Variation<Square<Length>> const squared_distance_derivative =
         2.0 * InnerProduct(relative.displacement(), relative.velocity());
 
@@ -93,8 +93,8 @@ void ComputeApsides(Trajectory<Frame> const& reference,
             previous_degrees_of_freedom &&
             previous_squared_distance);
 
-      // The derivative of |squared_distance| changed sign.  Construct a Hermite
-      // approximation of |squared_distance| and find its extrema.
+      // The derivative of `squared_distance` changed sign.  Construct a Hermite
+      // approximation of `squared_distance` and find its extrema.
       Hermite3<Square<Length>, Instant> const
           squared_distance_approximation(
               {*previous_time, time},
@@ -117,12 +117,12 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       }
       if (valid_extrema != 1) {
         // Something went wrong when finding the extrema of
-        // |squared_distance_approximation|. Use a linear interpolation of
-        // |squared_distance_derivative| instead.
+        // `squared_distance_approximation`. Use a linear interpolation of
+        // `squared_distance_derivative` instead.
         apsis_time = Barycentre({time, *previous_time},
                                 {*previous_squared_distance_derivative,
                                  -squared_distance_derivative});
-        // This happens if |*previous_squared_distance_derivative| is 0.  It is
+        // This happens if `*previous_squared_distance_derivative` is 0.  It is
         // indicative of ill-conditioning, but not in and of itself a problem.
         LOG_IF(WARNING, apsis_time == previous_time)
             << "Suspicious apsis at the beginning of a time interval: "
@@ -137,10 +137,10 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 
       // Now that we know the time of the apsis, use a Hermite approximation to
       // derive its degrees of freedom.  Note that an extremum of
-      // |squared_distance_approximation| is in general not an extremum for
-      // |position_approximation|: the distance computed using the latter is a
+      // `squared_distance_approximation` is in general not an extremum for
+      // `position_approximation`: the distance computed using the latter is a
       // 6th-degree polynomial.  However, approximating this polynomial using a
-      // 3rd-degree polynomial would yield |squared_distance_approximation|, so
+      // 3rd-degree polynomial would yield `squared_distance_approximation`, so
       // we shouldn't be far from the truth.
       DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
           trajectory.EvaluateDegreesOfFreedom(apsis_time);
@@ -195,8 +195,8 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     return {};
   }
 
-  // Initialize the iterators.  After this block |it| designates the first
-  // periapsis and |previous_it| designates the previous apoapsis, if there is
+  // Initialize the iterators.  After this block `it` designates the first
+  // periapsis and `previous_it` designates the previous apoapsis, if there is
   // one, or is past the end.
   absl::btree_set<Instant>::const_iterator it;
   absl::btree_set<Instant>::const_iterator previous_it;
@@ -255,12 +255,12 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
 
   std::vector<Interval<Instant>> intervals;
   for (; it != apsides_times.end(); previous_it = it, ++it) {
-    // Here |it| designates a periapsis, and |previous_it| the previous
+    // Here `it` designates a periapsis, and `previous_it` the previous
     // apoapsis, or is past-the-end if there is no previous apoapsis (only the
     // first time through the outer loop).
     Instant const periapsis_time = *it;
 
-    // No collision is possible if the periapsis is above |max_radius|.
+    // No collision is possible if the periapsis is above `max_radius`.
     if (squared_distance_from_centre(periapsis_time) < max_radius²) {
       Interval<Instant> interval;
       if (previous_it == apsides_times.end()) {
@@ -273,7 +273,7 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
         CHECK_LE(apoapsis_time, periapsis_time);
 
         if (squared_distance_from_centre(apoapsis_time) > max_radius²) {
-          // The periapsis is below |max_radius| and the preceding apoapsis is
+          // The periapsis is below `max_radius` and the preceding apoapsis is
           // above.  Find the intersection point.
           interval.min = Brent(
               [max_radius²,
@@ -283,28 +283,28 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
               apoapsis_time,
               periapsis_time);
         } else {
-          // An apoapsis below |max_radius| can only happen the first time
+          // An apoapsis below `max_radius` can only happen the first time
           // through the loop because the nested loop below skips the other
           // ones.
           CHECK_EQ(apoapsis_time, trajectory.t_min());
           interval.min = apoapsis_time;
         }
       }
-      // Here |interval.min| has been computed and is the time where the
-      // trajectory descends below |max_radius|.
+      // Here `interval.min` has been computed and is the time where the
+      // trajectory descends below `max_radius`.
 
-      // Loop until we find an apoapsis above |max_radius|, or we reach the end
-      // of |apsides_time|.
+      // Loop until we find an apoapsis above `max_radius`, or we reach the end
+      // of `apsides_time`.
       do {
-        // Here |it| denotes a periapsis below |max_radius| and |previous_it|
+        // Here `it` denotes a periapsis below `max_radius` and `previous_it`
         // the preceding apoapsis or is past-the-end if there is no previous
         // apoapsis (only the first time through the outer and inner loops).
         Instant const periapsis_time = *it;
         previous_it = it;
         ++it;
 
-        // Here |it| denotes an apoapsis or is past-the-end.  |previous_it| is
-        // the previous periapsis, which is below |max_radius|.
+        // Here `it` denotes an apoapsis or is past-the-end.  `previous_it` is
+        // the previous periapsis, which is below `max_radius`.
         if (it == apsides_times.end()) {
           break;
         }
@@ -312,7 +312,7 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
         CHECK_LE(periapsis_time, apoapsis_time);
 
         if (squared_distance_from_centre(apoapsis_time) > max_radius²) {
-          // The periapsis is below |max_radius| and the following apoapsis is
+          // The periapsis is below `max_radius` and the following apoapsis is
           // above.  Find the intersection point.
           interval.max = Brent(
               [max_radius²,
@@ -327,41 +327,41 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
         previous_it = it;
         ++it;
 
-        // Here |it| denotes a periapsis or is past-the end.  |previous_it| is
-        // the previous apoapsis, which is below |max_radius|.  Therefore, the
-        // periapsis denoted by |it| is below |max_radius|.
+        // Here `it` denotes a periapsis or is past-the end.  `previous_it` is
+        // the previous apoapsis, which is below `max_radius`.  Therefore, the
+        // periapsis denoted by `it` is below `max_radius`.
       } while (it != apsides_times.end());
 
       if (it == apsides_times.end()) {
         // If we reach the end of the set, the last element, denoted by
-        // |previous_it|, may be a periapsis (first break in the loop above) or
-        // an apoapsis (while condition).  In both cases, |previous_it| denotes
+        // `previous_it`, may be a periapsis (first break in the loop above) or
+        // an apoapsis (while condition).  In both cases, `previous_it` denotes
         // the extremity of the trajectory.
         interval.max = *previous_it;
         intervals.push_back(interval);
         break;
       }
 
-      // |interval.max| has been computed using Brent (second break in the loop
+      // `interval.max` has been computed using Brent (second break in the loop
       // above).
       intervals.push_back(interval);
 
-      // Here |it| designates an apoapsis above |max_radius|.  |previous_it| is
-      // the previous periapsis, which is below |max_radius|.  The outer loop
-      // increment moves |previous_it| to denote the apoapsis and |it| to denote
+      // Here `it` designates an apoapsis above `max_radius`.  `previous_it` is
+      // the previous periapsis, which is below `max_radius`.  The outer loop
+      // increment moves `previous_it` to denote the apoapsis and `it` to denote
       // the next periapsis or to be past-the-end.
     } else {
-      // Here |it| designates a periapsis above |max_radius|, and |previous_it|
+      // Here `it` designates a periapsis above `max_radius`, and `previous_it`
       // the previous apoapsis, or is past-the-end if there is no previous
       // apoapsis (only the first time through the outer loop).
       previous_it = it;
       ++it;
-      // Here |it| denotes an apoapsis or is past-the-end.  |previous_it| is
-      // the previous periapsis, which is above |max_radius|.  Therefore, the
-      // apoapsis denoted by |it| is above |max_radius|.
+      // Here `it` denotes an apoapsis or is past-the-end.  `previous_it` is
+      // the previous periapsis, which is above `max_radius`.  Therefore, the
+      // apoapsis denoted by `it` is above `max_radius`.
       if (it == apsides_times.end()) {
-        // Reached the end of |apsides_times| with a periapsis above
-        // |max_radius|.  No interval to produce.
+        // Reached the end of `apsides_times` with a periapsis above
+        // `max_radius`.  No interval to produce.
         break;
       }
     }
@@ -430,8 +430,8 @@ ComputeFirstCollision(
        &number_of_evaluations](auto interpolant) -> bool {
     if (interpolant->MayHaveRealRoots()) {
       // The relative error on the roots is choosen so that it corresponds to an
-      // absolute error in distance similar to |max_collision_error|, assuming
-      // that the speed is below |max_collision_speed|.  We don't care too much
+      // absolute error in distance similar to `max_collision_error`, assuming
+      // that the speed is below `max_collision_speed`.  We don't care too much
       // about the performance of this computation, because the zero-free test
       // is very efficient.
       auto const& real_roots = interpolant->RealRoots(
@@ -509,7 +509,7 @@ absl::Status ComputeNodes(
     if (previous_z && Sign(z) != Sign(*previous_z)) {
       CHECK(previous_time && previous_z_speed);
 
-      // |z| changed sign.  Construct a Hermite approximation of |z| and find
+      // `z` changed sign.  Construct a Hermite approximation of `z` and find
       // its zeros.
       Hermite3<Length, Instant> const z_approximation(
           {*previous_time, time},
@@ -538,7 +538,7 @@ absl::Status ComputeNodes(
       if (predicate(node_degrees_of_freedom)) {
         if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
             Sign(z_speed)) {
-          // |north| is up and we are going up, or |north| is down and we are
+          // `north` is up and we are going up, or `north` is down and we are
           // going down.
           ascending.Append(node_time, node_degrees_of_freedom).IgnoreError();
         } else {

@@ -25,7 +25,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 // A utility to compute the local errors in the numerical integration of a
-// |solar_system| with a given |integrator| and |step|.
+// `solar_system` with a given `integrator` and `step`.
 template<typename Frame>
 class LocalErrorAnalyser {
  public:
@@ -35,9 +35,9 @@ class LocalErrorAnalyser {
           Ephemeris<Frame>::NewtonianMotionEquation> const& integrator,
       Time const& step);
 
-  // Computes the error over |granularity| between the main integration and a
-  // fine integration forked off the main one, for |duration| from the solar
-  // system epoch.  Writes the errors to a file with the given |path|.
+  // Computes the error over `granularity` between the main integration and a
+  // fine integration forked off the main one, for `duration` from the solar
+  // system epoch.  Writes the errors to a file with the given `path`.
   void WriteLocalErrors(
       std::filesystem::path const& path,
       FixedStepSizeIntegrator<typename

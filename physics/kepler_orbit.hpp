@@ -44,8 +44,8 @@ struct KeplerianElements final {
   // The following two elements are NaN for elliptic orbits.
   std::optional<AngularFrequency> hyperbolic_mean_motion;
   std::optional<Speed> hyperbolic_excess_velocity;
-  // 3. semiminor axis.  The |semiminor_axis| is NaN for hyperbolic orbits, the
-  // |impact_parameter| is NaN for elliptic orbits.
+  // 3. semiminor axis.  The `semiminor_axis` is NaN for hyperbolic orbits, the
+  // `impact_parameter` is NaN for elliptic orbits.
   std::optional<Length> semiminor_axis;
   std::optional<Length> impact_parameter;
   // 4. semilatus rectum.
@@ -94,8 +94,8 @@ class KeplerOrbit final {
   static_assert(!Frame::may_rotate);
 
  public:
-  // Exactly one of the |optional|s must be filled in the given
-  // |KeplerianElements|.
+  // Exactly one of the `optional`s must be filled in the given
+  // `KeplerianElements`.
   KeplerOrbit(MassiveBody const& primary,
               Body const& secondary,
               KeplerianElements<Frame> const& elements_at_epoch,
@@ -105,29 +105,29 @@ class KeplerOrbit final {
               RelativeDegreesOfFreedom<Frame> const& state_vectors,
               Instant const& epoch);
 
-  // The |DegreesOfFreedom| of the secondary minus those of the primary.
+  // The `DegreesOfFreedom` of the secondary minus those of the primary.
   RelativeDegreesOfFreedom<Frame> StateVectors(Instant const& t) const;
 
-  // All |optional|s are filled in the result.
+  // All `optional`s are filled in the result.
   KeplerianElements<Frame> const& elements_at_epoch() const;
 
  private:
-  // |elements| must be minimally specified.  Fills all |optional|s in
-  // |elements|.
+  // `elements` must be minimally specified.  Fills all `optional`s in
+  // `elements`.
   static void CompleteElements(KeplerianElements<Frame>& elements,
                                GravitationalParameter const& μ);
-  // For each category in section I of |elements|, either one, none, or all of
-  // the |optional|s must be filled.  If one is filled, fills the others in that
+  // For each category in section I of `elements`, either one, none, or all of
+  // the `optional`s must be filled.  If one is filled, fills the others in that
   // category.
   static void CompleteConicParametersByCategory(
       KeplerianElements<Frame>& elements,
       GravitationalParameter const& μ);
-  // Section I of |elements| must be minimally specified.  Fills it.
+  // Section I of `elements` must be minimally specified.  Fills it.
   static void CompleteConicParameters(KeplerianElements<Frame>& elements,
                                       GravitationalParameter const& μ);
-  // Section II of |elements| must be minimally specified.  Fills it.
+  // Section II of `elements` must be minimally specified.  Fills it.
   static void CompleteOrientationParameters(KeplerianElements<Frame>& elements);
-  // Sections I and II of |elements| must be filled; section III must be
+  // Sections I and II of `elements` must be filled; section III must be
   // minimally specified.  Fills section III.
   static void CompleteAnomalies(KeplerianElements<Frame>& elements);
 

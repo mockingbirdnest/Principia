@@ -249,7 +249,7 @@ TEST_F(DoublePrecisionTest, Consistencies) {
   // DoublePrecision<Point> - DoublePrecision<Point>.
   EXPECT_THAT(DebugString(q1 - q2), Eq(DebugString(w1 + -w2)));
 
-  // We now showcase the difference between |Increment| and |operator+=|.
+  // We now showcase the difference between `Increment` and `operator+=`.
   auto compensated_accumulator = -w2;
   compensated_accumulator.Increment(v1);
   auto double_accumulator = -w2;

@@ -103,12 +103,12 @@ TEST_F(AffineMapTest, Cube) {
               Eq(front_right_bottom_ - origin_));
   EXPECT_THAT(map(front_left_top_) - origin_,
               AlmostEquals(back_left_top_ - origin_, 1));
-  // Check that |map| is an isometry of the cube whose vertices are |vertices_|.
+  // Check that `map` is an isometry of the cube whose vertices are `vertices_`.
   for (auto const& point : vertices_) {
     EXPECT_THAT(originated_vertices_,
                 Contains(AlmostEquals(map(point) - origin_, 0, 1)));
   }
-  // Test that |map.Inverse() * map| acts as the identity on that cube.
+  // Test that `map.Inverse() * map` acts as the identity on that cube.
   for (std::size_t i = 0; i < vertices_.size(); ++i) {
     EXPECT_THAT(originated_vertices_[i],
                 AlmostEquals((map.Inverse() * map)

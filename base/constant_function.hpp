@@ -6,7 +6,7 @@ namespace _constant_function {
 namespace internal {
 
 // A function object that can be called with arbitrary arguments, and always
-// returns the same |value|.
+// returns the same `value`.
 template<typename T>
 struct ConstantFunction {
   template<typename... Args>

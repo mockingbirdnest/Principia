@@ -10,7 +10,7 @@ namespace internal {
 using namespace principia::numerics::_fixed_arrays;
 
 // Definition of an Adams-Moulton method.  Not technically an "integrator" as
-// it is not a subclass of |integrators::Integrator|.
+// it is not a subclass of `integrators::Integrator`.
 template<int order_>
 struct AdamsMoulton final {
   static constexpr int order = order_;

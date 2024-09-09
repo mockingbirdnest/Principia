@@ -7,8 +7,8 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
-// The test is in the |internal| namespace to get visibility to |one_π| and
-// |two_π|.
+// The test is in the `internal` namespace to get visibility to `one_π` and
+// `two_π`.
 namespace principia {
 namespace numerics {
 namespace _angle_reduction {
@@ -25,7 +25,7 @@ class AngleReductionTest : public testing::Test {};
 TYPED_TEST_SUITE_P(AngleReductionTest);
 
 // This test is not type-parameterized because the reduction algorithm only
-// works for |Angle|.
+// works for `Angle`.
 TEST(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
   Angle fractional_part;
   std::int64_t integer_part;

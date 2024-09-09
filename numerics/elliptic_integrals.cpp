@@ -36,9 +36,9 @@ using namespace principia::quantities::_si;
 namespace {
 
 // The functions that compute elliptic integrals of multiple kinds may be called
-// without computing the integral of the third kind.  Passing |unused| bypasses
+// without computing the integral of the third kind.  Passing `unused` bypasses
 // the corresponding code path at compile time, passing a reference to an
-// |Angle| performs the computation.
+// `Angle` performs the computation.
 
 struct UnusedResult {
   constexpr UnusedResult(uninitialized_t) {}  // NOLINT(runtime/explicit)
@@ -115,8 +115,8 @@ Angle FukushimaEllipticJsMaclaurinSeries(double y, double n, double m);
 // Fukushima's T function [Fuk12b].
 Angle FukushimaT(double t, double h);
 
-// The common implementation underlying the functions |FukushimaEllipticBDJ| and
-// |FukushimaEllipticBD| declared in the header file.
+// The common implementation underlying the functions `FukushimaEllipticBDJ` and
+// `FukushimaEllipticBD` declared in the header file.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
@@ -134,8 +134,8 @@ void FukushimaEllipticBDJReduced(Angle const& φ,
                                  Angle& D_φǀm,
                                  ThirdKind& J_φ_nǀm);
 
-// The common implementation underlying the functions |EllipticFEΠ| and
-// |EllipticFE| declared in the header file.
+// The common implementation underlying the functions `EllipticFEΠ` and
+// `EllipticFE` declared in the header file.
 template<typename ThirdKind, typename = EnableIfAngleResult<ThirdKind>>
 void EllipticFEΠ(Angle const& φ,
                  double n,
@@ -2024,7 +2024,7 @@ void EllipticFEΠ(Angle const& φ,
 // Note that the identifiers in the function definition are not the same as
 // those in the function declaration.
 // The notation here follows [Fuk09a], whereas the notation in the function
-// declaration uses |mc| for consistency with the other functions.
+// declaration uses `mc` for consistency with the other functions.
 Angle EllipticK(double const mʹ) {
   DCHECK_LE(0, mʹ);
   DCHECK_GE(1, mʹ);

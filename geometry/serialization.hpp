@@ -9,8 +9,8 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 
-// A helper class that serializes a |double|, a |Quantity|, a |Point| or a
-// |Multivector| to a protobuf structure like:
+// A helper class that serializes a `double`, a `Quantity`, a `Point` or a
+// `Multivector` to a protobuf structure like:
 //
 // message Message {
 //   oneof message {
@@ -23,7 +23,7 @@ using namespace principia::base::_not_constructible;
 template<typename T, typename Message>
 struct DoubleOrQuantityOrPointOrMultivectorSerializer : not_constructible {};
 
-// A helper class that serializes a |double|, a |Quantity| or a |Multivector|
+// A helper class that serializes a `double`, a `Quantity` or a `Multivector`
 // to a protobuf structure like:
 //
 // message Message {
@@ -36,7 +36,7 @@ struct DoubleOrQuantityOrPointOrMultivectorSerializer : not_constructible {};
 template<typename T, typename Message>
 struct DoubleOrQuantityOrMultivectorSerializer : not_constructible {};
 
-// A helper class that serializes a |Point| or a |Multivector| to a protobuf
+// A helper class that serializes a `Point` or a `Multivector` to a protobuf
 // structure like:
 //
 // message Message {
@@ -48,7 +48,7 @@ struct DoubleOrQuantityOrMultivectorSerializer : not_constructible {};
 template<typename T, typename Message>
 struct PointOrMultivectorSerializer : not_constructible {};
 
-// A helper class that serializes a |Quantity| or a |Multivector| to a protobuf
+// A helper class that serializes a `Quantity` or a `Multivector` to a protobuf
 // structure like:
 //
 // message Message {

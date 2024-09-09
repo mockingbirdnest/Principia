@@ -54,7 +54,7 @@ void BM_EvaluatePolynomialInЧебышёвBasisDouble(benchmark::State& state) {
     }
   }
 
-  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // This weird call to `SetLabel` has no effect except that it uses `result`
   // and therefore prevents the loop from being optimized away.
   state.SetLabel(std::to_string(result).substr(0, 0));
 }
@@ -83,7 +83,7 @@ void BM_EvaluatePolynomialInЧебышёвBasisQuantity(benchmark::State& state)
     }
   }
 
-  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // This weird call to `SetLabel` has no effect except that it uses `result`
   // and therefore prevents the loop from being optimized away.
   std::stringstream ss;
   ss << result;
@@ -117,7 +117,7 @@ void BM_EvaluatePolynomialInЧебышёвBasisR3ElementDouble(
     }
   }
 
-  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // This weird call to `SetLabel` has no effect except that it uses `result`
   // and therefore prevents the loop from being optimized away.
   std::stringstream ss;
   ss << result;
@@ -152,7 +152,7 @@ void BM_EvaluatePolynomialInЧебышёвBasisVectorDouble(
     }
   }
 
-  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // This weird call to `SetLabel` has no effect except that it uses `result`
   // and therefore prevents the loop from being optimized away.
   std::stringstream ss;
   ss << result;
@@ -187,7 +187,7 @@ void BM_EvaluatePolynomialInЧебышёвBasisDisplacement(
     }
   }
 
-  // This weird call to |SetLabel| has no effect except that it uses |result|
+  // This weird call to `SetLabel` has no effect except that it uses `result`
   // and therefore prevents the loop from being optimized away.
   std::stringstream ss;
   ss << result;

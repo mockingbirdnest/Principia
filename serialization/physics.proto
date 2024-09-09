@@ -260,8 +260,8 @@ message OblateBody {
         }
         required double sin = 3;
       }
-      // For a given |degree|, the |column| array must contain at most
-      // |degree + 1| entries.
+      // For a given `degree`, the `column` array must contain at most
+      // `degree + 1` entries.
       required int32 degree = 1;
       // For stability, the serialization produces columns by increasing order.
       repeated GeopotentialColumn column = 2;

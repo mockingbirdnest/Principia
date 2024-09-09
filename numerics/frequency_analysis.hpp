@@ -20,9 +20,9 @@ using namespace principia::numerics::_poisson_series;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// Computes the precise mode of a quasi-periodic |function|, assuming that the
-// mode is over the interval |fft_mode| (so named because it has presumably been
-// obtained using FFT).  The |Function| must have a member |FourierTransform|
+// Computes the precise mode of a quasi-periodic `function`, assuming that the
+// mode is over the interval `fft_mode` (so named because it has presumably been
+// obtained using FFT).  The `Function` must have a member `FourierTransform`
 // that returns its spectrum.  See [Cha95].
 template<typename Function,
          int aperiodic_wdegree, int periodic_wdegree>
@@ -32,11 +32,11 @@ AngularFrequency PreciseMode(
     PoissonSeries<double,
                   aperiodic_wdegree, periodic_wdegree> const& weight);
 
-// In the projection functions the |Function| must have an |InnerProduct| with
-// |PoissonSeries| or |PiecewisePoissonSeries|.
+// In the projection functions the `Function` must have an `InnerProduct` with
+// `PoissonSeries` or `PiecewisePoissonSeries`.
 
-// Computes the Кудрявцев projection of |function| on a basis with angular
-// frequency ω and maximum degrees |aperiodic_ldegree| and |periodic_ldegree|.
+// Computes the Кудрявцев projection of `function` on a basis with angular
+// frequency ω and maximum degrees `aperiodic_ldegree` and `periodic_ldegree`.
 // See [Kud07].
 template<int aperiodic_degree, int periodic_degree,
          typename Function,
@@ -64,8 +64,8 @@ Projection(Function const& function,
 //};
 //
 // Where Residual is a functor that takes an Instant and returns an element of a
-// vector space.  The first call to the calculator is with the |function| passed
-// to |IncrementalProjection|.
+// vector space.  The first call to the calculator is with the `function` passed
+// to `IncrementalProjection`.
 // If the calculator cannot find a suitable frequency, or if it wants to stop
 // the algorithm, it does so by returning std::nullopt.
 template<int aperiodic_degree, int periodic_degree,

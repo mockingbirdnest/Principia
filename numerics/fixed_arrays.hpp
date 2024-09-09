@@ -111,7 +111,7 @@ class FixedMatrix final {
   constexpr FixedMatrix();
   explicit FixedMatrix(uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   constexpr FixedMatrix(
       std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
   constexpr FixedMatrix(
@@ -126,8 +126,8 @@ class FixedMatrix final {
                          FixedMatrix const& right) = default;
 
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
-  // |a(i, j)|.  if i and j do not satisfy these conditions, the expression
-  // |a(i, j)| implies undefined behaviour.
+  // `a(i, j)`.  if i and j do not satisfy these conditions, the expression
+  // `a(i, j)` implies undefined behaviour.
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
@@ -149,7 +149,7 @@ class FixedMatrix final {
   Scalar FrobeniusNorm() const;
 
   // Applies the matrix as a bilinear form.  Present for compatibility with
-  // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
+  // `SymmetricBilinearForm`.  Prefer to use `TransposedView` and `operator*`.
   template<typename LScalar, typename RScalar>
   Product<Scalar, Product<LScalar, RScalar>>
       operator()(FixedVector<LScalar, columns_> const& left,
@@ -178,7 +178,7 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix();
   explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
@@ -191,8 +191,8 @@ class FixedStrictlyLowerTriangularMatrix final {
                          FixedStrictlyLowerTriangularMatrix const& right) =
       default;
 
-  // For  0 ≤ j < i < rows, the entry a_ij is accessed as |a(i, j)|.
-  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ j < i < rows, the entry a_ij is accessed as `a(i, j)`.
+  // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
   constexpr Scalar const& operator()(std::int64_t row,
@@ -220,7 +220,7 @@ class FixedLowerTriangularMatrix final {
   constexpr FixedLowerTriangularMatrix();
   explicit FixedLowerTriangularMatrix(uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   constexpr FixedLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
@@ -234,8 +234,8 @@ class FixedLowerTriangularMatrix final {
   friend bool operator!=(FixedLowerTriangularMatrix const& left,
                          FixedLowerTriangularMatrix const& right) = default;
 
-  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
-  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as `a(i, j)`.
+  // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
   constexpr Scalar const& operator()(std::int64_t row,
@@ -260,7 +260,7 @@ class FixedStrictlyUpperTriangularMatrix final {
   constexpr FixedStrictlyUpperTriangularMatrix();
   explicit FixedStrictlyUpperTriangularMatrix(uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   constexpr FixedStrictlyUpperTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
@@ -277,8 +277,8 @@ class FixedStrictlyUpperTriangularMatrix final {
       FixedStrictlyUpperTriangularMatrix const& left,
       FixedStrictlyUpperTriangularMatrix const& right) = default;
 
-  // For  0 ≤ i < j < columns, the entry a_ij is accessed as |a(i, j)|.
-  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ i < j < columns, the entry a_ij is accessed as `a(i, j)`.
+  // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
   constexpr Scalar const& operator()(std::int64_t row,
@@ -308,7 +308,7 @@ class FixedUpperTriangularMatrix final {
   constexpr FixedUpperTriangularMatrix();
   explicit FixedUpperTriangularMatrix(uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   constexpr FixedUpperTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
@@ -322,8 +322,8 @@ class FixedUpperTriangularMatrix final {
   friend bool operator!=(FixedUpperTriangularMatrix const& left,
                          FixedUpperTriangularMatrix const& right) = default;
 
-  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
-  // if i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as `a(i, j)`.
+  // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
   constexpr Scalar const& operator()(std::int64_t row,

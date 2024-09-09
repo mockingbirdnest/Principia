@@ -8,9 +8,9 @@ namespace geometry {
 namespace _rp2_point {
 namespace internal {
 
-// An |RP2Point| is an element of ℝP², the real projective plane.  |Scalar|
+// An `RP2Point` is an element of ℝP², the real projective plane.  `Scalar`
 // must be a 1-dimensional vector space over ℝ, typically represented by
-// |Quantity| or |double|.
+// `Quantity` or `double`.
 template<typename Scalar, typename Frame>
 class RP2Point {
  public:

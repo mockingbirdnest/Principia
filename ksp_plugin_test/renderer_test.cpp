@@ -163,7 +163,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
           /*t2=*/t0_ + 10 * Second),
       /*to=*/trajectory_to_render);
 
-  // The prediction is shorter than the |trajectory_to_render|.
+  // The prediction is shorter than the `trajectory_to_render`.
   MockVessel vessel;
   DiscreteTrajectory<Barycentric> vessel_trajectory;
   AppendTrajectoryTimeline(

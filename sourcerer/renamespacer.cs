@@ -141,9 +141,9 @@ class Renamespacer {
     }
   }
 
-  // Insert a using directive for |file_namespace| at the correct place in
-  // |using_directives|, but only if it's not there already.  If
-  // |using_directives| is empty, the insertion takes place after |after|.
+  // Insert a using directive for `file_namespace` at the correct place in
+  // `using_directives`, but only if it's not there already.  If
+  // `using_directives` is empty, the insertion takes place after `after`.
   // Return true iff a directive was added.
   private static bool InsertUsingDirectiveIfNeeded(
       string file_namespace,
@@ -170,7 +170,7 @@ class Renamespacer {
       return false;
     }
 
-    // Insert the using directive.  Note that we must update |using_directives|.
+    // Insert the using directive.  Note that we must update `using_directives`.
     var parent = file_namespace_insertion_point.parent;
     Debug.Assert(parent is Namespace, "Insertion point not within a namespace");
     int insertion_point_position_in_parent =

@@ -16,10 +16,10 @@ using namespace principia::base::_encoder;
 template<bool null_terminated>
 class HexadecimalEncoder : public Encoder<char, null_terminated> {
  public:
-  // The result is upper-case.  Either |input.data <= &output.data[1]| or
-  // |&output.data[input.size << 1] <= input.data| must hold, in particular,
-  // |input.data == output.data| is valid.  |output.size| must be at least twice
-  // |input.size|.  The range
+  // The result is upper-case.  Either `input.data <= &output.data[1]` or
+  // `&output.data[input.size << 1] <= input.data` must hold, in particular,
+  // `input.data == output.data` is valid.  `output.size` must be at least twice
+  // `input.size`.  The range
   // [&output.data[input.size << 1], &output.data[output.size][ is left
   // unmodified.
   void Encode(Array<std::uint8_t const> input,
@@ -29,11 +29,11 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
 
   std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
-  // Invalid digits are read as 0.  If |input.size| is odd, the last character
-  // of the input is ignored.  Ignores case.  Either |output.data <=
-  // &input.data[1]| or |&input.data[input.size & ~1] <= output.data| must hold,
-  // in particular, |input.data == output.data| is valid.  |output.size| must be
-  // at least |input.size / 2|.  The range
+  // Invalid digits are read as 0.  If `input.size` is odd, the last character
+  // of the input is ignored.  Ignores case.  Either `output.data <=
+  // &input.data[1]` or `&input.data[input.size & ~1] <= output.data` must hold,
+  // in particular, `input.data == output.data` is valid.  `output.size` must be
+  // at least `input.size / 2`.  The range
   // [&output[input.size / 2], &output[output.size][ is left unmodified.
   void Decode(Array<char const> input,
               Array<std::uint8_t> output) override;

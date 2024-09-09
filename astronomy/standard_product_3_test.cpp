@@ -291,7 +291,7 @@ class StandardProduct3DynamicsTest
   // This ephemeris has only one body, an oblate Earth.
   // The lack of third bodies makes it quick to prolong; it is suitable for
   // minimal sanity checking of Earth orbits.
-  // Its |t_min| is the time of the launch of Спутник-1, so it can be used for
+  // Its `t_min` is the time of the launch of Спутник-1, so it can be used for
   // any artificial satellite.
   SolarSystem<ICRS> const solar_system_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;

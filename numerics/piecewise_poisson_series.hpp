@@ -103,9 +103,9 @@ class PiecewisePoissonSeries {
   // Gauss-Legendre quadrature on each subinterval, where the number of points
   // is chosen assuming that the periods of periodic terms are all large
   // compared to the subintervals.
-  // If apodization is desired, |*this| should be multiplied by an apodization
-  // function, and |FourierTransform| should be called on the product.
-  // |*this| must outlive the resulting function.
+  // If apodization is desired, `*this` should be multiplied by an apodization
+  // function, and `FourierTransform` should be called on the product.
+  // `*this` must outlive the resulting function.
   Spectrum FourierTransform() const;
 
   template<int aperiodic_wdegree, int periodic_wdegree>

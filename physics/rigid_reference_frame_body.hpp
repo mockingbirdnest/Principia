@@ -136,9 +136,9 @@ RigidReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris) {
   std::unique_ptr<RigidReferenceFrame> result;
   int extensions_found = 0;
-  // NOTE(egg): the |static_cast|ing below is needed on MSVC, because the silly
+  // NOTE(egg): the `static_cast`ing below is needed on MSVC, because the silly
   // compiler doesn't see the
-  // |operator std::unique_ptr<RigidReferenceFrame>() &&|.
+  // `operator std::unique_ptr<RigidReferenceFrame>() &&`.
   if (message.HasExtension(
           serialization::BarycentricRotatingReferenceFrame::extension)) {
     ++extensions_found;
@@ -221,7 +221,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedra(
     Velocity<InertialFrame> const& ṙ,
     Trihedron<Length, ArealSpeed>& orthogonal,
     Trihedron<double, double>& orthonormal) {
-  // Our orthogonal (but not orthonormal) trihedron for |ThisFrame|.
+  // Our orthogonal (but not orthonormal) trihedron for `ThisFrame`.
   Displacement<InertialFrame> const& F = r;
   Bivector<ArealSpeed, InertialFrame> const B = Wedge(r, ṙ);
   Vector<Product<Length, ArealSpeed>, InertialFrame> const N = B * F;
@@ -248,7 +248,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
   auto const& N = orthogonal.normal;
   auto const& B = orthogonal.binormal;
 
-  // The derivatives of the |orthogonal| trihedron.
+  // The derivatives of the `orthogonal` trihedron.
   Velocity<InertialFrame> const& Ḟ = ṙ;
   Bivector<Variation<ArealSpeed>, InertialFrame> const Ḃ = Wedge(r, r̈);
   Vector<Variation<Product<Length, ArealSpeed>>, InertialFrame> const Ṅ =
@@ -259,7 +259,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
     return (v.Norm²() * v̇ - InnerProduct(v, v̇) * v) / Pow<3>(v.Norm());
   };
 
-  // The derivatives of the |orthonormal| trihedron.
+  // The derivatives of the `orthonormal` trihedron.
   Vector<Variation<double>, InertialFrame> const ḟ = 𝛛normalized(F, Ḟ);
   Vector<Variation<double>, InertialFrame> const ṅ = 𝛛normalized(N, Ṅ);
   Bivector<Variation<double>, InertialFrame> const ḃ = 𝛛normalized(B, Ḃ);
@@ -287,7 +287,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
   auto const& Ṅ = 𝛛orthogonal.normal;
   auto const& Ḃ = 𝛛orthogonal.binormal;
 
-  // The second derivatives of the |orthogonal| trihedron.
+  // The second derivatives of the `orthogonal` trihedron.
   Vector<Acceleration, InertialFrame> const& F̈ = r̈;
   Bivector<Variation<ArealSpeed, 2>, InertialFrame> const B̈ =
       Wedge(ṙ, r̈) + Wedge(r, r⁽³⁾);
@@ -304,7 +304,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
            3 * v * Pow<2>(InnerProduct(v, v̇)) / Pow<5>(v.Norm());
   };
 
-  // The second derivatives of the |orthonormal| trihedron.
+  // The second derivatives of the `orthonormal` trihedron.
   Vector<Variation<double, 2>, InertialFrame> const f̈ = 𝛛²normalized(F, Ḟ, F̈);
   Vector<Variation<double, 2>, InertialFrame> const n̈ = 𝛛²normalized(N, Ṅ, N̈);
   Bivector<Variation<double, 2>, InertialFrame> const b̈ = 𝛛²normalized(B, Ḃ, B̈);

@@ -16,10 +16,10 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// In this file |Argument| must be such that its difference belongs to a Hilbert
+// In this file `Argument` must be such that its difference belongs to a Hilbert
 // space.
 
-// A helper for generating declarations derived from |Scalar| and |Argument|.
+// A helper for generating declarations derived from `Scalar` and `Argument`.
 // It must declare the type of the gradient and a function returning the inner
 // product form thus:
 //   using Gradient = ...;
@@ -45,9 +45,9 @@ constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 constexpr absl::StatusCode NoMinimum = absl::StatusCode::kNotFound;
 }  // namespace termination_condition
 
-// Stops when the search displacement is smaller than |tolerance|.  Returns
-// |NoMinimum| if no minimum is found within distance |radius| of
-// |start_argument|.  The first step size defaults to the tolerance.  The
+// Stops when the search displacement is smaller than `tolerance`.  Returns
+// `NoMinimum` if no minimum is found within distance `radius` of
+// `start_argument`.  The first step size defaults to the tolerance.  The
 // assumption is that, if the caller provides a reasonable value then (1) we
 // won't miss "interesting features" of f; (2) the finite differences won't
 // underflow or have other unpleasant properties.

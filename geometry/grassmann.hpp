@@ -24,11 +24,11 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// A multivector of rank |rank| on a three-dimensional real inner product
-// space bearing the dimensionality of |Scalar|, i.e., an element of
-// ⋀ⁿ Scalar³. Do not use this type for |rank == 0| (scalars), use the |Scalar|
+// A multivector of rank `rank` on a three-dimensional real inner product
+// space bearing the dimensionality of `Scalar`, i.e., an element of
+// ⋀ⁿ Scalar³. Do not use this type for `rank == 0` (scalars), use the `Scalar`
 // type directly instead.
-// |Frame| represents a reference frame together with an orthonormal basis.
+// `Frame` represents a reference frame together with an orthonormal basis.
 template<quantity Scalar, typename Frame, int rank>
 class Multivector;
 
@@ -206,14 +206,14 @@ Angle AngleBetween(Bivector<LScalar, Frame> const& v,
                    Bivector<RScalar, Frame> const& w);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
-// [0, π] if |InnerProduct(Wedge(v, w), positive) >= 0|.
+// [0, π] if `InnerProduct(Wedge(v, w), positive) >= 0`.
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
 Angle OrientedAngleBetween(Vector<LScalar, Frame> const& v,
                            Vector<RScalar, Frame> const& w,
                            Bivector<PScalar, Frame> const& positive);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
-// [0, π] if |InnerProduct(Commutator(v, w), positive) >= 0|.
+// [0, π] if `InnerProduct(Commutator(v, w), positive) >= 0`.
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
 Angle OrientedAngleBetween(Bivector<LScalar, Frame> const& v,
                            Bivector<RScalar, Frame> const& w,

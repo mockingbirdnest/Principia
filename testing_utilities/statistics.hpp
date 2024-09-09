@@ -5,8 +5,8 @@
 
 #include "quantities/named_quantities.hpp"
 
-// Various statistics on finite populations stored as |std::vector|s of
-// |Quantity| or |Dimensionless|.
+// Various statistics on finite populations stored as `std::vector`s of
+// `Quantity` or `Dimensionless`.
 
 namespace principia {
 namespace testing_utilities {
@@ -20,7 +20,7 @@ template<typename T>
 T Mean(std::vector<T> const& x);
 
 // The population variance σ(x)² = Var[x] = E[x² - E[x]²].
-// Computed as |Covariance(x, x)|.
+// Computed as `Covariance(x, x)`.
 template<typename T>
 Product<T, T> Variance(std::vector<T> const& x);
 
@@ -34,20 +34,20 @@ T StandardDeviation(std::vector<T> const& x);
 
 // The Pearson product-moment correlation coefficient
 // ρ(x, y) = Cov[x, y] / (σ(x) σ(y)).
-// |x| and |y| should have the same size.
+// `x` and `y` should have the same size.
 template<typename T, typename U>
 double PearsonProductMomentCorrelationCoefficient(std::vector<T> const& x,
                                                   std::vector<U> const& y);
 
 // The slope of the least-squares linear regression to the dataset
-// with abscissae |x| and ordinates |y|. |x| and |y| should have the same size.
+// with abscissae `x` and ordinates `y`. `x` and `y` should have the same size.
 template<typename T, typename U>
 Quotient<U, T> Slope(std::vector<T> const& x, std::vector<U> const& y);
 
 // Mathematica input for a bidimensional dataset, copyable from the command line
 // (includes a call to StringReplace to remove stray newlines). The resulting
-// expression is a |List| of pairs {xᵢ, yᵢ}, which can be given as an argument
-// to |ListPlot|. |x| and |y| should have the same size.
+// expression is a `List` of pairs {xᵢ, yᵢ}, which can be given as an argument
+// to `ListPlot`. `x` and `y` should have the same size.
 // The result contains one pair per line and is delimited by Mathematica
 // comments so as to make the command line output more legible. It is not
 // terminated by a newline.

@@ -78,7 +78,7 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
 
   // Check that the version of the journal matches that of the binary.  Remember
   // that a GetVersion message is logged in Recorder::Activate, so it's always
-  // present.  The |StartsWith| test below allows the "-dirty" suffix, which is
+  // present.  The `StartsWith` test below allows the "-dirty" suffix, which is
   // typically present when debugging.
   if (method_in->HasExtension(serialization::GetVersion::extension)) {
     auto const& get_version_out =

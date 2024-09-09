@@ -89,7 +89,7 @@ ApplyReferenceFrame(
         reference_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
   }
 
-  // Render the trajectory at current time in |Rendering|.
+  // Render the trajectory at current time in `Rendering`.
   Instant const& current_time = intermediate_trajectory.back().time;
   DiscreteTrajectory<Rendering>::iterator initial_it =
       intermediate_trajectory.begin();

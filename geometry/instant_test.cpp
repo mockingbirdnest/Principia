@@ -42,8 +42,8 @@ TEST_F(InstantOutputTest, UniversalTime) {
   EXPECT_THAT(
       (std::stringstream() << JustAfter("2000-01-01T11:58:56,816"_UTC)).str(),
       Eq("2000-01-01T12:00:01,0000000000000002 (TT)"));
-  // TODO(egg): This is horribly misrounded because of the 32.184 in |FromTAI|;
-  // we should be doing that in |DateTime| arithmetic.
+  // TODO(egg): This is horribly misrounded because of the 32.184 in `FromTAI`;
+  // we should be doing that in `DateTime` arithmetic.
   EXPECT_THAT((std::stringstream() << "2000-01-01T11:58:56,817"_UTC).str(),
               Eq("2000-01-01T12:00:01,0009999999999977 (TT)"));
 

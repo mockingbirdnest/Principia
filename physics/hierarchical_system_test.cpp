@@ -47,7 +47,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   elements.argument_of_periapsis = 0 * Radian;
   elements.mean_anomaly = 0 * Radian;
 
-  // Invariant: |body_indices[bodies[i]] == i| for all |i|.
+  // Invariant: `body_indices[bodies[i]] == i` for all `i`.
   std::map<not_null<MassiveBody const*>, int> body_indices;
   std::vector<not_null<MassiveBody const*>> bodies;
 
@@ -58,7 +58,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
     return body;
   };
 
-  // We construct a system as follows, where the |body_indices| are, from left
+  // We construct a system as follows, where the `body_indices` are, from left
   // to right, 0, 2, 3, 1.
   // |<1 m>|     |<1 m>|
   // 2     1     1     2
@@ -103,7 +103,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
   elements.mean_anomaly = 0 * Radian;
 
 
-  // Invariant: |body_indices[bodies[i]] == i| for all |i|.
+  // Invariant: `body_indices[bodies[i]] == i` for all `i`.
   std::map<not_null<MassiveBody const*>, int> body_indices;
   std::vector<not_null<MassiveBody const*>> bodies;
 
@@ -115,7 +115,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
     return body;
   };
 
-  // We construct a system as follows, where the |body_indices| are, from left
+  // We construct a system as follows, where the `body_indices` are, from left
   // to right, 0, 2, 1.  All bodies have unit gravitational parameter.
   // |<1 m>|
   // .     .     .

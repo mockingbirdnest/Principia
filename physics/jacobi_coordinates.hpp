@@ -30,15 +30,15 @@ class JacobiCoordinates final {
  public:
   explicit JacobiCoordinates(MassiveBody const& primary);
 
-  // Adds |body| with the given |DegreesOfFreedom| with respect to the
+  // Adds `body` with the given `DegreesOfFreedom` with respect to the
   // barycentre of the existing bodies.
   void Add(MassiveBody const& body,
            RelativeDegreesOfFreedom<Frame> const& dof_relative_to_system);
 
-  // Adds |body| with the |RelativeDegreesOfFreedom| of a |KeplerOrbit| with the
-  // given |KeplerianElements| around the barycentre of the existing bodies.
-  // |osculating_elements_relative_to_system| must be a valid argument to the
-  // constructor of |KeplerOrbit|.
+  // Adds `body` with the `RelativeDegreesOfFreedom` of a `KeplerOrbit` with the
+  // given `KeplerianElements` around the barycentre of the existing bodies.
+  // `osculating_elements_relative_to_system` must be a valid argument to the
+  // constructor of `KeplerOrbit`.
   void Add(
       MassiveBody const& body,
       KeplerianElements<Frame> const& osculating_elements_relative_to_system);
@@ -53,7 +53,7 @@ class JacobiCoordinates final {
       const;
 
  private:
-  // A reference frame parallel to |Frame|, in which the primary is motionless
+  // A reference frame parallel to `Frame`, in which the primary is motionless
   // at the origin.
   using PrimocentricFrame =
       geometry::_frame::Frame<struct PrimocentricFrameTag>;

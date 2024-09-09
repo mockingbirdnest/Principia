@@ -100,7 +100,7 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
       Hermite3<double, double>(/*arguments=*/{0, 1},
                                /*values=*/{0, 1},
                                /*derivatives=*/{0, 4});
-  // |not_a_quartic| has a root at 1/2, where the error is maximal.
+  // `not_a_quartic` has a root at 1/2, where the error is maximal.
   EXPECT_THAT(not_a_quartic.LInfinityError(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },

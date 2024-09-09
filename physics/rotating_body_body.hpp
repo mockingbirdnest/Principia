@@ -108,7 +108,7 @@ template<typename Frame>
 template<typename CelestialFrame>
 Rotation<Frame, CelestialFrame> RotatingBody<Frame>::ToCelestialFrame()
     const {
-  // In coordinates, the third parameter is |polar_axis|, but we seem
+  // In coordinates, the third parameter is `polar_axis`, but we seem
   // to be a bit confused as to which of these things should be
   // vectors or bivectors here.
   // TODO(egg): Figure that out.

@@ -7,13 +7,13 @@ namespace ksp_plugin_adapter {
 // The Principia config nodes correspond to protocol buffers declared in
 // astronomy.proto.  The scalar (string or double) protobuf fields are string
 // values in a config node, the message fields are config nodes.
-// The |GetUniqueValue|, |GetUniqueNode| extension methods correspond to
+// The `GetUniqueValue`, `GetUniqueNode` extension methods correspond to
 // required fields.
-// The |GetAtMostOneValue|, |GetAtMostNode| extension methods correspond to
+// The `GetAtMostOneValue`, `GetAtMostNode` extension methods correspond to
 // optional fields.  Note that they are also used when a KSP-side default is
 // provided for a required field, e.g. using the stock values as defaults for
 // gravity models.
-// The KSP |GetValues|, |GetNodes| methods should be used directly for repeated
+// The KSP `GetValues`, `GetNodes` methods should be used directly for repeated
 // fields.
 internal static class ConfigNodeExtensions {
   public static ConfigNode GetAtMostOneNode(this ConfigNode node, string name) {

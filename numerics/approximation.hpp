@@ -22,8 +22,8 @@ template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;
 
 // A function that returns true iff the interpolation interval should be split
-// further.  It is only called if the |error_estimate| is larger than the
-// |max_error| given to |AdaptiveЧебышёвPolynomialInterpolant|.
+// further.  It is only called if the `error_estimate` is larger than the
+// `max_error` given to `AdaptiveЧебышёвPolynomialInterpolant`.
 template<typename Value, typename Argument>
 using SubdivisionPredicate = std::function<bool(
     PolynomialInЧебышёвBasis<Value, Argument> const& interpolant,
@@ -37,7 +37,7 @@ using TerminationPredicate = std::function<bool(
 
 // Returns a Чебышёв polynomial interpolant of f over
 // [lower_bound, upper_bound].  Stops if the absolute error is estimated to be
-// below |max_error| or if |max_degree| has been reached.  If |error_estimate|
+// below `max_error` or if `max_degree` has been reached.  If `error_estimate`
 // is nonnull, it receives the estimate of the L∞ error.
 template<int max_degree, typename Argument, typename Function>
 not_null<std::unique_ptr<
@@ -51,7 +51,7 @@ not_null<std::unique_ptr<
 
 // Returns an ordered vector of Чебышёв polynomial interpolants of f, which
 // together cover [lower_bound, upper_bound].  Subdivides the interval until the
-// error is below |max_error| or |subdivide| returns false.
+// error is below `max_error` or `subdivide` returns false.
 template<int max_degree, typename Argument, typename Function>
 std::vector<not_null<std::unique_ptr<
     PolynomialInЧебышёвBasis<Value<Argument, Function>, Argument>>>>
@@ -64,7 +64,7 @@ AdaptiveЧебышёвPolynomialInterpolant(
     Difference<Value<Argument, Function>>* error_estimate = nullptr);
 
 // A streaming version of the above: as each interpolant that is below
-// |max_error| is computed, it is passed to |stop|, which should return false
+// `max_error` is computed, it is passed to `stop`, which should return false
 // if the production of interpolants should continue and true if it should stop.
 template<int max_degree, typename Argument, typename Function>
 void StreamingAdaptiveЧебышёвPolynomialInterpolant(

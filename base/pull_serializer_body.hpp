@@ -84,9 +84,9 @@ inline PullSerializer::PullSerializer(int const chunk_size,
   CHECK_GT(number_of_chunks_ - number_of_compression_chunks_ - 1, 1);
 
   // Mark all the chunks as free except the last one which is a sentinel for the
-  // |queue_|.  The 0th chunk has been passed to the stream, but it's still free
-  // until the first call to |on_full|.  Note that the last
-  // |compressed_chunk_size_ - chunk_size_| bytes of each chunk are not
+  // `queue_`.  The 0th chunk has been passed to the stream, but it's still free
+  // until the first call to `on_full`.  Note that the last
+  // `compressed_chunk_size_ - chunk_size_` bytes of each chunk are not
   // considered as free.
   for (int i = 0; i < number_of_chunks_ - 1; ++i) {
     free_.push(data_.get() + i * compressed_chunk_size_);
@@ -131,7 +131,7 @@ inline Array<std::uint8_t> PullSerializer::Pull() {
     absl::MutexLock l(&lock_);
 
     // The element at the front of the queue is the one that was last returned
-    // by |Pull| and must be dropped and freed.
+    // by `Pull` and must be dropped and freed.
     auto const queue_has_elements = [this]() { return queue_.size() > 1; };
     lock_.Await(absl::Condition(&queue_has_elements));
 
@@ -158,7 +158,7 @@ inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
       free_.push(bytes.data);
     }
     // We maintain the invariant that the chunk being filled is at the front of
-    // the |free_| queue.
+    // the `free_` queue.
     ArraySource<std::uint8_t> source(bytes);
     ArraySink<std::uint8_t> sink(compressed_bytes);
     compressor_->CompressStream(&source, &sink);
@@ -172,8 +172,8 @@ inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
 
     auto const queue_has_room = [this]() {
       // -1 here is because we want to ensure that there is an entry in the
-      // free list, in addition to |result| and to
-      // |number_of_compression_chunks_| (if present).
+      // free list, in addition to `result` and to
+      // `number_of_compression_chunks_` (if present).
       return queue_.size() < static_cast<std::size_t>(number_of_chunks_) -
                                  number_of_compression_chunks_ - 1;
     };

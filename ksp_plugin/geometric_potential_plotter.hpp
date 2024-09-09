@@ -39,17 +39,17 @@ class GeometricPotentialPlotter {
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
   // Cancel any computation in progress, causing the next call to
-  // |RequestEquipotentials| to be processed as fast as possible.
+  // `RequestEquipotentials` to be processed as fast as possible.
   void Interrupt();
 
   // Sets the parameters that will be used for the computation of the next
   // equipotentials.
   void RequestEquipotentials(Parameters const& parameters);
 
-  // The last value passed to |RequestEquipotentials|.
+  // The last value passed to `RequestEquipotentials`.
   std::optional<Parameters> const& last_parameters() const;
 
-  // Sets |equipotentials()| to the latest computed equipotentials.
+  // Sets `equipotentials()` to the latest computed equipotentials.
   void RefreshEquipotentials();
 
   Equipotentials const* equipotentials() const;
@@ -65,14 +65,14 @@ class GeometricPotentialPlotter {
   mutable absl::Mutex lock_;
   jthread plotter_;
 
-  // The |plotter_| is idle:
-  // — if it is not joinable, e.g. because it was stopped by |Interrupt()|, or
-  // — if it is done computing |next_equipotentials_| and has stopped or is
+  // The `plotter_` is idle:
+  // — if it is not joinable, e.g. because it was stopped by `Interrupt()`, or
+  // — if it is done computing `next_equipotentials_` and has stopped or is
   //   about to stop executing.
   // If it is joined once idle (and joinable), it will not attempt to acquire
-  // |lock_|.
+  // `lock_`.
   bool plotter_idle_ GUARDED_BY(lock_) = true;
-  // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
+  // `next_analysis_` is set by the `analyser_` thread; it is read and cleared
   // by the main thread.
   std::optional<Equipotentials> next_equipotentials_ GUARDED_BY(lock_);
 };

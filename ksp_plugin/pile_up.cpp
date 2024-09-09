@@ -453,7 +453,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
     }
     return;
   }
-  // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
+  // A consistency check that `SetPartApparentDegreesOfFreedom` was called for
   // all the parts.
   // TODO(egg): I'd like to log some useful information on check failure, but I
   // need a clean way of getting the debug strings of all parts (rather than
@@ -482,10 +482,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
 
   // In a non-rigid body, the principal axes are not stable, and cannot be used
   // to determine attitude.  We treat this as a flexible body, and use the parts
-  // to propagate the attitude: the part orientations at |t0| and |t| are used
+  // to propagate the attitude: the part orientations at `t0` and `t` are used
   // as input to Davenport's method to figure out how the game rotated the pile-
-  // up overall.  This is then used to determine the attitute at |t| based on
-  // the principal axis at |t|.
+  // up overall.  This is then used to determine the attitute at `t` based on
+  // the principal axis at `t`.
 
   // Compute the canonical axes of all the parts using their apparent and actual
   // motions.
@@ -519,7 +519,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
                        /*weights=*/masses);
 
   // In order to prevent roundoff accumulation from eventually producing
-  // noticeably non-unit quaternions, we normalize |initial_attitude|.
+  // noticeably non-unit quaternions, we normalize `initial_attitude`.
   Rotation<PileUpPrincipalAxes, NonRotatingPileUp> initial_attitude =
       davenport_rotation.Inverse() *
       apparent_system.LinearMotion().orthogonal_map().AsRotation() *
@@ -527,7 +527,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   initial_attitude = Rotation<PileUpPrincipalAxes, NonRotatingPileUp>(
       Normalize(initial_attitude.quaternion()));
 
-  // We take into account the changes to |angular_momentum_| and to the moments
+  // We take into account the changes to `angular_momentum_` and to the moments
   // of inertia for the step from t0 to t before propagating the attitude from
   // t0 to t. This forms a splitting with the game, with the game changing
   // angular momentum and moment of inertia according to various physical
@@ -596,7 +596,7 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     status = ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     psychohistory_ = trajectory_.NewSegment();
     if (history_->back().time < t) {
-      // Do not clear the |fixed_instance_| here, we will use it for the next
+      // Do not clear the `fixed_instance_` here, we will use it for the next
       // fixed-step integration.
       status.Update(ephemeris_->FlowWithAdaptiveStep(
           &trajectory_,
@@ -608,10 +608,10 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
     // time we go through this function.  It will be re-created as needed.
     fixed_instance_ = nullptr;
-    // We make the |psychohistory_|, if any, authoritative, i.e. append it to
-    // the end of the |history_|.  We integrate on top of it.  Note how we skip
+    // We make the `psychohistory_`, if any, authoritative, i.e. append it to
+    // the end of the `history_`.  We integrate on top of it.  Note how we skip
     // the first point of the psychohistory, which is already present in the
-    // |trajectory_|.
+    // `trajectory_`.
     auto const psychohistory_trajectory =
         trajectory_.DetachSegments(psychohistory_);
     CHECK(!psychohistory_trajectory.empty());
@@ -630,7 +630,7 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     psychohistory_ = trajectory_.NewSegment();
   }
 
-  // Append the |history_| to the parts' history and the |psychohistory_| to the
+  // Append the `history_` to the parts' history and the `psychohistory_` to the
   // parts' psychohistory.  Drop the history of the pile-up, we won't need it
   // anymore.
   auto const history_end = history_->end();

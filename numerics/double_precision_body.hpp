@@ -143,7 +143,7 @@ DoublePrecision<T>& DoublePrecision<T>::operator-=(
 template <typename T>
 DoublePrecision<T>& DoublePrecision<T>::Decrement(Difference<T> const& right) {
   // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
-  // This is equivalent to |QuickTwoSum(value, error - right)|.
+  // This is equivalent to `QuickTwoSum(value, error - right)`.
   T const temp = value;
   Difference<T> const y = error - right;
   value = temp + y;
@@ -154,7 +154,7 @@ DoublePrecision<T>& DoublePrecision<T>::Decrement(Difference<T> const& right) {
 template <typename T>
 DoublePrecision<T>& DoublePrecision<T>::Increment(Difference<T> const& right) {
   // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
-  // This is equivalent to |QuickTwoSum(value, error + right)|.
+  // This is equivalent to `QuickTwoSum(value, error + right)`.
   T const temp = value;
   Difference<T> const y = error + right;
   value = temp + y;
@@ -369,7 +369,7 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
   Vector& s = result.value;
   Vector& e = result.error;
   s = a - b;
-  // Corresponds to -v in |TwoSum|.
+  // Corresponds to -v in `TwoSum`.
   Point const w = a - s;
   e = (a - (s + w)) + (w - b);
   return result;
@@ -515,10 +515,10 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
 
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision) {
-  // We use |DebugString| to get all digits when |T| is |double|.  In that case
-  // ADL will not find it, so we need the |using|.  For some values of |T|,
-  // |DebugString| will come from elsewhere, so we cannot directly call
-  // |quantities::Multivector|.
+  // We use `DebugString` to get all digits when `T` is `double`.  In that case
+  // ADL will not find it, so we need the `using`.  For some values of `T`,
+  // `DebugString` will come from elsewhere, so we cannot directly call
+  // `quantities::Multivector`.
   using quantities::_quantities::DebugString;
   return DebugString(double_precision.value) + "|" +
          DebugString(double_precision.error);

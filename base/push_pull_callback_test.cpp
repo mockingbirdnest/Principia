@@ -10,7 +10,7 @@ namespace base {
 using namespace principia::base::_push_pull_callback;
 
 TEST(PushPullCallback, Test) {
-  // A task that does some computation, including running its callback |f| with
+  // A task that does some computation, including running its callback `f` with
   // various arguments.
   auto task = [](std::function<int(int left, int right)> const& f) {
     double const a = f(2, 4);

@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |RigidReferenceFrame| must
+// The files containing the tree of child classes of `RigidReferenceFrame` must
 // be included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
@@ -39,20 +39,20 @@ using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 
 // The origin of the frame is the centre of mass of the body.  The Y axis is at
-// the intersection of the equator and the XY plane of |InertialFrame|, in the
-// direction 90° + α from the X axis of |InertialFrame|, where α is the right
-// ascension of the |polar_axis|.  The Z axis is the |polar_axis|.  The X axis
+// the intersection of the equator and the XY plane of `InertialFrame`, in the
+// direction 90° + α from the X axis of `InertialFrame`, where α is the right
+// ascension of the `polar_axis`.  The Z axis is the `polar_axis`.  The X axis
 // in on the equator so that the frame has the same orientation as
-// |InertialFrame|.
-// For a non-rotating body, the axes are the same as those of |InertialFrame|.
-// With respect to figure 1 of the 2015 report of the IAU WGCCRE if |polar_axis|
-// is the north pole, or figure 2 if |polar_axis| is the positive pole,
+// `InertialFrame`.
+// For a non-rotating body, the axes are the same as those of `InertialFrame`.
+// With respect to figure 1 of the 2015 report of the IAU WGCCRE if `polar_axis`
+// is the north pole, or figure 2 if `polar_axis` is the positive pole,
 // - the Y axis is the node Q from the figure;
 // - the Z axis is the pole Z from the figure.
-// Note that, when |InertialFrame| is the ICRS, these axes make |ThisFrame| the
-// usual celestial reference frame (the GCRS) if |centre| is the Earth, as the X
-// axis will point towards ♈︎; however, if |centre| is another planet,
-// |ThisFrame| will not have the axes of its natural celestial reference frame,
+// Note that, when `InertialFrame` is the ICRS, these axes make `ThisFrame` the
+// usual celestial reference frame (the GCRS) if `centre` is the Earth, as the X
+// axis will point towards ♈︎; however, if `centre` is another planet,
+// `ThisFrame` will not have the axes of its natural celestial reference frame,
 // as the X axis will not point towards its equinox.
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredNonRotatingReferenceFrame

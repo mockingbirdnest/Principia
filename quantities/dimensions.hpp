@@ -26,14 +26,14 @@ using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0>;
 template<typename Dimensions>
 struct DimensionsAreSerializable;
 
-// These structs have a |Type| member that is a |Dimensions| suitable for
-// the result of the operation applied to argument(s) having the |Dimensions|
+// These structs have a `Type` member that is a `Dimensions` suitable for
+// the result of the operation applied to argument(s) having the `Dimensions`
 // given as template parameter(s).
 
 template<typename Dimensions, int n>
 struct DimensionsExponentiationGenerator;
 
-// Only legal if |n| divides the dimensions.
+// Only legal if `n` divides the dimensions.
 template<typename Dimensions, int n>
 struct DimensionsNthRootGenerator;
 

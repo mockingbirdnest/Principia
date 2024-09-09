@@ -27,7 +27,7 @@ static constexpr with_evaluator_t<Evaluator_> with_evaluator;
 template<typename Value, typename Argument, int degree>
   requires additive_group<Argument>
 struct Evaluator {
-  // This definition is replicated from |PolynomialInMonomialBasis| to avoid
+  // This definition is replicated from `PolynomialInMonomialBasis` to avoid
   // circular dependencies.
   using Coefficients = Derivatives<Value, Argument, degree + 1>;
 

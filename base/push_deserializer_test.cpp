@@ -153,7 +153,7 @@ class PushDeserializerTest : public ::testing::Test {
       }
 
       // Destroying the deserializer waits until deserialization is done.  It is
-      // important that this happens before |storage| is destroyed.
+      // important that this happens before `storage` is destroyed.
       pull_serializer_.reset();
       push_deserializer_.reset();
     }
