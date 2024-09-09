@@ -26,7 +26,7 @@ class Iteration {
   std::tuple<Tuple&&...> all_the_tuples_;
 };
 
-// Iterates over all the tuples in parallel.  |F| must be a functor taking
+// Iterates over all the tuples in parallel.  `F` must be a functor taking
 // elements at corresponding positions in each of the tuples.
 // Example:
 //   std::tuple const t{"a", 2.5, 3};

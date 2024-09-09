@@ -16,10 +16,10 @@ namespace internal {
 
 using namespace principia::quantities::_elementary_functions;
 
-// A helper class to compute the dot product of two arrays.  |LScalar| and
-// |RScalar| are the types of the elements of the arrays.  |Left| and |Right|
+// A helper class to compute the dot product of two arrays.  `LScalar` and
+// `RScalar` are the types of the elements of the arrays.  `Left` and `Right`
 // are the (deduced) types of the arrays.  They must both have an operator[].
-// The third argument must be |std::make_index_sequence<size>|.
+// The third argument must be `std::make_index_sequence<size>`.
 template<typename LScalar, typename RScalar, typename>
 struct DotProduct;
 
@@ -40,7 +40,7 @@ DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
   return ((left[i] * right[i]) + ...);
 }
 
-// The |data_| member is aggregate-initialized with an empty list initializer,
+// The `data_` member is aggregate-initialized with an empty list initializer,
 // which performs value initialization on the components.  For quantities this
 // calls the default constructor, for non-class types this does
 // zero-initialization.

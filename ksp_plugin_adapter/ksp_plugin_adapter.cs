@@ -216,14 +216,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   // Work around the launch backflip issue encountered while releasing
   // Frobenius.
-  // The issue is that the position of a  |ForceHolder| collected in
-  // |FashionablyLate| or constructed in |JaiFailliAttendre| is made invalid by
-  // changes to world coordinates in |FloatingOrigin| by the time it is used in
-  // |WaitForFixedUpdate|.
+  // The issue is that the position of a  `ForceHolder` collected in
+  // `FashionablyLate` or constructed in `JaiFailliAttendre` is made invalid by
+  // changes to world coordinates in `FloatingOrigin` by the time it is used in
+  // `WaitForFixedUpdate`.
   // TODO(egg): This should be cleaned up a bit, e.g., by making the plugin and
-  // interface take the |World| lever arm directly, since the lever arm is what
-  // we use in |principia::ksp_plugin::Part|, and it is what we compute below:
-  // this would obviate the need to keep track of the |Part| and to adjust its
+  // interface take the `World` lever arm directly, since the lever arm is what
+  // we use in `principia::ksp_plugin::Part`, and it is what we compute below:
+  // this would obviate the need to keep track of the `Part` and to adjust its
   // position.
   class PartCentredForceHolder {
     public static PartCentredForceHolder FromPartForceHolder(
@@ -415,7 +415,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private delegate void VesselProcessor(Vessel vessel);
 
-  // Applies |process_body| to all bodies but the sun in the tree of celestial
+  // Applies `process_body` to all bodies but the sun in the tree of celestial
   // bodies, in topological order.
   private void ApplyToBodyTree(BodyProcessor process_body) {
     // Tree traversal (DFS, not that it matters).
@@ -433,7 +433,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void ApplyToVesselsOnRails(VesselProcessor process_vessel) {
-    // |process_vessels| may touch |Transform|s, so disable syncing.
+    // `process_vessels` may touch `Transform`s, so disable syncing.
     UnityEngine.Physics.autoSyncTransforms = false;
     foreach (Vessel vessel in FlightGlobals.Vessels.Where(
         is_manageable_on_rails)) {
@@ -697,7 +697,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     reset_rsas_target_ = false;
   }
 
-  // Returns false and nulls |texture| if the file does not exist.
+  // Returns false and nulls `texture` if the file does not exist.
   public static bool LoadTextureIfExists(out UnityEngine.Texture texture,
                                          string path) {
     string full_path =
@@ -763,10 +763,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   #region ScenarioModule lifecycle
 
-  // These functions override virtual ones from |ScenarioModule|, but it seems
+  // These functions override virtual ones from `ScenarioModule`, but it seems
   // that they're actually called by reflection, so that bad things happen
-  // if you don't have, e.g., a function called |OnAwake()| that calls
-  // |base.OnAwake()|.  It doesn't matter whether the functions are public or
+  // if you don't have, e.g., a function called `OnAwake()` that calls
+  // `base.OnAwake()`.  It doesn't matter whether the functions are public or
   // private, overriding or hiding though.
 
   public override void OnAwake() {
@@ -1128,11 +1128,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               break;
             // NOTE(egg): For reasons that are unlikely to become clear again,
             // the button labeled with the radial in icon sets the autopilot
-            // mode to |RadialOut|, and vice-versa.  As a result, we must set
+            // mode to `RadialOut`, and vice-versa.  As a result, we must set
             // the target to the outwards radial (negative normal) vector if the
-            // mode is |RadialIn|.  Contrast with the navball vectors above,
+            // mode is `RadialIn`.  Contrast with the navball vectors above,
             // which do not exhibit this inconsistency (thus where
-            // |radialInVector| is set to |radial|).
+            // `radialInVector` is set to `radial`).
             case VesselAutopilot.AutopilotMode.RadialIn:
               rsas_target_ = -radial;
               break;
@@ -1182,7 +1182,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             vessel.rootPart.rb.angularVelocity);
       }
 
-      // TODO(egg): Set the degrees of freedom of the origin of |World| (by
+      // TODO(egg): Set the degrees of freedom of the origin of `World` (by
       // toying with Krakensbane and FloatingOrigin) here.
 
       // Now we let the game and Unity do their thing.  Among other things,
@@ -1238,7 +1238,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         yield break;
       }
 
-      // We are going to touch plenty of |Transform|s, so we will prevent
+      // We are going to touch plenty of `Transform`s, so we will prevent
       // Unity from syncing with the physics system all the time.
       UnityEngine.Physics.autoSyncTransforms = false;
 
@@ -1252,7 +1252,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       };
 
       // NOTE(egg): Inserting vessels and parts has to occur in
-      // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
+      // `WaitForFixedUpdate`, since some may be destroyed (by collisions) during
       // the physics step.  See also #1281.
       foreach (Vessel vessel in FlightGlobals.Vessels) {
         int main_body_index = vessel.mainBody.flightGlobalsIndex;
@@ -1295,8 +1295,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             // In the first few frames after spawning a Kerbal, its physicsMass is
             // 0; we use its rb.mass instead.
             // NOTE(egg): the physics engine does not move the celestials, so it
-            // is fine to use |main_body_degrees_of_freedom| here rather than to
-            // store it during |FixedUpdate| or one of its timings.
+            // is fine to use `main_body_degrees_of_freedom` here rather than to
+            // store it during `FixedUpdate` or one of its timings.
             plugin_.InsertOrKeepLoadedPart(
                 part_id,
                 part.name,
@@ -1374,7 +1374,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       // The collisions are reported by the
       // CollisionReporter.OnCollisionEnter|Stay events, which occurred while we
       // yielded.
-      // Here, the |CollisionReporter.collisions| are the collisions that occurred
+      // Here, the `CollisionReporter.collisions` are the collisions that occurred
       // in the physics simulation.
       foreach (Vessel vessel1 in FlightGlobals.Vessels.Where(
                    v => !v.packed && is_manageable(v))) {
@@ -1411,8 +1411,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             var collision_reporter =
                 part1.gameObject.GetComponent<CollisionReporter>();
             if (collision_reporter == null) {
-              // This would only happen if |part1| had been added after
-              // |BetterLateThanNever|, but we never know what the game will throw
+              // This would only happen if `part1` had been added after
+              // `BetterLateThanNever`, but we never know what the game will throw
               // at us.
               continue;
             }
@@ -1420,7 +1420,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               var collider = collision.collider;
               if (collider == null) {
                 // This happens, albeit quite rarely, see #1447.  When it happens,
-                // the null collider remains in |currentCollisions| until the next
+                // the null collider remains in `currentCollisions` until the next
                 // scene change, so we do not log, otherwise we would spam.
                 continue;
               }
@@ -1437,7 +1437,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 // point in reporting this collision; this also causes issues
                 // where disappearing kerbals collide with themselves.
                 // NOTE(egg): It is unclear whether this is needed now that we
-                // have the |CollisionReporter|.
+                // have the `CollisionReporter`.
                 continue;
               }
               if (part1.State == PartStates.DEAD ||
@@ -1447,7 +1447,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               if (vessel2 != null) {
                 if (is_unready_kerbal(vessel2)) {
                   // A Kerbal that just started an EVA and is not ready yet.  If
-                  // we let it collide with |vessel1|, it will cause that vessel
+                  // we let it collide with `vessel1`, it will cause that vessel
                   // to become unmanageable and be removed from the plugin.  Of
                   // course, the vessel will come back once the Kerbal is ready,
                   // but at that point we'll have to trust the position given by
@@ -1558,7 +1558,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
             // transform nonsense must probably be done.
             // NOTE(egg): we must set the position and rotation of the
-            // |Transform| as well as that of the |RigidBody| because we are
+            // `Transform` as well as that of the `RigidBody` because we are
             // performing this correction after the physics step.
             // See https://github.com/mockingbirdnest/Principia/pull/1427,
             // https://github.com/mockingbirdnest/Principia/issues/1307#issuecomment-478337241.
@@ -1666,7 +1666,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         continue;
       }
       vessel.precalc.enabled = true;
-      // In stock this is equivalent to |FixedUpdate()|.  With
+      // In stock this is equivalent to `FixedUpdate()`.  With
       // ModularFlightIntegrator's ModularVesselPrecalculate, which gets run
       // in TimingPre like us, this comes with a flag that ensures it only gets
       // run once.
@@ -1777,7 +1777,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void JaiFailliAttendre() {
     // We fetch the forces from stock aerodynamics, which does not use
-    // |Part.AddForce| etc.
+    // `Part.AddForce` etc.
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(
           v => is_manageable(v) && !v.packed)) {
@@ -1823,12 +1823,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   });
           }
 
-          // KSP sets |part.rb.angularDrag| and lets Unity/PhysX compute a
+          // KSP sets `part.rb.angularDrag` and lets Unity/PhysX compute a
           // dampening torque.  However, it doesn't tell us about it so we end
           // up with uncontrolled oscillations.  Therefore, we must create that
           // torque out of thin air here.  Note that in FAR
-          // |part.rb.angularDrag| is 0 and we are properly given the torque
-          // through |Part.AddTorque| so this code has no effect.  See #3697 and
+          // `part.rb.angularDrag` is 0 and we are properly given the torque
+          // through `Part.AddTorque` so this code has no effect.  See #3697 and
           // https://documentation.help/NVIDIA-PhysX-SDK-Guide/RigidDynamics.html#damping.
           var drag_torque = -part.rb.angularDrag * part.rb.angularVelocity;
           if (drag_torque != UnityEngine.Vector3.zero) {
@@ -1884,7 +1884,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private void BetterLateThanNeverLateUpdate() {
     // While we draw the trajectories directly (and thus do so after everything
     // else has been rendered), we rely on the game to render its map nodes.
-    // Since the screen position is determined in |MapNode.NodeUpdate|, it must
+    // Since the screen position is determined in `MapNode.NodeUpdate`, it must
     // be called before rendering occurs, but after the cameras have moved;
     // otherwise, the map nodes will lag behind when the camera is moved.
     // The only timing that satisfies these constraints is BetterLateThanNever
@@ -1905,7 +1905,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
 
       foreach (var body in FlightGlobals.Bodies) {
-        // TODO(egg): I have no idea why this |swizzle| thing makes things work.
+        // TODO(egg): I have no idea why this `swizzle` thing makes things work.
         // This probably really means something in terms of frames that should
         // be done in the C++ instead---once I figure out what it is.
         var swizzly_body_world_to_world =
@@ -2769,10 +2769,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         if (name_to_gravity_model == null) {
           Log.Fatal("Cartesian config without gravity models");
         }
-        // Note that |game_epoch| is not in the astronomy proto, as it is
-        // KSP-specific: it is the |Instant| corresponding to KSP's
+        // Note that `game_epoch` is not in the astronomy proto, as it is
+        // KSP-specific: it is the `Instant` corresponding to KSP's
         // UniversalTime 0.  It is passed as an argument to
-        // |generate_configuration|.
+        // `generate_configuration`.
         plugin_ = Interface.NewPlugin(
             initial_state.GetUniqueValue("game_epoch"),
             initial_state.GetUniqueValue("solar_system_epoch"),
@@ -2816,7 +2816,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         plugin_.EndInitialization();
       } else {
         // We create the plugin at J2000 (a.k.a. Instant{}), rather than
-        // |Planetarium.GetUniversalTime()|, in order to get a deterministic
+        // `Planetarium.GetUniversalTime()`, in order to get a deterministic
         // initial state.
         plugin_ = Interface.NewPlugin(game_epoch: "JD2451545",
                                       solar_system_epoch: "JD2451545",

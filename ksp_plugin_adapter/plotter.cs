@@ -163,7 +163,7 @@ class Plotter {
                             Planetarium.fetch.Sun, tan_angular_resolution);
   }
 
-  // Plots the trajectories of |root| and its natural satellites.
+  // Plots the trajectories of `root` and its natural satellites.
   private void PlotSubtreeTrajectories(DisposablePlanetarium planetarium,
                                        string main_vessel_guid,
                                        double history_length,
@@ -258,7 +258,7 @@ class Plotter {
     if (style == GLLines.Style.Faded) {
       for (int i = 0; i < vertex_count; ++i) {
         var faded_colour = colour;
-        // Fade from the opacity of |colour| (when i = 0) down to 20% of that
+        // Fade from the opacity of `colour` (when i = 0) down to 20% of that
         // opacity.
         faded_colour.a *= 1 - 0.8f * (i / (float)vertex_count);
         colours[i] = faded_colour;

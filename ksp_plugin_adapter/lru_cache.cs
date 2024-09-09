@@ -15,7 +15,7 @@ class LRUCache {
   public string Get(string name, string[] args, Func<string> compute_value) {
     string key = MakeKey(name, args);
     if (cache_.TryGetValue(key, out Entry entry)) {
-      // Note that we must remove the entry from |cache_by_time_| before
+      // Note that we must remove the entry from `cache_by_time_` before
       // updating the timestamp, since the timestamp is the key there.
       cache_by_time_.Remove(entry);
       entry.timestamp =

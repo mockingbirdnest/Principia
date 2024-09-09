@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |Body| must be included in
+// The files containing the tree of child classes of `Body` must be included in
 // the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #include "physics/body.hpp"
@@ -67,7 +67,7 @@ class MassiveBody : public Body {
   // Returns false.
   bool is_oblate() const override;
 
-  // Call the following |WriteToMessage|, which dispatches to the proper
+  // Call the following `WriteToMessage`, which dispatches to the proper
   // subclass.
   void WriteToMessage(not_null<serialization::Body*> message) const override;
 
@@ -76,7 +76,7 @@ class MassiveBody : public Body {
   virtual void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const;
 
-  // |message.has_massive_body()| must be true.
+  // `message.has_massive_body()` must be true.
   static not_null<std::unique_ptr<MassiveBody>> ReadFromMessage(
       serialization::Body const& message);
 

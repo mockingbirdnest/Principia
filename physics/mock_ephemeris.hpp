@@ -131,7 +131,7 @@ ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
 
 ACTION_P3(AppendToDiscreteTrajectory, trajectory, time, degrees_of_freedom) {
   // The extra level of indirection is useful for tests that get a pointer to a
-  // trajectory and squirrel it away using |SaveArg<N>|.
+  // trajectory and squirrel it away using `SaveArg<N>`.
   EXPECT_OK((*trajectory)->Append(time, degrees_of_freedom));
 }
 

@@ -69,10 +69,10 @@ using ApparentPileUp = Frame<struct ApparentPileUpTag,
                              NonRotating,
                              Handedness::Right>;
 
-// The origin of |NonRotatingPileUp| is the centre of mass of the pile up.
-// Its axes are those of |Barycentric|. It is used to describe the rotational
+// The origin of `NonRotatingPileUp` is the centre of mass of the pile up.
+// Its axes are those of `Barycentric`. It is used to describe the rotational
 // motion of the pile up (being a nonrotating frame) without running into
-// numerical issues from having a faraway origin like that of |Barycentric|.
+// numerical issues from having a faraway origin like that of `Barycentric`.
 // This also makes the quantities more conceptually convenient: the angular
 // momentum and inertia tensor with respect to the centre of mass are easier to
 // reason with than the same quantities with respect to the barycentre of the
@@ -82,16 +82,16 @@ using NonRotatingPileUp = Frame<serialization::Frame::PluginTag,
                                 Handedness::Right,
                                 serialization::Frame::NON_ROTATING_PILE_UP>;
 
-// The origin of |PileUpPrincipalAxes| is the centre of mass of the pile up. Its
+// The origin of `PileUpPrincipalAxes` is the centre of mass of the pile up. Its
 // axes are instantaneous principal axes of the pile up.
 using PileUpPrincipalAxes = Frame<serialization::Frame::PluginTag,
                                   Arbitrary,
                                   Handedness::Right,
                                   serialization::Frame::PILE_UP_PRINCIPAL_AXES>;
 
-// A |PileUp| handles a connected component of the graph of |Parts| under
+// A `PileUp` handles a connected component of the graph of `Parts` under
 // physical contact.  It advances the history and psychohistory of its component
-// |Parts|, modeling them as a massless body at their centre of mass.
+// `Parts`, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
   PileUp(
@@ -102,14 +102,14 @@ class PileUp {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
 
-  // Runs the |deletion_callback| passed at construction, if not null.
+  // Runs the `deletion_callback` passed at construction, if not null.
   virtual ~PileUp();
 
   std::list<not_null<Part*>> const& parts() const;
   Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters()
       const;
 
-  // Set the rigid motion for the given |part|.  This rigid motion is *apparent*
+  // Set the rigid motion for the given `part`.  This rigid motion is *apparent*
   // in the sense that it was reported by the game but we know better since we
   // are doing science.
   void SetPartApparentRigidMotion(
@@ -117,7 +117,7 @@ class PileUp {
       RigidMotion<RigidPart, Apparent> const& rigid_motion);
 
   // Deforms the pile-up, advances the time, and nudges the parts, in sequence.
-  // Does nothing if the psychohistory is already advanced beyond |t|.  Several
+  // Does nothing if the psychohistory is already advanced beyond `t`.  Several
   // executions of this method may happen concurrently on multiple threads, but
   // not concurrently with any other method of this class.
   absl::Status DeformAndAdvanceTime(Instant const& t);
@@ -138,7 +138,7 @@ class PileUp {
       std::function<void()> deletion_callback);
 
  private:
-  // A pointer to a member function of |Part| used to append a point to either
+  // A pointer to a member function of `Part` used to append a point to either
   // trajectory (history or psychohistory).
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
@@ -157,34 +157,34 @@ class PileUp {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void()> deletion_callback);
 
-  // Sets |euler_solver_| and updates |rigid_pile_up_|.
+  // Sets `euler_solver_` and updates `rigid_pile_up_`.
   void MakeEulerSolver(InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
                        Instant const& t);
 
-  // Update the degrees of freedom (in |NonRotatingPileUp|) of all the parts by
+  // Update the degrees of freedom (in `NonRotatingPileUp`) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
   // matches that computed by integration.
-  // |SetPartApparentDegreesOfFreedom| must have been called for each part in
+  // `SetPartApparentDegreesOfFreedom` must have been called for each part in
   // the pile-up, or for none.
-  // The degrees of freedom set by this method are used by |NudgeParts|.
+  // The degrees of freedom set by this method are used by `NudgeParts`.
   void DeformPileUpIfNeeded(Instant const& t);
 
-  // Flows the history authoritatively as far as possible up to |t|, advances
+  // Flows the history authoritatively as far as possible up to `t`, advances
   // the histories of the parts and updates the degrees of freedom of the parts
-  // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
-  // and of its parts have a (possibly ahistorical) final point exactly at |t|.
+  // if the pile-up is in the bubble.  After this call, the tail (of `*this`)
+  // and of its parts have a (possibly ahistorical) final point exactly at `t`.
   absl::Status AdvanceTime(Instant const& t);
 
   // Adjusts the degrees of freedom of all parts in this pile up based on the
-  // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
-  // |NonRotatingPileUp| degrees of freedom of the parts, as set by
-  // |DeformPileUpIfNeeded|.
+  // degrees of freedom of the pile-up computed by `AdvanceTime` and on the
+  // `NonRotatingPileUp` degrees of freedom of the parts, as set by
+  // `DeformPileUpIfNeeded`.
   void NudgeParts() const;
 
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::iterator it) const;
 
-  // Wrapped in a |unique_ptr| to be moveable.
+  // Wrapped in a `unique_ptr` to be moveable.
   not_null<std::unique_ptr<absl::Mutex>> lock_;
 
   std::list<not_null<Part*>> parts_;
@@ -206,18 +206,18 @@ class PileUp {
   // history and the psychohistory.
   DiscreteTrajectory<Barycentric> trajectory_;
 
-  // The |history_| is the past trajectory of the pile-up.  It is normally
-  // integrated with a fixed step using |fixed_instance_|, except in the
+  // The `history_` is the past trajectory of the pile-up.  It is normally
+  // integrated with a fixed step using `fixed_instance_`, except in the
   // presence of intrinsic acceleration.  It is authoritative in the sense that
   // it is never going to change.
   DiscreteTrajectorySegmentIterator<Barycentric> history_;
 
-  // The |psychohistory_| is the recent past trajectory of the pile-up.  Since
-  // we need to draw something between the last point of the |history_| and the
+  // The `psychohistory_` is the recent past trajectory of the pile-up.  Since
+  // we need to draw something between the last point of the `history_` and the
   // current time, we must have a bit of trajectory that may not cover an entire
-  // fixed step.  This part is the |psychohistory_|, and it is forked at the end
-  // of the |history_|.  It is not authoritative in the sense that it may not
-  // match the |history_| that we'll ultimately compute.  The name comes from
+  // fixed step.  This part is the `psychohistory_`, and it is forked at the end
+  // of the `history_`.  It is not authoritative in the sense that it may not
+  // match the `history_` that we'll ultimately compute.  The name comes from
   // the fact that we are trying to predict the future, but since we are not as
   // good as Hari Seldon we only do it over a short period of time.
   DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;

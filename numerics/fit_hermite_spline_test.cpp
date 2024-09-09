@@ -73,8 +73,8 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
           1 * Centi(Metre)).value();
 
   // Note that gmock doesn't do decltypes, so we can't pass a λ directly.
-  // Also note that |Pointee| doesn't work with iterators, so
-  // |Pointee(Field(&Sample::t, _))| is not an option.
+  // Also note that `Pointee` doesn't work with iterators, so
+  // `Pointee(Field(&Sample::t, _))` is not an option.
   std::function<Instant(std::vector<Sample>::const_iterator)> const get_time =
       [](auto const it) { return it->t; };
   EXPECT_THAT(interpolation_points,

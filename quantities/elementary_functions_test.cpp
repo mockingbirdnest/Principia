@@ -71,7 +71,7 @@ TEST_F(ElementaryFunctionsTest, DimensionlessExponentiation) {
   EXPECT_EQ(negativePower, Pow<-3>(number));
   positivePower *= number;
   negativePower /= number;
-  // This one calls |std::pow|.
+  // This one calls `std::pow`.
   EXPECT_THAT(positivePower, AlmostEquals(Pow<4>(number), 0, 1));
   EXPECT_THAT(negativePower, AlmostEquals(Pow<-4>(number), 0, 1));
 }

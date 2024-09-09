@@ -121,7 +121,7 @@ void __cdecl principia__PlanetariumDelete(
   return m.Return();
 }
 
-// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// Fills the array of size `vertices_size` at `vertices` with vertices for the
 // rendering of the segment with the given index in the flight plan of the
 // vessel with the given GUID.
 void __cdecl principia__PlanetariumPlotFlightPlanSegment(
@@ -165,7 +165,7 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   return m.Return();
 }
 
-// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// Fills the array of size `vertices_size` at `vertices` with vertices for the
 // rendered prediction of the vessel with the given GUID.
 void __cdecl principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
@@ -197,10 +197,10 @@ void __cdecl principia__PlanetariumPlotPrediction(
   return m.Return();
 }
 
-// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// Fills the array of size `vertices_size` at `vertices` with vertices for the
 // rendered past trajectory of the vessel with the given GUID; the
-// trajectory goes back |max_history_length| seconds before the present time (or
-// to the earliest time available if the relevant |t_min| is more recent).
+// trajectory goes back `max_history_length` seconds before the present time (or
+// to the earliest time available if the relevant `t_min` is more recent).
 void __cdecl principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -235,7 +235,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     Instant const desired_first_time =
         plugin->CurrentTime() - max_history_length * Second;
 
-    // Since we would want to plot starting from |desired_first_time|, ask the
+    // Since we would want to plot starting from `desired_first_time`, ask the
     // reanimator to reconstruct the past.  That may take a while, during which
     // time the history will be shorter than desired.
     vessel->RequestReanimation(desired_first_time);
@@ -255,10 +255,10 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
   }
 }
 
-// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// Fills the array of size `vertices_size` at `vertices` with vertices for the
 // rendered past trajectory of the celestial with the given index; the
-// trajectory goes back |max_history_length| seconds before the present time (or
-// to the earliest time available if the relevant |t_min| is more recent).
+// trajectory goes back `max_history_length` seconds before the present time (or
+// to the earliest time available if the relevant `t_min` is more recent).
 void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
@@ -290,7 +290,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Instant const desired_first_time =
         plugin->CurrentTime() - max_history_length * Second;
 
-    // Since we would want to plot starting from |desired_first_time|, ask the
+    // Since we would want to plot starting from `desired_first_time`, ask the
     // reanimator to reconstruct the past.  That may take a while, during which
     // time the history will be shorter than desired.
     plugin->RequestReanimation(desired_first_time);
@@ -314,7 +314,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
   }
 }
 
-// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// Fills the array of size `vertices_size` at `vertices` with vertices for the
 // rendered future trajectory of the celestial with the given index; the
 // trajectory goes as far as the furthest of the final time of the prediction or
 // that of the flight plan.
@@ -373,7 +373,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
   }
 }
 
-// Fills the array of size |vertices_size| at |vertices| with vertices for the
+// Fills the array of size `vertices_size` at `vertices` with vertices for the
 // rendered prediction of the vessel with the given GUID.
 void __cdecl principia__PlanetariumPlotEquipotential(
     Planetarium const* const planetarium,

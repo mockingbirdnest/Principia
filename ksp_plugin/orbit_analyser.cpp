@@ -122,7 +122,7 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
         FlowWithProgressBar(parameters, analysis_duration, trajectory));
     analysis.mission_duration_ = trajectory.back().time - parameters.first_time;
 
-    // TODO(egg): |next_analysis_percentage_| only reflects the progress of
+    // TODO(egg): `next_analysis_percentage_` only reflects the progress of
     // the integration, but the analysis itself can take a while; this results
     // in the progress bar being stuck at 100% while the elements and nodes
     // are being computed.

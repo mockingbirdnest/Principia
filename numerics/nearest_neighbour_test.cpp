@@ -44,7 +44,7 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
     return nearest;
   }
 
-  // Fills the vectors with |number_of_values| randomly generated values.
+  // Fills the vectors with `number_of_values` randomly generated values.
   void MakeValues(
       int const number_of_values,
       std::vector<V>& values,
@@ -91,7 +91,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneConstructor) {
 }
 
 // Same as the previous test, but the tree is initially empty and points are
-// added using |Add|.
+// added using `Add`.
 TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
   V const v1({-1, -1, 0});
   V const v2({-1, 1, 0});
@@ -152,7 +152,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
 }
 
 // Same as the previous test, but the trees are initially empty and points are
-// added using |Add|.
+// added using `Add`.
 TEST_F(PrincipalComponentPartitioningTreeTest, RandomAdd) {
   static constexpr int points_in_tree = 100;
   static constexpr int points_to_test = 100;

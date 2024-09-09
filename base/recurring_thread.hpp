@@ -19,7 +19,7 @@ using namespace principia::base::_jthread;
 
 // A stoppable thread that supports cyclical execution of an action.  It is
 // connected to two monodirectional channels that can (optionally) hold a value
-// of |Input| (for incoming data) or |Output| (for outgoing data), respectively.
+// of `Input` (for incoming data) or `Output` (for outgoing data), respectively.
 // The action is run to transform the input into the output.  This class and its
 // subclasses are thread-safe.  The base class is used to factor code common to
 // the various template specializations and should not be used directly.
@@ -37,7 +37,7 @@ class BaseRecurringThread {
 
  protected:
   // Constructs a stoppable thread that runs no more frequently than at the
-  // specified |period| (and less frequently if no input was provided).  At
+  // specified `period` (and less frequently if no input was provided).  At
   // construction the thread is in the stopped state.
   explicit BaseRecurringThread(std::chrono::milliseconds period);
 
@@ -61,15 +61,15 @@ class RecurringThread : public BaseRecurringThread {
   // If an action returns an error, no output in written to the output channel.
   using Action = std::function<absl::StatusOr<Output>(Input)>;
 
-  // Constructs a stoppable thread that executes the given |action| no more
-  // frequently than at the specified |period| (and less frequently if no input
+  // Constructs a stoppable thread that executes the given `action` no more
+  // frequently than at the specified `period` (and less frequently if no input
   // was provided).  At construction the thread is in the stopped state.
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
 
-  // Overwrites the contents of the input channel.  The |input| data will be
-  // either picked by the next execution of |action|, or overwritten by the next
-  // call to |Put|.
+  // Overwrites the contents of the input channel.  The `input` data will be
+  // either picked by the next execution of `action`, or overwritten by the next
+  // call to `Put`.
   void Put(Input input);
 
   // Extracts data from the output channel, if there is any.
@@ -91,15 +91,15 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
  public:
   using Action = std::function<absl::Status(Input)>;
 
-  // Constructs a stoppable thread that executes the given |action| no more
-  // frequently than at the specified |period| (and less frequently if no input
+  // Constructs a stoppable thread that executes the given `action` no more
+  // frequently than at the specified `period` (and less frequently if no input
   // was provided).  At construction the thread is in the stopped state.
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
 
-  // Overwrites the contents of the input channel.  The |input| data will be
-  // either picked by the next execution of |action|, or overwritten by the next
-  // call to |Put|.
+  // Overwrites the contents of the input channel.  The `input` data will be
+  // either picked by the next execution of `action`, or overwritten by the next
+  // call to `Put`.
   void Put(Input input);
 
  private:

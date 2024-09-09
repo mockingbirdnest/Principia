@@ -30,7 +30,7 @@ using namespace principia::quantities::_elementary_functions;
 
 template<typename Frame>
 struct Geopotential<Frame>::Precomputations {
-  // Allocate the maximum size to cover all possible degrees.  Making |size| a
+  // Allocate the maximum size to cover all possible degrees.  Making `size` a
   // template parameter of this class would be possible, but it would greatly
   // increase the number of instances of DegreeNOrderM and friends.
   static constexpr int size = OblateBody<Frame>::max_geopotential_degree + 1;
@@ -682,8 +682,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     int n;
     int m;
   };
-  // If |after(left, right)|, |left| is popped after |right| in the
-  // |priority_queue|.
+  // If `after(left, right)`, `left` is popped after `right` in the
+  // `priority_queue`.
   auto const after = [](Threshold const& left, Threshold const& right) -> bool {
     return left.r < right.r ||
            (left.r == right.r &&
@@ -747,10 +747,10 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Exponentiation<Length, -3> const& one_over_r³) const {
   if (r_norm != r_norm) {
     // Short-circuit NaN, to avoid having to deal with an unordered
-    // |r_norm| when finding the partition point below.
+    // `r_norm` when finding the partition point below.
     return NaN<ReducedAcceleration> * Vector<double, Frame>{};
   }
-  // We have |max_degree > 0|.
+  // We have `max_degree > 0`.
   int const max_degree = LimitingDegree(r_norm) - 1;
   switch (max_degree) {
     PRINCIPIA_CASE_SPHERICAL_HARMONICS_ACCELERATION(2);
@@ -829,10 +829,10 @@ Geopotential<Frame>::GeneralSphericalHarmonicsPotential(
     Exponentiation<Length, -3> const& one_over_r³) const {
   if (r_norm != r_norm) {
     // Short-circuit NaN, to avoid having to deal with an unordered
-    // |r_norm| when finding the partition point below.
+    // `r_norm` when finding the partition point below.
     return NaN<ReducedPotential>;
   }
-  // We have |max_degree > 0|.
+  // We have `max_degree > 0`.
   int const max_degree = LimitingDegree(r_norm) - 1;
   switch (max_degree) {
     PRINCIPIA_CASE_SPHERICAL_HARMONICS_POTENTIAL(2);

@@ -97,7 +97,7 @@ FlightPlan::FlightPlan(FlightPlan const& other)
     }
     bool first_point = true;
     for (auto const& [time, degrees_of_freedom] : other_segment) {
-      // For segments other than the first, |NewSegment| copied the last point
+      // For segments other than the first, `NewSegment` copied the last point
       // of the previous segment.
       if (!first_point || first_segment) {
         CHECK_OK(trajectory_.Append(time, degrees_of_freedom));
@@ -207,7 +207,7 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
     return DoesNotFit();
   }
 
-  // Replace the manœuvre at position |index| and rebuild all the ones that
+  // Replace the manœuvre at position `index` and rebuild all the ones that
   // follow as they may have a different initial mass.  Also pop the segments
   // that we'll recompute.
   manœuvres_[index] = manœuvre;
@@ -613,7 +613,7 @@ void FlightPlan::PopLastSegment() {
 
 void FlightPlan::PopSegmentsAffectedByManœuvre(int const index) {
   // We will keep, for each manœuvre in [0, index[, its burn and the coast
-  // preceding it, as well as the coast preceding manœuvre |index|.
+  // preceding it, as well as the coast preceding manœuvre `index`.
   int const segments_kept = 2 * index + 1;
   while (number_of_segments() > segments_kept) {
     PopLastSegment();
@@ -636,7 +636,7 @@ void FlightPlan::MakeProlongator(Instant const& prolongation_time) {
   // A helper lambda to swallow the status of RETURN_IF_STOPPED.
   auto const prolong_with_status = [this](Instant const& prolongation_time) {
     // The loop makes sure that we give the main thread a chance to call
-    // methods of the ephemeris.  The call to |Prolong| below is expected
+    // methods of the ephemeris.  The call to `Prolong` below is expected
     // to take about 40 ms.
     do {
       RETURN_IF_STOPPED;

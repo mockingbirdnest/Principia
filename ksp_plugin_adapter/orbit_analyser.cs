@@ -6,7 +6,7 @@ namespace ksp_plugin_adapter {
 // Miscellaneous formatting utilities; these are extension methods to make null
 // handling easier, thanks to null-coalescing operators.
 internal static class Formatters {
-  // Formats |value| in "N<fractional_digits>" using the Principia culture.
+  // Formats `value` in "N<fractional_digits>" using the Principia culture.
   public static string FormatN(this double value, int fractional_digits) {
     return value.ToString($"N{fractional_digits}", Culture.culture);
   }
@@ -15,7 +15,7 @@ internal static class Formatters {
     return value.ToString($"N{fractional_digits}", Culture.culture);
   }
 
-  // Formats |value| (given in metres) in kilometres or metres.
+  // Formats `value` (given in metres) in kilometres or metres.
   // TODO(egg): think about the threshold for metres.
   public static string FormatAltitude(this double value) {
     return $"{(value / 1000).FormatN(0)} km";
@@ -34,8 +34,8 @@ internal static class Formatters {
 
   // Displays an interval of lengths as midpoint±half-width, in km if the
   // half-width is 100 m or more.  The midpoint is given with respect to
-  // |offset| (for instance, if |interval| is an interval of distances from the
-  // primary and |offset| is the radius of the primary, altitudes are shown).
+  // `offset` (for instance, if `interval` is an interval of distances from the
+  // primary and `offset` is the radius of the primary, altitudes are shown).
   public static string FormatLengthInterval(this Interval interval,
                                             double offset = 0) {
     double half_width = (interval.max - interval.min) / 2;
@@ -80,7 +80,7 @@ internal static class Formatters {
     return $"{degrees}° ({kilometres} km)";
   }
 
-  // Similar to |FormatAngleInterval|, but annotated with the equivalent
+  // Similar to `FormatAngleInterval`, but annotated with the equivalent
   // of the half-width as a distance at the equator in parentheses.
   public static string FormatEquatorialAngleInterval(this Interval interval,
     CelestialBody primary) {
@@ -169,7 +169,7 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
   protected abstract string ButtonText(string orbit_description);
   protected abstract string AnalysingText();
 
-  // Whether |RequestAnalysis()| needs to be called.
+  // Whether `RequestAnalysis()` needs to be called.
   protected abstract bool should_request_analysis { get; }
 
   public void RenderButton() {

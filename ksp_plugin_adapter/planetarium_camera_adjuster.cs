@@ -6,9 +6,9 @@ using System.Text;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-// Immediately after |PlanetariumCamera| (300).  In particular, before the next
-// one, |ScaledSpace| (500), which moves scaled space so that the camera is at
-// the origin.  If the adjustment is not performed before |ScaledSpace| runs,
+// Immediately after `PlanetariumCamera` (300).  In particular, before the next
+// one, `ScaledSpace` (500), which moves scaled space so that the camera is at
+// the origin.  If the adjustment is not performed before `ScaledSpace` runs,
 // EnvironmentalVisualEnhancements will draw clouds on an incorrect hemisphere
 // (not the camera-facing one).
 // Note that KSP provides no timing between 300 and 500, so we have to do this

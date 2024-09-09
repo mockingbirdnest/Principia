@@ -18,12 +18,12 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 
-// The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
+// The GUID of a vessel, obtained by `v.id.ToString()` in C#. We use this as a
 // key in a map.
 using GUID = std::string;
 
-// Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|
-// corresponds to |uint32_t|.
+// Corresponds to KSP's `Part.flightID`, *not* to `Part.uid`.  C#'s `uint`
+// corresponds to `uint32_t`.
 using PartId = std::uint32_t;
 
 // Comparator by PartId.  Useful for ensuring a consistent ordering in sets of

@@ -26,7 +26,7 @@ class Iterator {
   virtual int Size() const = 0;
 };
 
-// A concrete, typed subclass of |Iterator| which holds a |Container|.
+// A concrete, typed subclass of `Iterator` which holds a `Container`.
 template<typename Container>
 class TypedIterator : public Iterator {
  public:
@@ -35,7 +35,7 @@ class TypedIterator : public Iterator {
                 Plugin const* plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
-  // |Interchange| type using |convert|.
+  // `Interchange` type using `convert`.
   template<typename Interchange>
   Interchange Get(
       std::function<Interchange(typename Container::value_type const&)> const&
@@ -54,7 +54,7 @@ class TypedIterator : public Iterator {
   Plugin const* plugin_;
 };
 
-// A specialization for |DiscreteTrajectory<World>|.
+// A specialization for `DiscreteTrajectory<World>`.
 template<>
 class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
  public:
@@ -62,7 +62,7 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
                 not_null<Plugin const*> plugin);
 
   // Obtains the element denoted by this iterator and converts it to some
-  // |Interchange| type using |convert|.
+  // `Interchange` type using `convert`.
   template<typename Interchange>
   Interchange Get(
       std::function<Interchange(

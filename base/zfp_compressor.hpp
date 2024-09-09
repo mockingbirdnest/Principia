@@ -36,8 +36,8 @@ class ZfpCompressor {
 
   // Serialization/deserialization of a vector of double into a message using an
   // D-dimensional encoding.  This encodes blocks of 4^D doubles and therefore
-  // takes advantage of any correlation across these doubles.  The vector |v|
-  // may be modified by padding it with zeroes.  When reading, the |message|
+  // takes advantage of any correlation across these doubles.  The vector `v`
+  // may be modified by padding it with zeroes.  When reading, the `message`
   // parameter is updated to reflect the data that was consumed.
   template<int D>
   void WriteToMessageMultidimensional(std::vector<double>& v,
@@ -48,7 +48,7 @@ class ZfpCompressor {
 
   // Low-level API: serialization/deserialization of a field (allocated and
   // owned by the caller) into a message (which is expected to by a bytes field
-  // of a proto).  When reading, the |message| parameter is updated to reflect
+  // of a proto).  When reading, the `message` parameter is updated to reflect
   // the data that was consumed.
   void WriteToMessage(const zfp_field* field,
                       not_null<std::string*> message) const;

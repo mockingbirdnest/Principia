@@ -10,7 +10,7 @@ namespace base {
 namespace _array {
 namespace internal {
 
-// A simple container for a pointer and size.  |data| is not owned.
+// A simple container for a pointer and size.  `data` is not owned.
 template<typename Element>
 struct Array final {
   // An object of size 0.
@@ -44,7 +44,7 @@ struct Array final {
               decltype(std ::declval<Container const>().size())>::value>>
   constexpr Array(Container const& container);  // NOLINT(runtime/explicit)
 
-  // Construction from a string literal if |Element| is a character type or some
+  // Construction from a string literal if `Element` is a character type or some
   // flavour of byte.
   template<std::size_t size_plus_1,
            typename Character,
@@ -64,12 +64,12 @@ struct Array final {
   std::int64_t size = 0;  // In number of elements.
 };
 
-// A simple container for a pointer and size.  |data| is owned.
+// A simple container for a pointer and size.  `data` is owned.
 template<typename Element>
 struct UniqueArray final {
   // An object of size 0.
   UniqueArray();
-  // Allocates memory for |size| elements.
+  // Allocates memory for `size` elements.
   template<typename Size,
            typename =
                typename std::enable_if<std::is_integral<Size>::value>::type>

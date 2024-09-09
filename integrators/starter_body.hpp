@@ -42,7 +42,7 @@ void Starter<ODE, Step, steps>::Solve(
   auto const startup_append_state =
       [this, &current_state, &equation](typename ODE::State const& state) {
         // Stop changing anything once we're done with the startup.  We may be
-        // called one more time by the |startup_integrator_|.
+        // called one more time by the `startup_integrator_`.
         if (previous_steps_.size() < steps) {
           current_state = state;
           // The startup integrator has a smaller step.  We do not record all
@@ -53,7 +53,7 @@ void Starter<ODE, Step, steps>::Solve(
             previous_steps_.emplace_back();
             FillStepFromState(equation, current_state, previous_steps_.back());
             // This call must happen last for a subtle reason: the callback may
-            // want to |Clone| this instance (see |Ephemeris::Checkpoint|) in
+            // want to `Clone` this instance (see `Ephemeris::Checkpoint`) in
             // which cases it is necessary that all the member variables be
             // filled for restartability to work.
             instance_->append_state()(state);

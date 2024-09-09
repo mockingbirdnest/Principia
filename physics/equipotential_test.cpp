@@ -118,8 +118,8 @@ class EquipotentialTest : public ::testing::Test {
     return {l4, l5};
   }
 
-  // Logs to Mathematica the equipotential line for the given |body| in the
-  // specified |reference_frame|.
+  // Logs to Mathematica the equipotential line for the given `body` in the
+  // specified `reference_frame`.
   void LogEquipotentialLine(
       Logger& logger,
       Plane<World> const& plane,
@@ -147,8 +147,8 @@ class EquipotentialTest : public ::testing::Test {
   }
 
   // Logs to Mathematica a family of equipotential lines determined by a
-  // parameter.  There must exist an overload of |ComputeLine| with a
-  // |LineParameter| as its third argument.
+  // parameter.  There must exist an overload of `ComputeLine` with a
+  // `LineParameter` as its third argument.
   template<typename LineParameter>
   void LogFamilyOfEquipotentialLines(
       Logger& logger,

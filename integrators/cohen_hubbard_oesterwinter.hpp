@@ -14,8 +14,8 @@ using namespace principia::numerics::_fixed_arrays;
 //   f′(x₀) ≅ (f(x₀) - f(x₋₁)) / h + h Σ(ηᵢ f″(x₋ᵢ))
 // where the sum is for i going from 0 to order_ - 1.  The ηᵢ are computed
 // using Mathematica, see cohen_hubbard_oesterwinter.wl.
-// |order_| is the order of the approximation, that is, the error on the
-// derivative is 𝒪(h^(order_ + 1)).  The formula requires |order_| values of the
+// `order_` is the order of the approximation, that is, the error on the
+// derivative is 𝒪(h^(order_ + 1)).  The formula requires `order_` values of the
 // acceleration.  numerators[0] corresponds to f″(x₀), numerators[1] to f″(x₋₁),
 // etc.
 // TODO(phl): This struct shows up in many places.  Factor it out.

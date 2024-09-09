@@ -35,8 +35,8 @@ using namespace principia::testing_utilities::_discrete_trajectory_factories;
 
 namespace {
 
-// Constructs a trajectory by assigning the points in |timeline| to segments
-// defined by |splits|, which must be doubles in [0, 1].
+// Constructs a trajectory by assigning the points in `timeline` to segments
+// defined by `splits`, which must be doubles in [0, 1].
 DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
                                          std::vector<double> const& splits) {
   DiscreteTrajectory<World> trajectory;
@@ -45,7 +45,7 @@ DiscreteTrajectory<World> MakeTrajectory(Timeline<World> const& timeline,
   auto it_split = splits.begin();
   std::optional<Instant> t_split;
   for (auto const& [t, degrees_of_freedom] : timeline) {
-    // The computation of |t_split| is complicated enough that we want to do it
+    // The computation of `t_split` is complicated enough that we want to do it
     // at a single place.
     if (!t_split.has_value()) {
       if (it_split == splits.end()) {

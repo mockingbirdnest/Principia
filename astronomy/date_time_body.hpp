@@ -56,17 +56,17 @@ constexpr int number_of_iso_weeks_in_year(int const year) {
              : 52;
 }
 
-// Returns the ordinal in |year| of the first day of the first week of |year|.
+// Returns the ordinal in `year` of the first day of the first week of `year`.
 // The result is in [-2, 4], with values in [-2, 0] meaning that the first week
-// of |year| starts in |year - 1|.
-// A result in [-2, 1] means that the first day of |year| is in the first week
-// of |year|; otherwise, it is in the last week of |year - 1|.
+// of `year` starts in `year - 1`.
+// A result in [-2, 1] means that the first day of `year` is in the first week
+// of `year`; otherwise, it is in the last week of `year - 1`.
 constexpr int ordinal_of_w_01_1(int const year) {
   return mod(2 - day_of_week_on_january_1st(year), 7, -2);
 }
 
-// Returns the number formed by taking |end - begin| increasingly significant
-// digits, starting from the digit of the (10 ** |begin|)s.
+// Returns the number formed by taking `end - begin` increasingly significant
+// digits, starting from the digit of the (10 ** `begin`)s.
 constexpr std::int64_t digit_range(std::int64_t const digits,
                                    int const begin,
                                    int const end) {
@@ -94,7 +94,7 @@ constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
   return count == 0 ? x : shift_right(x / 10, count - 1);
 }
 
-// Implementation of class |Date|.
+// Implementation of class `Date`.
 
 constexpr Date Date::YYYYMMDD(
     std::int64_t const digits,
@@ -466,12 +466,12 @@ constexpr CStringIterator::CStringIterator(char const* const str,
 
 // Date parsing.
 
-// A |DateParser| contains information about a string necessary to interpret it
+// A `DateParser` contains information about a string necessary to interpret it
 // as a date representation.
 class DateParser final {
  public:
-  // Returns a |Date| corresponding to the representation |str|.
-  // Fails unless |str| is a date representation of one of the following forms:
+  // Returns a `Date` corresponding to the representation `str`.
+  // Fails unless `str` is a date representation of one of the following forms:
   // [YYYY-MM-DD], [YYYYMMDD], [YYYY-Www-D], [YYYYWwwD], [YYYY-DDD], [YYYYDDD],
   // with an optional prefix [J] or [G] and an optional sign.
   static constexpr Date Parse(char const* str, std::size_t size);
@@ -485,7 +485,7 @@ class DateParser final {
                        bool has_w,
                        int w_index);
 
-  // Returns a |DateParser| describing the given string. Fails if the string
+  // Returns a `DateParser` describing the given string. Fails if the string
   // does not exclusively consist of:
   //   - any number of decimal digits;
   //   - at most two hyphens;
@@ -501,7 +501,7 @@ class DateParser final {
                                         bool has_w,
                                         int w_index);
 
-  // Returns a |Date| corresponding to the string that |*this| describes.
+  // Returns a `Date` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid date.
   constexpr Date ToDate(std::optional<Calendar> calendar, bool negative) const;
 
@@ -661,12 +661,12 @@ constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
 
 // TimeOfDay parsing.
 
-// A |TimeParser| contains information about a string necessary to interpret it
+// A `TimeParser` contains information about a string necessary to interpret it
 // as a time representation.
 class TimeParser final {
  public:
-  // Returns a |TimeOfDay| corresponding to the representation |str|.
-  // Fails unless |str| is a valid time representation of one of the following
+  // Returns a `TimeOfDay` corresponding to the representation `str`.
+  // Fails unless `str` is a valid time representation of one of the following
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
   // [hhmmss,ss̲], with at most three digits after the decimal mark.
   static constexpr TimeOfDay Parse(char const* str, std::size_t size);
@@ -680,7 +680,7 @@ class TimeParser final {
                        bool has_decimal_mark,
                        int decimal_mark_index);
 
-  // Returns a |TimeParser| describing the given string. Fails if the string
+  // Returns a `TimeParser` describing the given string. Fails if the string
   // does not exclusively consist of:
   // Fails if the string does not exclusively consist of:
   //   - any number of decimal digits;
@@ -697,7 +697,7 @@ class TimeParser final {
                                         bool has_decimal_mark,
                                         int decimal_mark_index);
 
-  // Returns a |TimeOfDay| corresponding to the string that |*this| describes.
+  // Returns a `TimeOfDay` corresponding to the string that `*this` describes.
   // Fails if the format is invalid or the string represents an invalid time.
   constexpr TimeOfDay ToTime() const;
 
@@ -837,15 +837,15 @@ constexpr TimeOfDay TimeParser::ToTime() const {
 
 // Julian date parsing.
 
-// A |JulianDateParser| contains information about a string necessary to
+// A `JulianDateParser` contains information about a string necessary to
 // interpret it as a Julian date.
 class JulianDateParser final {
  public:
-  // Returns a |JulianDate| corresponding to the representation |str|.
-  // Fails unless |str| is a valid time representation of the form [ddd] or
+  // Returns a `JulianDate` corresponding to the representation `str`.
+  // Fails unless `str` is a valid time representation of the form [ddd] or
   // [ddd.fff].
 
-  // Returns a |JulianDate| object corresponding to the given string interpreted
+  // Returns a `JulianDate` object corresponding to the given string interpreted
   // a Julian Date or a Modified Julian Date, respectively.
   static constexpr JulianDate ParseJD(char const* str, std::size_t size);
   static constexpr JulianDate ParseMJD(char const* str, std::size_t size);
@@ -855,7 +855,7 @@ class JulianDateParser final {
                              int digit_count,
                              int decimal_mark_index);
 
-  // Returns a |JulianDateParser| describing the given string. Fails if the
+  // Returns a `JulianDateParser` describing the given string. Fails if the
   // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
   // to fit in a std::int64_t.
   static constexpr JulianDateParser ReadToEnd(char const* str,
@@ -866,7 +866,7 @@ class JulianDateParser final {
                                               bool has_decimal_mark,
                                               int decimal_mark_index);
 
-  // Returns a |JulianDate| corresponding to the string that |*this| describes.
+  // Returns a `JulianDate` corresponding to the string that `*this` describes.
   // Fails if the format is invalid.
   constexpr JulianDate ToJD() const;
   constexpr JulianDate ToMJD() const;

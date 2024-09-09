@@ -576,9 +576,9 @@ UnboundedStrictlyUpperTriangularMatrix<Scalar_>::Transpose(
     std::int64_t const current_columns,
     std::int64_t const extra_columns) ->
   std::vector<Scalar, uninitialized_allocator<Scalar>> {
-  // |data| is a trapezoidal slice at the end of the matrix.  This is
+  // `data` is a trapezoidal slice at the end of the matrix.  This is
   // inconvenient to index, so we start by constructing a rectangular array with
-  // |extra_columns| columns and |current_columns + extra_columns| rows padded
+  // `extra_columns` columns and `current_columns + extra_columns` rows padded
   // with junk.
   std::vector<Scalar, uninitialized_allocator<Scalar>> padded;
   {
@@ -746,9 +746,9 @@ UnboundedUpperTriangularMatrix<Scalar_>::Transpose(
     std::int64_t const current_columns,
     std::int64_t const extra_columns) ->
   std::vector<Scalar, uninitialized_allocator<Scalar>> {
-  // |data| is a trapezoidal slice at the end of the matrix.  This is
+  // `data` is a trapezoidal slice at the end of the matrix.  This is
   // inconvenient to index, so we start by constructing a rectangular array with
-  // |extra_columns| columns and |current_columns + extra_columns| rows padded
+  // `extra_columns` columns and `current_columns + extra_columns` rows padded
   // with junk.
   std::vector<Scalar, uninitialized_allocator<Scalar>> padded;
   {

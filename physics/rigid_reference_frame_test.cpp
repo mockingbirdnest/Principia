@@ -62,7 +62,7 @@ class ReferenceFrameTest : public testing::Test {
   using Translating = Rotating;  // A better name for linear acceleration.
 
   // Computes a first-order approximation of the acceleration using the
-  // potential returned by |mock_frame_|.  Useful for checking that the
+  // potential returned by `mock_frame_`.  Useful for checking that the
   // potential and the accelaration are consistent.
   Vector<Acceleration, Rotating> FirstOrderAccelerationFromPotential(
       Instant const& t,

@@ -39,10 +39,10 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
 using namespace principia::quantities::_quantities;
 
-// |EulerAngles| and |CardanoAngles| have values in binary-coded ternary
+// `EulerAngles` and `CardanoAngles` have values in binary-coded ternary
 // representing the sequence of rotation axes.
 
-// |AxisConvention| concatenates ternary digits.  Implementation here so it is
+// `AxisConvention` concatenates ternary digits.  Implementation here so it is
 // defined by the time we use it as a constant expression.
 constexpr int AxisConvention(int const first_axis,
                              int const second_axis,
@@ -55,7 +55,7 @@ constexpr int Y = 1;
 constexpr int Z = 2;
 
 enum class EulerAngles {
-  // |ZXZ| is The most common convention, e.g. orbital elements (Ω, i, ω),
+  // `ZXZ` is The most common convention, e.g. orbital elements (Ω, i, ω),
   // rotational elements (90˚ + α₀, 90˚ - δ₀, W).
   ZXZ = AxisConvention(Z, X, Z),
   XYX = AxisConvention(X, Y, X),
@@ -78,7 +78,7 @@ template<typename Frame>
 struct DefinesFrame final {};
 
 // An orientation-preserving orthogonal map between the inner product spaces
-// |FromFrame| and |ToFrame|, as well as the induced maps on the exterior
+// `FromFrame` and `ToFrame`, as well as the induced maps on the exterior
 // algebra.
 template<typename FromFrame, typename ToFrame>
 class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
@@ -92,7 +92,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   friend bool operator==(Rotation const& left, Rotation const& right) = default;
   friend bool operator!=(Rotation const& left, Rotation const& right) = default;
 
-  // A rotation of |angle| around |axis|; no coordinate change is involved, this
+  // A rotation of `angle` around `axis`; no coordinate change is involved, this
   // is an active rotation.
   template<typename Scalar,
            typename F = FromFrame,
@@ -102,10 +102,10 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   // The constructors below define passive rotations (changes of coordinates
   // between orthonormal bases sharing the same orientation, rather than
-  // physical rotations).  As a consequence, they require that |FromFrame| be
-  // distinct from |ToFrame|.
+  // physical rotations).  As a consequence, they require that `FromFrame` be
+  // distinct from `ToFrame`.
 
-  // Construct a rotation from the axes of |ToFrame|, expressed in |FromFrame|.
+  // Construct a rotation from the axes of `ToFrame`, expressed in `FromFrame`.
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
            typename T = ToFrame,
@@ -113,11 +113,11 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   Rotation(Multivector<double, FromFrame, rank_x> x_to_frame,
            Multivector<double, FromFrame, rank_y> y_to_frame,
            Multivector<double, FromFrame, rank_z> z_to_frame);
-  // Construct a rotation from the axes of |FromFrame|, expressed in |ToFrame|.
-  // The |typename = void| template parameter gives it a different signature
-  // from the above when |FromFrame| and |ToFrame| are the same (otherwise this
+  // Construct a rotation from the axes of `FromFrame`, expressed in `ToFrame`.
+  // The `typename = void` template parameter gives it a different signature
+  // from the above when `FromFrame` and `ToFrame` are the same (otherwise this
   // is a problem when instantiating the class, even though they are both
-  // disabled by |enable_if|).
+  // disabled by `enable_if`).
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
            typename T = ToFrame,
@@ -134,7 +134,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // axis.
   // These constructors come in pairs (with either value of DefinesFrame), like
   // the matrix constructors above.  For each pair, one of the constructors has
-  // an additional |typename = void|, see above.
+  // an additional `typename = void`, see above.
 
   template<typename Scalar,
            typename F = FromFrame,
@@ -154,15 +154,15 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
            DefinesFrame<FromFrame> tag);
 
   // Constructors from Euler angles.
-  // Example: if |Orbit| is the frame of an orbit (x towards the periapsis,
+  // Example: if `Orbit` is the frame of an orbit (x towards the periapsis,
   // z the positive normal to the orbit plane), and Ω, i, and ω are the elements
-  // in some |Reference| frame,
+  // in some `Reference` frame,
   //   Rotation<Reference, Orbit>(Ω, i, ω, EulerAngles::ZXZ,
   //                              DefinesFrame<Orbit>{})
   // and
   //   Rotation<Orbit, Reference>(Ω, i, ω, EulerAngles::ZXZ,
   //                              DefinesFrame<Orbit>{})
-  // are the transformations between |Reference| and |Orbit|.
+  // are the transformations between `Reference` and `Orbit`.
 
   template<typename F = FromFrame,
            typename T = ToFrame,
@@ -184,15 +184,15 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
            DefinesFrame<FromFrame> tag);
 
   // Constructors from Cardano angles.
-  // Example: if |Aircraft| is the frame of an aircraft (x forward, y right,
-  // z down), and |Ground| is a local-vertical, local-horizontal frame (x North,
-  // y East, z Down), given the |heading|, |pitch|, and |roll| of the aircraft,
+  // Example: if `Aircraft` is the frame of an aircraft (x forward, y right,
+  // z down), and `Ground` is a local-vertical, local-horizontal frame (x North,
+  // y East, z Down), given the `heading`, `pitch`, and `roll` of the aircraft,
   //   Rotation<Ground, Aircraft>(heading, pitch, roll, CardanoAngles::ZYX,
   //                              DefinesFrame<Aircraft>{})
   // and
   //   Rotation<Aircraft, Ground>(heading, pitch, roll, CardanoAngles::ZYX,
   //                              DefinesFrame<Aircraft>{})
-  // are the transformations between |Aircraft| and |Ground|.
+  // are the transformations between `Aircraft` and `Ground`.
 
   template<typename F = FromFrame,
            typename T = ToFrame,

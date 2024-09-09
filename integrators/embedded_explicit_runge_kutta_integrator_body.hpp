@@ -65,7 +65,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   auto& parameters = this->parameters_;
   auto const& equation = this->equation_;
 
-  // |current_state| gets updated as the integration progresses to allow
+  // `current_state` gets updated as the integration progresses to allow
   // restartability.
 
   // State before the last, truncated step.
@@ -124,8 +124,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
   }
 
   // No step size control on the first step.  If this instance is being
-  // restarted we already have a value of |h| suitable for the next step, based
-  // on the computation of |tolerance_to_error_ratio_| during the last
+  // restarted we already have a value of `h` suitable for the next step, based
+  // on the computation of `tolerance_to_error_ratio_` during the last
   // invocation.
   goto runge_kutta_step;
 
@@ -169,7 +169,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
         }
       }
 
-      // Runge-Kutta iteration; fills |k|.
+      // Runge-Kutta iteration; fills `k`.
       for (int i = 0; i < stages_; ++i) {
         if (i == 0 && first_same_as_last) {
           // TODO(phl): Use pointers to avoid copying big objects.
@@ -180,7 +180,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
                   ? s_final
                   : s.value + (s.error + c[i] * h);
 
-          // TODO(phl): Should dimension |Σⱼ_aᵢⱼ_kⱼ| in the not FSAL case.
+          // TODO(phl): Should dimension `Σⱼ_aᵢⱼ_kⱼ` in the not FSAL case.
           DependentVariableDifferences Σⱼ_aᵢⱼ_kⱼ{};
           for (int j = 0; j < i; ++j) {
             for_all_of(k[j], Σⱼ_aᵢⱼ_kⱼ)
@@ -304,7 +304,7 @@ ReadFromMessage(serialization::
                 Time const& time_step,
                 bool const first_use,
                 EmbeddedExplicitRungeKuttaIntegrator const& integrator) {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(new Instance(problem,
                                                 append_state,
@@ -340,7 +340,7 @@ NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
             Parameters const& parameters) const {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
       new Instance(problem,

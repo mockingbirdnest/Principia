@@ -25,12 +25,12 @@ using namespace principia::physics::_solar_system;
 
 class FakePlugin : public Plugin {
  public:
-  // Creates a test plugin with the bodies of the given |solar_system|.  The
+  // Creates a test plugin with the bodies of the given `solar_system`.  The
   // system must be the Sol system.
   explicit FakePlugin(SolarSystem<ICRS> const& solar_system);
 
   // Adds an unloaded vessel with a single part with the given osculating
-  // elements around the Earth at |CurrentTime()|.
+  // elements around the Earth at `CurrentTime()`.
   Vessel& AddVesselInEarthOrbit(GUID const& vessel_id,
                                 std::string const& vessel_name,
                                 PartId part_id,

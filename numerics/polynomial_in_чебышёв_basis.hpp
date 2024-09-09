@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |Polynomial| must be
+// The files containing the tree of child classes of `Polynomial` must be
 // included in the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_NUMERICS_POLYNOMIAL_HPP_
 #include "numerics/polynomial.hpp"
@@ -79,10 +79,10 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
 
   // Returns true if this polynomial may (but doesn't necessarily) have real
   // roots.  Returns false it is guaranteed not to have real roots.  This is
-  // significantly faster than calling |RealRoots|.  If |error_estimate| is
+  // significantly faster than calling `RealRoots`.  If `error_estimate` is
   // given, false is only returned if the envelope of the series at a distance
-  // of |error_estimate| has no real roots.  This is useful if the series is an
-  // approximation of some function with an L∞ error less than |error_estimate|.
+  // of `error_estimate` has no real roots.  This is useful if the series is an
+  // approximation of some function with an L∞ error less than `error_estimate`.
   bool MayHaveRealRoots(Value error_estimate = Value{}) const
     requires convertible_to_quantity<Value_>;
 

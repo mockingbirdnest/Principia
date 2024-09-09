@@ -18,8 +18,8 @@ namespace internal {
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// Returns the base or derived SI unit of |Q|.
-// For instance, |si::Unit<Action>() == Joule * Second|.
+// Returns the base or derived SI unit of `Q`.
+// For instance, `si::Unit<Action>() == Joule * Second`.
 template<typename Q>
 constexpr Q Unit = _quantities::internal::SIUnit<Q>();
 template<>

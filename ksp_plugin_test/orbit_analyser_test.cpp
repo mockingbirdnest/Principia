@@ -134,7 +134,7 @@ TEST_F(OrbitAnalyserTest, TOPEXPoséidon) {
   while (analyser.progress_of_next_analysis() != 1) {
     absl::SleepFor(absl::Milliseconds(10));
   }
-  // Since |progress_of_next_analysis| only tracks the integration, not the
+  // Since `progress_of_next_analysis` only tracks the integration, not the
   // analysis, we have no guarantee that an analysis is available immediately.
   do {
     absl::SleepFor(absl::Milliseconds(10));

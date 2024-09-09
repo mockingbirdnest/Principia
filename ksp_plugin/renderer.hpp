@@ -69,18 +69,18 @@ class Renderer {
       not_null<std::unique_ptr<PlottingFrame>> plotting_frame);
 
   // Returns the current plotting frame.  This may not be the last set by
-  // |SetPlottingFrame| if it is overridden by a target vessel.
+  // `SetPlottingFrame` if it is overridden by a target vessel.
   virtual not_null<PlottingFrame const*> GetPlottingFrame() const;
 
   // Overrides the current plotting frame with one that is centred on the given
-  // |vessel|.
+  // `vessel`.
   virtual void SetTargetVessel(
       not_null<Vessel*> vessel,
       not_null<Celestial const*> celestial,
       not_null<Ephemeris<Barycentric> const*> ephemeris);
 
-  // Reverts to frame last set by |SetPlottingFrame|.  The second version only
-  // has an effect if the given |vessel| is the current target vessel.
+  // Reverts to frame last set by `SetPlottingFrame`.  The second version only
+  // has an effect if the given `vessel` is the current target vessel.
   virtual void ClearTargetVessel();
   virtual void ClearTargetVesselIf(not_null<Vessel*> vessel);
 
@@ -89,11 +89,11 @@ class Renderer {
   virtual Vessel& GetTargetVessel();
   virtual Vessel const& GetTargetVessel() const;
 
-  // Returns a trajectory in |World| corresponding to the trajectory defined by
-  // |begin| and |end|, as seen in the current plotting frame.  In this function
-  // and others in this class, |sun_world_position| is the current position of
-  // the sun in |World| space as returned by |Planetarium.fetch.Sun.position|;
-  // it is used to define the relation between |WorldSun| and |World|.
+  // Returns a trajectory in `World` corresponding to the trajectory defined by
+  // `begin` and `end`, as seen in the current plotting frame.  In this function
+  // and others in this class, `sun_world_position` is the current position of
+  // the sun in `World` space as returned by `Planetarium.fetch.Sun.position`;
+  // it is used to define the relation between `WorldSun` and `World`.
   virtual DiscreteTrajectory<World>
   RenderBarycentricTrajectoryInWorld(
       Instant const& time,
@@ -103,15 +103,15 @@ class Renderer {
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Returns a trajectory in the current plotting frame corresponding to the
-  // trajectory defined by |begin| and |end|.  If there is a target vessel, its
+  // trajectory defined by `begin` and `end`.  If there is a target vessel, its
   // prediction must not be empty.
   virtual DiscreteTrajectory<Navigation>
   RenderBarycentricTrajectoryInPlotting(
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end) const;
 
-  // Returns a trajectory in |World| corresponding to the trajectory defined by
-  // |begin| and |end| in the current plotting frame.
+  // Returns a trajectory in `World` corresponding to the trajectory defined by
+  // `begin` and `end` in the current plotting frame.
   virtual DiscreteTrajectory<World>
   RenderPlottingTrajectoryInWorld(
       Instant const& time,
@@ -144,20 +144,20 @@ class Renderer {
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Converts from the Frenet frame of the manœuvre's initial time in the
-  // plotted frame to the |World| coordinates.
+  // plotted frame to the `World` coordinates.
   virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
       Instant const& time,
       NavigationManœuvre const& manœuvre,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Converts from the Frenet frame of the vessel's free-falling trajectory in
-  // the plotted frame to the |World| coordinates.
+  // the plotted frame to the `World` coordinates.
   virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
       Vessel const& vessel,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Converts from the Frenet frame of the vessel's free-falling trajectory in
-  // the given |navigation_frame| to the |World| coordinates.
+  // the given `navigation_frame` to the `World` coordinates.
   virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
       Vessel const& vessel,
       NavigationFrame const& navigation_frame,

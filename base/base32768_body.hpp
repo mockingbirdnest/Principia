@@ -15,7 +15,7 @@
 #include "base/bits.hpp"
 #include "glog/logging.h"
 
-// Clang doesn't have a correct |std::array| yet, and we don't actually use this
+// Clang doesn't have a correct `std::array` yet, and we don't actually use this
 // code, so let's get rid of the entire body.
 #if PRINCIPIA_COMPILER_MSVC
 
@@ -245,7 +245,7 @@ void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
     CHECK_LT(code_point, 1 << bits_per_code_point);
     output.data[0] = repertoire->Encode(code_point);
 
-    // The following computation may cause |input.data| to overshoot the end if
+    // The following computation may cause `input.data` to overshoot the end if
     // using the special encoding at the end.  This is safe as soon as the loop
     // condition uses <.
     input_bit_index += bits_per_code_point;
@@ -303,7 +303,7 @@ void Base32768Encoder<null_terminated>::Decode(Array<char16_t const> input,
       repertoire = &seven_bits;
     }
 
-    // Align |data| on the output bit index.
+    // Align `data` on the output bit index.
     data = repertoire->Decode(input.data[0]);
     data <<= shift;
 

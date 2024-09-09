@@ -167,11 +167,11 @@ inline void PushDeserializer::Start(
 
 inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,
                                    std::function<void()> done) {
-  // Slice the incoming data in chunks of size at most |chunk_size|.  Release
+  // Slice the incoming data in chunks of size at most `chunk_size`.  Release
   // the lock after each chunk to give the deserializer a chance to run.  This
-  // method should be called with |bytes| of size 0 to terminate the
+  // method should be called with `bytes` of size 0 to terminate the
   // deserialization, but it never generates a chunk of size 0 in other
-  // circumstances.  The |done| callback is attached to the last chunk.
+  // circumstances.  The `done` callback is attached to the last chunk.
   Array<std::uint8_t> current = bytes;
   CHECK_LE(0, bytes.size);
 
@@ -223,7 +223,7 @@ inline Array<std::uint8_t> PushDeserializer::Pull() {
     auto const queue_has_elements =  [this]() { return !queue_.empty(); };
     lock_.Await(absl::Condition(&queue_has_elements));
 
-    // The front of |done_| is the callback for the |Array<std::uint8_t>| object
+    // The front of `done_` is the callback for the `Array<std::uint8_t>` object
     // that was just processed.  Run it now.
     CHECK(!done_.empty());
     auto const done = done_.front();
@@ -231,8 +231,8 @@ inline Array<std::uint8_t> PushDeserializer::Pull() {
       done();
     }
     done_.pop();
-    // Get the next |Array<std::uint8_t>| object to process and remove it from
-    // |queue_|.  Uncompress it if needed.
+    // Get the next `Array<std::uint8_t>` object to process and remove it from
+    // `queue_`.  Uncompress it if needed.
     auto const& front = queue_.front();
     if (front.size == 0 || compressor_ == nullptr) {
       result = front;

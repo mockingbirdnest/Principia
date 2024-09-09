@@ -45,16 +45,16 @@ void HexadecimalEncoder<null_terminated>::Encode(
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
   // We iterate backward.
-  // |input <= &output[1]| is still valid because we write two bytes of output
+  // `input <= &output[1]` is still valid because we write two bytes of output
   // from reading one byte of input, so output[1] and output[0] are written
-  // after reading input[0].  Greater values of |output| would
+  // after reading input[0].  Greater values of `output` would
   // overwrite input data before it is read, unless there is no overlap, i.e.,
-  // |&output[input_size << 1] <= input|.
+  // `&output[input_size << 1] <= input`.
   CHECK(input.data <= static_cast<void*>(&output.data[1]) ||
         static_cast<void*>(&output.data[input.size << 1]) <= input.data)
       << "bad overlap";
   CHECK_GE(output.size, EncodedLength(input)) << "output too small";
-  // We want the result to start at |output.data[0]|.
+  // We want the result to start at `output.data[0]`.
   output.data += ((input.size - 1) << 1);
   if constexpr (null_terminated) {
     output.data[2] = 0;
@@ -93,11 +93,11 @@ void HexadecimalEncoder<null_terminated>::Decode(Array<char const> input,
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
   input.size &= ~1;
-  // |output <= &input[1]| is still valid because we write one byte of output
+  // `output <= &input[1]` is still valid because we write one byte of output
   // from reading two bytes of input, so output[0] is written after reading
-  // input[0] and input[1].  Greater values of |output| would overwrite input
+  // input[0] and input[1].  Greater values of `output` would overwrite input
   // data before it is read, unless there is no overlap, i.e.,
-  // |&input[input_size] <= output|.
+  // `&input[input_size] <= output`.
   CHECK(static_cast<void*>(output.data) <= &input.data[1] ||
         &input.data[input.size] <= static_cast<void*>(output.data))
       << "bad overlap";

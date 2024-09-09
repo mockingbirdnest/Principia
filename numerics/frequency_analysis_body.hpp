@@ -38,7 +38,7 @@ using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_elementary_functions;
 
-// Appends basis elements for |ω| to |basis| and |basis_subspaces|.  Returns the
+// Appends basis elements for `ω` to `basis` and `basis_subspaces`.  Returns the
 // number of elements that were appended.
 template<int aperiodic_degree, int periodic_degree,
          typename BasisSeries>
@@ -69,11 +69,11 @@ int MakeBasis(std::optional<AngularFrequency> const& ω,
   }
 }
 
-// Given a column |aₘ| of a matrix (or quasimatrix in our case, see [Tre10])
-// this function produces the columns |qₘ|, |rₘ| of its QR decomposition.  The
-// inner product is defined by |weight|, |t_min| and |t_max|.  |q| is the Q
-// quasimatrix constructed so far, and |subspaces| specify the subspaces spanned
-// by the |q|s and by |aₘ|.
+// Given a column `aₘ` of a matrix (or quasimatrix in our case, see [Tre10])
+// this function produces the columns `qₘ`, `rₘ` of its QR decomposition.  The
+// inner product is defined by `weight`, `t_min` and `t_max`.  `q` is the Q
+// quasimatrix constructed so far, and `subspaces` specify the subspaces spanned
+// by the `q`s and by `aₘ`.
 template<typename BasisSeries,
          int aperiodic_wdegree, int periodic_wdegree>
 absl::Status NormalGramSchmidtStep(
@@ -149,12 +149,12 @@ absl::Status NormalGramSchmidtStep(
 }
 
 // This function performs the augmented QR decomposition step described in
-// [Hig02] section 20.3.  Note that as an optimization in updates |b|, because
-// the computation of |z| for larger and larger R would perform the exact same
-// inner products for the range [0, m_begin[.  The range of |q| to process (and
-// the range of |z| to update is at indices [m_begin, m_end[.  This function
-// doesn't return |qₘ₊₁| because it's not needed for the solution.  It also
-// doesn't return |ρ|.
+// [Hig02] section 20.3.  Note that as an optimization in updates `b`, because
+// the computation of `z` for larger and larger R would perform the exact same
+// inner products for the range [0, m_begin[.  The range of `q` to process (and
+// the range of `z` to update is at indices [m_begin, m_end[.  This function
+// doesn't return `qₘ₊₁` because it's not needed for the solution.  It also
+// doesn't return `ρ`.
 template<typename Function, typename BasisSeries, typename Norm,
          int aperiodic_wdegree, int periodic_wdegree>
 absl::Status AugmentedGramSchmidtStep(
@@ -180,7 +180,7 @@ absl::Status AugmentedGramSchmidtStep(
     b -= z[k] * q[k];
   }
 
-  // We do not compute the norm of |b| here (named |ρ| in [Hig02] section 20.3)
+  // We do not compute the norm of `b` here (named `ρ` in [Hig02] section 20.3)
   // because it's an additional cost: the client can compute the norm of the
   // residual however they want anyway.
 

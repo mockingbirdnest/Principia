@@ -9,7 +9,7 @@ namespace internal {
 
 using namespace principia::quantities::_quantities;
 
-// The result type of +, -, * and / on arguments of types |Left| and |Right|.
+// The result type of +, -, * and / on arguments of types `Left` and `Right`.
 template<typename Left, typename Right>
 using Sum = decltype(std::declval<Left>() + std::declval<Right>());
 template<typename Left, typename Right = Left>
@@ -37,21 +37,21 @@ using SquareRoot = NthRoot<Q, 2>;
 template<typename Q>
 using CubeRoot = NthRoot<Q, 3>;
 
-// The result type of the N-th derivative of a |Value|-valued function with
-// respect to its |Argument|-valued argument.
+// The result type of the N-th derivative of a `Value`-valued function with
+// respect to its `Argument`-valued argument.
 template<typename Value, typename Argument, int order = 1>
 using Derivative = typename std::conditional_t<
     order == 0,
     Value,
     Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
 
-// The result type of the primitive of a |Value|-valued function with respect to
-// its |Argument|-valued argument.  The primitive of an affine-valued function
+// The result type of the primitive of a `Value`-valued function with respect to
+// its `Argument`-valued argument.  The primitive of an affine-valued function
 // does not make much sense, but it must compile, hence the Difference.
 template<typename Value, typename Argument>
 using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
-// |Variation<T>| is the type of the time derivative of a |T|-valued function.
+// `Variation<T>` is the type of the time derivative of a `T`-valued function.
 template<typename T, int order = 1>
 using Variation = Derivative<T, Time, order>;
 

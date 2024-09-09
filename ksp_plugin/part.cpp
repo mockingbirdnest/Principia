@@ -317,8 +317,8 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.prehistory(),
         /*tracked=*/{});
-    // The |history_| has been created by the constructor above.  Construct the
-    // various trajectories from the |tail|.
+    // The `history_` has been created by the constructor above.  Construct the
+    // various trajectories from the `tail`.
     for (auto it = tail.begin(); it != tail.end();) {
       auto const& [time, degrees_of_freedom] = *it;
       ++it;

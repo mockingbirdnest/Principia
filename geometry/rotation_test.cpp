@@ -333,8 +333,8 @@ TEST_F(RotationTest, Enums) {
                                           EulerAngles::ZXZ,
                                           DefinesFrame<World1>{});
 
-  // Checks that using the convention |axes| for Euler angles, conjugated by the
-  // given |permutation|, and with appropriate sign changes, is equivalent to
+  // Checks that using the convention `axes` for Euler angles, conjugated by the
+  // given `permutation`, and with appropriate sign changes, is equivalent to
   // the ZXZ convention.
   auto const check_euler_angles = [this, &α, &β, &γ, &zxz_euler](
       EulerAngles axes, auto permutation) {
@@ -373,8 +373,8 @@ TEST_F(RotationTest, Enums) {
                                             CardanoAngles::XYZ,
                                             DefinesFrame<World1>{});
 
-  // Checks that using the convention |axes| for Cardano angles, conjugated by
-  // the given |permutation|, and with appropriate sign changes, is equivalent
+  // Checks that using the convention `axes` for Cardano angles, conjugated by
+  // the given `permutation`, and with appropriate sign changes, is equivalent
   // to the XYZ convention.
   auto const check_cardano_angles = [this, &α, &β, &γ, &xyz_cardano](
                                         CardanoAngles axes, auto permutation) {
@@ -418,14 +418,14 @@ TEST_F(RotationTest, EulerAngles) {
 
   // The frame in which the above elements are given.
   using Reference = Frame<struct ReferenceTag>;
-  // |Nodes| shares its z axis with |Reference|, and has the ascending node of
+  // `Nodes` shares its z axis with `Reference`, and has the ascending node of
   // the orbit as its positive x direction.
   using Nodes = Frame<struct NodesTag>;
-  // |Plane| also has the ascending node of the orbit as its positive x
+  // `Plane` also has the ascending node of the orbit as its positive x
   // direction, and has the orbital plane as its xy plane (with z being the
   // positive orbit normal).
   using Plane = Frame<struct PlaneTag>;
-  // |Orbit| has its x axis towards the periapsis, and its z axis towards the
+  // `Orbit` has its x axis towards the periapsis, and its z axis towards the
   // positive orbit normal.
   using Orbit = Frame<struct OrbitTag>;
 

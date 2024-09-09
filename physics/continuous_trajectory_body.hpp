@@ -136,7 +136,7 @@ void ContinuousTrajectory<Frame>::Prepend(ContinuousTrajectory&& prefix) {
   if (prefix.polynomials_.empty()) {
     // Nothing to do.
   } else if (polynomials_.empty()) {
-    // All the data comes from |prefix|.  This must set all the fields of
+    // All the data comes from `prefix`.  This must set all the fields of
     // this object that are not set at construction.
     adjusted_tolerance_ = prefix.adjusted_tolerance_;
     is_unstable_ = prefix.is_unstable_;
@@ -159,7 +159,7 @@ void ContinuousTrajectory<Frame>::Prepend(ContinuousTrajectory&& prefix) {
               std::back_inserter(prefix.polynomials_));
     polynomials_.swap(prefix.polynomials_);
     first_time_ = prefix.first_time_;
-    // Note that any |last_points_| in |prefix| are irrelevant because they
+    // Note that any `last_points_` in `prefix` are irrelevant because they
     // correspond to a time interval covered by the first polynomial of this
     // object.
   }
@@ -430,7 +430,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             mutable_coefficient(0)->mutable_point();
         *coefficient0_point->mutable_multivector() = coefficient0_multivector;
 
-        // Note the use of |EstrinWithoutFMA| below.  FMA was introduced in
+        // Note the use of `EstrinWithoutFMA` below.  FMA was introduced in
         // Grossmann, but unfortunately we didn't notice that it was affecting
         // existing flight plans, and we have no way to tell that a save is
         // exactly pre-Grossmann.  On the other hand, we are sure that pre-
@@ -450,7 +450,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
                     serialization::PolynomialInMonomialBasis::extension)
                 .has_evaluator()) {
           // The post-Καραθεοδωρή path, do not specify an evaluator when calling
-          // |ReadFromMessage|.
+          // `ReadFromMessage`.
           continuous_trajectory->polynomials_.emplace_back(
               Instant::ReadFromMessage(pair.t_max()),
               Polynomial<Position<Frame>, Instant>::ReadFromMessage(
@@ -515,7 +515,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   // There should always be a checkpoint, either at the end of the trajectory,
   // in the pre-Grassmann compatibility case; or at the first point of the
   // trajectory, for modern saves (see the comment in WriteToMessage).  In the
-  // pre-Grassman case the (only) checkpoint may be after |desired_t_min|, but
+  // pre-Grassman case the (only) checkpoint may be after `desired_t_min`, but
   // then we should have polynomials covering that time, see #3039.
   auto const status =
       continuous_trajectory->checkpointer_->ReadFromCheckpointAtOrBefore(
@@ -735,8 +735,8 @@ absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
                                 last_points_.cbegin()->first, time,
                                 displacement_error_estimate));
 
-  // Estimate the error.  For initializing |previous_error_estimate|, any value
-  // greater than |error_estimate| will do.
+  // Estimate the error.  For initializing `previous_error_estimate`, any value
+  // greater than `error_estimate` will do.
   Length error_estimate = displacement_error_estimate.Norm();
   Length previous_error_estimate = error_estimate + error_estimate;
 
@@ -814,7 +814,7 @@ template<typename Frame>
 typename ContinuousTrajectory<Frame>::InstantPolynomialPairs::const_iterator
 ContinuousTrajectory<Frame>::FindPolynomialForInstantLocked(
     Instant const& time) const {
-  // This returns the first polynomial |p| such that |time <= p.t_max|.
+  // This returns the first polynomial `p` such that `time <= p.t_max`.
   {
     auto const begin = polynomials_.begin();
     auto const it = begin + last_accessed_polynomial_;

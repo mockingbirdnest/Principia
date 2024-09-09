@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |RigidReferenceFrame| must
+// The files containing the tree of child classes of `RigidReferenceFrame` must
 // be included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
@@ -46,7 +46,7 @@ using namespace principia::quantities::_named_quantities;
 // axis points to the secondary.  The Y axis is in the direction of the velocity
 // of the secondary with respect to the primary.  The Z axis is in the direction
 // of the angular velocity of the system.  The basis has the same orientation as
-// |InertialFrame|.
+// `InertialFrame`.
 template<typename InertialFrame, typename ThisFrame>
 class BodyCentredBodyDirectionReferenceFrame
     : public RigidReferenceFrame<InertialFrame, ThisFrame> {

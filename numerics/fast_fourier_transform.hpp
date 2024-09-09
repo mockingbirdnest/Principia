@@ -36,8 +36,8 @@ using namespace principia::quantities::_quantities;
 template<typename Value, typename Argument, std::size_t size_>
 class FastFourierTransform {
  public:
-  // This is only an actual angular frequency if |Argument| is time-like.
-  // If |Argument| is an angular frequency, this is a time.
+  // This is only an actual angular frequency if `Argument` is time-like.
+  // If `Argument` is an angular frequency, this is a time.
   using AngularFrequency = Derivative<Angle, Argument>;
 
   // The size must be a power of 2.
@@ -45,7 +45,7 @@ class FastFourierTransform {
   static constexpr int log2_size = FloorLog2(size);
   static_assert(size == 1 << log2_size);
 
-  // In the constructors, the container must have |size| elements.  For the
+  // In the constructors, the container must have `size` elements.  For the
   // purpose of expressing the frequencies, the values are assumed to be
   // sampled at intervals of Δt.
 

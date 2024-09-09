@@ -24,9 +24,9 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
-// An |R3x3Matrix| is an element of the associative algebra of 3-by-3 matrices
-// over |Scalar|.  |Scalar| should be a vector space over ℝ, represented by
-// |double|.
+// An `R3x3Matrix` is an element of the associative algebra of 3-by-3 matrices
+// over `Scalar`.  `Scalar` should be a vector space over ℝ, represented by
+// `double`.
 template<typename Scalar>
 class R3x3Matrix final {
  public:

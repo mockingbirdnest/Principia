@@ -35,14 +35,14 @@ using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// This class represents a constant-thrust burn.  |InertialFrame| is an
-// underlying inertial reference frame, |Frame| is the reference frame used to
+// This class represents a constant-thrust burn.  `InertialFrame` is an
+// underlying inertial reference frame, `Frame` is the reference frame used to
 // compute the Frenet frame.
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
   // Characterization of intensity.  All members for exactly one of the groups
-  // must be supplied.  The |direction| and |Δv| are given in the Frenet frame
+  // must be supplied.  The `direction` and `Δv` are given in the Frenet frame
   // of the trajectory at the beginning of the burn.
   struct Intensity final {
     // Group 1.
@@ -130,15 +130,15 @@ class Manœuvre {
   void clear_coasting_trajectory();
 
   // Sets the trajectory segment at the end of which the manœuvre takes place.
-  // Must be called before any of the functions below.  |trajectory| must have a
-  // point at |initial_time()|.
+  // Must be called before any of the functions below.  `trajectory` must have a
+  // point at `initial_time()`.
   void set_coasting_trajectory(
       DiscreteTrajectorySegmentIterator<InertialFrame> trajectory);
 
   // This manœuvre must be inertially fixed.
   virtual Vector<double, InertialFrame> InertialDirection() const;
 
-  // The result is valid until |*this| is destroyed.  This manœuvre must be
+  // The result is valid until `*this` is destroyed.  This manœuvre must be
   // inertially fixed.
   typename Ephemeris<InertialFrame>::IntrinsicAcceleration
   InertialIntrinsicAcceleration() const;
@@ -150,22 +150,22 @@ class Manœuvre {
   // Frenet frame at the beginning of the manœuvre.
   virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
 
-  // Note that |coasting_trajectory| is neither written nor read.
+  // Note that `coasting_trajectory` is neither written nor read.
   void WriteToMessage(not_null<serialization::Manoeuvre*> message) const;
   static Manœuvre ReadFromMessage(
       serialization::Manoeuvre const& message,
       not_null<Ephemeris<InertialFrame>*> ephemeris);
 
  private:
-  // Computes the Frenet frame at instant |t|, assuming that the motion has the
-  // given |position| and |velocity|.
+  // Computes the Frenet frame at instant `t`, assuming that the motion has the
+  // given `position` and `velocity`.
   OrthogonalMap<Frenet<Frame>, InertialFrame>
   ComputeFrenetFrame(
       Instant const& t,
       DegreesOfFreedom<InertialFrame> const& degrees_of_freedom) const;
 
-  // Computes the acceleration at instant |t|, assuming that it happens in the
-  // given |direction|.
+  // Computes the acceleration at instant `t`, assuming that it happens in the
+  // given `direction`.
   Vector<Acceleration, InertialFrame>
   ComputeIntrinsicAcceleration(
       Instant const& t,

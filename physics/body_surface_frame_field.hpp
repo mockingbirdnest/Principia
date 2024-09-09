@@ -23,9 +23,9 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_rotating_body;
 
-// The z-axis goes from the point |q| to the centre of |body| at |t|  The
+// The z-axis goes from the point `q` to the centre of `body` at `t`  The
 // x-axis is orthogonal to the z-axis and in the plane defined by the z-axis and
-// the polar axis of |body|; its angle with the polar axis is less than π/2 in
+// the polar axis of `body`; its angle with the polar axis is less than π/2 in
 // absolute value.  The y-axis is chosen to form a direct basis.  In other
 // words, the frame field is (north, east, nadir).
 template<typename Frame, typename ThisFrame>

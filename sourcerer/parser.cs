@@ -220,7 +220,7 @@ public class Parser {
   }
 
   public class Include : Node {
-    // The |file_info| is the file where this include appears, not the one that
+    // The `file_info` is the file where this include appears, not the one that
     // is included.
     public Include(Node? parent,
                    string[] path,

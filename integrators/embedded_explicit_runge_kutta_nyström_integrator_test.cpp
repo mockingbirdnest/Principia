@@ -236,7 +236,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
   EXPECT_THAT(solution.back().time.value, Lt(t_final));
   EXPECT_EQ(100, solution.size());
 
-  // Check that a |max_steps| greater than or equal to the unconstrained number
+  // Check that a `max_steps` greater than or equal to the unconstrained number
   // of steps has no effect.
   for (std::int64_t const max_steps :
        {steps_forward, steps_forward + 1234}) {
@@ -393,7 +393,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
         AlmostEquals(0.506'410'259'195'249'068 * Second, 0));
   }
 
-  // Do it again in one call to |Solve| and check associativity.
+  // Do it again in one call to `Solve` and check associativity.
   std::vector<ODE::State> solution2;
   {
     ODE harmonic_oscillator;

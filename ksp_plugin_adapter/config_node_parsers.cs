@@ -79,8 +79,8 @@ internal static class ConfigNodeParsers {
         // than the y axis as is the case for Earth, so the right
         // ascension is -90 deg.
         // Note that once we set the positions and orientations of everything,
-        // that original x axis will become the y axis when |body| is the main
-        // body, and the |initialRotation| will be correspondingly increased by
+        // that original x axis will become the y axis when `body` is the main
+        // body, and the `initialRotation` will be correspondingly increased by
         // 90°.
         reference_instant       =
             node?.GetAtMostOneValue("reference_instant") ?? "JD2451545.0",

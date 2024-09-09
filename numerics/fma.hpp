@@ -29,11 +29,11 @@ inline bool const UseHardwareFMA = false;
 // The policy used for emitting FMA instructions.  This type is not used by this
 // file, but is declared here for the convenience of the clients.  The intended
 // semantics are:
-// * |Auto|: FMA is used if supported by the processor, the decision must be
-//   made dynamically by calling |UseHardwareFMA|.
-// * |Disallow|: FMA is never used.
-// * |Force|: FMA is always used.  The caller is expected to determine upstream
-//   if FMA is supported by the processor by calling |UseHardwareFMA|.
+// * `Auto`: FMA is used if supported by the processor, the decision must be
+//   made dynamically by calling `UseHardwareFMA`.
+// * `Disallow`: FMA is never used.
+// * `Force`: FMA is always used.  The caller is expected to determine upstream
+//   if FMA is supported by the processor by calling `UseHardwareFMA`.
 enum class FMAPolicy {
   Auto = 0,
   Disallow = 1,
@@ -41,7 +41,7 @@ enum class FMAPolicy {
 };
 
 // The functions in this file unconditionally wrap the appropriate intrinsics.
-// The caller may only use them if |UseHardwareFMA| is true.
+// The caller may only use them if `UseHardwareFMA` is true.
 
 // ⟦ab + c⟧.
 inline double FusedMultiplyAdd(double a, double b, double c);

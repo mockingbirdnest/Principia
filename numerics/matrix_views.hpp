@@ -16,7 +16,7 @@ using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_named_quantities;
 
-// A view of a rectangular block of a matrix.  This view is |two_dimensional|.
+// A view of a rectangular block of a matrix.  This view is `two_dimensional`.
 template<typename Matrix>
   requires two_dimensional<Matrix>
 struct BlockView {
@@ -50,7 +50,7 @@ struct BlockView {
   constexpr std::int64_t columns() const;
 };
 
-// A view of a column of a matrix.  This view is |one_dimensional|.
+// A view of a column of a matrix.  This view is `one_dimensional`.
 template<typename Matrix>
   requires two_dimensional<Matrix>
 struct ColumnView {
@@ -84,7 +84,7 @@ struct ColumnView {
   constexpr std::int64_t size() const;
 };
 
-// TODO(phl): This should probably be just |swap|.  The semantics of BlockView
+// TODO(phl): This should probably be just `swap`.  The semantics of BlockView
 // and ColumnView do imply an implicit dereferencing, so swapping should work
 // the same.
 template<typename Matrix>

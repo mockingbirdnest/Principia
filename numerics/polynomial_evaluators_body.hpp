@@ -17,10 +17,10 @@ using namespace principia::base::_bits;
 using namespace principia::quantities::_elementary_functions;
 
 
-// Internal helper for Estrin evaluation.  |degree| is the degree of the overall
-// polynomial, |low| and |subdegree| defines the subpolynomial that we currently
+// Internal helper for Estrin evaluation.  `degree` is the degree of the overall
+// polynomial, `low` and `subdegree` defines the subpolynomial that we currently
 // evaluate, i.e., the one with a constant term coefficient
-// |std::get<low>(coefficients)| and degree |subdegree|.
+// `std::get<low>(coefficients)` and degree `subdegree`.
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 struct InternalEstrinEvaluator {
@@ -170,9 +170,9 @@ EvaluateDerivative(Coefficients const& coefficients,
   return low * std::get<low>(coefficients);
 }
 
-// Internal helper for Horner evaluation.  |degree| is the degree of the overall
-// polynomial, |low| defines the subpolynomial that we currently evaluate, i.e.,
-// the one with a constant term coefficient |std::get<low>(coefficients)|.
+// Internal helper for Horner evaluation.  `degree` is the degree of the overall
+// polynomial, `low` defines the subpolynomial that we currently evaluate, i.e.,
+// the one with a constant term coefficient `std::get<low>(coefficients)`.
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalHornerEvaluator {
   using Coefficients =
@@ -298,8 +298,8 @@ Evaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument,
     not_null<Evaluator const*> const evaluator) {
-  // For some reason using a simpler control flow for |degree <= 3|, like we do
-  // above, degrades the performance of |Evaluate|.  So let's not do that.
+  // For some reason using a simpler control flow for `degree <= 3`, like we do
+  // above, degrades the performance of `Evaluate`.  So let's not do that.
   if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
     return Estrin<Value, Argument, degree>::EvaluateDerivative(
         coefficients, argument);

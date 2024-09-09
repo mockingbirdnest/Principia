@@ -13,7 +13,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_r3_element;
 
 // An element of the skew field of quaternions ℍ (where ℝ is modeled by
-// |double|).
+// `double`).
 class Quaternion final {
  public:
   constexpr Quaternion() = default;

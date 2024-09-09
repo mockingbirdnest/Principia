@@ -81,8 +81,8 @@ class DiscreteTrajectoryIterator {
   static typename Timeline::const_iterator const& iterator(
       OptionalTimelineConstIterator const& point);
 
-  // |point_| is always an iterator in the timeline of the segment denoted by
-  // |segment_|.  When |segment_| is at the end of its list, |point_| is
+  // `point_` is always an iterator in the timeline of the segment denoted by
+  // `segment_`.  When `segment_` is at the end of its list, `point_` is
   // nullopt.  It is possible to have repeated times in a segment or across
   // segments and the iterator will skip them, so that they will appear as a
   // single point to clients.

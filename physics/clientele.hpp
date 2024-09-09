@@ -12,15 +12,15 @@ namespace internal {
 using namespace principia::base::_not_null;
 
 // A helper class to manage a set of clients to a service.  Clients are ordered
-// based on the value of type |Key| passed when they join the |Clientele|.  A
-// |Clientele| may contain multiple clients with the same key.
+// based on the value of type `Key` passed when they join the `Clientele`.  A
+// `Clientele` may contain multiple clients with the same key.
 template<typename Key>
 class Clientele {
  public:
-  // The |default_key| is returned by |first| when the object is empty.
+  // The `default_key` is returned by `first` when the object is empty.
   explicit Clientele(Key const& default_key);
 
-  // Indicates that a client with the given |key| is joining or leaving the
+  // Indicates that a client with the given `key` is joining or leaving the
   // clientele.
   void Join(Key const& key);
   void Leave(Key const& key);
@@ -35,7 +35,7 @@ class Clientele {
   absl::btree_multiset<Key> clients_;
 };
 
-// An RAII object to manage clients that join and leave a |Clientele|.
+// An RAII object to manage clients that join and leave a `Clientele`.
 template<typename Key>
 class Client {
  public:

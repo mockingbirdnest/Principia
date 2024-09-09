@@ -100,10 +100,10 @@ class SolarSystemFactory : not_constructible {
   static not_null<std::unique_ptr<SolarSystem<ICRS>>>
   AtСпутник2Launch(Accuracy accuracy);
 
-  // Returns the index of the parent of the body with the given |index|.
+  // Returns the index of the parent of the body with the given `index`.
   // Because enums are broken in C++ we use ints.  Sigh.
   static int parent(int index);
-  // The name of the body with the given |index|.
+  // The name of the body with the given `index`.
   static std::string name(int index);
 };
 

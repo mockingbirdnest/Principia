@@ -17,9 +17,9 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/serialization.hpp"
 
-// A case branch in a switch on the serialized integrator |kind|.  It determines
-// the |method| type from the |kind| defined in scope |message| and calls
-// |action| on it.  |action| must be a 1-argument macro.
+// A case branch in a switch on the serialized integrator `kind`.  It determines
+// the `method` type from the `kind` defined in scope `message` and calls
+// `action` on it.  `action` must be a 1-argument macro.
 #define PRINCIPIA_INTEGRATOR_CASE(message, kind, method, action) \
   case serialization::message::kind: {                           \
     action(method);                                              \

@@ -161,8 +161,8 @@ template<typename Matrix>
 absl::btree_set<typename Matrix::Scalar> Compute2By2Eigenvalues(
     BlockView<Matrix> const& block) {
   static constexpr typename Matrix::Scalar zero{};
-  // TODO(phl): Would |SymmetricSchurDecomposition2By2| work to shoot one zero
-  // (even though the |block| is not symmetric)?
+  // TODO(phl): Would `SymmetricSchurDecomposition2By2` work to shoot one zero
+  // (even though the `block` is not symmetric)?
   auto const& a = block(0, 0);
   auto const& b = block(0, 1);
   auto const& c = block(1, 0);
@@ -332,8 +332,8 @@ struct UnitriangularGramSchmidtGenerator<FixedMatrix<Scalar, rows, columns>> {
   static Result Uninitialized(FixedMatrix<Scalar, rows, columns> const& m);
 };
 
-// A specialization for |cpp_rational|, which is used for lattice reduction.
-// |double| is not appropriate for the element of |R| in this case.
+// A specialization for `cpp_rational`, which is used for lattice reduction.
+// `double` is not appropriate for the element of `R` in this case.
 template<std::int64_t rows, std::int64_t columns>
 struct UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_rational, rows, columns>> {

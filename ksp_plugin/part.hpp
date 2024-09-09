@@ -82,7 +82,7 @@ class Part final {
   Mass const& mass() const;
   void set_centre_of_mass(Position<EccentricPart> const& centre_of_mass);
   // Returns the transformation from the part-centre-of-mass-centred to the
-  // part-position-centred frame; the offset is set by |set_centre_of_mass|.
+  // part-position-centred frame; the offset is set by `set_centre_of_mass`.
   RigidMotion<RigidPart, EccentricPart> MakeRigidToEccentricMotion() const;
   void set_inertia_tensor(InertiaTensor<RigidPart> const& inertia_tensor);
   InertiaTensor<RigidPart> const& inertia_tensor() const;
@@ -91,7 +91,7 @@ class Part final {
   void set_is_solid_rocket_motor(bool is_solid_rocket_motor);
   bool is_solid_rocket_motor() const;
 
-  // The difference between successive values passed to |set_mass()|.
+  // The difference between successive values passed to `set_mass()`.
   Mass const& mass_change() const;
 
   // Clears, increments or returns the intrinsic force exerted on the part by
@@ -125,9 +125,9 @@ class Part final {
 
   // Appends a point to the history or psychohistory of this part.  These
   // temporarily hold the trajectory of the part and are constructed by
-  // |PileUp::AdvanceTime|.  They are consumed by |Vessel::AdvanceTime| for the
-  // containing |Vessel|.
-  // Note that |AppendToHistory| clears the psychohistory so the order of the
+  // `PileUp::AdvanceTime`.  They are consumed by `Vessel::AdvanceTime` for the
+  // containing `Vessel`.
+  // Note that `AppendToHistory` clears the psychohistory so the order of the
   // calls matter.
   void AppendToHistory(
       Instant const& time,
@@ -139,14 +139,14 @@ class Part final {
   // Clears the history and psychohistory.
   void ClearHistory();
 
-  // Requires |!is_piled_up()|.  The part assumes co-ownership of the |pile_up|.
+  // Requires `!is_piled_up()`.  The part assumes co-ownership of the `pile_up`.
   void set_containing_pile_up(not_null<std::shared_ptr<PileUp>> const& pile_up);
 
   // A pointer to the containing pile up, if any.
   PileUp* containing_pile_up() const;
 
-  // Whether this part is in a |PileUp|, i.e., has a non-null
-  // |containing_pile_up|.
+  // Whether this part is in a `PileUp`, i.e., has a non-null
+  // `containing_pile_up`.
   bool is_piled_up() const;
 
   // Remove this part from its pile-up, if any.  This may cause the pile-up to
@@ -184,9 +184,9 @@ class Part final {
   bool truthful_;
   Mass mass_;
   Position<EccentricPart> centre_of_mass_ = EccentricPart::origin;
-  // NOTE(eggrobin): |mass_change_| and |is_solid_rocket_motor_| are set by
-  // |InsertOrKeepLoadedPart|, and used by |PileUp::RecomputeFromParts|.
-  // Ultimately, both are called in the adapter in |WaitedForFixedUpdate|.
+  // NOTE(eggrobin): `mass_change_` and `is_solid_rocket_motor_` are set by
+  // `InsertOrKeepLoadedPart`, and used by `PileUp::RecomputeFromParts`.
+  // Ultimately, both are called in the adapter in `WaitedForFixedUpdate`.
   // They therefore do not need to be serialized.
   Mass mass_change_;
   bool is_solid_rocket_motor_ = false;
@@ -204,15 +204,15 @@ class Part final {
   // history and the psychohistory.
   DiscreteTrajectory<Barycentric> trajectory_;
 
-  // The |history_| is nearly always present, except in some transient
+  // The `history_` is nearly always present, except in some transient
   // situations.
   DiscreteTrajectorySegmentIterator<Barycentric> history_;
 
-  // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
-  // as needed by |AppendToPsychohistory|.
+  // The `psychohistory_` is destroyed by `AppendToHistory` and is recreated
+  // as needed by `AppendToPsychohistory`.
   DiscreteTrajectorySegmentIterator<Barycentric> psychohistory_;
 
-  // We will use union-find algorithms on |Part|s.
+  // We will use union-find algorithms on `Part`s.
   not_null<std::unique_ptr<Subset<Part>::Node>> const subset_node_;
   friend class Subset<Part>::Node;
 

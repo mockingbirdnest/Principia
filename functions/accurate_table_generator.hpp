@@ -33,9 +33,9 @@ std::vector<cpp_rational> GalExhaustiveMultisearch(
     std::vector<AccurateFunction> const& functions,
     std::vector<cpp_rational> const& starting_arguments);
 
-// Searches in an interval of radius |T / N| centered on |starting_argument|.
-// The |polynomials| must be the degree-2 Taylor approximations of the
-// |functions| and the |remainders| must be upper bounds on the remainder of the
+// Searches in an interval of radius `T / N` centered on `starting_argument`.
+// The `polynomials` must be the degree-2 Taylor approximations of the
+// `functions` and the `remainders` must be upper bounds on the remainder of the
 // Taylor series. The argument and function values must be within [1/2, 1[.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
@@ -46,9 +46,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::int64_t N,
     std::int64_t T);
 
-// Performs a search around |starting_argument| to find a solution,
+// Performs a search around `starting_argument` to find a solution,
 // automatically adjusting the interval over which the search happens.  The
-// argument and function values must be nonzero.  If |search_pool| is not null,
+// argument and function values must be nonzero.  If `search_pool` is not null,
 // the search may use speculative execution.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
@@ -59,7 +59,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     ThreadPool<void>* search_pool = nullptr);
 
 // Same as above, but performs searches in parallel using the corresponding
-// |polynomials|, |remainders|, and |starting_arguments|.  Returns the results
+// `polynomials`, `remainders`, and `starting_arguments`.  Returns the results
 // in the same order as the parameters.
 template<std::int64_t zeroes>
 std::vector<absl::StatusOr<cpp_rational>>
@@ -71,8 +71,8 @@ StehléZimmermannSimultaneousMultisearch(
     std::vector<cpp_rational> const& starting_arguments);
 
 // Same as above, but instead of accumulating all the results and returning them
-// in a vector, it runs |callback| each time a computation is complete.  The
-// |index| indicates to which parameters the result corresponds.
+// in a vector, it runs `callback` each time a computation is complete.  The
+// `index` indicates to which parameters the result corresponds.
 template<std::int64_t zeroes>
 void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,

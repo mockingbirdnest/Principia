@@ -559,7 +559,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     // Poke holes in the timeline at the places given by
-    // |right_endpoints_times|.  This requires one lookup per erasure.
+    // `right_endpoints_times`.  This requires one lookup per erasure.
     auto left_it = dense_iterators.front();
     for (Instant const& right : right_endpoints_times) {
       ++left_it;
@@ -632,7 +632,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   }
   message->set_was_downsampled(was_downsampled_);
 
-  // Convert the |exact| vector into a set, and add the extremities.  This
+  // Convert the `exact` vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to
   // guarantee that serialization is reproducible.
   auto time_comparator = [](value_type const* const left,

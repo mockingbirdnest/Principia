@@ -57,7 +57,7 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 // - The time coordinate of the BCRS is TCB, and the time coordinate of the GCRS
 //   is TCG; TT is a linear scaling of TCG, and TDB is a linear scaling of TCB;
 //   for practical purposes TT and TDB are within 2 ms of each other;
-//   Principia's |Instant| is TT.
+//   Principia's `Instant` is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
                    NonRotating,
                    Handedness::Right,
@@ -71,7 +71,7 @@ using GCRS = Frame<serialization::Frame::SolarSystemTag,
 // - This is identical to WGS84 at 1 m level, and to recent realizations of WGS
 //   84 at 10 cm level; the xz plane is a bit over a hundred metres from the
 //   Royal Observatory in Greenwich.
-//   Caveat: using |SphericalCoordinates<Length>| on ITRS coordinates is
+//   Caveat: using `SphericalCoordinates<Length>` on ITRS coordinates is
 //   inconsistent with WGS 84 latitudes; the WGS 84 geoid should be used.
 // - The ITRS is related to the European Terrestrial Reference System (ETRS89)
 //   by a time-dependent rigid transformation.

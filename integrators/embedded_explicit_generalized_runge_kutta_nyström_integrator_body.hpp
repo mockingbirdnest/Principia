@@ -63,7 +63,7 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
   auto& parameters = this->parameters_;
   auto const& equation = this->equation_;
 
-  // |current_state| gets updated as the integration progresses to allow
+  // `current_state` gets updated as the integration progresses to allow
   // restartability.
 
   // State before the last, truncated step.
@@ -119,9 +119,9 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
   double tolerance_to_error_ratio;
 
   // The first stage of the Runge-Kutta-Nyström iteration.  In the FSAL case,
-  // |first_stage == 1| after the first step, since the first RHS evaluation has
+  // `first_stage == 1` after the first step, since the first RHS evaluation has
   // already occurred in the previous step.  In the non-FSAL case and in the
-  // first step of the FSAL case, |first_stage == 0|.
+  // first step of the FSAL case, `first_stage == 0`.
   int first_stage = 0;
 
   // The number of steps already performed.
@@ -131,8 +131,8 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
   absl::Status step_status;
 
   // No step size control on the first step.  If this instance is being
-  // restarted we already have a value of |h| suitable for the next step, based
-  // on the computation of |tolerance_to_error_ratio_| during the last
+  // restarted we already have a value of `h` suitable for the next step, based
+  // on the computation of `tolerance_to_error_ratio_` during the last
   // invocation.
   goto runge_kutta_nyström_step;
 
@@ -177,7 +177,7 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
 
       auto const h² = h * h;
 
-      // Runge-Kutta-Nyström iteration; fills |g|.
+      // Runge-Kutta-Nyström iteration; fills `g`.
       for (int i = first_stage; i < stages_; ++i) {
         Instant const t_stage =
             (parameters.last_step_is_exact && at_end && c[i] == 1.0)
@@ -310,7 +310,7 @@ Instance::ReadFromMessage(
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&
         integrator)
   requires serializable<typename ODE_::DependentVariable> {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(new Instance(problem,
                                                 append_state,
@@ -346,7 +346,7 @@ NewInstance(InitialValueProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
             Parameters const& parameters) const {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
       new Instance(problem,

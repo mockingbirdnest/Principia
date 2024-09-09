@@ -299,12 +299,12 @@ Status* __cdecl principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   }
 
   Instant const current_time = plugin->CurrentTime();
-  // The given |World| position and requested |World| degrees of freedom are
-  // body-centred inertial, so |body_centred_inertial| up to an orthogonal map
+  // The given `World` position and requested `World` degrees of freedom are
+  // body-centred inertial, so `body_centred_inertial` up to an orthogonal map
   // to world coordinates.  Do the conversion directly.
-  // NOTE(egg): it is correct to use the orthogonal map at |current_time|,
-  // because |body_centred_inertial| does not rotate with respect to
-  // |Barycentric|, so the orthogonal map does not depend on time.
+  // NOTE(egg): it is correct to use the orthogonal map at `current_time`,
+  // because `body_centred_inertial` does not rotate with respect to
+  // `Barycentric`, so the orthogonal map does not depend on time.
   RigidMotion<Navigation, World> to_world_body_centred_inertial(
       RigidTransformation<Navigation, World>(
           Navigation::origin,

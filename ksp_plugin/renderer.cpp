@@ -133,15 +133,15 @@ Renderer::RenderPlottingTrajectoryInWorld(
   // that we are considering an observer fixed in the plotting frame.
   // - Instead of applying the full rigid motion and consistently transforming
   // the velocities, or even just applying the orthogonal map, it simply
-  // identifies the axes of |World| with those of the plotting frame. This is
+  // identifies the axes of `World` with those of the plotting frame. This is
   // because we are interested in the magnitude of the velocity (the speed) in
   // the plotting frame, as well as the coordinates (in frames with a physically
   // significant plane, the z coordinate becomes the out-of-plane velocity).
   // We apply the scaling at the time of the velocity, instead of the scaling at
-  // |time| or no scaling, because we want speeds in current metres per second,
-  // not in constant metres (at |time|) per second, nor in constant lunar
+  // `time` or no scaling, because we want speeds in current metres per second,
+  // not in constant metres (at `time`) per second, nor in constant lunar
   // distances (masquerading as metres) per second.
-  // The resulting |DegreesOfFreedom| should be seen as no more than a
+  // The resulting `DegreesOfFreedom` should be seen as no more than a
   // convenient hack to send a plottable position together with a velocity in
   // the coordinates we want.  In fact, it needs an articial permutation to
   // avoid a violation of handedness.
@@ -338,7 +338,7 @@ Rotation<CameraCompensatedReference, World> Renderer::CameraReferenceRotation(
 void Renderer::WriteToMessage(
     not_null<serialization::Renderer*> message) const {
   plotting_frame_->WriteToMessage(message->mutable_plotting_frame());
-  // No serialization of the |target_|.
+  // No serialization of the `target_`.
 }
 
 not_null<std::unique_ptr<Renderer>> Renderer::ReadFromMessage(

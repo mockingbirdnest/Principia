@@ -19,25 +19,25 @@ using namespace principia::numerics::_scale_b;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
-// Approximates a root of |f| between |lower_bound| and |upper_bound| by
+// Approximates a root of `f` between `lower_bound` and `upper_bound` by
 // bisection.  The result is less than one ULP from a root of any continuous
-// function agreeing with |f| on the values of |Argument|.
-// If |f(lower_bound)| and |f(upper_bound)| are both nonzero, they must be of
+// function agreeing with `f` on the values of `Argument`.
+// If `f(lower_bound)` and `f(upper_bound)` are both nonzero, they must be of
 // opposite signs.
 template<typename Argument, typename Function>
 Argument Bisect(Function f,
                 Argument const& lower_bound,
                 Argument const& upper_bound);
 
-// Performs Brent’s procedure |zero| from [Bre73], chapter 4, with an absolute
+// Performs Brent’s procedure `zero` from [Bre73], chapter 4, with an absolute
 // tolerance t=0.
 template<typename Argument, typename Function>
 Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound);
 
-// Performs a golden-section search to find a local extremum of |f| between
-// |lower_bound| and |upper_bound|.
+// Performs a golden-section search to find a local extremum of `f` between
+// `lower_bound` and `upper_bound`.
 // The function searches for a minimum if compare is <, and a maximum if compare
 // is >.  Arbitrary order relations are allowed; in general, this function
 // searches for a value x such that compare(y, f(x)) is false for all y in some
@@ -48,13 +48,13 @@ Argument GoldenSectionSearch(Function f,
                              Argument const& upper_bound,
                              Compare compare);
 
-// Performs Brent’s procedure |localmin| from [Bre73], chapter 5, with an
+// Performs Brent’s procedure `localmin` from [Bre73], chapter 5, with an
 // absolute tolerance t set to the (subnormal) smallest strictly positive value
-// of |Difference<Argument>|.
+// of `Difference<Argument>`.
 // The function searches for a minimum if compare is <, and a maximum if compare
 // is >.  No values of Compare other than std::less<> and std::greater<> are
 // allowed.
-// The default value of |eps| is √ϵ, for ϵ as defined in [Bre73], chapter 4,
+// The default value of `eps` is √ϵ, for ϵ as defined in [Bre73], chapter 4,
 // (2.9).
 template<typename Argument, typename Function, typename Compare>
 Argument Brent(

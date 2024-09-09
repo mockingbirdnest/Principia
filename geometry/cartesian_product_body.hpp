@@ -213,8 +213,8 @@ Tail(Tuple const& tuple) -> Type {
   return std::make_tuple(std::get<tail_indices>(tuple)...);
 }
 
-// Technically, this is only a ring if |CartesianProductMultiplicativeSpace| is
-// the bona fide |CartesianProductVectorSpace|.  If it is not, this implements a
+// Technically, this is only a ring if `CartesianProductMultiplicativeSpace` is
+// the bona fide `CartesianProductVectorSpace`.  If it is not, this implements a
 // multiplication-like operation which has the expected properties with respect
 // to the cartesian product additive group.
 // NOTE(phl): The need for the third, defaulted, parameter to the template

@@ -126,7 +126,7 @@ class MultiTableImplementation {
 
   template<FMAPolicy fma_policy>
   static Value SinPolynomial(Argument x);
-  // |i| is the index of the binade in |cutoffs_|,
+  // `i` is the index of the binade in `cutoffs_`,
   template<FMAPolicy fma_policy>
   static Value CosPolynomial(std::int64_t i, Argument x);
 
@@ -238,7 +238,7 @@ class NearZeroImplementation {
       accurate_values_;
 };
 
-// Same as |NearZeroImplementation|, but evaluates the cost of the dynamic FMA
+// Same as `NearZeroImplementation`, but evaluates the cost of the dynamic FMA
 // determination.
 class FMAImplementation {
  public:
@@ -458,7 +458,7 @@ void MultiTableImplementation::SelectCutoff(Argument const x,
                                             Argument& cutoff) {
   // The details of this code have a measurable performance impact.  It does on
   // average 2.30 comparisons.  That's more than a naive loop starting at
-  // |k = 0| (which would do 2.28 comparisons) but it's faster in practice.
+  // `k = 0` (which would do 2.28 comparisons) but it's faster in practice.
   if (x <= cutoffs[1]) {
     // Because the intervals are unequal, this loop does on average 1.93
     // comparisons.

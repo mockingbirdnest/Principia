@@ -116,8 +116,8 @@ internal class
     });
   }
 
-  // Sets the |frame_type| to |BODY_SURFACE| and sets |selected_celestial| to
-  // the given |celestial|.
+  // Sets the `frame_type` to `BODY_SURFACE` and sets `selected_celestial` to
+  // the given `celestial`.
   public void SetToSurfaceFrameOf(CelestialBody celestial) {
     EffectChange(() => {
       frame_type = FrameType.BODY_SURFACE;
@@ -486,7 +486,7 @@ internal class
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
-        // terminology of |BodyCentredBodyDirection|).
+        // terminology of `BodyCentredBodyDirection`).
         return new ReferenceFrameParameters{
             Extension = frame_type,
             PrimaryIndices =

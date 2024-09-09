@@ -22,9 +22,9 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_named_quantities;
 
-// Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
-// |q| and |v| are the positions and velocities over a constant division of
-// [t_min, t_max].  |error_estimate| gives an estimate of the error between the
+// Computes a Newhall approximation of the given `degree` in the Чебышёв basis.
+// `q` and `v` are the positions and velocities over a constant division of
+// [t_min, t_max].  `error_estimate` gives an estimate of the error between the
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
 template<typename Value, int degree>
@@ -35,7 +35,7 @@ NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
                                    Instant const& t_max,
                                    Value& error_estimate);
 
-// Same as above but the |degree| is not a constant expression.
+// Same as above but the `degree` is not a constant expression.
 template<typename Value>
 not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
 NewhallApproximationInЧебышёвBasis(int degree,
@@ -45,9 +45,9 @@ NewhallApproximationInЧебышёвBasis(int degree,
                                    Instant const& t_max,
                                    Value& error_estimate);
 
-// Computes a Newhall approximation of the given |degree| in the monomial basis.
+// Computes a Newhall approximation of the given `degree` in the monomial basis.
 // The parameters have the same meaning as in the preceding function.  The
-// result is a polynomial of |Time| valid around |(t_min + t_max) / 2| with
+// result is a polynomial of `Time` valid around `(t_min + t_max) / 2` with
 // an argument in the range [(t_min - t_max) / 2, (t_max - t_min) / 2].  The
 // polynomial is created using the given evaluator policy.
 template<typename Value, int degree>
@@ -59,7 +59,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                                     Policy const& policy,
                                     Difference<Value>& error_estimate);
 
-// Same as above but the |degree| is not a constant expression.
+// Same as above but the `degree` is not a constant expression.
 template<typename Value>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,

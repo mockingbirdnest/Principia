@@ -64,8 +64,8 @@ class OrbitalElementsTest : public ::testing::Test {
  protected:
   OrbitalElementsTest() {}
 
-  // Completes |initial_osculating_elements| and returns a GCRS trajectory
-  // obtained by flowing the corresponding initial conditions in |ephemeris|.
+  // Completes `initial_osculating_elements` and returns a GCRS trajectory
+  // obtained by flowing the corresponding initial conditions in `ephemeris`.
   static not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>>
   EarthCentredTrajectory(
       KeplerianElements<GCRS>& initial_osculating_elements,

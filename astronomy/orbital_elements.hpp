@@ -151,9 +151,9 @@ class OrbitalElements {
  private:
   OrbitalElements() = default;
 
-  // For |t| between |t_min| and |t_max|,
-  // |relative_degrees_of_freedom_at_time(t)| should return
-  // |DegreesOfFreedom<Frame>|.
+  // For `t` between `t_min` and `t_max`,
+  // `relative_degrees_of_freedom_at_time(t)` should return
+  // `DegreesOfFreedom<Frame>`.
   template<typename Frame, typename RelativeDegreesOfFreedomComputation>
   static absl::StatusOr<OrbitalElements> ForRelativeDegreesOfFreedom(
       RelativeDegreesOfFreedomComputation const&
@@ -165,16 +165,16 @@ class OrbitalElements {
       bool fill_osculating_equinoctial_elements);
 
   // The functor EquinoctialElementsComputation must have the profile
-  // |EquinoctialElements(Instant const&)|.
+  // `EquinoctialElements(Instant const&)`.
   template<typename EquinoctialElementsComputation>
   static absl::StatusOr<Time> SiderealPeriod(
       EquinoctialElementsComputation const& equinoctial_elements,
       Instant const& t_min,
       Instant const& t_max);
 
-  // |osculating| must contain at least 2 elements.
+  // `osculating` must contain at least 2 elements.
   // The resulting elements are averaged over one period, centred on
-  // their |EquinoctialElements::t|.
+  // their `EquinoctialElements::t`.
   template<typename EquinoctialElementsComputation>
   static absl::StatusOr<std::vector<EquinoctialElements>>
   MeanEquinoctialElements(
@@ -186,14 +186,14 @@ class OrbitalElements {
   static absl::StatusOr<std::vector<ClassicalElements>> ToClassicalElements(
       std::vector<EquinoctialElements> const& equinoctial_elements);
 
-  // |mean_classical_elements_| must have been computed; sets
-  // |anomalistic_period_|, |nodal_period_|, and |nodal_precession_|
-  // accordingly. Note that this does not compute |sidereal_period_| (our mean
+  // `mean_classical_elements_` must have been computed; sets
+  // `anomalistic_period_`, `nodal_period_`, and `nodal_precession_`
+  // accordingly. Note that this does not compute `sidereal_period_` (our mean
   // element computation is based on it, so it gets computed earlier).
   absl::Status ComputePeriodsAndPrecession();
 
-  // The |mean_classical_elements_| must have been computed; sets
-  // |mean_*_interval_| accordingly.
+  // The `mean_classical_elements_` must have been computed; sets
+  // `mean_*_interval_` accordingly.
   absl::Status ComputeIntervals();
 
   std::vector<EquinoctialElements> osculating_equinoctial_elements_;

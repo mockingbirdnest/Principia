@@ -69,7 +69,7 @@ Argument Brent(Function f,
   using Value = decltype(f(lower_bound));
   Value const zero{};
 
-  // We do not use |std::numeric_limits<double>::epsilon()|, because it is 2ϵ in
+  // We do not use `std::numeric_limits<double>::epsilon()`, because it is 2ϵ in
   // Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic, see
   // (2.9).
   constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);
@@ -236,7 +236,7 @@ Argument Brent(Function f,
   {
     auto const& f = minimized_f;
 
-    // We do not use |std::numeric_limits<double>::epsilon()|, because it is 2ϵ
+    // We do not use `std::numeric_limits<double>::epsilon()`, because it is 2ϵ
     // in Brent’s notation: Brent uses ϵ = β^(1-τ) / 2 for rounded arithmetic,
     // see [Bre73], chapter 4, (2.9).
     constexpr double ϵ = ScaleB(0.5, 1 - std::numeric_limits<double>::digits);

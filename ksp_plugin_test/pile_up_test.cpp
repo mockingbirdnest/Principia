@@ -182,7 +182,7 @@ class PileUpTest : public testing::Test {
                                         10.0 * Metre / Second,
                                         10.0 / 3.0 * Metre / Second}), 17)));
 
-    // Centre of mass of |p1_| and |p2_| in |Apparent|, in SI units:
+    // Centre of mass of `p1_` and `p2_` in `Apparent`, in SI units:
     //   {1 / 9, -1 / 3, -2 / 9} {10 / 9, -10 / 3, -20 / 9}
     DegreesOfFreedom<Apparent> const p1_dof(
         Apparent::origin +
@@ -269,7 +269,7 @@ class PileUpTest : public testing::Test {
   InertiaTensor<RigidPart> inertia_tensor1_;
   InertiaTensor<RigidPart> inertia_tensor2_;
 
-  // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
+  // Centre of mass of `p1_` and `p2_` in `Barycentric`, in SI units:
   //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
   DegreesOfFreedom<Barycentric> const p1_dof_ = DegreesOfFreedom<Barycentric>(
       Barycentric::origin +
@@ -288,7 +288,7 @@ class PileUpTest : public testing::Test {
 
 #if 0
 
-// Exercises the entire lifecycle of a |PileUp| that is subject to an intrinsic
+// Exercises the entire lifecycle of a `PileUp` that is subject to an intrinsic
 // force.
 TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   MockEphemeris<Barycentric> ephemeris;
@@ -589,7 +589,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // An empty ephemeris; the parameters don't matter, since there are no bodies
   // to integrate.
-  // NOTE(egg): ... except we have to put a body because |Ephemeris| doesn't
+  // NOTE(egg): ... except we have to put a body because `Ephemeris` doesn't
   // want to be empty.  We put a tiny one very far.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   bodies.emplace_back(make_not_null_unique<MassiveBody>(1 * Kilogram));

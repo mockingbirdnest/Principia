@@ -28,7 +28,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_named_quantities;
 
-// Represents a KSP |CelestialBody|.
+// Represents a KSP `CelestialBody`.
 class Celestial {
  public:
   explicit Celestial(not_null<RotatingBody<Barycentric> const*> body);
@@ -36,7 +36,7 @@ class Celestial {
   Celestial(Celestial&&) = delete;
   virtual ~Celestial() = default;
 
-  // True if, and only if, |trajectory_| is not null.
+  // True if, and only if, `trajectory_` is not null.
   bool is_initialized() const;
   void set_trajectory(
       not_null<ContinuousTrajectory<Barycentric> const*> trajectory);

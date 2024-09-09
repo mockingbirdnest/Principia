@@ -58,7 +58,7 @@ std::optional<std::future<T>>
 ThreadPool<T>::TryAdd(std::function<T()> function) {
   std::optional<std::future<T>> result;
 
-  // We use double locking to avoid contention when |TryAdd| fails.
+  // We use double locking to avoid contention when `TryAdd` fails.
   lock_.ReaderLock();
   std::int64_t const idle_threads = threads_.size() - busy_threads_;
   if (calls_.size() + 1 <= idle_threads) {
@@ -116,7 +116,7 @@ void ThreadPool<T>::DequeueCallAndExecute() {
       ++busy_threads_;
     }
 
-    // Execute the function without holding the |lock_| as it might take some
+    // Execute the function without holding the `lock_` as it might take some
     // time.
     ExecuteAndSetValue(this_call.function, this_call.promise);
 

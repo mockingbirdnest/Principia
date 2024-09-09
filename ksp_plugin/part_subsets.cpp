@@ -32,7 +32,7 @@ Subset<Part>::Properties::Properties(not_null<Part*> const part) {
 
 void Subset<Part>::Properties::MergeWith(Properties& other) {
   if (SubsetsOfSamePileUp(*this, other)) {
-    // The subsets |*this| and |other| are disjoint.
+    // The subsets `*this` and `other` are disjoint.
     CHECK_EQ(missing_ - other.parts_.size(),
              other.missing_ - parts_.size());
     missing_ -= other.parts_.size();

@@ -49,8 +49,8 @@ NewMotionlessTrajectoryTimeline(Position<Frame> const& position,
                                 Instant const& t2);
 
 // A linear trajectory with constant velocity, going through
-// |degrees_of_freedom.position()| at t = t0.  The first point is at time |t1|,
-// the last point at a time < |t2|.
+// `degrees_of_freedom.position()` at t = t0.  The first point is at time `t1`,
+// the last point at a time < `t2`.
 template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
@@ -58,7 +58,7 @@ NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
                             Instant const& t0,
                             Instant const& t1,
                             Instant const& t2);
-// Same as above, going through |degrees_of_freedom.position()| at t = t1.
+// Same as above, going through `degrees_of_freedom.position()` at t = t1.
 template<typename Frame>
 Timeline<Frame>
 NewLinearTrajectoryTimeline(DegreesOfFreedom<Frame> const& degrees_of_freedom,
@@ -74,8 +74,8 @@ NewLinearTrajectoryTimeline(Velocity<Frame> const& v,
                             Instant const& t2);
 
 // A trajectory with a uniform acceleration, having the specified
-// |degrees_of_freedom| at t = 0.  The first point is at time |t1|, the last
-// point at a time < |t2|.
+// `degrees_of_freedom` at t = 0.  The first point is at time `t1`, the last
+// point at a time < `t2`.
 template<typename Frame>
 Timeline<Frame> NewAcceleratedTrajectoryTimeline(
     DegreesOfFreedom<Frame> const& degrees_of_freedom,
@@ -85,7 +85,7 @@ Timeline<Frame> NewAcceleratedTrajectoryTimeline(
     Instant const& t2);
 
 // A circular trajectory in the plane XY, centred at the origin.  The first
-// point is at time |t1|, the last point at a time < |t2|.
+// point is at time `t1`, the last point at a time < `t2`.
 template<typename Frame>
 Timeline<Frame>
 NewCircularTrajectoryTimeline(AngularFrequency const& ω,

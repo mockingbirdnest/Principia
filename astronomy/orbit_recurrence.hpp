@@ -47,7 +47,7 @@ class OrbitRecurrence final {
   // Returns the recurrence that mostly matches the given orbital
   // characteristics, limiting the value of |Cᴛₒ|.
   // The Nᴛₒ / Cᴛₒ of the result is the last convergent of the κ obtained from
-  // the given arguments whose denominator is less than |max_abs_Cᴛₒ|.
+  // the given arguments whose denominator is less than `max_abs_Cᴛₒ`.
   template<typename Frame>
   static OrbitRecurrence ClosestRecurrence(
       Time const& nodal_period,

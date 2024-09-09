@@ -182,7 +182,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
         for (int i = 0;
              i < plugin.FlightPlanNumberOfManoeuvres(vessel_guid);
              ++i) {
-          // Dummy initial time, we call |Reset| immediately afterwards.
+          // Dummy initial time, we call `Reset` immediately afterwards.
           burn_editors_.Add(new BurnEditor(adapter_,
                                            predicted_vessel,
                                            initial_time      : 0,
@@ -226,7 +226,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // A change of anomalous status "tickles" the flight plan.  Note that the
       // order of the terms in the || below matters, we always want to render
-      // the |final_time_|.
+      // the `final_time_`.
       if (final_time_.Render(enabled : true) || must_tickle_) {
         must_tickle_ = false;
         var status =

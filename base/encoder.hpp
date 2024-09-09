@@ -12,7 +12,7 @@ namespace internal {
 using namespace principia::base::_array;
 
 // Encodes/decodes an array of bytes to/from an array of Char.  If
-// |null_terminated| is true a null Char is appended to the encoded form and
+// `null_terminated` is true a null Char is appended to the encoded form and
 // taken into account in the encoded length.
 template<typename Char_, bool null_terminated>
 class Encoder {
@@ -21,7 +21,7 @@ class Encoder {
 
   virtual ~Encoder() = default;
 
-  // Encodes |input| into |output|, which must be large enough to hold the
+  // Encodes `input` into `output`, which must be large enough to hold the
   // encoded form.
   virtual void Encode(Array<std::uint8_t const> input,
                       Array<Char> output) = 0;
@@ -32,7 +32,7 @@ class Encoder {
   // Length of the encoded form, in Char.
   virtual std::int64_t EncodedLength(Array<std::uint8_t const> input) = 0;
 
-  // Decodes |input| into |output|, which must be large enough to hold the
+  // Decodes `input` into `output`, which must be large enough to hold the
   // decoded form.  The input may or may not be null-terminated.
   virtual void Decode(Array<Char const> input,
                       Array<std::uint8_t> output) = 0;

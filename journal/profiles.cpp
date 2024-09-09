@@ -52,8 +52,8 @@ T DeserializePointer(std::uint64_t const address,
   }
 }
 
-// This function uses a |std::string| to store non-UTF-8 data (UTF-16
-// specifically) because proto is silly and uses |std::string| for bytes as well
+// This function uses a `std::string` to store non-UTF-8 data (UTF-16
+// specifically) because proto is silly and uses `std::string` for bytes as well
 // as string.
 [[maybe_unused]] std::u16string DeserializeUtf16(
     std::string const& serialized) {
@@ -67,7 +67,7 @@ std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
 }
 
-// See the comment on |DeserializeUtf16| regarding the usage of |std::string|.
+// See the comment on `DeserializeUtf16` regarding the usage of `std::string`.
 [[maybe_unused]] std::string SerializeUtf16(
     char16_t const* const deserialized) {
   // Note that the string constructed here contains the final char16_t null.

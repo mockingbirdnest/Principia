@@ -68,7 +68,7 @@ struct RealSchurDecompositionGenerator;
 //     ⟨matrix⟩ rotation;
 //     ⟨vector⟩ eigenvalues;
 //   };
-// Note that in |rotation| the eigenvectors appear in column.  They are
+// Note that in `rotation` the eigenvectors appear in column.  They are
 // normalized.
 template<typename M>
 struct ClassicalJacobiGenerator;

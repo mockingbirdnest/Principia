@@ -61,7 +61,7 @@ class Equipotential {
   using Line = DiscreteTrajectory<Frame>;
   using Lines = std::vector<Line>;
 
-  // The |characteristic_length| is used in the stopping condition.
+  // The `characteristic_length` is used in the stopping condition.
   Equipotential(
       AdaptiveParameters const& adaptive_parameters,
       not_null<ReferenceFrame<InertialFrame, Frame> const*> reference_frame,
@@ -79,11 +79,11 @@ class Equipotential {
     Length radius;
   };
 
-  // Computes equipotential lines for the given |energy| that delineate the
-  // |peaks| from the |wells| and from the “well at infinity” (which is a well
+  // Computes equipotential lines for the given `energy` that delineate the
+  // `peaks` from the `wells` and from the “well at infinity” (which is a well
   // because we are in a rotating frame).  An equipotential delineates a peak
   // from a well if it encloses the peak but not the well, or vice-versa.  Given
-  // a position, |towards_infinity| should return a position far away where the
+  // a position, `towards_infinity` should return a position far away where the
   // potential is lower, in a direction where not much happens, e.g., away from
   // the centre in a rotating frame.
   Lines ComputeLines(
@@ -111,7 +111,7 @@ class Equipotential {
   static constexpr Quotient<Time, IndependentVariable>
       reinterpret_independent_variable_as_time = 1 * Second;
 
-  // The |binormal| determines in what direction we go around the curve.  It may
+  // The `binormal` determines in what direction we go around the curve.  It may
   // be anything, but must be consistent across calls to the right-hand side.
   absl::Status RightHandSide(Bivector<double, Frame> const& binormal,
                              Position<Frame> const& position,
@@ -124,10 +124,10 @@ class Equipotential {
                                State const& /*state*/,
                                typename State::Error const& error) const;
 
-  // Computes the winding number of |line| around |position|.  |line| and
-  // |position| must be in a plane paralles to |plane|.  The returned integer is
+  // Computes the winding number of `line` around `position`.  `line` and
+  // `position` must be in a plane paralles to `plane`.  The returned integer is
   // nonnegative, i.e., doesn't give information about the direction in which
-  // the |line| rotates around |position|.
+  // the `line` rotates around `position`.
   std::int64_t WindingNumber(Plane<Frame> const& plane,
                              Position<Frame> const& position,
                              std::vector<Position<Frame>> const& line) const;

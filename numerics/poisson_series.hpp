@@ -77,7 +77,7 @@ class PoissonSeries {
   using PolynomialsByAngularFrequency =
       std::vector<std::pair<AngularFrequency, Polynomials>>;
 
-  // The |periodic| vector may contain frequencies that are negative or zero, as
+  // The `periodic` vector may contain frequencies that are negative or zero, as
   // well as repeated frequencies.  It is not expected to be ordered.
   PoissonSeries(AperiodicPolynomial const& aperiodic,
                 PolynomialsByAngularFrequency const& periodic);
@@ -131,7 +131,7 @@ class PoissonSeries {
                 AperiodicPolynomial aperiodic,
                 PolynomialsByAngularFrequency periodic);
 
-  // Similar to the previous constructor, except that the |periodic| vector is
+  // Similar to the previous constructor, except that the `periodic` vector is
   // used verbatim, without sorting or normalization, which is useful for
   // internal algorithms which produce positive, ordered frequencies.
   struct TrustedPrivateConstructor {};

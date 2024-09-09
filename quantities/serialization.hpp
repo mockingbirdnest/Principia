@@ -9,7 +9,7 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 
-// A helper class that serializes a |Quantity| or a |double| to a protobuf
+// A helper class that serializes a `Quantity` or a `double` to a protobuf
 // structure like:
 //
 // message Message {

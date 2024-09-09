@@ -26,14 +26,14 @@ class Trajectory {
   virtual Instant t_min() const = 0;
   virtual Instant t_max() const = 0;
 
-  // Evaluates the trajectory at the given |time|, which must be in
+  // Evaluates the trajectory at the given `time`, which must be in
   // [t_min(), t_max()].
   virtual Position<Frame> EvaluatePosition(Instant const& time) const = 0;
   virtual Velocity<Frame> EvaluateVelocity(Instant const& time) const = 0;
   virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& time) const = 0;
 
-  // TODO(phl): This should probably declare |value_type| and friends.
+  // TODO(phl): This should probably declare `value_type` and friends.
 };
 
 }  // namespace internal

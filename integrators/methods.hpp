@@ -174,9 +174,9 @@ struct AsSymplecticRungeKuttaNyström {
         composition == serialization::FixedStepSizeIntegrator::ABA
             ? SymplecticPartitionedRungeKuttaMethod::b
             : SymplecticPartitionedRungeKuttaMethod::a};
-    // SymplecticPartitionedRungeKuttaMethod is a |BAB| method, with A and B
-    // interchangeable.  Exchanging A and B shifts |a| (because |ABA| means b₀
-    // vanishes, whereas |BAB| means aᵣ vanishes).
+    // SymplecticPartitionedRungeKuttaMethod is a `BAB` method, with A and B
+    // interchangeable.  Exchanging A and B shifts `a` (because `ABA` means b₀
+    // vanishes, whereas `BAB` means aᵣ vanishes).
     static constexpr FixedVector<double, stages> b{
         composition == serialization::FixedStepSizeIntegrator::ABA
             ? Shift(SymplecticPartitionedRungeKuttaMethod::a)

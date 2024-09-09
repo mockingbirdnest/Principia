@@ -105,10 +105,10 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
   Bivector<double, SystemFrame> const axis = Normalize(L);
   SymmetricBilinearForm<MomentOfInertia, SystemFrame, Bivector> const I =
       system_.InertiaTensor();
-  // Compute the kinetic energy of the system in |InertialFrame| as the energy
+  // Compute the kinetic energy of the system in `InertialFrame` as the energy
   // of its linear motion plus that of its rotational motion, and compare that
   // with sum of the kinetic energies of the point masses.  Note that m1 is
-  // stationary in |InertialFrame|.
+  // stationary in `InertialFrame`.
   EXPECT_THAT(p.Norm²() / (2 * m) + (L / Radian).Norm²() / (2 * I(axis, axis)),
               Eq(0.5 * m2 * Pow<2>(v)));
 }

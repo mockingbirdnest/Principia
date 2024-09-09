@@ -137,10 +137,10 @@ template<typename Value_, typename Argument_, int degree_>
 Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
     Argument const argument) const {
   // This formula ensures continuity at the edges by producing -1 or +1 within
-  // 2 ulps for |lower_bound_| and |upper_bound_|.
+  // 2 ulps for `lower_bound_` and `upper_bound_`.
   double const scaled_argument =
       ((argument - upper_bound_) + (argument - lower_bound_)) * one_over_width_;
-  // We have to allow |scaled_argument| to go slightly out of [-1, 1] because of
+  // We have to allow `scaled_argument` to go slightly out of [-1, 1] because of
   // computation errors.  But if it goes too far, something is broken.
   DCHECK_LE(scaled_argument, 1.1);
   DCHECK_GE(scaled_argument, -1.1);
@@ -247,8 +247,8 @@ template<typename Value_, typename Argument_, int degree_>
 void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage(
     not_null<serialization::Polynomial*> message) const {
   if constexpr (is_instance_of_v<R3Element, Value>) {
-    // |R3Element| is a low-level structure, so we don't want polynomials to use
-    // it directly: they should go through |Multivector|.  However, it's useful
+    // `R3Element` is a low-level structure, so we don't want polynomials to use
+    // it directly: they should go through `Multivector`.  However, it's useful
     // to be able to run benchmarks using them.
     LOG(FATAL) << "R3Element only supported for tests";
   } else {
