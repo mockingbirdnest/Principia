@@ -607,13 +607,24 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // degrading performance.
   std::atomic<std::int64_t> current_slice_index = 0;
 
+  // This variable addresses a subtle race (aren't they all?).  If `TryAdd`
+  // succeeds, but the entire `StehléZimmermannSimultaneousFullSearch` call
+  // completes before we have moved the future to speculative_futures, we must
+  // still wait for that last `TryAdd` thread to complete (lest we reference
+  // deallocated objects).  Note that these two variables are only accessed (1)
+  // from the scheduler, when it's running (2) from the
+  // `StehléZimmermannSimultaneousFullSearch` thread, once the scheduler has
+  // been shut down.
+  std::optional<std::future<void>> maybe_speculative_future;
+  std::vector<std::future<void>> speculative_futures;
+
   // This thread attempts to keep CPU utilization at 100% by starting
   // speculative searches if some of the threads in the `search_pool` are idle.
   // When there are calls queued in the `search_pool`, it does essentially
   // nothing, idly looping every 1 s.
-  std::vector<std::future<void>> speculative_futures;
   std::thread speculative_scheduler([&current_slice_index,
                                      &lock,
+                                     &maybe_speculative_future,
                                      &search_one_slice,
                                      search_pool,
                                      &speculative_futures,
@@ -640,7 +651,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         // `search_pool` busy.  Note that the slice to work on is determined
         // when the function actually starts.
         for (;;) {
-          auto maybe_future = search_pool->TryAdd(
+          maybe_speculative_future = search_pool->TryAdd(
               [&search_one_slice, &current_slice_index, &starting_argument] {
                 std::int64_t const slice_index =
                     current_slice_index.fetch_add(1);
@@ -648,10 +659,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                         << ", slice #" << slice_index;
                 search_one_slice(slice_index);
               });
-          if (!maybe_future.has_value()) {
+          if (!maybe_speculative_future.has_value()) {
             break;
           }
-          speculative_futures.push_back(std::move(maybe_future).value());
+          speculative_futures.push_back(
+              std::move(maybe_speculative_future).value());
         }
       }
     }
@@ -670,10 +682,15 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   // Wait for any remaining speculative execution to complete.  They may find a
   // better solution than the one that caused us to exit the sequential loop.
+  // Note that it's important to join the scheduler first, so that no more
+  // speculative work is started.
+  speculative_scheduler.join();
   for (auto const& future : speculative_futures) {
     future.wait();
   }
-  speculative_scheduler.join();
+  if (maybe_speculative_future.has_value()) {
+    maybe_speculative_future->wait();
+  }
 
   return status_or_solution.value();
 }
