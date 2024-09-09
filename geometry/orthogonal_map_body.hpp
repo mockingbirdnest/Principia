@@ -28,7 +28,7 @@ OrthogonalMap<FromFrame, ToFrame>::AsRotation() const {
 template<typename FromFrame, typename ToFrame>
 OrthogonalMap<ToFrame, FromFrame>
 OrthogonalMap<FromFrame, ToFrame>::Inverse() const {
-  // Because |quaternion_| has norm 1, its inverse is just its conjugate.
+  // Because `quaternion_` has norm 1, its inverse is just its conjugate.
   return OrthogonalMap<ToFrame, FromFrame>(quaternion_.Conjugate());
 }
 

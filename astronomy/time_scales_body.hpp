@@ -22,9 +22,9 @@ using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-// Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
+// Returns the duration between 2000-01-01T12:00:00 and `date_time` (of the same
 // timescale), not counting any leap seconds that may have occurred in the past.
-// |date_time| itself may be leap second.
+// `date_time` itself may be leap second.
 // Note that this may count non-SI seconds depending on the time scale according
 // to which it is interpreted.
 // On a time scale with leap seconds, this is not injective: a positive leap
@@ -122,7 +122,7 @@ constexpr std::array<int, (2023 - 1972) * 2> leap_seconds = {{
 }};
 
 // Returns +1 if a positive leap second was inserted at the end of the given
-// |month| of the given |year|, 0 otherwise.
+// `month` of the given `year`, 0 otherwise.
 constexpr int LeapSecond(int const year, int const month) {
   if (month == 6) {
     CONSTEXPR_CHECK((year - 1972) * 2 < leap_seconds.size());
@@ -197,8 +197,8 @@ constexpr Time TAIMinusStretchyUTC(DateTime const& utc) {
   return OffsetTAIMinusStretchyUTC(utc.date()) + RateTAIMinusStretchyUTC(utc);
 }
 
-// Returns |true| if |utc| is within a leap of the given number of
-// |milliseconds| inserted before |next_day|.
+// Returns `true` if `utc` is within a leap of the given number of
+// `milliseconds` inserted before `next_day`.
 constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
                                               Date const& next_day,
                                               double const& milliseconds) {
@@ -207,9 +207,9 @@ constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
          utc.time().millisecond() < milliseconds;
 }
 
-// If |utc| is on the day before |next_day|, returns true its time is consistent
-// with a negative leap of the given number of |milliseconds| before |next_day|.
-// If |utc| is not on the day before |next_day|, returns true.
+// If `utc` is on the day before `next_day`, returns true its time is consistent
+// with a negative leap of the given number of `milliseconds` before `next_day`.
+// If `utc` is not on the day before `next_day`, returns true.
 constexpr bool IsValidStretchyUTCIfOnDayOfNegativeLeap(DateTime const& utc,
                                                        Date const& next_day,
                                                        int const milliseconds) {
@@ -240,7 +240,7 @@ constexpr bool IsValidStretchyUTC(DateTime const& utc) {
 // Utilities for UT1.
 
 // An entry in the Experimental EOP C02 time series; represents UT1 - TAI at the
-// given |ut1_mjd|.
+// given `ut1_mjd`.
 struct ExperimentalEOPC02Entry final {
   constexpr ExperimentalEOPC02Entry(double ut1_mjd, Time ut1_minus_tai);
 
@@ -254,7 +254,7 @@ constexpr ExperimentalEOPC02Entry::ExperimentalEOPC02Entry(
     : ut1_mjd(ut1_mjd), ut1_minus_tai(ut1_minus_tai) {}
 
 // An entry in the EOP (IERS) 08 C04 time series; represents UT1 - UTC at
-// 00:00:00 on the given |utc_date|.  The date is given as an integer of the
+// 00:00:00 on the given `utc_date`.  The date is given as an integer of the
 // form YYYY'MM'DD, which is then interpreted on demand, in order to limit the
 // number of constexpr steps.
 struct EOPC04Entry final {
@@ -301,10 +301,10 @@ constexpr Instant EOPC04Entry::tt() const {
 #include "astronomy/eop_c04.generated.h"
 
 // Returns the last entry in [begin, begin + size[ whose UT1 is less than or
-// equal to the given |ut1|.  The range [begin, begin + size[ must be sorted by
+// equal to the given `ut1`.  The range [begin, begin + size[ must be sorted by
 // UT1.
-// We have to use |begin| and |size| rather than |begin| and |end| because
-// otherwise MSVC complains about undefinedness of |end - begin| (even though
+// We have to use `begin` and `size` rather than `begin` and `end` because
+// otherwise MSVC complains about undefinedness of `end - begin` (even though
 // Intellisense is fine with it).
 constexpr ExperimentalEOPC02Entry const* LookupUT1(
     Time const& ut1,
@@ -366,8 +366,8 @@ constexpr EOPC04Entry const* LookupInEOPC04(Instant const& tt) {
 constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
                                      Time const& ut1) {
   // TODO(egg): figure out whether using the divided difference of the
-  // |p->ut1_minus_tai()|s leads to less catastrophic cancellation than using
-  // the divided difference of the |DateTimeAsUTC(p->utc())|s.
+  // `p->ut1_minus_tai()`s leads to less catastrophic cancellation than using
+  // the divided difference of the `DateTimeAsUTC(p->utc())`s.
   return FromTAI(ut1 -
                  (low->ut1_minus_tai() +
                   (ut1 - low->ut1()) *
@@ -378,14 +378,14 @@ constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
 // UT1 Julian Day fraction in [-1/2 - ε, 1/2 + ε] where ε bounds |UT1-UTC|,
 // obtained by linear interpolation of EOP C04 on the TT range
 // [low->tt(), (low + 1)->tt()].
-// |jd_minus_2451545| is set to the integer such that the Julian UT1 date is
+// `jd_minus_2451545` is set to the integer such that the Julian UT1 date is
 // jd_minus_2451545 + 2451545 + result.
 constexpr double InterpolatedEOPC04JulianDayFraction(EOPC04Entry const* low,
                                                      Instant const& tt,
                                                      int& jd_minus_2451545) {
   double const λ = (tt - low->tt()) / ((low + 1)->tt() - low->tt());
   // The UTC MJD number for the day of the interpolation interval is
-  //   |low->utc().date().mjd()|.
+  //   `low->utc().date().mjd()`.
   // Up to the second-sized UT1-UTC difference, this is also the UT1 MJD number.
   // MJD = JD - 2400000.5, so that, in the middle of the interval, where the
   // result is 0,
@@ -408,8 +408,8 @@ constexpr Instant InterpolatedExperimentalEOPC02(
                             ((low + 1)->ut1_mjd - low->ut1_mjd)));
 }
 
-// Linear interpolation in the segment between the UT1s |low.ut1_mjd| and
-// |high.ut1()|, used to get continuity when switching between the series.
+// Linear interpolation in the segment between the UT1s `low.ut1_mjd` and
+// `high.ut1()`, used to get continuity when switching between the series.
 constexpr Instant ExperimentalEOPC02ToEOPC04(ExperimentalEOPC02Entry const& low,
                                              EOPC04Entry const& high,
                                              Time const& ut1) {
@@ -451,7 +451,7 @@ constexpr Angle EarthRotationAngle(Instant const tt) {
           0.00273781191135448 * Tu);
 }
 
-// Conversions from |DateTime| and |JulianDate| to |Instant|.
+// Conversions from `DateTime` and `JulianDate` to `Instant`.
 
 constexpr Instant DateTimeAsTT(DateTime const& tt) {
   CONSTEXPR_CHECK(!tt.time().is_leap_second());
@@ -494,7 +494,7 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
   return FromUT1(TimeSince20000101T120000Z(ut1));
 }
 
-// |Instant| date literals.
+// `Instant` date literals.
 
 constexpr Instant operator""_TAI(char const* str, std::size_t const size) {
   if (IsJulian(str, size)) {

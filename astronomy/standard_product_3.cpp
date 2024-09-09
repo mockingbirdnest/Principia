@@ -50,7 +50,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
     positions[k] = it->degrees_of_freedom.position();
   }
   // We use a central difference formula wherever possible, so we keep
-  // |offset| at (n - 1) / 2 except at the beginning and end of the arc.
+  // `offset` at (n - 1) / 2 except at the beginning and end of the arc.
   int offset = 0;
   for (int i = 0; i < arc.size(); ++i) {
     CHECK_OK(result->Append(times[offset],
@@ -59,8 +59,8 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
                                  /*values=*/positions,
                                  /*step=*/(times[n - 1] - times[0]) / (n - 1),
                                  offset)}));
-    // At every iteration, either |offset| advances, or the |positions|
-    // window shifts and |it| advances.
+    // At every iteration, either `offset` advances, or the `positions`
+    // window shifts and `it` advances.
     if (offset < (n - 1) / 2 || it == arc.end()) {
       ++offset;
     } else {
@@ -71,7 +71,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
       ++it;
     }
   }
-  // Note that having the right number of calls to |Append| does not guarantee
+  // Note that having the right number of calls to `Append` does not guarantee
   // this, as appending at an existing time merely emits a warning.
   CHECK_EQ(result->size(), arc.size());
   return result;

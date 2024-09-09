@@ -16,7 +16,7 @@ class ExponentSerializer : not_constructible {
   // Returns true if the exponent is in the range that we can serialize.
   static constexpr bool IsSerializable(std::int64_t exponent);
 
-  // Returns the serialized representation of the exponent.  |position| is the
+  // Returns the serialized representation of the exponent.  `position` is the
   // 0-based position of the dimension in the representation.
   static constexpr std::int64_t Representation(
       std::int64_t exponent,

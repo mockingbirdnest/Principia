@@ -26,9 +26,9 @@ using namespace principia::quantities::_quantities;
 template<typename Scalar>
 struct SphericalCoordinates;
 
-// An |R3Element<Scalar>| is an element of Scalar³. |Scalar| should be a vector
-// space over ℝ, represented by |double|. |R3Element| is the underlying data
-// type for more advanced strongly typed structures suchas |Multivector|.
+// An `R3Element<Scalar>` is an element of Scalar³. `Scalar` should be a vector
+// space over ℝ, represented by `double`. `R3Element` is the underlying data
+// type for more advanced strongly typed structures suchas `Multivector`.
 template<typename Scalar>
 struct alignas(16) R3Element final {
  public:
@@ -52,9 +52,9 @@ struct alignas(16) R3Element final {
   // the equator, and the z-axis as the north pole.
   SphericalCoordinates<Scalar> ToSpherical() const;
 
-  // Returns a vector coplanar to |*this| and |r3_element|, orthogonal to
-  // |r3_element|, and on the same side of |r3_element| as |*this|.
-  // Uses the modified Gram-Schmidt algorithm.  Fails if |r3_element| is zero.
+  // Returns a vector coplanar to `*this` and `r3_element`, orthogonal to
+  // `r3_element`, and on the same side of `r3_element` as `*this`.
+  // Uses the modified Gram-Schmidt algorithm.  Fails if `r3_element` is zero.
   template<typename S>
   R3Element OrthogonalizationAgainst(R3Element<S> const& r3_element) const;
 
@@ -76,8 +76,8 @@ struct alignas(16) R3Element final {
 
 template<typename Scalar>
 struct SphericalCoordinates final {
-  // Default, but prevents aggregate initialization of |SphericalCoordinates| to
-  // obviate confusion over the order of |latitude| and |longitude|.
+  // Default, but prevents aggregate initialization of `SphericalCoordinates` to
+  // obviate confusion over the order of `latitude` and `longitude`.
   SphericalCoordinates();
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
@@ -111,7 +111,7 @@ template<typename Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right);
 
-// Dimensionful multiplication |LScalar * R3Element<RScalar>| is the tensor
+// Dimensionful multiplication `LScalar * R3Element<RScalar>` is the tensor
 // product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
 // the result is an R3Element<Product<LScalar, RScalar>>.
 template<typename LScalar, typename RScalar>
@@ -210,8 +210,8 @@ template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                               R3Element<RScalar> const& right);
 
-// Returns the |i|th basis vector, whose |i|th coordinate is 1, and whose
-// other coordinates are 0.  |i| must be in [0, 2].
+// Returns the `i`th basis vector, whose `i`th coordinate is 1, and whose
+// other coordinates are 0.  `i` must be in [0, 2].
 R3Element<double> BasisVector(int i);
 
 }  // namespace internal

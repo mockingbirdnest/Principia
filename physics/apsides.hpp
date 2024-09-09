@@ -27,8 +27,8 @@ using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_quantities;
 
-// Computes the apsides with respect to |reference| for the section given by
-// |begin| and |end| of |trajectory|.  Appends to the given output trajectories
+// Computes the apsides with respect to `reference` for the section given by
+// `begin` and `end` of `trajectory`.  Appends to the given output trajectories
 // one point for each apsis.
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
@@ -41,7 +41,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     DiscreteTrajectory<Frame>& periapsides);
 
 // Returns the ordered time intervals where there can be a collision with the
-// |reference_body| because the |trajectory| is below its |max_radius|.
+// `reference_body` because the `trajectory` is below its `max_radius`.
 template<typename Frame>
 std::vector<Interval<Instant>> ComputeCollisionIntervals(
     RotatingBody<Frame> const& reference_body,
@@ -51,11 +51,11 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     DiscreteTrajectory<Frame> const& periapsides);
 
 // Computes the first collision between a vessel and a rotating body over the
-// given time |interval| with an accuracy better than |max_collision_error|.
-// Returns |nullopt| if there is no collision over the |interval|.  The
-// |interval| should have been obtained by |ComputeCollisionIntervals|. |radius|
+// given time `interval` with an accuracy better than `max_collision_error`.
+// Returns `nullopt` if there is no collision over the `interval`.  The
+// `interval` should have been obtained by `ComputeCollisionIntervals`. `radius`
 // must give the radius of the celestial at a particular position given by its
-// latitude and longitude.  It must never exceed the |max_radius| of the body.
+// latitude and longitude.  It must never exceed the `max_radius` of the body.
 template<typename Frame>
 std::optional<typename DiscreteTrajectory<Frame>::value_type>
 ComputeFirstCollision(
@@ -67,11 +67,11 @@ ComputeFirstCollision(
     std::function<Length(Angle const& latitude, Angle const& longitude)> const&
         radius);
 
-// Computes the crossings of the section given by |begin| and |end| of
-// |trajectory| with the xy plane.  Appends the crossings that go towards the
-// |north| side of the xy plane to |ascending|, and those that go away from the
-// |north| side to |descending|.
-// Nodes for which |predicate| returns false are excluded.
+// Computes the crossings of the section given by `begin` and `end` of
+// `trajectory` with the xy plane.  Appends the crossings that go towards the
+// `north` side of the xy plane to `ascending`, and those that go away from the
+// `north` side to `descending`.
+// Nodes for which `predicate` returns false are excluded.
 template<typename Frame, typename Predicate = ConstantFunction<bool>>
 absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
                           typename DiscreteTrajectory<Frame>::iterator begin,
@@ -83,8 +83,8 @@ absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
                           DiscreteTrajectory<Frame>& descending,
                           Predicate predicate = Identically(true));
 
-// TODO(egg): when we can usefully iterate over an arbitrary |Trajectory|, move
-// the following from |Ephemeris|.
+// TODO(egg): when we can usefully iterate over an arbitrary `Trajectory`, move
+// the following from `Ephemeris`.
 #if 0
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& trajectory1,

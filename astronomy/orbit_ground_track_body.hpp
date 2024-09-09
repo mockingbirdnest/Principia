@@ -25,12 +25,12 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // Note that the origin of this celestial longitude is arbitrary: it is not the
-// node of the orbit around the sun (the equinox).  If |PrimaryCentred| is the
+// node of the orbit around the sun (the equinox).  If `PrimaryCentred` is the
 // GCRS, this is the right ascension (with respect to the mean equinox of
 // J2000).
 template<typename PrimaryCentred>
 Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
-  // TODO(egg): |ToSpherical| is wasteful, as we discard the latitude.
+  // TODO(egg): `ToSpherical` is wasteful, as we discard the latitude.
   return (q - PrimaryCentred::origin).coordinates().ToSpherical().longitude;
 }
 
@@ -79,7 +79,7 @@ Interval<Angle> MeanSolarTimesOfNodes(
 
 // Returns the interval spanned by the unwound angles
 //   longitudes_of_equatorial_crossings[n] - initial_offset - n * Δλᴇ,
-// where Δλᴇ is |nominal_recurrence.equatorial_shift()|, and the first angle is
+// where Δλᴇ is `nominal_recurrence.equatorial_shift()`, and the first angle is
 // in [0, 2π].
 inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
     std::vector<Angle> const& longitudes_of_equatorial_crossings,
@@ -102,8 +102,8 @@ inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
 inline Interval<Angle>
 OrbitGroundTrack::EquatorCrossingLongitudes::longitudes_reduced_to_pass(
     int const pass_index) const {
-  // |shift| applies the number of equatorial shifts corresponding to the pass
-  // number; |reduction| puts the midpoint of the shifted interval in [0, 2π].
+  // `shift` applies the number of equatorial shifts corresponding to the pass
+  // number; `reduction` puts the midpoint of the shifted interval in [0, 2π].
   Angle shift;
   Interval<Angle> longitudes;
   if (pass_index % 2 == 1) {
@@ -180,7 +180,7 @@ OrbitGroundTrack::equator_crossing_longitudes(
           initial_offset);
   if (first_descending_pass_before_first_ascending_pass_) {
     // Since the first descending pass is before the first ascending pass, using
-    // the same offset in |ReducedLongitudesOfEquatorialCrossings| would compute
+    // the same offset in `ReducedLongitudesOfEquatorialCrossings` would compute
     // the longitude reduced to pass 0; adjust by one equatorial shift to get
     // pass 2.
     initial_offset -= Δλᴇ;

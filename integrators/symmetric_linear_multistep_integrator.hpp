@@ -1,4 +1,4 @@
-// The files containing the tree of of child classes of |Integrator| must be
+// The files containing the tree of of child classes of `Integrator` must be
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 //  parent.
@@ -69,8 +69,8 @@ class SymmetricLinearMultistepIntegrator
       requires serializable<typename ODE_::DependentVariable>;
 
    private:
-    // The data for a previous step of the integration.  The |Displacement|s
-    // here are really |Position|s, but we do complex computations on them and
+    // The data for a previous step of the integration.  The `Displacement`s
+    // here are really `Position`s, but we do complex computations on them and
     // it would be very inconvenient to cast these computations as barycentres.
     struct Step final {
       std::vector<DoublePrecision<typename ODE::DependentVariableDifference>>

@@ -31,8 +31,8 @@ internal static class Loader {
         possible_dll_paths = new []
             { @"GameData\Principia\x64\" + dll_filename };
         break;
-      // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
-      // (we probably don't actually encounter |PlatformID.MacOSX|).
+      // Both Mac and Linux report `PlatformID.Unix`, so we treat them together
+      // (we probably don't actually encounter `PlatformID.MacOSX`).
       case PlatformID.Unix:
       case PlatformID.MacOSX:
         dll_filename = "principia.so";

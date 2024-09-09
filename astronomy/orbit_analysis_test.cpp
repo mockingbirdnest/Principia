@@ -153,7 +153,7 @@ class OrbitAnalysisTest : public ::testing::Test {
         earth_(*earth_1957_.rotating_body(*ephemeris_, "Earth")) {}
 
   // Returns a GCRS trajectory obtained by stitching together the trajectories
-  // of |sp3_orbit.satellites| in |sp3_orbit.files|.
+  // of `sp3_orbit.satellites` in `sp3_orbit.files`.
   not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
       SP3Orbit const& sp3_orbit) {
     BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_.get(),

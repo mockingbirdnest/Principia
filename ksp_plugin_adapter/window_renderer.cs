@@ -132,7 +132,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     }
     UnityEngine.GUI.skin = skin_;
     if (show_) {
-      // NOTE: Calling |Shrink| here (in a Layout, before drawing the window)
+      // NOTE: Calling `Shrink` here (in a Layout, before drawing the window)
       // satisfies the conditions noted in its doc comment and is safe.
       Shrink();
       rectangle_ = UnityEngine.GUILayout.Window(
@@ -146,7 +146,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       // the centre of the screen.  This is tricky because we don't know its
       // width.  So we go through this method until the width has been
       // determined, and we update the window based on the width.  Note that
-      // |must_centre_| has to be persisted because there can be multiple
+      // `must_centre_` has to be persisted because there can be multiple
       // scene changes before a window is shown for the first time.  Also note
       // the conversion to float to avoid losing decimals and to avoid double
       // rounding.
@@ -221,7 +221,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   }
 
   // NOTE(al2me6): Empirical observation led to the following conclusions:
-  // In each frame, |OnGUI| (from whence this method is ultimately called)
+  // In each frame, `OnGUI` (from whence this method is ultimately called)
   // is called at least twice, with the following order of event types:
   // 1. Layout
   // 2. For each interaction during that frame (e.g., mouse event):
@@ -230,7 +230,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
   // 3. Repaint
   // cf. <https://docs.unity3d.com/ScriptReference/Event.html>.
   // Furthermore, this function is not safe to call between the call to
-  // |GUILayout.Window| in the last Layout of the frame and the subsequent
+  // `GUILayout.Window` in the last Layout of the frame and the subsequent
   // Repaint; doing so may cause the window to become blank for one frame.
   private void Shrink() {
     if (shrink_scheduled_

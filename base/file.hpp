@@ -9,7 +9,7 @@ namespace base {
 namespace _file {
 namespace internal {
 
-// A RAII wrapper for a |std::ofstream|.
+// A RAII wrapper for a `std::ofstream`.
 class OFStream {
  public:
   OFStream() = default;

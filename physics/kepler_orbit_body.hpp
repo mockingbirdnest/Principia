@@ -171,8 +171,8 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Angle const ω =
       ReduceAngle<0, 2 * π>(OrientedAngleBetween(ascending_node, periapsis, h));
   // Longitude of ascending node.
-  // This is equivalent to |OrientedAngleBetween(x, ascending_node, x_wedge_y)|
-  // since |ascending_node| lies in the xy plane.
+  // This is equivalent to `OrientedAngleBetween(x, ascending_node, x_wedge_y)`
+  // since `ascending_node` lies in the xy plane.
   Angle const Ω = ReduceAngle<0, 2 * π>(
       ArcTan(ascending_node.coordinates().y, ascending_node.coordinates().x));
   Angle const true_anomaly =

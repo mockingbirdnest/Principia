@@ -43,18 +43,18 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
 
-// The |OrbitAnalyser| asynchronously integrates a trajectory, and computes
+// The `OrbitAnalyser` asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting
 // orbit.
 class OrbitAnalyser {
  public:
   // The analysis stores the computed orbital characteristics.  It is publicly
-  // mutable via |SetRecurrence| and |ResetRecurrence| to allow the caller to
+  // mutable via `SetRecurrence` and `ResetRecurrence` to allow the caller to
   // consider a nominal recurrence other than the one deduced from the orbital
   // elements: analysing the precomputed ground track with respect to a
   // different recurrence is relatively cheap, so it is inconvenient to wait for
   // a whole new analysis to do so, but doing it at every frame is still
-  // wasteful, so we cache that in the |Analysis|.
+  // wasteful, so we cache that in the `Analysis`.
   class Analysis {
    public:
     Instant const& first_time() const;
@@ -64,20 +64,20 @@ class OrbitAnalyser {
     std::optional<OrbitalElements> const& elements() const;
     std::optional<OrbitRecurrence> const& recurrence() const;
     std::optional<OrbitGroundTrack> const& ground_track() const;
-    // |equatorial_crossings().has_value()| if and only if
-    // |recurrence().has_value && ground_track().has_value()|;
-    // |*equatorial_crossings()| is
+    // `equatorial_crossings().has_value()` if and only if
+    // `recurrence().has_value && ground_track().has_value()`;
+    // `*equatorial_crossings()` is
     //   ground_track()->equator_crossing_longitudes(
     //       *recurrence(), /*first_ascending_pass_index=*/1)
     // precomputed to avoid performing this calculation at every frame.
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes> const&
     equatorial_crossings() const;
 
-    // Sets |recurrence|, updating |equatorial_crossings| if needed.
+    // Sets `recurrence`, updating `equatorial_crossings` if needed.
     void SetRecurrence(OrbitRecurrence const& recurrence);
-    // Resets |recurrence| to a value deduced from |*elements| by
-    // |OrbitRecurrence::ClosestRecurrence|, or to nullopt if
-    // |!elements.has_value()|, updating |equatorial_crossings| if needed.
+    // Resets `recurrence` to a value deduced from `*elements` by
+    // `OrbitRecurrence::ClosestRecurrence`, or to nullopt if
+    // `!elements.has_value()`, updating `equatorial_crossings` if needed.
     void ResetRecurrence();
 
    private:
@@ -101,7 +101,7 @@ class OrbitAnalyser {
     Instant first_time;
     DegreesOfFreedom<Barycentric> first_degrees_of_freedom;
     Time mission_duration;
-    // The analyser may compute the trajectory up to |extended_mission_duration|
+    // The analyser may compute the trajectory up to `extended_mission_duration`
     // to ensure that at least one revolution is analysed.
     std::optional<Time> extended_mission_duration;
   };
@@ -113,20 +113,20 @@ class OrbitAnalyser {
   virtual ~OrbitAnalyser();
 
   // Cancels any computation in progress, causing the next call to
-  // |RequestAnalysis| to be processed as fast as possible.
+  // `RequestAnalysis` to be processed as fast as possible.
   void Interrupt();
 
   // Sets the parameters that will be used for the computation of the next
   // analysis.
   void RequestAnalysis(Parameters const& parameters);
 
-  // The last value passed to |RequestAnalysis|.
+  // The last value passed to `RequestAnalysis`.
   std::optional<Parameters> const& last_parameters() const;
 
-  // Sets |analysis()| to the latest computed analysis.
+  // Sets `analysis()` to the latest computed analysis.
   void RefreshAnalysis();
 
-  // Mutable so that the caller can call |SetRecurrence| and |ResetRecurrence|.
+  // Mutable so that the caller can call `SetRecurrence` and `ResetRecurrence`.
   Analysis* analysis();
 
   // The result is in [0, 1]; it tracks the progress of the computation of the
@@ -147,9 +147,9 @@ class OrbitAnalyser {
       RotatingBody<Barycentric> const*& primary,
       Time& smallest_osculating_period);
 
-  // Flows the |trajectory| with a fixed step integrator using the given
-  // |parameters|.  This is done in small increments and
-  // |progress_of_next_analysis_| is updated after each increment to be able to
+  // Flows the `trajectory` with a fixed step integrator using the given
+  // `parameters`.  This is done in small increments and
+  // `progress_of_next_analysis_` is updated after each increment to be able to
   // display a progress bar.  This function may be stopped.
   absl::Status FlowWithProgressBar(
       Parameters const& parameters,
@@ -158,14 +158,14 @@ class OrbitAnalyser {
 
   // If we can find a sun, computes its mean motion around the primary if it
   // doesn't require too long an integration.  If there is no sun, or the
-  // integration would take too long, |mean_sun| is set to |std::nullopt|.
+  // integration would take too long, `mean_sun` is set to `std::nullopt`.
   absl::Status ComputeMeanSunIfPossible(
       Parameters const& parameters,
       BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
           primary_centred,
       std::optional<OrbitGroundTrack::MeanSun>& mean_sun);
 
-  // Converts the |trajectory| to the given |primary_centred| frame.  This
+  // Converts the `trajectory` to the given `primary_centred` frame.  This
   // function may be stopped.
   static absl::StatusOr<DiscreteTrajectory<PrimaryCentred>> ToPrimaryCentred(
       BodyCentredNonRotatingReferenceFrame<Barycentric, PrimaryCentred> const&
@@ -182,18 +182,18 @@ class OrbitAnalyser {
 
   mutable absl::Mutex lock_;
   jthread analyser_;
-  // The |analyser_| is idle:
-  // — if it is not joinable, e.g. because it was stopped by |Interrupt()|, or
-  // — if it is done computing |next_analysis_| and has stopped or is about to
+  // The `analyser_` is idle:
+  // — if it is not joinable, e.g. because it was stopped by `Interrupt()`, or
+  // — if it is done computing `next_analysis_` and has stopped or is about to
   //   stop executing.
   // If it is joined once idle (and joinable), it will not attempt to acquire
-  // |lock_|.
+  // `lock_`.
   bool analyser_idle_ GUARDED_BY(lock_) = true;
-  // |next_analysis_| is set by the |analyser_| thread; it is read and cleared
+  // `next_analysis_` is set by the `analyser_` thread; it is read and cleared
   // by the main thread.
   std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
-  // |progress_of_next_analysis_| is set by the |analyser_| thread; it tracks
-  // progress in computing |next_analysis_|.
+  // `progress_of_next_analysis_` is set by the `analyser_` thread; it tracks
+  // progress in computing `next_analysis_`.
   std::atomic<double> progress_of_next_analysis_ = 0;
 };
 

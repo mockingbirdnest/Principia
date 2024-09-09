@@ -17,7 +17,7 @@ using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_dimensions;
 
-// The template template parameter |Quantity| on specializations lifts a
+// The template template parameter `Quantity` on specializations lifts a
 // circular dependency.
 
 template<typename Q>
@@ -58,8 +58,8 @@ struct NthRootGenerator<Quantity<D>, n, void> : not_constructible {
       Quantity<typename DimensionsNthRootGenerator<D, n>::Type>>::Type;
 };
 
-// NOTE(phl): We use |is_arithmetic| here, not |double|, to make it possible to
-// write something like |Sqrt(2)|.  We could use |is_arithmetic| in more places
+// NOTE(phl): We use `is_arithmetic` here, not `double`, to make it possible to
+// write something like `Sqrt(2)`.  We could use `is_arithmetic` in more places
 // but it would make the template magic even harder to follow, so let's not do
 // that until we have a good reason.
 template<typename Q, int n>

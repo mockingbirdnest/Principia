@@ -24,8 +24,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::quantities::_elementary_functions;
 
-// Values that are too small cause extra activity in |Add| and deeper recursion
-// in |FindNearestNeighbour|.  Values that are too large cause extra function
+// Values that are too small cause extra activity in `Add` and deeper recursion
+// in `FindNearestNeighbour`.  Values that are too large cause extra function
 // evaluations in the leaf search.
 constexpr int64_t pcp_tree_max_values_per_cell = 20;
 
@@ -114,7 +114,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   // This is the set X* from [RT87b].
   Arguments stationary_points;
 
-  // The sample points.  We'll have at least |points_per_round| points.
+  // The sample points.  We'll have at least `points_per_round` points.
   Arguments points;
   points.reserve(points_per_round);
 
@@ -134,8 +134,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
   // This structure corresponds to the list T in [RT87b].  Points are ordered
   // based on their distance to their nearest neighbour that has a lower value
-  // of |f|.  When new points are added to the map, they are initially given the
-  // key |Infinity|, which is then refined when the nearest neighbour search
+  // of `f`.  When new points are added to the map, they are initially given the
+  // key `Infinity`, which is then refined when the nearest neighbour search
   // happens.  Each time through the outer loop, only the points in the upper
   // half of the map (distance greater than rₖ) are considered, and they are
   // moved down if a "too close" neighbour is found.
@@ -148,9 +148,9 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   // [RT87b]; or we can use the optimal Bayesian stopping rule described in
   // proposition 2 of [RT87a] and equations (3) and (4) of [RT87b].  For
   // consistency with most of the description in [RT87a] and [RT87b], we call
-  // |N| the number of points added in a particular iteration and |kN| the total
-  // number of sampling points so far, even if |N| varies from one iteration to
-  // the next and |kN| is not necessarily |k * N|.
+  // `N` the number of points added in a particular iteration and `kN` the total
+  // number of sampling points so far, even if `N` varies from one iteration to
+  // the next and `kN` is not necessarily `k * N`.
   std::int64_t number_of_points_all_rounds;
   std::int64_t number_of_points_this_round;
   std::int64_t round = 1;
@@ -169,7 +169,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       }
     } else {
       std::int64_t const w = stationary_points.size();
-      // Note that |w| may be 0 here if the stationary points were all outside
+      // Note that `w` may be 0 here if the stationary points were all outside
       // the local search radius.
       DCHECK_GT(kN, w + 2);
       // [RT87b] equation 3.
@@ -188,7 +188,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     }
 
     // Generate N new random points and add them to the PCP tree and to the
-    // |schedule| map.  Note that while [RT87b] tells us in the description of
+    // `schedule` map.  Note that while [RT87b] tells us in the description of
     // algorithm A that "it is no longer necessary to reduce the sample" they
     // also tell us in section 4 that they reduce the sample using γ = 0.1.
     // Also, [KS05] reduce the sample, but they don't seem to agree on whether
@@ -246,12 +246,12 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         // it again.
         it = schedule.erase(it);
       } else {
-        // Move the point xᵢ "down" in the |schedule| map, based on the distance
+        // Move the point xᵢ "down" in the `schedule` map, based on the distance
         // to its nearest neighbour.
         auto const distance²_to_xⱼ = (xᵢ - *xⱼ).Norm²();
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
         it = schedule.erase(it);
-        // This insertion take places below |schedule.upper_bound(rₖ²)|, so it
+        // This insertion take places below `schedule.upper_bound(rₖ²)`, so it
         // doesn't affect the current iteration.
         schedule.emplace(distance²_to_xⱼ, &xᵢ);
       }

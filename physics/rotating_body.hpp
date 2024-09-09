@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |Body| must be included in
+// The files containing the tree of child classes of `Body` must be included in
 // the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
 #include "physics/massive_body.hpp"
@@ -40,12 +40,12 @@ class RotatingBody : public MassiveBody {
  public:
   class Parameters final {
    public:
-    // |reference_angle| is the angle of the prime meridian at
-    // |reference_instant|.  |angular_frequency| gives the rate of rotation of
+    // `reference_angle` is the angle of the prime meridian at
+    // `reference_instant`.  `angular_frequency` gives the rate of rotation of
     // the body around the pole (it may be negative, as is the convention for
     // planets and satellites whose rotation is retrograde).  The direction of
-    // the pole is specified in |Frame| using |right_ascension_of_pole| and
-    // |declination_of_pole|.
+    // the pole is specified in `Frame` using `right_ascension_of_pole` and
+    // `declination_of_pole`.
     Parameters(Length const& min_radius,
                Length const& mean_radius,
                Length const& max_radius,
@@ -88,11 +88,11 @@ class RotatingBody : public MassiveBody {
   // at construction.
   Vector<double, Frame> const& polar_axis() const;
 
-  // Two unit vectors in the equatorial plane of the body.  |biequatorial| is
-  // also in the equatorial plane of Frame.  The basis |equatorial|,
-  // |biequatorial|, |polar_axis| has the same orientation as that of |Frame|.
+  // Two unit vectors in the equatorial plane of the body.  `biequatorial` is
+  // also in the equatorial plane of Frame.  The basis `equatorial`,
+  // `biequatorial`, `polar_axis` has the same orientation as that of `Frame`.
   // In the figures of the 2015 IAU WGCCRE report (figure 1 or 2 depending on
-  // the convention used for |polar_axis|), |biequatorial| is the node Q.
+  // the convention used for `polar_axis`), `biequatorial` is the node Q.
   Vector<double, Frame> const& biequatorial() const;
   Vector<double, Frame> const& equatorial() const;
 
@@ -109,15 +109,15 @@ class RotatingBody : public MassiveBody {
   // and angular frequency passed at construction.
   AngularVelocity<Frame> const& angular_velocity() const;
 
-  // Returns the position at time |t|.
+  // Returns the position at time `t`.
   Angle AngleAt(Instant const& t) const;
 
   // Returns the rotation relating the reference frame of the surface of this
-  // body to |Frame|.  The reference frame of the surface is defined as follows:
-  //   - the z axis is the |polar_axis|;
+  // body to `Frame`.  The reference frame of the surface is defined as follows:
+  //   - the z axis is the `polar_axis`;
   //   - the x axis points from the centre of the body to the reference
   //     meridian;
-  //   - the reference frame has the same handedness as |Frame|.
+  //   - the reference frame has the same handedness as `Frame`.
   // Following this definition,
   //   Displacement<SurfaceFrame>(RadiusLatitudeLongitude(r, φ, λ))
   // converts planetocentric coordinates to a displacement from the body centre
@@ -132,10 +132,10 @@ class RotatingBody : public MassiveBody {
   Rotation<Frame, SurfaceFrame> ToSurfaceFrame(Instant const& t) const;
 
   // Returns the rotation relating the celestial reference frame of this
-  // body to |Frame|.  The celestial reference frame is defined as follows:
-  //   - the z axis is the |polar_axis|;
-  //   - the x axis is the |equatorial| vector;
-  //   - the reference frame has the same handedness as |Frame|.
+  // body to `Frame`.  The celestial reference frame is defined as follows:
+  //   - the z axis is the `polar_axis`;
+  //   - the x axis is the `equatorial` vector;
+  //   - the reference frame has the same handedness as `Frame`.
   template<typename CelestialFrame>
   Rotation<Frame, CelestialFrame> ToCelestialFrame() const;
 
@@ -150,7 +150,7 @@ class RotatingBody : public MassiveBody {
   void WriteToMessage(
       not_null<serialization::MassiveBody*> message) const override;
 
-  // Fails if the |RotatingBody| extension is absent from the message.
+  // Fails if the `RotatingBody` extension is absent from the message.
   static not_null<std::unique_ptr<RotatingBody<Frame>>> ReadFromMessage(
       serialization::RotatingBody const& message,
       MassiveBody::Parameters const& massive_body_parameters);

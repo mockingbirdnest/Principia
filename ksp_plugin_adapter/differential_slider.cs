@@ -9,7 +9,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   public delegate bool ValueParser(string s, out double value);
 
-  // Rates are in units of |value| per real-time second.
+  // Rates are in units of `value` per real-time second.
   public DifferentialSlider(string label,
                             string unit,
                             double log10_lower_rate,
@@ -91,7 +91,7 @@ internal class DifferentialSlider : ScalingRenderer {
     value = new_value;
   }
 
-  // Renders the |DifferentialSlider|.  Returns true if and only if |value|
+  // Renders the `DifferentialSlider`.  Returns true if and only if `value`
   // changed.
   public bool Render(bool enabled) {
     bool value_changed = false;
@@ -121,7 +121,7 @@ internal class DifferentialSlider : ScalingRenderer {
         bool text_field_has_focus =
             UnityEngine.GUI.GetNameOfFocusedControl() == text_field_name;
 
-        // Use up the vertical arrow keys before the |TextField| does (it
+        // Use up the vertical arrow keys before the `TextField` does (it
         // interprets up as home and down as end).
         bool event_was_arrow_key = false;
         if (text_field_has_focus &&
@@ -307,9 +307,9 @@ internal class DifferentialSlider : ScalingRenderer {
     return increment;
   }
 
-  // If |formatted_value_[digit_index]| is a decimal place, returns true and
-  // sets |increment| to the value of a unit in that place.  Otherwise, returns
-  // false, setting |increment| to 0.
+  // If `formatted_value_[digit_index]` is a decimal place, returns true and
+  // sets `increment` to the value of a unit in that place.  Otherwise, returns
+  // false, setting `increment` to 0.
   private bool CanIncrementAt(int digit_index, out double increment) {
     increment = 0;
     // Cannot increment an ill-formed value.
@@ -373,8 +373,8 @@ internal class DifferentialSlider : ScalingRenderer {
   private string formatted_value_;
   private readonly UnityEngine.TextAnchor alignment_;
 
-  // Represents a possible adjustment of the digit at |index| in
-  // |formatted_value_|.  The unit in that place is |increment|.
+  // Represents a possible adjustment of the digit at `index` in
+  // `formatted_value_`.  The unit in that place is `increment`.
   private struct DigitAdjustment {
     public DigitAdjustment(int index, double increment) {
       this.index = index;

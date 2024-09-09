@@ -91,7 +91,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
 }
 
 // A convenience test to find the last unpaired method of a journal.  You must
-// set |path|.
+// set `path`.
 TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
   std::string path =
       R"(P:\Public Mockingbird\Principia\Crashes\3375\JOURNAL.20220610-092143)";  // NOLINT
@@ -109,8 +109,8 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
              << player.last_method_out_return().DebugString();
 }
 
-// A test to debug a journal.  You must set |path| and fill the |method_in| and
-// |method_out_return| protocol buffers.
+// A test to debug a journal.  You must set `path` and fill the `method_in` and
+// `method_out_return` protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string path =
       R"(P:\Public Mockingbird\Principia\Issues\3872\JOURNAL.20240210-173425)";  // NOLINT

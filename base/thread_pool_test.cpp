@@ -27,7 +27,7 @@ class ThreadPoolTest : public ::testing::Test {
 };
 
 // Check that execution occurs in parallel.  If things were sequential, the
-// integers in |numbers| would be monotonically increasing.
+// integers in `numbers` would be monotonically increasing.
 TEST_F(ThreadPoolTest, ParallelExecution) {
 #if defined(_DEBUG)
   constexpr int number_of_calls = 100'000;
@@ -73,7 +73,7 @@ TEST_F(ThreadPoolTest, TryAdd) {
   EXPECT_EQ(std::nullopt,
             pool.TryAdd([]() { LOG(FATAL) << "Should not run"; }));
 
-  // Release one of the executing threads.  Now |TryAdd| should work and the
+  // Release one of the executing threads.  Now `TryAdd` should work and the
   // function should run.
   proceed1.Notify();
   std::this_thread::sleep_for(100ms);
@@ -98,7 +98,7 @@ TEST_F(ThreadPoolTest, WaitUntilIdleFor) {
   // Wait until a thread becomes idle.  That doesn't happen, so we timeout.
   EXPECT_FALSE(pool.WaitUntilIdleFor(absl::Milliseconds(100)));
 
-  // Release one of the executing threads.  Now |WaitUntilIdleFor| should see
+  // Release one of the executing threads.  Now `WaitUntilIdleFor` should see
   // that there is an idle thread.
   proceed1.Notify();
   std::this_thread::sleep_for(100ms);

@@ -113,7 +113,7 @@ class UnboundedMatrix final {
   UnboundedMatrix(std::int64_t rows, std::int64_t columns);
   UnboundedMatrix(std::int64_t rows, std::int64_t columns, uninitialized_t);
 
-  // The |data| must be in row-major format and must be for a square matrix.
+  // The `data` must be in row-major format and must be for a square matrix.
   UnboundedMatrix(std::initializer_list<Scalar> data);
 
   UnboundedMatrix(std::int64_t rows, std::int64_t columns,
@@ -127,13 +127,13 @@ class UnboundedMatrix final {
                          UnboundedMatrix const& right) = default;
 
   // For  0 ≤ i < rows and 0 ≤ j < columns, the entry a_ij is accessed as
-  // |a(i, j)|.  If i and j do not satisfy these conditions, the expression
-  // |a(i, j)| implies undefined behaviour.
+  // `a(i, j)`.  If i and j do not satisfy these conditions, the expression
+  // `a(i, j)` implies undefined behaviour.
   Scalar& operator()(std::int64_t row, std::int64_t column);
   Scalar const& operator()(std::int64_t row, std::int64_t column) const;
 
   // Applies the matrix as a bilinear form.  Present for compatibility with
-  // |SymmetricBilinearForm|.  Prefer to use |TransposedView| and |operator*|.
+  // `SymmetricBilinearForm`.  Prefer to use `TransposedView` and `operator*`.
   template<typename LScalar, typename RScalar>
   Product<Scalar, Product<LScalar, RScalar>>
       operator()(UnboundedVector<LScalar> const& left,
@@ -173,7 +173,7 @@ class UnboundedLowerTriangularMatrix final {
   explicit UnboundedLowerTriangularMatrix(std::int64_t rows);
   UnboundedLowerTriangularMatrix(std::int64_t rows, uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   UnboundedLowerTriangularMatrix(std::initializer_list<Scalar> data);
 
   explicit UnboundedLowerTriangularMatrix(
@@ -186,8 +186,8 @@ class UnboundedLowerTriangularMatrix final {
   friend bool operator!=(UnboundedLowerTriangularMatrix const& left,
                          UnboundedLowerTriangularMatrix const& right) = default;
 
-  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as |a(i, j)|.
-  // If i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as `a(i, j)`.
+  // If i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   Scalar& operator()(std::int64_t row, std::int64_t column);
   Scalar const& operator()(std::int64_t row, std::int64_t column) const;
@@ -198,7 +198,7 @@ class UnboundedLowerTriangularMatrix final {
   void Extend(std::int64_t extra_rows);
   void Extend(std::int64_t extra_rows, uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   void Extend(std::initializer_list<Scalar> data);
 
   void EraseToEnd(std::int64_t begin_row_index);
@@ -224,7 +224,7 @@ class UnboundedStrictlyUpperTriangularMatrix final {
   explicit UnboundedStrictlyUpperTriangularMatrix(std::int64_t columns);
   UnboundedStrictlyUpperTriangularMatrix(std::int64_t columns, uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   UnboundedStrictlyUpperTriangularMatrix(
       std::initializer_list<Scalar> const& data);
 
@@ -240,8 +240,8 @@ class UnboundedStrictlyUpperTriangularMatrix final {
       UnboundedStrictlyUpperTriangularMatrix const& left,
       UnboundedStrictlyUpperTriangularMatrix const& right) = default;
 
-  // For  0 ≤ i < j < columns, the entry a_ij is accessed as |a(i, j)|.
-  // If i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ i < j < columns, the entry a_ij is accessed as `a(i, j)`.
+  // If i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   Scalar& operator()(std::int64_t row, std::int64_t column);
   Scalar const& operator()(std::int64_t row, std::int64_t column) const;
@@ -252,7 +252,7 @@ class UnboundedStrictlyUpperTriangularMatrix final {
   void Extend(std::int64_t extra_columns);
   void Extend(std::int64_t extra_columns, uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   void Extend(std::initializer_list<Scalar> const& data);
 
   void EraseToEnd(std::int64_t begin_column_index);
@@ -290,7 +290,7 @@ class UnboundedUpperTriangularMatrix final {
   explicit UnboundedUpperTriangularMatrix(std::int64_t columns);
   UnboundedUpperTriangularMatrix(std::int64_t columns, uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   UnboundedUpperTriangularMatrix(std::initializer_list<Scalar> const& data);
 
   explicit UnboundedUpperTriangularMatrix(
@@ -303,8 +303,8 @@ class UnboundedUpperTriangularMatrix final {
   friend bool operator!=(UnboundedUpperTriangularMatrix const& left,
                          UnboundedUpperTriangularMatrix const& right) = default;
 
-  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as |a(i, j)|.
-  // If i and j do not satisfy these conditions, the expression |a(i, j)|
+  // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as `a(i, j)`.
+  // If i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
   Scalar& operator()(std::int64_t row, std::int64_t column);
   Scalar const& operator()(std::int64_t row, std::int64_t column) const;
@@ -315,7 +315,7 @@ class UnboundedUpperTriangularMatrix final {
   void Extend(std::int64_t extra_columns);
   void Extend(std::int64_t extra_columns, uninitialized_t);
 
-  // The |data| must be in row-major format.
+  // The `data` must be in row-major format.
   void Extend(std::initializer_list<Scalar> const& data);
 
   void EraseToEnd(std::int64_t begin_column_index);

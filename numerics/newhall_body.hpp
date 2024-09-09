@@ -24,7 +24,7 @@ using namespace principia::quantities::_quantities;
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;
 
-// Logically |QV| should be heterogeneous, as it contains positions (or
+// Logically `QV` should be heterogeneous, as it contains positions (or
 // displacements) and velocities.  However, this would require giving dimensions
 // to the derivatives of the Чебышёв polynomials.  Let's no go there, let's do a
 // bit of type decay instead.
@@ -32,7 +32,7 @@ template<typename Value>
 using QV = std::array<Value, 2 * divisions + 2>;
 
 // A helper to unroll the dot product between an array-like object (which must
-// have an operator[]) and a |QV|.
+// have an operator[]) and a `QV`.
 template<int index = 2 * divisions + 1>
 struct DotProduct {
   template<typename Left, typename RightElement>
@@ -59,8 +59,8 @@ RightElement DotProduct<0>::Compute(Left const& left,
   return left[0] * right[0];
 }
 
-// Fills |result| (which must be array-like) with the result of multiplying a
-// matrix with a |QV|.
+// Fills `result` (which must be array-like) with the result of multiplying a
+// matrix with a `QV`.
 template<int degree, typename RightElement, typename Result>
 void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
               QV<RightElement> const& right,

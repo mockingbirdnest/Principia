@@ -269,7 +269,7 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t,
   absl::MutexLock l(&lock_);
   Instant const instance_time = this->instance_time_locked();
 
-  // We want |t_max()| to reach at least this point when this function
+  // We want `t_max()` to reach at least this point when this function
   // terminates normally.
   Instant const desired_t_max = std::min(
       t,
@@ -277,16 +277,16 @@ absl::Status Ephemeris<Frame>::Prolong(Instant const& t,
 
   Instant t_final;  // Final time to integrate.
   if (desired_t_max <= instance_time) {
-    // Note that |desired_t_max| may be before the last time that we integrated
-    // and still after |t_max()|.  In this case we want to make sure that the
+    // Note that `desired_t_max` may be before the last time that we integrated
+    // and still after `t_max()`.  In this case we want to make sure that the
     // integrator makes progress.
     t_final = instance_time + fixed_step_parameters_.step();
   } else {
     t_final = desired_t_max;
   }
 
-  // Perform the integration.  Note that we may have to iterate until |t_max()|
-  // actually reaches |desired_t_max| because the last series may not be fully
+  // Perform the integration.  Note that we may have to iterate until `t_max()`
+  // actually reaches `desired_t_max` because the last series may not be fully
   // determined after the first integration.
   while (t_max_locked() < desired_t_max) {
     instance_->Solve(t_final).IgnoreError();
@@ -455,7 +455,7 @@ JacobianOfAcceleration<Frame> Ephemeris<Frame>::ComputeJacobianOnMassiveBody(
   std::vector<JacobianOfAcceleration<Frame>> jacobians(bodies_.size());
   int b1 = -1;
 
-  // Evaluate the |positions|.  Locking is necessary to be able to call the
+  // Evaluate the `positions`.  Locking is necessary to be able to call the
   // "locked" method of each trajectory.
   {
     absl::ReaderMutexLock l(&lock_);
@@ -506,7 +506,7 @@ Vector<Jerk, Frame> Ephemeris<Frame>::ComputeGravitationalJerkOnMasslessBody(
         b2_trajectory->EvaluateDegreesOfFreedomLocked(t);
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
-    // A vector from the center of |b2| to the center of |b1|.
+    // A vector from the center of `b2` to the center of `b1`.
     RelativeDegreesOfFreedom<Frame> const Δqv =
         degrees_of_freedom_of_b1 - degrees_of_freedom_of_b2;
     Displacement<Frame> const Δq = Δqv.displacement();
@@ -536,7 +536,7 @@ ComputeGravitationalJerkOnMassiveBody(not_null<MassiveBody const*> body,
   std::vector<Vector<Jerk, Frame>> jerks(bodies_.size());
   int b1 = -1;
 
-  // Evaluate the |degrees_of_freedom|.  Locking is necessary to be able to call
+  // Evaluate the `degrees_of_freedom`.  Locking is necessary to be able to call
   // the "locked" method of each trajectory.
   {
     absl::ReaderMutexLock l(&lock_);
@@ -606,7 +606,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
   std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
   int b1 = -1;
 
-  // Evaluate the |positions|.  Locking is necessary to be able to call the
+  // Evaluate the `positions`.  Locking is necessary to be able to call the
   // "locked" method of each trajectory.
   {
     absl::ReaderMutexLock l(&lock_);
@@ -705,8 +705,8 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
   not_null<ContinuousTrajectory<Frame> const*> const body2_trajectory =
       trajectory(body2);
 
-  // Computes the derivative of the squared distance between |body1| and |body2|
-  // at time |t|.
+  // Computes the derivative of the squared distance between `body1` and `body2`
+  // at time `t`.
   auto const evaluate_square_distance_derivative =
       [body1_trajectory, body2_trajectory](
           Instant const& t) -> Variation<Square<Length>> {
@@ -732,7 +732,7 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
             Sign(*previous_squared_distance_derivative)) {
       CHECK(previous_time);
 
-      // The derivative of |squared_distance| changed sign.  Find its zero by
+      // The derivative of `squared_distance` changed sign.  Find its zero by
       // Brent's method, this is the time of the apsis.  Then compute the apsis
       // and append it to one of the output trajectories.
       Instant const apsis_time = Brent(evaluate_square_distance_derivative,
@@ -878,15 +878,15 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
             message.checkpoint());
   }
 
-  // The checkpoint at or before |desired_t_min| will result in a |t_min()|
-  // which is at |desired_t_min| (if the checkpoint was taken with
-  // |last_points_.size() == 1|) or before (if the checkpoint was taken with
-  // |last_points_.size() > 1|).
+  // The checkpoint at or before `desired_t_min` will result in a `t_min()`
+  // which is at `desired_t_min` (if the checkpoint was taken with
+  // `last_points_.size() == 1`) or before (if the checkpoint was taken with
+  // `last_points_.size() > 1`).
   ephemeris->oldest_reanimated_checkpoint_ =
       ephemeris->checkpointer_->checkpoint_at_or_before(desired_t_min);
   if (ephemeris->oldest_reanimated_checkpoint_ == InfinitePast) {
     // In the pre-Grassmann compatibility case the (only) checkpoint may be
-    // after |desired_t_min|.  This also happens with old saves that are
+    // after `desired_t_min`.  This also happens with old saves that are
     // rewritten post-Grassmann.
     CHECK_LE(ephemeris->t_min(), desired_t_min);
   } else {
@@ -966,8 +966,8 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
   {
     absl::ReaderMutexLock l(&lock_);
 
-    // It is very important that |oldest_reanimated_checkpoint_| be only read by
-    // the |reanimator_| thread.  If the caller was trying to determine the set
+    // It is very important that `oldest_reanimated_checkpoint_` be only read by
+    // the `reanimator_` thread.  If the caller was trying to determine the set
     // of checkpoints to reanimate it might race with a reanimation already in
     // flight and result in the same checkpoint reanimated multiple times, which
     // is a no-no.
@@ -1177,7 +1177,7 @@ void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
     MassiveBody const& body2 = *bodies2[b2];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
-    // A vector from the center of |b2| to the center of |b1|.
+    // A vector from the center of `b2` to the center of `b1`.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
     Square<Length> const Δq² = Δq.Norm²();
@@ -1214,7 +1214,7 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
     MassiveBody const& body2 = *bodies2[b2];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
-    // A vector from the center of |b2| to the center of |b1|.
+    // A vector from the center of `b2` to the center of `b1`.
     RelativeDegreesOfFreedom<Frame> const Δqv =
         degrees_of_freedom_of_b1 - degrees_of_freedom[b2];
     Displacement<Frame> const Δq = Δqv.displacement();
@@ -1257,7 +1257,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
     MassiveBody const& body2 = *bodies2[b2];
     GravitationalParameter const& μ2 = body2.gravitational_parameter();
 
-    // A vector from the center of |b2| to the center of |b1|.
+    // A vector from the center of `b2` to the center of `b1`.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
     Square<Length> const Δq² = Δq.Norm²();
@@ -1324,7 +1324,7 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       absl::StatusCode::kOk);
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
-    // A vector from the center of |b2| to the center of |b1|.
+    // A vector from the center of `b2` to the center of `b1`.
     Displacement<Frame> const Δq = position1 - positions[b2];
 
     Square<Length> const Δq² = Δq.Norm²();
@@ -1370,7 +1370,7 @@ void Ephemeris<Frame>::ComputeGravitationalPotentialsOfMassiveBody(
   Position<Frame> const position1 = trajectory1.EvaluatePositionLocked(t);
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
-    // A vector from the center of |b2| to the center of |b1|.
+    // A vector from the center of `b2` to the center of `b1`.
     Displacement<Frame> const Δq = position1 - positions[b2];
 
     Square<Length> const Δq² = Δq.Norm²();
@@ -1579,8 +1579,8 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
 
   // TODO(egg): when we have events in trajectories, we should add a singularity
   // event at the end if the outcome indicates a singularity
-  // (|VanishingStepSize|).  We should not have an event on the trajectory if
-  // |ReachedMaximalStepCount|, since that is not a physical property, but
+  // (`VanishingStepSize`).  We should not have an event on the trajectory if
+  // `ReachedMaximalStepCount`, since that is not a physical property, but
   // rather a self-imposed constraint.
   if (!status.ok() || t_final == t) {
     return status;

@@ -31,11 +31,11 @@ using namespace principia::physics::_apsides;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
-// Conversion factors between |Argument| and |HomogeneousArgument|.
+// Conversion factors between `Argument` and `HomogeneousArgument`.
 constexpr Time time_homogeneization_factor = 1 * Second;
 constexpr Speed speed_homogeneization_factor = 1 * Metre / Second;
 
-// The displacement in |HomogeneousArgument| used to compute the derivatives.
+// The displacement in `HomogeneousArgument` used to compute the derivatives.
 constexpr double δ_homogeneous_argument = 1e-3;
 
 // By how much we extend the flight plan when it is too short to find
@@ -523,7 +523,7 @@ FlightPlanOptimizer::FlightPlanOptimizer(
 
 absl::Status FlightPlanOptimizer::Optimize(int const index,
                                            Speed const& Δv_tolerance) {
-  // We are going to repeatedly tweak the |flight_plan_|, no point in running
+  // We are going to repeatedly tweak the `flight_plan_`, no point in running
   // the orbit analysers.
   flight_plan_->EnableAnalysis(/*enabled=*/false);
 
@@ -531,7 +531,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   cache_.clear();
 
   // The following is a copy, and is not affected by changes to the
-  // |flight_plan_|.  It is moved into the metric.
+  // `flight_plan_`.  It is moved into the metric.
   NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
   auto const metric = metric_factory_(this, std::move(manœuvre), index);
 

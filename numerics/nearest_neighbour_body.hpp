@@ -131,7 +131,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   auto const principal_axis =
       eigensystem.rotation(PrincipalComponentsAxis({0, 0, 1}));
 
-  // Project the |vectors| on the principal axis.
+  // Project the `vectors` on the principal axis.
   for (auto it = begin; it != end; ++it) {
     auto const& displacement = displacements_[it->index];
     it->projection = InnerProduct(principal_axis, displacement);
@@ -146,7 +146,7 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   auto const mid_upper = begin + size / 2;
   std::nth_element(begin, mid_upper, end, projection_less);
 
-  // Here |mid_upper| denotes an index that denotes the point that is "in the
+  // Here `mid_upper` denotes an index that denotes the point that is "in the
   // middle" of the projections on the principal axis.  We do not wish to anchor
   // our separator plane on a point, because that would make it more likely that
   // queries have to dig into two branches of the tree.  Instead, we look for
@@ -264,8 +264,8 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
       InnerProduct(internal.principal_axis, displacement - internal.anchor);
 
   // We first search on the "preferred" side of the separator plane, i.e., the
-  // one where |displacement| is located.  We may have to look at the "other"
-  // side, if |displacement| is too close to that plane.
+  // one where `displacement` is located.  We may have to look at the "other"
+  // side, if `displacement` is too close to that plane.
   Node const* preferred_side;
   if (projection < Norm{}) {
     preferred_side = internal.children.first.get();
@@ -291,7 +291,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
       other_side = internal.children.first.get();
     }
 
-    // We omit |must_check_other_side| because there is no point in checking the
+    // We omit `must_check_other_side` because there is no point in checking the
     // other side again.
     // « Maintenant, rien qu'en traversant, j'ai fait qu'en face soit en face.
     // L'autre côté a changé de côté! » [GT71]
@@ -316,7 +316,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     min_index = preferred_min_index;
   }
 
-  // Finally, check if we are close to the separator plane of the |parent|, in
+  // Finally, check if we are close to the separator plane of the `parent`, in
   // which case *it* will need to check the other side of its plane.
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm² const projection² = Pow<2>(
@@ -336,7 +336,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     bool* const must_check_other_side) const {
   CHECK(!leaf.empty());
 
-  // Find the point in this leaf which is the closest to |displacement|.
+  // Find the point in this leaf which is the closest to `displacement`.
   min_distance² = Infinity<Norm²>;
   min_index = no_min_index;
   for (auto const index : leaf) {
@@ -350,7 +350,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     }
   }
 
-  // If there is a parent node, and |displacement| is very close to the
+  // If there is a parent node, and `displacement` is very close to the
   // separator plane, we'll need to check the other side of the plane.
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm² const projection² = Pow<2>(

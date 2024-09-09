@@ -19,8 +19,8 @@ using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
-// A helper function that converts a trajectory expressed in |Frame| into one
-// expressed in |Navigation|, using the given |plotting_frame| if needed for the
+// A helper function that converts a trajectory expressed in `Frame` into one
+// expressed in `Navigation`, using the given `plotting_frame` if needed for the
 // transformation.
 template<typename Frame>
 DegreesOfFreedom<Navigation> EvaluateDegreesOfFreedomInNavigation(

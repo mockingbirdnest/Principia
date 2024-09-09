@@ -662,7 +662,7 @@ inline RigidMotion<EccentricPart, World> MakePartRigidMotion(
   return part_rigid_motion;
 }
 
-// Same as |MakePartRigidMotion|, but uses the separate type |ApparentWorld| to
+// Same as `MakePartRigidMotion`, but uses the separate type `ApparentWorld` to
 // avoid mixing uncorrected and corrected data.
 inline RigidMotion<EccentricPart, ApparentWorld> MakePartApparentRigidMotion(
     QP const& part_world_degrees_of_freedom,

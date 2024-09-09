@@ -37,8 +37,8 @@ struct DoublePrecision final {
   DoublePrecision<T>& operator-=(Difference<T> const& right);
 
   // Compensated summation.  This is less precise, but more efficient, than
-  // |operator-=| or |operator+=|.  Unlike |QuickTwoSum|, these functions don't
-  // DCHECK their argument, so the caller must ensure that |right| is small
+  // `operator-=` or `operator+=`.  Unlike `QuickTwoSum`, these functions don't
+  // DCHECK their argument, so the caller must ensure that `right` is small
   // enough.
   DoublePrecision<T>& Decrement(Difference<T> const& right);
   DoublePrecision<T>& Increment(Difference<T> const& right);
@@ -51,45 +51,45 @@ struct DoublePrecision final {
   Difference<T> error{};
 };
 
-// |scale| must be a signed power of two or zero.
+// `scale` must be a signed power of two or zero.
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
 
 // Returns the exact product of its arguments.  Note that this function checks
-// whether |UseHardwareFMA| is true.  If the value of that flag is already known
+// whether `UseHardwareFMA` is true.  If the value of that flag is already known
 // from context, it may be preferable to either:
 // — use VeltkampDekkerProduct(a, b) below;
 // — directly compute value = a * b, error = FusedMultiplySubtract(a, b, value).
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
-// Returns the exact value of |a * b + c|.
+// Returns the exact value of `a * b + c`.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c);
 
-// Returns the exact value of |a * b - c|.
+// Returns the exact value of `a * b - c`.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c);
 
-// Returns the exact value of |-a * b + c|.
+// Returns the exact value of `-a * b + c`.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c);
 
-// Returns the exact value of |-a * b - c|.
+// Returns the exact value of `-a * b - c`.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c);
 
-// Same as |TwoProduct|, but never uses FMA.
+// Same as `TwoProduct`, but never uses FMA.
 template<typename T, typename U>
 constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
                                                                U const& b);
@@ -103,7 +103,7 @@ constexpr DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 
-// |TwoDifference| may have any of the following signatures:
+// `TwoDifference` may have any of the following signatures:
 //   1. Point × Point → Vector;
 //   2. Point × Vector → Point;
 //   3. Vector × Vector → Vector;
@@ -120,11 +120,11 @@ template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b);
 
-// |T| must be a vector.
+// `T` must be a vector.
 template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left);
 
-// |T| must be a vector.
+// `T` must be a vector.
 template<typename T>
 DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 

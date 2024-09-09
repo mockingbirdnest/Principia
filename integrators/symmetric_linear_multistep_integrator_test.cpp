@@ -107,8 +107,8 @@ std::ostream& operator<<(std::ostream& stream,
 // Not testing QuinlanTremaine1990Order14 as its characteristics cannot even be
 // computed.
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
-  // The |beginning_of_convergence| below were carefully chosen using
-  // Mathematica to only select the domain where |p| and |step| are properly
+  // The `beginning_of_convergence` below were carefully chosen using
+  // Mathematica to only select the domain where `p` and `step` are properly
   // correlated.
   return {
 #if OS_MACOSX

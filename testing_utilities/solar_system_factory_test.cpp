@@ -63,10 +63,10 @@ class SolarSystemFactoryTest : public testing::Test {
     return a * std::pow(secondary_body.mass() / primary_body.mass(), 2.0 / 5.0);
   }
 
-  // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
-  // |excentricity| within |relative_error| and, if |primary| is not null, tests
-  // that |tertiary| is within the Laplace sphere of |secondary| with respect
-  // to |*primary|. If |relative_error| is greater than 1e-6, it should be tight
+  // Tests whether `tertiary` orbits `secondary` in an orbit with excentricity
+  // `excentricity` within `relative_error` and, if `primary` is not null, tests
+  // that `tertiary` is within the Laplace sphere of `secondary` with respect
+  // to `*primary`. If `relative_error` is greater than 1e-6, it should be tight
   // within an order of magnitude.
   void TestStronglyBoundOrbit(
       double eccentricity,

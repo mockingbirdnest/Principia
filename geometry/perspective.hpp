@@ -32,7 +32,7 @@ template<typename Frame>
 using Segments = std::vector<Segment<Frame>>;
 
 // A perspective using the pinhole camera model.  It project a point of
-// |FromFrame| to an element of ℝP².  |ToFrame| is the frame of the camera.  In
+// `FromFrame` to an element of ℝP².  `ToFrame` is the frame of the camera.  In
 // that frame the camera is located at the origin and looking at the positive
 // z-axis.  The x- and y- axis of the camera correspond to those of ℝP².
 template<typename FromFrame, typename ToFrame>
@@ -45,12 +45,12 @@ class Perspective final {
 
   Length const& focal() const;
 
-  // Returns the ℝP² element resulting from the projection of |point|.  This
+  // Returns the ℝP² element resulting from the projection of `point`.  This
   // is properly defined for all points other than the camera origin.
   RP2Point<Length, ToFrame> operator()(Position<FromFrame> const& point) const;
 
-  // Returns the part of |segment| that is behind the focal plane as seen from
-  // the camera.  Returns nullopt if |segment| is entirely in front of the focal
+  // Returns the part of `segment` that is behind the focal plane as seen from
+  // the camera.  Returns nullopt if `segment` is entirely in front of the focal
   // plane.
   std::optional<Segment<FromFrame>>
   SegmentBehindFocalPlane(Segment<FromFrame> const& segment) const;
@@ -62,15 +62,15 @@ class Perspective final {
 
   Square<Length> SquaredDistanceFromCamera(Position<FromFrame> const& p) const;
 
-  // Returns true iff the |point| is hidden by the |sphere| in this perspective.
+  // Returns true iff the `point` is hidden by the `sphere` in this perspective.
   bool IsHiddenBySphere(Position<FromFrame> const& point,
                         Sphere<FromFrame> const& sphere) const;
 
-  // Returns sin² α where α is the half angle under which the |sphere| is seen.
+  // Returns sin² α where α is the half angle under which the `sphere` is seen.
   double SphereSin²HalfAngle(Sphere<FromFrame> const& sphere) const;
 
-  // Returns the (sub)segments of |segment| that are visible in this perspective
-  // after taking into account the hiding by |sphere|.  The returned vector has
+  // Returns the (sub)segments of `segment` that are visible in this perspective
+  // after taking into account the hiding by `sphere`.  The returned vector has
   // 0, 1, or 2 elements.
   BoundedArray<Segment<FromFrame>, 2> VisibleSegments(
       Segment<FromFrame> const& segment,

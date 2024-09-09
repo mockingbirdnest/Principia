@@ -23,12 +23,12 @@ namespace internal {
 class Date final {
  public:
   // The calendar is Gregorian by default starting in 1583; before that,
-  // |calendar| is required.
+  // `calendar` is required.
   static constexpr Date YYYYMMDD(
       std::int64_t digits,
       std::optional<Calendar> calendar = std::nullopt);
   // The calendar is Gregorian by default starting in 1583; before that,
-  // |calendar| is required.
+  // `calendar` is required.
   static constexpr Date YYYYDDD(
       std::int64_t digits,
       std::optional<Calendar> calendar = std::nullopt);
@@ -37,12 +37,12 @@ class Date final {
   static constexpr Date YYYYwwD(std::int64_t digits);
 
   // The calendar is Gregorian by default starting in 1583; before that,
-  // |calendar| is required.
+  // `calendar` is required.
   static constexpr Date Calendar(
       int year, int month, int day,
       std::optional<Calendar> calendar = std::nullopt);
   // The calendar is Gregorian by default starting in 1583; before that,
-  // |calendar| is required.
+  // `calendar` is required.
   static constexpr Date Ordinal(
       int year, int day,
       std::optional<_date_time::Calendar> calendar = std::nullopt);
@@ -50,8 +50,8 @@ class Date final {
   // at least 1583, and the calendar is Gregorian.
   static constexpr Date Week(int year, int week, int day);
 
-  // The julian date |jd| must not be negative; its fractional part must be one
-  // half, corresponding to 00:00 on the resulting |Date|.
+  // The julian date `jd` must not be negative; its fractional part must be one
+  // half, corresponding to 00:00 on the resulting `Date`.
   static constexpr Date JD(double jd);
 
   constexpr int year() const;
@@ -61,7 +61,7 @@ class Date final {
 
   constexpr int ordinal() const;
 
-  // The fractional part of |jd()| is one half, corresponding to 00:00 on the
+  // The fractional part of `jd()` is one half, corresponding to 00:00 on the
   // day represented by this object.
   constexpr double jd() const;
   constexpr int mjd() const;
@@ -93,7 +93,7 @@ class TimeOfDay final {
   constexpr int millisecond() const;
 
   constexpr bool is_leap_second() const;
-  // Whether |*this| is 24:00:00.
+  // Whether `*this` is 24:00:00.
   constexpr bool is_end_of_day() const;
 
  private:
@@ -107,7 +107,7 @@ class TimeOfDay final {
 
 class DateTime final {
  public:
-  // Checks that |time| does not represent a leap second unless |date| is the
+  // Checks that `time` does not represent a leap second unless `date` is the
   // last day of the month.
   constexpr DateTime(Date date, TimeOfDay time);
 
@@ -116,8 +116,8 @@ class DateTime final {
   constexpr Date const& date() const;
   constexpr TimeOfDay const& time() const;
 
-  // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
-  // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
+  // If `time()` is 24:00:00, returns an equivalent DateTime where midnight is
+  // expressed as 00:00:00 on the next day; otherwise, returns `*this`.
   constexpr DateTime normalized_end_of_day() const;
 
  private:
@@ -146,7 +146,7 @@ class JulianDate final {
                        std::int64_t fraction_numerator,
                        std::int64_t fraction_denominator);
 
-  // These numbers are relative to J2000.  |fraction_denominator| is a positive
+  // These numbers are relative to J2000.  `fraction_denominator` is a positive
   // power of 10.
   std::int64_t const day_;
   std::int64_t const fraction_numerator_;

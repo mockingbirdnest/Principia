@@ -151,7 +151,7 @@ class Pair final {
   template<typename Functor, typename T, typename>
   friend struct base::_mappable::internal::Mappable;
 
-  // This is needed to implement matchers for |Pair|.
+  // This is needed to implement matchers for `Pair`.
   template<typename PairType>
   friend class testing_utilities::_componentwise::internal::
       ComponentwiseMatcher2Impl;

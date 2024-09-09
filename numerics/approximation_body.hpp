@@ -65,12 +65,12 @@ not_null<std::unique_ptr<
 
   FixedVector<Value<Argument, Function>, N + 1> fₖ(uninitialized);
 
-  // Reuse the previous evaluations of |f|.
+  // Reuse the previous evaluations of `f`.
   for (std::int64_t k = 0; k <= N / 2; ++k) {
     fₖ[2 * k] = previous_fₖ[k];
   }
 
-  // Evaluate |f| for the new points.
+  // Evaluate `f` for the new points.
   for (std::int64_t k = 1; k < N; k += 2) {
     fₖ[k] = f(чебышёв_lobato_point(k));
   }
@@ -101,11 +101,11 @@ not_null<std::unique_ptr<
   }
 
   // Unlike [Boy13], section 4, we return the polynomial of the lower degree
-  // that is within the |max_error| bound (that is, the one of degree N / 2).
+  // that is within the `max_error` bound (that is, the one of degree N / 2).
   // Even though we computed the polynomial of degree N, returning it would
   // impose an unnecessary cost on the client (e.g., more costly evaluation). If
   // a client wants a more precise approximation, they just need to give a
-  // smaller |max_error|.
+  // smaller `max_error`.
   if (error_estimate != nullptr) {
     *error_estimate = current_error_estimate;
   }
@@ -132,7 +132,7 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
   if (full_error_estimate <= max_error ||
       !subdivide(*full_interpolant, full_error_estimate)) {
     // If the interpolant over the entire interval is within the desired error
-    // bound, return it.  Same thing if |subdivide| tells us that we should not
+    // bound, return it.  Same thing if `subdivide` tells us that we should not
     // subdivide the interval.
     VLOG(1) << "Degree " << full_interpolant->degree() << " interpolant over ["
             << lower_bound << " (" << f(lower_bound) << "), " << upper_bound

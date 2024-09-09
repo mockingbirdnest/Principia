@@ -190,7 +190,7 @@ struct TupleDropper;
 
 template<typename Tuple, int count, std::size_t... indices>
 struct TupleDropper<Tuple, count, std::index_sequence<indices...>> {
-  // Drops the first |count| elements of |tuple|.
+  // Drops the first `count` elements of `tuple`.
   static constexpr auto Drop(Tuple const& tuple);
 };
 

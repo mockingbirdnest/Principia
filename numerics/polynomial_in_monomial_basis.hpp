@@ -1,4 +1,4 @@
-// The files containing the tree of child classes of |Polynomial| must be
+// The files containing the tree of child classes of `Polynomial` must be
 // included in the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_NUMERICS_POLYNOMIAL_HPP_
 #include "numerics/polynomial.hpp"
@@ -183,7 +183,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
   // Compatibility deserialization, when the evaluator is not present in
-  // |message|.
+  // `message`.
   template<template<typename, typename, int> typename Evaluator>
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
@@ -200,7 +200,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   Coefficients coefficients_;
   Argument origin_;
-  // TODO(phl): The |Evaluator| class should be able to take a |Point|.
+  // TODO(phl): The `Evaluator` class should be able to take a `Point`.
   not_null<Evaluator<Value_, Difference<Argument_>, degree_> const*> evaluator_;
 
   template<typename V, typename A, int r>

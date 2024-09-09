@@ -67,8 +67,8 @@ constexpr not_null<Pointer>& not_null<Pointer>::operator=(
 
 template<typename Pointer>
 constexpr not_null<Pointer>::operator pointer const&&() const& {
-  // This |move| is deceptive: we are not actually moving anything (|*this| is
-  // |const&|), we are simply casting to an rvalue reference.
+  // This `move` is deceptive: we are not actually moving anything (`*this` is
+  // `const&`), we are simply casting to an rvalue reference.
   return std::move(storage_.pointer);
 }
 
@@ -105,7 +105,7 @@ template<typename Pointer>
 template<typename P, typename>
 constexpr not_null<decltype(std::declval<P>().get())>
 not_null<Pointer>::get() const {
-  // NOTE(egg): no |CHECK| is performed.
+  // NOTE(egg): no `CHECK` is performed.
   using type = decltype(std::declval<P>().get());
   return not_null<type>(storage_.pointer.get(), not_null<type>::unchecked_tag_);
 }

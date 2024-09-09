@@ -51,9 +51,9 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
   Iterator const last = samples.end() - 1;
   while (last - begin + 1 >= 3 &&
          !interpolation_error_is_within_tolerance(begin, last)) {
-    // Look for a cubic that fits the beginning within |tolerance| and
+    // Look for a cubic that fits the beginning within `tolerance` and
     // such the cubic fitting one more sample would not fit the samples within
-    // |tolerance|.
+    // `tolerance`.
     // Note that there may be more than one cubic satisfying this property;
     // ideally we would like to find the longest one, but this would be costly,
     // and we do not expect significant gains from this in practice.

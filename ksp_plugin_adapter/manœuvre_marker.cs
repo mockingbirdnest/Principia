@@ -16,13 +16,13 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
   public bool is_hovered { get; private set; } = false;
   public bool is_dragged { get; private set; } = false;
   public bool is_pinned { get; private set; } = false;
-  // Note that |is_hovered| is not a necessary condition for |is_interacting|:
+  // Note that `is_hovered` is not a necessary condition for `is_interacting`:
   // the cursor may move off the marker while still dragging.
   public bool is_interacting => is_hovered || is_dragged;
 
-  // As mouse events are sent before |Update|, we compute this state there.
-  // We clear it as late as possible, in |WaitForEndOfFrame|.
-  // In particular, the value is meaningful at |BetterLateThanNeverLateUpdate|,
+  // As mouse events are sent before `Update`, we compute this state there.
+  // We clear it as late as possible, in `WaitForEndOfFrame`.
+  // In particular, the value is meaningful at `BetterLateThanNeverLateUpdate`,
   // during which it is consumed by node markers.
   public static bool has_interacting_marker { get; private set; }
 
@@ -62,7 +62,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     Disable();
   }
 
-  // Call on each frame (at or later than |Update|) to set the state of the marker.
+  // Call on each frame (at or later than `Update`) to set the state of the marker.
   public void Render(int index,
                      Vector3d world_position,
                      Vector3d initial_plotted_velocity,
@@ -94,7 +94,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     UpdateCaption(screen_position);
 
     gameObject.SetActive(true);
-    // |UpdateCaption| will have updated its activity state appropriately.
+    // `UpdateCaption` will have updated its activity state appropriately.
   }
 
   // Disable this marker and reset its user-interaction state so that it is
@@ -138,7 +138,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     ui_position.y += caption_position_y_offset;
     caption_.transform.position = ui_position;
 
-    // Note that we check for |is_interacting| rather than |is_pinned|; this is
+    // Note that we check for `is_interacting` rather than `is_pinned`; this is
     // so that the brighter hover colour is applied in the 'hovered and pinned'
     // state.
     if (is_interacting) {
@@ -295,7 +295,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     return position;
   }
 
-  // From |MapNode.OnUpdatePositionToUI|.
+  // From `MapNode.OnUpdatePositionToUI`.
   private static (UnityEngine.Vector3 position, bool visible) ScaledToUIPosition(
     Vector3d scaled_position) {
       bool visible = false;

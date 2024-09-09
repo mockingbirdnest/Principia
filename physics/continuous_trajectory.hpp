@@ -45,16 +45,16 @@ using namespace principia::quantities::_quantities;
 
 // This class is thread-safe, but the client must be aware that if, for
 // instance, the trajectory is appended to asynchronously, successive calls to
-// |t_max()| may return different values.
+// `t_max()` may return different values.
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
-  // Constructs a trajectory with the given time |step|.  Because the Чебышёв
+  // Constructs a trajectory with the given time `step`.  Because the Чебышёв
   // polynomials have values in the range [-1, 1], the error resulting of
   // truncating the infinite Чебышёв series to a finite degree are a small
   // multiple of the coefficient of highest degree (assuming that the series
   // converges reasonably well).  Thus, we pick the degree of the series so that
-  // the coefficient of highest degree is less than |tolerance|.
+  // the coefficient of highest degree is less than `tolerance`.
   ContinuousTrajectory(Time const& step,
                        Length const& tolerance);
 
@@ -70,26 +70,26 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // benchmarking or analyzing performance.  Do not use in real code.
   double average_degree() const EXCLUDES(lock_);
 
-  // Appends one point to the trajectory.  |time| must be after the last time
-  // passed to |Append| if the trajectory is not empty.  The |time|s passed to
-  // successive calls to |Append| must be equally spaced with the |step| given
+  // Appends one point to the trajectory.  `time` must be after the last time
+  // passed to `Append` if the trajectory is not empty.  The `time`s passed to
+  // successive calls to `Append` must be equally spaced with the `step` given
   // at construction.
   absl::Status Append(Instant const& time,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom)
       EXCLUDES(lock_);
 
-  // Prepends the given |trajectory| to this one.  Ideally the last point of
-  // |trajectory| should match the first point of this object.
-  // Note the rvalue reference: |ContinuousTrajectory| is not moveable and not
-  // copyable, but the |InstantPolynomialPairs| are moveable and we really want
+  // Prepends the given `trajectory` to this one.  Ideally the last point of
+  // `trajectory` should match the first point of this object.
+  // Note the rvalue reference: `ContinuousTrajectory` is not moveable and not
+  // copyable, but the `InstantPolynomialPairs` are moveable and we really want
   // to move them.  We could pass by non-const lvalue reference, but we would
   // rather make it clear at the calling site that the object is consumed, so
   // we require the use of std::move.
   void Prepend(ContinuousTrajectory&& trajectory);
 
-  // Implementation of the interface |Trajectory|.
+  // Implementation of the interface `Trajectory`.
 
-  // |t_max| may be less than the last time passed to Append because the
+  // `t_max` may be less than the last time passed to Append because the
   // trajectory cannot be evaluated for the last points, for which no polynomial
   // was constructed.  For an empty trajectory, an infinity with the proper
   // sign is returned.
@@ -123,9 +123,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   void WriteToMessage(not_null<serialization::ContinuousTrajectory*> message)
       const EXCLUDES(lock_);
-  // The parameter |desired_t_min| indicates that the trajectory must be
+  // The parameter `desired_t_min` indicates that the trajectory must be
   // restored at a checkpoint such that, once it is appended to, its t_min() is
-  // at or before |desired_t_min|.
+  // at or before `desired_t_min`.
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       Instant const& desired_t_min,
       serialization::ContinuousTrajectory const& message)
@@ -139,7 +139,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       Checkpointer<serialization::ContinuousTrajectory>::Reader const& reader)
       const;
 
-  // Return functions that can be passed to a |Checkpointer| to write this
+  // Return functions that can be passed to a `Checkpointer` to write this
   // trajectory to a checkpoint or read it back.
   Checkpointer<serialization::ContinuousTrajectory>::Writer
   MakeCheckpointerWriter();
@@ -151,7 +151,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // function of this class) is responsible for synchronization, i.e., for
   // making sure that no mutators execute in parallel with any of the functions
   // having "locked" in their name.  The purpose of this API is to improve the
-  // performance of the |Ephemeris|.
+  // performance of the `Ephemeris`.
 
   Instant t_min_locked() const;
   Instant t_max_locked() const;
@@ -167,10 +167,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
  private:
   // Each polynomial is valid over an interval [t_min, t_max].  Polynomials are
-  // stored in this vector sorted by their |t_max|, as it turns out that we
-  // never need to extract their |t_min|.  Logically, the |t_min| for a
-  // polynomial is the |t_max| of the previous one.  The first polynomial has a
-  // |t_min| which is |*first_time_|.
+  // stored in this vector sorted by their `t_max`, as it turns out that we
+  // never need to extract their `t_min`.  Logically, the `t_min` for a
+  // polynomial is the `t_max` of the previous one.  The first polynomial has a
+  // `t_min` which is `*first_time_`.
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
@@ -193,7 +193,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       Displacement<Frame>& error_estimate) const;
 
   // Computes the best Newhall approximation based on the desired tolerance.
-  // Adjust the |degree_| and other member variables to stay within the
+  // Adjust the `degree_` and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
   // instabilities.
   absl::Status ComputeBestNewhallApproximation(
@@ -201,9 +201,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       std::vector<Position<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
 
-  // Returns an iterator to the polynomial applicable for the given |time|, or
-  // |begin| if |time| is before the first polynomial or |end| if |time| is
-  // after the last polynomial.  If |time| is the |t_max| of some polynomial,
+  // Returns an iterator to the polynomial applicable for the given `time`, or
+  // `begin` if `time` is before the first polynomial or `end` if `time` is
+  // after the last polynomial.  If `time` is the `t_max` of some polynomial,
   // that polynomial is returned.  Time complexity is O(N Log N).
   typename InstantPolynomialPairs::const_iterator
   FindPolynomialForInstantLocked(Instant const& time) const
@@ -232,7 +232,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   InstantPolynomialPairs polynomials_ GUARDED_BY(lock_);
   Policy polynomial_evaluator_policy_;
 
-  // Lookups into |polynomials_| are expensive because they entail a binary
+  // Lookups into `polynomials_` are expensive because they entail a binary
   // search into a vector that grows over time.  In benchmarks, this can be as
   // costly as the polynomial evaluation itself.  The accesses are not random,
   // though, they are clustered in time and (slowly) increasing.  To take
@@ -244,7 +244,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // multithreading it may be that different threads would want to access
   // polynomials at different indices, but by and large the threads progress in
   // parallel, and benchmarks show that there is no adverse performance effects.
-  // Any value in the range of |polynomials_| or 0 is correct.
+  // Any value in the range of `polynomials_` or 0 is correct.
   mutable std::int64_t last_accessed_polynomial_ GUARDED_BY(lock_) = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
@@ -252,7 +252,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The points that have not yet been incorporated in a polynomial.  Nonempty
   // for a nonempty trajectory.
-  // |last_points_.begin()->first == polynomials_.back().t_max|
+  // `last_points_.begin()->first == polynomials_.back().t_max`
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_
       GUARDED_BY(lock_);
 

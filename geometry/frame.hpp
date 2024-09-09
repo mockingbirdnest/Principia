@@ -20,7 +20,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 
-// The enumerators of |FrameMotion| are ordered from most restrictive to least
+// The enumerators of `FrameMotion` are ordered from most restrictive to least
 // restrictive; m1 <= m2 means that m1 satisfies the requirements of m2.
 enum FrameMotion {
   Inertial,
@@ -74,14 +74,14 @@ struct Frame : not_constructible {
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
-  // Checks that the |message| matches the current type.
+  // Checks that the `message` matches the current type.
   template<
       typename T = FrameTag,
       typename = std::enable_if_t<google::protobuf::is_proto_enum<T>::value>>
   static void ReadFromMessage(serialization::Frame const& message);
 };
 
-// Extracts enough information from the |message| to contruct a |Frame| type.
+// Extracts enough information from the `message` to contruct a `Frame` type.
 void ReadFrameFromMessage(
     serialization::Frame const& message,
     google::protobuf::EnumValueDescriptor const*& enum_value_descriptor,

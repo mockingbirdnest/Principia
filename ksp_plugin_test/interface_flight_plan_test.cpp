@@ -270,7 +270,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   MockContinuousTrajectory<Barycentric> centre_trajectory;
   EXPECT_CALL(ephemeris, trajectory(check_not_null(&centre)))
       .WillOnce(Return(&centre_trajectory));
-  // Cannot use a mock here since we use |dynamic_cast| to find the type of the
+  // Cannot use a mock here since we use `dynamic_cast` to find the type of the
   // actual frame.
   BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation> const* const
       navigation_manœuvre_frame =

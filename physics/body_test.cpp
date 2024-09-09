@@ -147,8 +147,8 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
   // No members to test in this class, we just check that it doesn't crash.
   massless_body_ = *MasslessBody::ReadFromMessage(message);
 
-  // Dispatching from |Body|.  Need two steps to add const and remove
-  // |not_null|.
+  // Dispatching from `Body`.  Need two steps to add const and remove
+  // `not_null`.
   not_null<std::unique_ptr<Body const>> body = Body::ReadFromMessage(message);
   cast_massless_body = dynamic_cast_not_null<MasslessBody const*>(body.get());
   EXPECT_THAT(cast_massless_body, NotNull());
@@ -171,7 +171,7 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
   EXPECT_EQ(massive_body_.gravitational_parameter(),
             massive_body.gravitational_parameter());
 
-  // Dispatching from |Body|.
+  // Dispatching from `Body`.
   not_null<std::unique_ptr<Body>> body = Body::ReadFromMessage(message);
   cast_massive_body = dynamic_cast_not_null<MassiveBody*>(body.get());
   EXPECT_THAT(cast_massive_body, NotNull());
@@ -207,7 +207,7 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
             Angle::ReadFromMessage(
                 rotating_body_extension.declination_of_pole()));
 
-  // Dispatching from |MassiveBody|.
+  // Dispatching from `MassiveBody`.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
       MassiveBody::ReadFromMessage(message);
   EXPECT_EQ(rotating_body_.gravitational_parameter(),
@@ -222,7 +222,7 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
   EXPECT_EQ(rotating_body_.AngleAt(Instant()),
             cast_rotating_body->AngleAt(Instant()));
 
-  // Dispatching from |Body|.
+  // Dispatching from `Body`.
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
   cast_rotating_body =
@@ -257,7 +257,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
             oblate_body_extension.geopotential().row(2).column(0).cos() *
                 LegendreNormalizationFactor(2, 0));
 
-  // Dispatching from |MassiveBody|.
+  // Dispatching from `MassiveBody`.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
       MassiveBody::ReadFromMessage(message);
   EXPECT_EQ(oblate_body_.gravitational_parameter(),
@@ -270,7 +270,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
   EXPECT_EQ(oblate_body_.polar_axis(), cast_oblate_body->polar_axis());
 
-  // Dispatching from |Body|.
+  // Dispatching from `Body`.
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
   cast_oblate_body =

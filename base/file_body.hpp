@@ -18,7 +18,7 @@ namespace internal {
 inline OFStream::OFStream(std::filesystem::path const& path) {
 #if PRINCIPIA_COMPILER_MSVC
   CHECK(path.has_filename()) << path;
-  // Don't use |remove_filename| here as it leaves a trailing \.  See
+  // Don't use `remove_filename` here as it leaves a trailing \.  See
   // https://developercommunity.visualstudio.com/content/problem/278829/stdfilesystemcreate-directories-returns-false-if-p.html
   // for a discussion of what happens in that case.
   std::filesystem::path const directory = path.parent_path();

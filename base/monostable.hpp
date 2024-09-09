@@ -5,7 +5,7 @@ namespace base {
 namespace _monostable {
 namespace internal {
 
-// A boolean which is constructed true and becomes false when |Flop| is called.
+// A boolean which is constructed true and becomes false when `Flop` is called.
 class Monostable final {
  public:
   Monostable() = default;

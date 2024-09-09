@@ -250,7 +250,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
   DiscreteTrajectory<World> reference_trajectory;
   DiscreteTrajectory<World> vessel_trajectory;
 
-  // At |t0| the vessel is inside the celestial, so we expect the collision at a
+  // At `t0` the vessel is inside the celestial, so we expect the collision at a
   // negative time.
   AppendTrajectoryTimeline(
       NewLinearTrajectoryTimeline(
@@ -476,14 +476,14 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
 #endif
 
-// A dedicated fixture for |ComputeCollisionIntervals| because we have many
+// A dedicated fixture for `ComputeCollisionIntervals` because we have many
 // tests for that function.
 class ApsidesTest_ComputeCollisionIntervals : public ::testing::Test {
  protected:
   using World = Frame<struct WorldTag, Inertial>;
 
   ApsidesTest_ComputeCollisionIntervals()
-      :  // Only |max_radius| matters for the body.
+      :  // Only `max_radius` matters for the body.
         body_(1 * Kilogram,
               RotatingBody<World>::Parameters(
                   /*min_radius=*/2 * Metre,
@@ -510,7 +510,7 @@ class ApsidesTest_ComputeCollisionIntervals : public ::testing::Test {
 };
 
 // A linear trajectory that intersects the body.  There is one periapsis below
-// |max_radius| and two sentinel apoapsides at the extremities of the
+// `max_radius` and two sentinel apoapsides at the extremities of the
 // trajectory.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
   DiscreteTrajectory<World> vessel_trajectory;
@@ -552,7 +552,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
 }
 
 // A linear trajectory that does not intersect the body.  There is one periapsis
-// above |max_radius|.
+// above `max_radius`.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisAboveMaxRadius) {
   DiscreteTrajectory<World> vessel_trajectory;
   AppendTrajectoryTimeline(
@@ -627,7 +627,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, NoPeriapsis) {
 }
 
 // Two perpendicular linear trajectory segments resulting in an apoapsis
-// below |max_radius| and two periapsides.
+// below `max_radius` and two periapsides.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
   DiscreteTrajectory<World> vessel_trajectory;
   AppendTrajectoryTimeline(
@@ -680,7 +680,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
 }
 
 // Two linear trajectory segments at 45° resulting in an apoapsis above
-// |max_radius| and two periapsides.
+// `max_radius` and two periapsides.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
   DiscreteTrajectory<World> vessel_trajectory;
   AppendTrajectoryTimeline(
@@ -735,8 +735,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
 }
 
 // Two linear trajectory segments at 45° resulting in an apoapsis above
-// |max_radius| followed by a periapsis below |max_radius|.  The initial point
-// acts as a periapsis below |max_radius|.
+// `max_radius` followed by a periapsis below `max_radius`.  The initial point
+// acts as a periapsis below `max_radius`.
 TEST_F(ApsidesTest_ComputeCollisionIntervals,
        InitialPeriapsisOneApoapsisOnePeriapsis) {
   DiscreteTrajectory<World> vessel_trajectory;
@@ -792,8 +792,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
 }
 
 // Two linear trajectory segments at 45° resulting in a periapsis below
-// |max_radius| followed by an apoapsis above |max_radius|.  The final point
-// acts as a periapsis below |max_radius|.
+// `max_radius` followed by an apoapsis above `max_radius`.  The final point
+// acts as a periapsis below `max_radius`.
 TEST_F(ApsidesTest_ComputeCollisionIntervals,
        OnePeriapsisOneApoapsisFinalPeriapsis) {
   DiscreteTrajectory<World> vessel_trajectory;
@@ -850,7 +850,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
 }
 
 // Two linear trajectory segments at 45° resulting in a periapsis below
-// |max_radius| followed by an apoapsis above |max_radius|.
+// `max_radius` followed by an apoapsis above `max_radius`.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
   DiscreteTrajectory<World> vessel_trajectory;
   AppendTrajectoryTimeline(
@@ -902,8 +902,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
                   AlmostEquals(t0_ + (4 + Sqrt(3)) * Second, 1))));
 }
 
-// A linear trajectory with a periapsis below |max_radius|.  The initial point
-// acts as an apoapsis below |max_radius|.
+// A linear trajectory with a periapsis below `max_radius`.  The initial point
+// acts as an apoapsis below `max_radius`.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
   DiscreteTrajectory<World> vessel_trajectory;
   AppendTrajectoryTimeline(
@@ -943,8 +943,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
                               AlmostEquals(t0_ + (1 + Sqrt(3)) * Second, 0))));
 }
 
-// A linear trajectory with a periapsis below |max_radius|.  The final point
-// acts as an apoapsis below |max_radius|.
+// A linear trajectory with a periapsis below `max_radius`.  The final point
+// acts as an apoapsis below `max_radius`.
 TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisFinalApoapsis) {
   DiscreteTrajectory<World> vessel_trajectory;
   AppendTrajectoryTimeline(

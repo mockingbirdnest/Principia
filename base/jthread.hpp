@@ -112,7 +112,7 @@ class jthread {
   std::thread thread_;
 };
 
-// |f| *does not* take a stop_token as its first parameter.
+// `f` *does not* take a stop_token as its first parameter.
 template<typename Function, typename... Args>
 static jthread MakeStoppableThread(Function&& f, Args&&... args);
 

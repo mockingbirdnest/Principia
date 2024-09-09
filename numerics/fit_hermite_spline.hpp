@@ -14,17 +14,17 @@ namespace internal {
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_named_quantities;
 
-// Given |samples| for which the arguments, values, and derivatives can be
+// Given `samples` for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators
 // (it₀, it₁, it₂, ..., itᵣ) such that, with it₋₁ = samples.begin(),
-// for all integers it in [0, r], the |Hermite3| interpolation of
-// (*itᵢ₋₁, *itᵢ) fits |samples| within |tolerance|, but the interpolation
+// for all integers it in [0, r], the `Hermite3` interpolation of
+// (*itᵢ₋₁, *itᵢ) fits `samples` within `tolerance`, but the interpolation
 // of (*itᵢ₋₁, *(it + 1)ᵢ) does not, i.e., the iterators delimit "maximal"
 // fitting polynomials.
 // Note that it follows from the above that itᵣ < samples.end() - 1, so that at
-// not all of |samples| is fitted maximally.  This function further guarantees
-// that the |Hermite3| interpolation of (*itᵣ, *(samples.end() - 1)) fits
-// |samples| within |tolerance|.
+// not all of `samples` is fitted maximally.  This function further guarantees
+// that the `Hermite3` interpolation of (*itᵣ, *(samples.end() - 1)) fits
+// `samples` within `tolerance`.
 template<typename Value, typename Argument, typename Samples>
 absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
     Samples const& samples,

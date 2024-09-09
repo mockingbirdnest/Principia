@@ -39,8 +39,8 @@ namespace principia {
 namespace interface {
 
 // This is used for interfacing, and should only appear in C++ code in tests
-// and generated code; we allow ourselves to pollute the |interface| namespace
-// with convenience |using|s.
+// and generated code; we allow ourselves to pollute the `interface` namespace
+// with convenience `using`s.
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
@@ -70,9 +70,9 @@ using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-// Takes ownership of |**pointer| and returns it to the caller.  Nulls
-// |*pointer|.  |pointer| must not be null.  No transfer of ownership of
-// |*pointer|.
+// Takes ownership of `**pointer` and returns it to the caller.  Nulls
+// `*pointer`.  `pointer` must not be null.  No transfer of ownership of
+// `*pointer`.
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** pointer);
 template<typename T>

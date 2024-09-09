@@ -57,8 +57,8 @@ using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_sign;
 
-// An orthogonal map between the inner product spaces |FromFrame| and
-// |ToFrame|, as well as the induced maps on the exterior algebra.
+// An orthogonal map between the inner product spaces `FromFrame` and
+// `ToFrame`, as well as the induced maps on the exterior algebra.
 // The orthogonal map is modeled as a rotoinversion.
 template<typename FromFrame, typename ToFrame>
 class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,

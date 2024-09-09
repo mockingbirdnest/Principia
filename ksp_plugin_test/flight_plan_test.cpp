@@ -405,8 +405,8 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   auto const generalized_adaptive_step_parameters =
       flight_plan_->generalized_adaptive_step_parameters();
 
-  // Reduce |max_steps|.  This causes many segments to become truncated so the
-  // call to |SetAdaptiveStepParameters| returns false and the flight plan is
+  // Reduce `max_steps`.  This causes many segments to become truncated so the
+  // call to `SetAdaptiveStepParameters` returns false and the flight plan is
   // unaffected.
   EXPECT_THAT(flight_plan_->SetAdaptiveStepParameters(
         Ephemeris<Barycentric>::AdaptiveStepParameters(
@@ -433,7 +433,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   segment4 = flight_plan_->GetSegment(4);
   EXPECT_EQ(t0_ + 42 * Second, segment4->back().time);
 
-  // Increase |max_steps|.  It works.
+  // Increase `max_steps`.  It works.
   EXPECT_OK(flight_plan_->SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<

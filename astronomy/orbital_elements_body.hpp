@@ -302,11 +302,11 @@ OrbitalElements::MeanEquinoctialElements(
     Instant const& t_min,
     Instant const& t_max,
     Time const& period) {
-  // This function averages the elements in |osculating| over |period|.  For
-  // each |mean_elements| in the result, for all э in the set of equinoctial
-  // elements {a, h, k, λ, p, q, pʹ, qʹ}, |mean_elements.э| is the integral of
-  // the osculating э from |mean_elements.t - period / 2| to
-  // |mean_elements.t + period / 2|, divided by |period|.
+  // This function averages the elements in `osculating` over `period`.  For
+  // each `mean_elements` in the result, for all э in the set of equinoctial
+  // elements {a, h, k, λ, p, q, pʹ, qʹ}, `mean_elements.э` is the integral of
+  // the osculating э from `mean_elements.t - period / 2` to
+  // `mean_elements.t + period / 2`, divided by `period`.
 
   // We integrate the function (э(t + period / 2) - э(t - period / 2)) / period
   // using as the initial value an integral obtained by Clenshaw-Curtis.
@@ -365,7 +365,7 @@ OrbitalElements::MeanEquinoctialElements(
     // sparse, to the point where it confuses unwinding (because we have more
     // than half a revolution between points).  To avoid this we reduce the
     // tolerance-to-error ratio exponentially above 1/3 of the period.  For a
-    // step of |period / 2|, the reduction is e^-3.
+    // step of `period / 2`, the reduction is e^-3.
     double braking_factor = 1.0;
     if (3 * step >= period) {
       braking_factor = std::exp(6 - 18 * step / period);
@@ -373,7 +373,7 @@ OrbitalElements::MeanEquinoctialElements(
 
     // The braking factor can be very small (even 0) for large steps.  In that
     // case we want to reject the step, but not drive it all the way to 0,
-    // hence the |std::max|.
+    // hence the `std::max`.
     auto const& [Δa, Δh, Δk, Δλ, Δp, Δq, Δpʹ, Δqʹ] = error;
     return std::max(0.5, braking_factor * eerk_a_tolerance / Abs(Δa));
   };

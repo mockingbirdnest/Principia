@@ -146,8 +146,8 @@ class TestablePlugin : public Plugin {
                  std::string const& solar_system_epoch,
                  Angle const& planetarium_rotation)
       : Plugin(game_epoch, solar_system_epoch, planetarium_rotation),
-        // The |mock_ephemeris_| has to be created early so that we can write
-        // expectations before |EndInitialization| has been called.
+        // The `mock_ephemeris_` has to be created early so that we can write
+        // expectations before `EndInitialization` has been called.
         owned_mock_ephemeris_(
             std::make_unique<MockEphemeris<Barycentric>>()),
         mock_ephemeris_(owned_mock_ephemeris_.get()) {}
@@ -170,7 +170,7 @@ class TestablePlugin : public Plugin {
   }
 
   // We override this part of initialization in order to create a
-  // |MockEphemeris| rather than an |Ephemeris|.
+  // `MockEphemeris` rather than an `Ephemeris`.
   void EndInitialization() override {
     Plugin::EndInitialization();
     // Extend the continuous trajectories of the ephemeris.
@@ -181,14 +181,14 @@ class TestablePlugin : public Plugin {
               &*ephemeris_->trajectory(body));
       trajectories_.emplace(name_to_index_[body->name()], trajectory);
 
-      // Make sure that the |trajectory| member does the right thing.  Note that
+      // Make sure that the `trajectory` member does the right thing.  Note that
       // the implicit conversion doesn't work too well in the matcher.
       ON_CALL(*mock_ephemeris_, trajectory(body))
           .WillByDefault(Return(trajectory));
     }
 
     // Replace the ephemeris with our mock, but keep the real thing as it owns
-    // the bodies.  We squirelled away a pointer in |mock_ephemeris_|.
+    // the bodies.  We squirelled away a pointer in `mock_ephemeris_`.
     owned_real_ephemeris_ = std::move(ephemeris_);
     ephemeris_ = std::move(owned_mock_ephemeris_);
   }
@@ -248,8 +248,8 @@ class PluginTest : public testing::Test {
     }
   }
 
-  // The time of the |step|th history step of |plugin_|.  |HistoryTime(0)| is
-  // |initial_time_|.
+  // The time of the `step`th history step of `plugin_`.  `HistoryTime(0)` is
+  // `initial_time_`.
   Instant HistoryTime(Instant const time, int const step) {
     return time + step * plugin_->Δt();
   }
@@ -304,8 +304,8 @@ TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   PartId const part_id = 666;
 
-  // We need an actual |Plugin| here rather than a |TestablePlugin|, since
-  // that's what |ReadFromMessage| returns.
+  // We need an actual `Plugin` here rather than a `TestablePlugin`, since
+  // that's what `ReadFromMessage` returns.
   auto plugin = make_not_null_unique<Plugin>(
                     initial_time_,
                     initial_time_,

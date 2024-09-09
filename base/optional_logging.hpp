@@ -2,7 +2,7 @@
 
 #include <optional>
 
-// We need to pollute the |::| namespace in order for lookup to work, like
+// We need to pollute the `::` namespace in order for lookup to work, like
 // glog/stl_logging.h.  The following caveat from glog/stl_logging.h applies
 // here too.
 
@@ -15,7 +15,7 @@
 //
 // to fix these errors.
 
-// If |optional|, logs |*optional|, otherwise, logs |"nullopt"|.
+// If `optional`, logs `*optional`, otherwise, logs `"nullopt"`.
 template<typename T>
 std::ostream& operator<<(std::ostream& out,
                          std::optional<T> const& optional);

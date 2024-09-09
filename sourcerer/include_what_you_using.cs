@@ -291,12 +291,12 @@ class IncludeWhatYouUsing {
       return;
     }
 
-    // Replace the includes in |consecutive_includes| with |new_includes|.
+    // Replace the includes in `consecutive_includes` with `new_includes`.
     int first_include_position;
     int last_include_position;
     if (consecutive_user_includes.Count == 0) {
       // There is no existing block of consecutive includes, so we have to do
-      // fancy footwork to decide where to hook |new_includes|.
+      // fancy footwork to decide where to hook `new_includes`.
       var start_includes =
           (from inc in all_includes where !inc.is_own_body select inc).
           ToArray();

@@ -55,7 +55,7 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 // Constructs a piecewise Poisson series that has the given number of pieces
-// covering [t_min, t_max] and that matches |series| over that interval.
+// covering [t_min, t_max] and that matches `series` over that interval.
 template<typename Piecewise>
 Piecewise Slice(typename Piecewise::Series const& series,
                 int const pieces,
@@ -357,7 +357,7 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
       Series4::AperiodicPolynomial({}, t_mid),
       {{ω, Series4::Polynomials{sin, cos}}});
 
-  // Build a series that is based on |series| with different perturbations over
+  // Build a series that is based on `series` with different perturbations over
   // different intervals.
   PiecewiseSeries4 piecewise_series({t_min, t_min + 1 * Second}, series);
   for (int i = 1; i < 10; ++i) {

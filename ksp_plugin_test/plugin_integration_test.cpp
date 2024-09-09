@@ -246,7 +246,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
-    // We give the sun an arbitrary nonzero velocity in |World|.
+    // We give the sun an arbitrary nonzero velocity in `World`.
     Position<World> const sun_world_position =
         World::origin + Velocity<World>(
             { 0.1 * AstronomicalUnit / Hour,
@@ -356,7 +356,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);
-  // We give the sun an arbitrary nonzero velocity in |World|.
+  // We give the sun an arbitrary nonzero velocity in `World`.
   Position<World> const sun_world_position =
       World::origin + Velocity<World>(
           { 0.1 * AstronomicalUnit / Hour,
@@ -664,7 +664,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 
 // Checks that we correctly predict a full circular orbit around a massive body
 // with unit gravitational parameter at unit distance.  Since predictions are
-// only computed on |AdvanceTime()|, we advance time by a small amount.
+// only computed on `AdvanceTime()`, we advance time by a small amount.
 TEST_F(PluginIntegrationTest, Prediction) {
   Index const celestial = 0;
   Plugin plugin("JD2451545.0", "JD2451545.0", 0 * Radian);

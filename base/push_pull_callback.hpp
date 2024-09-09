@@ -22,13 +22,13 @@ namespace internal {
 // expect the managed code to pull the arguments and push the result of the
 // computations that it is executing.
 // Note that calling the managed and unmanaged APIs from the same thread will
-// inevitably cause deadlocks.  See |PushPullExecutor| below for a solution to
+// inevitably cause deadlocks.  See `PushPullExecutor` below for a solution to
 // this.
 template<typename Result, typename... Arguments>
 class PushPullCallback {
  public:
   // The managed API, called to extract the arguments for the unmanaged callback
-  // and return its result.  |Pull| returns false if there are no more arguments
+  // and return its result.  `Pull` returns false if there are no more arguments
   // to be processed and the managed code should stop its iteration.
   bool Pull(Arguments&... arguments);
   void Push(Result result);
@@ -38,16 +38,16 @@ class PushPullCallback {
   std::function<Result(Arguments...)> ToStdFunction();
 
   // Used on the unmanaged side to indicate that the computation has finished.
-  // After a call to this method, |Pull| always returns false.
+  // After a call to this method, `Pull` always returns false.
   void Shutdown();
 
  private:
-  // The unmanaged API, called by the function returned by |ToStdFunction|.
+  // The unmanaged API, called by the function returned by `ToStdFunction`.
   void Push(Arguments... arguments);
   Result Pull();
 
-  // These functions return a (held) |MutexLock| that the caller should use to
-  // ensure proper release of |lock_|.
+  // These functions return a (held) `MutexLock` that the caller should use to
+  // ensure proper release of `lock_`.
   std::unique_ptr<absl::MutexLock> WaitUntilHasArgumentsOrShuttingDownAndLock();
   std::unique_ptr<absl::MutexLock> WaitUntilHasResultAndLock();
 
@@ -58,8 +58,8 @@ class PushPullCallback {
 };
 
 // A helper class to execute a task that takes a callback from unmanaged code to
-// managed code and returns a value of type |T|.  The task is executed on a
-// separate thread, so calls to the|PushPullCallback| don't cause deadlocks.
+// managed code and returns a value of type `T`.  The task is executed on a
+// separate thread, so calls to the`PushPullCallback` don't cause deadlocks.
 template<typename T,
          typename Result, typename... Arguments>
 class PushPullExecutor {
@@ -69,13 +69,13 @@ class PushPullExecutor {
   explicit PushPullExecutor(Task task);
   ~PushPullExecutor();
 
-  // Returns the internal |PushPullCallback| object that is used by the managed
+  // Returns the internal `PushPullCallback` object that is used by the managed
   // code to pull arguments and push results.
   PushPullCallback<Result, Arguments...>& callback();
   PushPullCallback<Result, Arguments...> const& callback() const;
 
   // Returns the result of the task passed at construction.  Must only be called
-  // once |PushPullCallback::Pull| has indicated that the task has finished.
+  // once `PushPullCallback::Pull` has indicated that the task has finished.
   T get();
 
  private:

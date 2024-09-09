@@ -36,7 +36,7 @@ void HierarchicalSystem<Frame>::Add(
   System& parent_system = *systems_[parent];
   parent_system.satellites.emplace_back(
       make_not_null_unique<Subsystem>(std::move(body)));
-  {  // Hide the moved-from |body|.
+  {  // Hide the moved-from `body`.
     not_null<MassiveBody const*> body = unowned_body;
     not_null<Subsystem*> inserted_system =
         parent_system.satellites.back().get();
@@ -105,7 +105,7 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
 
   BarycentricSubsystem result;
 
-  // A reference frame wherein the barycentre of |system| is motionless at the
+  // A reference frame wherein the barycentre of `system` is motionless at the
   // origin.
   using SystemBarycentre = geometry::_frame::Frame<struct SystemBarycentreTag>;
   static DegreesOfFreedom<SystemBarycentre> const system_barycentre = {
@@ -113,20 +113,20 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   static Identity<SystemBarycentre, Frame> const id_bf;
   static Identity<Frame, SystemBarycentre> const id_fb;
 
-  // Jacobi coordinates for |system|, with satellite subsystems treated as point
+  // Jacobi coordinates for `system`, with satellite subsystems treated as point
   // masses at their barycentres.
   JacobiCoordinates<Frame> jacobi_coordinates(*system.primary);
   // Add the primary first (preorder).
   result.bodies.emplace_back(std::move(system.primary));
 
-  // The |n|th element of |satellite_degrees_of_freedom| contains the list of
-  // degrees of freedom of the bodies in the |n|th satellite subsystem with
+  // The `n`th element of `satellite_degrees_of_freedom` contains the list of
+  // degrees of freedom of the bodies in the `n`th satellite subsystem with
   // respect to their barycentre.
   std::vector<std::vector<RelativeDegreesOfFreedom<Frame>>>
       satellite_degrees_of_freedom;
 
-  // Fill |satellite_degrees_of_freedom|, |jacobi_coordinates|, and
-  // |result.bodies|.
+  // Fill `satellite_degrees_of_freedom`, `jacobi_coordinates`, and
+  // `result.bodies`.
   for (auto const& subsystem : system.satellites) {
     BarycentricSubsystem barycentric_satellite_subsystem =
         ToBarycentric(*subsystem);
@@ -150,13 +150,13 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
     }
   }
 
-  // Fill |result.barycentric_degrees_of_freedom|.
+  // Fill `result.barycentric_degrees_of_freedom`.
   // The primary.
   result.barycentric_degrees_of_freedom.emplace_back(
       id_bf(barycentres_of_subsystems.front() - system_barycentre));
   // The bodies in satellite subsystems.
   for (int n = 0; n < satellite_degrees_of_freedom.size(); ++n) {
-    // |n + 1| because the primary is at |barycentres_of_subsystems[0]|.
+    // `n + 1` because the primary is at `barycentres_of_subsystems[0]`.
     DegreesOfFreedom<SystemBarycentre> const subsystem_barycentre =
         barycentres_of_subsystems[n + 1];
     for (auto const& body_dof_wrt_subsystem_barycentre :

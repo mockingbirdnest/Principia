@@ -23,14 +23,14 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
   : initial_mass_(initial_mass),
     construction_burn_(burn),
     burn_(burn) {
-  // Fill the missing fields of |intensity|.
+  // Fill the missing fields of `intensity`.
   auto& intensity = burn_.intensity;
   if (intensity.Δv) {
     CHECK(!intensity.direction && !intensity.duration);
     intensity.direction = NormalizeOrZero(*intensity.Δv);
     auto const speed = intensity.Δv->Norm();
     if (speed == Speed()) {
-      // This handles the case where |thrust_| vanishes, where the usual formula
+      // This handles the case where `thrust_` vanishes, where the usual formula
       // would yield NaN.
       intensity.duration = Time();
     } else {
@@ -45,7 +45,7 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
                    std::log(initial_mass_ / final_mass());
   }
 
-  // Fill the missing fields of |timing|.
+  // Fill the missing fields of `timing`.
   auto& timing = burn_.timing;
   if (timing.initial_time) {
     CHECK(!timing.time_of_half_Δv);

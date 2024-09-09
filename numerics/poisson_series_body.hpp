@@ -434,7 +434,7 @@ PoissonSeries(PrivateConstructor,
     : origin_(aperiodic.origin()),
       aperiodic_(std::move(aperiodic)),
       periodic_(std::move(periodic)) {
-  // The |periodic| vector may have elements with positive or negative angular
+  // The `periodic` vector may have elements with positive or negative angular
   // frequencies.  Normalize our member variable to only have positive angular
   // frequencies.
 

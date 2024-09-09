@@ -261,7 +261,7 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
         VanishesBefore(1 * Kilo(Metre) / Second, 0, 93));
-    // For the moment, the |BodyCentredBodyDirectionReferenceFrame| assumes that
+    // For the moment, the `BodyCentredBodyDirectionReferenceFrame` assumes that
     // its reference trajectories are free-falling, and gives us the wrong
     // geometric acceleration when this is not the case.
     auto const intrinsic_acceleration =

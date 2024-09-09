@@ -127,7 +127,7 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
   return m.Return();
 }
 
-// Calls |plugin| to create a |NavigationFrame| using the given |parameters|,
+// Calls `plugin` to create a `NavigationFrame` using the given `parameters`,
 // sets it as the current plotting frame.
 void __cdecl principia__SetPlottingFrame(
     Plugin* const plugin,

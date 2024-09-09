@@ -46,8 +46,8 @@ class FlightPlanOptimizationDriver {
   // optimization is already happening.
   void RequestOptimization(Parameters const& parameters);
 
-  // Returns the last parameters passed to |RequestOptimization|, or nullopt if
-  // |RequestOptimization| was not called.
+  // Returns the last parameters passed to `RequestOptimization`, or nullopt if
+  // `RequestOptimization` was not called.
   std::optional<Parameters> const& last_parameters() const;
 
   // Waits for the current optimization (if any) to complete.

@@ -111,7 +111,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
       Instant const& t) const override;
 
   // This segment must have 0 or 1 points.  Occasionally removes intermediate
-  // points from the segment when |Append|ing, ensuring that positions remain
+  // points from the segment when `Append`ing, ensuring that positions remain
   // within the desired tolerance.
   void SetDownsampling(DownsamplingParameters const& downsampling_parameters);
 
@@ -125,11 +125,11 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   void ClearDownsampling();
 
   // Returns true iff this segment was downsampled at least once since its
-  // creation or the last call to |clear|.  Only use for optimization purposes,
+  // creation or the last call to `clear`.  Only use for optimization purposes,
   // not to depend on the actual structure of the timeline.
   bool was_downsampled() const;
 
-  // The points denoted by |exact| are written and re-read exactly and are not
+  // The points denoted by `exact` are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.  The endpoints of a
   // segment are always exact.
   void WriteToMessage(
@@ -155,32 +155,32 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   std::optional<iterator> LowerBoundOrNullopt(Instant const& t) const;
   std::optional<iterator> UpperBoundOrNullopt(Instant const& t) const;
 
-  // Changes the |self_| iterator.  Only for use when attaching/detaching
+  // Changes the `self_` iterator.  Only for use when attaching/detaching
   // segments.
   void SetSelf(DiscreteTrajectorySegmentIterator<Frame> self);
 
   void Prepend(Instant const& t,
                DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  // Removes all points with a time greater than or equal to |t| (1st overload)
-  // or starting at |begin| (2nd overload).
+  // Removes all points with a time greater than or equal to `t` (1st overload)
+  // or starting at `begin` (2nd overload).
   void ForgetAfter(Instant const& t);
   void ForgetAfter(typename Timeline::const_iterator begin);
 
-  // Removes all points with a time strictly less than |t| (1st overload) or
-  // ending at |end| (2nd overload).
+  // Removes all points with a time strictly less than `t` (1st overload) or
+  // ending at `end` (2nd overload).
   void ForgetBefore(Instant const& t);
   void ForgetBefore(typename Timeline::const_iterator end);
 
   absl::Status Append(Instant const& t,
                       DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  // Merges the points from the given |segment| into this object.  The two
+  // Merges the points from the given `segment` into this object.  The two
   // segments must have nonoverlapping times.  The downsampling state of the
   // result is that of the latest segment (with the largest times).
   void Merge(DiscreteTrajectorySegment<Frame> segment);
 
-  // Computes |number_of_dense_points_| based on the start of the dense
+  // Computes `number_of_dense_points_` based on the start of the dense
   // timeline.  Used for compatibility deserialization.
   void SetStartOfDenseTimeline(Instant const& t);
 
@@ -188,13 +188,13 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // compatibility deserialization.
   void SetForkPoint(value_type const& point);
 
-  // Called by |Append| after appending a point to this segment.  If
+  // Called by `Append` after appending a point to this segment.  If
   // appropriate, performs downsampling and deletes some of the points of the
   // segment.
   absl::Status DownsampleIfNeeded();
 
   // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory segment bounded above by |upper|.
+  // trajectory segment bounded above by `upper`.
   Hermite3<Position<Frame>, Instant> GetInterpolation(
       typename Timeline::const_iterator upper) const;
 
@@ -204,10 +204,10 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   std::int64_t timeline_size() const;
 
   // Implementation of serialization.  The caller is expected to pass consistent
-  // parameters.  |timeline_begin| and |timeline_end| define the range to write.
-  // |timeline_size| is the distance from |timeline_begin| to |timeline_end|.
-  // |number_of_points_to_skip_at_end| is the distance between |timeline_end|
-  // and the true |end| of the timeline.
+  // parameters.  `timeline_begin` and `timeline_end` define the range to write.
+  // `timeline_size` is the distance from `timeline_begin` to `timeline_end`.
+  // `number_of_points_to_skip_at_end` is the distance between `timeline_end`
+  // and the true `end` of the timeline.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       typename Timeline::const_iterator timeline_begin,

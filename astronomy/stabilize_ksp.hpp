@@ -9,7 +9,7 @@ namespace internal {
 
 using namespace principia::physics::_solar_system;
 
-// Patches the given |solar_system|, which is expected to be the stock KSP, to
+// Patches the given `solar_system`, which is expected to be the stock KSP, to
 // make the Jool system stable.
 template<typename Frame>
 void StabilizeKSP(SolarSystem<Frame>& solar_system);

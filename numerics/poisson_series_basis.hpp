@@ -17,14 +17,14 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
 
-// A |PoissonSeriesSubspace| represents a linear subspace of the space of
+// A `PoissonSeriesSubspace` represents a linear subspace of the space of
 // Poisson series.
-// The type |PoissonSeriesSubspace| defines an orthogonal decomposition of the
+// The type `PoissonSeriesSubspace` defines an orthogonal decomposition of the
 // space of Poisson series, i.e., The space of Poisson series is the orthogonal
-// sum of all values of |PoissonSeriesSubspace|.
+// sum of all values of `PoissonSeriesSubspace`.
 class PoissonSeriesSubspace {
  public:
-  // Whether the subspaces |v| and |w| are orthogonal.
+  // Whether the subspaces `v` and `w` are orthogonal.
   // TODO(egg): When we take parity into account, orthogonality will be defined
   // with respect to an inner product over an interval centred on the origin of
   // the Poisson series, with an even apodization.
@@ -50,7 +50,7 @@ class PoissonSeriesSubspace {
 
 // A generator for the Кудрявцев basis, i.e., functions of the
 // form tⁿ sin ω t and tⁿ cos ω t properly ordered.  The basis elements have
-// type |Series|, which must be free from Quantity.  |degree| is the maximum
+// type `Series`, which must be free from Quantity.  `degree` is the maximum
 // degree of tⁿ.  The basis elements are valid over the interval [t_min, t_max]
 // and symmetrical (odd, even) around the midpoint of that interval.
 template<typename Series, int degree>

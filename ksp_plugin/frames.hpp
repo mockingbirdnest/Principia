@@ -29,7 +29,7 @@ using World = Frame<serialization::Frame::PluginTag,
                     Handedness::Left,
                     serialization::Frame::WORLD>;
 
-// Same as |World| but with the y and z axes switched through the looking-glass:
+// Same as `World` but with the y and z axes switched through the looking-glass:
 // it is a right-handed basis. "We're all mad here. I'm mad. You're mad."
 using AliceWorld = Frame<serialization::Frame::PluginTag,
                          Arbitrary,
@@ -42,23 +42,23 @@ using Barycentric = Frame<serialization::Frame::PluginTag,
                           Handedness::Right,
                           serialization::Frame::BARYCENTRIC>;
 
-// The |Apparent...| frames are used for data obtained after the physics
+// The `Apparent...` frames are used for data obtained after the physics
 // simulation of the game has run, and before we perform our correction.
 
-// |World| coordinates from the game, but before the correction.
+// `World` coordinates from the game, but before the correction.
 using ApparentWorld = Frame<serialization::Frame::PluginTag,
                             Arbitrary,
                             Handedness::Left,
                             serialization::Frame::APPARENT_WORLD>;
 
-// The axes are those of |Barycentric|.  The origin is that of |ApparentWorld|,
+// The axes are those of `Barycentric`.  The origin is that of `ApparentWorld`,
 // and should not be depended upon.
 using Apparent = Frame<serialization::Frame::PluginTag,
                        NonRotating,
                        Handedness::Right,
                        serialization::Frame::APPARENT>;
 
-// |Barycentric|, with its y and z axes swapped.
+// `Barycentric`, with its y and z axes swapped.
 using CelestialSphere = Frame<serialization::Frame::PluginTag,
                               Inertial,
                               Handedness::Left,
@@ -87,21 +87,21 @@ using Navigation = Frame<serialization::Frame::PluginTag,
                          serialization::Frame::NAVIGATION>;
 
 // The plotting frame, but with the y and z axes swapped compared to
-// |Navigation|.  This frame defines the camera horizontal, and its angular
+// `Navigation`.  This frame defines the camera horizontal, and its angular
 // velocity defines the angular velocity of the camera (note that the linear
 // motion of the camera is defined in-game by following a specific target, which
-// may be in motion with respect to |CameraReference|, so the camera is not
+// may be in motion with respect to `CameraReference`, so the camera is not
 // necessarily at rest in that frame).
 using CameraReference = Frame<serialization::Frame::PluginTag,
                               Arbitrary,
                               Handedness::Left,
                               serialization::Frame::CAMERA_REFERENCE>;
 
-// |CameraReference|, rotated about its y axis by the angle of the planetarium
+// `CameraReference`, rotated about its y axis by the angle of the planetarium
 // rotation.  KSP compensates for the planetarium rotation so that the
 // orientation of the camera remains inertially fixed regardless of whether
 // World is rotating; we must undo this compensation in order for the camera to
-// be fixed in |CameraReference|.
+// be fixed in `CameraReference`.
 using CameraCompensatedReference =
     Frame<serialization::Frame::PluginTag,
           Arbitrary,
@@ -109,9 +109,9 @@ using CameraCompensatedReference =
           serialization::Frame::CAMERA_COMPENSATED_REFERENCE>;
 
 // A nonrotating referencence frame comoving with the sun with the same axes as
-// |AliceWorld|. Since it is nonrotating (though not inertial), differences
+// `AliceWorld`. Since it is nonrotating (though not inertial), differences
 // between velocities are consistent with those in an inertial reference frame.
-// When |AliceWorld| rotates the axes are not fixed in the reference frame, so
+// When `AliceWorld` rotates the axes are not fixed in the reference frame, so
 // this (frame, basis) pair is inconsistent across instants. Operations should
 // only be performed between simultaneous quantities, then converted to a
 // consistent (frame, basis) pair before use.
@@ -120,8 +120,8 @@ using AliceSun = Frame<serialization::Frame::PluginTag,
                        Handedness::Right,
                        serialization::Frame::ALICE_SUN>;
 
-// Same as above, but with same axes as |World| instead of those of
-// |AliceWorld|. The caveats are the same as for |AliceSun|.
+// Same as above, but with same axes as `World` instead of those of
+// `AliceWorld`. The caveats are the same as for `AliceSun`.
 using WorldSun = Frame<serialization::Frame::PluginTag,
                        NonRotating,
                        Handedness::Left,
@@ -141,8 +141,8 @@ using EccentricPart = Frame<serialization::Frame::PluginTag,
                             Handedness::Left,
                             serialization::Frame::ECCENTRIC_PART>;
 
-// The axes are those of |EccentricPart|.  The origin is the centre of mass of
-// the part, which may be offset from |EccentricPart::origin|.
+// The axes are those of `EccentricPart`.  The origin is the centre of mass of
+// the part, which may be offset from `EccentricPart::origin`.
 using RigidPart = Frame<serialization::Frame::PluginTag,
                         Arbitrary,
                         Handedness::Left,
@@ -154,12 +154,12 @@ using MainBodyCentred = Frame<serialization::Frame::PluginTag,
                               Handedness::Right,
                               serialization::Frame::MAIN_BODY_CENTRED>;
 
-// Convenient instances of types from |physics| for the above frames.
+// Convenient instances of types from `physics` for the above frames.
 using NavigationFrame = RigidReferenceFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 using PlottingFrame = ReferenceFrame<Barycentric, Navigation>;
 
-// The map between the vector spaces of |WorldSun| and |AliceSun|.
+// The map between the vector spaces of `WorldSun` and `AliceSun`.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 

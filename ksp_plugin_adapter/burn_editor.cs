@@ -96,7 +96,7 @@ class BurnEditor : ScalingRenderer {
     Maximized,
   }
 
-  // Renders the |BurnEditor|.  Returns |Changed| if and only if the settings
+  // Renders the `BurnEditor`.  Returns `Changed` if and only if the settings
   // were changed.
   public Event Render(
       string header,
@@ -134,7 +134,7 @@ class BurnEditor : ScalingRenderer {
       return Event.None;
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      // When we are first rendered, the |initial_mass_in_tonnes_| will just have
+      // When we are first rendered, the `initial_mass_in_tonnes_` will just have
       // been set.  If we have fallen back to instant impulse, we should use this
       // mass to set the thrust.
       if (first_time_rendering_) {
@@ -462,9 +462,9 @@ class BurnEditor : ScalingRenderer {
   private void UseTheForceLuke() {
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
-    // This, together with |scale = 1|, ensures that, when |initial_time| is
-    // less than 2 ** 32 s, |Δv(initial_time + duration)| does not overflow if
-    // Δv is less than 100 km/s, and that |initial_time + duration| does not
+    // This, together with `scale = 1`, ensures that, when `initial_time` is
+    // less than 2 ** 32 s, `Δv(initial_time + duration)` does not overflow if
+    // Δv is less than 100 km/s, and that `initial_time + duration` does not
     // fully cancel if Δv is more than 1 mm/s.
     // TODO(egg): Before the C* release, add a persisted flag to indicate to the
     // user that we are not using the craft's engines (we can also use that

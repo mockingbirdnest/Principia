@@ -23,7 +23,7 @@ using namespace principia::quantities::_elementary_functions;
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.
 FORCE_INLINE(inline) Quaternion ToQuaternion(R3x3Matrix<double> const& matrix) {
-  // TODO(egg): this should probably contain some checks that |matrix| has
+  // TODO(egg): this should probably contain some checks that `matrix` has
   // positive determinant...
   double const t = matrix.Trace();
   double real_part;
@@ -63,14 +63,14 @@ FORCE_INLINE(inline) Quaternion ToQuaternion(R3x3Matrix<double> const& matrix) {
   return Quaternion(real_part, imaginary_part);
 }
 
-// Returns a rotation of |angle| around |axis|.  |axis| must be normalized.
+// Returns a rotation of `angle` around `axis`.  `axis` must be normalized.
 inline Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
   Angle const half_angle = 0.5 * angle;
   return Quaternion(Cos(half_angle), Sin(half_angle) * axis);
 }
 
-// Returns the digits of the 3ⁿs from the given |BinaryCodedTernary number|.
-// Note that this does not check that |number| is valid binary-coded ternary,
+// Returns the digits of the 3ⁿs from the given `BinaryCodedTernary number`.
+// Note that this does not check that `number` is valid binary-coded ternary,
 // nor that the result is between 1 and 2.
 template<typename BinaryCodedTernary>
 int BinaryCodedTernaryDigit(int const n, BinaryCodedTernary const number) {
@@ -182,7 +182,7 @@ Sign Rotation<FromFrame, ToFrame>::Determinant() const {
 
 template<typename FromFrame, typename ToFrame>
 Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
-  // Because |quaternion_| has norm 1, its inverse is just its conjugate.
+  // Because `quaternion_` has norm 1, its inverse is just its conjugate.
   return Rotation<ToFrame, FromFrame>(quaternion_.Conjugate());
 }
 

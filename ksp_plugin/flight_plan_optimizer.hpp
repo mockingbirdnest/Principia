@@ -48,11 +48,11 @@ class FlightPlanOptimizer {
     Velocity<Frenet<Navigation>> ΔΔv;
   };
 
-  // For the gradient descent algorithm, |Argument| is transformed into a
+  // For the gradient descent algorithm, `Argument` is transformed into a
   // homogeneous array of numbers.
   using HomogeneousArgument = FixedVector<double, 4>;
 
-  // These functions convert between the two representations of |Argument|.
+  // These functions convert between the two representations of `Argument`.
   static HomogeneousArgument Homogeneize(Argument const& argument);
   static Argument Dehomogeneize(
       HomogeneousArgument const& homogeneous_argument);
@@ -113,14 +113,14 @@ class FlightPlanOptimizer {
   // state of the flight plan.
   using ProgressCallback = std::function<void(FlightPlan const&)>;
 
-  // Constructs an optimizer for |flight_plan|.  |flight_plan| must outlive this
+  // Constructs an optimizer for `flight_plan`.  `flight_plan` must outlive this
   // object.
   FlightPlanOptimizer(not_null<FlightPlan*> flight_plan,
                       MetricFactory metric_factory,
                       ProgressCallback progress_callback = nullptr);
 
-  // Optimizes the manœuvre at the given |index| to minimize the metric passed
-  // at construction.  The |Δv_tolerance| is used for the initial choice of the
+  // Optimizes the manœuvre at the given `index` to minimize the metric passed
+  // at construction.  The `Δv_tolerance` is used for the initial choice of the
   // step and for deciding when to stop, and must be small enough to not miss
   // interesting features of the trajectory, and large enough to avoid costly
   // startup steps.  Changes the flight plan passed at construction.
@@ -145,8 +145,8 @@ class FlightPlanOptimizer {
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
   using AngleGradient = Gradient<Angle, HomogeneousArgument>;
 
-  // Compute the closest periapsis of the |flight_plan| with respect to the
-  // |celestial|, occurring after |begin_time|.  If |extend_if_needed| is true,
+  // Compute the closest periapsis of the `flight_plan` with respect to the
+  // `celestial`, occurring after `begin_time`.  If `extend_if_needed` is true,
   // the flight plan is extended until its end is not the point that minimizes
   // the metric.
   DiscreteTrajectory<Barycentric>::value_type EvaluateClosestPeriapsis(
@@ -154,8 +154,8 @@ class FlightPlanOptimizer {
       Instant const& begin_time,
       bool extend_if_needed) const;
 
-  // Replaces the manœuvre at the given |index| based on the |argument|, and
-  // computes the closest periapis.  Leaves the |flight_plan| unchanged.
+  // Replaces the manœuvre at the given `index` based on the `argument`, and
+  // computes the closest periapis.  Leaves the `flight_plan` unchanged.
   DiscreteTrajectory<Barycentric>::value_type EvaluatePeriapsisWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
@@ -168,9 +168,9 @@ class FlightPlanOptimizer {
       NavigationManœuvre const& manœuvre,
       int index);
 
-  // Replaces the manœuvre at the given |index| based on the |argument|, and
+  // Replaces the manœuvre at the given `index` based on the `argument`, and
   // computes the gradient of the closest periapis with respect to the
-  // |argument|.  Leaves the |flight_plan| unchanged.
+  // `argument`.  Leaves the `flight_plan` unchanged.
   LengthGradient Evaluate𝛁DistanceToCelestialWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
@@ -209,8 +209,8 @@ class FlightPlanOptimizer {
       NavigationManœuvre const& manœuvre,
       int index);
 
-  // Returns a burn obtained by applying the changes in |homogeneous_argument|
-  // to the |manœuvre|.
+  // Returns a burn obtained by applying the changes in `homogeneous_argument`
+  // to the `manœuvre`.
   static NavigationManœuvre::Burn UpdatedBurn(
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre);

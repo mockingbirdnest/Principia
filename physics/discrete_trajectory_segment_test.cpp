@@ -92,7 +92,7 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     return DiscreteTrajectorySegmentIterator<World>(segments, iterator);
   }
 
-  // Constructs a list of |n| segments which are properly initialized.
+  // Constructs a list of `n` segments which are properly initialized.
   // TODO(phl): Move to a central place.
   static not_null<std::unique_ptr<Segments>> MakeSegments(const int n) {
     auto segments = make_not_null_unique<Segments>(n);

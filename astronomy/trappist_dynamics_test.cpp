@@ -108,8 +108,8 @@ class Population {
  public:
   using ComputeFitness = std::function<double(Genome const&, std::string&)>;
 
-  // Constructs an initial population made of |size| mutated copies of |luca|.
-  // If |elitism| is true, the best individual is preserved unchanged in the
+  // Constructs an initial population made of `size` mutated copies of `luca`.
+  // If `elitism` is true, the best individual is preserved unchanged in the
   // next generation.
   Population(Genome const& luca,
              int size,
@@ -166,7 +166,7 @@ void Genome::Mutate(std::mt19937_64& engine,
   // algorithm: if it's too small we do not explore the genomic space
   // efficiently and it takes forever to find decent solutions; if it's too
   // large we explore the genomic space haphazardly and suffer from deleterious
-  // mutations.  The |multiplicator| is used to decay the perturbation over
+  // mutations.  The `multiplicator` is used to decay the perturbation over
   // time.
   double const multiplicator =
       generation == -1 ? 1 : std::exp2(-2 - std::min(generation, 800) / 120);
@@ -1358,7 +1358,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
   double great_old_one_fitness = 0.0;
   {
     // First, let's do some rounds of evolution with a population of individuals
-    // based on |luca|.  The best of all of them is the Great Old One.
+    // based on `luca`.  The best of all of them is the Great Old One.
     int const number_of_rounds = 40;
     genetics::Genome const luca(elements);
     Bundle bundle;

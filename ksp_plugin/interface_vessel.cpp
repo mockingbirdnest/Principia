@@ -34,8 +34,8 @@ XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
 }
 
-// Calls |plugin->VesselFromParent| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
+// Calls `plugin->VesselFromParent` with the arguments given.
+// `plugin` must not be null.  No transfer of ownership.
 QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
                                        int const parent_index,
                                        char const* const vessel_guid) {

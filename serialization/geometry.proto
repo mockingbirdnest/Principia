@@ -120,7 +120,7 @@ message Permutation {
   }
 
   // These enums are used in the definition of the field
-  // |coordinate_permutation|.
+  // `coordinate_permutation`.
 
   // Three two-bit fields which indicate how each coordinate get mapped by the
   // permutation.
@@ -129,7 +129,7 @@ message Permutation {
     Y = 1;
     Z = 2;
   }
-  // A three bit field used when using |coordinate_permutation| to index arrays.
+  // A three bit field used when using `coordinate_permutation` to index arrays.
   enum Index {
     INDEX = 6;
   }
@@ -161,7 +161,7 @@ message Signature {
 }
 
 // Frames follow.  Note that the names of the enum types are part of the
-// serialized representation (|tag_type_fingerprint| field).
+// serialized representation (`tag_type_fingerprint` field).
 
 message Frame {
   // The frame tags used in the plugin.

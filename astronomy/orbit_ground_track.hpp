@@ -30,11 +30,11 @@ class OrbitGroundTrack {
   struct MeanSun {
     Instant epoch;
     // This mean longitude of the sun is with respect to the axes of
-    // |PrimaryCentred|.
+    // `PrimaryCentred`.
     Angle mean_longitude_at_epoch;
     // This year is the period of the above mean longitude; which kind of year
-    // it is depends on the definition of |PrimaryCentred|.  If |PrimaryCentred|
-    // has ICRS axes, it is the sidereal year; if |PrimaryCentred| is the
+    // it is depends on the definition of `PrimaryCentred`.  If `PrimaryCentred`
+    // has ICRS axes, it is the sidereal year; if `PrimaryCentred` is the
     // reference frame of the equator & equinox of the date, it is the tropical
     // year.
     Time year;
@@ -66,7 +66,7 @@ class OrbitGroundTrack {
   OrbitGroundTrack& operator=(OrbitGroundTrack&&) = default;
 
   // Returns an object that describes the properties of the ground track of
-  // |trajectory| as an orbit around |primary|; if |mean_sun| is provided,
+  // `trajectory` as an orbit around `primary`; if `mean_sun` is provided,
   // sun-synchronicity is analysed.
   template<typename PrimaryCentred, typename Inertial>
   static absl::StatusOr<OrbitGroundTrack> ForTrajectory(
@@ -76,7 +76,7 @@ class OrbitGroundTrack {
 
   // Given a nominal recurrence and the index of the first ascending pass east
   // of the equator (which must be odd and in [1, 2 Nᴛₒ - 1], where Nᴛₒ is
-  // |nominal_recurrence.number_of_revolutions()|), returns an object describing
+  // `nominal_recurrence.number_of_revolutions()`), returns an object describing
   // how the recurrence grid is aligned in longitude, and how well the actual
   // orbit follows that grid.
   EquatorCrossingLongitudes equator_crossing_longitudes(
@@ -97,9 +97,9 @@ class OrbitGroundTrack {
 
   std::vector<Angle> longitudes_of_equator_crossings_of_ascending_passes_;
   std::vector<Angle> longitudes_of_equator_crossings_of_descending_passes_;
-  // Whether |longitudes_of_equator_crossings_of_descending_passes_.front()| is
+  // Whether `longitudes_of_equator_crossings_of_descending_passes_.front()` is
   // the longitude of the pass preceding
-  // |longitudes_of_equator_crossings_of_ascending_passes_.front()|, rather than
+  // `longitudes_of_equator_crossings_of_ascending_passes_.front()`, rather than
   // the following one.
   bool first_descending_pass_before_first_ascending_pass_;
   std::optional<Interval<Angle>> mean_solar_times_of_ascending_nodes_;

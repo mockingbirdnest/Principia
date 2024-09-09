@@ -38,7 +38,7 @@ Instant Checkpointer<Message>::newest_checkpoint() const {
 template<typename Message>
 Instant Checkpointer<Message>::checkpoint_at_or_after(Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
-  // |it| denotes an entry equal to or greater than |t| (or end).
+  // `it` denotes an entry equal to or greater than `t` (or end).
   auto const it = checkpoints_.lower_bound(t);
   if (it == checkpoints_.cend()) {
     return InfiniteFuture;
@@ -49,7 +49,7 @@ Instant Checkpointer<Message>::checkpoint_at_or_after(Instant const& t) const {
 template<typename Message>
 Instant Checkpointer<Message>::checkpoint_at_or_before(Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
-  // |it| denotes an entry strictly greater than |t| (or end).
+  // `it` denotes an entry strictly greater than `t` (or end).
   auto const it = checkpoints_.upper_bound(t);
   if (it == checkpoints_.cbegin()) {
     return InfinitePast;
@@ -75,7 +75,7 @@ template<typename Message>
 absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints_at_or_before(
     Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
-  // |it| denotes an entry strictly greater than |t| (or end).
+  // `it` denotes an entry strictly greater than `t` (or end).
   auto const it = checkpoints_.upper_bound(t);
   absl::btree_set<Instant> result;
   std::transform(
@@ -97,9 +97,9 @@ absl::btree_set<Instant> Checkpointer<Message>::all_checkpoints_between(
   }
 
   absl::ReaderMutexLock l(&lock_);
-  // |it1| denotes an entry greater or equal to |t1| (or end).
+  // `it1` denotes an entry greater or equal to `t1` (or end).
   auto const it1 = checkpoints_.lower_bound(t1);
-  // |it2| denotes an entry strictly greater than |t2| (or end).
+  // `it2` denotes an entry strictly greater than `t2` (or end).
   auto const it2 = checkpoints_.upper_bound(t2);
   absl::btree_set<Instant> result;
   std::transform(
@@ -163,7 +163,7 @@ absl::Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
   typename Message::Checkpoint const* checkpoint = nullptr;
   {
     absl::ReaderMutexLock l(&lock_);
-    // |it| denotes an entry strictly greater than |t| (or end).
+    // `it` denotes an entry strictly greater than `t` (or end).
     auto const it = checkpoints_.upper_bound(t);
     if (it == checkpoints_.cbegin()) {
       return absl::NotFoundError("No checkpoint");

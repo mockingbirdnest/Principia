@@ -38,7 +38,7 @@ Instance::Solve(Instant const& t_final) {
   auto const& equation = this->equation_;
   auto const& step = this->step_;
 
-  // |current_state| is updated as the integration progresses to allow
+  // `current_state` is updated as the integration progresses to allow
   // restartability.
 
   // Argument checks.
@@ -244,7 +244,7 @@ SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) const {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));

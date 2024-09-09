@@ -33,7 +33,7 @@ class HarmonicDamping final {
   // This class depends on the invariant: outer_threshold = 3 * inner_threshold.
   Length const& inner_threshold() const;
 
-  // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
+  // Sets σℜ_over_r and grad_σℜ according to σ as defined by `*this`.
   template<typename Frame>
   void ComputeDampedRadialQuantities(
       Length const& r_norm,

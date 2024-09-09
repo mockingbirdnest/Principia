@@ -19,7 +19,7 @@ using namespace principia::base::_not_null;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_named_quantities;
 
-// |Value_| must belong to an affine space.  |Argument_| must belong to a ring
+// `Value_` must belong to an affine space.  `Argument_` must belong to a ring
 // or to Point based on a ring.
 template<typename Value_, typename Argument_>
 class Polynomial {
@@ -55,7 +55,7 @@ class Polynomial {
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
   // Compatibility deserialization, when the evaluator is not present in
-  // |message|.
+  // `message`.
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);

@@ -64,7 +64,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
                     .ComputeLines(parameters);
 
   absl::MutexLock l(&lock_);
-  // We don’t reset |next_equipotentials_| unless |result.ok()|, so that if we
+  // We don’t reset `next_equipotentials_` unless `result.ok()`, so that if we
   // have a transient error, we keep the old ones until the problem goes away.
   if (result.ok()) {
     next_equipotentials_ = {{}, parameters};

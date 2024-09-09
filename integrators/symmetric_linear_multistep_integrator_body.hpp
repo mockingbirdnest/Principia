@@ -42,8 +42,8 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
   if (!starter_.started()) {
     starter_.Solve(t_final);
 
-    // If |t_final| is not large enough, we may not have generated enough
-    // points.  Bail out, we'll continue the next time |Solve| is called.
+    // If `t_final` is not large enough, we may not have generated enough
+    // points.  Bail out, we'll continue the next time `Solve` is called.
     if (!starter_.started()) {
       return absl::OkStatus();
     }
@@ -336,7 +336,7 @@ SymmetricLinearMultistepIntegrator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) const {
-  // Cannot use |make_not_null_unique| because the constructor of |Instance| is
+  // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));

@@ -33,7 +33,7 @@ BodySurfaceFrameField<Frame, ThisFrame>::FromThisFrame(
       InnerProduct(zenith, body_axis_);
   double const axis_projection² = axis_projection * axis_projection;
 
-  // The unit vector |north| is directed along the polar axis.  Note that λ is
+  // The unit vector `north` is directed along the polar axis.  Note that λ is
   // positive.
   double const λ = 1 / Sqrt(1 - axis_projection²);
   auto const μ = -λ * axis_projection;

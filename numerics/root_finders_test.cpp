@@ -129,8 +129,8 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
   // Capture everything but the function itself by copy so we have some
   // confidence that the function is pure.
   // We capture f because it is defined recursively.
-  // If non-null, |*evaluations| is incremented when the function is called.
-  // If |expect_brent_calls| is true, this function checks that x is an element
+  // If non-null, `*evaluations` is incremented when the function is called.
+  // If `expect_brent_calls` is true, this function checks that x is an element
   // of the expected sequence X.
   // For x in X, this function returns f(x) as defined at the end of
   // section 4.2.

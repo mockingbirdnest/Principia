@@ -40,7 +40,7 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
 
-// The execution time is exponential in |step_sizes|.
+// The execution time is exponential in `step_sizes`.
 constexpr int step_sizes = 110;
 constexpr double step_reduction = 1.1;
 
@@ -98,8 +98,8 @@ std::ostream& operator<<(std::ostream& stream,
 }
 
 std::vector<IntegratorTestParam> IntegratorTestParams() {
-  // The |initial_number_of_steps| below were carefully chosen using
-  // Mathematica to only select the domain where |p| and |step| are properly
+  // The `initial_number_of_steps` below were carefully chosen using
+  // Mathematica to only select the domain where `p` and `step` are properly
   // correlated.
   return {PARAM(AdamsBashforthOrder2,
                 10,

@@ -17,21 +17,21 @@ namespace _bundle {
 namespace internal {
 
 // A bundle manages a number of threads that execute independently.  A thread is
-// created for each call to |Add|.  When one of the |Join*| is called, no more
-// calls to |Add| are allowed, and |Join*| returns the first error status (if
+// created for each call to `Add`.  When one of the `Join*` is called, no more
+// calls to `Add` are allowed, and `Join*` returns the first error status (if
 // any) produced by the tasks.
 class Bundle final {
  public:
   using Task = std::function<absl::Status()>;
 
-  // If a |task| returns an erroneous |absl::Status|, |Join| returns that
+  // If a `task` returns an erroneous `absl::Status`, `Join` returns that
   // status.
   void Add(Task task) LOCKS_EXCLUDED(lock_);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
   absl::Status Join() LOCKS_EXCLUDED(lock_, status_lock_);
-  // Same as above, but returns a |kDeadlineExceeded| status if it fails to
+  // Same as above, but returns a `kDeadlineExceeded` status if it fails to
   // complete within the given interval.
   absl::Status JoinWithin(std::chrono::steady_clock::duration Δt)
       LOCKS_EXCLUDED(lock_, status_lock_);
@@ -50,13 +50,13 @@ class Bundle final {
 
   absl::Mutex lock_;
 
-  // Whether |Join| has been called.  When set to true, |Add| should not be
+  // Whether `Join` has been called.  When set to true, `Add` should not be
   // called.
   std::atomic_bool joining_ = false;
   absl::Notification all_done_;
 
   // The number of workers currently executing.  Can only be incremented when
-  // |joining_| is false.
+  // `joining_` is false.
   std::atomic_int number_of_active_workers_ = 0;
   std::list<std::thread> workers_ GUARDED_BY(lock_);
 

@@ -27,8 +27,8 @@ class Protector {
   // state of the protector permits it.
   using Callback = std::function<void()>;
 
-  // If the range ]-∞, t[ is unprotected, |callback| is run immediately and this
-  // function returns true.  Otherwise |callback| is delayed and will be run as
+  // If the range ]-∞, t[ is unprotected, `callback` is run immediately and this
+  // function returns true.  Otherwise `callback` is delayed and will be run as
   // soon as ]-∞, t[ becomes unprotected; returns false in this case.  The
   // callbacks are run without any lock held, in time order.
   bool RunWhenUnprotected(Instant const& t, Callback callback);

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-// We need to pollute the |::| namespace in order for lookup to work, like
+// We need to pollute the `::` namespace in order for lookup to work, like
 // glog/stl_logging.h.  The following caveat from glog/stl_logging.h applies
 // here too.
 

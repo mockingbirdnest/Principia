@@ -21,7 +21,7 @@ namespace principia {
 namespace journal {
 
 // This file is not included from other headers, only translation units, so we
-// allow pollution of the |journal| namespace.
+// allow pollution of the `journal` namespace.
 using interface::AdaptiveStepParameters;
 using interface::BodyGeopotentialElement;
 using interface::BodyParameters;

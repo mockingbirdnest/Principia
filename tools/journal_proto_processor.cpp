@@ -63,7 +63,7 @@ std::string ToLower(std::string const& s) {
 }  // namespace
 
 void JournalProtoProcessor::ProcessMessages() {
-  // Get the file containing |Method|.
+  // Get the file containing `Method`.
   Descriptor const* method_descriptor =
       journal::serialization::Method::descriptor();
   FileDescriptor const* file_descriptor = method_descriptor->file();
@@ -73,7 +73,7 @@ void JournalProtoProcessor::ProcessMessages() {
     Descriptor const* message_descriptor = file_descriptor->message_type(i);
     std::string message_descriptor_name = message_descriptor->name();
     if (message_descriptor->extension_range_count() > 0) {
-      // Only the |Method| message should have a range.  Don't generate any code
+      // Only the `Method` message should have a range.  Don't generate any code
       // for it.
       CHECK_EQ(method_message_name, message_descriptor_name)
           << message_descriptor_name << " should not have extension ranges";
@@ -87,7 +87,7 @@ void JournalProtoProcessor::ProcessMessages() {
         break;
       }
       case 1: {
-        // An extension.  Check that it extends |Method|.
+        // An extension.  Check that it extends `Method`.
         FieldDescriptor const* extension = message_descriptor->extension(0);
         CHECK(extension->is_extension());
         Descriptor const* containing_type = extension->containing_type();
@@ -444,8 +444,8 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
         };
   }
 
-  // It is not possible to use a custom marshaler on an |T?|, as this raises
-  // |System.Runtime.InteropServices.MarshalDirectiveException| with the message
+  // It is not possible to use a custom marshaler on an `T?`, as this raises
+  // `System.Runtime.InteropServices.MarshalDirectiveException` with the message
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
   // value types.".
   if (Contains(interchange_, descriptor)) {
@@ -460,11 +460,11 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       field_cs_custom_marshaler_[descriptor] =
           custom_marshaler_generic_name(cs_unboxed_type);
     }
-    // For fields of interchange messages we can use a |T?| as the field is not
+    // For fields of interchange messages we can use a `T?` as the field is not
     // the part being marshaled, it is the entire interchange message.
     field_cs_type_[descriptor] = cs_unboxed_type + "?";
   } else {
-    // We could use a boxed |T|, whose type would be |object|, but we would lose
+    // We could use a boxed `T`, whose type would be `object`, but we would lose
     // static typing.  We use a custom strongly-typed boxed type instead.
     field_cs_custom_marshaler_[descriptor] =
         custom_marshaler_generic_name(cs_unboxed_type);
@@ -735,7 +735,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         "std::vector<" +
         options.GetExtension(journal::serialization::pointer_to) + ">";
     std::string const size_field_name = field_cxx_size_[descriptor]->name();
-    // Note that in this lambda |expr| is the size field, not the address field:
+    // Note that in this lambda `expr` is the size field, not the address field:
     // the latter was allocated in C# and never inserted in our pointer map, so
     // it's mostly useless.
     field_cxx_deserializer_fn_[descriptor] =

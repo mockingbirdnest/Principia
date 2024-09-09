@@ -178,7 +178,7 @@ DiscreteTrajectory<Frame>::NewSegment() {
     // Duplicate the last point of the previous segment.
     auto const& [last_time, last_degrees_of_freedom] = *last_segment.rbegin();
     new_segment_sit->Append(last_time, last_degrees_of_freedom).IgnoreError();
-    // The use of |insert_or_assign| ensure that we override any entry with the
+    // The use of `insert_or_assign` ensure that we override any entry with the
     // same left endpoint.
     segment_by_left_endpoint_.insert_or_assign(
         segment_by_left_endpoint_.end(), last_time, new_segment_sit);
@@ -217,7 +217,7 @@ DiscreteTrajectory<Frame>::AttachSegments(DiscreteTrajectory trajectory) {
     CHECK_EQ(back().degrees_of_freedom, trajectory.front().degrees_of_freedom)
         << "Mismatching degrees of freedom when attaching segments";
   } else {
-    // If the points are not matching, prepend a matching point to |trajectory|
+    // If the points are not matching, prepend a matching point to `trajectory`
     // and update the time-to-segment map.
     CHECK_LT(back().time, trajectory.front().time)
         << "Mismatching times when attaching segments";
@@ -229,7 +229,7 @@ DiscreteTrajectory<Frame>::AttachSegments(DiscreteTrajectory trajectory) {
     trajectory.segment_by_left_endpoint_.emplace(back().time, sit);
   }
 
-  // The |end| iterator keeps pointing at the end after the splice.  Instead,
+  // The `end` iterator keeps pointing at the end after the splice.  Instead,
   // we track the iterator to the last segment.
   auto const last_before_splice = --segments_->end();
 
@@ -278,9 +278,9 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
     return;
   }
 
-  // |FindSegment| gives us the most recent segment comprising |t|.  If |t| is
+  // `FindSegment` gives us the most recent segment comprising `t`.  If `t` is
   // exactly at the beginning of a segment, it is possible that there would be
-  // 1-point segments at |t| before that segment.  Let's find them and include
+  // 1-point segments at `t` before that segment.  Let's find them and include
   // them in the forgetting.
   auto sit = leit->second;
   while (sit != segments_->begin()) {
@@ -292,9 +292,9 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& t) {
   }
   sit->ForgetAfter(t);
 
-  // Here |sit| designates a segment starting at or after |t|.  If |t| is
+  // Here `sit` designates a segment starting at or after `t`.  If `t` is
   // exactly at the beginning of the segment,
-  // |DiscreteTrajectorySegment::ForgetAfter| will leave it empty.  In that
+  // `DiscreteTrajectorySegment::ForgetAfter` will leave it empty.  In that
   // case we drop the segment entirely, unless it is the only one in the
   // trajectory.
   if (sit->empty()) {
@@ -327,24 +327,24 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& t) {
     return;
   }
   auto const sit = leit->second;
-  // This call may make the segment |*sit| empty if |t| is after the end of
-  // |*sit|.
-  // NOTE(phl): This declaration is necessary because MSVC corrupts |t| during
+  // This call may make the segment `*sit` empty if `t` is after the end of
+  // `*sit`.
+  // NOTE(phl): This declaration is necessary because MSVC corrupts `t` during
   // the call below.
   Instant const t_saved = t;
   sit->ForgetBefore(t);
   for (auto s = segments_->begin(); s != sit; ++s) {
-    // This call may either make the segment |*s| empty or leave it with a
-    // single point matching |sit->front()|.
+    // This call may either make the segment `*s` empty or leave it with a
+    // single point matching `sit->front()`.
     s->ForgetBefore(t_saved);
   }
 
-  // Erase all the entries before and including |leit|.  These are entries for
+  // Erase all the entries before and including `leit`.  These are entries for
   // now-empty segments or for 1-point segments, and the segment which we may
   // just have truncated.
   segment_by_left_endpoint_.erase(segment_by_left_endpoint_.begin(),
                                   std::next(leit));
-  // It |*sit| is not empty, recreate an entry with its new left endpoint.
+  // It `*sit` is not empty, recreate an entry with its new left endpoint.
   if (!sit->empty()) {
     segment_by_left_endpoint_.insert_or_assign(
         segment_by_left_endpoint_.begin(),
@@ -406,7 +406,7 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
       // Merge corresponding segments.
       sit_t->Merge(std::move(*sit_s));
 
-      // If the left endpoint of |sit_t| has changed, remove its entry from the
+      // If the left endpoint of `sit_t` has changed, remove its entry from the
       // time-to-segment map, if any.
       if (left_endpoint.has_value() &&
           sit_t->front().time < left_endpoint.value()) {
@@ -427,7 +427,7 @@ void DiscreteTrajectory<Frame>::Merge(DiscreteTrajectory<Frame> trajectory) {
     } else if (sit_s != trajectory.segments_->end()) {
       // No more segments in the target.  We splice the segments of the source.
 
-      // The |end| iterator keeps pointing at the end after the splice.
+      // The `end` iterator keeps pointing at the end after the splice.
       // Instead, we track the iterator to the last segment.
       auto const last_before_splice = --segments_->end();
 
@@ -511,7 +511,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
   // Construct a map to efficiently find if a segment must be tracked.  The
-  // keys are pointers to segments in |tracked|, the values are the
+  // keys are pointers to segments in `tracked`, the values are the
   // corresponding indices.  Note that multiple tracked segments may turn out to
   // be identical.
   std::unordered_multimap<DiscreteTrajectorySegment<Frame> const*, int>
@@ -541,13 +541,13 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       DiscreteTrajectorySegment<Frame> const*> intersecting_segments;
   bool intersect_range = false;
 
-  // The position of a segment in the repeated field |segment|.
+  // The position of a segment in the repeated field `segment`.
   int segment_position = 0;
   for (auto sit = segments_->begin();
        sit != segments_->end();
        ++sit, ++segment_position) {
-    // Look up in |*sit| the instants that define the range to write.
-    // |lower_bound| returns the past-the-end-of-segment iterator if no point
+    // Look up in `*sit` the instants that define the range to write.
+    // `lower_bound` returns the past-the-end-of-segment iterator if no point
     // exists after the given time, i.e., for the segments that precede the
     // intersection.
     auto const begin_time_it = sit->lower_bound(begin_time);
@@ -560,7 +560,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       break;
     }
 
-    // If |*sit| contains a point at or after |begin_time|, it intersects the
+    // If `*sit` contains a point at or after `begin_time`, it intersects the
     // range to write.
     intersect_range = begin_time_it != sit->end();
     if (intersect_range) {
@@ -577,8 +577,8 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     for (auto position_it = position_begin;
          position_it != position_end;
          ++position_it) {
-      // The field |tracked_position| is indexed by the indices in |tracked|.
-      // Its value is the position of a tracked segment in the field |segment|.
+      // The field `tracked_position` is indexed by the indices in `tracked`.
+      // Its value is the position of a tracked segment in the field `segment`.
       message->set_tracked_position(position_it->second, segment_position);
     }
   }
@@ -634,7 +634,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     return trajectory;
   }
 
-  // First restore the segments themselves.  |segment_iterators| will be used to
+  // First restore the segments themselves.  `segment_iterators` will be used to
   // restore the tracked segments.
   std::vector<SegmentIterator> segment_iterators;
   segment_iterators.reserve(message.segment_size());
@@ -828,8 +828,8 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
     sit->SetSelf(SegmentIterator(to.segments_.get(), sit));
   }
 
-  // Copy the time-to-segment entries on or after the time of |to_segment_begin|
-  // from |from| to |to|.  We are sure to copy all the entries we need because
+  // Copy the time-to-segment entries on or after the time of `to_segment_begin`
+  // from `from` to `to`.  We are sure to copy all the entries we need because
   // it includes the last segment that starts at that time.
   auto from_leit = from.FindSegment(to_segments_begin->front().time);
   for (auto leit = from_leit;
@@ -839,8 +839,8 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
         to.segment_by_left_endpoint_.end(), leit->first, leit->second);
   }
 
-  // Erase from |from| the entries that we just copied.  We may erase too much
-  // if |from| now ends with a 1-point segment that was not in the map, so we
+  // Erase from `from` the entries that we just copied.  We may erase too much
+  // if `from` now ends with a 1-point segment that was not in the map, so we
   // insert it again.
   from.segment_by_left_endpoint_.erase(from_leit,
                                        from.segment_by_left_endpoint_.end());
@@ -988,8 +988,8 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
 
   // Finally, set the time-to-segment map.
   if (!sit->empty()) {
-    // This is the *only* place where we must use |emplace|, not
-    // |insert_or_assign|.  The reason is that this happens when returning from
+    // This is the *only* place where we must use `emplace`, not
+    // `insert_or_assign`.  The reason is that this happens when returning from
     // the recursivity (see to the call to ReadFromPreHamiltonMessage) so
     // segments are processed in reverse order.  Therefore, a segment that is
     // the last at its time will be processed *before* any 1-point segments with

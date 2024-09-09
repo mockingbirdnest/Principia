@@ -27,7 +27,7 @@ class LoggerTest : public ::testing::Test {
 };
 
 // On macOS, std::filesystem is broken (prior to Catalina).  On Ubuntu, the
-// introduction of |Flush| caused the test to fail because apparently the file
+// introduction of `Flush` caused the test to fail because apparently the file
 // is never written to.  We don't really care, we only use the logger on
 // Windows.
 #if PRINCIPIA_COMPILER_MSVC

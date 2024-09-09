@@ -82,21 +82,21 @@ class SolarSystem final {
   // The names of the bodies, sorted alphabetically.
   std::vector<std::string> const& names() const;
 
-  // The index of the body named |name| in the vector |names()| and in the
+  // The index of the body named `name` in the vector `names()` and in the
   // bodies of the ephemeris.
   int index(std::string const& name) const;
 
-  // The initial state of the body named |name|.
+  // The initial state of the body named `name`.
   DegreesOfFreedom<Frame> degrees_of_freedom(std::string const& name) const;
 
-  // The gravitational parameter of the body named |name|.
+  // The gravitational parameter of the body named `name`.
   GravitationalParameter gravitational_parameter(std::string const& name) const;
 
-  // The mean radius of the body named |name|.
+  // The mean radius of the body named `name`.
   Length mean_radius(std::string const& name) const;
 
-  // The |MassiveBody| for the body named |name|, extracted from the given
-  // |ephemeris|.
+  // The `MassiveBody` for the body named `name`, extracted from the given
+  // `ephemeris`.
   not_null<MassiveBody const*> massive_body(Ephemeris<Frame> const& ephemeris,
                                             std::string const& name) const;
 
@@ -105,13 +105,13 @@ class SolarSystem final {
       Ephemeris<Frame> const& ephemeris,
       std::string const& name) const;
 
-  // The |ContinuousTrajectory| for the body named |name|, extracted from the
-  // given |ephemeris|.
+  // The `ContinuousTrajectory` for the body named `name`, extracted from the
+  // given `ephemeris`.
   ContinuousTrajectory<Frame> const& trajectory(
       Ephemeris<Frame> const& ephemeris,
       std::string const& name) const;
 
-  // The configuration protocol buffers for the body named |name|.
+  // The configuration protocol buffers for the body named `name`.
   serialization::GravityModel::Body const& gravity_model_message(
       std::string const& name) const;
   bool has_cartesian_initial_state_message(std::string const& name) const;
@@ -151,7 +151,7 @@ class SolarSystem final {
                        KeplerianElements<Frame> const& elements);
 
  private:
-  // Fails if the given |body| doesn't have a consistent set of fields.
+  // Fails if the given `body` doesn't have a consistent set of fields.
   static void Check(serialization::GravityModel::Body const& body);
 
   // Factory functions for the parameter classes of the bodies.

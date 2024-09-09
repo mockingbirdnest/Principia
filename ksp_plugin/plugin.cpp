@@ -103,7 +103,7 @@ Length const& MaxCollisionError() {
   return max_collision_error;
 }
 
-// Keep this consistent with |prediction_steps_| in |main_window.cs|.
+// Keep this consistent with `prediction_steps_` in `main_window.cs`.
 constexpr std::int64_t max_steps_in_prediction = 1 << 24;
 
 Plugin::Plugin(std::string const& game_epoch,
@@ -124,10 +124,10 @@ Plugin::Plugin(std::string const& game_epoch,
 
 Plugin::~Plugin() {
   // We must manually destroy the vessels, triggering the destruction of the
-  // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
+  // parts, which have callbacks to remove themselves from `part_id_to_vessel_`,
   // which must therefore still exist.  This also causes the parts to be
   // destroyed, and therefore to destroy the pile-ups, which want to remove
-  // themselves from |pile_up_|, which also exists.
+  // themselves from `pile_up_`, which also exists.
   vessels_.clear();
 }
 
@@ -264,8 +264,8 @@ void Plugin::EndInitialization() {
 
   // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
   // the sun's index at hand.
-  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
-  // then export |FindOrDie(celestials_, _)|.
+  // TODO(egg): maybe these functions should take `Celestial*`s, and we should
+  // then export `FindOrDie(celestials_, _)`.
   renderer_ = std::make_unique<Renderer>(
       sun_,
       make_not_null_unique<
@@ -314,7 +314,7 @@ void Plugin::SetMainBody(Index const index) {
 
 Rotation<BodyWorld, World> Plugin::CelestialRotation(
     Index const index) const {
-  // |BodyWorld| with its y and z axes swapped (so that z is the polar axis).
+  // `BodyWorld` with its y and z axes swapped (so that z is the polar axis).
   using BodyFixed = Frame<struct BodyFixedTag>;
   Permutation<BodyWorld, BodyFixed> const body_mirror(OddPermutation::XZY);
 
@@ -342,7 +342,7 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
 
 Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
   auto const& body = *FindOrDie(celestials_, celestial_index)->body();
-  // Offset by π/2 since |AngleAt| is with respect to the y axis of the
+  // Offset by π/2 since `AngleAt` is with respect to the y axis of the
   // celestial frame of the body, but KSP counts from the x axis.
   return body.AngleAt(game_epoch_) + π / 2 * Radian;
 }
@@ -448,7 +448,7 @@ void Plugin::InsertOrKeepLoadedPart(
   Instant const previous_time = current_time_ - Δt;
   OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
       Exp(Δt * angular_velocity_of_world_).Forget<OrthogonalMap>();
-  // TODO(egg): Can we use |BarycentricToWorld| here?
+  // TODO(egg): Can we use `BarycentricToWorld` here?
   BodyCentredNonRotatingReferenceFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(),
                       FindOrDie(celestials_, main_body_index)->body()};
@@ -538,9 +538,9 @@ bool Plugin::PartIsTruthful(PartId const part_id) const {
 void Plugin::PrepareToReportCollisions() {
   for (auto const& [_, vessel] : vessels_) {
     // NOTE(egg): The lifetime requirement on the second argument of
-    // |MakeSingleton| (which forwards to the argument of the constructor of
-    // |Subset<Part>::Properties|) is that |part| outlives the constructed
-    // |Properties|; since these are owned by |part|, this is true.
+    // `MakeSingleton` (which forwards to the argument of the constructor of
+    // `Subset<Part>::Properties`) is that `part` outlives the constructed
+    // `Properties`; since these are owned by `part`, this is true.
     vessel->ForAllParts(
         [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }
@@ -617,7 +617,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   // are disjoint unions of vessels.
   {
     // Note that we need to go through an intermediate set, since destroying a
-    // vessel destroys its parts, which invalidates the intrusive |Subset| data
+    // vessel destroys its parts, which invalidates the intrusive `Subset` data
     // structure.
     VesselSet grounded_vessels;
     for (auto const& [_, vessel] : vessels_) {
@@ -662,15 +662,15 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 void Plugin::SetPartApparentRigidMotion(
     PartId const part_id,
     RigidMotion<EccentricPart, ApparentWorld> const& rigid_motion) {
-  // As a reference frame, |Apparent| differs from |World| only by having the
-  // same axes as |Barycentric| and being nonrotating.  However, there is
-  // another semantic distinction: |Apparent...| coordinates are uncorrected
+  // As a reference frame, `Apparent` differs from `World` only by having the
+  // same axes as `Barycentric` and being nonrotating.  However, there is
+  // another semantic distinction: `Apparent...` coordinates are uncorrected
   // data from the game, given immediately after its physics step; before using
   // them, we must correct them in accordance with the data computed by the pile
   // up.  This correction overrides the origin of position and velocity, so we
   // need not worry about the current definition of
-  // |{World::origin, World::unmoving}| as we do when getting the actual degrees
-  // of freedom (via |Plugin::BarycentricToWorld|).
+  // `{World::origin, World::unmoving}` as we do when getting the actual degrees
+  // of freedom (via `Plugin::BarycentricToWorld`).
   RigidMotion<ApparentWorld, Apparent> world_to_apparent{
       RigidTransformation<ApparentWorld, Apparent>{
           ApparentWorld::origin,
@@ -928,7 +928,7 @@ void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
   Vessel* target_vessel = nullptr;
 
   // If there is a target vessel, ensure that the prediction of the
-  // |predicted_vessels| is not longer than that of the target vessel.  This is
+  // `predicted_vessels` is not longer than that of the target vessel.  This is
   // necessary to build the targeting frame.
   if (renderer_->HasTargetVessel()) {
     target_vessel = &renderer_->GetTargetVessel();
@@ -1509,7 +1509,7 @@ void Plugin::WriteToMessage(
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
 
-  // |history_downsampling_parameters_| is not persisted.
+  // `history_downsampling_parameters_` is not persisted.
   history_fixed_step_parameters_.WriteToMessage(
       message->mutable_history_parameters());
   psychohistory_parameters_.WriteToMessage(
@@ -1726,8 +1726,8 @@ Velocity<World> Plugin::VesselVelocity(
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
       renderer_->BarycentricToPlotting(time)(degrees_of_freedom);
   // Note that in the rotating-pulsating reference frame, this value is given in
-  // current metres per second (that is, in metres at |time| per second, for a
-  // velocity at |time|).
+  // current metres per second (that is, in metres at `time` per second, for a
+  // velocity at `time`).
   return renderer_->PlottingToWorld(time, PlanetariumRotation())(
       plotting_frame_degrees_of_freedom.velocity());
 }
@@ -1778,7 +1778,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   auto const [_, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [part_id, &map = part_id_to_vessel_] {
-    // This entails a lookup, but iterators are not stable in |flat_hash_map|.
+    // This entails a lookup, but iterators are not stable in `flat_hash_map`.
     map.erase(part_id);
   };
   auto part = make_not_null_unique<Part>(part_id,

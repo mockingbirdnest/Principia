@@ -174,11 +174,11 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
   return absl::NotFoundError("Not enough zeroes");
 }
 
-// Searches in a "slice", which is a set of two intervals of measure |2 * T₀| on
-// either side of |scaled.argument|.  Consecutive values of |slice_index|
-// correspond to contiguous intervals farther away from |scaled.argument|.
+// Searches in a "slice", which is a set of two intervals of measure `2 * T₀` on
+// either side of `scaled.argument`.  Consecutive values of `slice_index`
+// correspond to contiguous intervals farther away from `scaled.argument`.
 // Slices may be processed independently of one another.
-// Returns a *scaled* argument, or |NotFound| if no solution was found in the
+// Returns a *scaled* argument, or `NotFound` if no solution was found in the
 // slice.
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
@@ -197,7 +197,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   std::int64_t const T₀ = static_cast<std::int64_t>(
       Cbrt(static_cast<double>(M) * static_cast<double>(N)) / 128.0);
 
-  // Construct intervals of measure |2 * T₀| above and below |scaled.argument|
+  // Construct intervals of measure `2 * T₀` above and below `scaled.argument`
   // and search for solutions on each side alternatively.
   Interval<cpp_rational> const initial_high_interval{
       .min = scaled.argument + cpp_rational(2 * slice_index * T₀, N),
@@ -215,7 +215,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   std::int64_t low_T_to_cover = T₀;
 
   // When exiting this loop, we have completely processed
-  // |initial_high_interval| and |initial_low_interval|.
+  // `initial_high_interval` and `initial_low_interval`.
   for (;;) {
     bool const high_interval_empty = high_interval.empty();
     bool const low_interval_empty = low_interval.empty();
@@ -226,7 +226,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
 
     if (!high_interval_empty) {
       std::int64_t T = high_T_to_cover;
-      // This loop exits (breaks or returns) when |T <= T_max| because
+      // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
         VLOG(3) << "T = " << T << ", high_interval = " << high_interval;
@@ -259,7 +259,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
     }
     if (!low_interval_empty) {
       std::int64_t T = low_T_to_cover;
-      // This loop exits (breaks or returns) when |T <= T_max| because
+      // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
         VLOG(3) << "T = " << T << ", low_interval = " << low_interval;
@@ -306,9 +306,9 @@ cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
                                  cpp_rational const& starting_argument) {
   CHECK_LT(0, starting_argument);
 
-  // We will look for candidates both above and below |starting_argument|.
-  // Note that if |starting_argument| is a power of 2, the increments above
-  // and below |starting_argument| are not the same.
+  // We will look for candidates both above and below `starting_argument`.
+  // Note that if `starting_argument` is a power of 2, the increments above
+  // and below `starting_argument` are not the same.
   std::int64_t exponent;
   auto const starting_mantissa =
       frexp(static_cast<cpp_bin_float_50>(starting_argument), &exponent);
@@ -369,7 +369,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   std::array<std::optional<AccuratePolynomial<cpp_rational, 2>>, 2> P;
   for (std::int64_t i = 0; i < functions.size(); ++i) {
     F[i] = [&functions, i, N, &starting_argument](cpp_rational const& t) {
-      // Here |t| <= |T|.
+      // Here |t| ≤ T.
       return N * functions[i](starting_argument + t / N);
     };
   }

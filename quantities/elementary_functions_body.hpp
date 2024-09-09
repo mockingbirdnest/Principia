@@ -162,7 +162,7 @@ inline constexpr double Pow<3>(double x) {
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
   if constexpr (number_category<Q>::value == number_kind_rational) {
-    // It seems that Boost does not define |pow| for |cpp_rational|.
+    // It seems that Boost does not define `pow` for `cpp_rational`.
     return cpp_rational(pow(numerator(x), exponent),
                         pow(denominator(x), exponent));
   } else if constexpr (is_number<Q>::value) {
@@ -206,7 +206,7 @@ template<typename Q>
   requires is_number<Q>::value || std::floating_point<Q>
 Q Round(Q const& x) {
   if constexpr (is_number<Q>::value) {
-    // TODO(phl): This is clunky.  Use |divide_qr| or something.
+    // TODO(phl): This is clunky.  Use `divide_qr` or something.
     return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
   } else {
     return std::round(x);

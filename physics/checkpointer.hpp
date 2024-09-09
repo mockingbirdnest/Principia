@@ -33,9 +33,9 @@ using namespace principia::quantities::_quantities;
 // timeline may be reconstructed as needed based on the checkpoints.
 // Checkpoints must be created at regular intervals to ensure that the timeline
 // may be reconstructed fast enough.
-// The |Message| must declare a nested message named |Checkpoint|, which must
-// have a field named |time| of type |Point|.  There must be a repeated field of
-// |Checkpoint|s in |Message|.
+// The `Message` must declare a nested message named `Checkpoint`, which must
+// have a field named `time` of type `Point`.  There must be a repeated field of
+// `Checkpoint`s in `Message`.
 // This class is thread-safe.  The callbacks are not run under a lock.
 template<typename Message>
 class Checkpointer {
@@ -59,18 +59,18 @@ class Checkpointer {
   // ever created.
   Instant newest_checkpoint() const EXCLUDES(lock_);
 
-  // Returns the checkpoint at or immediately after |t|, or +∞ if no such
+  // Returns the checkpoint at or immediately after `t`, or +∞ if no such
   // checkpoint exists.
   Instant checkpoint_at_or_after(Instant const& t) const EXCLUDES(lock_);
 
-  // Returns the checkpoint at or immediately before |t|, or -∞ if no such
+  // Returns the checkpoint at or immediately before `t`, or -∞ if no such
   // checkpoint exists.
   Instant checkpoint_at_or_before(Instant const& t) const EXCLUDES(lock_);
 
   // Returns all the checkpoints in this object.
   absl::btree_set<Instant> all_checkpoints() const EXCLUDES(lock_);
 
-  // Returns all the checkpoints at or before |t|.
+  // Returns all the checkpoints at or before `t`.
   absl::btree_set<Instant> all_checkpoints_at_or_before(Instant const& t) const
       EXCLUDES(lock_);
 
@@ -79,36 +79,36 @@ class Checkpointer {
                                                    Instant const& t2) const
       EXCLUDES(lock_);
 
-  // Creates a checkpoint at time |t|, which will be used to recreate the
-  // timeline after |t|.  The checkpoint is constructed by calling the |Writer|
+  // Creates a checkpoint at time `t`, which will be used to recreate the
+  // timeline after `t`.  The checkpoint is constructed by calling the `Writer`
   // passed at construction.
   void WriteToCheckpoint(Instant const& t) EXCLUDES(lock_);
 
   // Same as above, but a checkpoint is only created if one was not created
-  // recently, as specified by |max_time_between_checkpoints|.  Returns true iff
+  // recently, as specified by `max_time_between_checkpoints`.  Returns true iff
   // a new checkpoint was created.
   bool WriteToCheckpointIfNeeded(Instant const& t,
                                  Time const& max_time_between_checkpoints)
       EXCLUDES(lock_);
 
-  // Calls the |Reader| passed at construction to reconstruct an object using
+  // Calls the `Reader` passed at construction to reconstruct an object using
   // the oldest checkpoint.  Returns an error if this object contains no
-  // checkpoint or if the |Reader| returns one.
+  // checkpoint or if the `Reader` returns one.
   absl::Status ReadFromOldestCheckpoint() const EXCLUDES(lock_);
 
-  // Calls the |Reader| passed at construction to reconstruct an object using
+  // Calls the `Reader` passed at construction to reconstruct an object using
   // the newest checkpoint.  Returns an error if this object contains no
-  // checkpoint or if the |Reader| returns one.
+  // checkpoint or if the `Reader` returns one.
   absl::Status ReadFromNewestCheckpoint() const EXCLUDES(lock_);
 
-  // Calls the |Reader| passed at construction to reconstruct an object using
-  // the checkpoint at or immediately before |t|.  Returns an error if no such
-  // checkpoint exists or if the |Reader| returns one.
+  // Calls the `Reader` passed at construction to reconstruct an object using
+  // the checkpoint at or immediately before `t`.  Returns an error if no such
+  // checkpoint exists or if the `Reader` returns one.
   absl::Status ReadFromCheckpointAtOrBefore(Instant const& t) const
       EXCLUDES(lock_);
 
-  // Calls |reader| on the checkpoint at |t|.  Returns an error if there is no
-  // such checkpoint or if |reader| returns one.
+  // Calls `reader` on the checkpoint at `t`.  Returns an error if there is no
+  // such checkpoint or if `reader` returns one.
   absl::Status ReadFromCheckpointAt(Instant const& t,
                                     Reader const& reader) const EXCLUDES(lock_);
 

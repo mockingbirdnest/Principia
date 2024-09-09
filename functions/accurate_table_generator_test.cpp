@@ -56,7 +56,7 @@ TEST_F(AccurateTableGeneratorTest, GalSin5) {
               RelativeErrorFrom(5.0 / 128.0, IsNear(3.1e-14_(1))));
 
   // The stupid language doesn't allow printing a float in binary.  So to verify
-  // that the |Sin| has zeroes in the right place we fiddle with the Mathematica
+  // that the `Sin` has zeroes in the right place we fiddle with the Mathematica
   // output.  We check the 7 bits starting at the last bit of the mantissa
   // (i.e., the bits starting at index 52) and verify that they are made of 5
   // zeroes surrounded by ones.  This validates that we actually shoot zeroes at

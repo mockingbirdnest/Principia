@@ -31,9 +31,9 @@ BodyCentredNonRotatingReferenceFrame(
       centre_(std::move(centre)),
       centre_trajectory_(ephemeris_->trajectory(centre_)),
       orthogonal_map_([this]() {
-        // Note that we cannot do this by making |equatorial| and
-        // |biequatorial| virtual members of |MassiveBody|, because that
-        // class is not templatized on |InertialFrame|.
+        // Note that we cannot do this by making `equatorial` and
+        // `biequatorial` virtual members of `MassiveBody`, because that
+        // class is not templatized on `InertialFrame`.
         auto const rotating_body =
             dynamic_cast<RotatingBody<InertialFrame> const*>(&*centre_);
         if (rotating_body == nullptr) {
