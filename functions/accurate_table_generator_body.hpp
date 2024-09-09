@@ -670,10 +670,12 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
   // Wait for any remaining speculative execution to complete.  They may find a
   // better solution than the one that caused us to exit the sequential loop.
+  // Note that it's important to join the scheduler first, so that no more
+  // speculative work is started.
+  speculative_scheduler.join();
   for (auto const& future : speculative_futures) {
     future.wait();
   }
-  speculative_scheduler.join();
 
   return status_or_solution.value();
 }
