@@ -667,14 +667,13 @@ double Vessel::progress_of_orbit_analysis() const {
   return orbit_analyser_->progress_of_next_analysis();
 }
 
-void Vessel::RefreshOrbitAnalysis() {
+OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
   if (orbit_analyser_.has_value()) {
     orbit_analyser_->RefreshAnalysis();
+    return orbit_analyser_->analysis();
+  } else {
+    return nullptr;
   }
-}
-
-OrbitAnalyser::Analysis* Vessel::orbit_analysis() {
-  return orbit_analyser_.has_value() ? orbit_analyser_->analysis() : nullptr;
 }
 
 std::string Vessel::ShortDebugString() const {

@@ -280,12 +280,7 @@ class Vessel {
   // current analysis.
   double progress_of_orbit_analysis() const;
 
-  // Prepares the last completed analysis so that will be returned by
-  // `orbit_analysis`.
-  // TODO(phl): This API is weird.  Why does the caller need a 2-step dance?
-  void RefreshOrbitAnalysis();
-
-  // Returns the latest completed analysis, if there is one.
+  // Returns the last completed analysis, if there is one.
   OrbitAnalyser::Analysis* orbit_analysis();
 
   // Returns "vessel_name (GUID)".
