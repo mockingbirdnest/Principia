@@ -3,6 +3,7 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <ranges>
 #include <vector>
 
 #include "absl/container/btree_map.h"
@@ -48,7 +49,9 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using reverse_iterator = std::reverse_iterator<iterator>;
   using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;
   using ReverseSegmentIterator = std::reverse_iterator<SegmentIterator>;
-  using SegmentRange = DiscreteTrajectorySegmentRange<SegmentIterator>;
+  using SegmentRange = std::ranges::subrange<SegmentIterator,
+                                             SegmentIterator,
+                                             std::ranges::subrange_kind::sized>;
   using ReverseSegmentRange =
       DiscreteTrajectorySegmentRange<ReverseSegmentIterator>;
 
@@ -80,9 +83,11 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   iterator lower_bound(Instant const& t) const;
   iterator upper_bound(Instant const& t) const;
 
+static_assert(std::ranges::range<SegmentRange>);
+static_assert(std::movable<SegmentRange>);
+static_assert(std::ranges::enable_view<SegmentRange>);
   SegmentRange segments() const;
-  // TODO(phl): In C++20 this should be a reverse_view on segments.
-  ReverseSegmentRange rsegments() const;
+  std::ranges::reverse_view<SegmentRange> rsegments() const;
 
   SegmentIterator NewSegment();
 

@@ -142,19 +142,15 @@ DiscreteTrajectory<Frame>::upper_bound(Instant const& t) const {
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::SegmentRange
 DiscreteTrajectory<Frame>::segments() const {
-  return SegmentRange(SegmentIterator(
-                          segments_.get(), segments_->begin()),
-                      SegmentIterator(
-                          segments_.get(), segments_->end()));
+  return SegmentRange(SegmentIterator(segments_.get(), segments_->begin()),
+                      SegmentIterator(segments_.get(), segments_->end()),
+                      segments_->size());
 }
 
 template<typename Frame>
-typename DiscreteTrajectory<Frame>::ReverseSegmentRange
+std::ranges::reverse_view<typename DiscreteTrajectory<Frame>::SegmentRange>
 DiscreteTrajectory<Frame>::rsegments() const {
-  return ReverseSegmentRange(std::reverse_iterator(SegmentIterator(
-                                 segments_.get(), segments_->end())),
-                             std::reverse_iterator(SegmentIterator(
-                                 segments_.get(), segments_->begin())));
+  return std::ranges::reverse_view(segments());
 }
 
 template<typename Frame>

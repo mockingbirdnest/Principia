@@ -1,5 +1,6 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 
+#include <iterator>
 #include <memory>
 
 #include "base/not_null.hpp"
@@ -27,6 +28,8 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
  protected:
   using World = Frame<struct WorldTag>;
   using Segments = _discrete_trajectory_types::Segments<World>;
+  static_assert(
+      std::bidirectional_iterator<DiscreteTrajectorySegmentIterator<World>>);
 
   DiscreteTrajectorySegmentIteratorTest()
       : segments_(MakeSegments(3)) {
