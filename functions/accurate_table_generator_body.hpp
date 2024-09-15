@@ -365,8 +365,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // Preliminary: shift and rescale the functions and the polynomials:
   //   Fᵢ = N fᵢ(t / N)
   //   Pᵢ = N pᵢ(t / N)
+  // We don't reify Pᵢ as that would require an extra call to `Compose`.
+  // Instead, we directly compute P̃ᵢ below.
   std::array<AccurateFunction, 2> F;
-  std::array<std::optional<AccuratePolynomial<cpp_rational, 2>>, 2> P;
   for (std::int64_t i = 0; i < functions.size(); ++i) {
     F[i] = [&functions, i, N, &starting_argument](cpp_rational const& t) {
       // Here |t| ≤ T.
@@ -383,12 +384,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     RETURN_IF_ERROR(status_or_t);
 
     return starting_argument + cpp_rational(status_or_t.value(), N);
-  }
-
-  AccuratePolynomial<cpp_rational, 1> const shift_and_rescale(
-      {starting_argument, cpp_rational(1, N)});
-  for (std::int64_t i = 0; i < polynomials.size(); ++i) {
-    P[i] = N * Compose(polynomials[i], shift_and_rescale);
   }
 
   // Step 2: compute ε.  We use the remainders provided by the clients.  Note
@@ -413,9 +408,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 
   // Step 3, second part: compute P̃
   std::array<std::optional<AccuratePolynomial<cpp_int, 2>>, 2> P̃;
-  AccuratePolynomial<cpp_rational, 1> const Tτ({0, T});
-  for (std::int64_t i = 0; i < P.size(); ++i) {
-    auto const composition_coefficients = Compose(C * *P[i], Tτ).coefficients();
+  AccuratePolynomial<cpp_rational, 1> const shift_and_rescale(
+      {starting_argument, cpp_rational(T, N)});
+  for (std::int64_t i = 0; i < polynomials.size(); ++i) {
+    auto const composition_coefficients =
+        Compose(C * (N * polynomials[i]), shift_and_rescale).coefficients();
     AccuratePolynomial<cpp_int, 2>::Coefficients P̃_coefficients;
     for_all_of(composition_coefficients, P̃_coefficients)
         .loop([](auto const& composition_coefficient, auto& P̃_coefficient) {
