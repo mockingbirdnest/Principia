@@ -290,7 +290,7 @@ TEST_F(PolynomialInMonomialBasisTest, Monoid) {
                  -4 * Ampere / Kelvin}, 3 * Kelvin);
   P2A const p2a({1 * Kelvin,
                  3 * Kelvin / Second,
-                 -8 * Kelvin / Second / Second}, t0);
+                 -8 * Kelvin / Second / Second}, t0 + 4 * Second);
   P2V const p2v({1 * Kelvin,
                  3 * Kelvin / Second,
                  -8 * Kelvin / Second / Second});
@@ -303,36 +303,36 @@ TEST_F(PolynomialInMonomialBasisTest, Monoid) {
   {
     auto const actual_a = pa(t0 + 0 * Second);
     auto const actual_v = pv(0 * Second);
-    EXPECT_THAT(actual_a, AlmostEquals(2 * Ampere, 0));
+    EXPECT_THAT(actual_a, AlmostEquals(-2'627'098 * Ampere, 0));
     EXPECT_THAT(actual_v, AlmostEquals(2 * Ampere, 0));
   }
   {
     auto const actual_a = pa(t0 + 1 * Second);
     auto const actual_v = pv(1 * Second);
-    EXPECT_THAT(actual_a, AlmostEquals(2 * Ampere, 0));
+    EXPECT_THAT(actual_a, AlmostEquals(-492'478 * Ampere, 0));
     EXPECT_THAT(actual_v, AlmostEquals(2 * Ampere, 0));
   }
   {
     auto const actual_a = pa(t0 - 1 * Second);
     auto const actual_v = pv(-1 * Second);
-    EXPECT_THAT(actual_a, AlmostEquals(-658 * Ampere, 0));
+    EXPECT_THAT(actual_a, AlmostEquals(-9'662'098 * Ampere, 0));
     EXPECT_THAT(actual_v, AlmostEquals(-658 * Ampere, 0));
   }
   {
     auto const actual_a = pa(t0 + 2 * Second);
     auto const actual_v = pv(2 * Second);
-    EXPECT_THAT(actual_a, AlmostEquals(-13648 * Ampere, 0));
+    EXPECT_THAT(actual_a, AlmostEquals(-46'396 * Ampere, 0));
     EXPECT_THAT(actual_v, AlmostEquals(-13648 * Ampere, 0));
   }
   {
     auto const actual_a = pa(t0 - 2 * Second);
     auto const actual_v = pv(-2 * Second);
-    EXPECT_THAT(actual_a, AlmostEquals(-46396 * Ampere, 0));
+    EXPECT_THAT(actual_a, AlmostEquals(-28'092'328 * Ampere, 0));
     EXPECT_THAT(actual_v, AlmostEquals(-46396 * Ampere, 0));
   }
   {
     auto const actual = Compose(p1a, p2a)(t0 + 1 * Second);
-    EXPECT_THAT(actual, AlmostEquals(30 * Ampere, 0));
+    EXPECT_THAT(actual, AlmostEquals(334 * Ampere, 0));
   }
 }
 
