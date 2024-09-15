@@ -58,6 +58,7 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
                                                  ground_track_revolution});
   CHECK_NOTNULL(plugin);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  vessel.RefreshOrbitAnalysis();
   not_null<OrbitAnalysis*> const analysis =
       NewOrbitAnalysis(vessel.orbit_analysis(),
                        *plugin,
