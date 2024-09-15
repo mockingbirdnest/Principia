@@ -280,7 +280,11 @@ class Vessel {
   // current analysis.
   double progress_of_orbit_analysis() const;
 
-  // Returns the last completed analysis, if there is one.
+  // Prepares the last completed analysis so that will be returned by
+  // `orbit_analysis`.
+  void RefreshOrbitAnalysis();
+
+  // Returns the latest completed analysis, if there is one.
   OrbitAnalyser::Analysis* orbit_analysis();
 
   // Returns "vessel_name (GUID)".
