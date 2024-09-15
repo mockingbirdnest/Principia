@@ -87,11 +87,10 @@ bool DiscreteTrajectorySegmentIterator<Frame>::is_end() const {
 }
 
 template<typename Frame>
-DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator<Frame>>
-DiscreteTrajectorySegmentIterator<Frame>::segments() const {
+DiscreteTrajectorySegmentIterator<Frame>
+DiscreteTrajectorySegmentIterator<Frame>::EndSegment() const {
   DCHECK(segments_ != nullptr);
-  return {DiscreteTrajectorySegmentIterator(segments_, segments_->begin()),
-          DiscreteTrajectorySegmentIterator(segments_, segments_->end())};
+  return DiscreteTrajectorySegmentIterator(segments_, segments_->end());
 }
 
 template<typename Frame>

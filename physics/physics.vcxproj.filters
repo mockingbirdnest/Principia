@@ -155,12 +155,6 @@
     <ClInclude Include="discrete_trajectory_types.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="discrete_trajectory_segment_range.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="discrete_trajectory_segment_range_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -317,9 +311,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="analytical_series_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="discrete_trajectory_segment_range_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp">

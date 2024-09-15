@@ -16,7 +16,6 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "physics/discrete_trajectory_segment_range.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
 #include "serialization/physics.pb.h"
@@ -34,7 +33,6 @@ using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
-using namespace principia::physics::_discrete_trajectory_segment_range;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
 
@@ -52,8 +50,6 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using SegmentRange = std::ranges::subrange<SegmentIterator,
                                              SegmentIterator,
                                              std::ranges::subrange_kind::sized>;
-  using ReverseSegmentRange =
-      DiscreteTrajectorySegmentRange<ReverseSegmentIterator>;
 
   DiscreteTrajectory();
 
@@ -83,9 +79,6 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   iterator lower_bound(Instant const& t) const;
   iterator upper_bound(Instant const& t) const;
 
-static_assert(std::ranges::range<SegmentRange>);
-static_assert(std::movable<SegmentRange>);
-static_assert(std::ranges::enable_view<SegmentRange>);
   SegmentRange segments() const;
   std::ranges::reverse_view<SegmentRange> rsegments() const;
 
