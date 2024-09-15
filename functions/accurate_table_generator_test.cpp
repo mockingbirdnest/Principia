@@ -430,77 +430,75 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
 }
 
 TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
-  for (std::int64_t n = 0; n < 1; ++n) {
-    Logger logger(TEMP_DIR / absl::StrCat("sin_cos_18_", n, ".wl"),
-                  /*make_unique=*/false);
+  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_18.wl"),
+                /*make_unique=*/false);
 
-    // Process the binade [1 / 2^(n + 1), 1 / 2^n[ (except that for n = 0 the
-    // upper bound is π / 4).
-    double const lower_bound = std::asin(1.0 / (1 << (n + 1)));
-    double const upper_bound = n == 0 ? π / 4 : std::asin(1.0 / (1 << n));
+  // The radius of each interval.
+  double const h = 1.0 / (1 << 10);
 
-    double const h = 1.0 / (1 << (n + 10));
-    double const h_over_2 = h / 2.0;
+  // The centre of the interval with index `i`.
+  auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
 
-    std::vector<cpp_rational> starting_arguments;
-    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
-    std::vector<std::array<AccurateFunction, 2>> remainders;
-    for (std::int64_t i = std::floor(lower_bound / h_over_2);
-         i <= std::ceil(upper_bound / h_over_2);
-         ++i) {
-      // The arguments are odd multiples of h/2.
-      if (i % 2 == 1) {
-        double const x₀ = i * h_over_2;
-        if (lower_bound <= x₀ && x₀ < upper_bound) {
-          AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
-              {cpp_rational(Sin(x₀)),
-               cpp_rational(Cos(x₀)),
-               -cpp_rational(Sin(x₀)) / 2},
-              x₀);
-          AccuratePolynomial<cpp_rational, 2> const cos_taylor2(
-              {cpp_rational(Cos(x₀)),
-               -cpp_rational(Sin(x₀)),
-               -cpp_rational(Cos(x₀) / 2)},
-              x₀);
+  // The index of the first interval, which starts at `h` with a centre at
+  // `2 * h`.
+  std::int64_t const i_min = 1;
 
-          // The remainders don't need to be extremely precise, so for speed
-          // they are computed using double.
-          auto const remainder_sin_taylor2 =
-              [x₀ = static_cast<double>(cpp_rational(x₀))](
-                  cpp_rational const& x) {
-                auto const Δx = static_cast<double>(x) - x₀;
-                auto const Δx³ = Δx * Δx * Δx;
-                return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
-              };
-          auto const remainder_cos_taylor2 =
-              [x₀ = static_cast<double>(cpp_rational(x₀))](
-                  cpp_rational const& x) {
-                auto const Δx = static_cast<double>(x) - x₀;
-                auto const Δx³ = Δx * Δx * Δx;
-                return Δx³ * std::sin(std::max(x₀ + Δx, x₀)) / Factorial(3);
-              };
+  // The index of the last interval, which goes a bit beyond π / 4.
+  std::int64_t i_max = std::ceil(π / (8 * h) - 0.5);
 
-          starting_arguments.push_back(x₀);
-          polynomials.push_back({sin_taylor2, cos_taylor2});
-          remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
-        }
-      }
-    }
+  // Check that the last interval straddles π / 4.
+  CHECK_LT(centre(i_max) - h, π / 4);
+  CHECK_LT(π / 4, centre(i_max) + h);
 
-    StehléZimmermannSimultaneousStreamingMultisearch<18>(
-        {Sin, Cos},
-        polynomials,
-        remainders,
-        starting_arguments,
-        [n, &logger](std::int64_t const index,
-                     absl::StatusOr<cpp_rational> status_or_x) {
-          auto const& x = status_or_x.value();
-          logger.Set(
-              absl::StrCat("accurateTables[", n, ",", index, "]"),
-              std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
-          logger.FlushAndClear();
-        });
+  std::vector<cpp_rational> starting_arguments;
+  std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
+  std::vector<std::array<AccurateFunction, 2>> remainders;
+  for (std::int64_t i = i_min; i <= i_max; ++i) {
+    double const x₀ = centre(i);
+    AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
+        {cpp_rational(Sin(x₀)),
+         cpp_rational(Cos(x₀)),
+         -cpp_rational(Sin(x₀)) / 2},
+        x₀);
+    AccuratePolynomial<cpp_rational, 2> const cos_taylor2(
+        {cpp_rational(Cos(x₀)),
+         -cpp_rational(Sin(x₀)),
+         -cpp_rational(Cos(x₀) / 2)},
+        x₀);
+
+    // The remainders don't need to be extremely precise, so for speed
+    // they are computed using double.
+    auto const remainder_sin_taylor2 =
+        [x₀ = static_cast<double>(cpp_rational(x₀))](cpp_rational const& x) {
+          auto const Δx = static_cast<double>(x) - x₀;
+          auto const Δx³ = Δx * Δx * Δx;
+          return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
+        };
+    auto const remainder_cos_taylor2 =
+        [x₀ = static_cast<double>(cpp_rational(x₀))](cpp_rational const& x) {
+          auto const Δx = static_cast<double>(x) - x₀;
+          auto const Δx³ = Δx * Δx * Δx;
+          return Δx³ * std::sin(std::max(x₀ + Δx, x₀)) / Factorial(3);
+        };
+
+    starting_arguments.push_back(x₀);
+    polynomials.push_back({sin_taylor2, cos_taylor2});
+    remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
   }
+
+  StehléZimmermannSimultaneousStreamingMultisearch<18>(
+      {Sin, Cos},
+      polynomials,
+      remainders,
+      starting_arguments,
+      [i_min, &logger](std::int64_t const index,
+                       absl::StatusOr<cpp_rational> status_or_x) {
+        auto const& x = status_or_x.value();
+        logger.Set(
+            absl::StrCat("accurateTables[", index + i_min, "]"),
+            std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
+        logger.FlushAndClear();
+      });
 }
 
 #endif
