@@ -85,12 +85,6 @@ internal class DifferentialSlider : ScalingRenderer {
     }
   }
 
-  // TODO(phl): Remove and use value instead.
-  public void ResetValue(double new_value) {
-    value_ = null;
-    value = new_value;
-  }
-
   // Renders the `DifferentialSlider`.  Returns true if and only if `value`
   // changed.
   public bool Render(bool enabled) {
@@ -242,7 +236,7 @@ internal class DifferentialSlider : ScalingRenderer {
         if (UnityEngine.GUILayout.Button("0", GUILayoutWidth(1))) {
           value_changed = true;
           // Force a change of value so that any input is discarded.
-          ResetValue(zero_value_);
+          value = zero_value_;
         }
         if (slider_position_ != 0.0) {
           value_changed = true;

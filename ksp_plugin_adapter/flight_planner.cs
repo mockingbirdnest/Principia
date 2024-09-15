@@ -387,8 +387,8 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
               // The final time does not change, but since it is displayed with
               // respect to the beginning of the flight plan, the text must be
               // recomputed.
-              final_time_.ResetValue(
-                  plugin.FlightPlanGetDesiredFinalTime(vessel_guid));
+              final_time_.value =
+                  plugin.FlightPlanGetDesiredFinalTime(vessel_guid);
               UpdateBurnEditorIndices(vessel_guid);
               return;
             }
