@@ -5,7 +5,6 @@
 #include "absl/container/btree_map.h"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
-#include "physics/discrete_trajectory_segment_range.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 
 namespace principia {
@@ -39,7 +38,6 @@ namespace _discrete_trajectory_segment_iterator {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::physics::_discrete_trajectory_segment_range;
 using namespace principia::physics::_discrete_trajectory_types;
 
 template<typename Frame>
@@ -72,8 +70,7 @@ class DiscreteTrajectorySegmentIterator {
 
   bool is_begin() const;
   bool is_end() const;
-  DiscreteTrajectorySegmentRange<DiscreteTrajectorySegmentIterator>
-  segments() const;
+  DiscreteTrajectorySegmentIterator EndSegment() const;
 
   typename Segments::iterator iterator() const;
 

@@ -3,6 +3,7 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <ranges>
 #include <vector>
 
 #include "absl/container/btree_map.h"
@@ -15,7 +16,6 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "physics/discrete_trajectory_segment_range.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
 #include "serialization/physics.pb.h"
@@ -33,7 +33,6 @@ using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
-using namespace principia::physics::_discrete_trajectory_segment_range;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
 
@@ -48,9 +47,9 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using reverse_iterator = std::reverse_iterator<iterator>;
   using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;
   using ReverseSegmentIterator = std::reverse_iterator<SegmentIterator>;
-  using SegmentRange = DiscreteTrajectorySegmentRange<SegmentIterator>;
-  using ReverseSegmentRange =
-      DiscreteTrajectorySegmentRange<ReverseSegmentIterator>;
+  using SegmentRange = std::ranges::subrange<SegmentIterator,
+                                             SegmentIterator,
+                                             std::ranges::subrange_kind::sized>;
 
   DiscreteTrajectory();
 
@@ -81,8 +80,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   iterator upper_bound(Instant const& t) const;
 
   SegmentRange segments() const;
-  // TODO(phl): In C++20 this should be a reverse_view on segments.
-  ReverseSegmentRange rsegments() const;
+  std::ranges::reverse_view<SegmentRange> rsegments() const;
 
   SegmentIterator NewSegment();
 

@@ -41,7 +41,7 @@ DiscreteTrajectoryIterator<Frame>::operator--() {
   bool const point_is_at_end = is_at_end(point_);
   if (point_is_at_end) {
     // Move the iterator to the end of the last segment.
-    segment_ = std::prev(segment_.segments().end());
+    segment_ = std::prev(segment_.EndSegment());
     point_ = segment_->timeline_end();
     // Now proceed with the decrement.
   }
