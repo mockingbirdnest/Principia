@@ -65,14 +65,14 @@ Argument Brent(
     double eps = Sqrt(ScaleB(0.5, 1 - std::numeric_limits<double>::digits)));
 
 // Returns the solutions of the quadratic equation:
-//   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
+//   a₂ * (x - origin)² + a₁ * (x - origin) + a₀ == 0
 // The result may have 0, 1 or 2 values and is sorted.
 template<typename Argument, typename Value>
 BoundedArray<Argument, 2> SolveQuadraticEquation(
     Argument const& origin,
-    Value const& a0,
-    Derivative<Value, Argument> const& a1,
-    Derivative<Derivative<Value, Argument>, Argument> const& a2);
+    Value const& a₀,
+    Derivative<Value, Argument> const& a₁,
+    Derivative<Derivative<Value, Argument>, Argument> const& a₂);
 
 }  // namespace internal
 

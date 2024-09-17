@@ -343,46 +343,44 @@ Argument Brent(Function f,
 template<typename Argument, typename Value>
 BoundedArray<Argument, 2> SolveQuadraticEquation(
     Argument const& origin,
-    Value const& a0,
-    Derivative<Value, Argument> const& a1,
-    Derivative<Derivative<Value, Argument>, Argument> const& a2) {
+    Value const& a₀,
+    Derivative<Value, Argument> const& a₁,
+    Derivative<Derivative<Value, Argument>, Argument> const& a₂) {
   using Derivative1 = Derivative<Value, Argument>;
   using Discriminant = Square<Derivative1>;
 
-  // This algorithm is after section 1.8 of Accuracy and Stability of Numerical
-  // Algorithms, Second Edition, Higham, ISBN 0-89871-521-0.
+  // This algorithm is after section 1.8 of [Hig02].
 
-  static Discriminant const discriminant_zero{};
+  constexpr Discriminant zero{};
 
   // Use double precision for the discriminant because there can be
-  // cancellations.  Higham mentions that it is necessary "to use extended
-  // precision (or some trick tantamount to the use of extended precision)."
-  DoublePrecision<Discriminant> discriminant = TwoSum(a1 * a1, -4.0 * a0 * a2);
+  // cancellations.  Higham mentions that it is necessary “to use extended
+  // precision (or some trick tantamount to the use of extended precision).”
+  DoublePrecision<Discriminant> discriminant = TwoSum(a₁ * a₁, -4.0 * a₀ * a₂);
 
-  if (discriminant.value == discriminant_zero &&
-      discriminant.error == discriminant_zero) {
+  if (discriminant.value == zero && discriminant.error == zero) {
     // One solution.
-    return {origin - 0.5 * a1 / a2};
-  } else if (discriminant.value < discriminant_zero ||
-             (discriminant.value == discriminant_zero &&
-              discriminant.error < discriminant_zero)) {
+    return {origin - 0.5 * a₁ / a₂};
+  } else if (discriminant.value < zero ||
+             (discriminant.value == zero && discriminant.error < zero)) {
     // No solution.
     return {};
   } else {
-    // Two solutions.  Compute the numerator of the larger one.
+    // Two solutions.  Compute the numerator of the larger one (in absolute
+    // value).
     Derivative1 numerator;
-    static Derivative1 derivative_zero{};
-    if (a1 > derivative_zero) {
-      numerator = -a1 - Sqrt(discriminant.value + discriminant.error);
+    constexpr Derivative1 zero{};
+    if (a₁ > zero) {
+      numerator = -a₁ - Sqrt(discriminant.value + discriminant.error);
     } else {
-      numerator = -a1 + Sqrt(discriminant.value + discriminant.error);
+      numerator = -a₁ + Sqrt(discriminant.value + discriminant.error);
     }
-    auto const solution1 = origin + numerator / (2.0 * a2);
-    auto const solution2 = origin + (2.0 * a0) / numerator;
-    if (solution1 < solution2) {
-      return {solution1, solution2};
+    auto const x₁ = origin + numerator / (2.0 * a₂);
+    auto const x₂ = origin + (2.0 * a₀) / numerator;
+    if (x₁ < x₂) {
+      return {x₁, x₂};
     } else {
-      return {solution2, solution1};
+      return {x₂, x₁};
     }
   }
 }
