@@ -64,6 +64,23 @@ TEST_F(Hermite3Test, Precomputed) {
                           t0_ + ((64.0 + sqrt(430.0)) / 39.0) * Second));
 }
 
+TEST_F(Hermite3Test, Quadratic) {
+  Hermite3<Length, Instant> near_quadratic(
+      {t0_ + 1 * Second, t0_ + 2 * Second},
+      {0x1p-53 * Metre, 0 * Metre},
+      {-1 * Metre / Second, 1 * Metre / Second});
+  // These are the correctly-rounded extrema.
+  EXPECT_THAT(
+      near_quadratic.FindExtrema(),
+      ElementsAre(t0_ - 0x1.5555555555552p51 * Second, t0_ + 1.5 * Second));
+  Hermite3<Length, Instant> quadratic(
+      {t0_ + 1 * Second, t0_ + 2 * Second},
+      {0 * Metre, 0 * Metre},
+      {-1 * Metre / Second, 1 * Metre / Second});
+  EXPECT_THAT(quadratic.FindExtrema(),
+              ElementsAre(InfinitePast, t0_ + 1.5 * Second));
+}
+
 TEST_F(Hermite3Test, Typed) {
   // Just here to check that the types work in the presence of affine spaces.
   Hermite3<Position<World>, Instant> h({t0_ + 1 * Second, t0_ + 2 * Second},
