@@ -223,6 +223,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
   U const hy = y - py + py;
   U const ty = y - hy;
   // Veltkamp’s 1968 algorithm, as given in [Dek71, p. 234].
+  // See also exactmul in [Lin81, p. 278].
   z = x * y;
   zz = (((hx * hy - z) + hx * ty) + tx * hy) + tx * ty;
   // Dekker’s algorithm (5.12) would be
