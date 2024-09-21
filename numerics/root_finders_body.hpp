@@ -356,13 +356,13 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
   // Use double precision for the discriminant because there can be
   // cancellations.  Higham mentions that it is necessary “to use extended
   // precision (or some trick tantamount to the use of extended precision).”
-  DoublePrecision<Discriminant> discriminant = TwoSum(a₁ * a₁, -4.0 * a₀ * a₂);
+  DoublePrecision<Discriminant> discriminant =
+      TwoProduct(a₁, a₁) - TwoProduct(4.0 * a₀, a₂);
 
-  if (discriminant.value == zero && discriminant.error == zero) {
+  if (discriminant.value == zero) {
     // One solution.
     return {origin - 0.5 * a₁ / a₂};
-  } else if (discriminant.value < zero ||
-             (discriminant.value == zero && discriminant.error < zero)) {
+  } else if (discriminant.value < zero) {
     // No solution.
     return {};
   } else {
@@ -371,9 +371,9 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
     Derivative1 numerator;
     constexpr Derivative1 zero{};
     if (a₁ > zero) {
-      numerator = -a₁ - Sqrt(discriminant.value + discriminant.error);
+      numerator = -a₁ - Sqrt(discriminant.value);
     } else {
-      numerator = -a₁ + Sqrt(discriminant.value + discriminant.error);
+      numerator = -a₁ + Sqrt(discriminant.value);
     }
     auto const x₁ = origin + numerator / (2.0 * a₂);
     auto const x₂ = origin + (2.0 * a₀) / numerator;

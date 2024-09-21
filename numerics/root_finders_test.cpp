@@ -469,14 +469,16 @@ TEST_F(RootFindersTest, QuadraticEquations) {
   EXPECT_THAT(s3, ElementsAre(-1.0));
 
   // An ill-conditioned system.  I fart in its general direction.  If done
-  // naively, this yields {-100032., -99968.4} according to Mathematica.
+  // naïvely, the results are -100000.0031'0988855 and -99999.9968'90111535
+  // (separator after the last correct decimal digit), whose error is
+  // approximately 3.5 million ULPs.
   auto const s4 = SolveQuadraticEquation(0.0,
-                                         1.0000001e25,
-                                         2.0000003e20,
-                                         1.0000001e15);
+                                         1.000'000'000'000'001e25,
+                                         2.000'000'000'000'003e20,
+                                         1.000'000'000'000'001e15);
   EXPECT_THAT(s4,
-              ElementsAre(AlmostEquals(-100031.62777541532972762902, 66),
-                          AlmostEquals(-99968.38222458367027247098, 65)));
+              ElementsAre(AlmostEquals(-100000.00316153381194436811, 0),
+                          AlmostEquals(-99999.996838466282967631886, 1)));
 
   // A typed system.
   Instant const t0;

@@ -148,8 +148,8 @@ TEST_F(PolynomialInЧебышёвBasisTest, FrobeniusCompanionMatrix) {
     auto const matrix_schur_decomposition =
         RealSchurDecomposition(matrix, 1e-16);
     EXPECT_THAT(matrix_schur_decomposition.real_eigenvalues,
-                ElementsAre(AlmostEquals((1.0 - Sqrt(337.0)) / 24.0, 4),
-                            AlmostEquals(-0.5, 1),
+                ElementsAre(AlmostEquals((1.0 - Sqrt(337.0)) / 24.0, 5),
+                            AlmostEquals(-0.5, 0),
                             AlmostEquals((1.0 + Sqrt(337.0)) / 24.0, 2)));
   }
   {
@@ -189,7 +189,7 @@ TEST_F(PolynomialInЧебышёвBasisTest, RealRoots) {
   Instant const r2 = t0_;
   Instant const r3 = t0_ + (13.0 + Sqrt(337.0)) / 12.0 * Second;
   EXPECT_THAT(series.RealRoots(1e-16),
-              ElementsAre(AlmostEquals(r1, 15),
+              ElementsAre(AlmostEquals(r1, 19),
                           AbsoluteErrorFrom(r2, Lt(2.3e-16 * Second)),
                           AlmostEquals(r3, 1)));
   EXPECT_THAT(Abs(series(r1)), Lt(8.9e-16));

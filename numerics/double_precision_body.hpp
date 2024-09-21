@@ -102,7 +102,7 @@ template<typename T, typename U>
   requires convertible_to_quantity<T> && convertible_to_quantity<U>
 struct ComponentwiseComparator<T, U> {
   static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
-    return Abs(left) >= Abs(right) || left == T{};
+    return Abs(left) >= Abs(right) || left == T{} || !IsFinite(left);
   }
 };
 
@@ -223,6 +223,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
   U const hy = y - py + py;
   U const ty = y - hy;
   // Veltkamp’s 1968 algorithm, as given in [Dek71, p. 234].
+  // See also exactmul in [Lin81, p. 278].
   z = x * y;
   zz = (((hx * hy - z) + hx * ty) + tx * hy) + tx * ty;
   // Dekker’s algorithm (5.12) would be
