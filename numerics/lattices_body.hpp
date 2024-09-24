@@ -33,6 +33,11 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 
+// The largest `int64_t` that can be converted to and from `double` without loss
+// of accuracy.
+constexpr std::int64_t largest_convertible_integer =
+    2LL << std::numeric_limits<double>::digits;
+
 // In the terminology of [NS09], our vectors are in columns, so `d` is `columns`
 // and `n` is `rows`.
 template<typename Matrix>
@@ -378,14 +383,26 @@ void SizeReduce(std::int64_t const κ,
     }
 
     std::vector<std::int64_t> X(κ);
+    bool making_progress = false;
     for (std::int64_t i = κ - 1; i >= 0; --i) {
-      // Step 4.
-      X[i] = std::llround(μ(i, κ));
+      // Step 4.  A large `double` value may overflow `int64_t`, and cause
+      // `llround` to return junk.  To avoid this, we make the conversion
+      // saturating and trust that the reduction will iterate.
+      double const μ_iκ = μ(i, κ);
+      if (μ_iκ > largest_convertible_integer) {
+        X[i] = largest_convertible_integer;
+      } else if (μ_iκ < -largest_convertible_integer) {
+        X[i] = -largest_convertible_integer;
+      } else {
+        X[i] = std::llround(μ_iκ);
+      }
+      making_progress |= X[i] != 0;
       // Step 5.
       for (std::int64_t j = 0; j <= i - 1; ++j) {
         μ(j, κ) -= X[i] * μ(j, i);
       }
     }
+    CHECK(making_progress) << b;
     // Step 6.
     auto b_κ = ColumnView{.matrix = b,
                           .first_row = 0,
