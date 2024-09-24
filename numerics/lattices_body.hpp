@@ -3,6 +3,7 @@
 #include "numerics/lattices.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <vector>
 
