@@ -91,8 +91,8 @@ StehléZimmermannSpecification ScaleToBinade0(
   auto const lower_bound = starting_argument / multiplier;
   auto const upper_bound = starting_argument * multiplier;
 
-  auto const compute_scale = [](const auto& value1,
-                                const auto& value2) {
+  auto const compute_scale = [](auto const& value1,
+                                auto const& value2) {
     std::int64_t value1_exponent;
     auto const value1_mantissa =
         frexp(static_cast<cpp_bin_float_50>(value1), &value1_exponent);
@@ -151,6 +151,41 @@ StehléZimmermannSpecification ScaleToBinade0(
                                                   polynomials[1])},
           .remainders = scaled_remainders,
           .argument = scaled_argument};
+}
+
+//TODO(phl)comment
+template<std::int64_t zeroes>
+bool VerifyBinade0Solution(StehléZimmermannSpecification const& scaled,
+                           cpp_rational const& scaled_solution) {
+  constexpr std::int64_t M = 1LL << zeroes;
+  CHECK_LE(cpp_rational(1, 2), abs(scaled_solution));
+
+  // If the scaled solution is below 1, it is necessarily a machine number.  It
+  // may be above 1 if we upscaled, in which case we must verify that once
+  // scaled down to binade 0 it is a machine number.
+  if (abs(scaled_solution) > 1) {
+    auto const solution_binade0 = scaled_solution / 2;
+    if (solution_binade0 != static_cast<double>(solution_binade0)) {
+      return false;
+    }
+  }
+
+  // Verify that the value of the functions are close to a machine number.  This
+  // may not be the case if we upscaled the functions.
+  for (auto const& function : scaled.functions) {
+    auto const y = function(scaled_solution);
+    std::int64_t y_exponent;
+    auto const y_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(y), &y_exponent);
+    auto const y_mantissa_scaled =
+        ldexp(y_mantissa, std::numeric_limits<double>::digits);
+    auto const y_mantissa_cmod_1 = y_mantissa - round(y_mantissa);
+    if (M * abs(y_mantissa_cmod_1) >= 1) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // This is essentially the same as Gal's exhaustive search, but with the
@@ -578,7 +613,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                            &scaled,
                            &starting_argument,
                            &status_or_solution](
-                              std::int64_t const slice_index) {
+                               std::int64_t const slice_index) {
     auto const start = std::chrono::system_clock::now();
 
     auto const status_or_scaled_solution =
@@ -591,13 +626,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
     absl::Status const& status = status_or_scaled_solution.status();
     if (status.ok()) {
-      // The argument returned by the slice search is scaled, so we must
-      // adjust it before returning.
-      auto const solution = status_or_scaled_solution.value() / argument_scale;
-      VLOG(1) << "Solution for " << starting_argument << ", slice #"
-              << slice_index;
-      {
+      auto const scaled_solution = status_or_scaled_solution.value();
+      if (VerifyBinade0Solution<zeroes>(scaled, scaled_solution)) {
         absl::MutexLock l(&lock);
+        // The argument returned by the slice search is scaled, so we must
+        // adjust it before returning.
+        auto const solution = scaled_solution / argument_scale;
+        VLOG(1) << "Solution for " << starting_argument << ", slice #"
+                << slice_index;
         // We have found a solution; we only retain it if (1) no internal error
         // occurred; and (2) it closer to the `starting_argument` than any
         // solution found previously.
