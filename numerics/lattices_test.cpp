@@ -47,10 +47,11 @@ TEST_F(LatticesTest, LLL_Rational) {
 
   auto const reduced = LenstraLenstraLovász(l);
   EXPECT_EQ(reduced,
-            (FixedMatrix<cpp_rational, 5, 4>({  45,     6, -18,   15,    0,
-                                                45, -1200, 348,    0,    0,
-                                                 0,     0,   0, 1083,  336,
-                                              -660,     0, 165, -180, 1263})));
+            (FixedMatrix<cpp_rational, 5, 4>({ 45,    6,   -18,   15,
+                                                0,   45, -1200,  348,
+                                                0,    0,     0,    0,
+                                                0, 1083,   336, -660,
+                                                0,  165,  -180, 1263})));
 }
 
 TEST_F(LatticesTest, NS_Example_7_75) {
@@ -87,10 +88,27 @@ TEST_F(LatticesTest, NS_Int) {
 
   auto const reduced = NguyễnStehlé(l);
   EXPECT_EQ(reduced,
-            (FixedMatrix<cpp_int, 5, 4>({  45,     6, -18,   15,    0,
-                                           45, -1200, 348,    0,    0,
-                                            0,     0,   0, 1083,  336,
-                                         -660,     0, 165, -180, 1263})));
+            (FixedMatrix<cpp_int, 5, 4>({ 45,    6,   -18,   15,
+                                           0,   45, -1200,  348,
+                                           0,    0,     0,    0,
+                                           0, 1083,   336, -660,
+                                           0,  165,  -180, 1263})));
+}
+
+TEST_F(LatticesTest, NoProgress) {
+  FixedMatrix<cpp_int, 5, 4> l(
+      { 212,  74278, -24016,  cpp_int("2236050964407517784120"),
+       -116, 135836, -23372, cpp_int("-1223499584298453127159"),
+          0,      0,      0,                                  0,
+          3,  -3513, 784686,    cpp_int("31642230628408270524"),
+          0,      0,      0,                                  3});
+  auto const reduced = NguyễnStehlé(l);
+  EXPECT_EQ(reduced,
+            (FixedMatrix<cpp_int, 5, 4>({ 0,  212,  72582,  26440,
+                                          1, -113, 133330,  52572,
+                                          0,    0,      0,      0,
+                                         -6,  -15,  17067, 164088,
+                                          3,    9, -10302, 310656})));
 }
 
 }  // namespace _lattices
