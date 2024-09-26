@@ -74,6 +74,8 @@ struct StehléZimmermannSpecification {
 
 // Scales the argument, functions, polynomials, and remainders to lie within
 // [1/2, 1[.
+//TODO(phl)comment
+template<std::int64_t zeroes>
 StehléZimmermannSpecification ScaleToBinade0(
     StehléZimmermannSpecification const& input,
     double& argument_scale) {
@@ -82,23 +84,44 @@ StehléZimmermannSpecification ScaleToBinade0(
   auto const& remainders = input.remainders;
   auto const& starting_argument = input.argument;
 
+  //TODO(phl)comment
+  constexpr double multiplier =
+      1 +
+      (std::numeric_limits<double>::epsilon() - 1) * (1LL << (2 * zeroes + 4));
+  auto const lower_bound = starting_argument / multiplier;
+  auto const upper_bound = starting_argument * multiplier;
+
+  auto const compute_scale = [](const auto& value1,
+                                const auto& value2) {
+    std::int64_t value1_exponent;
+    auto const value1_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(value1), &value1_exponent);
+    CHECK_NE(0, value1_mantissa);
+
+    std::int64_t value2_exponent;
+    auto const value2_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(value2), &value2_exponent);
+    CHECK_NE(0, value2_mantissa);
+
+    CHECK_EQ(1, std::abs(value1_exponent - value2_exponent))
+        << "Values straddle multiple powers of 2: " << value1 << " and "
+        << value2;
+
+    return exp2(-std::min(value1_exponent, value2_exponent));
+  };
+
   // TODO(phl): Handle an argument that is exactly a power of 2.
-  std::int64_t argument_exponent;
-  auto const argument_mantissa = frexp(
-      static_cast<cpp_bin_float_50>(starting_argument), &argument_exponent);
-  CHECK_NE(0, argument_mantissa);
-  argument_scale = exp2(-argument_exponent);
+  argument_scale = compute_scale(lower_bound, upper_bound);
+  LOG(WARNING)<<"Arg "<<argument_scale;
   cpp_rational const scaled_argument = starting_argument * argument_scale;
 
   std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
   std::array<AccurateFunction, 2> scaled_remainders;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
-    std::int64_t function_exponent;
-    auto const function_mantissa =
-        frexp(functions[i](starting_argument), &function_exponent);
-    CHECK_NE(0, function_mantissa);
-    function_scales[i] = exp2(-function_exponent);
+    function_scales[i] = compute_scale(functions[i](lower_bound),
+                                       functions[i](upper_bound));
+    LOG(WARNING)<<"Fun "<<i<<" "<<function_scales[i];
     scaled_functions[i] = [argument_scale,
                            function_scale = function_scales[i],
                            function = functions[i],
@@ -538,11 +561,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // Start by scaling the specification of the search.  The rest of this
   // function only uses the scaled objects.
   double argument_scale;
-  auto const scaled = ScaleToBinade0({.functions = functions,
-                                      .polynomials = polynomials,
-                                      .remainders = remainders,
-                                      .argument = starting_argument},
-                                     argument_scale);
+  auto const scaled = ScaleToBinade0<zeroes>({.functions = functions,
+                                              .polynomials = polynomials,
+                                              .remainders = remainders,
+                                              .argument = starting_argument},
+                                             argument_scale);
 
   // This mutex is not contended as it is only held exclusively when we have
   // found a solution.
