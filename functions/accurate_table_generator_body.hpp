@@ -86,8 +86,7 @@ StehléZimmermannSpecification ScaleToBinade0(
 
   //TODO(phl)comment
   constexpr double multiplier =
-      1 +
-      (std::numeric_limits<double>::epsilon() - 1) * (1LL << (2 * zeroes + 4));
+      1 + std::numeric_limits<double>::epsilon() * (1LL << (2 * zeroes + 4));
   auto const lower_bound = starting_argument / multiplier;
   auto const upper_bound = starting_argument * multiplier;
 
@@ -103,7 +102,7 @@ StehléZimmermannSpecification ScaleToBinade0(
         frexp(static_cast<cpp_bin_float_50>(value2), &value2_exponent);
     CHECK_NE(0, value2_mantissa);
 
-    CHECK_EQ(1, std::abs(value1_exponent - value2_exponent))
+    CHECK_LE(std::abs(value1_exponent - value2_exponent), 1)
         << "Values straddle multiple powers of 2: " << value1 << " and "
         << value2;
 
@@ -166,6 +165,8 @@ bool VerifyBinade0Solution(StehléZimmermannSpecification const& scaled,
   if (abs(scaled_solution) > 1) {
     auto const solution_binade0 = scaled_solution / 2;
     if (solution_binade0 != static_cast<double>(solution_binade0)) {
+      VLOG(1) << "Rejecting " << scaled_solution
+              << " because it's not a machine number";
       return false;
     }
   }
@@ -179,8 +180,11 @@ bool VerifyBinade0Solution(StehléZimmermannSpecification const& scaled,
         frexp(static_cast<cpp_bin_float_50>(y), &y_exponent);
     auto const y_mantissa_scaled =
         ldexp(y_mantissa, std::numeric_limits<double>::digits);
-    auto const y_mantissa_cmod_1 = y_mantissa - round(y_mantissa);
-    if (M * abs(y_mantissa_cmod_1) >= 1) {
+    auto const y_mantissa_scaled_cmod_1 =
+        y_mantissa_scaled - round(y_mantissa_scaled);
+    if (M * abs(y_mantissa_scaled_cmod_1) >= 1) {
+      VLOG(1) << "Rejecting " << scaled_solution << " because " << y
+              << " is not close enough to a machine number";
       return false;
     }
   }
@@ -633,15 +637,19 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
         // adjust it before returning.
         auto const solution = scaled_solution / argument_scale;
         VLOG(1) << "Solution for " << starting_argument << ", slice #"
-                << slice_index;
+                << slice_index << " is " << solution;
         // We have found a solution; we only retain it if (1) no internal error
         // occurred; and (2) it closer to the `starting_argument` than any
         // solution found previously.
         if (status_or_solution.has_value()) {
-          if (status_or_solution.value().ok() &&
-              abs(solution - starting_argument) <
-                  abs(status_or_solution.value().value() - starting_argument)) {
-            status_or_solution = solution;
+          if (status_or_solution.value().ok()) {
+            if (abs(solution - starting_argument) <
+                abs(status_or_solution.value().value() - starting_argument)) {
+              status_or_solution = solution;
+            } else {
+              VLOG(1) << "Solution for slice #" << slice_index
+                      << " discarded because there is a better one";
+            }
           }
         } else {
           status_or_solution = solution;
