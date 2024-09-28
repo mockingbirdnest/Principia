@@ -68,7 +68,7 @@ bool AllFunctionValuesHaveDesiredZeroes(
 struct StehléZimmermannSpecification {
   std::array<AccurateFunction, 2> functions;
   std::array<AccuratePolynomial<cpp_rational, 2>, 2> polynomials;
-  std::array<AccurateFunction, 2> remainders;
+  std::array<ApproximateFunction, 2> remainders;
   cpp_rational argument;
 };
 
@@ -136,7 +136,7 @@ StehléZimmermannSpecification ScaleToBinade01(
 
   std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
-  std::array<AccurateFunction, 2> scaled_remainders;
+  std::array<ApproximateFunction, 2> scaled_remainders;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     function_scales[i] = compute_scale(functions[i](lower_bound),
                                        functions[i](upper_bound));
@@ -439,7 +439,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<AccurateFunction, 2> const& remainders,
+    std::array<ApproximateFunction, 2> const& remainders,
     cpp_rational const& starting_argument,
     std::int64_t const N,
     std::int64_t const T) {
@@ -473,17 +473,17 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // Step 2: compute ε.  We use the remainders provided by the clients.  Note
   // that we could save on the number of evaluations by providing both bounds to
   // a single call.
-  cpp_bin_float_50 ε = 0;
+  double ε = 0;
+  auto const T_over_N = cpp_rational(T, N);
   for (std::int64_t i = 0; i < remainders.size(); ++i) {
-    auto const T_over_N = cpp_rational(T, N);
-    ε = std::max(ε, abs(N * remainders[i](starting_argument - T_over_N)));
-    ε = std::max(ε, abs(N * remainders[i](starting_argument + T_over_N)));
+    ε = std::max(ε, std::abs(N * remainders[i](starting_argument - T_over_N)));
+    ε = std::max(ε, std::abs(N * remainders[i](starting_argument + T_over_N)));
   }
   VLOG(3) << "ε = " << ε;
 
   // Step 3, first part: compute Mʹ and C.  Give up is C is 0, which may happen
   // if ε is too large.
-  auto const Mʹ = static_cast<std::int64_t>(floor(M / (2 + 2 * M * ε)));
+  auto const Mʹ = static_cast<std::int64_t>(std::floor(M / (2 + 2 * M * ε)));
   auto const C = 3 * Mʹ;
   if (C == 0) {
     return absl::FailedPreconditionError("Error too large");
@@ -616,7 +616,7 @@ template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<AccurateFunction, 2> const& remainders,
+    std::array<ApproximateFunction, 2> const& remainders,
     cpp_rational const& starting_argument,
     ThreadPool<void>* const search_pool) {
   // Start by scaling the specification of the search.  The rest of this
@@ -772,7 +772,7 @@ StehléZimmermannSimultaneousMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
         polynomials,
-    std::vector<std::array<AccurateFunction, 2>> const& remainders,
+    std::vector<std::array<ApproximateFunction, 2>> const& remainders,
     std::vector<cpp_rational> const& starting_arguments) {
   std::vector<absl::StatusOr<cpp_rational>> result;
   result.resize(starting_arguments.size());
@@ -793,7 +793,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
         polynomials,
-    std::vector<std::array<AccurateFunction, 2>> const& remainders,
+    std::vector<std::array<ApproximateFunction, 2>> const& remainders,
     std::vector<cpp_rational> const& starting_arguments,
     std::function<void(/*index=*/std::int64_t,
                        absl::StatusOr<cpp_rational>)> const& callback) {
