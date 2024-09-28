@@ -39,7 +39,7 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
-constexpr std::int64_t T_max = 16;
+constexpr std::int64_t T_max = 4;
 static_assert(T_max >= 1);
 
 template<std::int64_t zeroes>
