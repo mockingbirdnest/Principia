@@ -72,11 +72,25 @@ struct StehléZimmermannSpecification {
   cpp_rational argument;
 };
 
-// Scales the argument, functions, polynomials, and remainders to lie within
-// [1/2, 1[.
-//TODO(phl)comment
+// In general, scales the argument, functions, polynomials, and remainders to
+// lie within [1/2, 1[.  There is a subtlety though if the input is such that
+// either the argument or a function is a power of 2 or close enough to a power
+// of 2 that it could cross from one binade to another as part of the search.
+// The Stehlé-Zimmermann algorithm wants to believe that machine numbers are
+// equally spaced, which is not the case when changing binade.  We have two
+// options:
+// 1. Choose the scale based on the spacing near 0, which results in a larger
+//    scale factor and can possibly cause bogus solutions to be found near ∞
+//    (such solutions would be midpoints between machine numbers and not machine
+//    numbers).  This may cause the argument and functions to lie within
+//    [1/2, 2[.
+// 2. Choose the scale based on the spacing near ∞, which results in a smaller
+//    scale factor and can possibly cause solutions to be missed near 0 because
+//    the algorithm would skip half of the machine numbers.
+// We choose option 1, but it requires that each candidate solution be checked
+// to see if it actually fullfills the desired conditions.
 template<std::int64_t zeroes>
-StehléZimmermannSpecification ScaleToBinade0(
+StehléZimmermannSpecification ScaleToBinade01(
     StehléZimmermannSpecification const& input,
     double& argument_scale) {
   auto const& functions = input.functions;
@@ -84,9 +98,14 @@ StehléZimmermannSpecification ScaleToBinade0(
   auto const& remainders = input.remainders;
   auto const& starting_argument = input.argument;
 
-  //TODO(phl)comment
+  // In order to decide whether there is a risk of changing binade, we need an
+  // estimate of the interval that will be searched.  We use the random model of
+  // [SZ05], section 1, together with a safety margin in case the search would
+  // be unlucky.
+  constexpr std::int64_t multiplier_safety_bits = 6;
   constexpr double multiplier =
-      1 + std::numeric_limits<double>::epsilon() * (1LL << (2 * zeroes + 4));
+      1 + std::numeric_limits<double>::epsilon() *
+              (1LL << (2 * zeroes - 2 + multiplier_safety_bits));
   auto const lower_bound = starting_argument / multiplier;
   auto const upper_bound = starting_argument * multiplier;
 
@@ -109,9 +128,7 @@ StehléZimmermannSpecification ScaleToBinade0(
     return exp2(-std::min(value1_exponent, value2_exponent));
   };
 
-  // TODO(phl): Handle an argument that is exactly a power of 2.
   argument_scale = compute_scale(lower_bound, upper_bound);
-  LOG(WARNING)<<"Arg "<<argument_scale;
   cpp_rational const scaled_argument = starting_argument * argument_scale;
 
   std::array<double, 2> function_scales;
@@ -120,7 +137,6 @@ StehléZimmermannSpecification ScaleToBinade0(
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     function_scales[i] = compute_scale(functions[i](lower_bound),
                                        functions[i](upper_bound));
-    LOG(WARNING)<<"Fun "<<i<<" "<<function_scales[i];
     scaled_functions[i] = [argument_scale,
                            function_scale = function_scales[i],
                            function = functions[i],
@@ -152,10 +168,13 @@ StehléZimmermannSpecification ScaleToBinade0(
           .argument = scaled_argument};
 }
 
-//TODO(phl)comment
+// `ScaleToBinade01` may have had to choose a scale factor that's "too large" to
+// account for the argument or functions possibly changing binade.  This may
+// result in candidate solutions that are midway between machine numbers.  This
+// function rejects such solutions.
 template<std::int64_t zeroes>
-bool VerifyBinade0Solution(StehléZimmermannSpecification const& scaled,
-                           cpp_rational const& scaled_solution) {
+bool VerifyBinade01Solution(StehléZimmermannSpecification const& scaled,
+                            cpp_rational const& scaled_solution) {
   constexpr std::int64_t M = 1LL << zeroes;
   CHECK_LE(cpp_rational(1, 2), abs(scaled_solution));
 
@@ -600,7 +619,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // Start by scaling the specification of the search.  The rest of this
   // function only uses the scaled objects.
   double argument_scale;
-  auto const scaled = ScaleToBinade0<zeroes>({.functions = functions,
+  auto const scaled = ScaleToBinade01<zeroes>({.functions = functions,
                                               .polynomials = polynomials,
                                               .remainders = remainders,
                                               .argument = starting_argument},
@@ -631,7 +650,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     absl::Status const& status = status_or_scaled_solution.status();
     if (status.ok()) {
       auto const scaled_solution = status_or_scaled_solution.value();
-      if (VerifyBinade0Solution<zeroes>(scaled, scaled_solution)) {
+      if (VerifyBinade01Solution<zeroes>(scaled, scaled_solution)) {
         absl::MutexLock l(&lock);
         // The argument returned by the slice search is scaled, so we must
         // adjust it before returning.
