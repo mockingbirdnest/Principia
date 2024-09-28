@@ -72,9 +72,26 @@ struct StehléZimmermannSpecification {
   cpp_rational argument;
 };
 
-// Scales the argument, functions, polynomials, and remainders to lie within
-// [1/2, 1[.
-StehléZimmermannSpecification ScaleToBinade0(
+// In general, scales the argument, functions, polynomials, and remainders to
+// lie within [1/2, 1[.  There is a subtlety though if the input is such that
+// either the argument or a function is a power of 2 or close enough to a power
+// of 2 that it could cross from one binade to another as part of the search.
+// The Stehlé-Zimmermann algorithm wants to believe that machine numbers are
+// equally spaced, which is not the case when changing binade.  We have two
+// options:
+// 1. Choose the scale based on the spacing near 0, which results in a larger
+//    scale factor and can possibly cause bogus solutions to be found near ∞
+//    (such solutions would be midpoints between machine numbers and not machine
+//    numbers).  This may cause the argument and functions to lie within
+//    [1/2, 2[.
+// 2. Choose the scale based on the spacing near ∞, which results in a smaller
+//    scale factor and can possibly cause solutions to be missed near 0 because
+//    the algorithm would skip half of the machine numbers.
+// Option 1 is the only one that ensures optimality of the solution, but it
+// requires that each candidate solution be checked to see if it actually
+// fullfills the desired conditions.
+template<std::int64_t zeroes>
+StehléZimmermannSpecification ScaleToBinade01(
     StehléZimmermannSpecification const& input,
     double& argument_scale) {
   auto const& functions = input.functions;
@@ -82,23 +99,47 @@ StehléZimmermannSpecification ScaleToBinade0(
   auto const& remainders = input.remainders;
   auto const& starting_argument = input.argument;
 
-  // TODO(phl): Handle an argument that is exactly a power of 2.
-  std::int64_t argument_exponent;
-  auto const argument_mantissa = frexp(
-      static_cast<cpp_bin_float_50>(starting_argument), &argument_exponent);
-  CHECK_NE(0, argument_mantissa);
-  argument_scale = exp2(-argument_exponent);
+  // In order to decide whether there is a risk of changing binade, we need an
+  // estimate of the interval that will be searched.  We use the random model of
+  // [SZ05], section 1, together with a safety margin in case the search would
+  // be unlucky.
+  constexpr std::int64_t multiplier_safety_bits = 6;
+  constexpr double multiplier =
+      1 + std::numeric_limits<double>::epsilon() *
+              (1LL << (2 * zeroes - 2 + multiplier_safety_bits));
+  auto const lower_bound = starting_argument / multiplier;
+  auto const upper_bound = starting_argument * multiplier;
+
+  // Returns a scale factor suitable for both `value1` and `value2`.  Makes no
+  // assumptions regarding the order of its arguments.
+  auto const compute_scale = [](auto const& value1,
+                                auto const& value2) {
+    std::int64_t value1_exponent;
+    auto const value1_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(value1), &value1_exponent);
+    CHECK_NE(0, value1_mantissa);
+
+    std::int64_t value2_exponent;
+    auto const value2_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(value2), &value2_exponent);
+    CHECK_NE(0, value2_mantissa);
+
+    CHECK_LE(std::abs(value1_exponent - value2_exponent), 1)
+        << "Values straddle multiple powers of 2: " << value1 << " and "
+        << value2;
+
+    return exp2(std::max(-value1_exponent, -value2_exponent));
+  };
+
+  argument_scale = compute_scale(lower_bound, upper_bound);
   cpp_rational const scaled_argument = starting_argument * argument_scale;
 
   std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
   std::array<AccurateFunction, 2> scaled_remainders;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
-    std::int64_t function_exponent;
-    auto const function_mantissa =
-        frexp(functions[i](starting_argument), &function_exponent);
-    CHECK_NE(0, function_mantissa);
-    function_scales[i] = exp2(-function_exponent);
+    function_scales[i] = compute_scale(functions[i](lower_bound),
+                                       functions[i](upper_bound));
     scaled_functions[i] = [argument_scale,
                            function_scale = function_scales[i],
                            function = functions[i],
@@ -128,6 +169,49 @@ StehléZimmermannSpecification ScaleToBinade0(
                                                   polynomials[1])},
           .remainders = scaled_remainders,
           .argument = scaled_argument};
+}
+
+// `ScaleToBinade01` may have had to choose a scale factor that's "too large" to
+// account for the argument or functions possibly changing binade.  This may
+// result in candidate solutions that are midway between machine numbers.  This
+// function rejects such solutions.
+template<std::int64_t zeroes>
+bool VerifyBinade01Solution(StehléZimmermannSpecification const& scaled,
+                            cpp_rational const& scaled_solution) {
+  constexpr std::int64_t M = 1LL << zeroes;
+  CHECK_LE(cpp_rational(1, 2), abs(scaled_solution));
+
+  // If the scaled solution is below 1, it is necessarily a machine number.  It
+  // may be above 1 if we upscaled, in which case we must verify that once
+  // scaled down to binade 0 it is a machine number.
+  if (abs(scaled_solution) > 1) {
+    auto const solution_binade0 = scaled_solution / 2;
+    if (solution_binade0 != static_cast<double>(solution_binade0)) {
+      VLOG(1) << "Rejecting " << scaled_solution
+              << " because it's not a machine number";
+      return false;
+    }
+  }
+
+  // Verify that the value of the functions are close to a machine number.  This
+  // may not be the case if we upscaled the functions.
+  for (auto const& function : scaled.functions) {
+    auto const y = function(scaled_solution);
+    std::int64_t y_exponent;
+    auto const y_mantissa =
+        frexp(static_cast<cpp_bin_float_50>(y), &y_exponent);
+    auto const y_mantissa_scaled =
+        ldexp(y_mantissa, std::numeric_limits<double>::digits);
+    auto const y_mantissa_scaled_cmod_1 =
+        y_mantissa_scaled - round(y_mantissa_scaled);
+    if (M * abs(y_mantissa_scaled_cmod_1) >= 1) {
+      VLOG(1) << "Rejecting " << scaled_solution << " because " << y
+              << " is not close enough to a machine number";
+      return false;
+    }
+  }
+
+  return true;
 }
 
 // This is essentially the same as Gal's exhaustive search, but with the
@@ -538,11 +622,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // Start by scaling the specification of the search.  The rest of this
   // function only uses the scaled objects.
   double argument_scale;
-  auto const scaled = ScaleToBinade0({.functions = functions,
-                                      .polynomials = polynomials,
-                                      .remainders = remainders,
-                                      .argument = starting_argument},
-                                     argument_scale);
+  auto const scaled = ScaleToBinade01<zeroes>({.functions = functions,
+                                               .polynomials = polynomials,
+                                               .remainders = remainders,
+                                               .argument = starting_argument},
+                                              argument_scale);
 
   // This mutex is not contended as it is only held exclusively when we have
   // found a solution.
@@ -555,7 +639,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
                            &scaled,
                            &starting_argument,
                            &status_or_solution](
-                              std::int64_t const slice_index) {
+                               std::int64_t const slice_index) {
     auto const start = std::chrono::system_clock::now();
 
     auto const status_or_scaled_solution =
@@ -568,21 +652,26 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
     absl::Status const& status = status_or_scaled_solution.status();
     if (status.ok()) {
-      // The argument returned by the slice search is scaled, so we must
-      // adjust it before returning.
-      auto const solution = status_or_scaled_solution.value() / argument_scale;
-      VLOG(1) << "Solution for " << starting_argument << ", slice #"
-              << slice_index;
-      {
+      auto const scaled_solution = status_or_scaled_solution.value();
+      if (VerifyBinade01Solution<zeroes>(scaled, scaled_solution)) {
         absl::MutexLock l(&lock);
+        // The argument returned by the slice search is scaled, so we must
+        // adjust it before returning.
+        auto const solution = scaled_solution / argument_scale;
+        VLOG(1) << "Solution for " << starting_argument << ", slice #"
+                << slice_index << " is " << solution;
         // We have found a solution; we only retain it if (1) no internal error
         // occurred; and (2) it closer to the `starting_argument` than any
         // solution found previously.
         if (status_or_solution.has_value()) {
-          if (status_or_solution.value().ok() &&
-              abs(solution - starting_argument) <
-                  abs(status_or_solution.value().value() - starting_argument)) {
-            status_or_solution = solution;
+          if (status_or_solution.value().ok()) {
+            if (abs(solution - starting_argument) <
+                abs(status_or_solution.value().value() - starting_argument)) {
+              status_or_solution = solution;
+            } else {
+              VLOG(1) << "Solution for slice #" << slice_index
+                      << " discarded because there is a better one";
+            }
           }
         } else {
           status_or_solution = solution;
