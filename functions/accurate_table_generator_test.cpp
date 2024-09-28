@@ -451,7 +451,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
   std::vector<cpp_rational> starting_arguments;
   std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
   std::vector<std::array<ApproximateFunction, 2>> remainders;
-  for (std::int64_t i = 1; i <= 1; ++i) {
+  for (std::int64_t i = i_min; i <= i_max; ++i) {
     double const x₀ = centre(i);
     AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
         {cpp_rational(Sin(x₀)),
