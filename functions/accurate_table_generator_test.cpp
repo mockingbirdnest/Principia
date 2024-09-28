@@ -440,6 +440,14 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
   CHECK_LT(centre(i_max) - h, π / 4);
   CHECK_LT(π / 4, centre(i_max) + h);
 
+  // No need for fancy angle reduction as the angles are small.
+  AccurateFunction const accurate_sin = [](cpp_rational const& x) {
+    return sin(static_cast<cpp_bin_float_50>(x));
+  };
+  AccurateFunction const accurate_cos = [](cpp_rational const& x) {
+    return cos(static_cast<cpp_bin_float_50>(x));
+  };
+
   std::vector<cpp_rational> starting_arguments;
   std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> polynomials;
   std::vector<std::array<ApproximateFunction, 2>> remainders;
@@ -475,7 +483,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
   }
 
   StehléZimmermannSimultaneousStreamingMultisearch<18>(
-      {Sin, Cos},
+      {accurate_sin, accurate_cos},
       polynomials,
       remainders,
       starting_arguments,
