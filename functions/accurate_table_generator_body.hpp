@@ -109,6 +109,8 @@ StehléZimmermannSpecification ScaleToBinade01(
   auto const lower_bound = starting_argument / multiplier;
   auto const upper_bound = starting_argument * multiplier;
 
+  // Returns a scale factor suitable for both `value1` and `value2`.  Makes no
+  // assumptions regarding the order of its arguments.
   auto const compute_scale = [](auto const& value1,
                                 auto const& value2) {
     std::int64_t value1_exponent;
@@ -125,7 +127,7 @@ StehléZimmermannSpecification ScaleToBinade01(
         << "Values straddle multiple powers of 2: " << value1 << " and "
         << value2;
 
-    return exp2(-std::min(value1_exponent, value2_exponent));
+    return exp2(std::max(-value1_exponent, -value2_exponent));
   };
 
   argument_scale = compute_scale(lower_bound, upper_bound);
@@ -620,10 +622,10 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // function only uses the scaled objects.
   double argument_scale;
   auto const scaled = ScaleToBinade01<zeroes>({.functions = functions,
-                                              .polynomials = polynomials,
-                                              .remainders = remainders,
-                                              .argument = starting_argument},
-                                             argument_scale);
+                                               .polynomials = polynomials,
+                                               .remainders = remainders,
+                                               .argument = starting_argument},
+                                              argument_scale);
 
   // This mutex is not contended as it is only held exclusively when we have
   // found a solution.
