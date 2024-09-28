@@ -87,8 +87,9 @@ struct StehléZimmermannSpecification {
 // 2. Choose the scale based on the spacing near ∞, which results in a smaller
 //    scale factor and can possibly cause solutions to be missed near 0 because
 //    the algorithm would skip half of the machine numbers.
-// We choose option 1, but it requires that each candidate solution be checked
-// to see if it actually fullfills the desired conditions.
+// Option 1 is the only one that ensures optimality of the solution, but it
+// requires that each candidate solution be checked to see if it actually
+// fullfills the desired conditions.
 template<std::int64_t zeroes>
 StehléZimmermannSpecification ScaleToBinade01(
     StehléZimmermannSpecification const& input,
