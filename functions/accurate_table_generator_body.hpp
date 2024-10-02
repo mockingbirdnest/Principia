@@ -290,35 +290,39 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       .min = scaled.argument - cpp_rational(2 * (slice_index + 1) * T₀, N),
       .max = scaled.argument - cpp_rational(2 * slice_index * T₀, N)};
 
-  Interval<cpp_rational> high_interval = initial_high_interval;
-  Interval<cpp_rational> low_interval = initial_low_interval;
-
   // The radii of the intervals remaining to cover above and below the
   // `scaled.argument`.
   std::int64_t high_T_to_cover = T₀;
   std::int64_t low_T_to_cover = T₀;
 
+  std::int64_t last_high_T = high_T_to_cover;
+  std::int64_t last_low_T = low_T_to_cover;
+
   // When exiting this loop, we have completely processed
   // `initial_high_interval` and `initial_low_interval`.
   for (;;) {
-    bool const high_interval_empty = high_interval.empty();
-    bool const low_interval_empty = low_interval.empty();
-    if (high_interval_empty && low_interval_empty) {
+    if (high_T_to_cover == 0 && low_T_to_cover == 0) {
       return absl::NotFoundError(
           absl::StrCat("No solution in slice #", slice_index));
     }
 
-    if (!high_interval_empty) {
-      std::int64_t T = high_T_to_cover;
+    if (high_T_to_cover > 0) {
+      std::int64_t T = std::min(2 * last_high_T, high_T_to_cover);
       // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
-        VLOG(3) << "T = " << T << ", high_interval = " << high_interval;
+        // Make sure that the new interval is contiguous to the segment already
+        // explored.
+        cpp_rational const high_interval_midpoint =
+            initial_high_interval.max -
+            cpp_rational(2 * high_T_to_cover - T, N);
+        //LOG(WARNING) << "T = " << T
+        //             << ", high_T_to_cover = " << high_T_to_cover;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
                                                        scaled.remainders,
-                                                       high_interval.midpoint(),
+                                                       high_interval_midpoint,
                                                        N,
                                                        T);
         absl::Status const& status = status_or_solution.status();
@@ -327,13 +331,12 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         } else {
           VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
-            // Halve the interval.  Make sure that the new interval is
-            // contiguous to the segment already explored.
+            // Halve the interval.
             T /= 2;
-            high_interval.max = high_interval.min + cpp_rational(2 * T, N);
           } else if (absl::IsNotFound(status)) {
             // No solutions here, go to the next interval.
             high_T_to_cover -= T;
+            last_high_T = T;
             break;
           } else {
             return status;
@@ -341,17 +344,22 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         }
       }
     }
-    if (!low_interval_empty) {
-      std::int64_t T = low_T_to_cover;
+    if (low_T_to_cover > 0) {
+      std::int64_t T = std::min(2 * last_low_T, low_T_to_cover);
       // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
-        VLOG(3) << "T = " << T << ", low_interval = " << low_interval;
+        // Make sure that the new interval is contiguous to the segment already
+        // explored.
+        cpp_rational const low_interval_midpoint =
+            initial_low_interval.min +
+            cpp_rational(2 * low_T_to_cover - T, N);
+        //LOG(WARNING) << "T = " << T << ", low_T_to_cover = " << low_T_to_cover;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
                                                        scaled.remainders,
-                                                       low_interval.midpoint(),
+                                                       low_interval_midpoint,
                                                        N,
                                                        T);
         absl::Status const& status = status_or_solution.status();
@@ -363,10 +371,10 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
             // Halve the interval.  Make sure that the new interval is
             // contiguous to the segment already explored.
             T /= 2;
-            low_interval.min = low_interval.max - cpp_rational(2 * T, N);
           } else if (absl::IsNotFound(status)) {
             // No solutions here, go to the next interval.
             low_T_to_cover -= T;
+            last_low_T = T;
             break;
           } else {
             return status;
@@ -374,13 +382,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         }
       }
     }
-    VLOG_EVERY_N(2, 10) << "high = "
-                        << DebugString(static_cast<double>(high_interval.max));
-    VLOG_EVERY_N(2, 10) << "low  = "
-                        << DebugString(static_cast<double>(low_interval.min));
-    high_interval = {.min = high_interval.max,
-                     .max = initial_high_interval.max};
-    low_interval = {.min = initial_low_interval.min, .max = low_interval.min};
   }
 }
 
