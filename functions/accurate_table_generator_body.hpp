@@ -753,9 +753,10 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   });
 
   for (;;) {
+    std::int64_t const slice_index = current_slice_index.fetch_add(1);
     VLOG(1) << "Sequential search for " << starting_argument << ", slice #"
-            << current_slice_index;
-    search_one_slice(current_slice_index.fetch_add(1));
+            << slice_index;
+    search_one_slice(slice_index);
 
     absl::ReaderMutexLock l(&lock);
     if (status_or_solution.has_value()) {
