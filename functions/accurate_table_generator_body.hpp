@@ -39,8 +39,16 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
+// For intervals with a radius less or equal to this value, we use exhaustive
+// search.
 constexpr std::int64_t T_max = 4;
 static_assert(T_max >= 1);
+
+// When starting a new interval, we multiply the value `T` that led to a
+// rejection of the previous interval and multiply it by this value.  This
+// avoids restarting from a large value of `T` and doing pointless halving.
+constexpr std::int64_t T_multiplier = 2;
+static_assert(T_multiplier >= 1);
 
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
@@ -295,8 +303,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   std::int64_t high_T_to_cover = T₀;
   std::int64_t low_T_to_cover = T₀;
 
-  std::int64_t last_high_T = high_T_to_cover;
-  std::int64_t last_low_T = low_T_to_cover;
+  // The last value of `T` for which the search was run and found no solution.
+  std::int64_t last_high_T = T₀;
+  std::int64_t last_low_T = T₀;
 
   // When exiting this loop, we have completely processed
   // `initial_high_interval` and `initial_low_interval`.
@@ -307,7 +316,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
     }
 
     if (high_T_to_cover > 0) {
-      std::int64_t T = std::min(2 * last_high_T, high_T_to_cover);
+      std::int64_t T = std::min(T_multiplier * last_high_T, high_T_to_cover);
       // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
@@ -316,8 +325,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         cpp_rational const high_interval_midpoint =
             initial_high_interval.max -
             cpp_rational(2 * high_T_to_cover - T, N);
-        //LOG(WARNING) << "T = " << T
-        //             << ", high_T_to_cover = " << high_T_to_cover;
+        VLOG(3) << "T = " << T << ", high_T_to_cover = " << high_T_to_cover;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
@@ -345,7 +353,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       }
     }
     if (low_T_to_cover > 0) {
-      std::int64_t T = std::min(2 * last_low_T, low_T_to_cover);
+      std::int64_t T = std::min(T_multiplier * last_low_T, low_T_to_cover);
       // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
@@ -354,7 +362,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         cpp_rational const low_interval_midpoint =
             initial_low_interval.min +
             cpp_rational(2 * low_T_to_cover - T, N);
-        //LOG(WARNING) << "T = " << T << ", low_T_to_cover = " << low_T_to_cover;
+        VLOG(3) << "T = " << T << ", low_T_to_cover = " << low_T_to_cover;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
                                                        scaled.polynomials,
