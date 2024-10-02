@@ -692,7 +692,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // This variable should not be under a mutex as it might cause contention.
   // Apparently the memory barrier implied by sequential consistency is not
   // degrading performance.
-  std::atomic<std::int64_t> current_slice_index = 120'000;
+  std::atomic<std::int64_t> current_slice_index = 0;
 
   // This thread attempts to keep CPU utilization at 100% by starting
   // speculative searches if some of the threads in the `search_pool` are idle.
@@ -748,7 +748,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     VLOG(1) << "Sequential search for " << starting_argument << ", slice #"
             << current_slice_index;
     search_one_slice(current_slice_index.fetch_add(1));
-    status_or_solution = cpp_rational(1, 1);
 
     absl::ReaderMutexLock l(&lock);
     if (status_or_solution.has_value()) {
@@ -817,7 +816,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
                                                          polynomials[i],
                                                          remainders[i],
                                                          starting_argument,
-                                                         /*search_pool=*/nullptr);
+                                                         &search_pool);
       if (status_or_final_argument.ok()) {
         LOG(INFO) << "Finished search around " << starting_argument
                   << ", found " << status_or_final_argument.value();
