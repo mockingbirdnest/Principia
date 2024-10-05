@@ -285,14 +285,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
 
   // [SZ05], section 3.2, proves that T³ = O(M * N).  Of course, the
-  // multiplicative factor is not known.  In practice it seems that a value of
-  // T₀ that's too large is very costly as it results in many intervals that are
-  // rejected with `OutOfRange` and must be halved and retried.  A value that's
-  // too small on the other hand can slow down progress.  The fudge factor 1/128
-  // attempts to strike a balance between these problems; it has been chosen by
-  // benchmarking SinCos18 around 1167/2048.
+  // multiplicative factor is not known, but 1 works well in practice.
   std::int64_t const T₀ = static_cast<std::int64_t>(
-      Cbrt(static_cast<double>(M) * static_cast<double>(N)) / 128.0);
+      Cbrt(static_cast<double>(M) * static_cast<double>(N)));
 
   // Construct intervals of measure `2 * T₀` above and below `scaled.argument`
   // and search for solutions on each side alternatively.
