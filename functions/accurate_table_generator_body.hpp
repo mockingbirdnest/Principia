@@ -341,7 +341,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
                                                        T);
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
-          return status_or_solution.value();
+          auto const& solution = status_or_solution.value();
+          if (VerifyBinade01Solution<zeroes>(scaled, solution)) {
+            return solution;
+          } else if (T == 1) {
+            high_T_to_cover -= T;
+          } else {
+            T /= 2;
+          }
         } else {
           VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
@@ -377,7 +384,14 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
                                                        T);
         absl::Status const& status = status_or_solution.status();
         if (status.ok()) {
-          return status_or_solution.value();
+          auto const& solution = status_or_solution.value();
+          if (VerifyBinade01Solution<zeroes>(scaled, solution)) {
+            return solution;
+          } else if (T == 1) {
+            low_T_to_cover -= T;
+          } else {
+            T /= 2;
+          }
         } else {
           VLOG(3) << "Status = " << status;
           if (absl::IsOutOfRange(status)) {
@@ -597,6 +611,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
                                                Q_coefficients[1]});
   VLOG(3) << "Q = " << Q;
   if (Q_coefficients[1] == 0) {
+      LOG_IF(FATAL, Q_coefficients[0] == 0) << "Identically zero";
       return absl::NotFoundError("No integer zeroes");
   }
 
@@ -666,30 +681,28 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
 
     absl::Status const& status = status_or_scaled_solution.status();
     if (status.ok()) {
+      absl::MutexLock l(&lock);
+      // The argument returned by the slice search is scaled, so we must
+      // adjust it before returning.
       auto const scaled_solution = status_or_scaled_solution.value();
-      if (VerifyBinade01Solution<zeroes>(scaled, scaled_solution)) {
-        absl::MutexLock l(&lock);
-        // The argument returned by the slice search is scaled, so we must
-        // adjust it before returning.
-        auto const solution = scaled_solution / argument_scale;
-        VLOG(1) << "Solution for " << starting_argument << ", slice #"
-                << slice_index << " is " << solution;
-        // We have found a solution; we only retain it if (1) no internal error
-        // occurred; and (2) it closer to the `starting_argument` than any
-        // solution found previously.
-        if (status_or_solution.has_value()) {
-          if (status_or_solution.value().ok()) {
-            if (abs(solution - starting_argument) <
-                abs(status_or_solution.value().value() - starting_argument)) {
-              status_or_solution = solution;
-            } else {
-              VLOG(1) << "Solution for slice #" << slice_index
-                      << " discarded because there is a better one";
-            }
+      auto const solution = scaled_solution / argument_scale;
+      VLOG(1) << "Solution for " << starting_argument << ", slice #"
+              << slice_index << " is " << solution;
+      // We have found a solution; we only retain it if (1) no internal error
+      // occurred; and (2) it closer to the `starting_argument` than any
+      // solution found previously.
+      if (status_or_solution.has_value()) {
+        if (status_or_solution.value().ok()) {
+          if (abs(solution - starting_argument) <
+              abs(status_or_solution.value().value() - starting_argument)) {
+            status_or_solution = solution;
+          } else {
+            VLOG(1) << "Solution for slice #" << slice_index
+                    << " discarded because there is a better one";
           }
-        } else {
-          status_or_solution = solution;
         }
+      } else {
+        status_or_solution = solution;
       }
     } else if (absl::IsNotFound(status)) {
       // No solution found in this slice, go to the next one.
