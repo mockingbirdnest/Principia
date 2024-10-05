@@ -163,10 +163,15 @@ StehléZimmermannSpecification ScaleToBinade01(
   auto build_scaled_polynomial =
       [argument_scale, &starting_argument](
           double const function_scale,
-          AccuratePolynomial<cpp_rational, 2> const& polynomial) {
-        return function_scale * Compose(polynomial,
-                                        AccuratePolynomial<cpp_rational, 1>(
-                                            {0, 1 / argument_scale}));
+          AccuratePolynomialFactory<cpp_rational, 2> const& polynomial) {
+        return [argument_scale,
+                function_scale,
+                polynomial](cpp_rational const& argument₀) {
+          return function_scale *
+                 Compose(polynomial(argument₀ / argument_scale),
+                         AccuratePolynomial<cpp_rational, 1>(
+                             {0, 1 / argument_scale}));
+        };
       };
   return {.functions = scaled_functions,
           .polynomials = {build_scaled_polynomial(function_scales[0],
