@@ -42,7 +42,7 @@ using namespace principia::testing_utilities::_numerics_matchers;
 class AccurateTableGeneratorTest : public ::testing::Test {
  protected:
   AccurateTableGeneratorTest() {
-    FLAGS_v = 1;
+    FLAGS_v = 0;
     google::LogToStderr();
   }
 };
@@ -483,7 +483,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
   std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
       polynomials;
   std::vector<std::array<ApproximateFunctionFactory, 2>> remainders;
-  for (std::int64_t i = 1; i <= 1; ++i) {
+  for (std::int64_t i = i_min; i <= i_max; ++i) {
     double const x₀ = centre(i);
     auto const sin_taylor2 = [](cpp_rational const& x₀) {
       return AccuratePolynomial<cpp_rational, 2>({cpp_rational(Sin(x₀)),
