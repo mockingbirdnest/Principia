@@ -20,6 +20,15 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
 
+// The use of factories below greatly speeds up the search (in one case, from
+// multiple hours to 11 s) without affecting correctness.  It seems that Taylor
+// polynomials constructed at the `starting_argument` get transformed into
+// polynomials with larger and larger coefficients as we scan more and more
+// distant slices.  This in turn makes polynomial composition and lattice
+// reduction progressively more expensive.  Locally constructed Taylor
+// polynomials behave must better (100'000× speed-ups have been observed for
+// some slices).
+
 template<typename ArgValue, int degree>
 using AccuratePolynomial =
     PolynomialInMonomialBasis<ArgValue, ArgValue, degree>;
