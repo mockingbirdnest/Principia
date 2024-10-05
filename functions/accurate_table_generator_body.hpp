@@ -67,8 +67,8 @@ bool AllFunctionValuesHaveDesiredZeroes(
 
 struct StehléZimmermannSpecification {
   std::array<AccurateFunction, 2> functions;
-  std::array<AccuratePolynomial<cpp_rational, 2>, 2> polynomials;
-  std::array<ApproximateFunction, 2> remainders;
+  std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2> polynomials;
+  std::array<ApproximateFunctionFactory, 2> remainders;
   cpp_rational argument;
 };
 
@@ -615,8 +615,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
-    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<ApproximateFunction, 2> const& remainders,
+    std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2> const&
+        polynomials,
+    std::array<ApproximateFunctionFactory, 2> const& remainders,
     cpp_rational const& starting_argument,
     ThreadPool<void>* const search_pool) {
   // Start by scaling the specification of the search.  The rest of this
@@ -770,9 +771,9 @@ template<std::int64_t zeroes>
 std::vector<absl::StatusOr<cpp_rational>>
 StehléZimmermannSimultaneousMultisearch(
     std::array<AccurateFunction, 2> const& functions,
-    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
-        polynomials,
-    std::vector<std::array<ApproximateFunction, 2>> const& remainders,
+    std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
+        const& polynomials,
+    std::vector<std::array<ApproximateFunctionFactory, 2>> const& remainders,
     std::vector<cpp_rational> const& starting_arguments) {
   std::vector<absl::StatusOr<cpp_rational>> result;
   result.resize(starting_arguments.size());
@@ -791,9 +792,9 @@ StehléZimmermannSimultaneousMultisearch(
 template<std::int64_t zeroes>
 void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,
-    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
-        polynomials,
-    std::vector<std::array<ApproximateFunction, 2>> const& remainders,
+    std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
+        const& polynomials,
+    std::vector<std::array<ApproximateFunctionFactory, 2>> const& remainders,
     std::vector<cpp_rational> const& starting_arguments,
     std::function<void(/*index=*/std::int64_t,
                        absl::StatusOr<cpp_rational>)> const& callback) {

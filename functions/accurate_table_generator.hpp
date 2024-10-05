@@ -19,11 +19,20 @@ using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
-using ApproximateFunction = std::function<double(cpp_rational const&)>;
 
 template<typename ArgValue, int degree>
 using AccuratePolynomial =
     PolynomialInMonomialBasis<ArgValue, ArgValue, degree>;
+template<typename ArgValue, int degree>
+using AccuratePolynomialFactory =
+    std::function<AccuratePolynomial<ArgValue, degree>(double)>;
+
+// The remainders don't need to be extremely precise, so for speed
+// they are computed using double.
+using ApproximateFunction = std::function<double(cpp_rational const&)>;
+using ApproximateFunctionFactory =
+    std::function<ApproximateFunction(double)>;
+
 
 template<std::int64_t zeroes>
 cpp_rational GalExhaustiveSearch(std::vector<AccurateFunction> const& functions,
@@ -54,8 +63,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 template<std::int64_t zeroes>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
-    std::array<AccuratePolynomial<cpp_rational, 2>, 2> const& polynomials,
-    std::array<ApproximateFunction, 2> const& remainders,
+    std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2> const&
+        polynomials,
+    std::array<ApproximateFunctionFactory, 2> const& remainders,
     cpp_rational const& starting_argument,
     ThreadPool<void>* search_pool = nullptr);
 
@@ -66,9 +76,9 @@ template<std::int64_t zeroes>
 std::vector<absl::StatusOr<cpp_rational>>
 StehléZimmermannSimultaneousMultisearch(
     std::array<AccurateFunction, 2> const& functions,
-    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
-        polynomials,
-    std::vector<std::array<ApproximateFunction, 2>> const& remainders,
+    std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
+        const& polynomials,
+    std::vector<std::array<ApproximateFunctionFactory, 2>> const& remainders,
     std::vector<cpp_rational> const& starting_arguments);
 
 // Same as above, but instead of accumulating all the results and returning them
@@ -77,9 +87,9 @@ StehléZimmermannSimultaneousMultisearch(
 template<std::int64_t zeroes>
 void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,
-    std::vector<std::array<AccuratePolynomial<cpp_rational, 2>, 2>> const&
-        polynomials,
-    std::vector<std::array<ApproximateFunction, 2>> const& remainders,
+    std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
+        const& polynomials,
+    std::vector<std::array<ApproximateFunctionFactory, 2>> const& remainders,
     std::vector<cpp_rational> const& starting_arguments,
     std::function<void(/*index=*/std::int64_t,
                        absl::StatusOr<cpp_rational>)> const& callback);
@@ -88,7 +98,9 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
 
 using internal::AccurateFunction;
 using internal::AccuratePolynomial;
+using internal::AccuratePolynomialFactory;
 using internal::ApproximateFunction;
+using internal::ApproximateFunctionFactory;
 using internal::GalExhaustiveMultisearch;
 using internal::GalExhaustiveSearch;
 using internal::StehléZimmermannSimultaneousFullSearch;
