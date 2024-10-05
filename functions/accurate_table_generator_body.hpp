@@ -72,6 +72,14 @@ struct StehléZimmermannSpecification {
   cpp_rational argument;
 };
 
+template<typename Factory>
+std::array<std::invoke_result_t<Factory, cpp_rational>, 2> EvaluateFactoriesAt(
+    std::array<Factory, 2> const& factories,
+    cpp_rational const& argument) {
+  // TODO(phl)Ugly
+  return {factories[0](argument), factories[1](argument)};
+}
+
 // In general, scales the argument, functions, polynomials, and remainders to
 // lie within [1/2, 1[.  There is a subtlety though if the input is such that
 // either the argument or a function is a power of 2 or close enough to a power
@@ -160,6 +168,7 @@ StehléZimmermannSpecification ScaleToBinade01(
     };
   }
 
+//TODO(phl)Move to the loop above.
   auto build_scaled_polynomial =
       [argument_scale, &starting_argument](
           double const function_scale,
@@ -301,6 +310,16 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       .min = scaled.argument - cpp_rational(2 * (slice_index + 1) * T₀, N),
       .max = scaled.argument - cpp_rational(2 * slice_index * T₀, N)};
 
+  // Evaluate the factories at the centre of each half of the slice.
+  auto const high_polynomials =
+      EvaluateFactoriesAt(scaled.polynomials, initial_high_interval.midpoint());
+  auto const high_remainders =
+      EvaluateFactoriesAt(scaled.remainders, initial_high_interval.midpoint());
+  auto const low_polynomials =
+      EvaluateFactoriesAt(scaled.polynomials, initial_low_interval.midpoint());
+  auto const low_remainders =
+      EvaluateFactoriesAt(scaled.remainders, initial_low_interval.midpoint());
+
   Interval<cpp_rational> high_interval = initial_high_interval;
   Interval<cpp_rational> low_interval = initial_low_interval;
 
@@ -327,8 +346,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         VLOG(3) << "T = " << T << ", high_interval = " << high_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
-                                                       scaled.polynomials,
-                                                       scaled.remainders,
+                                                       high_polynomials,
+                                                       high_remainders,
                                                        high_interval.midpoint(),
                                                        N,
                                                        T);
@@ -360,8 +379,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
         VLOG(3) << "T = " << T << ", low_interval = " << low_interval;
         auto const status_or_solution =
             StehléZimmermannSimultaneousSearch<zeroes>(scaled.functions,
-                                                       scaled.polynomials,
-                                                       scaled.remainders,
+                                                       low_polynomials,
+                                                       low_remainders,
                                                        low_interval.midpoint(),
                                                        N,
                                                        T);
