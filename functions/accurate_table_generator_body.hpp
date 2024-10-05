@@ -44,12 +44,6 @@ using namespace principia::quantities::_quantities;
 constexpr std::int64_t T_max = 4;
 static_assert(T_max >= 1);
 
-// When starting a new interval, we multiply the value `T` that led to a
-// rejection of the previous interval and multiply it by this value.  This
-// avoids restarting from a large value of `T` and doing pointless halving.
-constexpr std::int64_t T_multiplier = 2;
-static_assert(T_multiplier >= 1);
-
 template<std::int64_t zeroes>
 bool HasDesiredZeroes(cpp_bin_float_50 const& y) {
   std::int64_t y_exponent;
@@ -84,7 +78,6 @@ template<typename Factory>
 std::array<std::invoke_result_t<Factory, cpp_rational>, 2> EvaluateFactoriesAt(
     std::array<Factory, 2> const& factories,
     cpp_rational const& argument) {
-  // TODO(phl)Ugly
   return {factories[0](argument), factories[1](argument)};
 }
 
@@ -152,6 +145,7 @@ StehléZimmermannSpecification ScaleToBinade01(
 
   std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
+  std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2> scaled_polynomials;
   std::array<ApproximateFunctionFactory, 2> scaled_remainders;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     function_scales[i] = compute_scale(functions[i](lower_bound),
@@ -161,6 +155,14 @@ StehléZimmermannSpecification ScaleToBinade01(
                            function =
                                functions[i]](cpp_rational const& argument) {
       return function_scale * function(argument / argument_scale);
+    };
+    scaled_polynomials[i] = [argument_scale,
+                             function_scale = function_scales[i],
+                             polynomial = polynomials[i]](
+                                cpp_rational const& argument₀) {
+      return function_scale * Compose(polynomial(argument₀ / argument_scale),
+                                      AccuratePolynomial<cpp_rational, 1>(
+                                          {0, 1 / argument_scale}));
     };
     scaled_remainders[i] = [argument_scale,
                             function_scale = function_scales[i],
@@ -176,25 +178,8 @@ StehléZimmermannSpecification ScaleToBinade01(
     };
   }
 
-//TODO(phl)Move to the loop above.
-  auto build_scaled_polynomial =
-      [argument_scale, &starting_argument](
-          double const function_scale,
-          AccuratePolynomialFactory<cpp_rational, 2> const& polynomial) {
-        return [argument_scale,
-                function_scale,
-                polynomial](cpp_rational const& argument₀) {
-          return function_scale *
-                 Compose(polynomial(argument₀ / argument_scale),
-                         AccuratePolynomial<cpp_rational, 1>(
-                             {0, 1 / argument_scale}));
-        };
-      };
   return {.functions = scaled_functions,
-          .polynomials = {build_scaled_polynomial(function_scales[0],
-                                                  polynomials[0]),
-                          build_scaled_polynomial(function_scales[1],
-                                                  polynomials[1])},
+          .polynomials = scaled_polynomials,
           .remainders = scaled_remainders,
           .argument = scaled_argument};
 }
@@ -333,10 +318,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
   std::int64_t high_T_to_cover = T₀;
   std::int64_t low_T_to_cover = T₀;
 
-  // The last value of `T` for which the search was run and found no solution.
-  std::int64_t last_high_T = T₀;
-  std::int64_t last_low_T = T₀;
-
   // When exiting this loop, we have completely processed
   // `initial_high_interval` and `initial_low_interval`.
   for (;;) {
@@ -346,7 +327,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
     }
 
     if (high_T_to_cover > 0) {
-      std::int64_t T = std::min(T_multiplier * last_high_T, high_T_to_cover);
+      std::int64_t T = high_T_to_cover;
       // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
@@ -374,7 +355,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
           } else if (absl::IsNotFound(status)) {
             // No solutions here, go to the next interval.
             high_T_to_cover -= T;
-            last_high_T = T;
             break;
           } else {
             return status;
@@ -383,7 +363,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       }
     }
     if (low_T_to_cover > 0) {
-      std::int64_t T = std::min(T_multiplier * last_low_T, low_T_to_cover);
+      std::int64_t T = low_T_to_cover;
       // This loop exits (breaks or returns) when `T <= T_max` because
       // exhaustive search always gives an answer.
       for (;;) {
@@ -412,7 +392,6 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
           } else if (absl::IsNotFound(status)) {
             // No solutions here, go to the next interval.
             low_T_to_cover -= T;
-            last_low_T = T;
             break;
           } else {
             return status;
