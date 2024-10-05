@@ -136,21 +136,27 @@ StehléZimmermannSpecification ScaleToBinade01(
 
   std::array<double, 2> function_scales;
   std::array<AccurateFunction, 2> scaled_functions;
-  std::array<ApproximateFunction, 2> scaled_remainders;
+  std::array<ApproximateFunctionFactory, 2> scaled_remainders;
   for (std::int64_t i = 0; i < scaled_functions.size(); ++i) {
     function_scales[i] = compute_scale(functions[i](lower_bound),
                                        functions[i](upper_bound));
     scaled_functions[i] = [argument_scale,
                            function_scale = function_scales[i],
-                           function = functions[i],
-                           i](cpp_rational const& argument) {
+                           function =
+                               functions[i]](cpp_rational const& argument) {
       return function_scale * function(argument / argument_scale);
     };
     scaled_remainders[i] = [argument_scale,
                             function_scale = function_scales[i],
-                            remainder = remainders[i],
-                            i](cpp_rational const& argument) {
-      return function_scale * remainder(argument / argument_scale);
+                            remainder =
+                                remainders[i]](cpp_rational const& argument₀) {
+      return [argument₀,
+              argument_scale,
+              function_scale,
+              remainder](cpp_rational const& argument) {
+        return function_scale *
+               remainder(argument₀ / argument_scale)(argument / argument_scale);
+      };
     };
   }
 

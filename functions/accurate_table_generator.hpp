@@ -25,13 +25,13 @@ using AccuratePolynomial =
     PolynomialInMonomialBasis<ArgValue, ArgValue, degree>;
 template<typename ArgValue, int degree>
 using AccuratePolynomialFactory =
-    std::function<AccuratePolynomial<ArgValue, degree>(double)>;
+    std::function<AccuratePolynomial<ArgValue, degree>(cpp_rational const&)>;
 
 // The remainders don't need to be extremely precise, so for speed
 // they are computed using double.
 using ApproximateFunction = std::function<double(cpp_rational const&)>;
 using ApproximateFunctionFactory =
-    std::function<ApproximateFunction(double)>;
+    std::function<ApproximateFunction(cpp_rational const&)>;
 
 
 template<std::int64_t zeroes>
