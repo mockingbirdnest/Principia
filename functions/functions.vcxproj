@@ -17,6 +17,7 @@
     <ClCompile Include="cos.cc" />
     <ClCompile Include="multiprecision.cpp" />
     <ClCompile Include="sin.cc" />
+    <ClCompile Include="sin_cos_test.cpp" />
     <ClCompile Include="std_accuracy_test.cpp" />
   </ItemGroup>
   <Import Project="$(SolutionDir)principia.props" />

@@ -17,5 +17,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\cbrt.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\elliptic_functions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\elliptic_integrals.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\numerics\sin_cos.cpp" />
   </ItemGroup>
 </Project>
