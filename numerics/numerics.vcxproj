@@ -86,6 +86,7 @@
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="scale_b.hpp" />
     <ClInclude Include="scale_b_body.hpp" />
+    <ClInclude Include="sin_cos.hpp" />
     <ClInclude Include="transposed_view.hpp" />
     <ClInclude Include="transposed_view_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
@@ -138,6 +139,7 @@
     <ClCompile Include="quadrature_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="scale_b_test.cpp" />
+    <ClCompile Include="sin_cos.cpp" />
     <ClCompile Include="unbounded_arrays_test.cpp" />
   </ItemGroup>
   <ItemGroup>
