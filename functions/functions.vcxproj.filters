@@ -36,6 +36,9 @@
     <ClCompile Include="sin.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sin_cos_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="multiprecision.hpp">
