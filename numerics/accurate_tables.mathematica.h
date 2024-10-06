@@ -13,7 +13,7 @@ struct SinCosAccurateValues {
   double cos_x;
 };
 
-constexpr std::array<SinCosAccurateValues, 402> SinCosAccurateTable{
+constexpr std::array<SinCosAccurateValues, 403> SinCosAccurateTable{
     /*  0*/{.x =     std::numeric_limits<double>::signaling_NaN(),
             .sin_x = std::numeric_limits<double>::signaling_NaN(),
             .cos_x = std::numeric_limits<double>::signaling_NaN()},

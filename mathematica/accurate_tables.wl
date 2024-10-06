@@ -56,7 +56,7 @@
 (*  double cos_x;*)
 (*};*)
 (**)
-(*constexpr std::array<SinCosAccurateValues, " <> ToString[max] <> "> SinCosAccurateTable{\n" <>*)
+(*constexpr std::array<SinCosAccurateValues, " <> ToString[max + 1] <> "> SinCosAccurateTable{\n" <>*)
 (*StringRiffle[Join[Table["    /*"<>StringPadLeft[ToString[i],width]<>"*/{.x =     std::numeric_limits<double>::signaling_NaN(),\n"<>StringRepeat[" ",width+9]<>".sin_x = std::numeric_limits<double>::signaling_NaN(),\n"<>StringRepeat[" ",width+9]<>".cos_x = std::numeric_limits<double>::signaling_NaN()",{i,0,min-1}],Table["    /*"<>StringPadLeft[ToString[i],width]<>"*/{.x =     " <> hexFloatLiteral[sincos`accurateTables[i][[1]],False] <> ",\n"<>StringRepeat[" ",width+9]<>".sin_x = " <> hexFloatLiteral[sincos`accurateTables[i][[2]],False] <> ",\n"<>StringRepeat[" ",width+9]<>".cos_x = "<> hexFloatLiteral[sincos`accurateTables[i][[3]],False], {i,indices}]],"},\n"]<>"}};*)
 (**)
 (*}  // namespace internal*)
