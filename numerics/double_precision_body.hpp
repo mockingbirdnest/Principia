@@ -258,9 +258,9 @@ DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
-    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+    using quantities::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(FusedMultiplyAdd(a, b, c));
-    result.error = FusedNegatedMultiplyAdd(a, b, (result.value - c));
+    result.error = FusedMultiplySubtract(a, b, (result.value - c));
     return result;
   } else {
     auto result = VeltkampDekkerProduct(a, b);
@@ -277,9 +277,8 @@ DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
-    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     DoublePrecision<Product<T, U>> result(FusedMultiplySubtract(a, b, c));
-    result.error = FusedNegatedMultiplyAdd(a, b, (result.value + c));
+    result.error = FusedMultiplySubtract(a, b, (result.value + c));
     return result;
   } else {
     auto result = VeltkampDekkerProduct(a, b);
@@ -295,10 +294,10 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     Product<T, U> const& c) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+    using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(FusedNegatedMultiplyAdd(a, b, c));
-    result.error = FusedMultiplyAdd(a, b, (result.value - c));
+    result.error = FusedNegatedMultiplySubtract(a, b, (result.value - c));
     return result;
   } else {
     auto result = VeltkampDekkerProduct(-a, b);
@@ -315,11 +314,10 @@ TwoProductNegatedSubtract(T const& a,
                           Product<T, U> const& c) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(
         FusedNegatedMultiplySubtract(a, b, c));
-    result.error = FusedMultiplyAdd(a, b, (result.value + c));
+    result.error = FusedNegatedMultiplySubtract(a, b, (result.value + c));
     return result;
   } else {
     auto result = VeltkampDekkerProduct(-a, b);
