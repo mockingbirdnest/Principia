@@ -451,7 +451,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
 }
 
 TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
-  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_18.wl"),
+  static constexpr std::int64_t bits = 18;
+  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, ".wl"),
                 /*make_unique=*/false);
 
   // The radius of each interval.
@@ -518,7 +519,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
     remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
   }
 
-  StehléZimmermannSimultaneousStreamingMultisearch<18>(
+  StehléZimmermannSimultaneousStreamingMultisearch<bits>(
       {accurate_sin, accurate_cos},
       polynomials,
       remainders,
@@ -526,9 +527,32 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
       [i_min, &logger](std::int64_t const index,
                        absl::StatusOr<cpp_rational> status_or_x) {
         auto const& x = status_or_x.value();
-        logger.Set(
-            absl::StrCat("accurateTables[", index + i_min, "]"),
-            std::tuple{static_cast<cpp_bin_float_50>(x), Sin(x), Cos(x)});
+        auto const sin_x = Sin(x);
+        auto const cos_x = Cos(x);
+        {
+          std::string const mathematica =
+              ToMathematica(sin_x,
+                            /*express_in=*/std::nullopt,
+                            /*base=*/2);
+          std::string_view mantissa = mathematica;
+          CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+          EXPECT_THAT(mantissa.substr(53, bits),
+                      AnyOf(Eq("00000""00000""00000""000"),
+                            Eq("11111""11111""11111""111")));
+        }
+        {
+          std::string const mathematica =
+              ToMathematica(cos_x,
+                            /*express_in=*/std::nullopt,
+                            /*base=*/2);
+          std::string_view mantissa = mathematica;
+          CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+          EXPECT_THAT(mantissa.substr(53, bits),
+                      AnyOf(Eq("00000""00000""00000""000"),
+                            Eq("11111""11111""11111""111")));
+        }
+        logger.Set(absl::StrCat("accurateTables[", index + i_min, "]"),
+                   std::tuple{static_cast<cpp_bin_float_50>(x), sin_x, cos_x});
         logger.FlushAndClear();
       });
 }
