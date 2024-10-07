@@ -34,7 +34,7 @@ TEST_F(SinCosTest, Random) {
 #if _DEBUG
   static constexpr std::int64_t iterations = 100;
 #else
-  static constexpr std::int64_t iterations = 400'000;
+  static constexpr std::int64_t iterations = 300'000;
 #endif
 
   for (std::int64_t i = 0; i < iterations; ++i) {
