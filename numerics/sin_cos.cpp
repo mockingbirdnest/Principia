@@ -95,11 +95,17 @@ Value CosImplementation(Argument const x) {
           cos_x₀_minus_h_sin_x₀.error);
 }
 
+#if PRINCIPIA_INLINE_SIN_COS
+inline
+#endif
 Value __cdecl Sin(Argument const x) {
   return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
                         : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
+#if PRINCIPIA_INLINE_SIN_COS
+inline
+#endif
 Value __cdecl Cos(Argument const x) {
   return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
                         : CosImplementation<FMAPolicy::Disallow>(x);
