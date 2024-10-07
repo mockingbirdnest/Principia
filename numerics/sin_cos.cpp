@@ -28,6 +28,11 @@ constexpr Argument table_spacing_reciprocal = 512.0;
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
+namespace masks {
+static const __m128d sign_bit =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
+}  // namespace masks
+
 // TODO(phl): Take the perturbation into account in the polynomials.
 
 template<FMAPolicy fma_policy>
@@ -54,15 +59,21 @@ Value CosPolynomial(Argument const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SinImplementation(Argument const x) {
-  if (x < sin_near_zero_cutoff) {
+  __m128d x_0 = _mm_set_sd(x);
+  __m128d const sign = _mm_and_pd(masks::sign_bit, x_0);
+  x_0 = _mm_andnot_pd(masks::sign_bit, x_0);
+  double const abs_x = _mm_cvtsd_f64(x_0);
+  if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
     return x + x³ * SinPolynomialNearZero<fma_policy>(x²);
   } else {
-    auto const i = _mm_cvtsd_si64(_mm_set_sd(x * table_spacing_reciprocal));
+    auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
     auto const& accurate_values = SinCosAccurateTable[i];
-    double const& x₀ = accurate_values.x;
-    double const& sin_x₀ = accurate_values.sin_x;
+    double const& x₀ =
+        _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(accurate_values.x), sign));
+    double const& sin_x₀ =
+        _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(accurate_values.sin_x), sign));
     double const& cos_x₀ = accurate_values.cos_x;
     double const h = x - x₀;
 
@@ -86,7 +97,7 @@ Value CosImplementation(Argument const x) {
   double const& x₀ = accurate_values.x;
   double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
-  double const h = x - x₀;
+  double const h = abs_x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
