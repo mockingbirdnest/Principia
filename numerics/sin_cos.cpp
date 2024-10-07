@@ -2,7 +2,7 @@
 
 #include "numerics/sin_cos.hpp"
 
-#include <cmath>
+#include <pmmintrin.h>
 
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
