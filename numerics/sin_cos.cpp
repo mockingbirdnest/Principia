@@ -70,16 +70,16 @@ Value SinImplementation(Argument const x) {
   } else {
     auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
     auto const& accurate_values = SinCosAccurateTable[i];
-    double const& x₀ =
-        _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(accurate_values.x), sign));
+    double const& x₀ = accurate_values.x;
     double const& sin_x₀ =
-        _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(accurate_values.sin_x), sign));
+        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
     double const& cos_x₀ = accurate_values.cos_x;
-    double const h = x - x₀;
+    double const abs_h = abs_x - x₀;
+    double const h = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign));
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    double const h² = h * h;
+    double const h² = abs_h * abs_h;
     double const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value +
            ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
