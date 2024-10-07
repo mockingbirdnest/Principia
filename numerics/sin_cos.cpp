@@ -52,38 +52,41 @@ Value CosPolynomial(Argument const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SinImplementation(Argument const x) {
-  if (x < sin_near_zero_cutoff) {
+  double const abs_x = std::abs(x);
+  double const sign = std::copysign(1, x);
+  if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
     return x + x³ * SinPolynomialNearZero<fma_policy>(x²);
   } else {
-    std::int64_t const i = std::lround(x * table_spacing_reciprocal);
+    std::int64_t const i = std::lround(abs_x * table_spacing_reciprocal);
     auto const& accurate_values = SinCosAccurateTable[i];
     double const& x₀ = accurate_values.x;
     double const& sin_x₀ = accurate_values.sin_x;
     double const& cos_x₀ = accurate_values.cos_x;
-    double const h = x - x₀;
+    double const h = abs_x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
     double const h² = h * h;
     double const h³ = h² * h;
-    return sin_x₀_plus_h_cos_x₀.value +
-           ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-             cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
-            sin_x₀_plus_h_cos_x₀.error);
+    return sign * sin_x₀_plus_h_cos_x₀.value +
+           ((sign * sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
+             sign * cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+            sign * sin_x₀_plus_h_cos_x₀.error);
   }
 }
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value CosImplementation(Argument const x) {
-  std::int64_t const i = std::lround(x * table_spacing_reciprocal);
+  double const abs_x = std::abs(x);
+  std::int64_t const i = std::lround(abs_x * table_spacing_reciprocal);
   auto const& accurate_values = SinCosAccurateTable[i];
   double const& x₀ = accurate_values.x;
   double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
-  double const h = x - x₀;
+  double const h = abs_x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);

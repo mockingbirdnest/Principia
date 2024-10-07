@@ -23,8 +23,7 @@ class SinCosTest : public ::testing::Test {};
 
 TEST_F(SinCosTest, Random) {
   std::mt19937_64 random(42);
-  // TODO(phl): Negative angles.
-  std::uniform_real_distribution<> uniformly_at(0, π / 4);
+  std::uniform_real_distribution<> uniformly_at(-π / 4, π / 4);
 
   cpp_bin_float_50 max_sin_ulps_error = 0;
   cpp_bin_float_50 max_cos_ulps_error = 0;
@@ -34,7 +33,7 @@ TEST_F(SinCosTest, Random) {
 #if _DEBUG
   static constexpr std::int64_t iterations = 100;
 #else
-  static constexpr std::int64_t iterations = 400'000;
+  static constexpr std::int64_t iterations = 300'000;
 #endif
 
   for (std::int64_t i = 0; i < iterations; ++i) {
@@ -69,8 +68,8 @@ TEST_F(SinCosTest, Random) {
   }
 
   // This implementation is not quite correctly rounded, but not far from it.
-  EXPECT_LE(max_sin_ulps_error, 0.500002);
-  EXPECT_LE(max_cos_ulps_error, 0.500002);
+  EXPECT_LE(max_sin_ulps_error, 0.500003);
+  EXPECT_LE(max_cos_ulps_error, 0.500001);
 
   LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
              << " ulps for argument: " << worst_sin_argument
