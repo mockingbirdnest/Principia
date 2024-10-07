@@ -9,6 +9,7 @@
 #include "benchmarks/metric.hpp"
 #include "functions/cos.hpp"
 #include "functions/sin.hpp"
+#include "numerics/sin_cos.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
@@ -17,6 +18,7 @@ namespace functions {
 using namespace principia::benchmarks::_metric;
 using namespace principia::functions::_cos;
 using namespace principia::functions::_sin;
+using namespace principia::numerics::_sin_cos;
 
 static constexpr std::int64_t number_of_iterations = 1000;
 
@@ -26,7 +28,7 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
   using Argument = double;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(-π / 4, π / 4);
+  std::uniform_real_distribution<> uniformly_at(0, π / 4);
 
   Argument a[number_of_iterations];
   for (std::int64_t i = 0; i < number_of_iterations; ++i) {
@@ -79,6 +81,11 @@ BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, cr_sin)
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, cr_sin)
     ->Unit(benchmark::kNanosecond);
 
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, Sin)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, Sin)
+    ->Unit(benchmark::kNanosecond);
+
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, std::cos)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, std::cos)
@@ -87,6 +94,11 @@ BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, std::cos)
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, cr_cos)
     ->Unit(benchmark::kNanosecond);
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, cr_cos)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Latency, Cos)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction, Metric::Throughput, Cos)
     ->Unit(benchmark::kNanosecond);
 
 }  // namespace functions

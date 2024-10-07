@@ -3,6 +3,7 @@
 #include <string>
 
 #include "base/not_null.hpp"
+#include "base/tags.hpp"
 #include "numerics/fma.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -14,6 +15,7 @@ namespace _double_precision {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_tags;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -22,8 +24,9 @@ using namespace principia::quantities::_quantities;
 // type of the value must be an affine space.  The notations follow [HLB08].
 template<typename T>
 struct DoublePrecision final {
-  constexpr DoublePrecision() = default;
+  constexpr DoublePrecision();
 
+  explicit constexpr DoublePrecision(uninitialized_t);
   explicit constexpr DoublePrecision(T const& value);
 
   // This is correct assuming that left and right have non-overlapping
@@ -47,8 +50,8 @@ struct DoublePrecision final {
   static DoublePrecision ReadFromMessage(
       serialization::DoublePrecision const& message);
 
-  T value{};
-  Difference<T> error{};
+  T value;
+  Difference<T> error;
 };
 
 // `scale` must be a signed power of two or zero.
@@ -64,25 +67,29 @@ DoublePrecision<Product<T, U>> Scale(T const& scale,
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
-// Returns the exact value of `a * b + c`.
+// Returns the exact value of `a * b + c` if `|a * b|` is small compared to
+// `|c|`. See [SZ05], section 2.1.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c);
 
-// Returns the exact value of `a * b - c`.
+// Returns the exact value of `a * b - c` if `|a * b|` is small compared to
+// `|c|`. See [SZ05], section 2.1.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c);
 
-// Returns the exact value of `-a * b + c`.
+// Returns the exact value of `-a * b + c` if `|a * b|` is small compared to
+// `|c|`. See [SZ05], section 2.1.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c);
 
-// Returns the exact value of `-a * b - c`.
+// Returns the exact value of `-a * b - c` if `|a * b|` is small compared to
+// `|c|`. See [SZ05], section 2.1.
 template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,

@@ -108,6 +108,12 @@ struct ComponentwiseComparator<T, U> {
 
 
 template<typename T>
+constexpr DoublePrecision<T>::DoublePrecision() : value{}, error{} {}
+
+template<typename T>
+constexpr DoublePrecision<T>::DoublePrecision(uninitialized_t) {}
+
+template<typename T>
 constexpr DoublePrecision<T>::DoublePrecision(T const& value)
     : value(value),
       error() {}
@@ -199,7 +205,7 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
     CHECK_EQ(0.5, std::fabs(mantissa)) << scale;
   }
 #endif
-  DoublePrecision<Product<T, U>> result;
+  DoublePrecision<Product<T, U>> result(uninitialized);
   result.value = right.value * scale;
   result.error = right.error * scale;
   return result;
@@ -208,7 +214,7 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
 template<typename T, typename U>
 constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
                                                                U const& b) {
-  DoublePrecision<Product<T, U>> result;
+  DoublePrecision<Product<T, U>> result(uninitialized);
   auto const& x = a;
   auto const& y = b;
   auto& z = result.value;
@@ -242,7 +248,8 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
-    DoublePrecision<Product<T, U>> result(a * b);
+    DoublePrecision<Product<T, U>> result(uninitialized);
+    result.value = a * b;
     result.error = FusedMultiplySubtract(a, b, result.value);
     return result;
   } else {
@@ -259,8 +266,9 @@ DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     using quantities::_elementary_functions::FusedMultiplySubtract;
-    DoublePrecision<Product<T, U>> result(FusedMultiplyAdd(a, b, c));
-    result.error = FusedMultiplySubtract(a, b, (result.value - c));
+    DoublePrecision<Product<T, U>> result(uninitialized);
+    result.value = FusedMultiplyAdd(a, b, c);
+    result.error = FusedMultiplySubtract(a, b, result.value - c);
     return result;
   } else {
     auto result = VeltkampDekkerProduct(a, b);
@@ -277,8 +285,9 @@ DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplySubtract;
-    DoublePrecision<Product<T, U>> result(FusedMultiplySubtract(a, b, c));
-    result.error = FusedMultiplySubtract(a, b, (result.value + c));
+    DoublePrecision<Product<T, U>> result(uninitialized);
+    result.value = FusedMultiplySubtract(a, b, c);
+    result.error = FusedMultiplySubtract(a, b, result.value + c);
     return result;
   } else {
     auto result = VeltkampDekkerProduct(a, b);
@@ -296,8 +305,9 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
-    DoublePrecision<Product<T, U>> result(FusedNegatedMultiplyAdd(a, b, c));
-    result.error = FusedNegatedMultiplySubtract(a, b, (result.value - c));
+    DoublePrecision<Product<T, U>> result(uninitialized);
+    result.value = FusedNegatedMultiplyAdd(a, b, c);
+    result.error = FusedNegatedMultiplySubtract(a, b, result.value - c);
     return result;
   } else {
     auto result = VeltkampDekkerProduct(-a, b);
@@ -315,9 +325,9 @@ TwoProductNegatedSubtract(T const& a,
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
-    DoublePrecision<Product<T, U>> result(
-        FusedNegatedMultiplySubtract(a, b, c));
-    result.error = FusedNegatedMultiplySubtract(a, b, (result.value + c));
+    DoublePrecision<Product<T, U>> result(uninitialized);
+    result.value = FusedNegatedMultiplySubtract(a, b, c);
+    result.error = FusedNegatedMultiplySubtract(a, b, result.value + c);
     return result;
   } else {
     auto result = VeltkampDekkerProduct(-a, b);
