@@ -1,3 +1,5 @@
+#pragma once
+
 #include "numerics/sin_cos.hpp"
 
 #include <cmath>
@@ -57,7 +59,7 @@ Value SinImplementation(Argument const x) {
     double const x³ = x² * x;
     return x + x³ * SinPolynomialNearZero<fma_policy>(x²);
   } else {
-    std::int64_t const i = std::lround(x * table_spacing_reciprocal);
+    auto const i = _mm_cvtsd_si64(_mm_set_sd(x * table_spacing_reciprocal));
     auto const& accurate_values = SinCosAccurateTable[i];
     double const& x₀ = accurate_values.x;
     double const& sin_x₀ = accurate_values.sin_x;
@@ -78,7 +80,8 @@ Value SinImplementation(Argument const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value CosImplementation(Argument const x) {
-  std::int64_t const i = std::lround(x * table_spacing_reciprocal);
+  double const abs_x = std::abs(x);
+  auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
   auto const& accurate_values = SinCosAccurateTable[i];
   double const& x₀ = accurate_values.x;
   double const& sin_x₀ = accurate_values.sin_x;
