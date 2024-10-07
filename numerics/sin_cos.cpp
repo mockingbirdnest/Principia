@@ -95,12 +95,12 @@ Value CosImplementation(Argument const x) {
           cos_x₀_minus_h_sin_x₀.error);
 }
 
-Value Sin(Argument const x) {
+Value __cdecl Sin(Argument const x) {
   return UseHardwareFMA ? SinImplementation<FMAPolicy::Force>(x)
                         : SinImplementation<FMAPolicy::Disallow>(x);
 }
 
-Value Cos(Argument const x) {
+Value __cdecl Cos(Argument const x) {
   return UseHardwareFMA ? CosImplementation<FMAPolicy::Force>(x)
                         : CosImplementation<FMAPolicy::Disallow>(x);
 }

@@ -5,8 +5,8 @@ namespace numerics {
 namespace _sin_cos {
 namespace internal {
 
-double Sin(double x);
-double Cos(double x);
+double __cdecl Sin(double x);
+double __cdecl Cos(double x);
 
 }  // namespace internal
 
