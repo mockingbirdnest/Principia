@@ -84,8 +84,8 @@ Value CosPolynomial(Argument const x) {
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value SinImplementation(DoublePrecision<Argument> const x_double) {
-  auto const& x = x_double.value;
+Value SinImplementation(DoublePrecision<Argument> const argument) {
+  auto const& x = argument.value;
   __m128d x_0 = _mm_set_sd(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, x_0);
   x_0 = _mm_andnot_pd(masks::sign_bit, x_0);
@@ -103,7 +103,7 @@ Value SinImplementation(DoublePrecision<Argument> const x_double) {
     double const& cos_x₀ = accurate_values.cos_x;
     double const abs_h = abs_x - x₀;
     double const h =
-        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign)) + x_double.error;
+        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign)) + argument.error;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
@@ -118,15 +118,15 @@ Value SinImplementation(DoublePrecision<Argument> const x_double) {
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value CosImplementation(DoublePrecision<Argument> const x_double) {
-  auto const& x = x_double.value;
+Value CosImplementation(DoublePrecision<Argument> const argument) {
+  auto const& x = argument.value;
   double const abs_x = std::abs(x);
   auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
   auto const& accurate_values = SinCosAccurateTable[i];
   double const& x₀ = accurate_values.x;
   double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
-  double const h = abs_x - x₀ + std::abs(x_double.error);
+  double const h = abs_x - x₀ + std::abs(argument.error);
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
@@ -142,33 +142,27 @@ Value CosImplementation(DoublePrecision<Argument> const x_double) {
 inline
 #endif
 Value __cdecl Sin(Argument const x) {
-  DoublePrecision<Argument> x_reduced{};
+  DoublePrecision<Argument> x_reduced;
   std::int64_t quadrant;
   Reduce(x, x_reduced, quadrant);
+  double value;
   if (UseHardwareFMA) {
-    switch (quadrant) {
-      case 0:
-        return SinImplementation<FMAPolicy::Force>(x_reduced);
-      case 1:
-        return CosImplementation<FMAPolicy::Force>(x_reduced);
-      case 2:
-        return -SinImplementation<FMAPolicy::Force>(x_reduced);
-      case 3:
-      default:
-        return -CosImplementation<FMAPolicy::Force>(x_reduced);
+    if (quadrant & 0b1) {
+      value = CosImplementation<FMAPolicy::Force>(x_reduced);
+    } else {
+      value = SinImplementation<FMAPolicy::Force>(x_reduced);
     }
   } else {
-    switch (quadrant) {
-      case 0:
-        return SinImplementation<FMAPolicy::Disallow>(x_reduced);
-      case 1:
-        return CosImplementation<FMAPolicy::Disallow>(x_reduced);
-      case 2:
-        return -SinImplementation<FMAPolicy::Disallow>(x_reduced);
-      case 3:
-      default:
-        return -CosImplementation<FMAPolicy::Disallow>(x_reduced);
+    if (quadrant & 0b1) {
+      value = CosImplementation<FMAPolicy::Disallow>(x_reduced);
+    } else {
+      value = SinImplementation<FMAPolicy::Disallow>(x_reduced);
     }
+  }
+  if (quadrant & 0b10) {
+    return -value;
+  } else {
+    return value;
   }
 }
 
@@ -176,33 +170,27 @@ Value __cdecl Sin(Argument const x) {
 inline
 #endif
     Value __cdecl Cos(Argument const x) {
-  DoublePrecision<Argument> x_reduced{};
+  DoublePrecision<Argument> x_reduced;
   std::int64_t quadrant;
   Reduce(x, x_reduced, quadrant);
+  double value;
   if (UseHardwareFMA) {
-    switch (quadrant) {
-      case 0:
-        return CosImplementation<FMAPolicy::Force>(x_reduced);
-      case 1:
-        return -SinImplementation<FMAPolicy::Force>(x_reduced);
-      case 2:
-        return -CosImplementation<FMAPolicy::Force>(x_reduced);
-      case 3:
-      default:
-        return SinImplementation<FMAPolicy::Force>(x_reduced);
+    if (quadrant & 0b1) {
+      value = SinImplementation<FMAPolicy::Force>(x_reduced);
+    } else {
+      value = CosImplementation<FMAPolicy::Force>(x_reduced);
     }
   } else {
-    switch (quadrant) {
-      case 0:
-        return CosImplementation<FMAPolicy::Disallow>(x_reduced);
-      case 1:
-        return -SinImplementation<FMAPolicy::Disallow>(x_reduced);
-      case 2:
-        return -CosImplementation<FMAPolicy::Disallow>(x_reduced);
-      case 3:
-      default:
-        return SinImplementation<FMAPolicy::Disallow>(x_reduced);
+    if (quadrant & 0b1) {
+      value = SinImplementation<FMAPolicy::Disallow>(x_reduced);
+    } else {
+      value = CosImplementation<FMAPolicy::Disallow>(x_reduced);
     }
+  }
+  if (quadrant == 1 || quadrant == 2) {
+    return -value;
+  } else {
+    return value;
   }
 }
 
