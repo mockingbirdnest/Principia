@@ -86,10 +86,9 @@ template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SinImplementation(DoublePrecision<Argument> const argument) {
   auto const& x = argument.value;
-  __m128d x_0 = _mm_set_sd(x);
+  __m128d const x_0 = _mm_set_sd(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, x_0);
-  x_0 = _mm_andnot_pd(masks::sign_bit, x_0);
-  double const abs_x = _mm_cvtsd_f64(x_0);
+  double const abs_x = _mm_cvtsd_f64(_mm_andnot_pd(masks::sign_bit, x_0));
   if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
