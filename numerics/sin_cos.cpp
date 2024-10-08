@@ -27,6 +27,7 @@ constexpr Argument table_spacing_reciprocal = 512.0;
 
 // π / 2 split so that the high half has 18 zeros at the end of its mantissa.
 constexpr std::int64_t π_over_2_zeroes = 18;
+constexpr Argument π_over_2_threshold = 1 << π_over_2_zeroes;
 constexpr Argument π_over_2_high = 0x1.921fb'5444p0;
 constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
 
@@ -46,11 +47,12 @@ void Reduce(Argument const x,
     x_reduced.value = x;
     x_reduced.error = 0;
     quadrant = 0;
-  } else if (abs_x <= 1 << π_over_2_zeroes) {
-    std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(x / (π / 2)));
-    Argument const value = x - n * π_over_2_high;
-    Argument const error = -n * π_over_2_low;
-    x_reduced = QuickTwoSum(value, error);
+  } else if (abs_x <= π_over_2_threshold) {
+    std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(x * (2 / π)));
+    double const n_double = static_cast<double>(n);
+    Argument const value = x - n_double * π_over_2_high;
+    Argument const error = n_double * π_over_2_low;
+    x_reduced = QuickTwoDifference(value, error);
     // TODO(phl): Check for value too small.
     quadrant = n & 0b11;
   }
@@ -82,7 +84,8 @@ Value CosPolynomial(Argument const x) {
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value SinImplementation(Argument const x) {
+Value SinImplementation(DoublePrecision<Argument> const x_double) {
+  auto const& x = x_double.value;
   __m128d x_0 = _mm_set_sd(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, x_0);
   x_0 = _mm_andnot_pd(masks::sign_bit, x_0);
@@ -99,7 +102,8 @@ Value SinImplementation(Argument const x) {
         _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
     double const& cos_x₀ = accurate_values.cos_x;
     double const abs_h = abs_x - x₀;
-    double const h = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign));
+    double const h =
+        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign)) + x_double.error;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
@@ -114,14 +118,15 @@ Value SinImplementation(Argument const x) {
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value CosImplementation(Argument const x) {
+Value CosImplementation(DoublePrecision<Argument> const x_double) {
+  auto const& x = x_double.value;
   double const abs_x = std::abs(x);
   auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
   auto const& accurate_values = SinCosAccurateTable[i];
   double const& x₀ = accurate_values.x;
   double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
-  double const h = abs_x - x₀;
+  double const h = abs_x - x₀ + std::abs(x_double.error);
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
@@ -143,26 +148,26 @@ Value __cdecl Sin(Argument const x) {
   if (UseHardwareFMA) {
     switch (quadrant) {
       case 0:
-        return SinImplementation<FMAPolicy::Force>(x_reduced.value);
+        return SinImplementation<FMAPolicy::Force>(x_reduced);
       case 1:
-        return CosImplementation<FMAPolicy::Force>(x_reduced.value);
+        return CosImplementation<FMAPolicy::Force>(x_reduced);
       case 2:
-        return -SinImplementation<FMAPolicy::Force>(x_reduced.value);
+        return -SinImplementation<FMAPolicy::Force>(x_reduced);
       case 3:
       default:
-        return -CosImplementation<FMAPolicy::Force>(x_reduced.value);
+        return -CosImplementation<FMAPolicy::Force>(x_reduced);
     }
   } else {
     switch (quadrant) {
       case 0:
-        return SinImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return SinImplementation<FMAPolicy::Disallow>(x_reduced);
       case 1:
-        return CosImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return CosImplementation<FMAPolicy::Disallow>(x_reduced);
       case 2:
-        return -SinImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return -SinImplementation<FMAPolicy::Disallow>(x_reduced);
       case 3:
       default:
-        return -CosImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return -CosImplementation<FMAPolicy::Disallow>(x_reduced);
     }
   }
 }
@@ -177,26 +182,26 @@ inline
   if (UseHardwareFMA) {
     switch (quadrant) {
       case 0:
-        return CosImplementation<FMAPolicy::Force>(x_reduced.value);
+        return CosImplementation<FMAPolicy::Force>(x_reduced);
       case 1:
-        return -SinImplementation<FMAPolicy::Force>(x_reduced.value);
+        return -SinImplementation<FMAPolicy::Force>(x_reduced);
       case 2:
-        return -CosImplementation<FMAPolicy::Force>(x_reduced.value);
+        return -CosImplementation<FMAPolicy::Force>(x_reduced);
       case 3:
       default:
-        return SinImplementation<FMAPolicy::Force>(x_reduced.value);
+        return SinImplementation<FMAPolicy::Force>(x_reduced);
     }
   } else {
     switch (quadrant) {
       case 0:
-        return CosImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return CosImplementation<FMAPolicy::Disallow>(x_reduced);
       case 1:
-        return -SinImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return -SinImplementation<FMAPolicy::Disallow>(x_reduced);
       case 2:
-        return -CosImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return -CosImplementation<FMAPolicy::Disallow>(x_reduced);
       case 3:
       default:
-        return SinImplementation<FMAPolicy::Disallow>(x_reduced.value);
+        return SinImplementation<FMAPolicy::Disallow>(x_reduced);
     }
   }
 }
