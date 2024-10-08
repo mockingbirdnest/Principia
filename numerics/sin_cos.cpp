@@ -42,12 +42,11 @@ static const __m128d sign_bit =
 void Reduce(Argument const x,
             DoublePrecision<Argument>& x_reduced,
             std::int64_t& quadrant) {
-  Argument const abs_x = std::abs(x);
-  if (abs_x < π / 4) {
+  if (x < π / 4 && x > -π / 4) {
     x_reduced.value = x;
     x_reduced.error = 0;
     quadrant = 0;
-  } else if (abs_x <= π_over_2_threshold) {
+  } else if (x <= π_over_2_threshold && x >= -π_over_2_threshold) {
     std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(x * (2 / π)));
     double const n_double = static_cast<double>(n);
     Argument const value = x - n_double * π_over_2_high;
@@ -169,7 +168,7 @@ Value __cdecl Sin(Argument const x) {
 #if PRINCIPIA_INLINE_SIN_COS
 inline
 #endif
-    Value __cdecl Cos(Argument const x) {
+Value __cdecl Cos(Argument const x) {
   DoublePrecision<Argument> x_reduced;
   std::int64_t quadrant;
   Reduce(x, x_reduced, quadrant);
