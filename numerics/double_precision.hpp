@@ -106,6 +106,12 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
+// Computes the exact difference of a and b.  The arguments must be such that
+// |a| >= |b| or a == 0.
+template<typename T, typename U>
+constexpr DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a,
+                                                               U const& b);
+
 // Computes the exact sum of a and b.
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
@@ -193,6 +199,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal
 
 using internal::DoublePrecision;
+using internal::QuickTwoDifference;
 using internal::QuickTwoSum;
 using internal::TwoDifference;
 using internal::TwoProduct;
