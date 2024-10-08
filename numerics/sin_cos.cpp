@@ -120,7 +120,8 @@ template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value CosImplementation(DoublePrecision<Argument> const argument) {
   auto const& x = argument.value;
-  double const abs_x = std::abs(x);
+  double const abs_x =
+      _mm_cvtsd_f64(_mm_andnot_pd(_mm_set_sd(x), masks::sign_bit));
   auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
   auto const& accurate_values = SinCosAccurateTable[i];
   double const& x₀ = accurate_values.x;
