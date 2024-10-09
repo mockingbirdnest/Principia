@@ -27,7 +27,7 @@ constexpr Argument table_spacing_reciprocal = 512.0;
 
 // π / 2 split so that the high half has 18 zeros at the end of its mantissa.
 constexpr std::int64_t π_over_2_zeroes = 18;
-constexpr Argument π_over_2_threshold = 1 << π_over_2_zeroes;
+constexpr Argument π_over_2_threshold = 1 << π_over_2_zeroes;//NONONO
 constexpr Argument π_over_2_high = 0x1.921fb'5444p0;
 constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
 
@@ -85,13 +85,15 @@ template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SinImplementation(DoublePrecision<Argument> const argument) {
   auto const& x = argument.value;
+  auto const& e = argument.error;
   __m128d const x_0 = _mm_set_sd(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, x_0);
-  double const abs_x = _mm_cvtsd_f64(_mm_andnot_pd(masks::sign_bit, x_0));
+  double const abs_x = _mm_cvtsd_f64(_mm_xor_pd(x_0, sign));
+  double const abs_e = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
   if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
-    return x + x³ * SinPolynomialNearZero<fma_policy>(x²);
+    return x + (x³ * SinPolynomialNearZero<fma_policy>(x²) + e);
   } else {
     auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
     auto const& accurate_values = SinCosAccurateTable[i];
@@ -99,9 +101,8 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
     double const& sin_x₀ =
         _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
     double const& cos_x₀ = accurate_values.cos_x;
-    double const abs_h = abs_x - x₀;
-    double const h =
-        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign)) + argument.error;
+    double const abs_h = (abs_x - x₀) + abs_e;
+    double const h = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(abs_h), sign));
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
@@ -109,7 +110,7 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
     double const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value +
            ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-             cos_x₀ * h³ * SinPolynomial<fma_policy>(h²)) +
+             cos_x₀ * (h³ * SinPolynomial<fma_policy>(h²) + e)) +
             sin_x₀_plus_h_cos_x₀.error);
   }
 }
@@ -118,14 +119,17 @@ template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value CosImplementation(DoublePrecision<Argument> const argument) {
   auto const& x = argument.value;
-  double const abs_x =
-      _mm_cvtsd_f64(_mm_andnot_pd(_mm_set_sd(x), masks::sign_bit));
+  auto const& e = argument.error;
+  __m128d const x_0 = _mm_set_sd(x);
+  __m128d const sign = _mm_and_pd(masks::sign_bit, x_0);
+  double const abs_x = _mm_cvtsd_f64(_mm_xor_pd(x_0, sign));
+  double const abs_e = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
   auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
   auto const& accurate_values = SinCosAccurateTable[i];
   double const& x₀ = accurate_values.x;
   double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
-  double const h = abs_x - x₀ + std::abs(argument.error);
+  double const h = (abs_x - x₀) + abs_e;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
