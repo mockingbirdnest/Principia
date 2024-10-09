@@ -8,6 +8,7 @@
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -18,6 +19,7 @@ using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::quantities::_elementary_functions;
 
 using Argument = double;
 using Value = double;
@@ -27,7 +29,7 @@ constexpr Argument table_spacing_reciprocal = 512.0;
 
 // π / 2 split so that the high half has 18 zeros at the end of its mantissa.
 constexpr std::int64_t π_over_2_zeroes = 18;
-constexpr Argument π_over_2_threshold = 1 << π_over_2_zeroes;//NONONO
+constexpr Argument π_over_2_threshold = π / 2 * (1 << π_over_2_zeroes);
 constexpr Argument π_over_2_high = 0x1.921fb'5444p0;
 constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
 
@@ -38,6 +40,17 @@ namespace masks {
 static const __m128d sign_bit =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
 }  // namespace masks
+
+template<FMAPolicy fma_policy>
+double FusedMultiplyAdd(double const a, double const b, double const c) {
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+    using quantities::_elementary_functions::FusedMultiplyAdd;
+    return FusedMultiplyAdd(a, b, c);
+  } else {
+    return a * b + c;
+  }
+}
 
 void Reduce(Argument const x,
             DoublePrecision<Argument>& x_reduced,
@@ -90,7 +103,8 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
   if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
-    return x + (x³ * SinPolynomialNearZero<fma_policy>(x²) + e);
+    return x + FusedMultiplyAdd<fma_policy>(
+                   x³, SinPolynomialNearZero<fma_policy>(x²), e);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
     auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
@@ -100,6 +114,10 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
     double const sin_x₀ =
         _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
     double const& cos_x₀ = accurate_values.cos_x;
+  // [GB91] incorporates `e` in the computation of `h`.  However, `e` can be
+  // very small and `h` can be as large as 1/512.  We note that the only
+  // influence of `e` is on the computation of `cos_x₀ * e`, so we incorporate
+  // `e` with the `SinPolynomial` below.
     double const h = x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
@@ -108,7 +126,8 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
     double const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value +
            ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-             cos_x₀ * (h³ * SinPolynomial<fma_policy>(h²) + e)) +
+             cos_x₀ * FusedMultiplyAdd<fma_policy>(
+                          h³, SinPolynomial<fma_policy>(h²), e)) +
             sin_x₀_plus_h_cos_x₀.error);
   }
 }
@@ -127,6 +146,10 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
   double const sin_x₀ =
       _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
   double const& cos_x₀ = accurate_values.cos_x;
+  // [GB91] incorporates `e` in the computation of `h`.  However, `e` can be
+  // very small and `h` can be as large as 1/512.  We note that the only
+  // influence of `e` is on the computation of `sin_x₀ * e`, so we incorporate
+  // `e` with the `SinPolynomial` below.
   double const h = x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
@@ -135,7 +158,8 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
   double const h³ = h² * h;
   return cos_x₀_minus_h_sin_x₀.value +
          ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
-           sin_x₀ * (h³ * SinPolynomial<fma_policy>(h²) + e)) +
+           sin_x₀ * FusedMultiplyAdd<fma_policy>(
+                        h³, SinPolynomial<fma_policy>(h²), e)) +
           cos_x₀_minus_h_sin_x₀.error);
 }
 
