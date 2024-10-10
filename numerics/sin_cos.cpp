@@ -154,7 +154,7 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-   double const h² = h * (h + (e + e));
+  double const h² = h * (h + (e + e));
   double const h³ = h² * h;
   return cos_x₀_minus_h_sin_x₀.value +
          ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
