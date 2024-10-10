@@ -76,8 +76,10 @@ TEST_F(SinCosTest, Random) {
   }
 
   // This implementation is not quite correctly rounded, but not far from it.
-  EXPECT_LE(max_sin_ulps_error, 0.500138);
-  EXPECT_LE(max_cos_ulps_error, 0.500146);
+  EXPECT_LE(max_sin_ulps_error, 0.500002);
+  EXPECT_LE(max_cos_ulps_error, 0.500002);
+  EXPECT_LE(incorrectly_rounded_sin, 1);
+  EXPECT_LE(incorrectly_rounded_cos, 1);
 
   LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
              << " ulps for argument: " << worst_sin_argument

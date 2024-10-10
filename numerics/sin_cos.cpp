@@ -114,15 +114,15 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
     double const sin_x₀ =
         _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
     double const& cos_x₀ = accurate_values.cos_x;
-  // [GB91] incorporates `e` in the computation of `h`.  However, `e` can be
-  // very small and `h` can be as large as 1/512.  We note that the only
-  // influence of `e` is on the computation of `cos_x₀ * e`, so we incorporate
-  // `e` with the `SinPolynomial` below.
+    // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
+    // don't overlap and in the first interval `x` and `h` may be of the same
+    // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
+    // later in the computation.
     double const h = x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    double const h² = h * h;
+    double const h² = h * (h + (e + e));
     double const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value +
            ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
@@ -146,15 +146,15 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
   double const sin_x₀ =
       _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
   double const& cos_x₀ = accurate_values.cos_x;
-  // [GB91] incorporates `e` in the computation of `h`.  However, `e` can be
-  // very small and `h` can be as large as 1/512.  We note that the only
-  // influence of `e` is on the computation of `sin_x₀ * e`, so we incorporate
-  // `e` with the `SinPolynomial` below.
+  // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
+  // don't overlap and in the first interval `x` and `h` may be of the same
+  // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
+  // later in the computation.
   double const h = x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  double const h² = h * h;
+   double const h² = h * (h + (e + e));
   double const h³ = h² * h;
   return cos_x₀_minus_h_sin_x₀.value +
          ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
