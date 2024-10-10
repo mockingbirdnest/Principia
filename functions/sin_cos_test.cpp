@@ -23,13 +23,14 @@ class SinCosTest : public ::testing::Test {};
 
 TEST_F(SinCosTest, Random) {
   std::mt19937_64 random(42);
-  // TODO(phl): Negative angles.
-  std::uniform_real_distribution<> uniformly_at(-π / 4, π / 4);
+  std::uniform_real_distribution<> uniformly_at(-2 * π, 2 * π);
 
   cpp_bin_float_50 max_sin_ulps_error = 0;
   cpp_bin_float_50 max_cos_ulps_error = 0;
   double worst_sin_argument = 0;
   double worst_cos_argument = 0;
+  std::int64_t incorrectly_rounded_sin = 0;
+  std::int64_t incorrectly_rounded_cos = 0;
 
 #if _DEBUG
   static constexpr std::int64_t iterations = 100;
@@ -52,6 +53,9 @@ TEST_F(SinCosTest, Random) {
         max_sin_ulps_error = sin_ulps_error;
         worst_sin_argument = principia_argument;
       }
+      if (sin_ulps_error > 0.5) {
+        ++incorrectly_rounded_sin;
+      }
     }
     {
       auto const boost_cos =
@@ -65,19 +69,28 @@ TEST_F(SinCosTest, Random) {
         max_cos_ulps_error = cos_ulps_error;
         worst_cos_argument = principia_argument;
       }
+      if (cos_ulps_error > 0.5) {
+        ++incorrectly_rounded_cos;
+      }
     }
   }
 
   // This implementation is not quite correctly rounded, but not far from it.
-  EXPECT_LE(max_sin_ulps_error, 0.500003);
-  EXPECT_LE(max_cos_ulps_error, 0.500001);
+  EXPECT_LE(max_sin_ulps_error, 0.500002);
+  EXPECT_LE(max_cos_ulps_error, 0.500002);
+  EXPECT_LE(incorrectly_rounded_sin, 1);
+  EXPECT_LE(incorrectly_rounded_cos, 1);
 
   LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
              << " ulps for argument: " << worst_sin_argument
-             << " value: " << Sin(worst_sin_argument);
+             << " value: " << Sin(worst_sin_argument)
+             << "; incorrectly rounded: " << std::setprecision(3)
+             << incorrectly_rounded_sin / static_cast<double>(iterations);
   LOG(ERROR) << "Cos error: " << max_cos_ulps_error << std::setprecision(25)
              << " ulps for argument: " << worst_cos_argument
-             << " value: " << Cos(worst_cos_argument);
+             << " value: " << Cos(worst_cos_argument)
+             << "; incorrectly rounded: " << std::setprecision(3)
+             << incorrectly_rounded_cos / static_cast<double>(iterations);
 }
 
 }  // namespace _sin_cos

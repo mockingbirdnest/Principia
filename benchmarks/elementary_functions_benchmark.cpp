@@ -28,7 +28,7 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
   using Argument = double;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(0, π / 4);
+  std::uniform_real_distribution<> uniformly_at(-2 * π, 2 * π);
 
   Argument a[number_of_iterations];
   for (std::int64_t i = 0; i < number_of_iterations; ++i) {
