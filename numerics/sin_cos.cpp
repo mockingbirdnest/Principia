@@ -122,7 +122,7 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    double const h² = h * (h + (e + e));
+    double const h² = h * (h + 2 * e);
     double const h³ = h² * h;
     return sin_x₀_plus_h_cos_x₀.value +
            ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
@@ -154,7 +154,7 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  double const h² = h * (h + (e + e));
+  double const h² = h * (h + 2 * e);
   double const h³ = h² * h;
   return cos_x₀_minus_h_sin_x₀.value +
          ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
