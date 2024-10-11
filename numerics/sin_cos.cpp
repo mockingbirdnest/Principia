@@ -60,8 +60,15 @@ void Reduce(Argument const x,
     x_reduced.error = 0;
     quadrant = 0;
   } else if (x <= π_over_2_threshold && x >= -π_over_2_threshold) {
-    std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(x * (2 / π)));
-    double const n_double = static_cast<double>(n);
+    // We are not very sensitive to rounding errors in this expression, because
+    // in the worst case it could cause the reduced angle to jump from the
+    // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
+    // of the quadrant.
+    __m128d const n_128d = _mm_round_sd(
+        _mm_setzero_pd(), _mm_set_sd(x * (2 / π)), _MM_FROUND_RINT);
+    double n_double;
+    _mm_store_sd(&n_double, n_128d);
+    std::int64_t const n = _mm_cvtsd_si64(n_128d);
     Argument const value = x - n_double * π_over_2_high;
     Argument const error = n_double * π_over_2_low;
     x_reduced = QuickTwoDifference(value, error);
