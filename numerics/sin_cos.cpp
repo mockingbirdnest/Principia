@@ -66,8 +66,7 @@ void Reduce(Argument const x,
     // of the quadrant.
     __m128d const n_128d = _mm_round_sd(
         _mm_setzero_pd(), _mm_set_sd(x * (2 / π)), _MM_FROUND_RINT);
-    double n_double;
-    _mm_store_sd(&n_double, n_128d);
+    double const n_double = _mm_cvtsd_f64(n_128d);
     std::int64_t const n = _mm_cvtsd_si64(n_128d);
     Argument const value = x - n_double * π_over_2_high;
     Argument const error = n_double * π_over_2_low;
