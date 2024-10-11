@@ -39,6 +39,10 @@ using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 namespace masks {
 static const __m128d sign_bit =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
+static const __m128d exponent_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x7ff0'0000'0000'0000));
+static const __m128d mantissa_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
 }  // namespace masks
 
 template<FMAPolicy fma_policy>
@@ -50,6 +54,27 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
   } else {
     return a * b + c;
   }
+}
+
+int alerts = 0;
+
+double DoTheThing(double const x, double const dx) {
+  double const value = x + dx;
+  double const error = (value - x) - dx;
+  __m128i const value_exponent_128i =
+      _mm_castpd_si128(_mm_and_pd(masks::exponent_bits, _mm_set_sd(value)));
+  double const value_exponent =
+      _mm_cvtsd_f64(_mm_castsi128_pd(value_exponent_128i));
+  __m128i const error_128i =
+      _mm_castpd_si128(_mm_andnot_pd(masks::sign_bit, _mm_set_sd(error)));
+  double const normalized_error = _mm_cvtsd_f64(
+      _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
+  if (normalized_error < -0x1.ffffp971 && normalized_error > -0x1.00008p972) {
+    //LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat
+    //           << value<<" "<<error<< " "<< normalized_error;
+    ++alerts;
+  }
+  return value;
 }
 
 void Reduce(Argument const x,
@@ -109,8 +134,9 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
   if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
-    return x + FusedMultiplyAdd<fma_policy>(
+    double const x³_term = FusedMultiplyAdd<fma_policy>(
                    x³, SinPolynomialNearZero<fma_policy>(x²), e);
+    return DoTheThing(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
     auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
@@ -130,11 +156,12 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
     double const h² = h * (h + 2 * e);
     double const h³ = h² * h;
-    return sin_x₀_plus_h_cos_x₀.value +
-           ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-             cos_x₀ * FusedMultiplyAdd<fma_policy>(
-                          h³, SinPolynomial<fma_policy>(h²), e)) +
-            sin_x₀_plus_h_cos_x₀.error);
+    double const polynomial_term =
+        ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
+          cos_x₀ * FusedMultiplyAdd<fma_policy>(
+                       h³, SinPolynomial<fma_policy>(h²), e)) +
+         sin_x₀_plus_h_cos_x₀.error);
+    return DoTheThing(sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
 
@@ -162,11 +189,12 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
   double const h² = h * (h + 2 * e);
   double const h³ = h² * h;
-  return cos_x₀_minus_h_sin_x₀.value +
-         ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
-           sin_x₀ * FusedMultiplyAdd<fma_policy>(
-                        h³, SinPolynomial<fma_policy>(h²), e)) +
-          cos_x₀_minus_h_sin_x₀.error);
+  double const polynomial_term =
+      ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
+        sin_x₀ * FusedMultiplyAdd<fma_policy>(
+                     h³, SinPolynomial<fma_policy>(h²), e)) +
+       cos_x₀_minus_h_sin_x₀.error);
+  return DoTheThing(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
