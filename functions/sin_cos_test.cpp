@@ -137,6 +137,12 @@ TEST_F(SinCosTest, HardRounding) {
               AlmostEquals(0.9716198764286143041422587, 0));
 }
 
+TEST_F(SinCosTest, HardReduction) {
+  EXPECT_THAT(Sin(0x16ac5b262ca1ffp797), AlmostEquals(1.0, 0));
+  EXPECT_THAT(Cos(0x16ac5b262ca1ffp797),
+              AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
+}
+
 }  // namespace _sin_cos
 }  // namespace numerics
 }  // namespace principia
