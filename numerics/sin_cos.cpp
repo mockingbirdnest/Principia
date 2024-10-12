@@ -138,8 +138,7 @@ Value CosPolynomial(Argument const x) {
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value SinImplementation(double const θ,
-                        DoublePrecision<Argument> const θ_reduced) {
+Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& x = θ_reduced.value;
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
@@ -179,8 +178,7 @@ Value SinImplementation(double const θ,
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value CosImplementation(double const θ,
-                        DoublePrecision<Argument> const θ_reduced) {
+Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& x = θ_reduced.value;
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
@@ -220,18 +218,20 @@ Value __cdecl Sin(Argument const θ) {
   double value;
   if (UseHardwareFMA) {
     if (quadrant & 0b1) {
-      value = CosImplementation<FMAPolicy::Force>(θ, θ_reduced);
+      value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-      value = SinImplementation<FMAPolicy::Force>(θ, θ_reduced);
+      value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
     if (quadrant & 0b1) {
-      value = CosImplementation<FMAPolicy::Disallow>(θ, θ_reduced);
+      value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
-      value = SinImplementation<FMAPolicy::Disallow>(θ, θ_reduced);
+      value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (quadrant & 0b10) {
+  if (value != value) {
+    return cr_sin(θ);
+  } else if (quadrant & 0b10) {
     return -value;
   } else {
     return value;
@@ -248,18 +248,20 @@ Value __cdecl Cos(Argument const θ) {
   double value;
   if (UseHardwareFMA) {
     if (quadrant & 0b1) {
-      value = SinImplementation<FMAPolicy::Force>(θ, θ_reduced);
+      value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-      value = CosImplementation<FMAPolicy::Force>(θ, θ_reduced);
+      value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
     if (quadrant & 0b1) {
-      value = SinImplementation<FMAPolicy::Disallow>(θ, θ_reduced);
+      value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
-      value = CosImplementation<FMAPolicy::Disallow>(θ, θ_reduced);
+      value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (quadrant == 1 || quadrant == 2) {
+  if (value != value) {
+    return cr_cos(θ);
+  } else if (quadrant == 1 || quadrant == 2) {
     return -value;
   } else {
     return value;
