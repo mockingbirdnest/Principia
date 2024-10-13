@@ -88,14 +88,14 @@ double DetectDangerousRounding(double const x, double const dx) {
   }
 }
 
-bool Reduce(Argument const θ,
+void Reduce(Argument const θ,
             DoublePrecision<Argument>& θ_reduced,
             std::int64_t& quadrant) {
   if (θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
-    return true;
+    return;
   } else if (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
@@ -111,10 +111,11 @@ bool Reduce(Argument const θ,
     // TODO(phl): Error analysis needed to find the right bounds.
     if (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
       quadrant = n & 0b11;
-      return true;
+      return;
     }
   }
-  return false;
+  θ_reduced.value = 0;
+  θ_reduced.error = std::numeric_limits<double>::quiet_NaN();
 }
 
 // TODO(phl): Take the perturbation into account in the polynomials.
@@ -218,9 +219,7 @@ inline
 Value __cdecl Sin(Argument const θ) {
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  if (!Reduce(θ, θ_reduced, quadrant)) {
-    return cr_sin(θ);
-  }
+  Reduce(θ, θ_reduced, quadrant);
   double value;
   if (UseHardwareFMA) {
     if (quadrant & 0b1) {
@@ -250,9 +249,7 @@ inline
 Value __cdecl Cos(Argument const θ) {
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  if (!Reduce(θ, θ_reduced, quadrant)) {
-    return cr_cos(θ);
-  }
+  Reduce(θ, θ_reduced, quadrant);
   double value;
   if (UseHardwareFMA) {
     if (quadrant & 0b1) {
