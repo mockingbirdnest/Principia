@@ -63,10 +63,13 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
   }
 }
 
-//TODO(phl) comment
-double DetectDangerousRounding(double const x, double const dx) {
-  double const value = x + dx;
-  double const error = (value - x) - dx;
+// Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
+// configuration (that is, the bits after the last mantissa bit of the sum are
+// either 1000... or 0111..., then return `NaN`.  Otherwise returns the sum.
+double DetectDangerousRounding(double const x, double const Δx) {
+  DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
+  double const& value = sum.value;
+  double const& error = sum.error;
   __m128i const value_exponent_128i =
       _mm_castpd_si128(_mm_and_pd(masks::exponent_bits, _mm_set_sd(value)));
   double const value_exponent =

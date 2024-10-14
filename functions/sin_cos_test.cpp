@@ -37,7 +37,7 @@ TEST_F(SinCosTest, Random) {
 #if _DEBUG
   static constexpr std::int64_t iterations = 100;
 #else
-  static constexpr std::int64_t iterations = 4'000'000;
+  static constexpr std::int64_t iterations = 1'000'000;
 #endif
 
   for (std::int64_t i = 0; i < iterations; ++i) {
@@ -80,10 +80,10 @@ TEST_F(SinCosTest, Random) {
   }
 
   // This implementation is not quite correctly rounded, but not far from it.
-  EXPECT_LE(max_sin_ulps_error, 0.500002);
-  EXPECT_LE(max_cos_ulps_error, 0.500002);
-  EXPECT_LE(incorrectly_rounded_sin, 1);
-  EXPECT_LE(incorrectly_rounded_cos, 1);
+  EXPECT_LE(max_sin_ulps_error, 0.5);
+  EXPECT_LE(max_cos_ulps_error, 0.5);
+  EXPECT_EQ(incorrectly_rounded_sin, 0);
+  EXPECT_EQ(incorrectly_rounded_cos, 0);
 
   LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
              << " ulps for argument: " << worst_sin_argument
