@@ -65,7 +65,7 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 // Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
 // configuration (that is, the bits after the last mantissa bit of the sum are
-// either 1000... or 0111..., then return `NaN`.  Otherwise returns the sum.
+// either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
 double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
