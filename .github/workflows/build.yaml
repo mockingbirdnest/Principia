@@ -75,6 +75,13 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: Boost
 
+    - name: Download core-math artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: core-math
+        configuration: ${{ matrix.configuration }}
+        directory: Inria
+
     - name: Download gipfeli artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
