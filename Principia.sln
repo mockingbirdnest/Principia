@@ -194,8 +194,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "shared
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functions", "functions\functions.vcxproj", "{7CCA653C-2E8F-4FFD-9E9F-BEE590F3EFAB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functions", "shared\functions.vcxitems", "{5F9338E3-D7FF-4C66-AFA2-B9E27A2CE3E2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -711,7 +709,6 @@ Global
 		{388CBEA7-7BC1-4146-8813-66B951E63A96} = {6722AD00-0A85-4156-B912-38E99A12AE75}
 		{C59F84DA-2F82-43DD-BBA4-5A469B32557C} = {6722AD00-0A85-4156-B912-38E99A12AE75}
 		{2E39517A-4713-455F-8C78-610DDFD8EA99} = {6722AD00-0A85-4156-B912-38E99A12AE75}
-		{5F9338E3-D7FF-4C66-AFA2-B9E27A2CE3E2} = {6722AD00-0A85-4156-B912-38E99A12AE75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {332981CB-A6C7-4BD0-9EE0-8E8C6FB4E01A}
@@ -733,10 +730,8 @@ Global
 		shared\base.vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
 		shared\geometry.vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{5eea5210-0fa9-4b44-8466-c40b22d24e8e}*SharedItemsImports = 4
-		shared\functions.vcxitems*{5f9338e3-d7ff-4c66-afa2-b9e27a2ce3e2}*SharedItemsImports = 9
 		shared\astronomy.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\base.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
-		shared\functions.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\geometry.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4
 		shared\testing_utilities.vcxitems*{7b174b21-0837-4bee-864e-08ad3c74046a}*SharedItemsImports = 4

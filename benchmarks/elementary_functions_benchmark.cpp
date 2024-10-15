@@ -7,8 +7,8 @@
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
-#include "functions/cos.hpp"
-#include "functions/sin.hpp"
+#include "core-math/cos.h"
+#include "core-math/sin.h"
 #include "numerics/sin_cos.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 
@@ -16,8 +16,6 @@ namespace principia {
 namespace functions {
 
 using namespace principia::benchmarks::_metric;
-using namespace principia::functions::_cos;
-using namespace principia::functions::_sin;
 using namespace principia::numerics::_sin_cos;
 
 static constexpr std::int64_t number_of_iterations = 1000;
