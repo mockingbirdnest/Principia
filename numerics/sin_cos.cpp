@@ -6,9 +6,8 @@
 
 #include <limits>
 
-// TODO(phl): Don't pull `functions` into `numerics`.
-#include "functions/cos.hpp"
-#include "functions/sin.hpp"
+#include "core-math/cos.h"
+#include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
@@ -20,8 +19,6 @@ namespace numerics {
 namespace _sin_cos {
 namespace internal {
 
-using namespace principia::functions::_cos;
-using namespace principia::functions::_sin;
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fma;
