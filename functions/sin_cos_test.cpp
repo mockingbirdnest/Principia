@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "numerics/next.hpp"
 #include "quantities/numbers.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 // This test lives in `functions` to avoid pulling `boost` into `numerics`.
 namespace principia {
@@ -18,6 +19,7 @@ namespace _sin_cos {
 
 using namespace boost::multiprecision;
 using namespace principia::numerics::_next;
+using namespace principia::testing_utilities::_almost_equals;
 
 class SinCosTest : public ::testing::Test {};
 
@@ -35,7 +37,7 @@ TEST_F(SinCosTest, Random) {
 #if _DEBUG
   static constexpr std::int64_t iterations = 100;
 #else
-  static constexpr std::int64_t iterations = 300'000;
+  static constexpr std::int64_t iterations = 1'000'000;
 #endif
 
   for (std::int64_t i = 0; i < iterations; ++i) {
@@ -55,6 +57,7 @@ TEST_F(SinCosTest, Random) {
       }
       if (sin_ulps_error > 0.5) {
         ++incorrectly_rounded_sin;
+        LOG(ERROR) << "Sin: " << std::setprecision(25) << principia_argument;
       }
     }
     {
@@ -71,15 +74,16 @@ TEST_F(SinCosTest, Random) {
       }
       if (cos_ulps_error > 0.5) {
         ++incorrectly_rounded_cos;
+        LOG(ERROR) << "Cos: " << std::setprecision(25) << principia_argument;
       }
     }
   }
 
   // This implementation is not quite correctly rounded, but not far from it.
-  EXPECT_LE(max_sin_ulps_error, 0.500002);
-  EXPECT_LE(max_cos_ulps_error, 0.500002);
-  EXPECT_LE(incorrectly_rounded_sin, 1);
-  EXPECT_LE(incorrectly_rounded_cos, 1);
+  EXPECT_LE(max_sin_ulps_error, 0.5);
+  EXPECT_LE(max_cos_ulps_error, 0.5);
+  EXPECT_EQ(incorrectly_rounded_sin, 0);
+  EXPECT_EQ(incorrectly_rounded_cos, 0);
 
   LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
              << " ulps for argument: " << worst_sin_argument
@@ -91,6 +95,52 @@ TEST_F(SinCosTest, Random) {
              << " value: " << Cos(worst_cos_argument)
              << "; incorrectly rounded: " << std::setprecision(3)
              << incorrectly_rounded_cos / static_cast<double>(iterations);
+}
+
+// Values for which the base algorithm gives an error of 1 ULP.
+TEST_F(SinCosTest, HardRounding) {
+  EXPECT_THAT(Sin(1.777288458404935767021016),
+              AlmostEquals(0.9787561457198967196367773, 0));
+  EXPECT_THAT(Cos(3.912491942337291916942377),
+              AlmostEquals(-0.7172843528140595004137653, 0));
+  EXPECT_THAT(Sin(5.528810471911395296729097),
+              AlmostEquals(-0.6848332450871304488693046, 0));
+  EXPECT_THAT(Sin(2.670333644894535396474566),
+              AlmostEquals(0.4540084183741445456039384, 0));
+  EXPECT_THAT(Cos(1.486604973422413600303571),
+              AlmostEquals(0.0840919279825555407437241, 0));
+  EXPECT_THAT(Sin(-2.496680544289484160458414),
+              AlmostEquals(-0.6011282027544306294509797, 0));
+  EXPECT_THAT(Sin(3.348980952786005715893225),
+              AlmostEquals(-0.2059048676737040700634683, 0));
+  EXPECT_THAT(Sin(3.523452575387961971387085),
+              AlmostEquals(-0.3726470704519433130297035, 0));
+  EXPECT_THAT(Cos(-6.265702600230396157598989),
+              AlmostEquals(0.99984718137127853720984932, 0));
+  EXPECT_THAT(Sin(1.881458091523454001503524),
+              AlmostEquals(0.9521314843257784876761001, 0));
+  EXPECT_THAT(Sin(-1.763163156774038675678185),
+              AlmostEquals(-0.9815544881044536151825223, 0));
+  EXPECT_THAT(Cos(-3.885819786017697730073905),
+              AlmostEquals(-0.7356116652133562472394118, 0));
+  EXPECT_THAT(Sin(-2.58105062034143273308473),
+              AlmostEquals(-0.5316453603071467637339815, 0));
+  EXPECT_THAT(Sin(1.657419885978818285821035),
+              AlmostEquals(0.99625052493662308306103561, 0));
+  EXPECT_THAT(Sin(5.094301519947547873812255),
+              AlmostEquals(-0.9279535374988051033005616, 0));
+  EXPECT_THAT(Sin(5.262137362438826571064965),
+              AlmostEquals(-0.8526560125576488347044409, 0));
+  EXPECT_THAT(Cos(-5.026994177012682030181168),
+              AlmostEquals(0.3094410694753661206223057, 0));
+  EXPECT_THAT(Cos(0.2388111698570396512764091),
+              AlmostEquals(0.9716198764286143041422587, 0));
+}
+
+TEST_F(SinCosTest, HardReduction) {
+  EXPECT_THAT(Sin(0x16ac5b262ca1ffp797), AlmostEquals(1.0, 0));
+  EXPECT_THAT(Cos(0x16ac5b262ca1ffp797),
+              AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
 }
 
 }  // namespace _sin_cos

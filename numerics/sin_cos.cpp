@@ -4,6 +4,10 @@
 
 #include <pmmintrin.h>
 
+#include <limits>
+
+#include "core-math/cos.h"
+#include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
@@ -39,6 +43,10 @@ using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 namespace masks {
 static const __m128d sign_bit =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
+static const __m128d exponent_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x7ff0'0000'0000'0000));
+static const __m128d mantissa_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
 }  // namespace masks
 
 template<FMAPolicy fma_policy>
@@ -52,29 +60,62 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
   }
 }
 
-void Reduce(Argument const x,
-            DoublePrecision<Argument>& x_reduced,
+// Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
+// configuration (that is, the bits after the last mantissa bit of the sum are
+// either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
+double DetectDangerousRounding(double const x, double const Δx) {
+  DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
+  double const& value = sum.value;
+  double const& error = sum.error;
+  __m128i const value_exponent_128i =
+      _mm_castpd_si128(_mm_and_pd(masks::exponent_bits, _mm_set_sd(value)));
+  double const value_exponent =
+      _mm_cvtsd_f64(_mm_castsi128_pd(value_exponent_128i));
+  __m128i const error_128i =
+      _mm_castpd_si128(_mm_andnot_pd(masks::sign_bit, _mm_set_sd(error)));
+  double const normalized_error = _mm_cvtsd_f64(
+      _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
+  // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
+  // negative numbers?
+  if (normalized_error < -0x1.ffffp971 && normalized_error > -0x1.00008p972) {
+#if _DEBUG
+    LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
+               << " " << error << " " << normalized_error;
+#endif
+    return std::numeric_limits<double>::quiet_NaN();
+  } else {
+    return value;
+  }
+}
+
+void Reduce(Argument const θ,
+            DoublePrecision<Argument>& θ_reduced,
             std::int64_t& quadrant) {
-  if (x < π / 4 && x > -π / 4) {
-    x_reduced.value = x;
-    x_reduced.error = 0;
+  if (θ < π / 4 && θ > -π / 4) {
+    θ_reduced.value = θ;
+    θ_reduced.error = 0;
     quadrant = 0;
-  } else if (x <= π_over_2_threshold && x >= -π_over_2_threshold) {
+    return;
+  } else if (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
     __m128d const n_128d = _mm_round_sd(
-        _mm_setzero_pd(), _mm_set_sd(x * (2 / π)), _MM_FROUND_RINT);
+        _mm_setzero_pd(), _mm_set_sd(θ * (2 / π)), _MM_FROUND_RINT);
     double const n_double = _mm_cvtsd_f64(n_128d);
     std::int64_t const n = _mm_cvtsd_si64(n_128d);
-    Argument const value = x - n_double * π_over_2_high;
+    Argument const value = θ - n_double * π_over_2_high;
     Argument const error = n_double * π_over_2_low;
-    x_reduced = QuickTwoDifference(value, error);
-    // TODO(phl): Check for value too small.
-    quadrant = n & 0b11;
+    θ_reduced = QuickTwoDifference(value, error);
+    // TODO(phl): Error analysis needed to find the right bounds.
+    if (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+      quadrant = n & 0b11;
+      return;
+    }
   }
-  // TODO(phl): Fallback to a more precise algorithm.
+  θ_reduced.value = 0;
+  θ_reduced.error = std::numeric_limits<double>::quiet_NaN();
 }
 
 // TODO(phl): Take the perturbation into account in the polynomials.
@@ -102,15 +143,16 @@ Value CosPolynomial(Argument const x) {
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value SinImplementation(DoublePrecision<Argument> const argument) {
-  auto const& x = argument.value;
-  auto const& e = argument.error;
+Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
+  auto const& x = θ_reduced.value;
+  auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
   if (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
-    return x + FusedMultiplyAdd<fma_policy>(
+    double const x³_term = FusedMultiplyAdd<fma_policy>(
                    x³, SinPolynomialNearZero<fma_policy>(x²), e);
+    return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
     auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
@@ -130,19 +172,20 @@ Value SinImplementation(DoublePrecision<Argument> const argument) {
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
     double const h² = h * (h + 2 * e);
     double const h³ = h² * h;
-    return sin_x₀_plus_h_cos_x₀.value +
-           ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-             cos_x₀ * FusedMultiplyAdd<fma_policy>(
-                          h³, SinPolynomial<fma_policy>(h²), e)) +
-            sin_x₀_plus_h_cos_x₀.error);
+    double const polynomial_term =
+        ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
+          cos_x₀ * FusedMultiplyAdd<fma_policy>(
+                       h³, SinPolynomial<fma_policy>(h²), e)) +
+         sin_x₀_plus_h_cos_x₀.error);
+    return DetectDangerousRounding(sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
-Value CosImplementation(DoublePrecision<Argument> const argument) {
-  auto const& x = argument.value;
-  auto const& e = argument.error;
+Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
+  auto const& x = θ_reduced.value;
+  auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
   auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
@@ -162,35 +205,38 @@ Value CosImplementation(DoublePrecision<Argument> const argument) {
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
   double const h² = h * (h + 2 * e);
   double const h³ = h² * h;
-  return cos_x₀_minus_h_sin_x₀.value +
-         ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
-           sin_x₀ * FusedMultiplyAdd<fma_policy>(
-                        h³, SinPolynomial<fma_policy>(h²), e)) +
-          cos_x₀_minus_h_sin_x₀.error);
+  double const polynomial_term =
+      ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
+        sin_x₀ * FusedMultiplyAdd<fma_policy>(
+                     h³, SinPolynomial<fma_policy>(h²), e)) +
+       cos_x₀_minus_h_sin_x₀.error);
+  return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
 inline
 #endif
-Value __cdecl Sin(Argument const x) {
-  DoublePrecision<Argument> x_reduced;
+Value __cdecl Sin(Argument const θ) {
+  DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  Reduce(x, x_reduced, quadrant);
+  Reduce(θ, θ_reduced, quadrant);
   double value;
   if (UseHardwareFMA) {
     if (quadrant & 0b1) {
-      value = CosImplementation<FMAPolicy::Force>(x_reduced);
+      value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-      value = SinImplementation<FMAPolicy::Force>(x_reduced);
+      value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
     if (quadrant & 0b1) {
-      value = CosImplementation<FMAPolicy::Disallow>(x_reduced);
+      value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
-      value = SinImplementation<FMAPolicy::Disallow>(x_reduced);
+      value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (quadrant & 0b10) {
+  if (value != value) {
+    return cr_sin(θ);
+  } else if (quadrant & 0b10) {
     return -value;
   } else {
     return value;
@@ -200,25 +246,27 @@ Value __cdecl Sin(Argument const x) {
 #if PRINCIPIA_INLINE_SIN_COS
 inline
 #endif
-Value __cdecl Cos(Argument const x) {
-  DoublePrecision<Argument> x_reduced;
+Value __cdecl Cos(Argument const θ) {
+  DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  Reduce(x, x_reduced, quadrant);
+  Reduce(θ, θ_reduced, quadrant);
   double value;
   if (UseHardwareFMA) {
     if (quadrant & 0b1) {
-      value = SinImplementation<FMAPolicy::Force>(x_reduced);
+      value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-      value = CosImplementation<FMAPolicy::Force>(x_reduced);
+      value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
     if (quadrant & 0b1) {
-      value = SinImplementation<FMAPolicy::Disallow>(x_reduced);
+      value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
-      value = CosImplementation<FMAPolicy::Disallow>(x_reduced);
+      value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (quadrant == 1 || quadrant == 2) {
+  if (value != value) {
+    return cr_cos(θ);
+  } else if (quadrant == 1 || quadrant == 2) {
     return -value;
   } else {
     return value;
