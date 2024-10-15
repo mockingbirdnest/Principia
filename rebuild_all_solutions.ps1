@@ -9,12 +9,14 @@ $dependencies = @(".\Google\glog\msvc\glog.sln",
                   ".\Google\benchmark\msvc\google-benchmark.sln",
                   ".\Google\gipfeli\msvc\gipfeli.sln",
                   ".\Google\abseil-cpp\msvc\abseil-cpp.sln",
+                  ".\Inria\core-math\msvc\core-math.sln",
                   ".\LLNL\zfp\msvc\zfp.sln")
 
 foreach ($directory_and_repositories in @(
          @("Boost",  @("config", "multiprecision")),
          @("Google", @("glog", "googletest", "protobuf", "benchmark",
                        "gipfeli", "abseil-cpp", "chromium")),
+         @("Inria",  @("core-math")),
          @("LLNL",   @("zfp")))) {
   $directory, $repositories = $directory_and_repositories
   New-Item -ItemType Directory -Force -Path $directory
