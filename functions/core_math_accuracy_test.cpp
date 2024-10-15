@@ -2,9 +2,9 @@
 #include <limits>
 #include <random>
 
-#include "functions/cos.hpp"
+#include "core-math/cos.h"
+#include "core-math/sin.h"
 #include "functions/multiprecision.hpp"
-#include "functions/sin.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -17,8 +17,6 @@ namespace functions {
 namespace _multiprecision {
 
 using namespace boost::multiprecision;
-using namespace principia::functions::_cos;
-using namespace principia::functions::_sin;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
