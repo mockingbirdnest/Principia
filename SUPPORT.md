@@ -14,6 +14,15 @@ and provide guidance on getting started with the mod.  The Discord channel is
 will likely not been seen by the developers, and therefore the underlying bug
 won’t be fixed.
 
+## Forum
+
+Historically, the [Principia thread](https://forum.kerbalspaceprogram.com/topic/162200-wip181-191-1101-1110%E2%80%932-1122%E2%80%935-principia%E2%80%94version-%E2%80%8E%E2%80%8E%D0%BA%D0%BE%D0%BB%D0%BC%D0%BE%D0%B3%D0%BE%D1%80%D0%BE%D0%B2-released-2024-10-02%E2%80%94n-body-and-extended-body-gravitation)
+on the KSP forum was a good place to ask for help with the mod, and it contained
+some interesting threads, although it has been less active in recent years.
+Unfortunately, as of this writing (October 2024) the KSP forum seems to return
+500 more often than not.  It is not recommended to post questions there, even
+when it is up.  Use Discord instead.
+
 ## GitHub Issues
 
 GitHub Issues should be used for reporting bugs (either crashes or
