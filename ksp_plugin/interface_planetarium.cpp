@@ -349,7 +349,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     Instant const prediction_final_time = vessel.prediction()->t_max();
     Instant const final_time =
         vessel.has_flight_plan()
-            ? std::max(vessel.flight_plan().actual_final_time(),
+            ? std::max(GetFlightPlan(*plugin, vessel_guid).actual_final_time(),
                        prediction_final_time)
             : prediction_final_time;
     auto const& celestial_trajectory =

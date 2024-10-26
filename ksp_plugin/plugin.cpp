@@ -971,6 +971,7 @@ void Plugin::ExtendPredictionForFlightPlan(GUID const& vessel_guid) const {
   // no guarantee that it will be long enough.  Presumably the user will keep
   // increasing the flight plan length and get what they want, ultimately.
   if (renderer_->HasTargetVessel() && vessel.has_flight_plan()) {
+    vessel.ReadFlightPlanFromMessage();
     auto& target_vessel = renderer_->GetTargetVessel();
     if (target_vessel.prediction()->back().time <
         vessel.flight_plan().actual_final_time()) {
