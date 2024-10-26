@@ -87,6 +87,7 @@ endif
 LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)gipfeli/libgipfeli.a \
 	$(ABSL_GROUP_LIBS) \
+	$(DEP_DIR)core-math/libcore-math.a \
 	$(DEP_DIR)zfp/build/lib/libzfp.a \
 	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
@@ -96,6 +97,7 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)protobuf/src \
 	-I$(DEP_DIR)gipfeli/include \
 	-I$(DEP_DIR)abseil-cpp \
+	-I$(DEP_DIR)core-math/include \
 	-I$(DEP_DIR)zfp/include \
 	-I$(DEP_DIR)config/include \
 	-I$(DEP_DIR)multiprecision/include
