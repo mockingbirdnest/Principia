@@ -69,8 +69,6 @@ double DetectDangerousRounding(double const x, double const Δx) {
   double const& error = sum.error;
   __m128i const value_exponent_128i =
       _mm_castpd_si128(_mm_and_pd(masks::exponent_bits, _mm_set_sd(value)));
-  double const value_exponent =
-      _mm_cvtsd_f64(_mm_castsi128_pd(value_exponent_128i));
   __m128i const error_128i =
       _mm_castpd_si128(_mm_andnot_pd(masks::sign_bit, _mm_set_sd(error)));
   double const normalized_error = _mm_cvtsd_f64(
