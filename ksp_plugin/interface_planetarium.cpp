@@ -345,13 +345,16 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
     return m.Return();
   } else {
-    auto const& vessel = *plugin->GetVessel(vessel_guid);
+    auto& vessel = *plugin->GetVessel(vessel_guid);
     Instant const prediction_final_time = vessel.prediction()->t_max();
-    Instant const final_time =
-        vessel.has_flight_plan()
-            ? std::max(vessel.flight_plan().actual_final_time(),
-                       prediction_final_time)
-            : prediction_final_time;
+    Instant final_time;
+    if (vessel.has_flight_plan()) {
+      vessel.ReadFlightPlanFromMessage();
+      final_time = std::max(vessel.flight_plan().actual_final_time(),
+                            prediction_final_time);
+    } else {
+      final_time = prediction_final_time;
+    }
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
     // No need to request reanimation here because the current time of the
