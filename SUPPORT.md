@@ -7,7 +7,8 @@ following guidelines.
 
 Questions regarding the usage of Principia are best directed to the [Discord
 channel for
-Principia](https://discord.gg/Hz8sJx7K8e).
+Principia](https://discord.com/channels/319857228905447436/480397772248580098)
+(here is an [invite](https://discord.gg/Hz8sJx7K8e) if you don't have access already).
 There are many knowledgeable users there who can help you with basic questions
 and provide guidance on getting started with the mod.  The Discord channel is
 *not* suitable for reporting bugs, however; a post like "when I do X it crashes"
