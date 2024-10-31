@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[Колмогоров](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%D0%BA%D0%BE%D0%BB%D0%BC%D0%BE%D0%B3%D0%BE%D1%80%D0%BE%D0%B2), the October version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k0lmogor0v).**
+**&lrm;[Kronecker](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#kronecker), the November version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kr0n3cker).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Колмогоров for 1.8.1—1.12.5](https://share.weiyun.com/qSf7xDrt).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Kronecker for 1.8.1—1.12.5](https://share.weiyun.com/A26orgyL).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/k0lmogor0v).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Колмогоров](https://github.com/mockingbirdnest/Principia/releases/tag/2024100219-%D0%9A%D0%BE%D0%BB%D0%BC%D0%BE%D0%B3%D0%BE%D1%80%D0%BE%D0%B2) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kr0n3cker).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Kronecker](https://github.com/mockingbirdnest/Principia/releases/tag/2024110113-Kronecker) release.
