@@ -3,7 +3,7 @@ name: Keep runners alive
 on:
   schedule:
     # Run this workflow shortly before the time when the VM auto-shutdown, which is at 04:00:00 UTC.
-    - cron: '45 3 */4 * *'
+    - cron: '30 3 */4 * *'
 
 permissions:
   id-token: write
