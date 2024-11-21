@@ -733,17 +733,29 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   public static double RadiusAt(CelestialBody centre,
                                 double latitude,
                                 double longitude) {
-    double altitude = centre.TerrainAltitude(
-        latitude,
-        longitude,
-        allowNegative: !centre.ocean);
+    double altitude = 0;
+    try {
+      altitude = centre.TerrainAltitude(latitude,
+                                        longitude,
+                                        allowNegative: !centre.ocean);
+    } catch (Exception e) {
+      Log.Fatal("Terrain system raised exception " + e.ToString() +
+                " when computing altitude at latitude " +
+                latitude +
+                ", longitude " +
+                longitude +
+                " for celestial " +
+                centre.name +
+                "; you are probably using a mod incompatible with Principia");
+    }
     if (double.IsNaN(altitude)) {
       Log.Fatal("Terrain system returned NaN for altitude at latitude " +
                 latitude +
                 ", longitude " +
                 longitude +
                 " for celestial " +
-                centre.name);
+                centre.name +
+                "; you are probably using a mod incompatible with Principia");
     }
     if (double.IsNaN(centre.Radius)) {
       Log.Fatal("Radius is NaN for celestial " + centre.name);
