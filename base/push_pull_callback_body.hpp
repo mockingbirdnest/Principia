@@ -5,6 +5,8 @@
 #include <memory>
 #include <utility>
 
+#include "glog/logging.h"
+
 namespace principia {
 namespace base {
 namespace _push_pull_callback {
@@ -117,6 +119,7 @@ PushPullExecutor<T, Result, Arguments...>::callback() const {
 template<typename T, typename Result, typename... Arguments>
 T PushPullExecutor<T, Result, Arguments...>::get() {
   absl::MutexLock l(&lock_);
+  CHECK(result_.has_value());
   return std::move(result_.value());
 }
 
