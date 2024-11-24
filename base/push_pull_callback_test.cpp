@@ -1,9 +1,7 @@
 #include "base/push_pull_callback.hpp"
 
-#include <random>
 #include <utility>
 
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 
 namespace principia {
