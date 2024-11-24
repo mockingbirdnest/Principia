@@ -80,9 +80,11 @@ class PushPullExecutor {
 
  private:
   PushPullCallback<Result, Arguments...> callback_;
-  std::thread thread_;
   mutable absl::Mutex lock_;
   std::optional<T> result_ GUARDED_BY(lock_);
+
+  // This must come last as it references the other member variables, see #4136.
+  std::thread thread_;
 };
 
 }  // namespace internal

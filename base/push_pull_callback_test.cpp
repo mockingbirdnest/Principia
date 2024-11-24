@@ -38,5 +38,28 @@ TEST(PushPullCallback, Test) {
   EXPECT_EQ(8, executor.get());
 }
 
+TEST(PushPullCallback, 4136) {
+  auto task =
+      [](std::function<double(int const x)> const& f)
+      -> std::optional<double> {
+    return std::nullopt;
+  };
+
+  for (std::int64_t attempt = 0; attempt < 100'000; ++attempt) {
+    auto* const executor =
+        new PushPullExecutor<std::optional<double>, double, int>(task);
+    for (;;) {
+      int x;
+      bool const more = executor->callback().Pull(x);
+      if (!more) {
+        auto const result = executor->get();
+        delete executor;
+        break;
+      }
+      executor->callback().Push(1.0);
+    }
+  }
+}
+
 }  // namespace base
 }  // namespace principia
