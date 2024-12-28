@@ -12,6 +12,7 @@ struct SinCosAccurateValues {
   double x;
   double sin_x;
   double cos_x;
+  double padding;
 };
 
 constexpr std::array<SinCosAccurateValues, 403> SinCosAccurateTable{{
