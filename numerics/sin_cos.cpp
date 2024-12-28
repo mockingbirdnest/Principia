@@ -14,6 +14,10 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
+#if PRINCIPIA_USE_IACA
+#include "intel/iacaMarks.h"
+#endif
+
 namespace principia {
 namespace numerics {
 namespace _sin_cos {
@@ -63,7 +67,7 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 // Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
 // configuration (that is, the bits after the last mantissa bit of the sum are
 // either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
-double DetectDangerousRounding(double const x, double const Δx) {
+inline double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
   double const& error = sum.error;
@@ -86,9 +90,9 @@ double DetectDangerousRounding(double const x, double const Δx) {
   }
 }
 
-void Reduce(Argument const θ,
-            DoublePrecision<Argument>& θ_reduced,
-            std::int64_t& quadrant) {
+inline void Reduce(Argument const θ,
+                   DoublePrecision<Argument>& θ_reduced,
+                   std::int64_t& quadrant) {
   if (θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
@@ -212,7 +216,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
-inline
+FORCE_INLINE(inline)
 #endif
 Value __cdecl Sin(Argument const θ) {
   DoublePrecision<Argument> θ_reduced;
@@ -242,7 +246,7 @@ Value __cdecl Sin(Argument const θ) {
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
-inline
+FORCE_INLINE(inline)
 #endif
 Value __cdecl Cos(Argument const θ) {
   DoublePrecision<Argument> θ_reduced;
@@ -253,7 +257,13 @@ Value __cdecl Cos(Argument const θ) {
     if (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
+#if PRINCIPIA_USE_IACA
+      IACA_VC64_START;
+#endif
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
+#if PRINCIPIA_USE_IACA
+      IACA_VC64_END;
+#endif
     }
   } else {
     if (quadrant & 0b1) {

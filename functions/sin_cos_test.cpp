@@ -21,7 +21,25 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_next;
 using namespace principia::testing_utilities::_almost_equals;
 
-class SinCosTest : public ::testing::Test {};
+class SinCosTest : public ::testing::Test {
+ protected:
+  double a_ = 1.0;
+};
+
+// Defined in sin_cos.hpp
+#if PRINCIPIA_USE_IACA
+
+// A convenient skeleton for analysing code with IACA.  Note that to speed-up
+// analysis, we disable all the other tests when using IACA.
+TEST_F(SinCosTest, DISABLED_IACA) {
+  auto iaca = [](double const a) {
+    auto const principia_cos = Cos(a);
+    return principia_cos;
+  };
+  CHECK_EQ(iaca(a_), iaca(a_));
+}
+
+#else
 
 TEST_F(SinCosTest, Random) {
   std::mt19937_64 random(42);
@@ -142,6 +160,8 @@ TEST_F(SinCosTest, HardReduction) {
   EXPECT_THAT(Cos(0x16ac5b262ca1ffp797),
               AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
 }
+
+#endif
 
 }  // namespace _sin_cos
 }  // namespace numerics
