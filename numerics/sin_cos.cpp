@@ -81,6 +81,17 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
   }
 }
 
+template<FMAPolicy fma_policy>
+double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+    return FusedNegatedMultiplyAdd(a, b, c);
+  } else {
+    return c - a * b;
+  }
+}
+
 // Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
 // configuration (that is, the bits after the last mantissa bit of the sum are
 // either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
@@ -225,9 +236,10 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   double const h² = h * (h + 2 * e);
   double const h³ = h² * h;
   double const polynomial_term =
-      ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
-        sin_x₀ * FusedMultiplyAdd<fma_policy>(
-                     h³, SinPolynomial<fma_policy>(h²), e)) +
+      (FusedNegatedMultiplyAdd<fma_policy>(
+           sin_x₀,
+           FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+           cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
        cos_x₀_minus_h_sin_x₀.error);
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
