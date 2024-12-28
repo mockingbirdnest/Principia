@@ -741,11 +741,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		shared\base.vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
-		shared\astronomy.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
 		shared\base.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
-		shared\geometry.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
-		shared\testing_utilities.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
 		shared\base.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
 		shared\base.vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4

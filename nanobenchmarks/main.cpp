@@ -91,31 +91,47 @@ BENCHMARKED_FUNCTION(square_root_division) {
 
 struct distribution {
   double min;
-  double percentile;
-  double decile;
-  double quartile;
-  double median;
+  std::vector<double> quantiles;
+  static std::vector<double>& quantile_definitions;
 
   static std::ostream& __cdecl heading(std::ostream& out) {
-    return out << std::setw(8) << "min" << std::setw(8) << "1%" << std::setw(8)
-               << "10%" << std::setw(8) << "25%" << std::setw(8) << "50%";
+    out << std::setw(8) << "min";
+    for (auto const& n : quantile_definitions) {
+      if (n > 100) {
+        std::print(out, "{:>7}‰", 1000.0 / n);
+      } else {
+        std::print(out, "{:>7}%", 100.0 / n);
+      }
+    }
+    return out;
   }
 };
 
+std::vector<double>& distribution::quantile_definitions =
+    *new std::vector<double>();
+
 std::ostream& operator<<(std::ostream& out, distribution const& x) {
-  return out << std::fixed << std::setprecision(2) << std::setw(8) << x.min
-             << std::showpos << std::setw(8) << x.percentile - x.min
-             << std::setw(8) << x.decile - x.min << std::setw(8)
-             << x.quartile - x.min << std::setw(8) << x.median - x.min
-             << std::noshowpos << std::defaultfloat;
+  std::print(out, "{:8.2f}", x.min);
+  for (double const quantile : x.quantiles) {
+      std::print(out, "{:+8.2f}", quantile - x.min);
+  }
+  return out;
 }
 
 distribution operator*(double a, distribution x) {
-  return {a * x.min, a * x.percentile, a * x.decile, a * x.quartile, a * x.median};
+  distribution result{a * x.min};
+  for (double const quantile : x.quantiles) {
+      result.quantiles.push_back(a * quantile);
+  }
+  return result;
 }
 
 distribution operator+(distribution x, double b) {
-  return {x.min + b, x.percentile + b, x.decile + b, x.quartile + b, x.median + b};
+  distribution result{x.min + b};
+  for (double const quantile : x.quantiles) {
+      result.quantiles.push_back(quantile + b);
+  }
+  return result;
 }
 
 __declspec(noinline) distribution benchmark(double (BENCHMARK_CALLING_CONVENTION* f)(double)) {
@@ -137,35 +153,35 @@ __declspec(noinline) distribution benchmark(double (BENCHMARK_CALLING_CONVENTION
     durations[j] = δtsc / n;
   }
   std::sort(durations, durations + k);
-  return {
-      durations[0],
-      durations[k / 100],
-      durations[k / 10],
-      durations[k / 4],
-      durations[k / 2],
-  };
+  distribution result {
+      durations[0]};
+  for (int const q : distribution::quantile_definitions) {
+    result.quantiles.push_back(durations[k / q]);
+  }
+  return result;
 }
 
 BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt no FMA faithful",
+    "Cbrt 3²ᴄZ5¹ Faithful",
     principia::numerics::_cbrt::internal::method_3²ᴄZ5¹::Cbrt<
         principia::numerics::_cbrt::internal::Rounding::Faithful>);
 BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt no FMA correct",
+    "Cbrt 3²ᴄZ5¹ Correct",
     principia::numerics::_cbrt::internal::method_3²ᴄZ5¹::Cbrt<
         principia::numerics::_cbrt::internal::Rounding::Correct>);
 BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt FMA faithful",
+    "Cbrt 5²Z4¹FMA Faithful",
     principia::numerics::_cbrt::internal::method_5²Z4¹FMA::Cbrt<
         principia::numerics::_cbrt::internal::Rounding::Faithful>);
 BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt FMA correct",
+    "Cbrt 5²Z4¹FMA Correct",
     principia::numerics::_cbrt::internal::method_5²Z4¹FMA::Cbrt<
         principia::numerics::_cbrt::internal::Rounding::Correct>);
 BENCHMARK_FUNCTION_WITH_NAME("Cbrt",
     principia::numerics::_cbrt::Cbrt);
 
 int __cdecl main(int argc, const char** argv) {
+  distribution::quantile_definitions = {1000, 100, 10, 4, 2};
   std::cout << principia::base::_cpuid::CPUVendorIdentificationString() << " "
             << principia::base::_cpuid::ProcessorBrandString() << "\nFeatures:"
             << principia::base::_cpuid::CPUFeatures() << "\n";
@@ -180,7 +196,7 @@ int __cdecl main(int argc, const char** argv) {
   };
   std::map<double(BENCHMARK_CALLING_CONVENTION*)(double), distribution>
       reference_measurements;
-  std::cout << std::setw(name_width + 1) << "RAW TSC:" << distribution::heading
+  std::cout << std::setw(name_width + 2) << "RAW TSC:" << distribution::heading
             << "\n";
   for (auto const& [function, _] : reference_functions) {
     auto const result = benchmark(function);
@@ -189,7 +205,10 @@ int __cdecl main(int argc, const char** argv) {
         std::ranges::find(function_registry, function, [&](auto pair) {
           return pair.second;
         })->first;
-    std::cout << std::setw(name_width + 1) << name << result << "\n";
+    std::vprint_unicode(std::cout,
+                        " {:>" + std::to_string(name_width + 1) + "}",
+                        std::make_format_args(name));
+    std::cout << result << "\n";
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
@@ -208,18 +227,19 @@ int __cdecl main(int argc, const char** argv) {
                    PearsonProductMomentCorrelationCoefficient(tsc,
                                                               expected_cycles)
             << "\n";
-  std::cout << std::setw(name_width + 1) << "Cycles:" << distribution::heading
+  std::cout << std::setw(name_width + 2) << "Cycles:" << distribution::heading
             << "\n";
   auto bm_cycles = [&](double(BENCHMARK_CALLING_CONVENTION * f)(double)) {
     return a * benchmark(f) + b;
   };
   for (auto const& [name, f] : function_registry) {
-    std::cout << (std::ranges::contains(reference_functions,
-                                        f,
-                                        [&](auto pair) { return pair.first; })
+    std::cout << (std::ranges::contains(std::views::keys(reference_functions),
+                                        f)
                       ? "R"
-                      : " ")
-              << std::setw(name_width + 1) << name << a * benchmark(f) + b
-              << "\n";
+                      : " ");
+    std::vprint_unicode(std::cout,
+                        "{:>" + std::to_string(name_width + 1) + "}",
+                        std::make_format_args(name));
+    std::cout << a * benchmark(f) + b << "\n";
   }
 }
