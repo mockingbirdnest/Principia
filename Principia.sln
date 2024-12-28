@@ -194,6 +194,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testing_utilities", "shared
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functions", "functions\functions.vcxproj", "{7CCA653C-2E8F-4FFD-9E9F-BEE590F3EFAB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nanobenchmarks", "nanobenchmarks\nanobenchmarks.vcxproj", "{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -693,6 +695,30 @@ Global
 		{7CCA653C-2E8F-4FFD-9E9F-BEE590F3EFAB}.Release|x64.Build.0 = Release|x64
 		{7CCA653C-2E8F-4FFD-9E9F-BEE590F3EFAB}.Release|x86.ActiveCfg = Release|Win32
 		{7CCA653C-2E8F-4FFD-9E9F-BEE590F3EFAB}.Release|x86.Build.0 = Release|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Debug|Any CPU.Build.0 = Debug|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Debug|x64.ActiveCfg = Debug|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Debug|x64.Build.0 = Debug|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Debug|x86.ActiveCfg = Debug|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Debug|x86.Build.0 = Debug|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release KSP 1.7.3|Any CPU.ActiveCfg = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release KSP 1.7.3|Any CPU.Build.0 = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release KSP 1.7.3|x64.ActiveCfg = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release KSP 1.7.3|x64.Build.0 = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release KSP 1.7.3|x86.ActiveCfg = Release|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release KSP 1.7.3|x86.Build.0 = Release|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release_LLVM|Any CPU.ActiveCfg = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release_LLVM|Any CPU.Build.0 = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release_LLVM|x64.ActiveCfg = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release_LLVM|x64.Build.0 = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release_LLVM|x86.ActiveCfg = Release|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release_LLVM|x86.Build.0 = Release|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|Any CPU.ActiveCfg = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|Any CPU.Build.0 = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x64.ActiveCfg = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x64.Build.0 = Release|x64
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x86.ActiveCfg = Release|Win32
+		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -715,6 +741,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		shared\base.vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
+		shared\astronomy.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
+		shared\base.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
+		shared\geometry.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
+		shared\testing_utilities.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
 		shared\base.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
 		shared\base.vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}</ProjectGuid>
+    <RootNamespace>nanobenchmarks</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="reference_functions.asm" />
+  </ItemGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+  <Import Project="$(SolutionDir)principia.props" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+    <Import Project="..\shared\testing_utilities.vcxitems" Label="Shared" />
+    <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
+  </ImportGroup>
+</Project>
