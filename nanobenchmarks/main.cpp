@@ -1,3 +1,7 @@
+
+#include <Windows.h>
+#include <Powersetting.h>
+
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -17,10 +21,11 @@
 
 #define BENCHMARK_CALLING_CONVENTION
 
-static std::map<std::string, double(BENCHMARK_CALLING_CONVENTION*)(double)>&
+using BenchmarkedFunction = double(BENCHMARK_CALLING_CONVENTION*)(double);
+
+static std::map<std::string, BenchmarkedFunction>&
     function_registry =
-        *new std::map<std::string,
-                      double(BENCHMARK_CALLING_CONVENTION*)(double)>();
+    *new std::map<std::string, BenchmarkedFunction>();
 
 #define BENCHMARK_FUNCTION(f) \
   static bool registered_##f = function_registry.emplace(#f, &(f)).second
@@ -35,7 +40,7 @@ static std::map<std::string, double(BENCHMARK_CALLING_CONVENTION*)(double)>&
   static bool registered_##line =                              \
       function_registry.emplace(name, &(__VA_ARGS__)).second
 
-#define BENCHMARKED_FUNCTION(f)                    \
+#define BenchmarkedFunction(f)                    \
   double BENCHMARK_CALLING_CONVENTION f(double x); \
   BENCHMARK_FUNCTION(f);                           \
   double BENCHMARK_CALLING_CONVENTION f(double x)
@@ -50,41 +55,41 @@ BENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 
-BENCHMARKED_FUNCTION(twice) {
+BenchmarkedFunction(twice) {
   return 2 * x;
 }
 
-BENCHMARKED_FUNCTION(thrice) {
+BenchmarkedFunction(thrice) {
   return 3 * x;
 }
 
-BENCHMARKED_FUNCTION(inc) {
+BenchmarkedFunction(inc) {
   return x + 1;
 }
 
-BENCHMARKED_FUNCTION(add_4_times) {
+BenchmarkedFunction(add_4_times) {
   return x * x * x * x * x;
 }
 
-BENCHMARKED_FUNCTION(add_16_times) {
+BenchmarkedFunction(add_16_times) {
 
   return x + x + x + x +
          x + x + x + x +
          x + x + x + x +
          x + x + x + x + x;}
 
-BENCHMARKED_FUNCTION(square_root) {
+BenchmarkedFunction(square_root) {
   __m128d x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
-BENCHMARKED_FUNCTION(sqrt_sqrt) {
+BenchmarkedFunction(sqrt_sqrt) {
   __m128d x_0 = _mm_set_sd(x);
   x_0 = _mm_sqrt_sd(x_0, x_0);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
-BENCHMARKED_FUNCTION(square_root_division) {
+BenchmarkedFunction(square_root_division) {
   __m128d x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_div_sd(x_0, _mm_sqrt_sd(x_0, x_0)));
 }
@@ -134,7 +139,7 @@ distribution operator+(distribution x, double b) {
   return result;
 }
 
-__declspec(noinline) distribution benchmark(double (BENCHMARK_CALLING_CONVENTION* f)(double)) {
+__declspec(noinline) distribution benchmark(BenchmarkedFunction f) {
   constexpr int k = 1'000'000;
   static double* durations = new double[k];
   int registers[4]{};
@@ -180,7 +185,124 @@ BENCHMARK_FUNCTION_WITH_NAME(
 BENCHMARK_FUNCTION_WITH_NAME("Cbrt",
     principia::numerics::_cbrt::Cbrt);
 
+std::pair<DWORD, DWORD> ReadPerfBoostModeACDC(
+    GUID const* const active_power_scheme) {
+  #define CASE(value) \
+    case value:       \
+      return #value
+    auto perf_boost_mode_to_string = [](DWORD mode) -> std::string {
+      switch (mode) {
+        CASE(PROCESSOR_PERF_BOOST_MODE_DISABLED);
+        CASE(PROCESSOR_PERF_BOOST_MODE_ENABLED);
+        CASE(PROCESSOR_PERF_BOOST_MODE_AGGRESSIVE);
+        CASE(PROCESSOR_PERF_BOOST_MODE_EFFICIENT_ENABLED);
+        CASE(PROCESSOR_PERF_BOOST_MODE_EFFICIENT_AGGRESSIVE);
+        CASE(PROCESSOR_PERF_BOOST_MODE_AGGRESSIVE_AT_GUARANTEED);
+        CASE(PROCESSOR_PERF_BOOST_MODE_EFFICIENT_AGGRESSIVE_AT_GUARANTEED);
+        default:
+          return std::to_string(mode);
+      }
+    };
+  #undef CASE
+  DWORD perf_boost_mode_ac;
+  DWORD perf_boost_mode_dc;
+  DWORD perf_boost_mode_size = sizeof(perf_boost_mode_ac);
+  CHECK_EQ(PowerReadACValue(nullptr,
+                            active_power_scheme,
+                            &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                            &GUID_PROCESSOR_PERF_BOOST_MODE,
+                            nullptr,
+                            reinterpret_cast<LPBYTE>(&perf_boost_mode_ac),
+                            &perf_boost_mode_size),
+           ERROR_SUCCESS)
+      << perf_boost_mode_size;
+  CHECK_EQ(PowerReadDCValue(nullptr,
+                            active_power_scheme,
+                            &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                            &GUID_PROCESSOR_PERF_BOOST_MODE,
+                            nullptr,
+                            reinterpret_cast<LPBYTE>(&perf_boost_mode_dc),
+                            &perf_boost_mode_size),
+           ERROR_SUCCESS)
+      << perf_boost_mode_size;
+  std::println(std::cout,
+               "PERF_BOOST_MODE AC={} ({})",
+               perf_boost_mode_ac,
+               perf_boost_mode_to_string(perf_boost_mode_ac));
+  std::println(std::cout,
+               "PERF_BOOST_MODE DC={} ({})",
+               perf_boost_mode_ac,
+               perf_boost_mode_to_string(perf_boost_mode_dc));
+  return {
+    perf_boost_mode_ac, perf_boost_mode_dc
+  };
+}
+
 int __cdecl main(int argc, const char** argv) {
+  SYSTEM_POWER_STATUS power_status;
+  CHECK(GetSystemPowerStatus(&power_status));
+  std::println(std::cout,
+               "ACLineStatus={} ({})",
+               power_status.ACLineStatus,
+               power_status.ACLineStatus == 0   ? "Offline"
+               : power_status.ACLineStatus == 1 ? "Online"
+                                                : "Unknown");
+  GUID* active_power_scheme;
+  CHECK_EQ(PowerGetActiveScheme(nullptr, &active_power_scheme), ERROR_SUCCESS);
+
+  // powercfg /query scheme_current sub_processor PERFBOOSTMODE
+
+  auto const [perf_boost_mode_ac, perf_boost_mode_dc] =
+      ReadPerfBoostModeACDC(active_power_scheme);
+  std::println(std::cout, "Disabling perf boost mode…");
+  std::println(
+      std::cout,
+      R"(If interrupted, restore with
+      POWERCFG /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE {}
+      POWERCFG /SETDCVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE {})",
+      perf_boost_mode_ac,
+      perf_boost_mode_dc);
+  CHECK_EQ(PowerWriteACValueIndex(nullptr,
+                                  active_power_scheme,
+                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
+                                  PROCESSOR_PERF_BOOST_MODE_DISABLED),
+           ERROR_SUCCESS);
+  CHECK_EQ(PowerWriteDCValueIndex(nullptr,
+                                  active_power_scheme,
+                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
+                                  PROCESSOR_PERF_BOOST_MODE_DISABLED),
+           ERROR_SUCCESS);
+  auto const [updated_perf_boost_mode_ac, updated_perf_boost_mode_dc] =
+      ReadPerfBoostModeACDC(active_power_scheme);
+  CHECK_EQ(updated_perf_boost_mode_ac, PROCESSOR_PERF_BOOST_MODE_DISABLED);
+  CHECK_EQ(updated_perf_boost_mode_dc, PROCESSOR_PERF_BOOST_MODE_DISABLED);
+
+  {
+    DWORD perf_boost_mode_ac;
+    DWORD perf_boost_mode_dc;
+    DWORD perf_boost_mode_size = sizeof(perf_boost_mode_ac);
+    CHECK_EQ(PowerReadACValue(nullptr,
+                              active_power_scheme,
+                              &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                              &GUID_PROCESSOR_PERF_BOOST_MODE,
+                              nullptr,
+                              reinterpret_cast<LPBYTE>(&perf_boost_mode_ac),
+                              &perf_boost_mode_size),
+             ERROR_SUCCESS)
+        << perf_boost_mode_size;
+    CHECK_EQ(PowerReadDCValue(nullptr,
+                              active_power_scheme,
+                              &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                              &GUID_PROCESSOR_PERF_BOOST_MODE,
+                              nullptr,
+                              reinterpret_cast<LPBYTE>(&perf_boost_mode_dc),
+                              &perf_boost_mode_size),
+             ERROR_SUCCESS)
+        << perf_boost_mode_size;
+  }
+
   distribution::quantile_definitions = {1000, 100, 10, 4, 2};
   std::cout << principia::base::_cpuid::CPUVendorIdentificationString() << " "
             << principia::base::_cpuid::ProcessorBrandString() << "\nFeatures:"
@@ -194,7 +316,7 @@ int __cdecl main(int argc, const char** argv) {
       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
       std::pair{&sqrtps_xmm0_xmm0, 12},
   };
-  std::map<double(BENCHMARK_CALLING_CONVENTION*)(double), distribution>
+  std::map<BenchmarkedFunction, distribution>
       reference_measurements;
   std::cout << std::setw(name_width + 2) << "RAW TSC:" << distribution::heading
             << "\n";
@@ -229,7 +351,7 @@ int __cdecl main(int argc, const char** argv) {
             << "\n";
   std::cout << std::setw(name_width + 2) << "Cycles:" << distribution::heading
             << "\n";
-  auto bm_cycles = [&](double(BENCHMARK_CALLING_CONVENTION * f)(double)) {
+  auto bm_cycles = [&](BenchmarkedFunction f) {
     return a * benchmark(f) + b;
   };
   for (auto const& [name, f] : function_registry) {
@@ -242,4 +364,18 @@ int __cdecl main(int argc, const char** argv) {
                         std::make_format_args(name));
     std::cout << a * benchmark(f) + b << "\n";
   }
+  std::println(std::cout, "Restoring perf boost mode…");
+  CHECK_EQ(PowerWriteACValueIndex(nullptr,
+                                  active_power_scheme,
+                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
+                                  perf_boost_mode_ac),
+           ERROR_SUCCESS);
+  CHECK_EQ(PowerWriteDCValueIndex(nullptr,
+                                  active_power_scheme,
+                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
+                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
+                                  perf_boost_mode_dc),
+           ERROR_SUCCESS);
+  ReadPerfBoostModeACDC(active_power_scheme);
 }
