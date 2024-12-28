@@ -41,6 +41,29 @@ TEST_F(SinCosTest, DISABLED_IACA) {
 
 #else
 
+TEST_F(SinCosTest, AccurateTableIndex) {
+  static constexpr std::int64_t iterations = 100;
+
+  constexpr std::int64_t table_spacing_bits = 9;
+  constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
+  constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
+  static const __m128d mantissa_index_bits =
+      _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'f800'0000'0000));
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(0, π / 4);
+
+  for (std::int64_t i = 0; i < iterations; ++i) {
+    double const x = uniformly_at(random);
+    auto const n = _mm_cvtsd_si64(_mm_set_sd(x * table_spacing_reciprocal));
+    auto const m =
+        _mm_cvtsi128_si64(_mm_castpd_si128(
+            _mm_and_pd(mantissa_index_bits,
+                       _mm_set_sd(x + (1.0 + table_spacing / 2.0))))) >>
+        (std::numeric_limits<double>::digits - table_spacing_bits - 1);
+    EXPECT_EQ(n, m);
+  }
+}
+
 TEST_F(SinCosTest, Random) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> uniformly_at(-2 * π, 2 * π);

@@ -32,8 +32,10 @@ using namespace principia::quantities::_elementary_functions;
 using Argument = double;
 using Value = double;
 
-constexpr Argument sin_near_zero_cutoff = 1.0 / 1024.0;
-constexpr Argument table_spacing_reciprocal = 512.0;
+constexpr std::int64_t table_spacing_bits = 9;
+constexpr Argument table_spacing_reciprocal = 1 << table_spacing_bits;
+constexpr Argument table_spacing = 1.0 / table_spacing_reciprocal;
+constexpr Argument sin_near_zero_cutoff = table_spacing / 2.0;
 
 // π / 2 split so that the high half has 18 zeros at the end of its mantissa.
 constexpr std::int64_t π_over_2_zeroes = 18;
@@ -51,7 +53,22 @@ static const __m128d exponent_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x7ff0'0000'0000'0000));
 static const __m128d mantissa_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
+static const __m128d mantissa_index_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'f800'0000'0000));
 }  // namespace masks
+
+inline std::int64_t AccurateTableIndex(double const abs_x) {
+  // 1. `abs_x + 1` is in [1, 1 + π / 4], so its exponent is 1.
+  // 2. Adding `table_spacing / 2` ensures that when we mask we have ranges
+  //    centred on integral multiples of `table_spacing`.
+  // 3. Masking preserves only mantissa bits in [0, 511] (modulo a shift) that
+  //    are suitable for indexing.
+  // 4. Shifting yield a bona fide index.
+  return _mm_cvtsi128_si64(_mm_castpd_si128(
+             _mm_and_pd(masks::mantissa_index_bits,
+                        _mm_set_sd(abs_x + (1.0 + table_spacing / 2.0))))) >>
+         (std::numeric_limits<double>::digits - table_spacing_bits - 1);
+}
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
@@ -157,7 +174,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
-    auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
+    auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
     double const x₀ =
         _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
@@ -190,7 +207,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
-  auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
+  auto const i = AccurateTableIndex(abs_x);
   auto const& accurate_values = SinCosAccurateTable[i];
   double const x₀ =
       _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
