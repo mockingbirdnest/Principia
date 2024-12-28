@@ -14,7 +14,7 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
-#if PRINCIPIA_USE_IACA
+#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
 #endif
 
@@ -256,7 +256,13 @@ Value __cdecl Sin(Argument const θ) {
     if (quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
+#if PRINCIPIA_USE_OSACA_SIN
+      IACA_VC64_START;
+#endif
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
+#if PRINCIPIA_USE_OSACA_SIN
+      IACA_VC64_END;
+#endif
     }
   } else {
     if (quadrant & 0b1) {
@@ -286,11 +292,11 @@ Value __cdecl Cos(Argument const θ) {
     if (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-#if PRINCIPIA_USE_IACA
+#if PRINCIPIA_USE_OSACA_COS
       IACA_VC64_START;
 #endif
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
-#if PRINCIPIA_USE_IACA
+#if PRINCIPIA_USE_OSACA_COS
       IACA_VC64_END;
 #endif
     }

@@ -27,16 +27,22 @@ class SinCosTest : public ::testing::Test {
 };
 
 // Defined in sin_cos.hpp
-#if PRINCIPIA_USE_IACA
+#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 
-// A convenient skeleton for analysing code with IACA.  Note that to speed-up
-// analysis, we disable all the other tests when using IACA.
-TEST_F(SinCosTest, DISABLED_IACA) {
-  auto iaca = [](double const a) {
-    auto const principia_cos = Cos(a);
-    return principia_cos;
+// A convenient skeleton for analysing code with OSACA.  Note that to speed-up
+// analysis, we disable all the other tests when using OSACA.
+TEST_F(SinCosTest, DISABLED_OSACA) {
+  static_assert(PRINCIPIA_INLINE_SIN_COS == 1,
+                "Must force inlining to use OSACA");
+  static_assert(PRINCIPIA_USE_OSACA_SIN + PRINCIPIA_USE_OSACA_COS <= 1,
+                "Must use OSACA for at most one function");
+  auto osaca_sin = [](double const a) {
+    return Sin(a);
   };
-  CHECK_EQ(iaca(a_), iaca(a_));
+  auto osaca_cos = [](double const a) {
+    return Cos(a);
+  };
+  CHECK_NE(osaca_sin(a_), osaca_cos(a_));
 }
 
 #else
