@@ -43,6 +43,7 @@ ABSL_FLAG(std::string,
           log_to_mathematica,
           "",
           "File to which to log the measurements");
+ABSL_FLAG(double, input, 5, "Input for the benchmarked functions");
 
 // Adding support for flag types only works using ADL (or by being in
 // marshalling.h), so we do this, which is UB.
@@ -142,14 +143,14 @@ __declspec(noinline) LatencyDistributionTable
   int registers[4]{};
   int leaf = 0;
   for (int j = 0; j < sample_count; ++j) {
+    double x = absl::GetFlag(FLAGS_input);
     __cpuid(registers, leaf);
     auto const tsc = __rdtsc();
-    double x = 5 + tsc % 2 + registers[0] % 2;
     for (int i = 0; i < loop_iterations; ++i) {
       x = f(x);
       x += 5 - x;
     }
-    __cpuid(registers, x);
+    __cpuid(registers, leaf);
     double const δtsc = __rdtsc() - tsc;
     samples[j] = δtsc / loop_iterations;
   }
@@ -166,25 +167,6 @@ __declspec(noinline) LatencyDistributionTable
   }
   return result;
 }
-
-BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt 3²ᴄZ5¹ Faithful",
-    principia::numerics::_cbrt::internal::method_3²ᴄZ5¹::Cbrt<
-        principia::numerics::_cbrt::internal::Rounding::Faithful>);
-BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt 3²ᴄZ5¹ Correct",
-    principia::numerics::_cbrt::internal::method_3²ᴄZ5¹::Cbrt<
-        principia::numerics::_cbrt::internal::Rounding::Correct>);
-BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt 5²Z4¹FMA Faithful",
-    principia::numerics::_cbrt::internal::method_5²Z4¹FMA::Cbrt<
-        principia::numerics::_cbrt::internal::Rounding::Faithful>);
-BENCHMARK_FUNCTION_WITH_NAME(
-    "Cbrt 5²Z4¹FMA Correct",
-    principia::numerics::_cbrt::internal::method_5²Z4¹FMA::Cbrt<
-        principia::numerics::_cbrt::internal::Rounding::Correct>);
-BENCHMARK_FUNCTION_WITH_NAME("Cbrt",
-    principia::numerics::_cbrt::Cbrt);
 
 std::size_t FormattedWidth(std::string s) {
   // Two columns per code unit is wide enough, since field width is at most 2
