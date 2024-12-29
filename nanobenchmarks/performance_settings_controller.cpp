@@ -109,6 +109,10 @@ WindowsPerformanceSettingsController::WindowsPerformanceSettingsController() {
                                     &GUID_PROCESSOR_PERF_BOOST_MODE,
                                     PROCESSOR_PERF_BOOST_MODE_DISABLED),
              ERROR_SUCCESS);
+    auto const [updated_perf_boost_mode_ac, updated_perf_boost_mode_dc] =
+        ReadAndPrintPerfBoostModeACDC();
+    CHECK_EQ(updated_perf_boost_mode_ac, PROCESSOR_PERF_BOOST_MODE_DISABLED);
+    CHECK_EQ(updated_perf_boost_mode_dc, PROCESSOR_PERF_BOOST_MODE_DISABLED);
   }
   if (!absl::GetFlag(FLAGS_keep_throttling)) {
     std::println("Disabling processor throttling…");
@@ -121,10 +125,6 @@ WindowsPerformanceSettingsController::WindowsPerformanceSettingsController() {
        POWERCFG /QUERY SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE
     If the setting is hidden, use
        POWERCFG -ATTRIBUTES SUB_PROCESSOR THROTTLING -ATTRIB_HIDE)");
-    auto const [updated_perf_boost_mode_ac, updated_perf_boost_mode_dc] =
-        ReadAndPrintPerfBoostModeACDC();
-    CHECK_EQ(updated_perf_boost_mode_ac, PROCESSOR_PERF_BOOST_MODE_DISABLED);
-    CHECK_EQ(updated_perf_boost_mode_dc, PROCESSOR_PERF_BOOST_MODE_DISABLED);
     CHECK_EQ(PowerWriteACValueIndex(nullptr,
                                     active_power_scheme_,
                                     &GUID_PROCESSOR_SETTINGS_SUBGROUP,
