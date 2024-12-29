@@ -6,8 +6,10 @@
 #include <map>
 #include <print>
 #include <ranges>
+#include <regex>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -15,12 +17,67 @@
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
+#include "base/array.hpp"
 #include "base/cpuid.hpp"
+#include "mathematica/logger.hpp"
 #include "nanobenchmarks/function_registry.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
 #include "numerics/cbrt.hpp"
 #include "testing_utilities/statistics.hpp"
 
+ABSL_FLAG(std::size_t,
+          loop_iterations,
+          100,
+          "Number of iterations of the measured loop");
+ABSL_FLAG(std::size_t,
+          samples,
+          1'000'000,
+          "Number of measurements to perform for each benchmarked function");
+ABSL_FLAG(std::string,
+          benchmark_filter,
+          ".*",
+          "Regular expression matching the names of functions to benchmark");
+ABSL_FLAG(std::string,
+          log_to_mathematica,
+          "",
+          "File to which to log the measurements");
+
+// Adding support for flag types only works using ADL (or by being in
+// marshalling.h), so we do this, which is UB.
+namespace std {
+
+bool AbslParseFlag(absl::string_view const text,
+                   std::vector<int>* const flag,
+                   std::string* const error) {
+  flag->clear();
+  for (absl::string_view const element : absl::StrSplit(text, ',')) {
+    if (!absl::ParseFlag(element, &flag->emplace_back(), error)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::string AbslUnparseFlag(std::vector<int> const& flag) {
+  return absl::StrJoin(flag, ",");
+}
+
+}  // namespace std
+
+ABSL_FLAG(std::vector<int>,
+          quantiles,
+          (std::vector{1000, 100, 20, 10, 4, 2}),
+          "Inverses of the quantiles to report");
+
+namespace principia {
+namespace nanobenchmarks {
+namespace _main {
+namespace {
+
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_function_registry;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
 using namespace principia::testing_utilities::_statistics;
@@ -34,12 +91,11 @@ BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 struct LatencyDistributionTable {
   double min;
   std::vector<double> quantiles;
-  static std::vector<double>& quantile_definitions;
 
   static std::string heading() {
     std::stringstream out;
     std::print(out, "{:>8}", "min");
-    for (auto const& n : quantile_definitions) {
+    for (auto const& n : absl::GetFlag(FLAGS_quantiles)) {
       if (n > 1000) {
         std::print(out, "{:>7}‱", 10'000.0 / n);
       } else if (n > 100) {
@@ -61,9 +117,6 @@ struct LatencyDistributionTable {
   }
 };
 
-std::vector<double>& LatencyDistributionTable::quantile_definitions =
-    *new std::vector<double>();
-
 LatencyDistributionTable operator*(double a, LatencyDistributionTable x) {
   LatencyDistributionTable result{a * x.min};
   for (double const quantile : x.quantiles) {
@@ -80,29 +133,36 @@ LatencyDistributionTable operator+(LatencyDistributionTable x, double b) {
   return result;
 }
 
-__declspec(noinline) LatencyDistributionTable benchmark(BenchmarkedFunction f) {
-  constexpr int k = 1'000'000;
-  static double* durations = new double[k];
+__declspec(noinline) LatencyDistributionTable
+    Benchmark(BenchmarkedFunction f, Logger* logger) {
+  std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
+  std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
+  static std::vector<double>& samples = *new std::vector<double>(
+      sample_count, std::numeric_limits<double>::quiet_NaN());
   int registers[4]{};
   int leaf = 0;
-  for (int j = 0; j < k; ++j) {
-    constexpr int n = 100;
+  for (int j = 0; j < sample_count; ++j) {
     __cpuid(registers, leaf);
     auto const tsc = __rdtsc();
     double x = 5 + tsc % 2 + registers[0] % 2;
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < loop_iterations; ++i) {
       x = f(x);
       x += 5 - x;
     }
     __cpuid(registers, x);
     double const δtsc = __rdtsc() - tsc;
-    durations[j] = δtsc / n;
+    samples[j] = δtsc / loop_iterations;
   }
-  std::sort(durations, durations + k);
-  LatencyDistributionTable result {
-      durations[0]};
-  for (int const q : LatencyDistributionTable::quantile_definitions) {
-    result.quantiles.push_back(durations[k / q]);
+  if (logger != nullptr) {
+    logger->Append(
+        "samples",
+        std::tuple{FunctionRegistry::names_by_function().at(f),
+                   samples});
+  }
+  std::ranges::sort(samples);
+  LatencyDistributionTable result{samples[0]};
+  for (int const q : absl::GetFlag(FLAGS_quantiles)) {
+    result.quantiles.push_back(samples[sample_count / q]);
   }
   return result;
 }
@@ -126,36 +186,59 @@ BENCHMARK_FUNCTION_WITH_NAME(
 BENCHMARK_FUNCTION_WITH_NAME("Cbrt",
     principia::numerics::_cbrt::Cbrt);
 
-int __cdecl main(int argc, char** argv) {
-  absl::ParseCommandLine(argc, argv);
+std::size_t FormattedWidth(std::string s) {
+  // Two columns per code unit is wide enough, since field width is at most 2
+  // per extended grapheme cluster.
+  std::size_t wide = 2 * s.size();
+    // There is no vformatted_size, so we actually format.
+    std::size_t const formatted_size =
+      std::vformat("{:" + std::to_string(wide) + "}",
+                     std::make_format_args(s))
+            .size();
+  // The actual width is the field width we allocated, minus the padding spaces
+  // added by formatting.
+  return wide - (formatted_size - s.size());
+}
+
+void Main() {
+  std::regex const name_matcher(absl::GetFlag(FLAGS_benchmark_filter));
   auto controller = PerformanceSettingsController::Make();
-  LatencyDistributionTable::quantile_definitions = {1000, 100, 20, 10, 4, 2};
+  std::unique_ptr<Logger> logger;
+  std::string const& filename = absl::GetFlag(FLAGS_log_to_mathematica);
+  if (!filename.empty()) {
+    logger = std::make_unique<Logger>(filename, /*make_unique=*/false);
+  }
   std::println("{} {}",
                principia::base::_cpuid::CPUVendorIdentificationString(),
                principia::base::_cpuid::ProcessorBrandString());
   std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
-  auto name_widths =
-      std::views::keys(FunctionRegistry::singleton.functions_by_name()) |
-      std::views::transform(&std::string::size);
-  std::size_t name_width = *std::ranges::max_element(name_widths);
   std::vector reference_functions{
       std::pair{&identity, 0},
       std::pair{&mulsd_xmm0_xmm0, 4},
       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
       std::pair{&sqrtps_xmm0_xmm0, 12},
   };
+  auto name_widths =
+      FunctionRegistry::functions_by_name() |
+      std::views::filter([&](auto const& pair) {
+        auto const& [name, f] = pair;
+        return std::regex_match(name, name_matcher) ||
+               std::ranges::contains(std::views::keys(reference_functions), f);
+      }) |
+      std::views::keys | std::views::transform(&FormattedWidth);
+  std::size_t name_width = *std::ranges::max_element(name_widths);
   std::map<BenchmarkedFunction, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(
       "{:<" + std::to_string(name_width + 2) + "}{}\n",
       std::make_format_args("RAW TSC:", LatencyDistributionTable::heading()));
   for (auto const& [function, _] : reference_functions) {
-    auto const result = benchmark(function);
+    auto const result = Benchmark(function, logger.get());
     reference_measurements.emplace(function, result);
     std::vprint_unicode(
         "{:>" + std::to_string(name_width + 2) + "}{}\n",
         std::make_format_args(
-            FunctionRegistry::singleton.names_by_function().at(function),
+            FunctionRegistry::names_by_function().at(function),
             result.Row()));
   }
   std::vector<double> tsc;
@@ -166,6 +249,9 @@ int __cdecl main(int argc, char** argv) {
   }
   double const a = Slope(tsc, expected_cycles);
   double const b = Mean(expected_cycles) - a * Mean(tsc);
+  auto benchmark_cycles = [&](BenchmarkedFunction const f) {
+    return a * Benchmark(f, logger.get()) + b;
+  };
   std::println("Slope: {:0.6f} cycle/TSC", a);
   std::println(
       "Correlation coefficient: {:0.6f}",
@@ -173,18 +259,28 @@ int __cdecl main(int argc, char** argv) {
   std::vprint_unicode(
       "{:<" + std::to_string(name_width + 2) + "}{}\n",
       std::make_format_args("Cycles:", LatencyDistributionTable::heading()));
-  auto bm_cycles = [&](BenchmarkedFunction f) {
-    return a * benchmark(f) + b;
-  };
-  for (auto const& [name, f] : FunctionRegistry::singleton.functions_by_name()) {
-    auto const result = benchmark(f);
+  for (auto const& [name, f] :
+       FunctionRegistry::functions_by_name()) {
+    if (!std::regex_match(name, name_matcher)) {
+      continue;
+    }
     std::vprint_unicode(
-        "{}{:>" + std::to_string(name_width + 1) + "}{}\n",
+        "{} {:>" + std::to_string(name_width) + "}{}\n",
         std::make_format_args(
             std::ranges::contains(std::views::keys(reference_functions), f)
                 ? "R"
                 : " ",
             name,
-            (a * result + b).Row()));
+            benchmark_cycles(f).Row()));
   }
+}
+
+}  // namespace
+}  // namespace _main
+}  // namespace nanobenchmarks
+}  // namespace principia
+
+int __cdecl main(int const argc, char** const argv) {
+  absl::ParseCommandLine(argc, argv);
+  principia::nanobenchmarks::_main::Main();
 }
