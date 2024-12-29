@@ -3,14 +3,15 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <map>
+#include <print>
+#include <ranges>
+#include <sstream>
+#include <string>
 #include <utility>
 #include <vector>
-#include <map>
-#include <string>
-#include <ranges>
 
 #include <intrin.h>
-#include <emmintrin.h>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -22,6 +23,7 @@
 
 using namespace principia::nanobenchmarks::_function_registry;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
+using namespace principia::testing_utilities::_statistics;
 
 BENCHMARK_EXTERN_C_FUNCTION(identity);
 BENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);
@@ -29,52 +31,14 @@ BENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 
-BENCHMARKED_FUNCTION(twice) {
-  return 2 * x;
-}
-
-BENCHMARKED_FUNCTION(thrice) {
-  return 3 * x;
-}
-
-BENCHMARKED_FUNCTION(inc) {
-  return x + 1;
-}
-
-BENCHMARKED_FUNCTION(add_4_times) {
-  return x * x * x * x * x;
-}
-
-BENCHMARKED_FUNCTION(add_16_times) {
-
-  return x + x + x + x +
-         x + x + x + x +
-         x + x + x + x +
-         x + x + x + x + x;}
-
-BENCHMARKED_FUNCTION(square_root) {
-  __m128d x_0 = _mm_set_sd(x);
-  return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
-}
-
-BENCHMARKED_FUNCTION(sqrt_sqrt) {
-  __m128d x_0 = _mm_set_sd(x);
-  x_0 = _mm_sqrt_sd(x_0, x_0);
-  return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
-}
-
-BENCHMARKED_FUNCTION(square_root_division) {
-  __m128d x_0 = _mm_set_sd(x);
-  return _mm_cvtsd_f64(_mm_div_sd(x_0, _mm_sqrt_sd(x_0, x_0)));
-}
-
-struct distribution {
+struct LatencyDistributionTable {
   double min;
   std::vector<double> quantiles;
   static std::vector<double>& quantile_definitions;
 
-  static std::ostream& __cdecl heading(std::ostream& out) {
-    out << std::setw(8) << "min";
+  static std::string heading() {
+    std::stringstream out;
+    std::print(out, "{:>8}", "min");
     for (auto const& n : quantile_definitions) {
       if (n > 1000) {
         std::print(out, "{:>7}‱", 10'000.0 / n);
@@ -84,38 +48,39 @@ struct distribution {
         std::print(out, "{:>7}%", 100.0 / n);
       }
     }
-    return out;
+    return out.str();
+  }
+
+  std::string Row() const {
+    std::stringstream out;
+    std::print(out, "{:8.2f}", min);
+    for (double const quantile : quantiles) {
+      std::print(out, "{:+8.2f}", quantile - min);
+    }
+    return out.str();
   }
 };
 
-std::vector<double>& distribution::quantile_definitions =
+std::vector<double>& LatencyDistributionTable::quantile_definitions =
     *new std::vector<double>();
 
-std::ostream& operator<<(std::ostream& out, distribution const& x) {
-  std::print(out, "{:8.2f}", x.min);
-  for (double const quantile : x.quantiles) {
-      std::print(out, "{:+8.2f}", quantile - x.min);
-  }
-  return out;
-}
-
-distribution operator*(double a, distribution x) {
-  distribution result{a * x.min};
+LatencyDistributionTable operator*(double a, LatencyDistributionTable x) {
+  LatencyDistributionTable result{a * x.min};
   for (double const quantile : x.quantiles) {
       result.quantiles.push_back(a * quantile);
   }
   return result;
 }
 
-distribution operator+(distribution x, double b) {
-  distribution result{x.min + b};
+LatencyDistributionTable operator+(LatencyDistributionTable x, double b) {
+  LatencyDistributionTable result{x.min + b};
   for (double const quantile : x.quantiles) {
       result.quantiles.push_back(quantile + b);
   }
   return result;
 }
 
-__declspec(noinline) distribution benchmark(BenchmarkedFunction f) {
+__declspec(noinline) LatencyDistributionTable benchmark(BenchmarkedFunction f) {
   constexpr int k = 1'000'000;
   static double* durations = new double[k];
   int registers[4]{};
@@ -134,9 +99,9 @@ __declspec(noinline) distribution benchmark(BenchmarkedFunction f) {
     durations[j] = δtsc / n;
   }
   std::sort(durations, durations + k);
-  distribution result {
+  LatencyDistributionTable result {
       durations[0]};
-  for (int const q : distribution::quantile_definitions) {
+  for (int const q : LatencyDistributionTable::quantile_definitions) {
     result.quantiles.push_back(durations[k / q]);
   }
   return result;
@@ -164,10 +129,11 @@ BENCHMARK_FUNCTION_WITH_NAME("Cbrt",
 int __cdecl main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
   auto controller = PerformanceSettingsController::Make();
-  distribution::quantile_definitions = {1000, 100, 20, 10, 4, 2};
-  std::cout << principia::base::_cpuid::CPUVendorIdentificationString() << " "
-            << principia::base::_cpuid::ProcessorBrandString() << "\nFeatures:"
-            << principia::base::_cpuid::CPUFeatures() << "\n";
+  LatencyDistributionTable::quantile_definitions = {1000, 100, 20, 10, 4, 2};
+  std::println("{} {}",
+               principia::base::_cpuid::CPUVendorIdentificationString(),
+               principia::base::_cpuid::ProcessorBrandString());
+  std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
   auto name_widths =
       std::views::keys(FunctionRegistry::singleton.functions_by_name()) |
       std::views::transform(&std::string::size);
@@ -178,18 +144,19 @@ int __cdecl main(int argc, char** argv) {
       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
       std::pair{&sqrtps_xmm0_xmm0, 12},
   };
-  std::map<BenchmarkedFunction, distribution>
+  std::map<BenchmarkedFunction, LatencyDistributionTable>
       reference_measurements;
-  std::cout << std::setw(name_width + 2) << "RAW TSC:" << distribution::heading
-            << "\n";
+  std::vprint_unicode(
+      "{:<" + std::to_string(name_width + 2) + "}{}\n",
+      std::make_format_args("RAW TSC:", LatencyDistributionTable::heading()));
   for (auto const& [function, _] : reference_functions) {
     auto const result = benchmark(function);
     reference_measurements.emplace(function, result);
-    auto const& name = FunctionRegistry::singleton.names_by_function().at(function);
-    std::vprint_unicode(std::cout,
-                        " {:>" + std::to_string(name_width + 1) + "}",
-                        std::make_format_args(name));
-    std::cout << result << "\n";
+    std::vprint_unicode(
+        "{:>" + std::to_string(name_width + 2) + "}{}\n",
+        std::make_format_args(
+            FunctionRegistry::singleton.names_by_function().at(function),
+            result.Row()));
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
@@ -197,31 +164,27 @@ int __cdecl main(int argc, char** argv) {
     tsc.push_back(reference_measurements[f].min);
     expected_cycles.push_back(cycles);
   }
-  double const a =
-      principia::testing_utilities::_statistics::Slope(tsc, expected_cycles);
-  double const b =
-      principia::testing_utilities::_statistics::Mean(expected_cycles) -
-      a * principia::testing_utilities::_statistics::Mean(tsc);
-  std::cout << "Slope: " << std::setprecision(6) << a << " cycle/TSC\n";
-  std::cout << "Correlation coefficient: "
-            << principia::testing_utilities::_statistics::
-                   PearsonProductMomentCorrelationCoefficient(tsc,
-                                                              expected_cycles)
-            << "\n";
-  std::cout << std::setw(name_width + 2) << "Cycles:" << distribution::heading
-            << "\n";
+  double const a = Slope(tsc, expected_cycles);
+  double const b = Mean(expected_cycles) - a * Mean(tsc);
+  std::println("Slope: {:0.6f} cycle/TSC", a);
+  std::println(
+      "Correlation coefficient: {:0.6f}",
+      PearsonProductMomentCorrelationCoefficient(tsc, expected_cycles));
+  std::vprint_unicode(
+      "{:<" + std::to_string(name_width + 2) + "}{}\n",
+      std::make_format_args("Cycles:", LatencyDistributionTable::heading()));
   auto bm_cycles = [&](BenchmarkedFunction f) {
     return a * benchmark(f) + b;
   };
   for (auto const& [name, f] : FunctionRegistry::singleton.functions_by_name()) {
     auto const result = benchmark(f);
-    std::cout << (std::ranges::contains(std::views::keys(reference_functions),
-                                        f)
-                      ? "R"
-                      : " ");
-    std::vprint_unicode(std::cout,
-                        "{:>" + std::to_string(name_width + 1) + "}",
-                        std::make_format_args(name));
-    std::cout << a * result + b << "\n";
+    std::vprint_unicode(
+        "{}{:>" + std::to_string(name_width + 1) + "}{}\n",
+        std::make_format_args(
+            std::ranges::contains(std::views::keys(reference_functions), f)
+                ? "R"
+                : " ",
+            name,
+            (a * result + b).Row()));
   }
 }

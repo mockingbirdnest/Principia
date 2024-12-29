@@ -28,6 +28,7 @@
     <ClCompile Include="function_registry.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
+    <ClCompile Include="examples.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm" />
