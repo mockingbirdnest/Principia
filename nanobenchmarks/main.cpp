@@ -143,12 +143,13 @@ __declspec(noinline) LatencyDistributionTable
   int registers[4]{};
   int leaf = 0;
   for (int j = 0; j < sample_count; ++j) {
-    double x = absl::GetFlag(FLAGS_input);
+    double const input = absl::GetFlag(FLAGS_input);
+    double x = input;
     __cpuid(registers, leaf);
     auto const tsc = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
       x = f(x);
-      x += 5 - x;
+      x += input - x;
     }
     __cpuid(registers, leaf);
     double const δtsc = __rdtsc() - tsc;
