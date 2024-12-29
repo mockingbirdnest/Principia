@@ -29,6 +29,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
     <ClCompile Include="examples.cpp" />
+    <ClCompile Include="microarchitectures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm" />
@@ -36,6 +37,7 @@
   <ItemGroup>
     <ClInclude Include="function_registry.hpp" />
     <ClInclude Include="performance_settings_controller.hpp" />
+    <ClInclude Include="microarchitectures.hpp" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />

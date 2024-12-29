@@ -23,6 +23,7 @@
 #include "base/cpuid.hpp"
 #include "mathematica/logger.hpp"
 #include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
 #include "numerics/cbrt.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -80,14 +81,9 @@ namespace {
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
 using namespace principia::testing_utilities::_statistics;
-
-BENCHMARK_EXTERN_C_FUNCTION(identity);
-BENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);
-BENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
-BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
-BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 
 struct LatencyDistributionTable {
   double min;
@@ -194,18 +190,12 @@ void Main() {
                principia::base::_cpuid::CPUVendorIdentificationString(),
                principia::base::_cpuid::ProcessorBrandString());
   std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
-  std::vector reference_functions{
-      std::pair{&identity, 0},
-      std::pair{&mulsd_xmm0_xmm0, 4},
-      std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
-      std::pair{&sqrtps_xmm0_xmm0, 12},
-  };
   auto name_widths =
       FunctionRegistry::functions_by_name() |
       std::views::filter([&](auto const& pair) {
         auto const& [name, f] = pair;
         return std::regex_match(name, name_matcher) ||
-               std::ranges::contains(std::views::keys(reference_functions), f);
+               ReferenceCycleCounts().contains(f);
       }) |
       std::views::keys | std::views::transform(&FormattedWidth);
   std::size_t name_width = *std::ranges::max_element(name_widths);
@@ -214,7 +204,7 @@ void Main() {
   std::vprint_unicode(
       "{:<" + std::to_string(name_width + 2) + "}{}\n",
       std::make_format_args("RAW TSC:", LatencyDistributionTable::heading()));
-  for (auto const& [function, _] : reference_functions) {
+  for (auto const& [function, _] : ReferenceCycleCounts()) {
     auto const result = Benchmark(function, logger.get());
     reference_measurements.emplace(function, result);
     std::vprint_unicode(
@@ -225,7 +215,7 @@ void Main() {
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
-  for (auto const& [f, cycles] : reference_functions) {
+  for (auto const& [f, cycles] : ReferenceCycleCounts()) {
     tsc.push_back(reference_measurements[f].min);
     expected_cycles.push_back(cycles);
   }
@@ -243,17 +233,19 @@ void Main() {
       std::make_format_args("Cycles:", LatencyDistributionTable::heading()));
   for (auto const& [name, f] :
        FunctionRegistry::functions_by_name()) {
-    if (!std::regex_match(name, name_matcher)) {
+    if (!std::regex_match(name, name_matcher) &&
+        !ReferenceCycleCounts().contains(f)) {
       continue;
     }
     std::vprint_unicode(
-        "{} {:>" + std::to_string(name_width) + "}{}\n",
-        std::make_format_args(
-            std::ranges::contains(std::views::keys(reference_functions), f)
-                ? "R"
-                : " ",
-            name,
-            benchmark_cycles(f).Row()));
+        "{} {:>" + std::to_string(name_width) + "}{:>8}{}\n",
+                        std::make_format_args(
+                            ReferenceCycleCounts().contains(f) ? "R" : " ",
+                            name,
+                            (ReferenceCycleCounts().contains(f)
+                                 ? std::to_string(ReferenceCycleCounts().at(f))
+                                 : ""),
+                            benchmark_cycles(f).Row()));
   }
 }
 
