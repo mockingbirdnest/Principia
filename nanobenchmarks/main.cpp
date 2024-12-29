@@ -93,19 +93,22 @@ struct LatencyDistributionTable {
   double min;
   std::vector<double> quantiles;
 
-  static std::string heading() {
-    std::stringstream out;
-    std::print(out, "{:>8}", "min");
-    for (double const q : absl::GetFlag(FLAGS_quantiles)) {
-      if (q < 1e-3) {
-        std::print(out, "{:>7}‱", 10'000 * q);
-      } else if (q < 1e-2) {
-        std::print(out, "{:>7}‰", 1000 * q);
-      } else {
-        std::print(out, "{:>7}%", 100 * q);
+  static std::string const& heading() {
+    static std::string const& result = [] {
+      std::stringstream& out = *new std::stringstream();
+      std::print(out, "{:>8}", "min");
+      for (double const q : absl::GetFlag(FLAGS_quantiles)) {
+        if (q < 1e-3) {
+          std::print(out, "{:>7}‱", 10'000 * q);
+        } else if (q < 1e-2) {
+          std::print(out, "{:>7}‰", 1000 * q);
+        } else {
+          std::print(out, "{:>7}%", 100 * q);
+        }
       }
-    }
-    return out.str();
+      return out.str();
+    }();
+    return result;
   }
 
   std::string Row() const {
@@ -221,7 +224,7 @@ void Main() {
         "{:>" + std::to_string(name_width + 2) + "}{}\n",
         std::make_format_args(
             FunctionRegistry::names_by_function().at(function),
-            result.Row()));
+            static_cast<std::string const&>(result.Row())));
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
@@ -253,7 +256,7 @@ void Main() {
                 ? "R"
                 : " ",
             name,
-            benchmark_cycles(f).Row()));
+            static_cast<std::string const&>(benchmark_cycles(f).Row())));
   }
 }
 
