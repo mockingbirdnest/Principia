@@ -1,5 +1,9 @@
 #include "nanobenchmarks/function_registry.hpp"
 
+#include <functional>
+#include <map>
+#include <string>
+
 #include "glog/logging.h"
 
 namespace principia {

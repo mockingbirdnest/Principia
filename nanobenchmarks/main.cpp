@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <memory>
 #include <print>
 #include <ranges>
 #include <regex>

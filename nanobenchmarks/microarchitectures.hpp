@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <string_view>
 
 #include "nanobenchmarks/function_registry.hpp"
 

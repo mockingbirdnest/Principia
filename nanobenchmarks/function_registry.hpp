@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <string>
 #include <string_view>
@@ -11,8 +12,7 @@ namespace nanobenchmarks {
 namespace _function_registry {
 namespace internal {
 
-#define BENCHMARK_CALLING_CONVENTION
-using BenchmarkedFunction = double (BENCHMARK_CALLING_CONVENTION*)(double);
+using BenchmarkedFunction = double (*)(double);
 
 class FunctionRegistry {
  public:
@@ -42,13 +42,13 @@ class FunctionRegistry {
 #define BENCHMARK_FUNCTION(...) \
   BENCHMARK_FUNCTION_WITH_NAME(#__VA_ARGS__, __VA_ARGS__)
 
-#define BENCHMARKED_FUNCTION(f)                     \
-  double BENCHMARK_CALLING_CONVENTION f(double x); \
-  BENCHMARK_FUNCTION(f);                           \
-  double BENCHMARK_CALLING_CONVENTION f(double x)
+#define BENCHMARKED_FUNCTION(f) \
+  double f(double x);           \
+  BENCHMARK_FUNCTION(f);        \
+  double f(double x)
 
-#define BENCHMARK_EXTERN_C_FUNCTION(f)                      \
-  extern "C" double BENCHMARK_CALLING_CONVENTION f(double); \
+#define BENCHMARK_EXTERN_C_FUNCTION(f) \
+  extern "C" double f(double);         \
   BENCHMARK_FUNCTION(f)
 
 }  // namespace internal

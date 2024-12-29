@@ -1,6 +1,8 @@
 #include "nanobenchmarks/microarchitectures.hpp"
 
+#include <map>
 #include <regex>
+#include <utility>
 #include <vector>
 
 #include "base/cpuid.hpp"
@@ -37,7 +39,7 @@ static std::vector<
                            std::pair{&mulsd_xmm0_xmm0, 3},
                            std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
                            std::pair{&sqrtps_xmm0_xmm0, 14}}}};
-}
+}  // namespace
 
 std::map<BenchmarkedFunction, int> const& ReferenceCycleCounts() {
   static std::map<BenchmarkedFunction, int> const& result = [] {

@@ -1,6 +1,7 @@
 #include "nanobenchmarks/performance_settings_controller.hpp"
 
 #include <iostream>
+#include <memory>
 #include <print>
 #include <utility>
 #include <string_view>
@@ -100,9 +101,9 @@ WindowsPerformanceSettingsController::WindowsPerformanceSettingsController() {
     CHECK_EQ(updated_perf_boost_mode_ac, PROCESSOR_PERF_BOOST_MODE_DISABLED);
     CHECK_EQ(updated_perf_boost_mode_dc, PROCESSOR_PERF_BOOST_MODE_DISABLED);
   }
- }
+}
 
- WindowsPerformanceSettingsController::~WindowsPerformanceSettingsController() {
+WindowsPerformanceSettingsController::~WindowsPerformanceSettingsController() {
   CHECK(UnregisterPowerSettingNotification(power_setting_notification_));
   if (settings_changed_) {
     std::println("!!! Power settings changed during benchmarking.");
@@ -153,7 +154,8 @@ std::string_view WindowsPerformanceSettingsController::PerfBoostModeToString(
     PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE(EFFICIENT_ENABLED);
     PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE(EFFICIENT_AGGRESSIVE);
     PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE(AGGRESSIVE_AT_GUARANTEED);
-    PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE(EFFICIENT_AGGRESSIVE_AT_GUARANTEED);
+    PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE(
+        EFFICIENT_AGGRESSIVE_AT_GUARANTEED);
     default:
       return "Unknown";
   }
