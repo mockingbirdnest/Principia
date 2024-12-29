@@ -2,12 +2,14 @@
 
 #include "nanobenchmarks/function_registry.hpp"
 #include "numerics/cbrt.hpp"
+#include "numerics/sin_cos.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _examples {
 
 using namespace principia::numerics::_cbrt;
+using namespace principia::numerics::_sin_cos;
 
 BENCHMARKED_FUNCTION(twice) {
   return 2 * x;
@@ -52,6 +54,14 @@ BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
+
+BENCHMARKED_FUNCTION(std_cos) {
+  return std::cos(x);
+}
+
+BENCHMARKED_FUNCTION(principia_cos) {
+  return Cos(x);
+}
 
 }  // namespace _examples
 }  // namespace nanobenchmarks
