@@ -89,19 +89,22 @@ struct LatencyDistributionTable {
   double min;
   std::vector<double> quantiles;
 
-  static std::string heading() {
-    std::stringstream out;
-    std::print(out, "{:>8}", "min");
-    for (double const q : absl::GetFlag(FLAGS_quantiles)) {
-      if (q < 1e-3) {
-        std::print(out, "{:>7}‱", 10'000 * q);
-      } else if (q < 1e-2) {
-        std::print(out, "{:>7}‰", 1000 * q);
-      } else {
-        std::print(out, "{:>7}%", 100 * q);
+  static std::string const& heading() {
+    static std::string const& result = [] {
+      std::stringstream& out = *new std::stringstream();
+      std::print(out, "{:>8}", "min");
+      for (double const q : absl::GetFlag(FLAGS_quantiles)) {
+        if (q < 1e-3) {
+          std::print(out, "{:>7}‱", 10'000 * q);
+        } else if (q < 1e-2) {
+          std::print(out, "{:>7}‰", 1000 * q);
+        } else {
+          std::print(out, "{:>7}%", 100 * q);
+        }
       }
-    }
-    return out.str();
+      return out.str();
+    }();
+    return result;
   }
 
   std::string Row() const {
@@ -202,16 +205,18 @@ void Main() {
   std::map<BenchmarkedFunction, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(
-      "{:<" + std::to_string(name_width + 2) + "}{}\n",
-      std::make_format_args("RAW TSC:", LatencyDistributionTable::heading()));
+      "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
+                      std::make_format_args(
+                          "RAW TSC:", "", LatencyDistributionTable::heading()));
   for (auto const& [function, _] : ReferenceCycleCounts()) {
     auto const result = Benchmark(function, logger.get());
     reference_measurements.emplace(function, result);
     std::vprint_unicode(
-        "{:>" + std::to_string(name_width + 2) + "}{}\n",
+        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
         std::make_format_args(
-            FunctionRegistry::names_by_function().at(function),
-            result.Row()));
+                            FunctionRegistry::names_by_function().at(function),
+                            "",
+            static_cast<std::string const&>(result.Row())));
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
@@ -229,8 +234,9 @@ void Main() {
       "Correlation coefficient: {:0.6f}",
       PearsonProductMomentCorrelationCoefficient(tsc, expected_cycles));
   std::vprint_unicode(
-      "{:<" + std::to_string(name_width + 2) + "}{}\n",
-      std::make_format_args("Cycles:", LatencyDistributionTable::heading()));
+      "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
+      std::make_format_args(
+          "Cycles:", "expected", LatencyDistributionTable::heading()));
   for (auto const& [name, f] :
        FunctionRegistry::functions_by_name()) {
     if (!std::regex_match(name, name_matcher) &&
@@ -239,13 +245,14 @@ void Main() {
     }
     std::vprint_unicode(
         "{} {:>" + std::to_string(name_width) + "}{:>8}{}\n",
-                        std::make_format_args(
-                            ReferenceCycleCounts().contains(f) ? "R" : " ",
-                            name,
-                            (ReferenceCycleCounts().contains(f)
-                                 ? std::to_string(ReferenceCycleCounts().at(f))
-                                 : ""),
-                            benchmark_cycles(f).Row()));
+        std::make_format_args(
+            ReferenceCycleCounts().contains(f) ? "R" : " ",
+            name,
+            static_cast<std::string const&>(
+                ReferenceCycleCounts().contains(f)
+                    ? std::to_string(ReferenceCycleCounts().at(f))
+                    : ""),
+            static_cast<std::string const&>(benchmark_cycles(f).Row())));
   }
 }
 
