@@ -202,6 +202,7 @@ void WindowsPerformanceSettingsController::NotifyPowerSetting(DWORD type,
 #define PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE(value) \
   case PROCESSOR_PERF_BOOST_MODE_##value:               \
     return #value
+
 std::string_view WindowsPerformanceSettingsController::PerfBoostModeToString(
     DWORD mode) {
   switch (mode) {
@@ -217,22 +218,25 @@ std::string_view WindowsPerformanceSettingsController::PerfBoostModeToString(
       return "Unknown";
   }
 };
+
 #undef PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE
 
-#define PRINCIPIA_PROCESSOR_PROCESSOR_THROTTLE(value) \
+#define PRINCIPIA_PROCESSOR_THROTTLE(value) \
   case PROCESSOR_THROTTLE_##value:               \
     return #value
+
 std::string_view
 WindowsPerformanceSettingsController::ProcessorThrottleToString(DWORD mode) {
   switch (mode) {
-    PRINCIPIA_PROCESSOR_PROCESSOR_THROTTLE(DISABLED);
-    PRINCIPIA_PROCESSOR_PROCESSOR_THROTTLE(ENABLED);
-    PRINCIPIA_PROCESSOR_PROCESSOR_THROTTLE(AUTOMATIC);
+    PRINCIPIA_PROCESSOR_THROTTLE(DISABLED);
+    PRINCIPIA_PROCESSOR_THROTTLE(ENABLED);
+    PRINCIPIA_PROCESSOR_THROTTLE(AUTOMATIC);
     default:
       return "Unknown";
   }
 };
-#undef PRINCIPIA_PROCESSOR_PERF_BOOST_MODE_CASE
+
+#undef PRINCIPIA_PROCESSOR_THROTTLE
 
 std::pair<DWORD, DWORD>
 WindowsPerformanceSettingsController::ReadAndPrintPerfBoostModeACDC() const {
