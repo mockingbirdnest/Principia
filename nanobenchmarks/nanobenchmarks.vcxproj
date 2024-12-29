@@ -26,9 +26,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="disable_perf_boost_mode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="disable_perf_boost_mode.hpp" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />

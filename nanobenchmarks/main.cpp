@@ -1,7 +1,4 @@
 
-#include <Windows.h>
-#include <Powersetting.h>
-
 #include <algorithm>
 #include <iostream>
 #include <iomanip>
@@ -15,9 +12,14 @@
 #include <intrin.h>
 #include <emmintrin.h>
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "base/cpuid.hpp"
 #include "numerics/cbrt.hpp"
 #include "testing_utilities/statistics.hpp"
+#include "nanobenchmarks/disable_perf_boost_mode.hpp"
+
+using namespace principia::nanobenchmarks::_disable_perf_boost_mode;
 
 #define BENCHMARK_CALLING_CONVENTION
 
@@ -185,124 +187,9 @@ BENCHMARK_FUNCTION_WITH_NAME(
 BENCHMARK_FUNCTION_WITH_NAME("Cbrt",
     principia::numerics::_cbrt::Cbrt);
 
-std::pair<DWORD, DWORD> ReadPerfBoostModeACDC(
-    GUID const* const active_power_scheme) {
-  #define CASE(value) \
-    case value:       \
-      return #value
-    auto perf_boost_mode_to_string = [](DWORD mode) -> std::string {
-      switch (mode) {
-        CASE(PROCESSOR_PERF_BOOST_MODE_DISABLED);
-        CASE(PROCESSOR_PERF_BOOST_MODE_ENABLED);
-        CASE(PROCESSOR_PERF_BOOST_MODE_AGGRESSIVE);
-        CASE(PROCESSOR_PERF_BOOST_MODE_EFFICIENT_ENABLED);
-        CASE(PROCESSOR_PERF_BOOST_MODE_EFFICIENT_AGGRESSIVE);
-        CASE(PROCESSOR_PERF_BOOST_MODE_AGGRESSIVE_AT_GUARANTEED);
-        CASE(PROCESSOR_PERF_BOOST_MODE_EFFICIENT_AGGRESSIVE_AT_GUARANTEED);
-        default:
-          return std::to_string(mode);
-      }
-    };
-  #undef CASE
-  DWORD perf_boost_mode_ac;
-  DWORD perf_boost_mode_dc;
-  DWORD perf_boost_mode_size = sizeof(perf_boost_mode_ac);
-  CHECK_EQ(PowerReadACValue(nullptr,
-                            active_power_scheme,
-                            &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                            &GUID_PROCESSOR_PERF_BOOST_MODE,
-                            nullptr,
-                            reinterpret_cast<LPBYTE>(&perf_boost_mode_ac),
-                            &perf_boost_mode_size),
-           ERROR_SUCCESS)
-      << perf_boost_mode_size;
-  CHECK_EQ(PowerReadDCValue(nullptr,
-                            active_power_scheme,
-                            &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                            &GUID_PROCESSOR_PERF_BOOST_MODE,
-                            nullptr,
-                            reinterpret_cast<LPBYTE>(&perf_boost_mode_dc),
-                            &perf_boost_mode_size),
-           ERROR_SUCCESS)
-      << perf_boost_mode_size;
-  std::println(std::cout,
-               "PERF_BOOST_MODE AC={} ({})",
-               perf_boost_mode_ac,
-               perf_boost_mode_to_string(perf_boost_mode_ac));
-  std::println(std::cout,
-               "PERF_BOOST_MODE DC={} ({})",
-               perf_boost_mode_ac,
-               perf_boost_mode_to_string(perf_boost_mode_dc));
-  return {
-    perf_boost_mode_ac, perf_boost_mode_dc
-  };
-}
-
-int __cdecl main(int argc, const char** argv) {
-  SYSTEM_POWER_STATUS power_status;
-  CHECK(GetSystemPowerStatus(&power_status));
-  std::println(std::cout,
-               "ACLineStatus={} ({})",
-               power_status.ACLineStatus,
-               power_status.ACLineStatus == 0   ? "Offline"
-               : power_status.ACLineStatus == 1 ? "Online"
-                                                : "Unknown");
-  GUID* active_power_scheme;
-  CHECK_EQ(PowerGetActiveScheme(nullptr, &active_power_scheme), ERROR_SUCCESS);
-
-  // powercfg /query scheme_current sub_processor PERFBOOSTMODE
-
-  auto const [perf_boost_mode_ac, perf_boost_mode_dc] =
-      ReadPerfBoostModeACDC(active_power_scheme);
-  std::println(std::cout, "Disabling perf boost mode…");
-  std::println(
-      std::cout,
-      R"(If interrupted, restore with
-      POWERCFG /SETACVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE {}
-      POWERCFG /SETDCVALUEINDEX SCHEME_CURRENT SUB_PROCESSOR PERFBOOSTMODE {})",
-      perf_boost_mode_ac,
-      perf_boost_mode_dc);
-  CHECK_EQ(PowerWriteACValueIndex(nullptr,
-                                  active_power_scheme,
-                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
-                                  PROCESSOR_PERF_BOOST_MODE_DISABLED),
-           ERROR_SUCCESS);
-  CHECK_EQ(PowerWriteDCValueIndex(nullptr,
-                                  active_power_scheme,
-                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
-                                  PROCESSOR_PERF_BOOST_MODE_DISABLED),
-           ERROR_SUCCESS);
-  auto const [updated_perf_boost_mode_ac, updated_perf_boost_mode_dc] =
-      ReadPerfBoostModeACDC(active_power_scheme);
-  CHECK_EQ(updated_perf_boost_mode_ac, PROCESSOR_PERF_BOOST_MODE_DISABLED);
-  CHECK_EQ(updated_perf_boost_mode_dc, PROCESSOR_PERF_BOOST_MODE_DISABLED);
-
-  {
-    DWORD perf_boost_mode_ac;
-    DWORD perf_boost_mode_dc;
-    DWORD perf_boost_mode_size = sizeof(perf_boost_mode_ac);
-    CHECK_EQ(PowerReadACValue(nullptr,
-                              active_power_scheme,
-                              &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                              &GUID_PROCESSOR_PERF_BOOST_MODE,
-                              nullptr,
-                              reinterpret_cast<LPBYTE>(&perf_boost_mode_ac),
-                              &perf_boost_mode_size),
-             ERROR_SUCCESS)
-        << perf_boost_mode_size;
-    CHECK_EQ(PowerReadDCValue(nullptr,
-                              active_power_scheme,
-                              &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                              &GUID_PROCESSOR_PERF_BOOST_MODE,
-                              nullptr,
-                              reinterpret_cast<LPBYTE>(&perf_boost_mode_dc),
-                              &perf_boost_mode_size),
-             ERROR_SUCCESS)
-        << perf_boost_mode_size;
-  }
-
+int __cdecl main(int argc, char** argv) {
+  absl::ParseCommandLine(argc, argv);
+  PerfBoostModeDisabler perf_boost_mode_disabled;
   distribution::quantile_definitions = {1000, 100, 10, 4, 2};
   std::cout << principia::base::_cpuid::CPUVendorIdentificationString() << " "
             << principia::base::_cpuid::ProcessorBrandString() << "\nFeatures:"
@@ -355,6 +242,7 @@ int __cdecl main(int argc, const char** argv) {
     return a * benchmark(f) + b;
   };
   for (auto const& [name, f] : function_registry) {
+    auto const result = benchmark(f);
     std::cout << (std::ranges::contains(std::views::keys(reference_functions),
                                         f)
                       ? "R"
@@ -362,20 +250,6 @@ int __cdecl main(int argc, const char** argv) {
     std::vprint_unicode(std::cout,
                         "{:>" + std::to_string(name_width + 1) + "}",
                         std::make_format_args(name));
-    std::cout << a * benchmark(f) + b << "\n";
+    std::cout << a * result + b << "\n";
   }
-  std::println(std::cout, "Restoring perf boost mode…");
-  CHECK_EQ(PowerWriteACValueIndex(nullptr,
-                                  active_power_scheme,
-                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
-                                  perf_boost_mode_ac),
-           ERROR_SUCCESS);
-  CHECK_EQ(PowerWriteDCValueIndex(nullptr,
-                                  active_power_scheme,
-                                  &GUID_PROCESSOR_SETTINGS_SUBGROUP,
-                                  &GUID_PROCESSOR_PERF_BOOST_MODE,
-                                  perf_boost_mode_dc),
-           ERROR_SUCCESS);
-  ReadPerfBoostModeACDC(active_power_scheme);
 }
