@@ -25,14 +25,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="function_registry.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="disable_perf_boost_mode.cpp" />
+    <ClCompile Include="performance_settings_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="disable_perf_boost_mode.hpp" />
+    <ClInclude Include="function_registry.hpp" />
+    <ClInclude Include="performance_settings_controller.hpp" />
   </ItemGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
