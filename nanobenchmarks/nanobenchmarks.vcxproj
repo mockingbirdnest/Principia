@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}</ProjectGuid>
+    <RootNamespace>nanobenchmarks</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalDependencies>gmock.lib;gmock_main.lib;powrprof.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalDependencies>gmock.lib;gmock_main.lib;powrprof.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <Link>
+      <AdditionalDependencies>gmock.lib;gmock_main.lib;powrprof.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="function_registry.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="performance_settings_controller.cpp" />
+    <ClCompile Include="examples.cpp" />
+    <ClCompile Include="microarchitectures.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="reference_functions.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="function_registry.hpp" />
+    <ClInclude Include="performance_settings_controller.hpp" />
+    <ClInclude Include="microarchitectures.hpp" />
+  </ItemGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+  <Import Project="$(SolutionDir)principia.props" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+  </ImportGroup>
+</Project>
