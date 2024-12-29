@@ -90,7 +90,7 @@ struct LatencyDistributionTable {
   double min;
   std::vector<double> quantiles;
 
-  static std::string const& heading() {
+  static std::string const& Heading() {
     static std::string const& result = [] {
       std::stringstream& out = *new std::stringstream();
       std::print(out, "{:>8}", "min");
@@ -118,7 +118,8 @@ struct LatencyDistributionTable {
   }
 };
 
-LatencyDistributionTable operator*(double a, LatencyDistributionTable x) {
+LatencyDistributionTable operator*(double const a,
+                                   LatencyDistributionTable const& x) {
   LatencyDistributionTable result{a * x.min};
   for (double const quantile : x.quantiles) {
       result.quantiles.push_back(a * quantile);
@@ -126,7 +127,8 @@ LatencyDistributionTable operator*(double a, LatencyDistributionTable x) {
   return result;
 }
 
-LatencyDistributionTable operator+(LatencyDistributionTable x, double b) {
+LatencyDistributionTable operator+(LatencyDistributionTable const& x,
+                                   double const b) {
   LatencyDistributionTable result{x.min + b};
   for (double const quantile : x.quantiles) {
       result.quantiles.push_back(quantile + b);
@@ -134,8 +136,11 @@ LatencyDistributionTable operator+(LatencyDistributionTable x, double b) {
   return result;
 }
 
+// We disable inlining on this function so that the overhead is independent of
+// the callsite, and so that we actually call the benchmarked function via a
+// function pointer, instead of inlining it.
 __declspec(noinline) LatencyDistributionTable
-    Benchmark(BenchmarkedFunction f, Logger* logger) {
+    Benchmark(BenchmarkedFunction const f, Logger* logger) {
   std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(
@@ -145,14 +150,24 @@ __declspec(noinline) LatencyDistributionTable
   for (int j = 0; j < sample_count; ++j) {
     double const input = absl::GetFlag(FLAGS_input);
     double x = input;
+    // The CPUID barriers prevent out-of-order execution; see [Pao10].
     __cpuid(registers, leaf);
-    auto const tsc = __rdtsc();
+    auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
       x = f(x);
       x += input - x;
     }
+    unsigned int tsc_aux;
+    // The use of RDTSCP rather than RDTSC here follows [Pao10].  See the Intel®
+    // 64 and IA-32 Architectures Software Developer’s Manual:
+    // The RDTSCP  instruction is not a serializing instruction, but it does
+    // wait until all previous instructions have executed and all previous loads
+    // are globally visible.  But it does not wait for previous stores to be
+    // globally visible, and subsequent instructions may begin execution before
+    // the read operation is performed.
+    auto const tsc_stop = __rdtscp(&tsc_aux);
     __cpuid(registers, leaf);
-    double const δtsc = __rdtsc() - tsc;
+    double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;
   }
   if (logger != nullptr) {
@@ -169,10 +184,10 @@ __declspec(noinline) LatencyDistributionTable
   return result;
 }
 
-std::size_t FormattedWidth(std::string s) {
+std::size_t FormattedWidth(std::string const& s) {
   // Two columns per code unit is wide enough, since field width is at most 2
   // per extended grapheme cluster.
-  std::size_t wide = 2 * s.size();
+  std::size_t const wide = 2 * s.size();
     // There is no vformatted_size, so we actually format.
     std::size_t const formatted_size =
       std::vformat("{:" + std::to_string(wide) + "}",
@@ -185,7 +200,7 @@ std::size_t FormattedWidth(std::string s) {
 
 void Main() {
   std::regex const name_matcher(absl::GetFlag(FLAGS_benchmark_filter));
-  auto controller = PerformanceSettingsController::Make();
+  auto controller = PerformanceSettingsController::New();
   std::unique_ptr<Logger> logger;
   std::string const& filename = absl::GetFlag(FLAGS_log_to_mathematica);
   if (!filename.empty()) {
@@ -203,13 +218,13 @@ void Main() {
                ReferenceCycleCounts().contains(f);
       }) |
       std::views::keys | std::views::transform(&FormattedWidth);
-  std::size_t name_width = *std::ranges::max_element(name_widths);
+  std::size_t const name_width = *std::ranges::max_element(name_widths);
   std::map<BenchmarkedFunction, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(
       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
                       std::make_format_args(
-                          "RAW TSC:", "", LatencyDistributionTable::heading()));
+                          "RAW TSC:", "", LatencyDistributionTable::Heading()));
   for (auto const& [function, _] : ReferenceCycleCounts()) {
     auto const result = Benchmark(function, logger.get());
     reference_measurements.emplace(function, result);
@@ -238,7 +253,7 @@ void Main() {
   std::vprint_unicode(
       "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
       std::make_format_args(
-          "Cycles:", "expected", LatencyDistributionTable::heading()));
+          "Cycles:", "expected", LatencyDistributionTable::Heading()));
   for (auto const& [name, f] :
        FunctionRegistry::functions_by_name()) {
     if (!std::regex_match(name, name_matcher) &&

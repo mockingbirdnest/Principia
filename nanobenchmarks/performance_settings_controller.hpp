@@ -13,7 +13,7 @@ using namespace base::_not_null;
 
 class PerformanceSettingsController {
  public:
-  static not_null<std::unique_ptr<PerformanceSettingsController>> Make();
+  static not_null<std::unique_ptr<PerformanceSettingsController>> New();
   virtual ~PerformanceSettingsController() = default;
 };
 
