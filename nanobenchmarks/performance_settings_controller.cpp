@@ -53,7 +53,7 @@ class WindowsPerformanceSettingsController
 };
 
 not_null<std::unique_ptr<PerformanceSettingsController>>
-PerformanceSettingsController::Make() {
+PerformanceSettingsController::New() {
   return make_not_null_unique<WindowsPerformanceSettingsController>();
 }
 
