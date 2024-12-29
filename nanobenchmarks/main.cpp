@@ -49,7 +49,7 @@ ABSL_FLAG(std::string,
 namespace std {
 
 bool AbslParseFlag(absl::string_view const text,
-                   std::vector<int>* const flag,
+                   std::vector<double>* const flag,
                    std::string* const error) {
   flag->clear();
   for (absl::string_view const element : absl::StrSplit(text, ',')) {
@@ -60,16 +60,16 @@ bool AbslParseFlag(absl::string_view const text,
   return true;
 }
 
-std::string AbslUnparseFlag(std::vector<int> const& flag) {
+std::string AbslUnparseFlag(std::vector<double> const& flag) {
   return absl::StrJoin(flag, ",");
 }
 
 }  // namespace std
 
-ABSL_FLAG(std::vector<int>,
+ABSL_FLAG(std::vector<double>,
           quantiles,
-          (std::vector{1000, 100, 20, 10, 4, 2}),
-          "Inverses of the quantiles to report");
+          (std::vector<double>{0.001, 0.01, 0.05, 0.1, 0.25, 0.5}),
+          "Quantiles to report");
 
 namespace principia {
 namespace nanobenchmarks {
@@ -95,13 +95,13 @@ struct LatencyDistributionTable {
   static std::string heading() {
     std::stringstream out;
     std::print(out, "{:>8}", "min");
-    for (auto const& n : absl::GetFlag(FLAGS_quantiles)) {
-      if (n > 1000) {
-        std::print(out, "{:>7}‱", 10'000.0 / n);
-      } else if (n > 100) {
-        std::print(out, "{:>7}‰", 1000.0 / n);
+    for (double const q : absl::GetFlag(FLAGS_quantiles)) {
+      if (q < 1e-3) {
+        std::print(out, "{:>7}‱", 10'000 * q);
+      } else if (q < 1e-2) {
+        std::print(out, "{:>7}‰", 1000 * q);
       } else {
-        std::print(out, "{:>7}%", 100.0 / n);
+        std::print(out, "{:>7}%", 100 * q);
       }
     }
     return out.str();
@@ -161,8 +161,8 @@ __declspec(noinline) LatencyDistributionTable
   }
   std::ranges::sort(samples);
   LatencyDistributionTable result{samples[0]};
-  for (int const q : absl::GetFlag(FLAGS_quantiles)) {
-    result.quantiles.push_back(samples[sample_count / q]);
+  for (double const q : absl::GetFlag(FLAGS_quantiles)) {
+    result.quantiles.push_back(samples[(sample_count - 1) * q]);
   }
   return result;
 }
