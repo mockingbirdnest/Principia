@@ -54,20 +54,23 @@ static const __m128d exponent_bits =
 static const __m128d mantissa_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
 static const __m128d mantissa_index_bits =
-    _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'f800'0000'0000));
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
 }  // namespace masks
 
 inline std::int64_t AccurateTableIndex(double const abs_x) {
-  // 1. `abs_x + 1` is in [1, 1 + π / 4], so its exponent is 1.
-  // 2. Adding `table_spacing / 2` ensures that when we mask we have ranges
-  //    centred on integral multiples of `table_spacing`.
-  // 3. Masking preserves only mantissa bits in [0, 511] (modulo a shift) that
-  //    are suitable for indexing.
-  // 4. Shifting yield a bona fide index.
-  return _mm_cvtsi128_si64(_mm_castpd_si128(
-             _mm_and_pd(masks::mantissa_index_bits,
-                        _mm_set_sd(abs_x + (1.0 + table_spacing / 2.0))))) >>
-         (std::numeric_limits<double>::digits - table_spacing_bits - 1);
+  // This function computes the index in the accurate table:
+  // 1. A suitable (large) power of 2 is added to the argument so that the last
+  //    bit of the mantissa of the result corresponds to units of 1/512 of the
+  //    argument.  As part of this addition, an interval of radius 1/1024 around
+  //    an integral multiple of 1/512 is correctly rounded to that integral
+  //    multiple.
+  // 2. An `and` operation is used to only retain the last 9 bits of the
+  //    mantissa.
+  // 3. The result is interpreted as an integer and returned as the index.
+  return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_and_pd(
+      masks::mantissa_index_bits,
+      _mm_set_sd(abs_x + (1LL << (std::numeric_limits<double>::digits -
+                                  table_spacing_bits - 1))))));
 }
 
 template<FMAPolicy fma_policy>
