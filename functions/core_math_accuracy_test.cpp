@@ -14,12 +14,13 @@
 
 namespace principia {
 namespace functions {
-namespace _core_math_accuracy_test {
 
 using namespace boost::multiprecision;
 using namespace principia::functions::_multiprecision;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+
+namespace {
 
 class CoreMathAccuracyTest : public ::testing::Test {
  protected:
@@ -75,6 +76,6 @@ TEST_F(CoreMathAccuracyTest, SinCos) {
 
 #endif
 
-}  // namespace _multiprecision
+}  // namespace
 }  // namespace functions
 }  // namespace principia
