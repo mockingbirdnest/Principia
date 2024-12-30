@@ -4,6 +4,7 @@
 
 #include "core-math/cos.h"
 #include "core-math/sin.h"
+#include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -13,9 +14,10 @@
 
 namespace principia {
 namespace functions {
-namespace _multiprecision {
+namespace _core_math_accuracy_test {
 
 using namespace boost::multiprecision;
+using namespace principia::functions::_multiprecision;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
