@@ -19,15 +19,13 @@
 // below.
 
 namespace principia {
-namespace numerics_multiprecision_tests {
+namespace {
 
 using namespace boost::multiprecision;
 using namespace principia::functions::_multiprecision;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
-
-namespace {
 
 class SinCosTest : public ::testing::Test {};
 
@@ -150,5 +148,4 @@ TEST_F(SinCosTest, HardReduction) {
 }
 
 }  // namespace
-}  // namespace numerics_multiprecision_tests
 }  // namespace principia
