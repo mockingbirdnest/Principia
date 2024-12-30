@@ -16,25 +16,24 @@
 
 #if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
-static bool iaca_breaker = false;
-#define IACA_FUNCTION_DOUBLE(arg)    \
-  volatile double iaca_result = arg; \
-  IACA_VC64_START;                   \
-  IACA_LOOP:                         \
-  arg = iaca_result
-#define IACA_RETURN(result) \
-  iaca_result = result;     \
-  if (iaca_breaker) {       \
-    goto IACA_END_LOOP;     \
-  } else {                  \
-    goto IACA_LOOP;         \
-  }
-#define IACA_FUNCTION_END \
-  goto IACA_LOOP;         \
-  IACA_END_LOOP:          \
-  IACA_VC64_END;          \
-  return iaca_result
-#define IACA_IF(condition)                                           \
+static bool const iaca_loop_terminator = false;
+#define IACA_FUNCTION_DOUBLE(arg) \
+  double iaca_result = arg;       \
+  IACA_VC64_START;                \
+  IACA_LOOP :                    \
+    arg = iaca_result
+#define IACA_RETURN(result) IACA_RETURN_AT(__LINE__, result)
+#define IACA_RETURN_AT(line, result) IACA_RETURN_AT2(line, result)
+#define IACA_RETURN_AT2(line, result)  \
+  if (iaca_loop_terminator) {          \
+    goto IACA_END_LOOP_##line;          \
+  }                                    \
+  iaca_result = (result);              \
+  goto IACA_LOOP;                      \
+  IACA_VC64_END; \
+  IACA_END_LOOP_##line : return iaca_result
+#define IACA_FUNCTION_END
+  #define IACA_IF(condition)                                           \
   if constexpr (volatile bool IACA_computed_condition = (condition); \
                 [] { UNDER_IACA_HYPOTHESES(return (condition)); }())
 
