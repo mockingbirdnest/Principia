@@ -9,8 +9,6 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "numerics/next.hpp"
-#include "testing_utilities/almost_equals.hpp"
-#include "numerics/sin_cos.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/almost_equals.hpp"
 
