@@ -4,11 +4,10 @@
 
 #include "core-math/cos.h"
 #include "core-math/sin.h"
-#include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
