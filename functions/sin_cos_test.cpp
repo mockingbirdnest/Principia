@@ -9,16 +9,22 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "numerics/next.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/almost_equals.hpp"
 
 // This test lives in `functions` to avoid pulling `boost` into `numerics`.
+// It uses neither the `functions` nor the `numerics` namespace so that the Sin
+// and Cos from both (`principia::functions::_multiprecision` and
+// `principia::numerics::_sin_cos`) are made visible by the using directives
+// below.
+
 namespace principia {
-namespace numerics {
-namespace _sin_cos {
+namespace functions_test {
 
 using namespace boost::multiprecision;
+using namespace principia::functions::_multiprecision;
 using namespace principia::numerics::_next;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
 
 class SinCosTest : public ::testing::Test {};
@@ -44,8 +50,7 @@ TEST_F(SinCosTest, Random) {
     double const principia_argument = uniformly_at(random);
     auto const boost_argument = cpp_rational(principia_argument);
     {
-      auto const boost_sin =
-          functions::_multiprecision::Sin(boost_argument);
+      auto const boost_sin = Sin(boost_argument);
       double const principia_sin = Sin(principia_argument);
       auto const sin_error =
           abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
@@ -61,8 +66,7 @@ TEST_F(SinCosTest, Random) {
       }
     }
     {
-      auto const boost_cos =
-          functions::_multiprecision::Cos(boost_argument);
+      auto const boost_cos = Cos(boost_argument);
       double const principia_cos = Cos(principia_argument);
       auto const cos_error =
           abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));
@@ -143,6 +147,5 @@ TEST_F(SinCosTest, HardReduction) {
               AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
 }
 
-}  // namespace _sin_cos
-}  // namespace numerics
+}  // namespace functions_test
 }  // namespace principia
