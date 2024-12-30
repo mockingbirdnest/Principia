@@ -117,6 +117,14 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: Google
 
+    - name: Download protobuf Release artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      if: ${{ matrix.configuration == 'Debug' }}
+      with:
+        name: protobuf
+        configuration: Release
+        directory: Google
+
     - name: Download zfp artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
