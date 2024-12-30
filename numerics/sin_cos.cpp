@@ -16,7 +16,60 @@
 
 #if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
+static bool iaca_breaker = false;
+#define IACA_FUNCTION_DOUBLE(arg)    \
+  volatile double iaca_result = arg; \
+  IACA_VC64_START;                   \
+  IACA_LOOP:                         \
+  arg = iaca_result
+#define IACA_RETURN(result) \
+  iaca_result = result;     \
+  if (iaca_breaker) {       \
+    goto IACA_END_LOOP;     \
+  } else {                  \
+    goto IACA_LOOP;         \
+  }
+#define IACA_FUNCTION_END \
+  goto IACA_LOOP;         \
+  IACA_END_LOOP:          \
+  IACA_VC64_END;          \
+  return iaca_result
+#define IACA_IF(condition)                                           \
+  if constexpr (volatile bool IACA_computed_condition = (condition); \
+                [] { UNDER_IACA_HYPOTHESES(return (condition)); }())
+
+#define UNDER_IACA_HYPOTHESES(statement)                                       \
+  do {                                                                         \
+    constexpr bool UseHardwareFMA = true;                                      \
+    constexpr double θ = 0.1;                                                  \
+    /* From argument reduction. */                                             \
+    constexpr double n_double = θ * (2 / π);                                   \
+    constexpr double reduction_value = θ - n_double * π_over_2_high;           \
+    constexpr double reduction_error = n_double * π_over_2_low;                \
+    /* Used to determine whether a better argument reduction is needed. */     \
+    constexpr DoublePrecision<double> θ_reduced =                              \
+        QuickTwoDifference(reduction_value, reduction_error);                  \
+    /* Used in Sin to detect the near-0 case. */                               \
+    constexpr double abs_x =                                                   \
+        θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;              \
+    /* Used throughout the top-level functions. */                             \
+    constexpr std::int64_t quadrant =                                          \
+        static_cast<std::int64_t>(n_double) & 0b11;                            \
+    /* Used in DetectDangerousRounding. */                                     \
+    constexpr double normalized_error = 0;                                     \
+    /* Not NaN is the only part that matters; used at the end of the top-level \
+     * functions to determine whether to call the slow path. */                \
+    constexpr double value = 1;                                                \
+    { statement; }                                                             \
+  } while (false)
+
+#else
+#define IACA_FUNCTION_DOUBLE(arg) (double const arg)
+#define IACA_RETURN(result) return result
+#define IACA_IF (condition) if (condition)
+#define UNDER_IACA_HYPOTHESES(statement)
 #endif
+
 
 namespace principia {
 namespace numerics {
@@ -75,8 +128,8 @@ inline std::int64_t AccurateTableIndex(double const abs_x) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  IACA_IF ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+          (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
   } else {
@@ -86,8 +139,8 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  IACA_IF ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+          (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
@@ -110,7 +163,8 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
       _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
   // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
   // negative numbers?
-  if (normalized_error < -0x1.ffffp971 && normalized_error > -0x1.00008p972) {
+  IACA_IF (normalized_error < -0x1.ffffp971 &&
+          normalized_error > -0x1.00008p972) {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
                << " " << error << " " << normalized_error;
@@ -124,12 +178,12 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
-  if (θ < π / 4 && θ > -π / 4) {
+  IACA_IF (θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } else if (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
+  } else IACA_IF (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -142,7 +196,7 @@ inline void Reduce(Argument const θ,
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
     // TODO(phl): Error analysis needed to find the right bounds.
-    if (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+    IACA_IF (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
       quadrant = n & 0b11;
       return;
     }
@@ -180,7 +234,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& x = θ_reduced.value;
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
-  if (abs_x < sin_near_zero_cutoff) {
+  IACA_IF (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
@@ -257,8 +311,8 @@ Value __cdecl Sin(Argument const θ) {
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  if (UseHardwareFMA) {
-    if (quadrant & 0b1) {
+  IACA_IF (UseHardwareFMA) {
+    IACA_IF (quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
 #if PRINCIPIA_USE_OSACA_SIN
@@ -270,55 +324,56 @@ Value __cdecl Sin(Argument const θ) {
 #endif
     }
   } else {
-    if (quadrant & 0b1) {
+    IACA_IF (quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (value != value) {
+  IACA_IF (value != value) {
     return cr_sin(θ);
-  } else if (quadrant & 0b10) {
+  }
+  IACA_IF (quadrant & 0b10) {
     return -value;
   } else {
     return value;
   }
 }
 
+namespace IACA_assumptions {
+constexpr std::int64_t quadrant = 1;
+}  // namespace IACA_assumptions
+
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
-Value __cdecl Cos(Argument const θ) {
+Value __cdecl Cos(Argument θ) {
+  IACA_FUNCTION_DOUBLE(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  if (UseHardwareFMA) {
-    if (quadrant & 0b1) {
+  IACA_IF (UseHardwareFMA) {
+    IACA_IF (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-#if PRINCIPIA_USE_OSACA_COS
-      IACA_VC64_START;
-#endif
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
-#if PRINCIPIA_USE_OSACA_COS
-      IACA_VC64_END;
-#endif
     }
   } else {
-    if (quadrant & 0b1) {
+    IACA_IF (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (value != value) {
-    return cr_cos(θ);
-  } else if (quadrant == 1 || quadrant == 2) {
-    return -value;
+  IACA_IF (value != value) {
+    IACA_RETURN(cr_cos(θ));
+  } else IACA_IF (quadrant == 1 || quadrant == 2) {
+    IACA_RETURN(-value);
   } else {
-    return value;
+    IACA_RETURN(value);
   }
+  IACA_FUNCTION_END;
 }
 
 }  // namespace internal

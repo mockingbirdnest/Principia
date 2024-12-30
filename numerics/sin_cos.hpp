@@ -7,9 +7,9 @@ namespace numerics {
 namespace _sin_cos {
 namespace internal {
 
-#define PRINCIPIA_INLINE_SIN_COS 0
+#define PRINCIPIA_INLINE_SIN_COS 1
 #define PRINCIPIA_USE_OSACA_SIN 0
-#define PRINCIPIA_USE_OSACA_COS 0
+#define PRINCIPIA_USE_OSACA_COS 1
 
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
