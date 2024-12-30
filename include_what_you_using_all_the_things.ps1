@@ -8,10 +8,10 @@
     --project:geometry `
     --project:integrators `
     --project:journal `
-    --project:nanobenchmarks `
     --project:ksp_plugin `
     --project:ksp_plugin_test `
     --project:mathematica `
+    --project:nanobenchmarks `
     --project:numerics `
     --project:physics `
     --project:quantities `
