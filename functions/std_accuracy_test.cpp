@@ -15,7 +15,6 @@
 
 namespace principia {
 namespace functions {
-namespace _multiprecision {
 
 using ::testing::AnyOf;
 using namespace boost::multiprecision;
@@ -86,6 +85,5 @@ TEST_F(StdAccuracyTest, SinCos) {
 
 #endif
 
-}  // namespace _multiprecision
 }  // namespace functions
 }  // namespace principia
