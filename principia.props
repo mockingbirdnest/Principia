@@ -34,6 +34,7 @@
     <PrincipiaTestProject Condition="$(ProjectName) == ksp_plugin or
                                      $(ProjectName) == serialization or
                                      $(ProjectName) == benchmarks or
+                                     $(ProjectName) == nanobenchmarks or
                                      $(ProjectName) == tools">false</PrincipiaTestProject>
     <!--Dependency paths.-->
     <PrincipiaDependencyConfiguration>Debug</PrincipiaDependencyConfiguration>

@@ -1,6 +1,6 @@
 #include <emmintrin.h>
 
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
 #include "numerics/cbrt.hpp"
 #include "numerics/sin_cos.hpp"
 

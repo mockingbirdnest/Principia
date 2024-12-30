@@ -15,7 +15,7 @@
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/combinatorics.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"

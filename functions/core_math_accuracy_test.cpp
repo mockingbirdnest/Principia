@@ -8,15 +8,15 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace functions {
-namespace _multiprecision {
 
 using namespace boost::multiprecision;
+using namespace principia::functions::_multiprecision;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
@@ -74,6 +74,5 @@ TEST_F(CoreMathAccuracyTest, SinCos) {
 
 #endif
 
-}  // namespace _multiprecision
 }  // namespace functions
 }  // namespace principia

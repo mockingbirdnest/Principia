@@ -5,8 +5,6 @@
 #include <string>
 #include <string_view>
 
-#include "base/macros.hpp"
-
 namespace principia {
 namespace nanobenchmarks {
 namespace _function_registry {

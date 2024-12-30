@@ -14,20 +14,22 @@
 #include <utility>
 #include <vector>
 
-#include <intrin.h>
-
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "base/array.hpp"
-#include "base/cpuid.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "mathematica/logger.hpp"
+#include "mathematica/mathematica.hpp"
 #include "nanobenchmarks/function_registry.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
-#include "numerics/cbrt.hpp"
 #include "testing_utilities/statistics.hpp"
+
+
+#if PRINCIPIA_COMPILER_MSVC
+#include <intrin.h>
+#endif
 
 ABSL_FLAG(std::size_t,
           loop_iterations,
@@ -151,7 +153,11 @@ __declspec(noinline) LatencyDistributionTable
     double const input = absl::GetFlag(FLAGS_input);
     double x = input;
     // The CPUID barriers prevent out-of-order execution; see [Pao10].
+    #if PRINCIPIA_COMPILER_MSVC
     __cpuid(registers, leaf);
+    #else
+    asm volatile("cpuid");
+    #endif
     auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
       x = f(x);
@@ -166,7 +172,11 @@ __declspec(noinline) LatencyDistributionTable
     // globally visible, and subsequent instructions may begin execution before
     // the read operation is performed.
     auto const tsc_stop = __rdtscp(&tsc_aux);
+    #if PRINCIPIA_COMPILER_MSVC
     __cpuid(registers, leaf);
+    #else
+    asm volatile("cpuid");
+    #endif
     double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;
   }

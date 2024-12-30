@@ -4,12 +4,14 @@
     --project:astronomy `
     --project:base `
     --project:benchmarks `
+    --project:functions `
     --project:geometry `
     --project:integrators `
     --project:journal `
     --project:ksp_plugin `
     --project:ksp_plugin_test `
     --project:mathematica `
+    --project:nanobenchmarks `
     --project:numerics `
     --project:physics `
     --project:quantities `
@@ -23,4 +25,5 @@
     --special_own_header:ksp_plugin/interface_*.cpp=ksp_plugin/interface.hpp `
     --special_own_header:ksp_plugin_test/interface_*.cpp=ksp_plugin/interface.hpp `
     --special_own_header:ksp_plugin_test/benchmark.cpp=ksp_plugin/plugin.hpp `
-    --special_own_header:ksp_plugin_test/plugin*_test.cpp=ksp_plugin/plugin.hpp
+    --special_own_header:ksp_plugin_test/plugin*_test.cpp=ksp_plugin/plugin.hpp `
+    --special_own_header:functions/sin_cos_test.cpp=numerics/sin_cos.hpp
