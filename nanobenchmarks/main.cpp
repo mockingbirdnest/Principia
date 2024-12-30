@@ -20,13 +20,11 @@
 #include "absl/flags/parse.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include "base/array.hpp"
-#include "base/cpuid.hpp"
 #include "mathematica/logger.hpp"
+#include "mathematica/mathematica.hpp"
 #include "nanobenchmarks/function_registry.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
-#include "numerics/cbrt.hpp"
 #include "testing_utilities/statistics.hpp"
 
 ABSL_FLAG(std::size_t,
