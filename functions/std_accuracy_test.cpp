@@ -3,6 +3,7 @@
 #include <limits>
 #include <random>
 
+#include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,6 +19,7 @@ namespace _multiprecision {
 
 using ::testing::AnyOf;
 using namespace boost::multiprecision;
+using namespace principia::functions::_multiprecision;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;

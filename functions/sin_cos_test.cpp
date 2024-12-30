@@ -19,7 +19,7 @@
 // below.
 
 namespace principia {
-namespace {
+namespace functions_test {
 
 using namespace boost::multiprecision;
 using namespace principia::functions::_multiprecision;
@@ -147,5 +147,5 @@ TEST_F(SinCosTest, HardReduction) {
               AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
 }
 
-}  // namespace
+}  // namespace functions_test
 }  // namespace principia

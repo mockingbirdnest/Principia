@@ -20,8 +20,6 @@ using namespace principia::functions::_multiprecision;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
-namespace {
-
 class CoreMathAccuracyTest : public ::testing::Test {
  protected:
   static double ULPDistance(cpp_bin_float_50 const& actual,
@@ -76,6 +74,5 @@ TEST_F(CoreMathAccuracyTest, SinCos) {
 
 #endif
 
-}  // namespace
 }  // namespace functions
 }  // namespace principia
