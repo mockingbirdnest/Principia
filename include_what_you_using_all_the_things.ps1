@@ -7,6 +7,7 @@
     --project:geometry `
     --project:integrators `
     --project:journal `
+    --project:nanobenchmarks `
     --project:ksp_plugin `
     --project:ksp_plugin_test `
     --project:mathematica `
