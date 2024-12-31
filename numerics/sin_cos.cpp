@@ -14,14 +14,31 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
+#if PRINCIPIA_USE_OSACA_SIN
+#define IACA_SIN_BEGIN IACA_FUNCTION_BEGIN
+#define IACA_RETURN_SIN IACA_RETURN
+#else
+#define IACA_SIN_BEGIN(arg)
+#define IACA_RETURN_SIN(result) return (result)
+#endif
+
+#if PRINCIPIA_USE_OSACA_COS
+#define IACA_COS_BEGIN IACA_FUNCTION_BEGIN
+#define IACA_RETURN_COS IACA_RETURN
+#else
+#define IACA_COS_BEGIN(arg)
+#define IACA_RETURN_COS(result) return (result)
+#endif
+
 #if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
 static bool iaca_loop_terminator = false;
-#define IACA_FUNCTION_DOUBLE(arg) \
+#define IACA_FUNCTION_BEGIN(arg) \
   double iaca_loop_carry = arg;   \
   IACA_VC64_START;                \
   IACA_LOOP:                      \
   arg = iaca_loop_carry
+
 #define IACA_RETURN(result)                      \
   iaca_loop_carry = (result);                    \
   if (!iaca_loop_terminator) {                   \
@@ -60,10 +77,7 @@ static bool iaca_loop_terminator = false;
   } while (false)
 
 #else
-#define IACA_FUNCTION_DOUBLE(arg) (double const arg)
-#define IACA_RETURN(result) return result
 #define IACA_IF (condition) if (condition)
-#define UNDER_IACA_HYPOTHESES(statement)
 #endif
 
 
@@ -303,6 +317,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 FORCE_INLINE(inline)
 #endif
 Value __cdecl Sin(Argument const θ) {
+  IACA_SIN_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
@@ -327,12 +342,11 @@ Value __cdecl Sin(Argument const θ) {
     }
   }
   IACA_IF (value != value) {
-    return cr_sin(θ);
-  }
-  IACA_IF (quadrant & 0b10) {
-    return -value;
+    IACA_RETURN_SIN(cr_sin(θ));
+  } else IACA_IF(quadrant & 0b10) {
+    IACA_RETURN_SIN(-value);
   } else {
-    return value;
+    IACA_RETURN_SIN(value);
   }
 }
 
@@ -344,7 +358,7 @@ constexpr std::int64_t quadrant = 1;
 FORCE_INLINE(inline)
 #endif
 Value __cdecl Cos(Argument θ) {
-  IACA_FUNCTION_DOUBLE(θ);
+  IACA_COS_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
@@ -363,11 +377,11 @@ Value __cdecl Cos(Argument θ) {
     }
   }
   IACA_IF (value != value) {
-    IACA_RETURN(cr_cos(θ));
+    IACA_RETURN_COS(cr_cos(θ));
   } else IACA_IF (quadrant == 1 || quadrant == 2) {
-    IACA_RETURN(-value);
+    IACA_RETURN_COS(-value);
   } else {
-    IACA_RETURN(value);
+    IACA_RETURN_COS(value);
   }
 }
 
