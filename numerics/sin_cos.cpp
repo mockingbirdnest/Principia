@@ -207,10 +207,11 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const h² = h * (h + 2 * e);
     double const h³ = h² * h;
     double const polynomial_term =
-        ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-          cos_x₀ * FusedMultiplyAdd<fma_policy>(
-                       h³, SinPolynomial<fma_policy>(h²), e)) +
-         sin_x₀_plus_h_cos_x₀.error);
+        FusedMultiplyAdd<fma_policy>(
+            cos_x₀,
+            FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+            sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
+        sin_x₀_plus_h_cos_x₀.error;
     return DetectDangerousRounding(sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
@@ -241,11 +242,11 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   double const h² = h * (h + 2 * e);
   double const h³ = h² * h;
   double const polynomial_term =
-      (FusedNegatedMultiplyAdd<fma_policy>(
-           sin_x₀,
-           FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
-           cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
-       cos_x₀_minus_h_sin_x₀.error);
+      FusedNegatedMultiplyAdd<fma_policy>(
+          sin_x₀,
+          FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+          cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
+      cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 

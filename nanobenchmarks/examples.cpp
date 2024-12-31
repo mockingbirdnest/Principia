@@ -55,6 +55,14 @@ BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
 
+BENCHMARKED_FUNCTION(std_sin) {
+  return std::sin(x);
+}
+
+BENCHMARKED_FUNCTION(principia_sin) {
+  return Sin(x);
+}
+
 BENCHMARKED_FUNCTION(std_cos) {
   return std::cos(x);
 }
