@@ -77,14 +77,14 @@
     }
   }
 // To analyse it near x = 5:
-#define UNDER_OSACA_HYPOTHESES(statement)                                  \
-  do {                                                                     \
+#define UNDER_OSACA_HYPOTHESES(expression)                                 \
+  [] {                                                                     \
     constexpr double x = 5;                                                \
     /* To avoid inconsistent definitions, constexpr code can be used as */ \
     /* needed.                                                          */ \
     constexpr double abs_x = x > 0 ? x : -x;                               \
-    statement;                                                             \
-  } while (false)
+    return (expression);                                                   \
+  }()
 #endif
 
 #define OSACA_EVALUATE_CONDITIONS 1
@@ -137,7 +137,7 @@ static bool OSACA_loop_terminator = false;
 #define OSACA_IF(condition)                                               \
   if constexpr (bool OSACA_CONDITION_QUALIFIER OSACA_computed_condition = \
                     (condition);                                          \
-                [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
+                UNDER_OSACA_HYPOTHESES(condition))
 
 #if OSACA_EVALUATE_CONDITIONS
 #define OSACA_CONDITION_QUALIFIER volatile
@@ -171,8 +171,8 @@ static bool OSACA_loop_terminator = false;
 #define OSACA_RETURN_COS(result) return (result)
 #endif
 
-#define UNDER_OSACA_HYPOTHESES(statement)                                  \
-  do {                                                                     \
+#define UNDER_OSACA_HYPOTHESES(expression)                                 \
+  [] {                                                                     \
     constexpr bool UseHardwareFMA = true;                                  \
     constexpr double θ = 0.1;                                              \
     /* From argument reduction. */                                         \
@@ -193,8 +193,8 @@ static bool OSACA_loop_terminator = false;
     /* Not NaN is the only part that matters; used at the end of the    */ \
     /* top-level functions to determine whether to call the slow path.  */ \
     constexpr double value = 1;                                            \
-    { statement; }                                                         \
-  } while (false)
+    return expression;                                                     \
+  }()
 
 
 namespace principia {
