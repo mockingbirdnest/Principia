@@ -356,10 +356,6 @@ Value __cdecl Sin(Argument const θ) {
   }
 }
 
-namespace OSACA_assumptions {
-constexpr std::int64_t quadrant = 1;
-}  // namespace OSACA_assumptions
-
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
