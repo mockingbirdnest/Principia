@@ -31,7 +31,7 @@
 // statements, including in inline functions called by the function being
 // analysed, should be replaced with OSACA_IF.  The path should be determined by
 // providing any necessary constexpr expressions in UNDER_OSACA_HYPOTHESES.
-// if OSACA_EVALUATE_CONDITIONS is set to 1, code will be generated to evaluate
+// If OSACA_EVALUATE_CONDITIONS is set to 1, code will be generated to evaluate
 // the conditions for the branches taken (outside the loop-carried path, as they
 // would be with correct branch prediction).
 // OSACA_EVALUATE_CONDITIONS can be set to 0 to get a more streamlined
@@ -79,7 +79,7 @@
   }
 // To analyse it near x = 5:
 #define UNDER_OSACA_HYPOTHESES(expression)                                 \
-  [] {                                                                     \
+  [&] {                                                                    \
     constexpr double x = 5;                                                \
     /* To avoid inconsistent definitions, constexpr code can be used as */ \
     /* needed.                                                          */ \
@@ -87,9 +87,6 @@
     return (expression);                                                   \
   }()
 #endif
-
-#define OSACA_EVALUATE_CONDITIONS 1
-
 // In principle, the loop-carried dependency for function latency analysis is
 // achieved by wrapping the body of the function in an infinite loop, assigning
 // the result to the argument at each iteration, and adding IACA markers outside
@@ -104,18 +101,24 @@
 //   registers in the generated code (where the names of OSACA_input and
 //   OSACA_result appear in movsd instructions) and to improve the structure of
 //   the generated graph.
+//
+// Putting a load of the input from memory in the analysed section makes the
+// OSACA dependency graph clearer. However:
+// — it adds a spurious move to the latency;
+// — some tools (IACA, LLVM-MCA) cannot see the dependency through memory.
+// Set OSACA_CARRY_LOOP_THROUGH_REGISTER to 1 to carry the loop dependency
+// through a register instead.
+
+#define OSACA_EVALUATE_CONDITIONS 1
+#define OSACA_CARRY_LOOP_THROUGH_REGISTER 0
 
 static bool OSACA_loop_terminator = false;
 
-#define OSACA_FUNCTION_BEGIN(arg)                                              \
-  double volatile OSACA_input = arg;                                           \
-  /* Putting a load of the input from memory in the analysed section makes  */ \
-  /* the dependency graph clearer, but adds a potentially spurious move to  */ \
-  /* the loop-carried latency.  Remove the `volatile` above to carry the    */ \
-  /* loop through registers.*/                                                 \
-  IACA_VC64_START;                                                             \
-  double OSACA_loop_carry = OSACA_input;                                       \
-  OSACA_loop:                                                                  \
+#define OSACA_FUNCTION_BEGIN(arg)                 \
+  double OSACA_INPUT_QUALIFIER OSACA_input = arg; \
+  IACA_VC64_START;                                \
+  double OSACA_loop_carry = OSACA_input;          \
+  OSACA_loop:                                     \
   arg = OSACA_loop_carry
 
 #define OSACA_RETURN(result)                       \
@@ -126,6 +129,12 @@ static bool OSACA_loop_terminator = false;
   double volatile OSACA_result = OSACA_loop_carry; \
   IACA_VC64_END;                                   \
   return OSACA_result
+
+#if OSACA_CARRY_LOOP_THROUGH_REGISTER
+#define OSACA_INPUT_QUALIFIER
+#else
+#define OSACA_INPUT_QUALIFIER volatile
+#endif
 
 // The branch not taken, determined by evaluating the condition
 // `UNDER_OSACA_HYPOTHESES`, is eliminated by `if constexpr`; the condition is
@@ -173,7 +182,7 @@ static bool OSACA_loop_terminator = false;
 #endif
 
 #define UNDER_OSACA_HYPOTHESES(expression)                                 \
-  [] {                                                                     \
+  [&] {                                                                    \
     constexpr bool UseHardwareFMA = true;                                  \
     constexpr double θ = 0.1;                                              \
     /* From argument reduction. */                                         \
