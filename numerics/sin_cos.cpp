@@ -77,15 +77,13 @@
     }
   }
 // To analyse it near x = 5:
-#define UNDER_OSACA_HYPOTHESES(statement)                                    \
-  do {                                                                       \
-    {                                                                        \
-      constexpr double x = 5;                                                \
-      /* To avoid inconsistent definitions, constexpr code can be used as */ \
-      /* needed.                                                          */ \
-      constexpr double abs_x = x > 0 ? x : -x;                               \
-      statement;                                                             \
-    }                                                                        \
+#define UNDER_OSACA_HYPOTHESES(statement)                                  \
+  do {                                                                     \
+    constexpr double x = 5;                                                \
+    /* To avoid inconsistent definitions, constexpr code can be used as */ \
+    /* needed.                                                          */ \
+    constexpr double abs_x = x > 0 ? x : -x;                               \
+    statement;                                                             \
   } while (false)
 #endif
 
