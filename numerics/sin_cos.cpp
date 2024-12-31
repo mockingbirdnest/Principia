@@ -41,13 +41,13 @@ static bool OSACA_loop_terminator = false;
    * through registers.*/                                                      \
   IACA_VC64_START;                                                             \
   double OSACA_loop_carry = OSACA_input;                                       \
-  OSACA_LOOP:                                                                  \
+  OSACA_loop:                                                                  \
   arg = OSACA_loop_carry
 
 #define OSACA_RETURN(result)                       \
   OSACA_loop_carry = (result);                     \
   if (!OSACA_loop_terminator) {                    \
-    goto OSACA_LOOP;                               \
+    goto OSACA_loop;                               \
   }                                                \
   double volatile OSACA_result = OSACA_loop_carry; \
   IACA_VC64_END;                                   \
