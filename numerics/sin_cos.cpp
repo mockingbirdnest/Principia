@@ -44,13 +44,13 @@
     if (abs_x < 0.1) {
       return x;
     } else if (x < 0) {
-      return -f_positive(x);
+      return -f_positive(abs_x);
     } else {
-      return f_positive(x);
+      return f_positive(abs_x);
     }
   }
-  double f_positive(x) {
-    if (x > 3) {
+  double f_positive(double const abs_x) {
+    if (abs_x > 3) {
       return 1;
     } else {
       // …
@@ -63,14 +63,15 @@
     OSACA_IF(abs_x < 0.1) {
       OSACA_RETURN(x);
     } OSACA_ELSE_IF(x < 0) {  // `else OSACA_IF` works, but upsets the linter.
-      OSACA_RETURN(-f_positive(x));
+      OSACA_RETURN(-f_positive(abs_x));
     } else {
-      OSACA_RETURN(f_positive(x));
+      OSACA_RETURN(f_positive(abs_x));
     }
   }
-  // Other functions can return normally, but need to use OSACA_IF:
-  double f_positive(x) {
-    OSACA_IF(x > 3) {
+  // Other functions can have const arguments and return normally, but need to
+  // use OSACA_IF:
+  double f_positive(double const abs_x) {
+    OSACA_IF(abs_x > 3) {
       return 1;
     } else {
       // …
