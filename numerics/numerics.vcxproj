@@ -10,15 +10,6 @@
     <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
     <Import Project="..\shared\testing_utilities.vcxitems" Label="Shared" />
   </ImportGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile />
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile />
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
-    <ClCompile />
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="angle_reduction.hpp" />
     <ClInclude Include="angle_reduction_body.hpp" />
