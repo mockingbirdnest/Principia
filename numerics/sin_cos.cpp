@@ -14,24 +14,83 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
-#if PRINCIPIA_USE_OSACA_SIN
-#define OSACA_SIN_BEGIN OSACA_FUNCTION_BEGIN
-#define OSACA_RETURN_SIN OSACA_RETURN
-#else
-#define OSACA_SIN_BEGIN(arg)
-#define OSACA_RETURN_SIN(result) return (result)
-#endif
+#define PRINCIPIA_USE_OSACA PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 
-#if PRINCIPIA_USE_OSACA_COS
-#define OSACA_COS_BEGIN OSACA_FUNCTION_BEGIN
-#define OSACA_RETURN_COS OSACA_RETURN
-#else
-#define OSACA_COS_BEGIN(arg)
-#define OSACA_RETURN_COS(result) return (result)
-#endif
+#if PRINCIPIA_USE_OSACA
 
-#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
+
+// The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
+// latency of a double -> double function, as measured, e.g., by the
+// nanobenchmarks; this notionally corresponds to the duration of an iteration
+// of a loop x = f(x).
+// The latency-critical path of the function is reported as the loop-carried
+// dependency by OSACA, and as the critical path by IACA in throughput analysis
+// mode.
+// OSACA and IACA are only suitable for benchmarking a single path.  Any if
+// statements, including in inline functions called by the function being
+// analysed, should be replaced with OSACA_IF.  The path should be determined by
+// providing any necessary constexpr expressions in UNDER_OSACA_HYPOTHESES.
+// if OSACA_EVALUATE_CONDITIONS is set to 1, code will be generated to evaluate
+// the conditions for the branches taken (outside the loop-carried path, as they
+// would be with correct branch prediction).
+// OSACA_EVALUATE_CONDITIONS can be set to 0 to get a more streamlined
+// dependency graph when the conditions are irrelevant.  Note that this can
+// result in artificially low port pressures.
+#if 0
+// Usage:
+double f(double const x) {
+  double const abs_x = std::abs(x);
+  if (abs_x < 0.1) {
+    return x;
+  } else if (x < 0) {
+    return f_negative(x);
+  } else {
+    return f_positive(x);
+  }
+}
+// becomes:
+double f(double x) {  // The argument cannot be const.
+  OSACA_FUNCTION_BEGIN(x);
+  double const abs_x = std::abs(x);
+  OSACA_IF(abs_x < 0.1) {
+    OSACA_RETURN(x);
+  } OSACA_ELSE_IF (x < 0) { // `else OSACA_IF` works, but upsets the linter.
+    OSACA_RETURN(f_negative(x));
+  } else {
+    OSACA_RETURN(f_positive(x));
+  }
+}
+// To analyse it near x = 5:
+#define UNDER_OSACA_HYPOTHESES(statement)                                    \
+  do {                                                                       \
+    {                                                                        \
+      constexpr double x = 5;                                                \
+      /* To avoid inconsistent definitions, constexpr code can be used as */ \
+      /* needed.                                                          */ \
+      constexpr double abs_x = x > 0 ? x : -x;                               \
+      statement;                                                             \
+    }                                                                        \
+  } while (false)
+#endif
+
+#define OSACA_EVALUATE_CONDITIONS 1
+
+// In principle, the loop-carried dependency for function latency analysis is
+// achieved by wrapping the body of the function in an infinite loop, assigning
+// the result to the argument at each iteration, and adding IACA markers outside
+// the loop.  There are some subtleties:
+// — We need to trick the compiler into believing the loop is finite, so that it
+//   doesn’t optimize away the end marker or even the function.  This is
+//   achieved by exiting based on the value of OSACA_loop_terminator.
+// — Return statements may be in if statements, and there may be several of
+//   them, so they cannot be the end of a loop started unconditionally.  Instead
+//   we loop with goto.
+// — Some volatile reads and writes are used to clarify identity of the
+//   registers in the generated code (where the names of OSACA_input and
+//   OSACA_result appear in movsd instructions) and to improve the structure of
+//   the generated graph.
+
 static bool OSACA_loop_terminator = false;
 
 #define OSACA_FUNCTION_BEGIN(arg)                                              \
@@ -54,9 +113,50 @@ static bool OSACA_loop_terminator = false;
   IACA_VC64_END;                                   \
   return OSACA_result
 
-#define OSACA_IF(condition)                                           \
-  if constexpr (bool volatile OSACA_computed_condition = (condition); \
+// The branch not taken, determined by evaluating the condition
+// `UNDER_OSACA_HYPOTHESES`, is eliminated by `if constexpr`; the condition is
+// also compiled normally and assigned to a boolean; whether this results in any
+// generated code depends on `OSACA_EVALUATE_CONDITIONS`.  Note that, with
+// `OSACA_EVALUATE_CONDITIONS`, in  `OSACA_IF(p) { } OSACA_ELSE_IF(q) { }`, if
+// `p` holds `UNDER_OSACA_HYPOTHESES`, code is generated to evalutae `p`, but
+// not `q`.
+
+#define OSACA_IF(condition)                                               \
+  if constexpr (bool OSACA_CONDITION_QUALIFIER OSACA_computed_condition = \
+                    (condition);                                          \
                 [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
+
+#if OSACA_EVALUATE_CONDITIONS
+#define OSACA_CONDITION_QUALIFIER volatile
+#else
+#define OSACA_CONDITION_QUALIFIER
+#endif
+
+#else
+
+#define OSACA_IF(condition) if (condition)
+
+#endif  // PRINCIPIA_USE_OSACA
+
+#define OSACA_ELSE_IF else OSACA_IF  // NOLINT
+
+// Sin- and Cos-specific definitions:
+
+#if PRINCIPIA_USE_OSACA_SIN
+#define OSACA_SIN_BEGIN OSACA_FUNCTION_BEGIN
+#define OSACA_RETURN_SIN OSACA_RETURN
+#else
+#define OSACA_SIN_BEGIN(arg)
+#define OSACA_RETURN_SIN(result) return (result)
+#endif
+
+#if PRINCIPIA_USE_OSACA_COS
+#define OSACA_COS_BEGIN OSACA_FUNCTION_BEGIN
+#define OSACA_RETURN_COS OSACA_RETURN
+#else
+#define OSACA_COS_BEGIN(arg)
+#define OSACA_RETURN_COS(result) return (result)
+#endif
 
 #define UNDER_OSACA_HYPOTHESES(statement)                                  \
   do {                                                                     \
@@ -82,12 +182,6 @@ static bool OSACA_loop_terminator = false;
     constexpr double value = 1;                                            \
     { statement; }                                                         \
   } while (false)
-
-#else
-#define OSACA_IF(condition) if (condition)
-#endif
-
-#define OSACA_ELSE_IF else OSACA_IF
 
 
 namespace principia {
