@@ -15,43 +15,43 @@
 #include "quantities/elementary_functions.hpp"
 
 #if PRINCIPIA_USE_OSACA_SIN
-#define IACA_SIN_BEGIN IACA_FUNCTION_BEGIN
-#define IACA_RETURN_SIN IACA_RETURN
+#define OSACA_SIN_BEGIN OSACA_FUNCTION_BEGIN
+#define OSACA_RETURN_SIN OSACA_RETURN
 #else
-#define IACA_SIN_BEGIN(arg)
-#define IACA_RETURN_SIN(result) return (result)
+#define OSACA_SIN_BEGIN(arg)
+#define OSACA_RETURN_SIN(result) return (result)
 #endif
 
 #if PRINCIPIA_USE_OSACA_COS
-#define IACA_COS_BEGIN IACA_FUNCTION_BEGIN
-#define IACA_RETURN_COS IACA_RETURN
+#define OSACA_COS_BEGIN OSACA_FUNCTION_BEGIN
+#define OSACA_RETURN_COS OSACA_RETURN
 #else
-#define IACA_COS_BEGIN(arg)
-#define IACA_RETURN_COS(result) return (result)
+#define OSACA_COS_BEGIN(arg)
+#define OSACA_RETURN_COS(result) return (result)
 #endif
 
 #if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
-static bool iaca_loop_terminator = false;
-#define IACA_FUNCTION_BEGIN(arg) \
-  double iaca_loop_carry = arg;   \
+static bool OSACA_loop_terminator = false;
+#define OSACA_FUNCTION_BEGIN(arg) \
+  double OSACA_loop_carry = arg;  \
   IACA_VC64_START;                \
-  IACA_LOOP:                      \
-  arg = iaca_loop_carry
+  OSACA_LOOP:                     \
+  arg = OSACA_loop_carry
 
-#define IACA_RETURN(result)                      \
-  iaca_loop_carry = (result);                    \
-  if (!iaca_loop_terminator) {                   \
-    goto IACA_LOOP;                              \
-  }                                              \
-  volatile double iaca_result = iaca_loop_carry; \
-  IACA_VC64_END;                                 \
-  return iaca_result
-#define IACA_IF(condition)                                           \
-  if constexpr (volatile bool IACA_computed_condition = (condition); \
-                [] { UNDER_IACA_HYPOTHESES(return (condition)); }())
+#define OSACA_RETURN(result)                       \
+  OSACA_loop_carry = (result);                     \
+  if (!OSACA_loop_terminator) {                    \
+    goto OSACA_LOOP;                               \
+  }                                                \
+  volatile double OSACA_result = OSACA_loop_carry; \
+  IACA_VC64_END;                                   \
+  return OSACA_result
+#define OSACA_IF(condition)                                           \
+  if constexpr (volatile bool OSACA_computed_condition = (condition); \
+                [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
 
-#define UNDER_IACA_HYPOTHESES(statement)                                       \
+#define UNDER_OSACA_HYPOTHESES(statement)                                      \
   do {                                                                         \
     constexpr bool UseHardwareFMA = true;                                      \
     constexpr double θ = 0.1;                                                  \
@@ -77,7 +77,7 @@ static bool iaca_loop_terminator = false;
   } while (false)
 
 #else
-#define IACA_IF (condition) if (condition)
+#define OSACA_IF (condition) if (condition)
 #endif
 
 
@@ -138,7 +138,7 @@ inline std::int64_t AccurateTableIndex(double const abs_x) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  IACA_IF ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+  OSACA_IF ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
           (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
@@ -149,7 +149,7 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  IACA_IF ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+  OSACA_IF ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
           (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
@@ -173,7 +173,7 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
       _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
   // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
   // negative numbers?
-  IACA_IF (normalized_error < -0x1.ffffp971 &&
+  OSACA_IF (normalized_error < -0x1.ffffp971 &&
           normalized_error > -0x1.00008p972) {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
@@ -188,12 +188,12 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
-  IACA_IF (θ < π / 4 && θ > -π / 4) {
+  OSACA_IF (θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } else IACA_IF (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
+  } else OSACA_IF (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -206,7 +206,7 @@ inline void Reduce(Argument const θ,
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
     // TODO(phl): Error analysis needed to find the right bounds.
-    IACA_IF (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+    OSACA_IF (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
       quadrant = n & 0b11;
       return;
     }
@@ -244,7 +244,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& x = θ_reduced.value;
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
-  IACA_IF (abs_x < sin_near_zero_cutoff) {
+  OSACA_IF (abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
@@ -262,8 +262,8 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-  // later in the computation.  Note that the terms in `e * h²` and higher are
-  // *not* computed correctly below because they don't matter.
+    // later in the computation.  Note that the terms in `e * h²` and higher are
+    // *not* computed correctly below because they don't matter.
     double const h = x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
@@ -317,71 +317,71 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 FORCE_INLINE(inline)
 #endif
 Value __cdecl Sin(Argument const θ) {
-  IACA_SIN_BEGIN(θ);
+  OSACA_SIN_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  IACA_IF (UseHardwareFMA) {
-    IACA_IF (quadrant & 0b1) {
+  OSACA_IF (UseHardwareFMA) {
+    OSACA_IF (quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
 #if PRINCIPIA_USE_OSACA_SIN
-      IACA_VC64_START;
+      OSACA_VC64_START;
 #endif
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
 #if PRINCIPIA_USE_OSACA_SIN
-      IACA_VC64_END;
+      OSACA_VC64_END;
 #endif
     }
   } else {
-    IACA_IF (quadrant & 0b1) {
+    OSACA_IF (quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  IACA_IF (value != value) {
-    IACA_RETURN_SIN(cr_sin(θ));
-  } else IACA_IF(quadrant & 0b10) {
-    IACA_RETURN_SIN(-value);
+  OSACA_IF (value != value) {
+    OSACA_RETURN_SIN(cr_sin(θ));
+  } else OSACA_IF(quadrant & 0b10) {
+    OSACA_RETURN_SIN(-value);
   } else {
-    IACA_RETURN_SIN(value);
+    OSACA_RETURN_SIN(value);
   }
 }
 
-namespace IACA_assumptions {
+namespace OSACA_assumptions {
 constexpr std::int64_t quadrant = 1;
-}  // namespace IACA_assumptions
+}  // namespace OSACA_assumptions
 
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
 Value __cdecl Cos(Argument θ) {
-  IACA_COS_BEGIN(θ);
+  OSACA_COS_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  IACA_IF (UseHardwareFMA) {
-    IACA_IF (quadrant & 0b1) {
+  OSACA_IF (UseHardwareFMA) {
+    OSACA_IF (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
-    IACA_IF (quadrant & 0b1) {
+    OSACA_IF (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  IACA_IF (value != value) {
-    IACA_RETURN_COS(cr_cos(θ));
-  } else IACA_IF (quadrant == 1 || quadrant == 2) {
-    IACA_RETURN_COS(-value);
+  OSACA_IF (value != value) {
+    OSACA_RETURN_COS(cr_cos(θ));
+  } else OSACA_IF (quadrant == 1 || quadrant == 2) {
+    OSACA_RETURN_COS(-value);
   } else {
-    IACA_RETURN_COS(value);
+    OSACA_RETURN_COS(value);
   }
 }
 
