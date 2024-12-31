@@ -1,18 +1,22 @@
 #pragma once
 
+#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
+
 namespace principia {
 namespace numerics {
 namespace _sin_cos {
 namespace internal {
 
 #define PRINCIPIA_INLINE_SIN_COS 0
+#define PRINCIPIA_USE_OSACA_SIN 0
+#define PRINCIPIA_USE_OSACA_COS 0
 
 #if PRINCIPIA_INLINE_SIN_COS
-inline
+FORCE_INLINE(inline)
 #endif
 double __cdecl Sin(double x);
 #if PRINCIPIA_INLINE_SIN_COS
-inline
+FORCE_INLINE(inline)
 #endif
 double __cdecl Cos(double x);
 

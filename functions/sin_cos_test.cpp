@@ -27,7 +27,53 @@ using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
 
-class SinCosTest : public ::testing::Test {};
+class SinCosTest : public ::testing::Test {
+ protected:
+  double a_ = 1.0;
+};
+
+// Defined in sin_cos.hpp
+#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
+
+// A convenient skeleton for analysing code with OSACA.  Note that to speed-up
+// analysis, we disable all the other tests when using OSACA.
+TEST_F(SinCosTest, DISABLED_OSACA) {
+  static_assert(PRINCIPIA_INLINE_SIN_COS == 1,
+                "Must force inlining to use OSACA");
+  static_assert(PRINCIPIA_USE_OSACA_SIN + PRINCIPIA_USE_OSACA_COS <= 1,
+                "Must use OSACA for at most one function");
+  auto osaca_sin = [](double const a) {
+    return Sin(a);
+  };
+  auto osaca_cos = [](double const a) {
+    return Cos(a);
+  };
+  CHECK_NE(osaca_sin(a_), osaca_cos(a_));
+}
+
+#else
+
+TEST_F(SinCosTest, AccurateTableIndex) {
+  static constexpr std::int64_t iterations = 100;
+
+  constexpr std::int64_t table_spacing_bits = 9;
+  constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
+  constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
+  static const __m128d mantissa_index_bits =
+      _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> uniformly_at(0, π / 4);
+
+  for (std::int64_t i = 0; i < iterations; ++i) {
+    double const x = uniformly_at(random);
+    auto const n = _mm_cvtsd_si64(_mm_set_sd(x * table_spacing_reciprocal));
+    auto const m = _mm_cvtsi128_si64(_mm_castpd_si128(
+        _mm_and_pd(mantissa_index_bits,
+                   _mm_set_sd(x + (1LL << (std::numeric_limits<double>::digits -
+                                           table_spacing_bits - 1))))));
+    EXPECT_EQ(n, m);
+  }
+}
 
 TEST_F(SinCosTest, Random) {
   std::mt19937_64 random(42);
@@ -146,6 +192,8 @@ TEST_F(SinCosTest, HardReduction) {
   EXPECT_THAT(Cos(0x16ac5b262ca1ffp797),
               AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
 }
+
+#endif
 
 }  // namespace functions_test
 }  // namespace principia

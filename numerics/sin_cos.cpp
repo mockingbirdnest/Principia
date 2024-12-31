@@ -14,6 +14,10 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
+#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
+#include "intel/iacaMarks.h"
+#endif
+
 namespace principia {
 namespace numerics {
 namespace _sin_cos {
@@ -28,8 +32,10 @@ using namespace principia::quantities::_elementary_functions;
 using Argument = double;
 using Value = double;
 
-constexpr Argument sin_near_zero_cutoff = 1.0 / 1024.0;
-constexpr Argument table_spacing_reciprocal = 512.0;
+constexpr std::int64_t table_spacing_bits = 9;
+constexpr Argument table_spacing_reciprocal = 1 << table_spacing_bits;
+constexpr Argument table_spacing = 1.0 / table_spacing_reciprocal;
+constexpr Argument sin_near_zero_cutoff = table_spacing / 2.0;
 
 // π / 2 split so that the high half has 18 zeros at the end of its mantissa.
 constexpr std::int64_t π_over_2_zeroes = 18;
@@ -47,7 +53,25 @@ static const __m128d exponent_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x7ff0'0000'0000'0000));
 static const __m128d mantissa_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
+static const __m128d mantissa_index_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
 }  // namespace masks
+
+inline std::int64_t AccurateTableIndex(double const abs_x) {
+  // This function computes the index in the accurate table:
+  // 1. A suitable (large) power of 2 is added to the argument so that the last
+  //    bit of the mantissa of the result corresponds to units of 1/512 of the
+  //    argument.  As part of this addition, an interval of radius 1/1024 around
+  //    an integral multiple of 1/512 is correctly rounded to that integral
+  //    multiple.
+  // 2. An `and` operation is used to only retain the last 9 bits of the
+  //    mantissa.
+  // 3. The result is interpreted as an integer and returned as the index.
+  return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_and_pd(
+      masks::mantissa_index_bits,
+      _mm_set_sd(abs_x + (1LL << (std::numeric_limits<double>::digits -
+                                  table_spacing_bits - 1))))));
+}
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
@@ -60,10 +84,21 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
   }
 }
 
+template<FMAPolicy fma_policy>
+double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
+  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+    return FusedNegatedMultiplyAdd(a, b, c);
+  } else {
+    return c - a * b;
+  }
+}
+
 // Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
 // configuration (that is, the bits after the last mantissa bit of the sum are
 // either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
-double DetectDangerousRounding(double const x, double const Δx) {
+inline double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
   double const& error = sum.error;
@@ -86,9 +121,9 @@ double DetectDangerousRounding(double const x, double const Δx) {
   }
 }
 
-void Reduce(Argument const θ,
-            DoublePrecision<Argument>& θ_reduced,
-            std::int64_t& quadrant) {
+inline void Reduce(Argument const θ,
+                   DoublePrecision<Argument>& θ_reduced,
+                   std::int64_t& quadrant) {
   if (θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
@@ -153,7 +188,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
-    auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
+    auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
     double const x₀ =
         _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
@@ -163,7 +198,8 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-    // later in the computation.
+    // later in the computation.  Note that the terms in `e * h²` and higher are
+    // *not* computed correctly below because they don't matter.
     double const h = x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
@@ -171,10 +207,11 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const h² = h * (h + 2 * e);
     double const h³ = h² * h;
     double const polynomial_term =
-        ((sin_x₀ * h² * CosPolynomial<fma_policy>(h²) +
-          cos_x₀ * FusedMultiplyAdd<fma_policy>(
-                       h³, SinPolynomial<fma_policy>(h²), e)) +
-         sin_x₀_plus_h_cos_x₀.error);
+        FusedMultiplyAdd<fma_policy>(
+            cos_x₀,
+            FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+            sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
+        sin_x₀_plus_h_cos_x₀.error;
     return DetectDangerousRounding(sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
@@ -186,7 +223,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
-  auto const i = _mm_cvtsd_si64(_mm_set_sd(abs_x * table_spacing_reciprocal));
+  auto const i = AccurateTableIndex(abs_x);
   auto const& accurate_values = SinCosAccurateTable[i];
   double const x₀ =
       _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
@@ -196,7 +233,8 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
   // don't overlap and in the first interval `x` and `h` may be of the same
   // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-  // later in the computation.
+  // later in the computation.  Note that the terms in `e * h²` and higher are
+  // *not* computed correctly below because they don't matter.
   double const h = x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
@@ -204,15 +242,16 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   double const h² = h * (h + 2 * e);
   double const h³ = h² * h;
   double const polynomial_term =
-      ((cos_x₀ * h² * CosPolynomial<fma_policy>(h²) -
-        sin_x₀ * FusedMultiplyAdd<fma_policy>(
-                     h³, SinPolynomial<fma_policy>(h²), e)) +
-       cos_x₀_minus_h_sin_x₀.error);
+      FusedNegatedMultiplyAdd<fma_policy>(
+          sin_x₀,
+          FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+          cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
+      cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
-inline
+FORCE_INLINE(inline)
 #endif
 Value __cdecl Sin(Argument const θ) {
   DoublePrecision<Argument> θ_reduced;
@@ -223,7 +262,13 @@ Value __cdecl Sin(Argument const θ) {
     if (quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
+#if PRINCIPIA_USE_OSACA_SIN
+      IACA_VC64_START;
+#endif
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
+#if PRINCIPIA_USE_OSACA_SIN
+      IACA_VC64_END;
+#endif
     }
   } else {
     if (quadrant & 0b1) {
@@ -242,7 +287,7 @@ Value __cdecl Sin(Argument const θ) {
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
-inline
+FORCE_INLINE(inline)
 #endif
 Value __cdecl Cos(Argument const θ) {
   DoublePrecision<Argument> θ_reduced;
@@ -253,7 +298,13 @@ Value __cdecl Cos(Argument const θ) {
     if (quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
+#if PRINCIPIA_USE_OSACA_COS
+      IACA_VC64_START;
+#endif
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
+#if PRINCIPIA_USE_OSACA_COS
+      IACA_VC64_END;
+#endif
     }
   } else {
     if (quadrant & 0b1) {
