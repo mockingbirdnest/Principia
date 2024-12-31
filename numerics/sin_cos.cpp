@@ -262,8 +262,8 @@ inline std::int64_t AccurateTableIndex(double const abs_x) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-            (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  static_assert(fma_policy != FMAPolicy::Auto);
+  if constexpr (fma_policy == FMAPolicy::Force) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
   } else {
@@ -273,8 +273,8 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-            (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  static_assert(fma_policy != FMAPolicy::Auto);
+  if constexpr (fma_policy == FMAPolicy::Force) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
@@ -372,7 +372,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const x² = x * x;
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
-                   x³, SinPolynomialNearZero<fma_policy>(x²), e);
+        x³, SinPolynomialNearZero<fma_policy>(x²), e);
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
