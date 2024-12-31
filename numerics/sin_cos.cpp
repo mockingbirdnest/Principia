@@ -33,10 +33,15 @@
 #if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
 static bool OSACA_loop_terminator = false;
-#define OSACA_FUNCTION_BEGIN(arg) \
-  double OSACA_loop_carry = arg;  \
-  IACA_VC64_START;                \
-  OSACA_LOOP:                     \
+#define OSACA_FUNCTION_BEGIN(arg)                                              \
+  double volatile OSACA_input = arg;                                           \
+  /* Putting a load of the input from memory in the analysed section makes the \
+   * dependency graph clearer, but adds a potentially spurious move to the     \
+   * loop-carried latency.  Remove the `volatile` above to carry the loop      \
+   * through registers.*/                                                      \
+  IACA_VC64_START;                                                             \
+  double OSACA_loop_carry = OSACA_input;                                       \
+  OSACA_LOOP:                                                                  \
   arg = OSACA_loop_carry
 
 #define OSACA_RETURN(result)                       \
@@ -44,11 +49,11 @@ static bool OSACA_loop_terminator = false;
   if (!OSACA_loop_terminator) {                    \
     goto OSACA_LOOP;                               \
   }                                                \
-  volatile double OSACA_result = OSACA_loop_carry; \
+  double volatile OSACA_result = OSACA_loop_carry; \
   IACA_VC64_END;                                   \
   return OSACA_result
 #define OSACA_IF(condition)                                           \
-  if constexpr (volatile bool OSACA_computed_condition = (condition); \
+  if constexpr (bool volatile OSACA_computed_condition = (condition); \
                 [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
 
 #define UNDER_OSACA_HYPOTHESES(statement)                                      \
