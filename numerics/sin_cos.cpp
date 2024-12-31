@@ -23,7 +23,7 @@
 // The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
 // latency of a double -> double function, as measured, e.g., by the
 // nanobenchmarks; this notionally corresponds to the duration of an iteration
-// of a loop x = f(x).
+// of a loop `x = f(x)`.
 // The latency-critical path of the function is reported as the loop-carried
 // dependency by OSACA, and as the critical path by IACA in throughput analysis
 // mode.
@@ -93,14 +93,14 @@
 // the loop.  There are some subtleties:
 // — We need to trick the compiler into believing the loop is finite, so that it
 //   doesn’t optimize away the end marker or even the function.  This is
-//   achieved by exiting based on the value of OSACA_loop_terminator.
+//   achieved by exiting based on the value of `OSACA_loop_terminator`.
 // — Return statements may be in if statements, and there may be several of
 //   them, so they cannot be the end of a loop started unconditionally.  Instead
 //   we loop with goto.
 // — Some volatile reads and writes are used to clarify identity of the
-//   registers in the generated code (where the names of OSACA_input and
-//   OSACA_result appear in movsd instructions) and to improve the structure of
-//   the generated graph.
+//   registers in the generated code (where the names of `OSACA_input` and
+//   'OSACA_result' appear in movsd instructions) and to improve the structure
+//   of the generated graph.
 //
 // Putting a load of the input from memory in the analysed section makes the
 // OSACA dependency graph clearer. However:
@@ -141,7 +141,7 @@ static bool OSACA_loop_terminator = false;
 // also compiled normally and assigned to a boolean; whether this results in any
 // generated code depends on `OSACA_EVALUATE_CONDITIONS`.  Note that, with
 // `OSACA_EVALUATE_CONDITIONS`, in  `OSACA_IF(p) { } OSACA_ELSE_IF(q) { }`, if
-// `p` holds `UNDER_OSACA_HYPOTHESES`, code is generated to evalutae `p`, but
+// `p` holds `UNDER_OSACA_HYPOTHESES`, code is generated to evaluate `p`, but
 // not `q`.
 
 #define OSACA_IF(condition)                                               \
@@ -155,7 +155,7 @@ static bool OSACA_loop_terminator = false;
 #define OSACA_CONDITION_QUALIFIER
 #endif
 
-#else
+#else  // if !PRINCIPIA_USE_OSACA
 
 #define OSACA_IF(condition) if (condition)
 
