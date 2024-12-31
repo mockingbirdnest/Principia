@@ -55,7 +55,7 @@ double f(double x) {  // The argument cannot be const.
   double const abs_x = std::abs(x);
   OSACA_IF(abs_x < 0.1) {
     OSACA_RETURN(x);
-  } OSACA_ELSE_IF (x < 0) { // `else OSACA_IF` works, but upsets the linter.
+  } OSACA_ELSE_IF(x < 0) {  // `else OSACA_IF` works, but upsets the linter.
     OSACA_RETURN(f_negative(x));
   } else {
     OSACA_RETURN(f_positive(x));
