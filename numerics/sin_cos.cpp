@@ -52,7 +52,7 @@ static bool OSACA_loop_terminator = false;
   double volatile OSACA_result = OSACA_loop_carry; \
   IACA_VC64_END;                                   \
   return OSACA_result
-#define OSACA_IF_(condition)                                           \
+#define OSACA_IF(condition)                                           \
   if constexpr (bool volatile OSACA_computed_condition = (condition); \
                 [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
 
@@ -82,8 +82,10 @@ static bool OSACA_loop_terminator = false;
   } while (false)
 
 #else
-#define OSACA_IF_(condition) if (condition)
+#define OSACA_IF(condition) if (condition)
 #endif
+
+#define OSACA_ELSE_IF else OSACA_IF
 
 
 namespace principia {
@@ -143,7 +145,7 @@ inline std::int64_t AccurateTableIndex(double const abs_x) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  OSACA_IF_((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
             (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
@@ -154,7 +156,7 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  OSACA_IF_((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
             (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
@@ -178,7 +180,7 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
       _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
   // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
   // negative numbers?
-  OSACA_IF_(normalized_error < -0x1.ffffp971 &&
+  OSACA_IF(normalized_error < -0x1.ffffp971 &&
           normalized_error > -0x1.00008p972) {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
@@ -193,12 +195,12 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
-  OSACA_IF_(θ < π / 4 && θ > -π / 4) {
+  OSACA_IF(θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } else OSACA_IF_(θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
+  } OSACA_ELSE_IF(θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -211,7 +213,7 @@ inline void Reduce(Argument const θ,
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
     // TODO(phl): Error analysis needed to find the right bounds.
-    OSACA_IF_(θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+    OSACA_IF(θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
       quadrant = n & 0b11;
       return;
     }
@@ -249,7 +251,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& x = θ_reduced.value;
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
-  OSACA_IF_(abs_x < sin_near_zero_cutoff) {
+  OSACA_IF(abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
@@ -328,28 +330,22 @@ Value __cdecl Sin(Argument const θ) {
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  OSACA_IF_(UseHardwareFMA) {
-    OSACA_IF_(quadrant & 0b1) {
+  OSACA_IF(UseHardwareFMA) {
+    OSACA_IF(quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-#if PRINCIPIA_USE_OSACA_SIN
-      OSACA_VC64_START;
-#endif
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
-#if PRINCIPIA_USE_OSACA_SIN
-      OSACA_VC64_END;
-#endif
     }
   } else {
-    OSACA_IF_(quadrant & 0b1) {
+    OSACA_IF(quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  OSACA_IF_(value != value) {
+  OSACA_IF(value != value) {
     OSACA_RETURN_SIN(cr_sin(θ));
-  } else OSACA_IF_(quadrant & 0b10) {
+  } OSACA_ELSE_IF(quadrant & 0b10) {
     OSACA_RETURN_SIN(-value);
   } else {
     OSACA_RETURN_SIN(value);
@@ -359,28 +355,28 @@ Value __cdecl Sin(Argument const θ) {
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
-Value __cdecl Cos(Argument θ) {
+Value __cdecl Cos(Argument const θ) {
   OSACA_COS_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  OSACA_IF_(UseHardwareFMA) {
-    OSACA_IF_(quadrant & 0b1) {
+  OSACA_IF(UseHardwareFMA) {
+    OSACA_IF(quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
-    OSACA_IF_(quadrant & 0b1) {
+    OSACA_IF(quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  OSACA_IF_(value != value) {
+  OSACA_IF(value != value) {
     OSACA_RETURN_COS(cr_cos(θ));
-  } else OSACA_IF_(quadrant == 1 || quadrant == 2) {
+  } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
     OSACA_RETURN_COS(-value);
   } else {
     OSACA_RETURN_COS(value);
