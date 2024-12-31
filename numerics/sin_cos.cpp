@@ -184,6 +184,7 @@ static bool OSACA_loop_terminator = false;
     constexpr bool UseHardwareFMA = true;                                  \
     constexpr double θ = 0.1;                                              \
     /* From argument reduction. */                                         \
+    constexpr double abs_θ = θ < 0 ? -θ : θ;                               \
     constexpr double n_double = θ * (2 / π);                               \
     constexpr double reduction_value = θ - n_double * π_over_2_high;       \
     constexpr double reduction_error = n_double * π_over_2_low;            \
@@ -312,12 +313,13 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
-  OSACA_IF(θ < π / 4 && θ > -π / 4) {
+  double const abs_θ = std::abs(θ);
+  OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } OSACA_ELSE_IF(θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
+  } OSACA_ELSE_IF(abs_θ <= π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
