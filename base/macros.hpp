@@ -13,10 +13,10 @@ namespace base {
 // True if X is #defined to nothing, false if X is #defined to an identifier or
 // is not defined.  This macro should not be used with macros that expand to
 // something other than an identifier.
-#define PRINCIPIA_MACRO_IS_EMPTY(X)                                  \
-  (PRINCIPIA_CONCATENATE_SENTINEL(X) ==                              \
-   ('S' << 000 | 'E' << 010 | 'N' << 020 | 'T' << 030 | 'I' << 040 | \
-    'N' << 050 | 'E' << 060 | 'L' << 070))
+#define PRINCIPIA_MACRO_IS_EMPTY(X)                                     \
+    (PRINCIPIA_CONCATENATE_SENTINEL(X) ==                               \
+     ('S' << 000 | 'E' << 010 | 'N' << 020 | 'T' << 030 | 'I' << 040 |  \
+      'N' << 050 | 'E' << 060 | 'L' << 070))
 
 // See http://goo.gl/2EVxN4 for a partial overview of compiler detection and
 // version macros.
