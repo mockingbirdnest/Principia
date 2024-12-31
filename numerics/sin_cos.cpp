@@ -324,7 +324,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
-Value __cdecl Sin(Argument const θ) {
+Value __cdecl Sin(Argument θ) {
   OSACA_SIN_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
@@ -355,7 +355,7 @@ Value __cdecl Sin(Argument const θ) {
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
-Value __cdecl Cos(Argument const θ) {
+Value __cdecl Cos(Argument θ) {
   OSACA_COS_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
