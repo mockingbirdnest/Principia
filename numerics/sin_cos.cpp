@@ -14,9 +14,196 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
-#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
+#if PRINCIPIA_USE_OSACA
+
 #include "intel/iacaMarks.h"
+
+// The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
+// latency of a double -> double function, as measured, e.g., by the
+// nanobenchmarks; this notionally corresponds to the duration of an iteration
+// of a loop `x = f(x)`.
+// The latency-critical path of the function is reported as the loop-carried
+// dependency by OSACA, and as the critical path by IACA in throughput analysis
+// mode.
+// OSACA and IACA are only suitable for benchmarking a single path.  Any if
+// statements, including in inline functions called by the function being
+// analysed, should be replaced with OSACA_IF.  The path should be determined by
+// providing any necessary constexpr expressions in UNDER_OSACA_HYPOTHESES.
+// If OSACA_EVALUATE_CONDITIONS is set to 1, code will be generated to evaluate
+// the conditions for the branches taken (outside the loop-carried path, as they
+// would be with correct branch prediction).
+// OSACA_EVALUATE_CONDITIONS can be set to 0 to get a more streamlined
+// dependency graph when the conditions are irrelevant.  Note that this can
+// result in artificially low port pressures.
+#if 0
+// Usage:
+  double f(double const x) {
+    double const abs_x = std::abs(x);
+    if (abs_x < 0.1) {
+      return x;
+    } else if (x < 0) {
+      return -f_positive(abs_x);
+    } else {
+      return f_positive(abs_x);
+    }
+  }
+  double f_positive(double const abs_x) {
+    if (abs_x > 3) {
+      return 1;
+    } else {
+      // …
+    }
+  }
+// becomes:
+  double f(double x) {  // The argument cannot be const.
+    OSACA_FUNCTION_BEGIN(x);
+    double const abs_x = std::abs(x);
+    OSACA_IF(abs_x < 0.1) {
+      OSACA_RETURN(x);
+    } OSACA_ELSE_IF(x < 0) {  // `else OSACA_IF` works, but upsets the linter.
+      OSACA_RETURN(-f_positive(abs_x));
+    } else {
+      OSACA_RETURN(f_positive(abs_x));
+    }
+  }
+  // Other functions can have const arguments and return normally, but need to
+  // use OSACA_IF:
+  double f_positive(double const abs_x) {
+    OSACA_IF(abs_x > 3) {
+      return 1;
+    } else {
+      // …
+    }
+  }
+// To analyse it near x = 5:
+#define OSACA_ANALYSED_FUNCTION f
+#define UNDER_OSACA_HYPOTHESES(expression)                                 \
+  [&] {                                                                    \
+    constexpr double x = 5;                                                \
+    /* To avoid inconsistent definitions, constexpr code can be used as */ \
+    /* needed.                                                          */ \
+    constexpr double abs_x = x > 0 ? x : -x;                               \
+    return (expression);                                                   \
+  }()
 #endif
+// In principle, the loop-carried dependency for function latency analysis is
+// achieved by wrapping the body of the function in an infinite loop, assigning
+// the result to the argument at each iteration, and adding IACA markers outside
+// the loop.  There are some subtleties:
+// — We need to trick the compiler into believing the loop is finite, so that it
+//   doesn’t optimize away the end marker or even the function.  This is
+//   achieved by exiting based on the value of `OSACA_loop_terminator`.
+// — Return statements may be in if statements, and there may be several of
+//   them, so they cannot be the end of a loop started unconditionally.  Instead
+//   we loop with goto.
+// — Some volatile reads and writes are used to clarify identity of the
+//   registers in the generated code (where the names of `OSACA_input` and
+//   'OSACA_result' appear in movsd instructions) and to improve the structure
+//   of the generated graph.
+//
+// Putting a load of the input from memory in the analysed section makes the
+// OSACA dependency graph clearer. However:
+// — it adds a spurious move to the latency;
+// — some tools (IACA, LLVM-MCA) cannot see the dependency through memory.
+// Set OSACA_CARRY_LOOP_THROUGH_REGISTER to 1 to carry the loop dependency
+// through a register instead.
+
+#define OSACA_EVALUATE_CONDITIONS 1
+#define OSACA_CARRY_LOOP_THROUGH_REGISTER 0
+
+static bool OSACA_loop_terminator = false;
+
+#define OSACA_FUNCTION_BEGIN(arg)                               \
+  double OSACA_INPUT_QUALIFIER OSACA_input = arg;               \
+  if constexpr (std::string_view(__func__) ==                   \
+                STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
+    IACA_VC64_START;                                            \
+  }                                                             \
+  double OSACA_loop_carry = OSACA_input;                        \
+  _Pragma("warning(push)");                                     \
+  _Pragma("warning(disable : 4102)");                           \
+  OSACA_loop:                                                   \
+  _Pragma("warning(pop)");                                      \
+  arg = OSACA_loop_carry
+
+#define OSACA_RETURN(result)                                      \
+  do {                                                            \
+    if constexpr (std::string_view(__func__) ==                   \
+                  STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
+      OSACA_loop_carry = (result);                                \
+      if (!OSACA_loop_terminator) {                               \
+        goto OSACA_loop;                                          \
+      }                                                           \
+      double volatile OSACA_result = OSACA_loop_carry;            \
+      IACA_VC64_END;                                              \
+      return OSACA_result;                                        \
+    } else {                                                      \
+      return (result);                                            \
+    }                                                             \
+  } while (false)
+
+#if OSACA_CARRY_LOOP_THROUGH_REGISTER
+#define OSACA_INPUT_QUALIFIER
+#else
+#define OSACA_INPUT_QUALIFIER volatile
+#endif
+
+// The branch not taken, determined by evaluating the condition
+// `UNDER_OSACA_HYPOTHESES`, is eliminated by `if constexpr`; the condition is
+// also compiled normally and assigned to a boolean; whether this results in any
+// generated code depends on `OSACA_EVALUATE_CONDITIONS`.  Note that, with
+// `OSACA_EVALUATE_CONDITIONS`, in  `OSACA_IF(p) { } OSACA_ELSE_IF(q) { }`, if
+// `p` holds `UNDER_OSACA_HYPOTHESES`, code is generated to evaluate `p`, but
+// not `q`.
+
+#define OSACA_IF(condition)                                               \
+  if constexpr (bool OSACA_CONDITION_QUALIFIER OSACA_computed_condition = \
+                    (condition);                                          \
+                UNDER_OSACA_HYPOTHESES(condition))
+
+#if OSACA_EVALUATE_CONDITIONS
+#define OSACA_CONDITION_QUALIFIER volatile
+#else
+#define OSACA_CONDITION_QUALIFIER
+#endif
+
+#else  // if !PRINCIPIA_USE_OSACA
+
+#define OSACA_FUNCTION_BEGIN(arg)
+#define OSACA_RETURN(result) return (result)
+#define OSACA_IF(condition) if (condition)
+
+#endif  // PRINCIPIA_USE_OSACA
+
+#define OSACA_ELSE_IF else OSACA_IF  // NOLINT
+
+// Sin- and Cos-specific definitions:
+
+#define UNDER_OSACA_HYPOTHESES(expression)                                 \
+  [&] {                                                                    \
+    constexpr bool UseHardwareFMA = true;                                  \
+    constexpr double θ = 0.1;                                              \
+    /* From argument reduction. */                                         \
+    constexpr double n_double = θ * (2 / π);                               \
+    constexpr double reduction_value = θ - n_double * π_over_2_high;       \
+    constexpr double reduction_error = n_double * π_over_2_low;            \
+    /* Used to determine whether a better argument reduction is needed. */ \
+    constexpr DoublePrecision<double> θ_reduced =                          \
+        QuickTwoDifference(reduction_value, reduction_error);              \
+    /* Used in Sin to detect the near-0 case. */                           \
+    constexpr double abs_x =                                               \
+        θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;          \
+    /* Used throughout the top-level functions. */                         \
+    constexpr std::int64_t quadrant =                                      \
+        static_cast<std::int64_t>(n_double) & 0b11;                        \
+    /* Used in DetectDangerousRounding. */                                 \
+    constexpr double normalized_error = 0;                                 \
+    /* Not NaN is the only part that matters; used at the end of the    */ \
+    /* top-level functions to determine whether to call the slow path.  */ \
+    constexpr double value = 1;                                            \
+    return expression;                                                     \
+  }()
+
 
 namespace principia {
 namespace numerics {
@@ -75,8 +262,8 @@ inline std::int64_t AccurateTableIndex(double const abs_x) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+            (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
   } else {
@@ -86,8 +273,8 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
+            (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
@@ -110,7 +297,8 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
       _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
   // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
   // negative numbers?
-  if (normalized_error < -0x1.ffffp971 && normalized_error > -0x1.00008p972) {
+  OSACA_IF(normalized_error < -0x1.ffffp971 &&
+           normalized_error > -0x1.00008p972) {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
                << " " << error << " " << normalized_error;
@@ -124,12 +312,12 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
-  if (θ < π / 4 && θ > -π / 4) {
+  OSACA_IF(θ < π / 4 && θ > -π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } else if (θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
+  } OSACA_ELSE_IF(θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -142,7 +330,7 @@ inline void Reduce(Argument const θ,
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
     // TODO(phl): Error analysis needed to find the right bounds.
-    if (θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+    OSACA_IF(θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
       quadrant = n & 0b11;
       return;
     }
@@ -180,7 +368,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& x = θ_reduced.value;
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
-  if (abs_x < sin_near_zero_cutoff) {
+  OSACA_IF(abs_x < sin_near_zero_cutoff) {
     double const x² = x * x;
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
@@ -253,72 +441,62 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
-Value __cdecl Sin(Argument const θ) {
+Value __cdecl Sin(Argument θ) {
+  OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  if (UseHardwareFMA) {
-    if (quadrant & 0b1) {
+  OSACA_IF(UseHardwareFMA) {
+    OSACA_IF(quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-#if PRINCIPIA_USE_OSACA_SIN
-      IACA_VC64_START;
-#endif
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
-#if PRINCIPIA_USE_OSACA_SIN
-      IACA_VC64_END;
-#endif
     }
   } else {
-    if (quadrant & 0b1) {
+    OSACA_IF(quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (value != value) {
-    return cr_sin(θ);
-  } else if (quadrant & 0b10) {
-    return -value;
+  OSACA_IF(value != value) {
+    OSACA_RETURN(cr_sin(θ));
+  } OSACA_ELSE_IF(quadrant & 0b10) {
+    OSACA_RETURN(-value);
   } else {
-    return value;
+    OSACA_RETURN(value);
   }
 }
 
 #if PRINCIPIA_INLINE_SIN_COS
 FORCE_INLINE(inline)
 #endif
-Value __cdecl Cos(Argument const θ) {
+Value __cdecl Cos(Argument θ) {
+  OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
   double value;
-  if (UseHardwareFMA) {
-    if (quadrant & 0b1) {
+  OSACA_IF(UseHardwareFMA) {
+    OSACA_IF(quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
-#if PRINCIPIA_USE_OSACA_COS
-      IACA_VC64_START;
-#endif
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
-#if PRINCIPIA_USE_OSACA_COS
-      IACA_VC64_END;
-#endif
     }
   } else {
-    if (quadrant & 0b1) {
+    OSACA_IF(quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     }
   }
-  if (value != value) {
-    return cr_cos(θ);
-  } else if (quadrant == 1 || quadrant == 2) {
-    return -value;
+  OSACA_IF(value != value) {
+    OSACA_RETURN(cr_cos(θ));
+  } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
+    OSACA_RETURN(-value);
   } else {
-    return value;
+    OSACA_RETURN(value);
   }
 }
 
