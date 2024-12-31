@@ -198,8 +198,8 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-  // later in the computation.  Note that the terms in `e * h²` and higher are
-  // *not* computed correctly below because they don't matter.
+    // later in the computation.  Note that the terms in `e * h²` and higher are
+    // *not* computed correctly below because they don't matter.
     double const h = x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
