@@ -39,28 +39,43 @@
 // result in artificially low port pressures.
 #if 0
 // Usage:
-double f(double const x) {
-  double const abs_x = std::abs(x);
-  if (abs_x < 0.1) {
-    return x;
-  } else if (x < 0) {
-    return f_negative(x);
-  } else {
-    return f_positive(x);
+  double f(double const x) {
+    double const abs_x = std::abs(x);
+    if (abs_x < 0.1) {
+      return x;
+    } else if (x < 0) {
+      return -f_positive(x);
+    } else {
+      return f_positive(x);
+    }
   }
-}
+  double f_positive(x) {
+    if (x > 3) {
+      return 1;
+    } else {
+      // …
+    }
+  }
 // becomes:
-double f(double x) {  // The argument cannot be const.
-  OSACA_FUNCTION_BEGIN(x);
-  double const abs_x = std::abs(x);
-  OSACA_IF(abs_x < 0.1) {
-    OSACA_RETURN(x);
-  } OSACA_ELSE_IF(x < 0) {  // `else OSACA_IF` works, but upsets the linter.
-    OSACA_RETURN(f_negative(x));
-  } else {
-    OSACA_RETURN(f_positive(x));
+  double f(double x) {  // The argument cannot be const.
+    OSACA_FUNCTION_BEGIN(x);
+    double const abs_x = std::abs(x);
+    OSACA_IF(abs_x < 0.1) {
+      OSACA_RETURN(x);
+    } OSACA_ELSE_IF(x < 0) {  // `else OSACA_IF` works, but upsets the linter.
+      OSACA_RETURN(-f_positive(x));
+    } else {
+      OSACA_RETURN(f_positive(x));
+    }
   }
-}
+  // Other functions can return normally, but need to use OSACA_IF:
+  double f_positive(x) {
+    OSACA_IF(x > 3) {
+      return 1;
+    } else {
+      // …
+    }
+  }
 // To analyse it near x = 5:
 #define UNDER_OSACA_HYPOTHESES(statement)                                    \
   do {                                                                       \
