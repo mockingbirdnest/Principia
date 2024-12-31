@@ -52,7 +52,7 @@ static bool OSACA_loop_terminator = false;
   double volatile OSACA_result = OSACA_loop_carry; \
   IACA_VC64_END;                                   \
   return OSACA_result
-#define OSACA_IF(condition)                                           \
+#define OSACA_IF_(condition)                                           \
   if constexpr (bool volatile OSACA_computed_condition = (condition); \
                 [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
 
