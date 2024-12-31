@@ -33,6 +33,7 @@
 #if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
 #include "intel/iacaMarks.h"
 static bool OSACA_loop_terminator = false;
+
 #define OSACA_FUNCTION_BEGIN(arg)                                              \
   double volatile OSACA_input = arg;                                           \
   /* Putting a load of the input from memory in the analysed section makes  */ \
@@ -52,6 +53,7 @@ static bool OSACA_loop_terminator = false;
   double volatile OSACA_result = OSACA_loop_carry; \
   IACA_VC64_END;                                   \
   return OSACA_result
+
 #define OSACA_IF(condition)                                           \
   if constexpr (bool volatile OSACA_computed_condition = (condition); \
                 [] { UNDER_OSACA_HYPOTHESES(return (condition)); }())
@@ -181,7 +183,7 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
   // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
   // negative numbers?
   OSACA_IF(normalized_error < -0x1.ffffp971 &&
-          normalized_error > -0x1.00008p972) {
+           normalized_error > -0x1.00008p972) {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
                << " " << error << " " << normalized_error;
