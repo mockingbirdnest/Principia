@@ -14,8 +14,6 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
-#define PRINCIPIA_USE_OSACA PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
-
 #if PRINCIPIA_USE_OSACA
 
 #include "intel/iacaMarks.h"
@@ -78,6 +76,7 @@
     }
   }
 // To analyse it near x = 5:
+#define OSACA_ANALYSED_FUNCTION f
 #define UNDER_OSACA_HYPOTHESES(expression)                                 \
   [&] {                                                                    \
     constexpr double x = 5;                                                \
@@ -114,21 +113,34 @@
 
 static bool OSACA_loop_terminator = false;
 
-#define OSACA_FUNCTION_BEGIN(arg)                 \
-  double OSACA_INPUT_QUALIFIER OSACA_input = arg; \
-  IACA_VC64_START;                                \
-  double OSACA_loop_carry = OSACA_input;          \
-  OSACA_loop:                                     \
+#define OSACA_FUNCTION_BEGIN(arg)                               \
+  double OSACA_INPUT_QUALIFIER OSACA_input = arg;               \
+  if constexpr (std::string_view(__func__) ==                   \
+                STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
+    IACA_VC64_START;                                            \
+  }                                                             \
+  double OSACA_loop_carry = OSACA_input;                        \
+  _Pragma("warning(push)");                                     \
+  _Pragma("warning(disable : 4102)");                           \
+  OSACA_loop:                                                   \
+  _Pragma("warning(pop)");                                      \
   arg = OSACA_loop_carry
 
-#define OSACA_RETURN(result)                       \
-  OSACA_loop_carry = (result);                     \
-  if (!OSACA_loop_terminator) {                    \
-    goto OSACA_loop;                               \
-  }                                                \
-  double volatile OSACA_result = OSACA_loop_carry; \
-  IACA_VC64_END;                                   \
-  return OSACA_result
+#define OSACA_RETURN(result)                                      \
+  do {                                                            \
+    if constexpr (std::string_view(__func__) ==                   \
+                  STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
+      OSACA_loop_carry = (result);                                \
+      if (!OSACA_loop_terminator) {                               \
+        goto OSACA_loop;                                          \
+      }                                                           \
+      double volatile OSACA_result = OSACA_loop_carry;            \
+      IACA_VC64_END;                                              \
+      return OSACA_result;                                        \
+    } else {                                                      \
+      return (result);                                            \
+    }                                                             \
+  } while (false)
 
 #if OSACA_CARRY_LOOP_THROUGH_REGISTER
 #define OSACA_INPUT_QUALIFIER
@@ -157,6 +169,8 @@ static bool OSACA_loop_terminator = false;
 
 #else  // if !PRINCIPIA_USE_OSACA
 
+#define OSACA_FUNCTION_BEGIN(arg)
+#define OSACA_RETURN(result) return (result)
 #define OSACA_IF(condition) if (condition)
 
 #endif  // PRINCIPIA_USE_OSACA
@@ -164,22 +178,6 @@ static bool OSACA_loop_terminator = false;
 #define OSACA_ELSE_IF else OSACA_IF  // NOLINT
 
 // Sin- and Cos-specific definitions:
-
-#if PRINCIPIA_USE_OSACA_SIN
-#define OSACA_SIN_BEGIN OSACA_FUNCTION_BEGIN
-#define OSACA_RETURN_SIN OSACA_RETURN
-#else
-#define OSACA_SIN_BEGIN(arg)
-#define OSACA_RETURN_SIN(result) return (result)
-#endif
-
-#if PRINCIPIA_USE_OSACA_COS
-#define OSACA_COS_BEGIN OSACA_FUNCTION_BEGIN
-#define OSACA_RETURN_COS OSACA_RETURN
-#else
-#define OSACA_COS_BEGIN(arg)
-#define OSACA_RETURN_COS(result) return (result)
-#endif
 
 #define UNDER_OSACA_HYPOTHESES(expression)                                 \
   [&] {                                                                    \
@@ -444,7 +442,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 FORCE_INLINE(inline)
 #endif
 Value __cdecl Sin(Argument θ) {
-  OSACA_SIN_BEGIN(θ);
+  OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
@@ -463,11 +461,11 @@ Value __cdecl Sin(Argument θ) {
     }
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN_SIN(cr_sin(θ));
+    OSACA_RETURN(cr_sin(θ));
   } OSACA_ELSE_IF(quadrant & 0b10) {
-    OSACA_RETURN_SIN(-value);
+    OSACA_RETURN(-value);
   } else {
-    OSACA_RETURN_SIN(value);
+    OSACA_RETURN(value);
   }
 }
 
@@ -475,7 +473,7 @@ Value __cdecl Sin(Argument θ) {
 FORCE_INLINE(inline)
 #endif
 Value __cdecl Cos(Argument θ) {
-  OSACA_COS_BEGIN(θ);
+  OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   Reduce(θ, θ_reduced, quadrant);
@@ -494,11 +492,11 @@ Value __cdecl Cos(Argument θ) {
     }
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN_COS(cr_cos(θ));
+    OSACA_RETURN(cr_cos(θ));
   } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
-    OSACA_RETURN_COS(-value);
+    OSACA_RETURN(-value);
   } else {
-    OSACA_RETURN_COS(value);
+    OSACA_RETURN(value);
   }
 }
 

@@ -33,15 +33,13 @@ class SinCosTest : public ::testing::Test {
 };
 
 // Defined in sin_cos.hpp
-#if PRINCIPIA_USE_OSACA_SIN || PRINCIPIA_USE_OSACA_COS
+#if PRINCIPIA_USE_OSACA
 
 // A convenient skeleton for analysing code with OSACA.  Note that to speed-up
 // analysis, we disable all the other tests when using OSACA.
 TEST_F(SinCosTest, DISABLED_OSACA) {
   static_assert(PRINCIPIA_INLINE_SIN_COS == 1,
                 "Must force inlining to use OSACA");
-  static_assert(PRINCIPIA_USE_OSACA_SIN + PRINCIPIA_USE_OSACA_COS <= 1,
-                "Must use OSACA for at most one function");
   auto osaca_sin = [](double const a) {
     return Sin(a);
   };

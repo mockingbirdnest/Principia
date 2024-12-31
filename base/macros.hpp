@@ -9,6 +9,15 @@ namespace base {
 #define STRINGIFY(X) #X
 #define STRINGIFY_EXPANSION(X) STRINGIFY(X)
 
+#define PRINCIPIA_CONCATENATE_SENTINEL(X) X##0x4C##45##4E##49##54##4E##45##53
+// True if X is #defined to nothing, false if X is #defined to an identifier or
+// is not defined.  This macro should not be used with macros that expand to
+// something other than an identifier.
+#define PRINCIPIA_MACRO_IS_EMPTY(X)                                  \
+  (PRINCIPIA_CONCATENATE_SENTINEL(X) ==                              \
+   ('S' << 000 | 'E' << 010 | 'N' << 020 | 'T' << 030 | 'I' << 040 | \
+    'N' << 050 | 'E' << 060 | 'L' << 070))
+
 // See http://goo.gl/2EVxN4 for a partial overview of compiler detection and
 // version macros.
 #if defined(_MSC_VER) && defined(__clang__)
