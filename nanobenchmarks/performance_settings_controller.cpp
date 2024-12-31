@@ -6,12 +6,14 @@
 #include <utility>
 #include <string_view>
 
+#include "absl/flags/flag.h"
+#include "base/macros.hpp"  // 🧙 For OS_WIN.
+#include "glog/logging.h"
+
+#if OS_WIN
 #include <windows.h>
 #include <powersetting.h>
 #include <powrprof.h>
-
-#include "absl/flags/flag.h"
-#include "glog/logging.h"
 
 ABSL_FLAG(bool,
           keep_perf_boost,
@@ -23,12 +25,14 @@ ABSL_FLAG(bool,
           keep_throttling,
           false,
           "Whether to allow processor throttling during benchmark execution");
+#endif
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _performance_settings_controller {
 namespace internal {
 
+#if OS_WIN
 class WindowsPerformanceSettingsController
     : public PerformanceSettingsController {
  public:
@@ -295,6 +299,14 @@ WindowsPerformanceSettingsController::ReadAndPrintAllowThrottlingACDC() const {
       "PROCESSOR_THROTTLE DC={} ({})", dc, ProcessorThrottleToString(dc));
   return {ac, dc};
 }
+#else
+
+not_null<std::unique_ptr<PerformanceSettingsController>>
+PerformanceSettingsController::New() {
+  return make_not_null_unique<PerformanceSettingsController>();
+}
+
+#endif
 
 }  // namespace internal
 }  // namespace _performance_settings_controller

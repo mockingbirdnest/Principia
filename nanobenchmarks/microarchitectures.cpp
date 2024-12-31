@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/cpuid.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "glog/logging.h"
 
 BENCHMARK_EXTERN_C_FUNCTION(identity);
@@ -13,6 +14,28 @@ BENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
+#if PRINCIPIA_COMPILER_CLANG
+asm(R"(
+.intel_syntax
+identity:
+  ret
+sqrtps_xmm0_xmm0:
+  sqrtps xmm0, xmm0
+  ret
+sqrtsd_xmm0_xmm0:
+  sqrtsd xmm0, xmm0
+  ret
+mulsd_xmm0_xmm0:
+  mulsd xmm0, xmm0
+  ret
+mulsd_xmm0_xmm0_4x:
+  mulsd xmm0, xmm0
+  mulsd xmm0, xmm0
+  mulsd xmm0, xmm0
+  mulsd xmm0, xmm0
+  ret
+)");
+#endif
 
 namespace principia {
 namespace nanobenchmarks {

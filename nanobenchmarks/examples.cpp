@@ -1,6 +1,6 @@
 #include <emmintrin.h>
 
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
 #include "numerics/cbrt.hpp"
 #include "numerics/sin_cos.hpp"
 
@@ -54,6 +54,14 @@ BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
+
+BENCHMARKED_FUNCTION(std_sin) {
+  return std::sin(x);
+}
+
+BENCHMARKED_FUNCTION(principia_sin) {
+  return Sin(x);
+}
 
 BENCHMARKED_FUNCTION(std_cos) {
   return std::cos(x);

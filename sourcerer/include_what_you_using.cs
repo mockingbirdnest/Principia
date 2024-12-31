@@ -186,7 +186,10 @@ class IncludeWhatYouUsing {
     foreach (string ns in using_namespaces) {
       var segments = ns.Split("::", StringSplitOptions.RemoveEmptyEntries);
       var include_path = Array.Empty<string>();
-      bool skip = false;
+      if (ns == file.file_namespace_full_name) {
+        // Don't add an include for our own header.  This matters for tests.
+        continue;
+      }
       foreach (string segment in segments) {
         if (segment == "principia") {
           continue;
@@ -195,24 +198,17 @@ class IncludeWhatYouUsing {
                    segment == "std") {
           // We have using directives for namespaces in absl or std, don't emit
           // an include for them.
-          skip = true;
-          continue;
+          goto next_using_directive;
         } else if (segment[0] == '_') {
-          // Don't add an include for our own header.  This matters for tests.
-          if (segment == file.file_namespace_simple_name) {
-            skip = true;
-          } else {
-            string header_filename = Regex.Replace(segment, @"^_", "");
-            include_path = include_path.Append(header_filename).ToArray();
-          }
+          string header_filename = Regex.Replace(segment, @"^_", "");
+          include_path = include_path.Append(header_filename).ToArray();
           break;
         } else {
           include_path = include_path.Append(segment).ToArray();
         }
       }
-      if (!skip) {
-        new_include_paths.Add(include_path);
-      }
+      new_include_paths.Add(include_path);
+      next_using_directive: {}
     }
 
     // Extract the includes.

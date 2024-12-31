@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/macros.hpp"
+#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
 
 namespace principia {
 namespace numerics {
