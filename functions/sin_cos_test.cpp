@@ -106,7 +106,8 @@ TEST_F(SinCosTest, Random) {
       }
       if (sin_ulps_error > 0.5) {
         ++incorrectly_rounded_sin;
-        LOG(ERROR) << "Sin: " << std::setprecision(25) << principia_argument;
+        LOG(ERROR) << "Sin: " << sin_ulps_error << " ulps at "
+                   << std::setprecision(25) << principia_argument;
       }
     }
     {
@@ -122,7 +123,8 @@ TEST_F(SinCosTest, Random) {
       }
       if (cos_ulps_error > 0.5) {
         ++incorrectly_rounded_cos;
-        LOG(ERROR) << "Cos: " << std::setprecision(25) << principia_argument;
+        LOG(ERROR) << "Cos: " << cos_ulps_error << " ulps at "
+                   << std::setprecision(25) << principia_argument;
       }
     }
   }
