@@ -151,7 +151,7 @@
 #define OSACA_EVALUATE_CONDITIONS 1
 #define OSACA_CARRY_LOOP_THROUGH_REGISTER 1
 
-static bool OSACA_loop_terminator = false;
+static bool volatile OSACA_loop_terminator = false;
 
 #define OSACA_FUNCTION_BEGIN(arg)                               \
   double OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;     \
