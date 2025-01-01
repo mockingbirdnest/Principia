@@ -456,9 +456,6 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
-#if PRINCIPIA_INLINE_SIN_COS
-FORCE_INLINE(inline)
-#endif
 Value __cdecl Sin(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
@@ -487,9 +484,6 @@ Value __cdecl Sin(Argument θ) {
   }
 }
 
-#if PRINCIPIA_INLINE_SIN_COS
-FORCE_INLINE(inline)
-#endif
 Value __cdecl Cos(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
