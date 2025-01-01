@@ -5,9 +5,7 @@
     <RootNamespace>functions</RootNamespace>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-    </ClCompile>
+    <ClCompile />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="accurate_table_generator.hpp" />

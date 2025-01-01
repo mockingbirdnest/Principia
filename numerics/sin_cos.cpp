@@ -20,6 +20,7 @@
     constexpr bool UseHardwareFMA = true;                                    \
     constexpr double θ = 3;                                                  \
     /* From argument reduction. */                                           \
+    constexpr double abs_θ = θ > 0 ? θ : -θ;                                 \
     constexpr std::int64_t n = static_cast<std::int64_t>(θ * (2 / π) + 0.5); \
     constexpr double reduction_value = θ - n * π_over_2_high;                \
     constexpr double reduction_error = n * π_over_2_low;                     \
