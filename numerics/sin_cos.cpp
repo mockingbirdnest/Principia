@@ -304,6 +304,7 @@ double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
 // Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
 // configuration (that is, the bits after the last mantissa bit of the sum are
 // either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
+// `x` is always positive.  `Δx` may be positive or negative.
 inline double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
@@ -396,31 +397,33 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
+    double const abs_e = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
     auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
-    double const x₀ =
-        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
-    double const sin_x₀ =
-        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
+    double const& x₀ = accurate_values.x;
+    double const& sin_x₀ = accurate_values.sin_x;
     double const& cos_x₀ = accurate_values.cos_x;
     // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
     // later in the computation.  Note that the terms in `e * h²` and higher are
     // *not* computed correctly below because they don't matter.
-    double const h = x - x₀;
+    double const h = abs_x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    double const h² = h * (h + 2 * e);
+    double const h² = h * (h + 2 * abs_e);
     double const h³ = h² * h;
     double const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
             h³ * SinPolynomial<fma_policy>(h²),
             sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
-        FusedMultiplyAdd<fma_policy>(cos_x₀, e, sin_x₀_plus_h_cos_x₀.error);
-    return DetectDangerousRounding(sin_x₀_plus_h_cos_x₀.value, polynomial_term);
+        FusedMultiplyAdd<fma_policy>(cos_x₀, abs_e, sin_x₀_plus_h_cos_x₀.error);
+    return _mm_cvtsd_f64(
+        _mm_xor_pd(_mm_set_sd(DetectDangerousRounding(
+                       sin_x₀_plus_h_cos_x₀.value, polynomial_term)),
+                   sign));
   }
 }
 
