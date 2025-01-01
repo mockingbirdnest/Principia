@@ -230,6 +230,8 @@ constexpr std::int64_t π_over_2_zeroes = 18;
 constexpr Argument π_over_2_threshold = π / 2 * (1 << π_over_2_zeroes);
 constexpr Argument π_over_2_high = 0x1.921fb'5444p0;
 constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
+constexpr Argument mantissa_reduce_shifter =
+    1LL << (std::numeric_limits<double>::digits - 1);
 
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
@@ -243,6 +245,8 @@ static const __m128d mantissa_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
 static const __m128d mantissa_index_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
+static const __m128d mantissa_reduce_bits =
+    _mm_castsi128_pd(_mm_cvtsi64_si128((1LL << π_over_2_zeroes) - 1));
 }  // namespace masks
 
 inline std::int64_t AccurateTableIndex(double const abs_x) {
@@ -324,10 +328,18 @@ inline void Reduce(Argument const θ,
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
-    __m128d const n_128d = _mm_round_sd(
-        _mm_setzero_pd(), _mm_set_sd(θ * (2 / π)), _MM_FROUND_RINT);
-    double const n_double = _mm_cvtsd_f64(n_128d);
-    std::int64_t const n = _mm_cvtsd_si64(n_128d);
+    __m128d const sign_128d = _mm_and_pd(masks::sign_bit, _mm_set_sd(θ));
+    double const signed_shifter = _mm_cvtsd_f64(
+        _mm_xor_pd(_mm_set_sd(mantissa_reduce_shifter), sign_128d));
+    double const n_shifted = θ * (2 / π) + signed_shifter;
+    double const n_double = n_shifted - signed_shifter;
+    __m128 const sign_128 = _mm_castpd_ps(sign_128d);
+    std::int64_t const n = _mm_cvtsi128_si32(_mm_sign_epi32(
+        _mm_castpd_si128(
+            _mm_and_pd(masks::mantissa_reduce_bits, _mm_set_sd(n_shifted))),
+        _mm_castps_si128(_mm_or_ps(_mm_shuffle_ps(sign_128, sign_128, 1),
+                                   _mm_castsi128_ps(_mm_cvtsi32_si128(1))))));
+
     Argument const value = θ - n_double * π_over_2_high;
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
