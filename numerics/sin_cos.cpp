@@ -413,28 +413,28 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
+  double const abs_e = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
   auto const i = AccurateTableIndex(abs_x);
   auto const& accurate_values = SinCosAccurateTable[i];
-  double const x₀ =
-      _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
-  double const sin_x₀ =
-      _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
+  double const& x₀ = accurate_values.x;
+  double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
   // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
   // don't overlap and in the first interval `x` and `h` may be of the same
   // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
   // later in the computation.  Note that the terms in `e * h²` and higher are
   // *not* computed correctly below because they don't matter.
-  double const h = x - x₀;
+  double const h = abs_x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  double const h² = h * (h + 2 * e);
+  double const h² = h * (h + 2 * abs_e);
   double const h³ = h² * h;
   double const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
-          FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+          FusedMultiplyAdd<fma_policy>(
+              h³, SinPolynomial<fma_policy>(h²), abs_e),
           cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
       cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
