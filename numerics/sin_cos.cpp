@@ -14,6 +14,35 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
+#define OSACA_ANALYSED_FUNCTION
+#define UNDER_OSACA_HYPOTHESES(expression)                                   \
+  [&] {                                                                      \
+    constexpr bool UseHardwareFMA = true;                                    \
+    constexpr double θ = 3;                                                  \
+    /* From argument reduction. */                                           \
+    constexpr std::int64_t n = static_cast<std::int64_t>(θ * (2 / π) + 0.5); \
+    constexpr double reduction_value = θ - n * π_over_2_high;                \
+    constexpr double reduction_error = n * π_over_2_low;                     \
+    /* Used to determine whether a better argument reduction is needed. */   \
+    constexpr DoublePrecision<double> θ_reduced =                            \
+        QuickTwoDifference(reduction_value, reduction_error);                \
+    /* Used in Sin to detect the near-0 case. */                             \
+    constexpr double abs_x =                                                 \
+        θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;            \
+    /* Used throughout the top-level functions. */                           \
+    constexpr std::int64_t quadrant = n & 0b11;                              \
+    /* Used in DetectDangerousRounding. */                                   \
+    constexpr double normalized_error = 0;                                   \
+    /* Not NaN is the only part that matters; used at the end of the    */   \
+    /* top-level functions to determine whether to call the slow path.  */   \
+    constexpr double value = 1;                                              \
+    return expression;                                                       \
+  }()
+
+#if defined(OSACA_ANALYSED_FUNCTION)
+#define PRINCIPIA_USE_OSACA !PRINCIPIA_MACRO_IS_EMPTY(OSACA_ANALYSED_FUNCTION)
+#endif
+
 #if PRINCIPIA_USE_OSACA
 
 #include "intel/iacaMarks.h"
@@ -96,56 +125,72 @@
 // — Return statements may be in if statements, and there may be several of
 //   them, so they cannot be the end of a loop started unconditionally.  Instead
 //   we loop with goto.
+// — We need to prevent the compiler from moving the start and end markers into
+//   the middle of register saving and restoring code, which would mess up the
+//   dependency analysis.  This is done with additional conditional gotos.
 // — Some volatile reads and writes are used to clarify identity of the
-//   registers in the generated code (where the names of `OSACA_input` and
-//   'OSACA_result' appear in movsd instructions) and to improve the structure
-//   of the generated graph.
+//   registers in the generated code (where the names of `OSACA_result` and, if
+//   `OSACA_CARRY_LOOP_THROUGH_REGISTER` is set to 0, `OSACA_loop_carry` appear
+//   in movsd instructions).
 //
-// Putting a load of the input from memory in the analysed section makes the
-// OSACA dependency graph clearer. However:
+// Carrying the loop dependency through a memory load and store can make the
+// dependency graph easier to understand, as it forces any usage of the input to
+// depend on the initial movsd, with the loop carried by a single backward edge
+// to that initial movsd.
+// If the loop is carried through a register, multiple usages of the input may
+// result in multiple back edges from the final instruction that computed the
+// result.  Carrying the loop through the memory could also potentially prevent
+// the compiler from reusing intermediate values in the next iteration, e.g., if
+// the the computation of f(x) depends on -x and produces -f(x) before f(x), as
+// in an even function defined in terms of its positive half, the compiler might
+// reuse -f(x₀)=-x₁ instead of computing -x₁ from x₁=f(x₀).  However:
 // — it adds a spurious move to the latency;
-// — some tools (IACA, LLVM-MCA) cannot see the dependency through memory.
-// Set OSACA_CARRY_LOOP_THROUGH_REGISTER to 1 to carry the loop dependency
-// through a register instead.
+// — some tools (IACA) cannot see the dependency through memory.
+// Set OSACA_CARRY_LOOP_THROUGH_REGISTER to 0 to carry the loop through memory.
 
 #define OSACA_EVALUATE_CONDITIONS 1
-#define OSACA_CARRY_LOOP_THROUGH_REGISTER 0
+#define OSACA_CARRY_LOOP_THROUGH_REGISTER 1
 
-static bool OSACA_loop_terminator = false;
+static bool volatile OSACA_loop_terminator = false;
 
 #define OSACA_FUNCTION_BEGIN(arg)                               \
-  double OSACA_INPUT_QUALIFIER OSACA_input = arg;               \
+  double OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;     \
+  OSACA_outer_loop:                                             \
   if constexpr (std::string_view(__func__) ==                   \
                 STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
     IACA_VC64_START;                                            \
   }                                                             \
-  double OSACA_loop_carry = OSACA_input;                        \
   _Pragma("warning(push)");                                     \
   _Pragma("warning(disable : 4102)");                           \
   OSACA_loop:                                                   \
   _Pragma("warning(pop)");                                      \
   arg = OSACA_loop_carry
 
-#define OSACA_RETURN(result)                                      \
-  do {                                                            \
-    if constexpr (std::string_view(__func__) ==                   \
-                  STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
-      OSACA_loop_carry = (result);                                \
-      if (!OSACA_loop_terminator) {                               \
-        goto OSACA_loop;                                          \
-      }                                                           \
-      double volatile OSACA_result = OSACA_loop_carry;            \
-      IACA_VC64_END;                                              \
-      return OSACA_result;                                        \
-    } else {                                                      \
-      return (result);                                            \
-    }                                                             \
+#define OSACA_RETURN(result)                                                \
+  do {                                                                      \
+    if constexpr (std::string_view(__func__) ==                             \
+                  STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) {           \
+      OSACA_loop_carry = (result);                                          \
+      if (!OSACA_loop_terminator) {                                         \
+        goto OSACA_loop;                                                    \
+      }                                                                     \
+      double volatile OSACA_result = OSACA_loop_carry;                      \
+      IACA_VC64_END;                                                        \
+      /* The outer loop prevents the the start and end marker from being */ \
+      /* interleaved with register saving and restoring moves.           */ \
+      if (!OSACA_loop_terminator) {                                         \
+        goto OSACA_outer_loop;                                              \
+      }                                                                     \
+      return OSACA_result;                                                  \
+    } else {                                                                \
+      return (result);                                                      \
+    }                                                                       \
   } while (false)
 
 #if OSACA_CARRY_LOOP_THROUGH_REGISTER
-#define OSACA_INPUT_QUALIFIER
+#define OSACA_LOOP_CARRY_QUALIFIER
 #else
-#define OSACA_INPUT_QUALIFIER volatile
+#define OSACA_LOOP_CARRY_QUALIFIER volatile
 #endif
 
 // The branch not taken, determined by evaluating the condition
@@ -176,34 +221,6 @@ static bool OSACA_loop_terminator = false;
 #endif  // PRINCIPIA_USE_OSACA
 
 #define OSACA_ELSE_IF else OSACA_IF  // NOLINT
-
-// Sin- and Cos-specific definitions:
-
-#define UNDER_OSACA_HYPOTHESES(expression)                                 \
-  [&] {                                                                    \
-    constexpr bool UseHardwareFMA = true;                                  \
-    constexpr double θ = 0.1;                                              \
-    /* From argument reduction. */                                         \
-    constexpr double abs_θ = θ < 0 ? -θ : θ;                               \
-    constexpr double n_double = θ * (2 / π);                               \
-    constexpr double reduction_value = θ - n_double * π_over_2_high;       \
-    constexpr double reduction_error = n_double * π_over_2_low;            \
-    /* Used to determine whether a better argument reduction is needed. */ \
-    constexpr DoublePrecision<double> θ_reduced =                          \
-        QuickTwoDifference(reduction_value, reduction_error);              \
-    /* Used in Sin to detect the near-0 case. */                           \
-    constexpr double abs_x =                                               \
-        θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;          \
-    /* Used throughout the top-level functions. */                         \
-    constexpr std::int64_t quadrant =                                      \
-        static_cast<std::int64_t>(n_double) & 0b11;                        \
-    /* Used in DetectDangerousRounding. */                                 \
-    constexpr double normalized_error = 0;                                 \
-    /* Not NaN is the only part that matters; used at the end of the    */ \
-    /* top-level functions to determine whether to call the slow path.  */ \
-    constexpr double value = 1;                                            \
-    return expression;                                                     \
-  }()
 
 
 namespace principia {
@@ -440,9 +457,6 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
-#if PRINCIPIA_INLINE_SIN_COS
-FORCE_INLINE(inline)
-#endif
 Value __cdecl Sin(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
@@ -471,9 +485,6 @@ Value __cdecl Sin(Argument θ) {
   }
 }
 
-#if PRINCIPIA_INLINE_SIN_COS
-FORCE_INLINE(inline)
-#endif
 Value __cdecl Cos(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
