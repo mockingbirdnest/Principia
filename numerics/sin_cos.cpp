@@ -14,11 +14,11 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
-#define OSACA_ANALYSED_FUNCTION Cos
+#define OSACA_ANALYSED_FUNCTION
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
     constexpr bool UseHardwareFMA = true;                                    \
-    constexpr double θ = 0.1;                                                \
+    constexpr double θ = 3;                                                  \
     /* From argument reduction. */                                           \
     constexpr std::int64_t n = static_cast<std::int64_t>(θ * (2 / π) + 0.5); \
     constexpr double reduction_value = θ - n * π_over_2_high;                \
