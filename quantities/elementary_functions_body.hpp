@@ -94,7 +94,7 @@ Q Mod(Q const& argument, Q const& modulus) {
 
 template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x) {
-#if PRINCIPIA_USE_SSE3_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS()
   auto const x_128d = _mm_set_sd(x / si::Unit<Q>);
   return si::Unit<SquareRoot<Q>> * _mm_cvtsd_f64(_mm_sqrt_sd(x_128d, x_128d));
 #else

@@ -141,7 +141,7 @@
 // Set OSACA_CARRY_LOOP_THROUGH_REGISTER to 0 to carry the loop through memory.
 
 #define OSACA_EVALUATE_CONDITIONS 1
-#define OSACA_CARRY_LOOP_THROUGH_REGISTER 0
+#define OSACA_CARRY_LOOP_THROUGH_REGISTER 1
 
 static bool volatile OSACA_loop_terminator = false;
 
