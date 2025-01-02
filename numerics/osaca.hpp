@@ -2,7 +2,7 @@
 
 #include "base/macros.hpp"
 
-#define PRINCIPIA_USE_OSACA 0
+#define PRINCIPIA_USE_OSACA 1
 
 // The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
 // latency of a double -> double function, as measured, e.g., by the
@@ -132,9 +132,11 @@ static bool volatile OSACA_loop_terminator = false;
 #define OSACA_FUNCTION_BEGIN(arg, ...)                              \
   double OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;         \
   OSACA_outer_loop:                                                 \
+  constexpr auto* OSACA_analysed_function_with_current_parameters = \
+      &OSACA_ANALYSED_FUNCTION __VA_ARGS__;                         \
   if constexpr (std::string_view(__func__) ==                       \
                     STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION) && \
-                &OSACA_ANALYSED_FUNCTION __VA_ARGS__ ==             \
+                OSACA_analysed_function_with_current_parameters ==  \
                     &OSACA_QUALIFIED_ANALYSED_FUNCTION) {           \
     IACA_VC64_START;                                                \
   }                                                                 \
@@ -146,8 +148,10 @@ static bool volatile OSACA_loop_terminator = false;
 
 #define OSACA_RETURN(result)                                                \
   do {                                                                      \
-    if constexpr (std::string_view(__FUNCSIG__) ==                          \
-                  STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) {           \
+    if constexpr (std::string_view(__func__) ==                             \
+                      STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION) &&       \
+                  OSACA_analysed_function_with_current_parameters ==        \
+                      &OSACA_QUALIFIED_ANALYSED_FUNCTION) {                 \
       OSACA_loop_carry = (result);                                          \
       if (!OSACA_loop_terminator) {                                         \
         goto OSACA_loop;                                                    \
